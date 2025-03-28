@@ -1,0 +1,371 @@
+package ldap
+
+import (
+	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"errors"
+	"fmt"
+	"net/http"
+	"reflect"
+	"time"
+
+	kitlog "github.com/go-kit/log"
+	"github.com/go-kit/log/level"
+	ldap "github.com/go-ldap/ldap/v3"
+	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-console/pkg/util/pool"
+	"github.com/sven-victor/ez-utils/log"
+	w "github.com/sven-victor/ez-utils/wrapper"
+)
+
+type Conn interface {
+	ldapConn
+	GetOptions() Options
+}
+
+type ldapConn interface {
+	IsClosing() bool
+	TLSConnectionState() (tls.ConnectionState, bool)
+	UnauthenticatedBind(username string) error
+	ExternalBind() error
+	NTLMUnauthenticatedBind(domain, username string) error
+	Unbind() error
+	ModifyWithResult(request *ldap.ModifyRequest) (*ldap.ModifyResult, error)
+	Start()
+	StartTLS(config *tls.Config) error
+	Close() error
+	SimpleBind(simpleBindRequest *ldap.SimpleBindRequest) (*ldap.SimpleBindResult, error)
+	Bind(username, password string) error
+	ModifyDN(modifyDNRequest *ldap.ModifyDNRequest) error
+	SetTimeout(t time.Duration)
+	Add(addRequest *ldap.AddRequest) error
+	Del(delRequest *ldap.DelRequest) error
+	Modify(modifyRequest *ldap.ModifyRequest) error
+	Compare(dn, attribute, value string) (bool, error)
+	PasswordModify(passwordModifyRequest *ldap.PasswordModifyRequest) (*ldap.PasswordModifyResult, error)
+	Search(searchRequest *ldap.SearchRequest) (*ldap.SearchResult, error)
+	SearchWithPaging(searchRequest *ldap.SearchRequest, pagingSize uint32) (*ldap.SearchResult, error)
+}
+
+var _ ldapConn = (*ldap.Conn)(nil)
+
+type conn struct {
+	*ldap.Conn
+	options Options
+}
+
+func (c *conn) GetOptions() Options {
+	return c.options
+}
+
+func (c *conn) Ping() error {
+	return nil
+}
+
+func (c *conn) Close() error {
+	return c.Conn.Close()
+}
+
+func valElem(valOf reflect.Value) reflect.Value {
+	if valOf.Kind() == reflect.Ptr || valOf.Kind() == reflect.Pointer {
+		return valElem(valOf.Elem())
+	}
+	return valOf
+}
+
+func typeElem(typeOf reflect.Type) reflect.Type {
+	if typeOf.Kind() == reflect.Ptr || typeOf.Kind() == reflect.Pointer {
+		return typeElem(typeOf.Elem())
+	}
+	return typeOf
+}
+
+func debug(ctx context.Context, name string, req interface{}, err error) {
+	logger := log.GetContextLogger(ctx, log.WithCaller(6))
+	if req != nil {
+
+		typeOf := typeElem(reflect.TypeOf(req))
+		valOf := valElem(reflect.ValueOf(req))
+		for i := 0; i < valOf.NumField(); i++ {
+			field := valOf.Field(i)
+			elem := valElem(field)
+			switch elem.Kind() {
+			case reflect.Slice, reflect.Array:
+				logger = kitlog.With(logger, log.WrapKeyName(typeOf.Field(i).Name), w.JSONStringer(elem.Interface()))
+			default:
+				fieldName := typeOf.Field(i).Name
+				if fieldName == "Controls" && elem.Interface() == nil {
+					continue
+				}
+				logger = kitlog.With(logger, log.WrapKeyName(fieldName), elem.Interface())
+			}
+		}
+	}
+
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to execute: "+name, "err", err)
+	} else {
+		level.Debug(logger).Log("msg", "execute:  "+name)
+	}
+}
+
+type PoolConn struct {
+	*conn
+	pool *pool.Pool[*conn]
+	ctx  context.Context
+}
+
+// Add implements Conn.
+func (c *PoolConn) Add(addRequest *ldap.AddRequest) (err error) {
+	defer func() {
+		debug(c.ctx, "add LDAP entry", addRequest, err)
+	}()
+	return c.conn.Add(addRequest)
+}
+
+// Bind implements Conn.
+func (c *PoolConn) Bind(username string, password string) (err error) {
+	defer func() {
+		debug(c.ctx, "bind LDAP entry", username, err)
+	}()
+	return c.conn.Bind(username, password)
+}
+
+// Del implements Conn.
+func (c *PoolConn) Del(delRequest *ldap.DelRequest) (err error) {
+	defer func() {
+		debug(c.ctx, "del LDAP entry", delRequest, err)
+	}()
+	return c.conn.Del(delRequest)
+}
+
+// Modify implements Conn.
+func (c *PoolConn) Modify(modifyRequest *ldap.ModifyRequest) (err error) {
+	defer func() {
+		debug(c.ctx, "modify LDAP entry", modifyRequest, err)
+	}()
+	return c.conn.Modify(modifyRequest)
+}
+
+// ModifyDN implements Conn.
+func (c *PoolConn) ModifyDN(modifyDNRequest *ldap.ModifyDNRequest) (err error) {
+	defer func() {
+		debug(c.ctx, "modify DN LDAP entry", modifyDNRequest, err)
+	}()
+	return c.conn.ModifyDN(modifyDNRequest)
+}
+
+// ModifyWithResult implements Conn.
+func (c *PoolConn) ModifyWithResult(request *ldap.ModifyRequest) (result *ldap.ModifyResult, err error) {
+	defer func() {
+		debug(c.ctx, "modify with result LDAP entry", request, err)
+	}()
+	return c.conn.ModifyWithResult(request)
+}
+
+// NTLMUnauthenticatedBind implements Conn.
+func (c *PoolConn) NTLMUnauthenticatedBind(domain string, username string) (err error) {
+	defer func() {
+		debug(c.ctx, "NTLM unauthenticated bind LDAP entry", fmt.Sprintf("%s@%s", username, domain), err)
+	}()
+	return c.conn.NTLMUnauthenticatedBind(domain, username)
+}
+
+// PasswordModify implements Conn.
+func (c *PoolConn) PasswordModify(passwordModifyRequest *ldap.PasswordModifyRequest) (result *ldap.PasswordModifyResult, err error) {
+	defer func() {
+		debug(c.ctx, "password modify LDAP entry", passwordModifyRequest, err)
+	}()
+	return c.conn.PasswordModify(passwordModifyRequest)
+}
+
+// Search implements Conn.
+func (c *PoolConn) Search(searchRequest *ldap.SearchRequest) (result *ldap.SearchResult, err error) {
+	defer func() {
+		type searchResult struct {
+			*ldap.SearchRequest
+			Total int
+		}
+		if result != nil {
+			debug(c.ctx, "search LDAP entry", searchResult{
+				SearchRequest: searchRequest,
+				Total:         len(result.Controls),
+			}, err)
+		} else {
+			debug(c.ctx, "search LDAP entry", searchRequest, err)
+		}
+	}()
+
+	result, err = c.conn.Search(searchRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// SearchWithPaging implements Conn.
+func (c *PoolConn) SearchWithPaging(searchRequest *ldap.SearchRequest, pagingSize uint32) (result *ldap.SearchResult, err error) {
+	defer func() {
+		debug(c.ctx, "search with paging LDAP entry", searchRequest, err)
+	}()
+	return c.conn.SearchWithPaging(searchRequest, pagingSize)
+}
+
+// SimpleBind implements Conn.
+func (c *PoolConn) SimpleBind(simpleBindRequest *ldap.SimpleBindRequest) (result *ldap.SimpleBindResult, err error) {
+	defer func() {
+		debugReq := *simpleBindRequest
+		debugReq.Password = "<secret>"
+		debug(c.ctx, "simple bind LDAP entry", debugReq, err)
+	}()
+	return c.conn.SimpleBind(simpleBindRequest)
+}
+
+// UnauthenticatedBind implements Conn.
+func (c *PoolConn) UnauthenticatedBind(username string) (err error) {
+	defer func() {
+		debug(c.ctx, "unauthenticated bind LDAP entry", username, err)
+	}()
+	return c.conn.UnauthenticatedBind(username)
+}
+
+// Unbind implements Conn.
+func (c *PoolConn) Unbind() (err error) {
+	defer func() {
+		debug(c.ctx, "unbind LDAP entry", nil, err)
+	}()
+	return c.conn.Unbind()
+}
+
+func (c *PoolConn) Close() error {
+	c.pool.Put(c.conn)
+	return nil
+}
+
+type Pool struct {
+	pool *pool.Pool[*conn]
+}
+
+func (p *Pool) Get(ctx context.Context) (Conn, error) {
+	c, err := p.pool.Get(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &PoolConn{conn: c, pool: p.pool, ctx: ctx}, nil
+}
+
+func (p *Pool) Close() {
+	p.pool.Close()
+}
+
+var ErrLDAPDisabled = fmt.Errorf("LDAP authentication is not enabled")
+
+func NewPool(ctx context.Context, optionsFactory func(ctx context.Context) (Options, error)) (*Pool, error) {
+	ldapPool, err := pool.NewPool(ctx, pool.Config[*conn]{
+		MinConns:    0,
+		MaxConns:    10,
+		MaxIdleTime: time.Minute * 10,
+		ConnFactory: func(ctx context.Context) (*conn, error) {
+			options, err := optionsFactory(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if !options.Enabled {
+				return nil, ErrLDAPDisabled
+			}
+			c, err := NewConn(ctx, options)
+			if err != nil {
+				return nil, err
+			}
+
+			var bindPassword string
+			if options.BindPassword.Size() > 0 {
+				bindPassword, err = options.BindPassword.UnsafeString()
+				if err != nil {
+					return nil, fmt.Errorf("failed to get bind password: %v", err)
+				}
+			}
+
+			logger := log.GetContextLogger(ctx)
+			level.Info(logger).Log("msg", "Binding LDAP admin", "bindDN", options.BindDN)
+			// Bind the admin account
+			if err := c.Bind(options.BindDN, bindPassword); err != nil {
+				return nil, util.ErrorResponse{
+					HTTPCode: http.StatusInternalServerError,
+					Code:     "E50011",
+					Err:      fmt.Errorf("failed to bind LDAP admin: %v", err),
+				}
+			}
+			return &conn{
+				Conn:    c,
+				options: options,
+			}, nil
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &Pool{pool: ldapPool}, nil
+}
+
+func NewConn(ctx context.Context, options Options) (*ldap.Conn, error) {
+	if !options.Enabled {
+		return nil, ErrLDAPDisabled
+	}
+	logger := log.GetContextLogger(ctx)
+	level.Info(logger).Log("msg", "Creating LDAP connection", "baseDN", options.BaseDN, "serverURL", options.ServerURL, "startTLS", options.StartTLS, "insecure", options.Insecure)
+	tlsConfig := tls.Config{
+		InsecureSkipVerify: options.Insecure,
+	}
+
+	if options.CACert != "" {
+		tlsConfig.RootCAs = x509.NewCertPool()
+		if !tlsConfig.RootCAs.AppendCertsFromPEM([]byte(options.CACert)) {
+			return nil, util.ErrorResponse{
+				HTTPCode: http.StatusInternalServerError,
+				Code:     "E50011",
+				Err:      errors.New("failed to append CA certificate"),
+			}
+		}
+	}
+	if options.ClientCert != "" && options.ClientKey != nil && options.ClientKey.Size() > 0 {
+		clientKey, err := options.ClientKey.UnsafeString()
+		if err != nil {
+			return nil, util.ErrorResponse{
+				HTTPCode: http.StatusInternalServerError,
+				Code:     "E50011",
+				Err:      err,
+			}
+		}
+		cert, err := tls.X509KeyPair([]byte(options.ClientCert), []byte(clientKey))
+		if err != nil {
+			return nil, util.ErrorResponse{
+				HTTPCode: http.StatusInternalServerError,
+				Code:     "E50011",
+				Err:      err,
+			}
+		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+	}
+
+	ldapConn, err := ldap.DialURL(options.ServerURL, ldap.DialWithTLSConfig(&tlsConfig))
+	if err != nil {
+		return nil, util.ErrorResponse{
+			HTTPCode: http.StatusInternalServerError,
+			Code:     "E50011",
+			Err:      err,
+		}
+	}
+	if options.StartTLS {
+		if err := ldapConn.StartTLS(&tlsConfig); err != nil {
+			return nil, util.ErrorResponse{
+				HTTPCode: http.StatusInternalServerError,
+				Code:     "E50011",
+				Err:      fmt.Errorf("failed to start TLS: %v", err),
+			}
+		}
+	}
+	return ldapConn, nil
+}

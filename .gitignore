@@ -1,0 +1,68 @@
+# build output
+/bin/
+/dist/
+
+# data files
+/data/
+
+# dependencies
+/vendor/
+node_modules/
+
+# IDE related
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+# log files
+*.log
+logs/*.txt
+
+
+# config files (except default)
+/config.yaml
+/config.yml
+/config/config.yaml
+/config/config.yml
+/config/dev.yaml
+/config/dev.yml
+/config/prod.yaml
+/config/prod.yml
+/config/test.yaml
+/config/test.yml
+
+# frontend build output
+/web/dist/
+/web/build/
+/server/static/
+
+# environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# certificates and keys
+*.pem
+*.key
+*.crt
+*.cert
+
+# cache files
+.cache/
+tmp/
+
+# test coverage
+coverage.txt
+profile.out
+
+# Go debug files
+__debug_bin*
+
+*.db
+*.db-wal
+*.db-shm
+
+/uploads/

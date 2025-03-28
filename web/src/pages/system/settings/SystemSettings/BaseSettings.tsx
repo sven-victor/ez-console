@@ -1,0 +1,96 @@
+import React from 'react';
+import { Form, Button, message, Space, Spin, Input, Tabs } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { useRequest } from 'ahooks';
+import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { getSystemBaseSettings, updateSystemBaseSettings } from '@/api/system';
+import { AllLangUIConfig } from '@/components/LanguageSwitch';
+
+
+const BaseSettingsForm: React.FC = () => {
+  const { t, i18n } = useTranslation('system');
+  const { t: tCommon } = useTranslation('common');
+  const [form] = Form.useForm();
+
+  // Get system settings data
+  const { loading, data, refresh } = useRequest(getSystemBaseSettings, {
+    onSuccess: (data) => {
+      form.setFieldsValue(data);
+    },
+    onError: (error) => {
+      message.error(t('settings.fetchFailed', { defaultValue: 'Failed to fetch settings' }));
+      console.error('Failed to get system settings', error);
+    }
+  });
+
+  // Handle form submission
+  const { loading: submitting, run: submitUpdate } = useRequest(updateSystemBaseSettings, {
+    manual: true,
+    onSuccess: () => {
+      message.success(t('settings.updateSuccess', { defaultValue: 'Settings updated successfully' }));
+      refresh(); // Refresh data
+    },
+    onError: (error) => {
+      message.error(t('settings.updateFailed', { defaultValue: 'Failed to update settings' }));
+      console.error('Failed to update system settings', error);
+    }
+  });
+
+  const handleSubmit = (values: API.SystemBaseSettings) => {
+    submitUpdate(values);
+  };
+
+  return <Spin spinning={loading}>
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={handleSubmit}
+      initialValues={data}
+    >
+      <Form.Item label={t('settings.base.name', { defaultValue: 'Name' })}>
+        <Tabs items={[{
+          key: "default",
+          label: tCommon(`language.default`, { defaultValue: 'Default' }),
+          children: <>
+            <Form.Item name={`name`}>
+              <Input />
+            </Form.Item>
+          </>
+        }, ...AllLangUIConfig.map(item => ({
+          key: item.lang,
+          label: i18n.language !== item.lang ? tCommon(`language.${item.lang}`, { defaultValue: item.label, lang: item.label }) : item.label,
+          children: <>
+            <Form.Item name={[`name_i18n`, item.lang]}>
+              <Input />
+            </Form.Item>
+          </>
+        }))]} />
+      </Form.Item>
+      <Form.Item label={t('settings.base.logo', { defaultValue: 'Logo' })} name="logo">
+        <Input />
+      </Form.Item>
+
+      {/* Submit Button */}
+      <Form.Item>
+        <Space>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={submitting}
+            icon={<SaveOutlined />}
+          >
+            {tCommon('save', { defaultValue: 'Save' })}
+          </Button>
+          <Button
+            onClick={() => refresh()}
+            icon={<ReloadOutlined />}
+          >
+            {tCommon('refresh', { defaultValue: 'Refresh' })}
+          </Button>
+        </Space>
+      </Form.Item>
+    </Form>
+  </Spin>
+};
+
+export default BaseSettingsForm; 
