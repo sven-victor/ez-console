@@ -1,0 +1,205 @@
+---
+description: 
+globs: *.ts,*.tsx,*.js
+alwaysApply: false
+---
+# Frontend Development Guidelines
+
+## Project Architecture
+- A single-page application built with React + TypeScript + Vite.
+- Uses React Router for routing management.
+- Uses Ant Design as the UI component library.
+- Uses React Query for data fetching and caching.
+- Uses Axios for HTTP requests.
+- All frontend page code is located in the `web/` directory.
+- Uses pnpm for package management.
+
+## Directory Structure
+- `src/api`: Code related to API requests.
+- `src/components`: Reusable components.
+- `src/contexts`: Code related to React Context.
+- `src/hooks`: Custom React Hooks.
+- `src/pages`: Page components.
+- `src/routes`: Routing configuration.
+- `src/types`: TypeScript type definitions.
+- `src/utils`: General utility functions.
+- `src/constants`: Constant definitions.
+
+## Code Style
+### File Formatting
+- Tab Size: 2
+- Use spaces for indentation.
+
+### Components
+- Use functional components and React Hooks.
+- Define components with the `React.FC` type: `const Component: React.FC = () => {}`
+- Component filenames use PascalCase (e.g., `MyComponent`).
+- One component per file, with the filename matching the component name.
+- If creation and modification pages are highly reusable, they can be merged into a single file, similar to [ServiceAccountForm.tsx](mdc:web/src/pages/authorization/service-account/ServiceAccountForm.tsx) and [UserForm.tsx](mdc:web/src/pages/authorization/user/UserForm.tsx).
+- Create, modify, and list pages should not include the `<Title>` component.
+- The filter form on list pages should use a separate `<Card/>`, like this:
+```tsx
+<div>
+  {/* Search Form */}
+  <Card style={{ marginBottom: 16 }}>
+    <Form>
+     // Form items...
+    </Form>
+  </Card>
+
+  {/* Data Table */}
+  <Card>
+    {/* Table Toolbar */}
+    <div style={{ marginBottom: 16 }}>
+      <Row justify="space-between" align="middle">
+        <Col>
+          <Button
+            type="primary"
+            onClick={handleReset}
+            icon={<ReloadOutlined />}
+          >
+            {tCommon('refresh')}
+          </Button>
+        </Col>
+        <Col>
+          <PermissionGuard permission="route:create">
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => navigate('/monitoring/routes/create')}
+            >
+              {t('route.create')}
+            </Button>
+          </PermissionGuard>
+        </Col>
+      </Row>
+    </div>
+
+    {/* Table */}
+    <Table />
+  </Card>
+</div>
+```
+
+### Type Definitions
+- Provide explicit type definitions for all variables, functions, and components.
+- Export types and interfaces for reusability.
+- Use `interface` to define object types.
+- Follow TypeScript naming conventions (do not prefix interface names with `I`).
+
+### Naming Conventions
+- Use camelCase for variables and function names.
+- Use PascalCase for components and type names.
+- Use UPPER_SNAKE_CASE for constants.
+- Use the same naming style for filenames as their main exported content.
+
+### Hook Guidelines
+- Custom Hooks should start with "use".
+- Call Hooks at the top level of a component, not inside loops, conditions, or nested functions.
+
+## API Call Guidelines
+- Use the encapsulated API client (implemented in `src/api/client.ts`) for requests; do not use Axios directly.
+- Name API call functions like `getXxx`, `createXxx`, `updateXxx`, `deleteXxx`, etc.
+- All API functions should return a `Promise`.
+- Use interceptors to handle errors and authorization uniformly.
+- Example API call:
+```ts
+import { apiGet, apiPost, apiPut, apiDelete } from './client';
+import { PaginatedResponse } from './client';
+
+const baseUrl = '/authorization';
+// Get a list of permissions
+export const getPermissions = (current: number = 1, pageSize: number = 1000): Promise<PermissionGroup[]> => {
+  return apiGet<PermissionGroup[]>(`${baseUrl}/permissions`, { params: { current, page_size: pageSize } });
+};
+
+// Get permission details by ID
+export const getPermissionById = (id: string): Promise<Permission> => {
+  return apiGet<Permission>(`${baseUrl}/permissions/${id}`);
+};
+
+// Create a permission
+export const createPermission = (data: { code: string, name: string, description?: string, module?: string }): Promise<Permission> => {
+  return apiPost<Permission>(`${baseUrl}/permissions`, data);
+};
+
+// Update a permission
+export const updatePermission = (id: string, data: { name?: string, description?: string, module?: string }): Promise<Permission> => {
+  return apiPut<Permission>(`${baseUrl}/permissions/${id}`, data);
+};
+
+// Delete a permission
+export const deletePermission = (id: string): Promise<{ message: string }> => {
+  return apiDelete<{ message: string }>(`${baseUrl}/permissions/${id}`);
+};
+```
+
+## State Management
+- Use React Context to manage global state.
+- Use `useState` and `useReducer` to manage component state.
+- Use `useQuery` and `useMutation` to manage server state.
+
+## Styling Guidelines
+- Use the styling system of the Ant Design component library.
+- Use object form for inline component styles.
+- Use layout components (Row, Col, Flex, etc.) appropriately.
+- Use `antd-style` for style management.
+
+## Routing Management
+- Configure routes centrally.
+- Use route guards to protect routes that require authentication.
+- Lazy load route components.
+
+## Error Handling
+- Use `try-catch` to handle asynchronous operations.
+- Use uniform error notifications (using Ant Design's `message` component).
+- The API layer should transform and format errors.
+
+## Internationalization (i18n)
+- Use `react-i18next` and `i18next` for internationalization support.
+- The project supports both Chinese (zh-CN) and English (en-US).
+- i18n resource structure:
+  - `src/i18n/index.ts`: Main configuration file, defining namespaces and resource loading.
+  - `src/i18n/[language_code].ts`: Main translation file, containing translations for core features like login, registration, dashboard, etc.
+  - `src/i18n/[language_code]/`: Directory for translation files split by module.
+    - `common.ts`: Common translations (buttons, labels, etc.).
+    - `authorization.ts`: Translations for the authorization module.
+
+### Usage Guidelines
+- Using i18n text in a component:
+```typescript
+// Basic usage
+const { t } = useTranslation();
+<Button>{t('save')}</Button>
+
+// Using a namespaced translation
+const { t: tCommon } = useTranslation('common'); 
+<Button>{tCommon('save')}</Button>
+
+// Translation with parameters
+<p>{t('dashboard.welcome', { name: user?.full_name })}</p>
+```
+
+### Adding New Translations
+- Add both Chinese and English translations for each new feature module.
+- All user-visible text should use i18n keys; do not hardcode text.
+- Translation key naming conventions:
+  - Use dot notation for hierarchy, e.g., `'module.submodule.key'`.
+  - Organize by feature module, e.g., `'user.profile.title'`.
+  - Place common UI elements in the `common` namespace.
+
+### Language Switching
+- The top navigation bar of the system provides a language switching component (`LanguageSwitch`).
+- Use `LocalStorage` to save user language preferences.
+- Automatically detect browser language settings on the first visit.
+
+## Best Practices
+- Use destructuring to get props and state.
+- Use template strings instead of string concatenation.
+- Use `async/await` instead of Promise chains.
+- Component props should have clearly defined type interfaces.
+- Use `React.memo` to optimize rendering performance.
+- Import Ant Design components on demand.
+- Use path aliases to simplify import paths (`@` represents the `src` directory).
+- Pages should not include the `<Title>` component.
+

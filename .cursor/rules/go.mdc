@@ -1,0 +1,121 @@
+---
+description: 
+globs: *.go
+alwaysApply: false
+---
+# Go Code Guidelines and Structure
+
+## Project Structure
+
+This project follows the standard Go project layout:
+
+-   `/cmd` - Main application entry points
+-   `/pkg` - Private application and library code
+    -   `/api` - HTTP API controllers
+    -   `/service` - Business logic layer
+    -   `/middleware` - HTTP middleware
+    -   `/model` - Data models
+    -   `/db` - Database operations
+    -   `/config` - Configuration handling
+    -   `/util` - Utility functions
+
+## Naming Conventions
+
+-   Package names should be lowercase words, without underscores or mixed case.
+-   Use CamelCase for naming.
+    -   Exported functions, variables, constants, and types should start with an uppercase letter (e.g., `PublicFunction`).
+    -   Unexported functions, variables, constants, and types should start with a lowercase letter (e.g., `privateVariable`).
+-   Interface names often end with "er" (e.g., `Reader`, `Writer`).
+-   Controller structs should end with "Controller".
+-   Constants should be in all uppercase with underscores separating words (e.g., `MAX_CONNECTIONS`).
+
+## Code Organization
+
+-   Each Controller should have a corresponding Service.
+-   Controllers are responsible for handling HTTP requests and input validation.
+-   Services are responsible for implementing business logic and database queries.
+-   All API endpoints should follow a RESTful design style.
+
+## Commenting Guidelines
+
+-   All exported functions, types, and variables should have comments.
+-   Use full sentences for comments, starting with the name of the function/method/variable.
+-   Complex logic should have inline comments for explanation.
+
+## Error Handling
+
+-   Errors should be returned, not panicked.
+-   Use custom error types where appropriate.
+-   The API layer should convert errors into appropriate HTTP responses using `util.RespondWithError`. Example:
+    ```go
+    userID := ctx.Param("id")
+    if userID == "" {
+        util.RespondWithError(ctx, util.ErrorResponse{
+            Code: "E4001",
+            Err:  errors.New("User ID cannot be empty"),
+        })
+        return
+    }
+    var filters service.AuditLogFilters
+    if err := ctx.BindQuery(&filters); err != nil {
+        util.RespondWithError(ctx, util.ErrorResponse{
+            Code:    "E4001",
+            Err:     err,
+            Message: "failed to parse query parameters",
+        })
+        return
+    }
+
+    logs, total, err := c.service.GetAuditLogs(ctx, filters, page, pageSize)
+    if err != nil {
+        util.RespondWithError(ctx, util.ErrorResponse{
+            Code:    "E5001",
+            Err:     err,
+            Message: "failed to get audit logs",
+        })
+        return
+    }
+    ```
+-   Returned error messages should be in English.
+
+## Dependency Injection
+
+-   Inject dependencies via constructors.
+-   Avoid global variables and singletons.
+
+## Logging Guidelines
+
+-   Use structured logging.
+-   Error logs should include contextual information.
+-   Use `github.com/go-kit/log` for logging.
+-   For the same request/task flow, the tracking ID in logs should be consistent. This is achieved by obtaining/generating a tracking ID at the entry point (implemented via middleware in Gin) and passing a logger with it in the context to downstream functions.
+-   Downstream functions should get the logger via `logger := log.GetContextLogger(ctx)`.
+-   Common fields for logging include:
+    -   `msg`: The log message.
+    -   `err`: The error message.
+-   Log output should be in English.
+
+## Database Operations
+
+-   Use GORM for database operations.
+-   Database migrations are performed on application startup.
+
+## Configuration Management
+
+-   Use Viper for configuration handling.
+-   Supports YAML and environment variable configuration.
+
+## Data Type Structure
+-   The `Base` field contains the following fields:
+    -   `ID`: Primary key, an auto-incrementing int, mainly for database storage. It is not used for querying or filtering in other business logic, and its value is not returned in API responses.
+    -   `ResourceID`: A string resource ID, which is a a utomatically generated UUID. When returned via HTTP, this field is serialized as `id`. During deserialization, the `id` field is also deserialized into `ResourceID`. This field is used to replace the original integer `id` field.
+    -   `CreatedAt`: The creation time of the data/resource, which should not be modified after creation.
+    -   `UpdatedAt`: The modification time of the data/resource, which should be updated every time the data/resource changes.
+    -   `DeletedAt`: The deletion time of the data/resource. If this field is null, it means the data has not been deleted; otherwise, it has been deleted.
+-   Other data types that need to be stored in the database must anonymously embed the `Base` field.
+
+## Audit Logging
+-   For all creation, modification, and user login operations, log key information to the database.
+-   For writing audit logs, use the `Service.StartAudit` method whenever possible.
+-   The definition of the `StartAudit` method is: `StartAudit(ctx *gin.Context, resourceID string, handleFunc func(auditLog *model.AuditLog) error, withOptions ...withStartAuditOptions) error`. The `handleFunc` is used to execute the actual operation. The necessary information for the audit log, such as `userID`, `username`, `ip`, `userAgent`, etc., are all obtained from the `ctx`.
+
