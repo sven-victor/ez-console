@@ -190,7 +190,7 @@ func (c *PoolConn) Search(searchRequest *ldap.SearchRequest) (result *ldap.Searc
 		if result != nil {
 			debug(c.ctx, "search LDAP entry", searchResult{
 				SearchRequest: searchRequest,
-				Total:         len(result.Controls),
+				Total:         len(result.Entries),
 			}, err)
 		} else {
 			debug(c.ctx, "search LDAP entry", searchRequest, err)
