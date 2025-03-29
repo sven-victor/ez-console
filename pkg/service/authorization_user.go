@@ -638,7 +638,9 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 		query = query.Where("locked_until > ?", time.Now())
 	case model.UserStatusPasswordExpired:
 		if passwordExpiryDays > 0 {
-			query = query.Where("password_changed_at < ?", time.Now().Add(-time.Duration(passwordExpiryDays)*24*time.Hour))
+			query = query.Where("password_changed_at < ? or password_changed_at is NULL or status = ?", time.Now().Add(-time.Duration(passwordExpiryDays)*24*time.Hour), model.UserStatusPasswordExpired)
+		} else {
+			query = query.Where("status = ?", model.UserStatusPasswordExpired)
 		}
 	case model.UserStatusActive, model.UserStatusDisabled:
 		query = query.Where("status = ?", status)

@@ -280,11 +280,12 @@ func (s *LDAPService) ImportLDAPUsers(ctx context.Context, userDNs []string) ([]
 				} else if existingUser.ResourceID != "" {
 					// If username or email matches, mark as bindable (return ID field)
 					users = append(users, model.User{
-						LDAPDN:   entry.DN,
-						Status:   "active",
-						Username: entry.GetAttributeValue(settings.UserAttr),
-						Email:    entry.GetAttributeValue(settings.EmailAttr),
-						FullName: entry.GetAttributeValue(settings.DisplayNameAttr),
+						LDAPDN:            entry.DN,
+						Status:            "active",
+						Username:          entry.GetAttributeValue(settings.UserAttr),
+						Email:             entry.GetAttributeValue(settings.EmailAttr),
+						FullName:          entry.GetAttributeValue(settings.DisplayNameAttr),
+						PasswordChangedAt: util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("modifyTimestamp")),
 						Base: model.Base{
 							ResourceID: entry.GetAttributeValue("entryUUID"),
 							CreatedAt:  util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("createTimestamp")),
@@ -295,11 +296,12 @@ func (s *LDAPService) ImportLDAPUsers(ctx context.Context, userDNs []string) ([]
 				}
 				// If username or email does not match, mark as new user (do not return ID field)
 				users = append(users, model.User{
-					LDAPDN:   entry.DN,
-					Status:   "active",
-					Username: entry.GetAttributeValue(settings.UserAttr),
-					Email:    entry.GetAttributeValue(settings.EmailAttr),
-					FullName: entry.GetAttributeValue(settings.DisplayNameAttr),
+					LDAPDN:            entry.DN,
+					Status:            "active",
+					Username:          entry.GetAttributeValue(settings.UserAttr),
+					Email:             entry.GetAttributeValue(settings.EmailAttr),
+					FullName:          entry.GetAttributeValue(settings.DisplayNameAttr),
+					PasswordChangedAt: util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("modifyTimestamp")),
 				})
 			}
 		}
