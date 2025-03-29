@@ -106,7 +106,7 @@ export const deleteUser = async (id: string): Promise<void> => {
 
 // Restore user
 export const restoreUser = async (id: string): Promise<void> => {
-  return apiPut<void>(`${baseUrl}/users/${id}/restore`, {});
+  return apiPost<void>(`${baseUrl}/users/${id}/restore`, {});
 };
 
 // Modify user status
