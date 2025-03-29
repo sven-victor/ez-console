@@ -224,7 +224,10 @@ func (s *LDAPService) GetLDAPEntry(ctx context.Context, baseDN string, attribute
 	level.Info(logger).Log("msg", "Getting LDAP entry", "baseDN", baseDN)
 	result, err := ldapClient.Search(searchRequest)
 	if err != nil {
-		return nil, fmt.Errorf("failed to search LDAP entries: %v", err)
+		if ldap.IsErrorWithCode(err, ldap.LDAPResultNoSuchObject) {
+			return nil, nil
+		}
+		return nil, err
 	}
 	level.Info(logger).Log("msg", "Found LDAP entry", "total", len(result.Entries))
 	if len(result.Entries) == 0 {
