@@ -82,7 +82,6 @@ type Service interface {
 	// Audit Service
 	StartAudit(ctx *gin.Context, resourceID string, handleFunc func(auditLog *model.AuditLog) error, withOptions ...service.WithStartAuditOptions) error
 	// Setting Service
-	FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error)
 	GetSettingsMap(ctx context.Context) (map[string]string, error)
 	GetStringSetting(ctx context.Context, key model.SettingKey, defaultValue string) (string, error)
 	GetBoolSetting(ctx context.Context, key model.SettingKey, defaultValue bool) (bool, error)
@@ -102,6 +101,9 @@ type Service interface {
 	ResetPassword(ctx context.Context, userID string, newPassword string) (bool, error)
 	RestoreUser(ctx context.Context, userID string) error
 	GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error)
+
+	FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error)
+	GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)
 }
 
 func (c *CommandServer) GetService() Service {
