@@ -135,10 +135,16 @@ const UserForm: React.FC = () => {
         form={form}
         layout="horizontal"
         onFinish={onSubmit}
-        labelCol={{ span: 6 }}
-        wrapperCol={{ span: 18 }}
+        labelCol={{
+          sm: { span: 24 },
+          md: { span: 6 },
+        }}
+        wrapperCol={{
+          sm: { span: 24 },
+          md: { span: 18 },
+        }}
         size='middle'
-        style={{ width: '30%', minWidth: '500px', margin: '0 auto' }}
+        style={{ maxWidth: '500px', margin: '0 auto' }}
         initialValues={{
           status: 'active',
           role_ids: [],

@@ -53,10 +53,7 @@ const AppLayout: React.FC = () => {
   const userMenu = [
     {
       key: 'profile',
-      label: tCommon('profile'),
-      onClick: () => {
-        navigate('/profile');
-      },
+      label: <Link to="/profile">{tCommon('profile')}</Link>,
     },
     {
       key: 'logout',
@@ -188,10 +185,8 @@ const AppLayout: React.FC = () => {
             <HeaderDropdown menu={{
               items: navigation.map(item => ({
                 key: item.path,
-                label: t(`menu.${item.name}`, { defaultValue: item.name }),
-                onClick: () => {
-                  window.location.href = item.path;
-                },
+                style: { paddingRight: '20px' },
+                label: <a href={item.path}>{t(`menu.${item.name}`, { defaultValue: item.name })}</a>,
               }))
             }}>
               <SwapOutlined />
