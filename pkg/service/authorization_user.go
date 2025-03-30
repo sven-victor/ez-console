@@ -1320,15 +1320,14 @@ func (s *UserService) GetLdapUsers(ctx context.Context, skipExisting bool) ([]mo
 }
 
 func (s *UserService) RestoreUser(ctx context.Context, userID string) error {
-	user, err := s.GetUserByID(ctx, userID, WithCache(true))
-	if err != nil {
-		return err
+	dbConn := db.Session(ctx)
+	var user model.User
+	if err := dbConn.Model(&model.User{}).Unscoped().Where("resource_id = ?", userID).First(&user).Error; err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
 	}
 	if !user.DeletedAt.Valid {
 		return errors.New("user is not deleted")
 	}
-
-	dbConn := db.Session(ctx)
 	if err := dbConn.Model(&user).Unscoped().Select("Status", "DeletedAt").Updates(map[string]any{
 		"status":     model.UserStatusActive,
 		"deleted_at": nil,
