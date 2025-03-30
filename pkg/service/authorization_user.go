@@ -827,15 +827,10 @@ func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 	}
 
 	return dbConn.Transaction(func(tx *gorm.DB) error {
-
 		if user.DeletedAt.Valid {
 			return tx.Unscoped().Select("Roles").Delete(&user).Error
 		}
-		result := tx.Where("resource_id = ?", id).Delete(&model.User{})
-		if result.Error != nil {
-			return result.Error
-		}
-		return nil
+		return tx.Where("resource_id = ?", id).Delete(&model.User{}).Error
 	})
 
 }
