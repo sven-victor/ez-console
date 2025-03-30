@@ -93,6 +93,19 @@ export default {
       E40035: 'Password does not meet complexity requirements',
     },
     avatar: 'Avatar',
+
+    fixUser: 'Fix User',
+    fixUserBindLDAPUser: 'Bind LDAP User',
+    fixUserConvertToLocal: 'Convert to Local User',
+    fixUserTitle: 'Fix User',
+    restore: 'Restore',
+    restoreConfirm: 'Are you sure you want to restore this user?',
+    unlock: 'Unlock',
+    unlockConfirm: 'Are you sure you want to unlock this user?',
+    unlockTitle: 'Unlock User',
+    unlockSuccess: 'User unlocked successfully',
+    unlockError: 'Failed to unlock user: {{error}}',
+    ldapUserNotBound: 'LDAP user is not bound to a local user, please bind.',
   },
 
   profile: {

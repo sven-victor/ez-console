@@ -93,6 +93,19 @@ export default {
       E40035: 'Lösenordet uppfyller inte komplexitetskraven',
     },
     avatar: 'Avatar',
+
+    fixUser: 'Reparera användare',
+    fixUserBindLDAPUser: 'Binda LDAP-användare',
+    fixUserConvertToLocal: 'Konvertera till lokal användare',
+    fixUserTitle: 'Reparera användare',
+    restore: 'Återställ',
+    restoreConfirm: 'Är du säker på att du vill återställa användaren {{username}}?',
+    unlock: 'Lås upp',
+    unlockConfirm: 'Är du säker på att du vill låsa upp användaren {{username}}?',
+    unlockTitle: 'Lås upp användare',
+    unlockSuccess: 'Användaren har låsts upp',
+    unlockError: 'Det gick inte att låsa upp användaren: {{error}}',
+    ldapUserNotBound: 'LDAP-användaren är inte bunden till en lokal användare, vänligen binda.',
   },
 
   profile: {

@@ -93,6 +93,19 @@ export default {
       E40035: 'كلمة المرور لا تفي بمتطلبات التعقيد',
     },
     avatar: 'الصورة الرمزية',
+
+    fixUser: 'إصلاح المستخدم',
+    fixUserBindLDAPUser: 'ربط المستخدم LDAP',
+    fixUserConvertToLocal: 'تحويل إلى مستخدم محلي',
+    fixUserTitle: 'إصلاح المستخدم',
+    restore: 'استعادة',
+    restoreConfirm: 'هل أنت متأكد أنك تريد استعادة هذا المستخدم؟',
+    unlock: 'فتح',
+    unlockConfirm: 'هل أنت متأكد أنك تريد فتح هذا المستخدم؟',
+    unlockTitle: 'فتح المستخدم',
+    unlockSuccess: 'تم فتح المستخدم بنجاح',
+    unlockError: 'فشل فتح المستخدم: {{error}}',
+    ldapUserNotBound: 'المستخدم LDAP غير مربوط إلى مستخدم محلي، يرجى الربط.',
   },
 
   profile: {

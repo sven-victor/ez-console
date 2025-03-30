@@ -93,6 +93,19 @@ export default {
       E40035: 'Passwort entspricht nicht den Komplexitätsanforderungen',
     },
     avatar: 'Avatar',
+
+    fixUser: 'Benutzer reparieren',
+    fixUserBindLDAPUser: 'LDAP-Benutzer binden',
+    fixUserConvertToLocal: 'Lokaler Benutzer konvertieren',
+    fixUserTitle: 'Benutzer reparieren',
+    restore: 'Wiederherstellen',
+    restoreConfirm: 'Sind Sie sicher, dass Sie diesen Benutzer wiederherstellen möchten?',
+    unlock: 'Entsperren',
+    unlockConfirm: 'Sind Sie sicher, dass Sie diesen Benutzer entsperren möchten?',
+    unlockTitle: 'Benutzer entsperren',
+    unlockSuccess: 'Benutzer erfolgreich entsperrt',
+    unlockError: 'Benutzer konnte nicht entsperrt werden: {{error}}',
+    ldapUserNotBound: 'LDAP-Benutzer ist nicht an einen lokalen Benutzer gebunden, bitte binden.',
   },
 
   profile: {

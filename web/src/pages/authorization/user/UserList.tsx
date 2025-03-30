@@ -300,7 +300,7 @@ const UserList: React.FC = () => {
         switch (source) {
           case 'ldap':
             if (!record.ldap_dn) {
-              return <Tooltip title={t('user.ldapUserDNNotSet', { defaultValue: 'LDAP User DN is not set, please fix it.' })}>
+              return <Tooltip title={t('user.ldapUserNotBound', { defaultValue: 'LDAP User is not bound to any local user, please bind it.' })}>
                 <Tag color="red">{t('user.sourceLdap', { defaultValue: 'LDAP' })}</Tag>
               </Tooltip>;
             }

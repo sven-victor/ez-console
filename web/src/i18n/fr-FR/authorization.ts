@@ -93,6 +93,19 @@ export default {
       E40035: 'Le mot de passe ne respecte pas les exigences de complexité',
     },
     avatar: 'Avatar',
+
+    fixUser: 'Réparer l\'utilisateur',
+    fixUserBindLDAPUser: 'Lier l\'utilisateur LDAP',
+    fixUserConvertToLocal: 'Convertir en utilisateur local',
+    fixUserTitle: 'Réparer l\'utilisateur',
+    restore: 'Restaurer',
+    restoreConfirm: 'Voulez-vous vraiment restaurer l\'utilisateur {{username}} ?',
+    unlock: 'Déverrouiller',
+    unlockConfirm: 'Voulez-vous vraiment déverrouiller l\'utilisateur {{username}} ?',
+    unlockTitle: 'Déverrouiller l\'utilisateur',
+    unlockSuccess: 'L\'utilisateur a été déverrouillé avec succès',
+    unlockError: 'Échec du déverrouillage de l\'utilisateur : {{error}}',
+    ldapUserNotBound: 'L\'utilisateur LDAP n\'est pas lié à un utilisateur local, veuillez le lier.',
   },
 
   profile: {

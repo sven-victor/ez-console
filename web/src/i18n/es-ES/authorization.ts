@@ -93,6 +93,19 @@ export default {
       E40035: 'La contraseña no cumple los requisitos de complejidad',
     },
     avatar: 'Avatar',
+
+    fixUser: 'Reparar usuario',
+    fixUserBindLDAPUser: 'Enlazar usuario LDAP',
+    fixUserConvertToLocal: 'Convertir en usuario local',
+    fixUserTitle: 'Reparar usuario',
+    restore: 'Restaurar',
+    restoreConfirm: '¿Estás seguro de que quieres restaurar este usuario?',
+    unlock: 'Desbloquear',
+    unlockConfirm: '¿Estás seguro de que quieres desbloquear este usuario?',
+    unlockTitle: 'Desbloquear usuario',
+    unlockSuccess: 'Usuario desbloqueado correctamente',
+    unlockError: 'Error al desbloquear el usuario: {{error}}',
+    ldapUserNotBound: 'El usuario LDAP no está enlazado a un usuario local, por favor enlaza.',
   },
 
   profile: {
