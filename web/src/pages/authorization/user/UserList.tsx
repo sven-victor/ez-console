@@ -384,7 +384,7 @@ const UserList: React.FC = () => {
           permission: "authorization:user:update",
           icon: <EditOutlined />,
           tooltip: t('user.edit', { defaultValue: 'Edit' }),
-          hidden: record.status === 'locked',
+          hidden: record.status === 'locked' || record.status === 'deleted',
           onClick: () => navigate(`/authorization/users/${record.id}/edit`),
         }, {
           permission: "authorization:user:update",
