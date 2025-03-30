@@ -51,6 +51,7 @@ const BaseSettingsForm: React.FC = () => {
         <Tabs items={[{
           key: "default",
           label: tCommon(`language.default`, { defaultValue: 'Default' }),
+          forceRender: true,
           children: <>
             <Form.Item name={`name`}>
               <Input />
@@ -59,6 +60,7 @@ const BaseSettingsForm: React.FC = () => {
         }, ...AllLangUIConfig.map(item => ({
           key: item.lang,
           label: i18n.language !== item.lang ? tCommon(`language.${item.lang}`, { defaultValue: item.label, lang: item.label }) : item.label,
+          forceRender: true,
           children: <>
             <Form.Item name={[`name_i18n`, item.lang]}>
               <Input />
