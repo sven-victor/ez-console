@@ -14,7 +14,7 @@ const SystemSettings: React.FC = () => {
   const location = useLocation();
   const hash = location.hash;
   const tab = hash.replace('#', '');
-  const defaultActiveKey = tab || 'security';
+  const defaultActiveKey = tab || 'base';
 
   const items = [
     {

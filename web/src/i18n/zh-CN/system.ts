@@ -17,6 +17,7 @@ export default {
     base: {
       name: '名称',
       logo: '图标',
+      home_page: '首页',
     },
     security: {
       mfa: {

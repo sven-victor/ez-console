@@ -53,6 +53,8 @@ const Login: React.FC = () => {
         const redirect = searchParams.get('redirect');
         if (redirect) {
           window.location.href = redirect;
+        } else if (siteConfig?.home_page) {
+          window.location.href = siteConfig.home_page;
         } else {
           navigate('/');
         }

@@ -17,6 +17,7 @@ export default {
     base: {
       name: 'Namn',
       logo: 'Logotyp',
+      home_page: 'Hem',
     },
     security: {
       mfa: {

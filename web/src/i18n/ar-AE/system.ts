@@ -17,6 +17,7 @@ export default {
     base: {
       name: 'الاسم',
       logo: 'الشعار',
+      home_page: 'الصفحة الرئيسية',
     },
     security: {
       mfa: {

@@ -114,11 +114,13 @@ namespace API {
     name: string;
     name_i18n: Record<string, string>;
     logo: string;
+    home_page: string;
   }
 
   export interface SiteConfig {
     logo: string;
     name: string;
+    home_page: string;
     name_i18n: Record<string, string>;
     navigation: Navigation[];
     menu: MenuConfig[];

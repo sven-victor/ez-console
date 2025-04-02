@@ -71,6 +71,9 @@ const BaseSettingsForm: React.FC = () => {
       <Form.Item label={t('settings.base.logo', { defaultValue: 'Logo' })} name="logo">
         <Input />
       </Form.Item>
+      <Form.Item label={t('settings.base.home_page', { defaultValue: 'Home Page' })} name="home_page">
+        <Input />
+      </Form.Item>
 
       {/* Submit Button */}
       <Form.Item>

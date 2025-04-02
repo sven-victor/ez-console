@@ -64,7 +64,16 @@ const AppLayout: React.FC = () => {
 
   useEffect(() => {
     getSiteConfig().then((siteConfig) => {
-      setNavigation(siteConfig.navigation)
+      const navigation = siteConfig.navigation.filter(item => item.path !== siteConfig.home_page)
+      const newNavigation = [...(siteConfig.home_page ? [{
+        name: 'home',
+        path: siteConfig.home_page,
+      }] : []), ...navigation]
+      if (newNavigation.length > 1) {
+        setNavigation(newNavigation)
+      } else {
+        setNavigation([])
+      }
       setSiteIcon(siteConfig.logo)
       setSiteConfig(siteConfig)
       document.getElementById('site-icon')?.setAttribute('href', siteConfig.logo)

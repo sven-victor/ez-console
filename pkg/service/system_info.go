@@ -79,10 +79,6 @@ type Navigation struct {
 
 var navigation = []Navigation{
 	{
-		Name: "home",
-		Path: "/",
-	},
-	{
 		Name: "console",
 		Path: "/console/",
 	},

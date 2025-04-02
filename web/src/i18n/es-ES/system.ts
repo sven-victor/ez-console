@@ -17,6 +17,7 @@ export default {
     base: {
       name: 'Nombre',
       logo: 'Logo',
+      home_page: 'Página de inicio',
     },
     security: {
       mfa: {

@@ -17,12 +17,14 @@ const (
 	SettingSystemName     SettingKey = "system_name"      // System name
 	SettingSystemNameI18n SettingKey = "system_name_i18n" // System name i18n
 	SettingSystemLogo     SettingKey = "system_logo"      // System Logo URL
+	SettingSystemHomePage SettingKey = "system_home_page" // System Home Page
 )
 
 var SystemSettingKeys = []SettingKey{
 	SettingSystemName,
 	SettingSystemNameI18n,
 	SettingSystemLogo,
+	SettingSystemHomePage,
 }
 
 var SettingKeys = []SettingKey{}
@@ -31,6 +33,7 @@ type SystemSettings struct {
 	Name     string            `json:"name"`
 	NameI18n map[string]string `json:"name_i18n"`
 	Logo     string            `json:"logo"`
+	HomePage string            `json:"home_page"`
 }
 
 func init() {

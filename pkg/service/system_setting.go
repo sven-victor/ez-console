@@ -168,23 +168,52 @@ func (s *SettingService) GetStringSetting(ctx context.Context, key model.Setting
 	return setting.Value, nil
 }
 
+type DefaultSetting struct {
+	Key     model.SettingKey
+	Value   string
+	Comment string
+}
+
+var defaultSettings = []DefaultSetting{
+	{
+		Key:     model.SettingSystemName,
+		Value:   "EZ-Console",
+		Comment: "System name",
+	},
+	{
+		Key:     model.SettingSystemLogo,
+		Value:   "/logo.png",
+		Comment: "System Logo URL",
+	},
+}
+
+func RegisterDefaultSettings(ctx context.Context, key model.SettingKey, value, comment string) error {
+	for i, setting := range defaultSettings {
+		if setting.Key == key {
+			defaultSettings[i] = DefaultSetting{
+				Key:     key,
+				Value:   value,
+				Comment: comment,
+			}
+			return nil
+		}
+	}
+	defaultSettings = append(defaultSettings, DefaultSetting{
+		Key:     key,
+		Value:   value,
+		Comment: comment,
+	})
+	return nil
+}
+
 // InitDefaultSettings initializes default settings
 func (s *SettingService) InitDefaultSettings(ctx context.Context) error {
-	// Default setting items
-	defaultSettings := map[model.SettingKey]struct {
-		Value   string
-		Comment string
-	}{
-		model.SettingSystemName: {"EZ-Console", "System name"},
-		model.SettingSystemLogo: {"/logo.png", "System Logo URL"},
-	}
-
 	// Check if each setting already exists, if not, create it
-	for key, setting := range defaultSettings {
+	for _, setting := range defaultSettings {
 		var count int64
-		db.Session(ctx).Model(&model.Setting{}).Where("key = ?", key).Count(&count)
+		db.Session(ctx).Model(&model.Setting{}).Where("key = ?", setting.Key).Count(&count)
 		if count == 0 {
-			if err := db.Session(ctx).Create(model.NewSetting(key, setting.Value, setting.Comment)).Error; err != nil {
+			if err := db.Session(ctx).Create(model.NewSetting(setting.Key, setting.Value, setting.Comment)).Error; err != nil {
 				return err
 			}
 		}
@@ -212,6 +241,7 @@ func (s *SettingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 		Name:     settings[string(model.SettingSystemName)],
 		NameI18n: map[string]string{},
 		Logo:     settings[string(model.SettingSystemLogo)],
+		HomePage: settings[string(model.SettingSystemHomePage)],
 	}
 	if err := json.Unmarshal([]byte(settings[string(model.SettingSystemNameI18n)]), &baseSettings.NameI18n); err != nil {
 		baseSettings.NameI18n = map[string]string{}
@@ -225,6 +255,7 @@ func (s *SettingService) UpdateSystemSettings(ctx context.Context, settings mode
 		string(model.SettingSystemName):     settings.Name,
 		string(model.SettingSystemNameI18n): w.JSONStringer(settings.NameI18n).String(),
 		string(model.SettingSystemLogo):     settings.Logo,
+		string(model.SettingSystemHomePage): settings.HomePage,
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }
