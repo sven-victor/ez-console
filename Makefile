@@ -1,7 +1,10 @@
 
 .DEFAULT_GOAL := build
 
-server/static:
+web/node_modules:
+	cd web && pnpm install
+
+server/static: web/node_modules
 	cd web && pnpm build
 	cp -r web/dist/ server/static
 
