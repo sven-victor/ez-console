@@ -26,6 +26,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
+	"github.com/sven-victor/ez-console/pkg/util"
 )
 
 func initFlags(rootCmd *cobra.Command) {
@@ -56,7 +57,7 @@ func initFlags(rootCmd *cobra.Command) {
 	databaseFlagSet.String("database.enable_compression", "true", "database enable compression (only used for mysql or clickhouse)")
 	databaseFlagSet.String("database.max_idle_connections", "2", "database max idle connections (only used for mysql or clickhouse)")
 	databaseFlagSet.String("database.max_open_connections", "100", "database max open connections (only used for mysql or clickhouse)")
-	databaseFlagSet.String("database.schema", "ez_console", "database schema (only used for mysql or clickhouse)")
+	databaseFlagSet.String("database.schema", util.ToSnakeCase(rootCmd.Use), "database schema (only used for mysql or clickhouse)")
 	databaseFlagSet.String("database.charset", "utf8mb4", "database charset (only used for mysql)")
 	databaseFlagSet.String("database.collation", "utf8mb4_unicode_ci", "database collation (only used for mysql)")
 	databaseFlagSet.String("database.read_timeout", "10s", "database read timeout (only used for clickhouse)")
@@ -110,14 +111,43 @@ func (c *CommandServer) GetService() Service {
 	return c.service
 }
 
-func NewCommandServer(serviceName string, description string, WithOptions ...func(*cobra.Command)) *CommandServer {
+type ServerOption struct {
+	withCommand []withCommandOption
+	withEngine  []withEngineOption
+}
+
+type withEngineOption func(*gin.Engine)
+type withCommandOption func(*cobra.Command)
+
+type WithServerOption func(*ServerOption)
+
+func WithCommandOptions(options ...withCommandOption) WithServerOption {
+	return func(option *ServerOption) {
+		option.withCommand = append(option.withCommand, options...)
+	}
+}
+
+func WithEngineOptions(options ...withEngineOption) WithServerOption {
+	return func(option *ServerOption) {
+		option.withEngine = append(option.withEngine, options...)
+	}
+}
+
+func NewCommandServer(serviceName string, description string, options ...WithServerOption) *CommandServer {
+	serverOption := &ServerOption{}
+	for _, option := range options {
+		option(serverOption)
+	}
+
 	var cfgFile string
 	rootCmd := &cobra.Command{
 		Use:   serviceName,
 		Short: description,
-		Run:   func(cmd *cobra.Command, args []string) { newServer(cmd.Context(), serviceName) },
+		Run: func(cmd *cobra.Command, args []string) {
+			newServer(cmd.Context(), serviceName, serverOption.withEngine...)
+		},
 	}
-	for _, option := range WithOptions {
+	for _, option := range serverOption.withCommand {
 		option(rootCmd)
 	}
 
@@ -140,7 +170,7 @@ func NewCommandServer(serviceName string, description string, WithOptions ...fun
 	return &CommandServer{Command: rootCmd}
 }
 
-func newServer(ctx context.Context, serviceName string) {
+func newServer(ctx context.Context, serviceName string, options ...withEngineOption) {
 
 	cfg := config.GetConfig()
 	{
@@ -218,6 +248,9 @@ func newServer(ctx context.Context, serviceName string) {
 
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	for _, option := range options {
+		option(engine)
+	}
 	// Start the server
 	serverAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	level.Info(logger).Log("msg", "Server starting on", "serverAddr", serverAddr)
