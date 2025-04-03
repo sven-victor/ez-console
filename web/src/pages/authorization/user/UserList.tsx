@@ -376,35 +376,41 @@ const UserList: React.FC = () => {
       key: 'action',
       render: (_: any, record: API.User) => {
         const actions = [{
+          key: 'view',
           permission: "authorization:user:view",
           icon: <EyeOutlined />,
           tooltip: t('user.viewDetail', { defaultValue: 'View Detail' }),
           onClick: () => navigate(`/authorization/users/${record.id}`),
         }, {
+          key: 'edit',
           permission: "authorization:user:update",
           icon: <EditOutlined />,
           tooltip: t('user.edit', { defaultValue: 'Edit' }),
           hidden: record.status === 'locked' || record.status === 'deleted',
           onClick: () => navigate(`/authorization/users/${record.id}/edit`),
         }, {
+          key: 'unlock',
           permission: "authorization:user:update",
           icon: <UnlockOutlined />,
           tooltip: t('user.unlock', { defaultValue: 'Unlock' }),
           hidden: record.status !== 'locked',
           onClick: () => handleUnlock(record.id),
         }, {
+          key: 'resetPassword',
           permission: "authorization:user:resetPassword",
           icon: <KeyOutlined />,
           tooltip: t('user.resetPassword', { defaultValue: 'Reset Password' }),
           hidden: !((record.source === 'local' || (record.source === 'ldap' && record.ldap_dn)) && record.status !== 'deleted'),
           onClick: () => handleResetPassword(record.id, record.username, record.email),
         }, {
+          key: 'fixUser',
           permission: "authorization:user:update",
           icon: <ToolOutlined />,
           tooltip: t('user.fixUser', { defaultValue: 'Fix User' }),
           hidden: !(record.source === 'ldap' && !record.ldap_dn && record.status !== 'deleted'),
           onClick: () => setFixUser(record),
         }, {
+          key: 'restore',
           permission: "authorization:user:update",
           icon: <UndoOutlined />,
           tooltip: t('user.restore', { defaultValue: 'Restore' }),
@@ -414,6 +420,7 @@ const UserList: React.FC = () => {
             onConfirm: () => handleRestore(record.id),
           }
         }, {
+          key: 'delete',
           permission: "authorization:user:delete",
           icon: <DeleteOutlined />,
           tooltip: t('user.delete', { defaultValue: 'Delete' }),
@@ -425,7 +432,7 @@ const UserList: React.FC = () => {
             cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
           }
         }]
-        return <Actions actions={actions} />
+        return <Actions actions={actions} key="actions" />
       },
     },
   ];
