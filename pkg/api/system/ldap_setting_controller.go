@@ -50,7 +50,9 @@ func (c *LDAPSettingController) GetLDAPSettings(ctx *gin.Context) {
 		})
 		return
 	}
-	settings.BindPassword.UpdateSecret(util.GenerateRandomPassword(128))
+	if settings.BindPassword != nil {
+		settings.BindPassword.UpdateSecret(util.GenerateRandomPassword(128))
+	}
 	settings.ClientKey = nil
 	ctx.JSON(http.StatusOK, util.Response{
 		Code: "0",
