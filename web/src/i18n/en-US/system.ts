@@ -70,6 +70,10 @@ export default {
         label: 'Session Timeout',
         tooltip: 'Set the automatic timeout period for user sessions',
       },
+      sessionIdleTimeout: {
+        label: 'Session Idle Timeout',
+        tooltip: 'Set the automatic timeout period for user sessions after inactivity',
+      },
     },
     oauth: {
       enabled: {

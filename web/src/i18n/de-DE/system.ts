@@ -70,6 +70,10 @@ export default {
         label: 'Sitzungs-Timeout',
         tooltip: 'Legen Sie die automatische Timeout-Periode für Benutzersitzungen fest',
       },
+      sessionIdleTimeout: {
+        label: 'Sitzungs-Inaktivitäts-Timeout',
+        tooltip: 'Legen Sie die automatische Timeout-Periode für Benutzersitzungen nach Inaktivität fest',
+      },
     },
     oauth: {
       enabled: {

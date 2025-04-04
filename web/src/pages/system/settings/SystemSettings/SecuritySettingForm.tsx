@@ -184,6 +184,15 @@ const SecuritySettingForm: React.FC = () => {
         <InputNumber min={5} style={{ width: '100%' }} addonAfter={t('settings.minutes', { defaultValue: 'Minutes' })} />
       </Form.Item>
 
+      {/* Session Idle Timeout */}
+      <Form.Item
+        name="session_idle_timeout_minutes"
+        label={t('settings.security.sessionIdleTimeout.label', { defaultValue: 'Session Idle Timeout (Minutes)' })}
+        tooltip={t('settings.security.sessionIdleTimeout.tooltip', { defaultValue: 'Automatically log out users after a period of inactivity.' })}
+      >
+        <InputNumber min={5} style={{ width: '100%' }} addonAfter={t('settings.minutes', { defaultValue: 'Minutes' })} />
+      </Form.Item>
+
       {/* Submit Button */}
       <Form.Item>
         <Space>

@@ -24,16 +24,17 @@ func (s *SettingService) GetSecuritySettings(ctx context.Context) (*model.Securi
 
 	// Set default values
 	result := &model.SecuritySettings{
-		MFAEnforced:           false,
-		PasswordComplexity:    model.PasswordComplexityMedium,
-		PasswordMinLength:     8,
-		PasswordExpiryDays:    90,
-		LoginFailureLock:      true,
-		LoginFailureAttempts:  5,
-		HistoryPasswordCheck:  true,
-		HistoryPasswordCount:  3,
-		UserInactiveDays:      90,
-		SessionTimeoutMinutes: 30,
+		MFAEnforced:               false,
+		PasswordComplexity:        model.PasswordComplexityMedium,
+		PasswordMinLength:         8,
+		PasswordExpiryDays:        90,
+		LoginFailureLock:          true,
+		LoginFailureAttempts:      5,
+		HistoryPasswordCheck:      true,
+		HistoryPasswordCount:      3,
+		UserInactiveDays:          90,
+		SessionTimeoutMinutes:     10080,
+		SessionIdleTimeoutMinutes: 1440,
 	}
 
 	// Read values from settings
@@ -95,6 +96,12 @@ func (s *SettingService) GetSecuritySettings(ctx context.Context) (*model.Securi
 		}
 	}
 
+	if val, ok := settings[string(model.SettingSessionIdleTimeoutMinutes)]; ok {
+		if intVal, err := strconv.Atoi(val); err == nil {
+			result.SessionIdleTimeoutMinutes = intVal
+		}
+	}
+
 	return result, nil
 }
 
@@ -102,16 +109,17 @@ func (s *SettingService) GetSecuritySettings(ctx context.Context) (*model.Securi
 func (s *SettingService) UpdateSecuritySettings(ctx context.Context, settings *model.SecuritySettings) error {
 	// Prepare settings to be updated
 	settingsMap := map[string]string{
-		string(model.SettingMFAEnforced):           boolToString(settings.MFAEnforced),
-		string(model.SettingPasswordComplexity):    string(settings.PasswordComplexity),
-		string(model.SettingPasswordMinLength):     strconv.Itoa(settings.PasswordMinLength),
-		string(model.SettingPasswordExpiryDays):    strconv.Itoa(settings.PasswordExpiryDays),
-		string(model.SettingLoginFailureLock):      boolToString(settings.LoginFailureLock),
-		string(model.SettingLoginFailureAttempts):  strconv.Itoa(settings.LoginFailureAttempts),
-		string(model.SettingHistoryPasswordCheck):  boolToString(settings.HistoryPasswordCheck),
-		string(model.SettingHistoryPasswordCount):  strconv.Itoa(settings.HistoryPasswordCount),
-		string(model.SettingUserInactiveDays):      strconv.Itoa(settings.UserInactiveDays),
-		string(model.SettingSessionTimeoutMinutes): strconv.Itoa(settings.SessionTimeoutMinutes),
+		string(model.SettingMFAEnforced):               boolToString(settings.MFAEnforced),
+		string(model.SettingPasswordComplexity):        string(settings.PasswordComplexity),
+		string(model.SettingPasswordMinLength):         strconv.Itoa(settings.PasswordMinLength),
+		string(model.SettingPasswordExpiryDays):        strconv.Itoa(settings.PasswordExpiryDays),
+		string(model.SettingLoginFailureLock):          boolToString(settings.LoginFailureLock),
+		string(model.SettingLoginFailureAttempts):      strconv.Itoa(settings.LoginFailureAttempts),
+		string(model.SettingHistoryPasswordCheck):      boolToString(settings.HistoryPasswordCheck),
+		string(model.SettingHistoryPasswordCount):      strconv.Itoa(settings.HistoryPasswordCount),
+		string(model.SettingUserInactiveDays):          strconv.Itoa(settings.UserInactiveDays),
+		string(model.SettingSessionTimeoutMinutes):     strconv.Itoa(settings.SessionTimeoutMinutes),
+		string(model.SettingSessionIdleTimeoutMinutes): strconv.Itoa(settings.SessionIdleTimeoutMinutes),
 	}
 
 	// Batch update settings
@@ -134,7 +142,8 @@ func (s *SettingService) InitDefaultSecuritySettings(ctx context.Context) error 
 		model.SettingLoginFailureLockoutMinutes: {"10", "Login failure lockout duration (minutes)"},
 		model.SettingHistoryPasswordCheck:       {"true", "Whether to enable history password check"},
 		model.SettingHistoryPasswordCount:       {"3", "History password check count"},
-		model.SettingSessionTimeoutMinutes:      {"30", "Session timeout in minutes"},
+		model.SettingSessionTimeoutMinutes:      {"10080", "Session timeout in minutes"},
+		model.SettingSessionIdleTimeoutMinutes:  {"1440", "Session idle timeout in minutes"},
 		model.SettingUserInactiveDays:           {"90", "User inactive days (0 means do not disable)"},
 		model.SettingPasswordExpiryDays:         {"90", "Password expiry days (0 means never expires)"},
 	}

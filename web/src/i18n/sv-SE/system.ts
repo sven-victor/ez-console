@@ -70,6 +70,10 @@ export default {
         label: 'Sessionstimeout',
         tooltip: 'Ange den automatiska timeoutperioden för användarsessioner',
       },
+      sessionIdleTimeout: {
+        label: 'Sessionstid utan aktivitet',
+        tooltip: 'Ange den automatiska timeoutperioden för användarsessioner efter inaktivitet',
+      },
     },
     oauth: {
       enabled: {

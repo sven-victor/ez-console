@@ -70,6 +70,10 @@ export default {
         label: '会话过期时间',
         tooltip: '设置用户会话的自动过期时间',
       },
+      sessionIdleTimeout: {
+        label: '会话空闲时间',
+        tooltip: '设置用户会话的自动过期时间',
+      },
     },
     oauth: {
       enabled: {

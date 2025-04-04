@@ -70,6 +70,10 @@ export default {
         label: 'Tiempo de espera de la sesión',
         tooltip: 'Establecer el período de tiempo de espera automático para las sesiones de los usuarios',
       },
+      sessionIdleTimeout: {
+        label: 'Tiempo de espera de la sesión inactiva',
+        tooltip: 'Establecer el período de tiempo de espera automático para las sesiones inactivas de los usuarios',
+      },
     },
     oauth: {
       enabled: {

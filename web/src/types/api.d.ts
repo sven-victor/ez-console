@@ -74,6 +74,7 @@ namespace API {
     history_password_count: number;
     inactive_account_lock_days: number;
     session_timeout_minutes: number;
+    session_idle_timeout_minutes: number;
   }
 
   // OAuth settings interface type

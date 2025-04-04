@@ -70,6 +70,10 @@ export default {
         label: 'Délai d\'expiration de la session',
         tooltip: 'Définir la période d\'expiration automatique pour les sessions utilisateur',
       },
+      sessionIdleTimeout: {
+        label: 'Délai d\'expiration de la session inactive',
+        tooltip: 'Définir la période d\'expiration automatique pour les sessions inactivées',
+      },
     },
     oauth: {
       enabled: {

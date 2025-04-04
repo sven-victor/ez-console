@@ -265,6 +265,21 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		return
 	}
 
+	iat, err := token.Claims.GetIssuedAt()
+	if err != nil {
+		util.RespondWithError(c, util.NewError("E4011", "Invalid token", err))
+		return
+	}
+	sessionIdleTimeoutMinutes, err := settingService.GetIntSetting(c, model.SettingSessionIdleTimeoutMinutes, 0)
+	if err != nil {
+		util.RespondWithError(c, util.NewError("E4011", "Invalid token", err))
+		return
+	}
+	if sessionIdleTimeoutMinutes > 0 && time.Since(iat.Time) > time.Duration(sessionIdleTimeoutMinutes)*time.Minute {
+		util.RespondWithError(c, util.NewError("E4011", "Session expired, please login again"))
+		return
+	}
+
 	// Validate token
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// Check if token has expired

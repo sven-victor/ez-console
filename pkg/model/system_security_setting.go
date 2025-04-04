@@ -25,10 +25,12 @@ const (
 	SettingPasswordExpiryDays   SettingKey = "password_expiry_days"   // Password expiry days (0 means never expires)
 
 	// User policy related settings
-	SettingSessionTimeoutMinutes SettingKey = "session_timeout_minutes" // Session timeout in minutes
-	SettingUserInactiveDays      SettingKey = "user_inactive_days"      // User inactive days (0 means do not disable)
-	SettingJWTKey                SettingKey = "jwt_key"                 // JWT secret key
-	SettingJWTMethod             SettingKey = "jwt_method"              // JWT encryption method
+	SettingSessionTimeoutMinutes     SettingKey = "session_timeout_minutes"      // Session timeout in minutes
+	SettingSessionIdleTimeoutMinutes SettingKey = "session_idle_timeout_minutes" // Session idle timeout in minutes
+
+	SettingUserInactiveDays SettingKey = "user_inactive_days" // User inactive days (0 means do not disable)
+	SettingJWTKey           SettingKey = "jwt_key"            // JWT secret key
+	SettingJWTMethod        SettingKey = "jwt_method"         // JWT encryption method
 
 )
 
@@ -40,6 +42,7 @@ var SecuritySettingKeys = []SettingKey{
 	SettingHistoryPasswordCheck,
 	SettingHistoryPasswordCount,
 	SettingSessionTimeoutMinutes,
+	SettingSessionIdleTimeoutMinutes,
 	SettingPasswordMinLength,
 	SettingPasswordExpiryDays,
 	SettingUserInactiveDays,
@@ -63,4 +66,5 @@ type SecuritySettings struct {
 	HistoryPasswordCount       int                `json:"history_password_count"`
 	UserInactiveDays           int                `json:"user_inactive_days"`
 	SessionTimeoutMinutes      int                `json:"session_timeout_minutes"`
+	SessionIdleTimeoutMinutes  int                `json:"session_idle_timeout_minutes"`
 }
