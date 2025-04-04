@@ -200,7 +200,8 @@ func (s *LDAPService) FilterLDAPEntries(ctx context.Context, baseDN string, filt
 	level.Info(logger).Log("msg", "Searching LDAP entries", "filter", searchRequest.Filter)
 	result, err := ldapClient.Search(searchRequest)
 	if err != nil {
-		return nil, fmt.Errorf("failed to search LDAP entries: %v", err)
+		level.Error(logger).Log("msg", "Failed to search LDAP entries", "err", err.Error())
+		return nil, err
 	}
 	level.Info(logger).Log("msg", "Found LDAP entries", "total", len(result.Entries))
 	return result.Entries, nil
