@@ -839,11 +839,7 @@ func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangePasswordRequest) error {
 	var user model.User
 	dbConn := db.Session(ctx)
-	ldapSession, err := s.ldapService.GetLDAPSession(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to get LDAP session: %w", err)
-	}
-	defer ldapSession.Close()
+	var ldapSession clientsldap.Conn
 	if err := dbConn.Where("resource_id = ?", id).First(&user).Error; err != nil {
 		return util.NewError("E4041", "user not found", err)
 	}
@@ -871,6 +867,11 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 		if err := loginConn.Bind(userDN, req.OldPassword); err != nil {
 			return util.NewError("E40032", "old password is incorrect")
 		}
+		ldapSession, err = s.ldapService.GetLDAPSession(ctx)
+		if err != nil {
+			return fmt.Errorf("failed to get LDAP session: %w", err)
+		}
+		defer ldapSession.Close()
 
 	case model.UserSourceLocal:
 		if !user.CheckPassword(req.OldPassword) {
