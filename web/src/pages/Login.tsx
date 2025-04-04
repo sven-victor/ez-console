@@ -107,7 +107,7 @@ const Login: React.FC = () => {
   }
 
   const fetchProviders = async () => {
-    setProviders(await getOAuthProviders());
+    setProviders(await getOAuthProviders() || []);
   }
 
   // Handle OAuth callback

@@ -39,7 +39,7 @@ func (c *OAuthController) RegisterRoutes(router *gin.RouterGroup) {
 func (c *OAuthController) GetProviders(ctx *gin.Context) {
 
 	// Only return enabled providers, without sensitive information
-	var providers []gin.H
+	providers := []gin.H{}
 	for _, p := range c.service.GetOAuth2ProviderConfig(ctx) {
 		providers = append(providers, gin.H{
 			"name":         p.Name,
