@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Button, Card, message, Typography, Alert, Divider, Space, Avatar, Spin } from 'antd';
+import { Form, Input, Button, Card, message, Typography, Alert, Divider, Space, Avatar } from 'antd';
 import { LockOutlined, UserOutlined, GithubOutlined, KeyOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -10,6 +10,7 @@ import ProfilePassword from '@/components/profile/ProfilePassword';
 import { maskEmail } from '@/utils';
 import { getSiteConfig } from '@/api/system';
 import LanguageSwitch from '@/components/LanguageSwitch';
+import Loading from '@/components/Loading';
 
 const { Title } = Typography;
 
@@ -17,11 +18,12 @@ const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { login, oauthLogin } = useAuth();
+  const { login, oauthLogin, user: currentUser } = useAuth();
   const { t, i18n } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [oauthLoading, setOAuthLoading] = useState<{ [key: string]: boolean }>({});
   const [pageType, setPageType] = useState<'login' | 'password_expired' | 'mfa'>('login');
+  const [token, setToken] = useState<string | null>(null);
   const [mfaType, setMfaType] = useState<string | null>(null);
   const [user, setUser] = useState<API.User | null>(null);
   const [form] = Form.useForm();
@@ -62,6 +64,7 @@ const Login: React.FC = () => {
     } catch (error) {
       if ((error as any).password_expired) {
         setPageType('password_expired');
+        setToken((error as any).token);
         setError(null);
       } else if ((error as any).needsMFA) {
         setError(null);
@@ -123,17 +126,7 @@ const Login: React.FC = () => {
         fetchProviders()
       }
     }
-
   }, [searchParams, oauthLogin]);
-
-  useEffect(() => {
-    getSiteConfig().then((siteConfig) => {
-      setSiteName(siteConfig.name)
-      setSiteConfig(siteConfig)
-      window.document.title = siteConfig.name
-      document.getElementById('site-icon')?.setAttribute('href', siteConfig.logo)
-    })
-  }, [])
 
 
   useEffect(() => {
@@ -172,8 +165,35 @@ const Login: React.FC = () => {
   const state = searchParams.get('state');
   const provider = searchParams.get('provider');
   if (code && state && provider) {
-    return <Spin />
+    return <Loading />
   }
+
+  useEffect(() => {
+    const fetchSiteConfig = async () => {
+      const siteConfig = await getSiteConfig()
+      setSiteName(siteConfig.name)
+      setSiteConfig(siteConfig)
+      window.document.title = siteConfig.name
+      document.getElementById('site-icon')?.setAttribute('href', siteConfig.logo)
+    }
+    fetchSiteConfig()
+  }, [])
+
+  if (!siteConfig) {
+    return <Loading />
+  }
+
+  if (currentUser && currentUser.status === 'active') {
+    const redirect = searchParams.get('redirect');
+    if (redirect) {
+      window.location.href = redirect;
+    } else if (siteConfig?.home_page) {
+      window.location.href = siteConfig.home_page;
+    } else {
+      navigate('/');
+    }
+  }
+
 
   return (
     <div>
@@ -294,7 +314,7 @@ const Login: React.FC = () => {
             setPageType('login');
             form.setFieldValue('password', '')
             form.setFieldValue('mfa_code', '')
-          }} />}
+          }} token={token || undefined} />}
         </Card>
       </div>
     </div>

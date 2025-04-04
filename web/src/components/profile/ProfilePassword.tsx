@@ -5,12 +5,14 @@ import { changePassword } from '@/api/authorization';
 import { useRequest } from 'ahooks';
 import { ApiError } from '@/api/client';
 
-const ProfilePassword: React.FC<{ onSuccess?: () => void }> = ({ onSuccess }) => {
+const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({ onSuccess, token }) => {
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();
 
-  const { run: handleSubmit, loading } = useRequest(changePassword, {
+  const { run: handleSubmit, loading } = useRequest(async (v: API.ChangePasswordRequest) => {
+    return changePassword(v, token)
+  }, {
     manual: true,
     onSuccess: () => {
       message.success(t('user.passwordChanged'));

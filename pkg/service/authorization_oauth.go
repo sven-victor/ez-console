@@ -140,8 +140,6 @@ func (s *OAuthService) GetLoginURL(ctx context.Context, provider string) (*OAuth
 		}
 	}
 
-	fmt.Printf("%#v\n", oauth2Config)
-
 	// Generate state value
 	state := util.GenerateRandomString(32)
 

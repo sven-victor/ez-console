@@ -88,12 +88,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (needs_mfa) {
         throw { needsMFA: true, mfaToken: mfa_token, mfaType: mfa_type, user: userData };
       }
+      if (password_expired) {
+        throw { password_expired: true, user: userData, token: token };
+      }
       setAuthToken(token);
       setToken(token);
       setUser(userData);
-      if (password_expired) {
-        throw { password_expired: true, user: userData };
-      }
       return userData;
     } catch (error) {
       // If it's an MFA required error, rethrow

@@ -151,8 +151,8 @@ export const updateCurrentUser = async (data: API.UpdateUserRequest): Promise<AP
 };
 
 // Modify current user password
-export const changePassword = async (data: API.ChangePasswordRequest): Promise<void> => {
-  return apiPut<void>(`${baseUrl}/profile/password`, data);
+export const changePassword = async (data: API.ChangePasswordRequest, token?: string): Promise<void> => {
+  return apiPut<void>(`${baseUrl}/profile/password`, data, { headers: { Authorization: `Bearer ${token}` } });
 };
 
 
