@@ -26,10 +26,15 @@ import (
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
+type UserChangeHook func(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error
+type UserRoleChangeHook func(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error
+
 // UserService provides user-related services
 type UserService struct {
-	baseService *BaseService
-	ldapService *LDAPService
+	baseService         *BaseService
+	ldapService         *LDAPService
+	userChangeHooks     []UserChangeHook
+	userRoleChangeHooks []UserRoleChangeHook
 }
 
 // NewUserService creates a user service
@@ -37,6 +42,30 @@ func NewUserService(baseService *BaseService, ldapService *LDAPService) *UserSer
 	return &UserService{
 		baseService: baseService,
 		ldapService: ldapService,
+		userChangeHooks: []UserChangeHook{
+			func(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error {
+				if newUser != nil {
+					user, ok := middleware.GetUserCache(newUser.ResourceID)
+					if ok {
+						newUser.Roles = user.Roles
+						middleware.SetUserCache(user.ResourceID, *newUser, time.Minute*10)
+					}
+				} else {
+					middleware.DeleteUserCache(oldUser.ResourceID)
+				}
+				return nil
+			},
+		},
+		userRoleChangeHooks: []UserRoleChangeHook{
+			func(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error {
+				user, ok := middleware.GetUserCache(userId)
+				if ok {
+					user.Roles = newRoles
+					middleware.SetUserCache(userId, user, time.Minute*10)
+				}
+				return nil
+			},
+		},
 	}
 }
 
@@ -111,7 +140,19 @@ type MFATokenData struct {
 	Source  middleware.JWTIssuer `json:"source"`
 }
 
+func (s *UserService) RegisterUserChangeHook(hook UserChangeHook) {
+	s.userChangeHooks = append(s.userChangeHooks, hook)
+}
+
+func (s *UserService) RegisterUserRoleChangeHook(hook UserRoleChangeHook) {
+	s.userRoleChangeHooks = append(s.userRoleChangeHooks, hook)
+}
+
 func (s *UserService) UserLoginFailed(ctx context.Context, user *model.User) error {
+	oldUser, err := s.GetUserByID(ctx, user.ResourceID, WithCache(true), WithRoles(false), WithPermissions(false))
+	if err != nil {
+		return fmt.Errorf("failed to get user: %w", err)
+	}
 	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get security settings: %w", err)
@@ -132,11 +173,16 @@ func (s *UserService) UserLoginFailed(ctx context.Context, user *model.User) err
 			"FullName": user.FullName,
 		})
 	}
-	err = dbConn.Model(&user).Select("LoginAttempts", "LockedUntil").Updates(&user).Error
-	if err != nil {
-		return fmt.Errorf("failed to update user login attempts: %w", err)
-	}
-	return nil
+	return dbConn.Transaction(func(tx *gorm.DB) error {
+		err = tx.Model(&user).Select("LoginAttempts", "LockedUntil").Updates(&user).Error
+		if err != nil {
+			return fmt.Errorf("failed to update user login attempts: %w", err)
+		}
+		newUser := *oldUser
+		newUser.LoginAttempts = user.LoginAttempts
+		newUser.LockedUntil = user.LockedUntil
+		return s.RunUserChangeHooks(ctx, tx, oldUser, &newUser)
+	})
 }
 
 func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string) (*LoginResponse, error) {
@@ -159,7 +205,6 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 	if err != nil {
 		return nil, util.NewError("E5001", "Failed to get MFA code", err)
 	}
-	fmt.Println(rawTokenData)
 	tokenData := MFATokenData{}
 	err = json.Unmarshal([]byte(rawTokenData), &tokenData)
 	if err != nil {
@@ -237,8 +282,15 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 		}
 	}
 
-	user.LoginAttempts = 0
-	db.Session(ctx).Model(&user).Select("LoginAttempts").Updates(&user)
+	{
+		oldUser := *user
+		oldUser.Roles = nil
+		user.LoginAttempts = 0
+		newUser := *user
+		newUser.Roles = nil
+		db.Session(ctx).Model(&user).Select("LoginAttempts").Updates(&newUser)
+		s.RunUserChangeHooks(ctx, db.Session(ctx), &oldUser, &newUser)
+	}
 
 	// Generate JWT token
 	token, err := middleware.GenerateToken(ctx, tokenData.Source, user.ResourceID, user.Username, time.Duration(securitySettings.SessionTimeoutMinutes)*time.Minute)
@@ -303,7 +355,7 @@ func (s *UserService) GenerateMFA(ctx context.Context, user *model.User, source 
 
 // Login user login verification
 func (s *UserService) Login(ctx context.Context, username, password string) (*LoginResponse, error) {
-
+	dbConn := db.Session(ctx)
 	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
 		return nil, util.ErrorResponse{
@@ -326,7 +378,7 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 	if user == nil {
 		// Find user
 		user = &model.User{}
-		err := db.Session(ctx).Where("username = ? OR email = ?", username, username).First(&user).Error
+		err := dbConn.Where("username = ? OR email = ?", username, username).First(&user).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, util.ErrorResponse{
@@ -388,18 +440,25 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 		return s.GenerateMFA(ctx, user, middleware.JWTIssuerLogin)
 	}
 
-	// Login successful, update login information
-	user.LastLogin = time.Now()
-	user.LoginAttempts = 0
-	user.MFASecret = nil // For security reasons, do not return the MFA secret in the response
-	db.Session(ctx).Select("LastLogin", "LoginAttempts").Save(&user)
-
-	if err := db.Session(ctx).Model(&user).Preload("Roles.Permissions").First(&user).Error; err != nil {
+	user, err = s.GetUserByID(ctx, user.ResourceID, WithCache(true), WithRoles(true), WithPermissions(true))
+	if err != nil {
 		return nil, err
 	}
 
-	middleware.SetUserCache(user.ResourceID, *user, time.Minute*10)
+	{
+		oldUser := *user
+		oldUser.Roles = nil
+		user.LastLogin = time.Now()
+		user.LoginAttempts = 0
+		newUser := *user
+		newUser.Roles = nil
 
+		// Login successful, update login information
+		dbConn.Select("LastLogin", "LoginAttempts").Save(&newUser)
+		s.RunUserChangeHooks(ctx, dbConn, &oldUser, &newUser)
+	}
+
+	user.MFASecret = nil // For security reasons, do not return the MFA secret in the response
 	// Generate JWT token
 	token, err := middleware.GenerateToken(ctx, middleware.JWTIssuerLogin, user.ResourceID, user.Username, time.Duration(securitySettings.SessionTimeoutMinutes)*time.Minute)
 	if err != nil {
@@ -477,8 +536,13 @@ func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*m
 			if err := tx.Model(&user).Association("Roles").Append(user.Roles); err != nil {
 				return fmt.Errorf("assign roles to user failed: %w", err)
 			}
+			if err := s.RunUserRoleChangeHooks(ctx, tx, user.ResourceID, nil, user.Roles); err != nil {
+				return err
+			}
 		}
-		return nil
+		newUser := user
+		newUser.Roles = nil
+		return s.RunUserChangeHooks(ctx, tx, nil, &newUser)
 	})
 	if err != nil {
 		return nil, err
@@ -724,7 +788,12 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 }
 
 // PatchUser updates user information
-func (s *UserService) PatchUser(ctx context.Context, req UpdateUserRequest, user *model.User) (*model.User, error) {
+func (s *UserService) PatchUser(ctx context.Context, id string, req UpdateUserRequest) (*model.User, error) {
+	user, err := s.GetUserByID(ctx, id, WithCache(true), WithRoles(true), WithPermissions(false))
+	if err != nil {
+		return nil, err
+	}
+	oldUser := *user
 	selectFields := []string{}
 	if req.Email != "" {
 		// Check if email already exists
@@ -787,36 +856,36 @@ func (s *UserService) PatchUser(ctx context.Context, req UpdateUserRequest, user
 		user.LDAPDN = req.LDAPDN
 		selectFields = append(selectFields, "LDAPDN")
 	}
-	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+	err = db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if len(selectFields) > 0 {
 			if err := tx.Where("resource_id = ?", user.ResourceID).Select(selectFields).Save(&user).Error; err != nil {
 				return fmt.Errorf("update user failed: %w", err)
 			}
 		}
-
 		if req.RoleIDs != nil {
+			oldRoles := user.Roles
 			if err := tx.Model(user).Omit("Roles.*").Association("Roles").Replace(&newRoles); err != nil {
 				return fmt.Errorf("update user roles failed: %w", err)
 			}
+			err := s.RunUserRoleChangeHooks(ctx, tx, user.ResourceID, oldRoles, newRoles)
+			if err != nil {
+				return fmt.Errorf("run user role change hooks failed: %w", err)
+			}
 		}
-		return nil
+		user.Roles = nil
+		oldUser.Roles = nil
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
 	})
 	if err != nil {
 		return nil, err
 	}
-	middleware.DeleteUserCache(user.ResourceID)
 	return user, nil
 }
 
 // DeleteUser deletes a user
 func (s *UserService) DeleteUser(ctx context.Context, id string) error {
-	var user model.User
-	dbConn := db.Session(ctx)
-	err := dbConn.Unscoped().Where("resource_id = ?", id).First(&user).Error
+	user, err := s.GetUserByID(ctx, id, WithCache(true), WithSoftDeleted(true))
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("user not found")
-		}
 		return err
 	}
 
@@ -829,22 +898,29 @@ func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 		return errors.New("cannot delete yourself")
 	}
 
-	return dbConn.Transaction(func(tx *gorm.DB) error {
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		var err error
 		if user.DeletedAt.Valid {
-			return tx.Unscoped().Select("Roles").Delete(&user).Error
+			err = tx.Unscoped().Select("Roles").Delete(&user).Error
+		} else {
+			err = tx.Where("resource_id = ?", id).Delete(&model.User{}).Error
 		}
-		return tx.Where("resource_id = ?", id).Delete(&model.User{}).Error
+		if err != nil {
+			return err
+		}
+		return s.RunUserChangeHooks(ctx, tx, user, nil)
 	})
 
 }
 
 // ChangePassword changes the user's password
 func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangePasswordRequest) error {
-	var user model.User
 	dbConn := db.Session(ctx)
 	var ldapSession clientsldap.Conn
-	if err := dbConn.Where("resource_id = ?", id).First(&user).Error; err != nil {
-		return util.NewError("E4041", "user not found", err)
+
+	user, err := s.GetUserByID(ctx, id, WithCache(true))
+	if err != nil {
+		return err
 	}
 
 	// Check if new password is the same as old password
@@ -929,6 +1005,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 	}
 
 	dbConn.Transaction(func(tx *gorm.DB) error {
+		oldUser := *user
 		if tx.Error != nil {
 			return tx.Error
 		}
@@ -978,8 +1055,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
 			}
 		}
-		middleware.DeleteUserCache(user.ResourceID)
-		return nil
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
 	})
 	return nil
 }
@@ -993,6 +1069,7 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 	}
 
 	err = dbConn.Transaction(func(tx *gorm.DB) error {
+		oldUser := user
 		if err := tx.Error; err != nil {
 			return fmt.Errorf("failed to start transaction: %w", err)
 		}
@@ -1050,13 +1127,12 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
 			}
 		}
-		return nil
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, &user)
 	})
 	if err != nil {
 		return false, fmt.Errorf("failed to reset password: %w", err)
 	}
 	if user.Email != "" {
-		middleware.DeleteUserCache(user.ResourceID)
 		err = s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "Password Reset", model.SettingSMTPResetPasswordTemplate, map[string]any{
 			"Username": user.Username,
 			"Password": newPassword,
@@ -1092,12 +1168,17 @@ func (s *UserService) EnableMFA(ctx context.Context, userID string, mfaType stri
 		}
 
 		// Save MFA key, but do not enable MFA immediately
-		user.MFASecret = safe.NewEncryptedString(key.Secret(), os.Getenv(safe.SecretEnvName))
-		if err := db.Session(ctx).Select("MFASecret").Save(user).Error; err != nil {
-			return nil, fmt.Errorf("save MFA key failed: %w", err)
+		err = db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+			oldUser := *user
+			user.MFASecret = safe.NewEncryptedString(key.Secret(), os.Getenv(safe.SecretEnvName))
+			if err := tx.Select("MFASecret").Save(user).Error; err != nil {
+				return fmt.Errorf("save MFA key failed: %w", err)
+			}
+			return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
+		})
+		if err != nil {
+			return nil, err
 		}
-
-		middleware.DeleteUserCache(user.ResourceID)
 
 		// Return key and QR code URL
 		return &EnableMFAResponse{
@@ -1151,21 +1232,22 @@ func (s *UserService) VerifyAndActivateEmailMFA(ctx context.Context, userID stri
 	if !safeCode.Equal(*safe.NewEncryptedString(code, os.Getenv(safe.SecretEnvName))) {
 		return errors.New("MFA verification code is invalid")
 	}
-	user.MFAEnabled = true
-	user.MFAType = "email"
-	user.MFASecret = nil
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		oldUser := *user
+		user.MFAEnabled = true
+		user.MFAType = "email"
+		user.MFASecret = nil
 
-	if err := db.Session(ctx).Select("MFAEnabled", "MFASecret", "MFAType").Save(user).Error; err != nil {
-		return fmt.Errorf("activate MFA failed: %w", err)
-	}
-
-	middleware.DeleteUserCache(user.ResourceID)
-	return nil
+		if err := tx.Select("MFAEnabled", "MFASecret", "MFAType").Save(user).Error; err != nil {
+			return fmt.Errorf("activate MFA failed: %w", err)
+		}
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
+	})
 }
 
 // VerifyAndActivateTOTPMFA verifies the MFA code and activates TOTP MFA for the user
 func (s *UserService) VerifyAndActivateTOTPMFA(ctx context.Context, userID string, code string) error {
-	user, err := s.GetUserByID(ctx, userID, WithCache(true))
+	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithRoles(false), WithPermissions(false))
 	if err != nil {
 		return err
 	}
@@ -1182,21 +1264,20 @@ func (s *UserService) VerifyAndActivateTOTPMFA(ctx context.Context, userID strin
 	if !valid {
 		return errors.New("MFA verification code is invalid")
 	}
-
-	// Activate MFA
-	user.MFAEnabled = true
-	user.MFAType = "totp"
-	if err := db.Session(ctx).Select("MFAEnabled", "MFASecret", "MFAType").Save(user).Error; err != nil {
-		return fmt.Errorf("activate MFA failed: %w", err)
-	}
-
-	middleware.DeleteUserCache(user.ResourceID)
-	return nil
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		oldUser := *user
+		user.MFAEnabled = true
+		user.MFAType = "totp"
+		if err := tx.Select("MFAEnabled", "MFAType").Save(user).Error; err != nil {
+			return fmt.Errorf("activate MFA failed: %w", err)
+		}
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
+	})
 }
 
 // DisableMFA disables MFA for the user
 func (s *UserService) DisableMFA(ctx context.Context, userID string) error {
-	user, err := s.GetUserByID(ctx, userID, WithCache(true))
+	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithRoles(false), WithPermissions(false))
 	if err != nil {
 		return err
 	}
@@ -1205,15 +1286,17 @@ func (s *UserService) DisableMFA(ctx context.Context, userID string) error {
 		return errors.New("MFA is not enabled")
 	}
 
-	user.MFAEnabled = false
-	user.MFASecret = nil
-	user.MFAType = ""
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		oldUser := *user
+		user.MFAEnabled = false
+		user.MFASecret = nil
+		user.MFAType = ""
 
-	if err := db.Session(ctx).Select("MFAEnabled", "MFASecret", "MFAType").Save(user).Error; err != nil {
-		return fmt.Errorf("failed to disable MFA: %w", err)
-	}
-	middleware.DeleteUserCache(user.ResourceID)
-	return nil
+		if err := tx.Select("MFAEnabled", "MFASecret", "MFAType").Save(user).Error; err != nil {
+			return fmt.Errorf("failed to disable MFA: %w", err)
+		}
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
+	})
 }
 
 // AssignRoles assigns roles to a user
@@ -1223,32 +1306,32 @@ func (s *UserService) AssignRoles(ctx context.Context, userID string, roleIDs []
 		return err
 	}
 
-	// Clear existing roles
-	if err := db.Session(ctx).Model(user).Association("Roles").Clear(); err != nil {
-		return fmt.Errorf("clear user roles failed: %w", err)
-	}
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		oldRoles := user.Roles
+		// Clear existing roles
+		if err := tx.Model(user).Association("Roles").Clear(); err != nil {
+			return fmt.Errorf("clear user roles failed: %w", err)
+		}
 
-	// Return if no new roles
-	if len(roleIDs) == 0 {
-		return nil
-	}
+		// Return if no new roles
+		if len(roleIDs) == 0 {
+			return nil
+		}
 
-	// Find and assign new roles
-	var roles []model.Role
-	if err := db.Session(ctx).Where("resource_id IN ?", roleIDs).Find(&roles).Error; err != nil {
-		return fmt.Errorf("find roles failed: %w", err)
-	}
+		// Find and assign new roles
+		var roles []model.Role
+		if err := tx.Where("resource_id IN ?", roleIDs).Find(&roles).Error; err != nil {
+			return fmt.Errorf("find roles failed: %w", err)
+		}
 
-	if len(roles) == 0 {
-		return errors.New("roles not found")
-	}
-	if err := db.Session(ctx).Model(user).Association("Roles").Replace(roles); err != nil {
-		return fmt.Errorf("assign roles failed: %w", err)
-	}
-	user.Roles = roles
-	middleware.DeleteUserCache(user.ResourceID)
-
-	return nil
+		if len(roles) == 0 {
+			return errors.New("roles not found")
+		}
+		if err := tx.Model(user).Association("Roles").Replace(roles); err != nil {
+			return fmt.Errorf("assign roles failed: %w", err)
+		}
+		return s.RunUserRoleChangeHooks(ctx, tx, userID, oldRoles, roles)
+	})
 }
 
 func (s *UserService) GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error) {
@@ -1322,28 +1405,31 @@ func (s *UserService) GetLdapUsers(ctx context.Context, skipExisting bool) ([]mo
 	return users, nil
 }
 
+// RestoreUser restores a user
 func (s *UserService) RestoreUser(ctx context.Context, userID string) error {
-	dbConn := db.Session(ctx)
-	var user model.User
-	if err := dbConn.Model(&model.User{}).Unscoped().Where("resource_id = ?", userID).First(&user).Error; err != nil {
-		return fmt.Errorf("failed to get user: %w", err)
+	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithPermissions(false), WithRoles(false), WithSoftDeleted(true))
+	if err != nil {
+		return err
 	}
+
 	if !user.DeletedAt.Valid {
 		return errors.New("user is not deleted")
 	}
-	if err := dbConn.Model(&user).Unscoped().Select("Status", "DeletedAt").Updates(map[string]any{
-		"status":     model.UserStatusActive,
-		"deleted_at": nil,
-	}).Error; err != nil {
-		return fmt.Errorf("failed to restore user: %w", err)
-	}
-	middleware.DeleteUserCache(user.ResourceID)
 
-	return nil
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		oldUser := *user
+		user.Status = model.UserStatusActive
+		user.DeletedAt = gorm.DeletedAt{}
+		if err := tx.Model(&user).Unscoped().Select("Status", "DeletedAt").Save(user).Error; err != nil {
+			return fmt.Errorf("failed to restore user: %w", err)
+		}
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
+	})
 }
 
+// UnlockUser unlocks a user
 func (s *UserService) UnlockUser(ctx context.Context, userID string) error {
-	user, err := s.GetUserByID(ctx, userID, WithCache(true))
+	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithPermissions(false), WithRoles(false))
 	if err != nil {
 		return err
 	}
@@ -1352,13 +1438,31 @@ func (s *UserService) UnlockUser(ctx context.Context, userID string) error {
 		return errors.New("user is not locked")
 	}
 
-	dbConn := db.Session(ctx)
-	if err := dbConn.Model(&user).Select("LockedUntil", "LoginAttempts").Updates(map[string]any{
-		"locked_until":   nil,
-		"login_attempts": 0,
-	}).Error; err != nil {
-		return fmt.Errorf("failed to unlock user: %w", err)
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		oldUser := *user
+		user.LockedUntil = time.Time{}
+		user.LoginAttempts = 0
+		if err := tx.Model(user).Select("LockedUntil", "LoginAttempts").Save(user).Error; err != nil {
+			return fmt.Errorf("failed to unlock user: %w", err)
+		}
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
+	})
+}
+
+func (s *UserService) RunUserChangeHooks(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error {
+	for _, hook := range s.userChangeHooks {
+		if err := hook(ctx, tx, oldUser, newUser); err != nil {
+			return err
+		}
 	}
-	middleware.DeleteUserCache(user.ResourceID)
+	return nil
+}
+
+func (s *UserService) RunUserRoleChangeHooks(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error {
+	for _, hook := range s.userRoleChangeHooks {
+		if err := hook(ctx, tx, userId, oldRoles, newRoles); err != nil {
+			return err
+		}
+	}
 	return nil
 }

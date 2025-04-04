@@ -102,6 +102,8 @@ type Service interface {
 	ResetPassword(ctx context.Context, userID string, newPassword string) (bool, error)
 	RestoreUser(ctx context.Context, userID string) error
 	GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error)
+	RegisterUserChangeHook(hook service.UserChangeHook)
+	RegisterUserRoleChangeHook(hook service.UserRoleChangeHook)
 
 	FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error)
 	GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)

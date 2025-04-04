@@ -202,15 +202,15 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 		ctx,
 		id,
 		func(auditLog *model.AuditLog) error {
-			_, err := c.service.PatchUser(ctx, req, user)
+			newUser, err := c.service.PatchUser(ctx, id, req)
 			if err != nil {
 				return err
 			}
-			auditLog.Details.NewData = *user
+			auditLog.Details.NewData = *newUser
 
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": "0",
-				"data": user,
+				"data": newUser,
 			})
 			return nil
 		},
@@ -312,15 +312,15 @@ func (c *UserController) UpdateUserStatus(ctx *gin.Context) {
 		ctx,
 		id,
 		func(auditLog *model.AuditLog) error {
-			_, err := c.service.PatchUser(ctx, service.UpdateUserRequest{Status: req.Status}, user)
+			newUser, err := c.service.PatchUser(ctx, id, service.UpdateUserRequest{Status: req.Status})
 			if err != nil {
 				return err
 			}
-			auditLog.Details.NewData = *user
+			auditLog.Details.NewData = *newUser
 
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": "0",
-				"data": user,
+				"data": newUser,
 			})
 			return nil
 		},
@@ -526,23 +526,22 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 		ctx,
 		user.ResourceID,
 		func(auditLog *model.AuditLog) error {
-			_, err := c.service.PatchUser(ctx,
+			newUser, err := c.service.PatchUser(ctx, user.ResourceID,
 				service.UpdateUserRequest{
 					Email:    req.Email,
 					FullName: req.FullName,
 					Phone:    req.Phone,
 					Avatar:   req.Avatar,
 				},
-				&user,
 			)
 			if err != nil {
 				return err
 			}
-			auditLog.Details.NewData = user
+			auditLog.Details.NewData = *newUser
 
 			ctx.JSON(http.StatusOK, gin.H{
 				"code": "0",
-				"data": user,
+				"data": newUser,
 			})
 			return nil
 		},
