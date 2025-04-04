@@ -665,58 +665,61 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 	}), func(user model.User) string {
 		return user.LDAPDN
 	})
-	ldapSession, err := s.ldapService.GetLDAPSession(ctx)
-	if err != nil {
-		return nil, 0, fmt.Errorf("failed to get LDAP session: %w", err)
-	}
-	defer ldapSession.Close()
 
 	settings, err := s.baseService.GetLDAPSettings(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get LDAP settings: %w", err)
 	}
-	// Get information from LDAP
-	for _, ldapDN := range ldapDNs {
-		searchRequest := ldap.NewSearchRequest(
-			ldapDN,
-			ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false,
-			"(objectClass=*)",
-			append([]string{"*"}, systemAttrs...),
-			[]ldap.Control{},
-		)
-		result, err := ldapSession.Search(searchRequest)
+	if settings.Enabled {
+		ldapSession, err := s.ldapService.GetLDAPSession(ctx)
 		if err != nil {
-			continue
+			return nil, 0, fmt.Errorf("failed to get LDAP session: %w", err)
 		}
-		if len(result.Entries) == 0 {
-			continue
-		}
-		entry := result.Entries[0]
-		for i, user := range users {
-			if user.LDAPDN == ldapDN {
-				users[i].Email = entry.GetAttributeValue(settings.EmailAttr)
-				users[i].FullName = entry.GetAttributeValue(settings.DisplayNameAttr)
-				users[i].Username = entry.GetAttributeValue(settings.UserAttr)
-				users[i].Source = model.UserSourceLDAP
-				users[i].Base = model.Base{
-					ID:         user.ID,
-					ResourceID: user.ResourceID,
-					CreatedAt:  util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("createTimestamp")),
-					UpdatedAt:  util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("modifyTimestamp")),
+		defer ldapSession.Close()
+
+		// Get information from LDAP
+		for _, ldapDN := range ldapDNs {
+			searchRequest := ldap.NewSearchRequest(
+				ldapDN,
+				ldap.ScopeBaseObject, ldap.NeverDerefAliases, 0, 0, false,
+				"(objectClass=*)",
+				append([]string{"*"}, systemAttrs...),
+				[]ldap.Control{},
+			)
+			result, err := ldapSession.Search(searchRequest)
+			if err != nil {
+				continue
+			}
+			if len(result.Entries) == 0 {
+				continue
+			}
+			entry := result.Entries[0]
+			for i, user := range users {
+				if user.LDAPDN == ldapDN {
+					users[i].Email = entry.GetAttributeValue(settings.EmailAttr)
+					users[i].FullName = entry.GetAttributeValue(settings.DisplayNameAttr)
+					users[i].Username = entry.GetAttributeValue(settings.UserAttr)
+					users[i].Source = model.UserSourceLDAP
+					users[i].Base = model.Base{
+						ID:         user.ID,
+						ResourceID: user.ResourceID,
+						CreatedAt:  util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("createTimestamp")),
+						UpdatedAt:  util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("modifyTimestamp")),
+					}
 				}
 			}
 		}
+		users = w.Map(users, func(user model.User) model.User {
+			if user.IsDeleted() {
+				user.Status = model.UserStatusDeleted
+			} else if user.IsLocked() {
+				user.Status = model.UserStatusLocked
+			} else if user.IsPasswordExpired(passwordExpiryDays) {
+				user.Status = model.UserStatusPasswordExpired
+			}
+			return user
+		})
 	}
-	users = w.Map(users, func(user model.User) model.User {
-		if user.IsDeleted() {
-			user.Status = model.UserStatusDeleted
-		} else if user.IsLocked() {
-			user.Status = model.UserStatusLocked
-		} else if user.IsPasswordExpired(passwordExpiryDays) {
-			user.Status = model.UserStatusPasswordExpired
-		}
-		return user
-	})
 	return users, total, nil
 }
 
@@ -983,12 +986,6 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 
 // ResetPassword resets the user's password (administrator operation)
 func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassword string) (sendEmail bool, err error) {
-	ldapSession, err := s.ldapService.GetLDAPSession(ctx)
-	if err != nil {
-		return false, fmt.Errorf("failed to get LDAP session: %w", err)
-	}
-	defer ldapSession.Close()
-
 	dbConn := db.Session(ctx)
 	var user model.User
 	if err := dbConn.Where("resource_id = ?", userID).First(&user).Error; err != nil {
@@ -1038,6 +1035,11 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 		}
 		// If user is LDAP user, update LDAP password
 		if user.Source == model.UserSourceLDAP {
+			ldapSession, err := s.ldapService.GetLDAPSession(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to get LDAP session: %w", err)
+			}
+			defer ldapSession.Close()
 			hashedPassword, err := util.Sha256CryptPassword("{CRYPT}", newPassword)
 			if err != nil {
 				return fmt.Errorf("failed to hash password: %w", err)
