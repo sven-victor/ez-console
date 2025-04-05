@@ -96,11 +96,11 @@ export const privateRoutes: IRoute[] = [
             path: '/authorization/users',
             name: 'users',
             icon: <UserOutlined />,
-            permissions: ['authorization:user:view', 'authorization:user:create', 'authorization:user:update', 'authorization:user:delete'],
+            permissions: ['authorization:user:view', 'authorization:user:list', 'authorization:user:create', 'authorization:user:update', 'authorization:user:delete'],
             children: [
               {
                 element: withSuspense(UserList),
-                permissions: ['authorization:user:view'],
+                permissions: ['authorization:user:list'],
                 index: true,
               },
               {

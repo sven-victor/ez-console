@@ -30,7 +30,7 @@ func NewUserController(service *service.Service) *UserController {
 func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 	users := router.Group("/users")
 	{
-		users.GET("", middleware.RequirePermission("authorization:user:view"), c.ListUsers)
+		users.GET("", middleware.RequirePermission("authorization:user:list"), c.ListUsers)
 		users.GET("/:id", middleware.RequirePermission("authorization:user:view"), c.GetUser)
 		users.POST("", middleware.RequirePermission("authorization:user:create"), c.CreateUser)
 		users.PUT("/:id", middleware.RequirePermission("authorization:user:update"), c.UpdateUser)
@@ -41,7 +41,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.GET("/:id/audit-logs", middleware.RequirePermission("authorization:user:view_audit_logs"), c.GetUserLogs)
 		users.POST("/:id/restore", middleware.RequirePermission("authorization:user:update"), c.RestoreUser)
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
-		users.GET("/ldap-users", middleware.RequirePermission("authorization:user:view"), c.GetLdapUsers)
+		users.GET("/ldap-users", middleware.RequirePermission("authorization:user:list"), c.GetLdapUsers)
 	}
 
 	// Profile management (for current user)
@@ -1006,9 +1006,14 @@ func (c *UserController) GetLdapUsers(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("User Management", "Manage user creation, editing, deletion, and permission assignment", []model.Permission{
 		{
+			Code:        "authorization:user:list",
+			Name:        "List users",
+			Description: "List users",
+		},
+		{
 			Code:        "authorization:user:view",
 			Name:        "View users",
-			Description: "View user list and details",
+			Description: "View details",
 		},
 		{
 			Code:        "authorization:user:create",
