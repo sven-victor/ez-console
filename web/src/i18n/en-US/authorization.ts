@@ -232,7 +232,6 @@ export default {
       "Role_Management": "Role Management",
       "Security_Settings": "Security Settings",
       "Service_Management": "Service Management",
-      "system.audit_log.view": "View audit logs",
       "System_Management": "System Management",
       "System_Settings": "System Settings",
       "User_Management": "User Management",
