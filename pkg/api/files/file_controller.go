@@ -170,16 +170,6 @@ func (c *FileController) ListFiles(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("File Management", "Manage file upload and download", []model.Permission{
 		{
-			Code:        "file:upload",
-			Name:        "Upload files",
-			Description: "Upload files to the system",
-		},
-		{
-			Code:        "file:download",
-			Name:        "Download files",
-			Description: "Download files from the system",
-		},
-		{
 			Code:        "file:list",
 			Name:        "List files",
 			Description: "List files from the system",

@@ -48,8 +48,8 @@ func (c *ServiceAccountController) RegisterRoutes(router *gin.RouterGroup) {
 		serviceAccounts.POST("/:id/roles", middleware.RequirePermission("authorization:service_account:role:assign"), c.AssignServiceAccountRoles)
 
 		// Policy related
-		serviceAccounts.GET("/:id/policy", middleware.RequirePermission("authorization:service_account:view"), c.GetServiceAccountPolicy)
-		serviceAccounts.PUT("/:id/policy", middleware.RequirePermission("authorization:service_account:update"), c.SetServiceAccountPolicy)
+		serviceAccounts.GET("/:id/policy", middleware.RequirePermission("authorization:service_account:policy:view"), c.GetServiceAccountPolicy)
+		serviceAccounts.PUT("/:id/policy", middleware.RequirePermission("authorization:service_account:policy:update"), c.SetServiceAccountPolicy)
 	}
 }
 
@@ -111,12 +111,12 @@ func init() {
 			Description: "Assign roles to service accounts",
 		},
 		{
-			Code:        "authorization:service_account:view",
+			Code:        "authorization:service_account:policy:view",
 			Name:        "Get service account policy",
 			Description: "Get service account policy",
 		},
 		{
-			Code:        "authorization:service_account:update",
+			Code:        "authorization:service_account:policy:update",
 			Name:        "Update service account policy",
 			Description: "Update service account policy",
 		},
