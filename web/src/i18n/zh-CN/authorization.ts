@@ -255,6 +255,7 @@ export default {
       "authorization.user.update": "更新用户",
       "authorization.user.view": "查看用户",
       "authorization.user.view_audit_logs": "查看用户审计日志",
+      "authorization:user:assign-roles": "分配角色给用户",
       "resource.service.create": "创建服务",
       "resource.service.delete": "删除服务",
       "resource.service.update": "更新服务",
@@ -265,7 +266,6 @@ export default {
       "system.settings.view": "查看设置",
       "system.view": "查看系统信息",
       "system.audit_log.view": "查看审计日志",
-
     }
   },
 

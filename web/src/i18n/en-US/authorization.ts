@@ -250,6 +250,7 @@ export default {
       "authorization:user:update": "Update users",
       "authorization:user:view": "View users",
       "authorization:user:view_audit_logs": "View user audit logs",
+      "authorization:user:assign-roles": "Assign roles to users",
       "system:security:update": "Update security settings",
       "system:security:view": "View security settings",
       "system:settings:update": "Update settings",

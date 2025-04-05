@@ -250,6 +250,7 @@ export default {
       "authorization:user:update": 'تحديث المستخدمين',
       "authorization:user:view": 'عرض المستخدمين',
       "authorization:user:view_audit_logs": 'عرض سجلات تدقيق المستخدم',
+      "authorization:user:assign-roles": 'تعيين الأدوار إلى المستخدمين',
       "system:security:update": 'تحديث إعدادات الأمان',
       "system:security:view": 'عرض إعدادات الأمان',
       "system:settings:update": 'تحديث الإعدادات',

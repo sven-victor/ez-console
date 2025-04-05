@@ -250,6 +250,7 @@ export default {
       "authorization:user:update": "Uppdatera användare",
       "authorization:user:view": "Visa användare",
       "authorization:user:view_audit_logs": "Visa användargranskningsloggar",
+      "authorization:user:assign-roles": "Tilldela roller till användare",
       "system:security:update": "Uppdatera säkerhetsinställningar",
       "system:security:view": "Visa säkerhetsinställningar",
       "system:settings:update": "Uppdatera inställningar",

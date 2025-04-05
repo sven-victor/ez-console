@@ -37,7 +37,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.DELETE("/:id", middleware.RequirePermission("authorization:user:delete"), c.DeleteUser)
 		users.PUT("/:id/status", middleware.RequirePermission("authorization:user:update"), c.UpdateUserStatus)
 		users.PUT("/:id/password", middleware.RequirePermission("authorization:user:reset-password"), c.ResetUserPassword)
-		users.PUT("/:id/roles", middleware.RequirePermission("authorization:user:update"), c.AssignRoles)
+		users.PUT("/:id/roles", middleware.RequirePermission("authorization:user:assign-roles"), c.AssignRoles)
 		users.GET("/:id/audit-logs", middleware.RequirePermission("authorization:user:view_audit_logs"), c.GetUserLogs)
 		users.POST("/:id/restore", middleware.RequirePermission("authorization:user:update"), c.RestoreUser)
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
@@ -139,6 +139,12 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		})
 		return
 	}
+	if len(req.RoleIDs) != 0 {
+		middleware.RequirePermission("authorization:user:create")(ctx)
+		if ctx.IsAborted() {
+			return
+		}
+	}
 
 	// Use StartAudit to refactor audit log recording
 	err := c.service.AuditLogService.StartAudit(
@@ -190,6 +196,12 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 			Err:  err,
 		})
 		return
+	}
+	if req.RoleIDs != nil {
+		middleware.RequirePermission("authorization:user:assign-roles")(ctx)
+		if ctx.IsAborted() {
+			return
+		}
 	}
 	user, err := c.service.GetUserByID(ctx, id, service.WithCache(true), service.WithRoles(true))
 	if err != nil {
@@ -1012,6 +1024,11 @@ func init() {
 			Code:        "authorization:user:reset-password",
 			Name:        "Reset User Password",
 			Description: "Reset user password",
+		},
+		{
+			Code:        "authorization:user:assign-roles",
+			Name:        "Assign roles to users",
+			Description: "Assign roles to users",
 		},
 		{
 			Code:        "authorization:user:delete",

@@ -250,6 +250,7 @@ export default {
       "authorization:user:update": 'Mettre à jour les utilisateurs',
       "authorization:user:view": 'Afficher les utilisateurs',
       "authorization:user:view_audit_logs": 'Afficher les journaux d\'audit des utilisateurs',
+      "authorization:user:assign-roles": 'Affecter des rôles aux utilisateurs',
       "system:security:update": 'Mettre à jour les paramètres de sécurité',
       "system:security:view": 'Afficher les paramètres de sécurité',
       "system:settings:update": 'Mettre à jour les paramètres',

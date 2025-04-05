@@ -250,6 +250,7 @@ export default {
       "authorization:user:update": "Benutzer aktualisieren",
       "authorization:user:view": "Benutzer anzeigen",
       "authorization:user:view_audit_logs": "Benutzerprüfprotokolle anzeigen",
+      "authorization:user:assign-roles": "Benutzerrollen zuweisen",
       "system:security:update": "Sicherheitseinstellungen aktualisieren",
       "system:security:view": "Sicherheitseinstellungen anzeigen",
       "system:settings:update": "Einstellungen aktualisieren",
