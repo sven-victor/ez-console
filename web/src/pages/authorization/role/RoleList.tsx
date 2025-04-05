@@ -48,6 +48,9 @@ const useStyle = createStyles(({ css }) => {
       .ant-form-item-additional>#policy_document_extra{
         min-height: 0;
       }
+      .ant-tree .ant-tree-node-content-wrapper{
+        flex: none;
+      }
     `,
     rolePermissionExtra: css`
       float: right;
