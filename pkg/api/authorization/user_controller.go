@@ -3,6 +3,8 @@ package authorizationapi
 import (
 	"errors"
 	"net/http"
+	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -197,16 +199,29 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 		})
 		return
 	}
-	if req.RoleIDs != nil {
-		middleware.RequirePermission("authorization:user:assign-roles")(ctx)
-		if ctx.IsAborted() {
-			return
-		}
-	}
 	user, err := c.service.GetUserByID(ctx, id, service.WithCache(true), service.WithRoles(true))
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5002", "Failed to get user", err))
 		return
+	}
+
+	if req.RoleIDs != nil {
+		newRoleIDs := w.Map(*req.RoleIDs, func(item string) string {
+			return item
+		})
+		oldRoleIDs := w.Map(user.Roles, func(role model.Role) string {
+			return role.ResourceID
+		})
+		sort.Strings(newRoleIDs)
+		sort.Strings(oldRoleIDs)
+		if slices.Equal(newRoleIDs, oldRoleIDs) {
+			req.RoleIDs = nil
+		} else {
+			middleware.RequirePermission("authorization:user:assign-roles")(ctx)
+			if ctx.IsAborted() {
+				return
+			}
+		}
 	}
 
 	// Use StartAudit to refactor audit log recording
