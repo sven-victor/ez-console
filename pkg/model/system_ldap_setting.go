@@ -20,6 +20,7 @@ const (
 	SettingLDAPClientCert      SettingKey = "ldap_client_cert"       // LDAP client certificate
 	SettingLDAPClientKey       SettingKey = "ldap_client_key"        // LDAP client key
 	SettingLDAPInsecure        SettingKey = "ldap_insecure"          // Whether to ignore certificates
+	SettingLDAPTimeout         SettingKey = "ldap_timeout"           // LDAP timeout
 )
 
 var LDAPSettingKeys = []SettingKey{
@@ -38,6 +39,7 @@ var LDAPSettingKeys = []SettingKey{
 	SettingLDAPClientCert,
 	SettingLDAPClientKey,
 	SettingLDAPInsecure,
+	SettingLDAPTimeout,
 }
 
 func init() {
