@@ -5,6 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
+
+	"github.com/go-kit/log/level"
+	"github.com/sven-victor/ez-utils/log"
 
 	clientsldap "github.com/sven-victor/ez-console/pkg/clients/ldap"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -29,6 +33,7 @@ func (s *SettingService) GetLDAPSettings(ctx context.Context) (clientsldap.Optio
 		EmailAttr:       "mail",
 		DisplayNameAttr: "displayName",
 		DefaultRole:     "user",
+		Timeout:         time.Second * 15,
 	}
 
 	var oauthSettingMap = map[string]any{}
@@ -39,6 +44,18 @@ func (s *SettingService) GetLDAPSettings(ctx context.Context) (clientsldap.Optio
 			switch name {
 			case "enabled", "auto_create_user", "start_tls", "insecure":
 				oauthSettingMap[name] = val == "1" || val == "true"
+			case "timeout":
+				if len(val) > 0 {
+					timeout, err := time.ParseDuration(val)
+					if err != nil {
+						level.Error(log.GetContextLogger(ctx)).Log("msg", "failed to parse ldap timeout", "error", err)
+						oauthSettingMap[name] = time.Second * 15
+					} else {
+						oauthSettingMap[name] = timeout
+					}
+				} else {
+					oauthSettingMap[name] = time.Second * 15
+				}
 			default:
 				oauthSettingMap[name] = val
 			}

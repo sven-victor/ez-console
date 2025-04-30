@@ -358,6 +358,7 @@ func NewConn(ctx context.Context, options Options) (*ldap.Conn, error) {
 			Err:      err,
 		}
 	}
+	ldapConn.SetTimeout(options.Timeout)
 	if options.StartTLS {
 		if err := ldapConn.StartTLS(&tlsConfig); err != nil {
 			return nil, util.ErrorResponse{

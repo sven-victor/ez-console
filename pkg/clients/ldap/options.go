@@ -2,6 +2,7 @@ package ldap
 
 import (
 	"fmt"
+	"time"
 
 	ldap "github.com/go-ldap/ldap/v3"
 	"github.com/sven-victor/ez-utils/safe"
@@ -24,6 +25,8 @@ type Options struct {
 	ClientCert      string       `json:"client_cert"`
 	ClientKey       *safe.String `json:"client_key,omitempty"`
 	Insecure        bool         `json:"insecure"`
+
+	Timeout time.Duration `json:"timeout"`
 }
 
 func (s *Options) BuildUserFilter(username string) string {
