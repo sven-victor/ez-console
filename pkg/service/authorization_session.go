@@ -10,12 +10,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
-	"github.com/sven-victor/ez-console/pkg/util/ip"
 	"github.com/sven-victor/ez-utils/safe"
 )
 
 // SessionService session service
-type SessionService struct{}
+type SessionService struct {
+	geoipService *GeoIPService
+}
 
 // SessionInfo session information
 type SessionInfo struct {
@@ -35,17 +36,12 @@ func (s *SessionService) DeleteSession(ctx context.Context, userID, token string
 
 // CreateSession creates a new session record
 func (s *SessionService) CreateSession(ctx context.Context, userID, token, ipAddress, userAgent string, expiredAt time.Time) (*model.Session, error) {
-
-	// Get geolocation information for IP address
-	location := ip.GetLocation(ipAddress)
-
 	// Create new session record
 	session := &model.Session{
 		UserID:       userID,
 		Token:        safe.NewHash(sha256.New, []byte(token)).HexString(64),
 		IPAddress:    ipAddress,
 		UserAgent:    userAgent,
-		Location:     location,
 		LastActiveAt: time.Now(),
 		ExpiredAt:    expiredAt,
 		IsValid:      true,
@@ -61,7 +57,7 @@ func (s *SessionService) CreateSession(ctx context.Context, userID, token, ipAdd
 }
 
 // GetUserSessions gets all sessions for a user
-func (s *SessionService) GetUserSessions(ctx context.Context, userID string, currentSessionID string) ([]SessionInfo, error) {
+func (s *SessionService) GetUserSessions(ctx context.Context, userID string, currentSessionID string, language string) ([]SessionInfo, error) {
 	var sessions []model.Session
 	if err := db.Session(ctx).Where("user_id = ? AND is_valid = ?", userID, true).Find(&sessions).Error; err != nil {
 		return nil, fmt.Errorf("failed to get session list: %w", err)
@@ -73,11 +69,13 @@ func (s *SessionService) GetUserSessions(ctx context.Context, userID string, cur
 			continue
 		}
 
+		location := s.geoipService.MustGetLocation(ctx, session.IPAddress, language)
+
 		sessionInfos = append(sessionInfos, SessionInfo{
 			ID:           session.ResourceID,
 			IPAddress:    session.IPAddress,
 			UserAgent:    session.UserAgent,
-			Location:     session.Location,
+			Location:     location,
 			CreatedAt:    session.CreatedAt,
 			LastActiveAt: session.LastActiveAt,
 			IsCurrent:    session.ResourceID == currentSessionID,

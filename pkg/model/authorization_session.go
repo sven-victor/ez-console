@@ -12,7 +12,6 @@ type Session struct {
 	Token        string    `gorm:"size:255;not null" json:"-"`
 	IPAddress    string    `gorm:"size:45" json:"ip_address"`
 	UserAgent    string    `gorm:"size:255" json:"user_agent"`
-	Location     string    `gorm:"size:100" json:"location"`
 	LastActiveAt time.Time `json:"last_active_at"`
 	ExpiredAt    time.Time `json:"expired_at"`
 	IsValid      bool      `gorm:"default:true" json:"is_valid"`

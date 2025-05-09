@@ -46,6 +46,7 @@ func initFlags(rootCmd *cobra.Command) {
 	serverFlagSet.String("server.write_timeout", "10s", "server write timeout")
 	serverFlagSet.String("server.shutdown_timeout", "10s", "server shutdown timeout")
 	serverFlagSet.String("server.file_upload_path", "./uploads", "server file upload path")
+	serverFlagSet.String("server.geoip_db_path", "", "GeoIP database path")
 	rootCmd.Flags().AddFlagSet(serverFlagSet)
 
 	databaseFlagSet := pflag.NewFlagSet("database", pflag.ExitOnError)
@@ -107,6 +108,10 @@ type Service interface {
 
 	FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error)
 	GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)
+
+	// GeoIP Service
+	GetLocation(ctx context.Context, ip string, language string) (string, error)
+	MustGetLocation(ctx context.Context, ip string, language string) string
 }
 
 func (c *CommandServer) GetService() Service {

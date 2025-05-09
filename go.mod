@@ -1,8 +1,8 @@
 module github.com/sven-victor/ez-console
 
-go 1.23.0
+go 1.24
 
-toolchain go1.23.4
+toolchain go1.24.4
 
 require (
 	github.com/gin-gonic/gin v1.10.0
@@ -22,6 +22,7 @@ require (
 	github.com/gogo/protobuf v1.3.2
 	github.com/google/uuid v1.6.0
 	github.com/mitchellh/mapstructure v1.5.0
+	github.com/oschwald/geoip2-golang/v2 v2.0.0-beta.2
 	github.com/pquerna/otp v1.4.0
 	github.com/prometheus/common v0.44.0
 	github.com/spf13/afero v1.12.0
@@ -91,6 +92,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/run v1.1.0 // indirect
+	github.com/oschwald/maxminddb-golang/v2 v2.0.0-beta.3 // indirect
 	github.com/paulmach/orb v0.11.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/pierrec/lz4/v4 v4.1.21 // indirect

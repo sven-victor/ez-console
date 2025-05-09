@@ -199,6 +199,10 @@ github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJ
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/oklog/run v1.1.0 h1:GEenZ1cK0+q0+wsJew9qUg/DyD8k3JzYsZAi5gYi2mA=
 github.com/oklog/run v1.1.0/go.mod h1:sVPdnTZT1zYwAJeCMu2Th4T21pA3FPOQRfWjQlk7DVU=
+github.com/oschwald/geoip2-golang/v2 v2.0.0-beta.2 h1:XSVB0yBAUAuasenfpVaF8Np47h9HVKWNlRevCdpCNVI=
+github.com/oschwald/geoip2-golang/v2 v2.0.0-beta.2/go.mod h1:4ISU8Yh+GhT3o1s/Q/36GxUXb6TN1HJeWCjx4ySwNpU=
+github.com/oschwald/maxminddb-golang/v2 v2.0.0-beta.3 h1:dIygR/m/ArKzJy5HFVlDpBOG0hju03T+567HxrRRAF4=
+github.com/oschwald/maxminddb-golang/v2 v2.0.0-beta.3/go.mod h1:JojXVel5ck1JzMiz32OVBfSk7lAtfSDUfzxIyVEuahM=
 github.com/paulmach/orb v0.11.1 h1:3koVegMC4X/WeiXYz9iswopaTwMem53NzTJuTF20JzU=
 github.com/paulmach/orb v0.11.1/go.mod h1:5mULz1xQfs3bmQm63QEJA6lNGujuRafwA5S/EnuLaLU=
 github.com/paulmach/protoscan v0.2.1/go.mod h1:SpcSwydNLrxUGSDvXvO0P7g7AuhJ7lcKfDlhJCDw2gY=

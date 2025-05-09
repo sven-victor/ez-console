@@ -17,23 +17,27 @@ type Service struct {
 	*FileService
 	*StatsService
 	*BaseService
+	*GeoIPService
 }
 
 type BaseService struct {
 	*CacheService
 	*SettingService
 	*EmailService
+	*GeoIPService
 }
 
 func NewService(ctx context.Context) *Service {
 
 	// Create settings service first, as user service depends on it
 	settingService := NewSettingService()
+	geoipService := NewGeoIPService(ctx)
 
 	baseService := &BaseService{
 		CacheService:   new(CacheService),
 		SettingService: settingService,
 		EmailService:   &EmailService{settingService: settingService},
+		GeoIPService:   geoipService,
 	}
 	ldapService := NewLDAPService(ctx, baseService)
 	userService := NewUserService(baseService, ldapService)
@@ -49,7 +53,7 @@ func NewService(ctx context.Context) *Service {
 		RoleService:           new(RoleService),
 		SystemService:         NewSystemService(baseService),
 		OAuthService:          oauthService,
-		SessionService:        new(SessionService),
+		SessionService:        &SessionService{geoipService: geoipService},
 		CacheService:          new(CacheService),
 		AuditLogService:       new(AuditLogService),
 		SettingService:        settingService,

@@ -728,7 +728,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 			if loginResponseData.User.ResourceID != "" {
 				auditLog.UserID = loginResponseData.User.ResourceID
 			}
-			_, err = c.service.CreateSession(ctx, loginResponseData.User.ResourceID, loginResponseData.Token, "", "", loginResponseData.ExpiresAt)
+			_, err = c.service.CreateSession(ctx, loginResponseData.User.ResourceID, loginResponseData.Token, ctx.ClientIP(), ctx.Request.UserAgent(), loginResponseData.ExpiresAt)
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to create session record", "err", err.Error())
 			}

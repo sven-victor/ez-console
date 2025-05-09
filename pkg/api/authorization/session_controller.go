@@ -46,11 +46,16 @@ func (c *SessionController) GetUserSessions(ctx *gin.Context) {
 		return
 	}
 
+	language := ctx.GetHeader("Accept-Language")
+	if language == "" {
+		language = "en-US"
+	}
+
 	// Get current session ID
 	currentSessionID := c.service.GetCurrentSessionID(ctx)
 
 	// Call service to get session list
-	sessions, err := c.service.GetUserSessions(ctx, user.ResourceID, currentSessionID)
+	sessions, err := c.service.GetUserSessions(ctx, user.ResourceID, currentSessionID, language)
 	if err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
 			HTTPCode: http.StatusInternalServerError,
