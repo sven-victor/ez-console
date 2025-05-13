@@ -158,15 +158,11 @@ const Login: React.FC = () => {
       default:
         return null;
     }
-
-
   };
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const provider = searchParams.get('provider');
-  if (code && state && provider) {
-    return <Loading />
-  }
+
 
   useEffect(() => {
     const fetchSiteConfig = async () => {
@@ -179,7 +175,7 @@ const Login: React.FC = () => {
     fetchSiteConfig()
   }, [])
 
-  if (!siteConfig) {
+  if ((code && state && provider) || !siteConfig) {
     return <Loading />
   }
 
