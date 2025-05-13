@@ -436,6 +436,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 	if len(result.Entries) > 1 {
 		return nil, util.NewError("E50016", "found multiple users with the same user filter, please contact the administrator", errors.New("found multiple users with the same user filter, please contact the administrator"))
 	}
+	allowChangePassword, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
 
 	// Get user information
 	entry := result.Entries[0]
@@ -451,6 +452,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 			CreatedAt:  util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("createTimestamp")),
 			UpdatedAt:  util.SafeParseTime("20060102150405Z", entry.GetAttributeValue("modifyTimestamp")),
 		},
+		DisableChangePassword: !allowChangePassword,
 	}
 
 	conn := db.Session(ctx)

@@ -158,6 +158,7 @@ namespace API {
     oauth_id?: string;
     source?: string;
     ldap_dn?: string;
+    disable_change_password?: boolean;
   }
 
   export interface PolicyDocument {

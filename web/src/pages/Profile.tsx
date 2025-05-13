@@ -47,6 +47,7 @@ const Profile: React.FC = () => {
     {
       key: 'password',
       label: t('profile.password', { defaultValue: 'Password' }),
+      disabled: user?.disable_change_password,
       children: <ProfilePassword />
     },
     {

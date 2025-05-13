@@ -48,6 +48,8 @@ type User struct {
 	Roles             []Role       `gorm:"many2many:user_roles;" json:"roles,omitempty"`
 	MFAEnforced       bool         `gorm:"default:false" json:"mfa_enforced"`
 	Source            UserSource   `gorm:"size:20;not null;default:'local'" json:"source,omitempty"`
+
+	DisableChangePassword bool `gorm:"-" json:"disable_change_password"`
 }
 
 // SetPassword sets the user's password, automatically generating a salt and encrypting it
@@ -132,4 +134,8 @@ func (u *User) HasRole(roleName string) bool {
 // IsActive checks if the user is active
 func (u *User) IsActive() bool {
 	return u.Status == UserStatusActive && !u.IsLocked()
+}
+
+func (u *User) IsLDAPUser() bool {
+	return u.Source == UserSourceLDAP && u.LDAPDN != ""
 }

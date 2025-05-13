@@ -118,6 +118,12 @@ func (c *UserController) GetUser(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5002", "Failed to get user", err))
 		return
 	}
+	if user.IsLDAPUser() {
+		allowChangePassword, _ := c.service.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
+		if !allowChangePassword {
+			passwordExpiryDays = 0
+		}
+	}
 	if user.IsDeleted() {
 		user.Status = model.UserStatusDeleted
 	} else if user.IsLocked() {
@@ -505,6 +511,10 @@ func (c *UserController) GetCurrentUser(ctx *gin.Context) {
 			Err:      errors.New("failed to get user info"),
 		})
 		return
+	}
+	if user.IsLDAPUser() {
+		allowChangePassword, _ := c.service.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
+		user.DisableChangePassword = !allowChangePassword
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{

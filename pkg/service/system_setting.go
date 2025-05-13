@@ -185,6 +185,11 @@ var defaultSettings = []DefaultSetting{
 		Value:   "/logo.png",
 		Comment: "System Logo URL",
 	},
+	{
+		Key:     model.SettingLDAPAllowManageUserPassword,
+		Value:   "true",
+		Comment: "Allow manage user password",
+	},
 }
 
 func RegisterDefaultSettings(ctx context.Context, key model.SettingKey, value, comment string) error {

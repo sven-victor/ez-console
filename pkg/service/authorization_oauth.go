@@ -154,6 +154,7 @@ func (s *OAuthService) GetLoginURL(ctx context.Context, provider string) (*OAuth
 
 // HandleCallback handles OAuth callback
 func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequest) (*LoginResponse, error) {
+	logger := log.GetContextLogger(ctx)
 	oauth2Config := w.Find(s.GetOAuth2ProviderConfig(ctx), func(cfg OAuth2ProviderConfig) bool {
 		return cfg.Name == req.Provider
 	})
@@ -163,6 +164,7 @@ func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequ
 	// Verify OAuth callback, get token
 	token, err := oauth2Config.Exchange(ctx, req.Code)
 	if err != nil {
+		level.Error(logger).Log("msg", "Failed to exchange token", "err", err.Error())
 		return nil, fmt.Errorf("invalid token: %w", err)
 	}
 

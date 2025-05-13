@@ -399,7 +399,8 @@ const UserList: React.FC = () => {
           key: 'resetPassword',
           permission: "authorization:user:resetPassword",
           icon: <KeyOutlined />,
-          tooltip: t('user.resetPassword', { defaultValue: 'Reset Password' }),
+          disabled: record.disable_change_password,
+          tooltip: record.disable_change_password ? t('user.resetPasswordDisabled', { defaultValue: 'The current system prohibits modifying the password of this user.' }) : t('user.resetPassword', { defaultValue: 'Reset Password' }),
           hidden: !((record.source === 'local' || (record.source === 'ldap' && record.ldap_dn)) && record.status !== 'deleted'),
           onClick: () => handleResetPassword(record.id, record.username, record.email),
         }, {
@@ -419,6 +420,7 @@ const UserList: React.FC = () => {
             title: t('user.restoreConfirm', { defaultValue: 'Are you sure you want to restore this user?' }),
             onConfirm: () => handleRestore(record.id),
           }
+
         }, {
           key: 'delete',
           permission: "authorization:user:delete",

@@ -297,10 +297,18 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 	if err != nil {
 		return nil, errors.New("failed to generate token")
 	}
+
+	passwordExpiryDays := securitySettings.PasswordExpiryDays
+	if user.IsLDAPUser() {
+		allowChangePassword, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
+		if !allowChangePassword {
+			passwordExpiryDays = 0
+		}
+	}
 	return &LoginResponse{
 		Token:           token,
 		User:            *user,
-		PasswordExpired: user.Status == model.UserStatusPasswordExpired || (securitySettings.PasswordExpiryDays > 0 && user.IsPasswordExpired(securitySettings.PasswordExpiryDays)),
+		PasswordExpired: user.Status == model.UserStatusPasswordExpired || (passwordExpiryDays > 0 && user.IsPasswordExpired(passwordExpiryDays)),
 		ExpiresAt:       time.Now().Add(time.Duration(securitySettings.SessionTimeoutMinutes) * time.Minute),
 	}, nil
 }
@@ -474,12 +482,19 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 	if user.MFAEnforced && !user.MFAEnabled {
 		user.Roles = []model.Role{}
 	}
+	passwordExpiryDays := securitySettings.PasswordExpiryDays
+	if user.IsLDAPUser() {
+		allowChangePassword, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
+		if !allowChangePassword {
+			passwordExpiryDays = 0
+		}
+	}
 	// Return login result
 	return &LoginResponse{
 		Token:           token,
 		User:            *user,
 		NeedsMFA:        false,
-		PasswordExpired: user.Status == model.UserStatusPasswordExpired || (securitySettings.PasswordExpiryDays > 0 && user.IsPasswordExpired(securitySettings.PasswordExpiryDays)),
+		PasswordExpired: user.Status == model.UserStatusPasswordExpired || (passwordExpiryDays > 0 && user.IsPasswordExpired(passwordExpiryDays)),
 		ExpiresAt:       time.Now().Add(time.Duration(securitySettings.SessionTimeoutMinutes) * time.Minute),
 	}, nil
 }
@@ -725,16 +740,27 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 		}
 	}
 	ldapDNs := w.Map(w.Filter(users, func(user model.User) bool {
-		return user.Source == model.UserSourceLDAP && user.LDAPDN != ""
+		return user.IsLDAPUser()
 	}), func(user model.User) string {
 		return user.LDAPDN
 	})
 
+	allowChangePassword, err := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
+	if err != nil {
+		return nil, 0, fmt.Errorf("failed to get LDAP allow change password: %w", err)
+	}
 	settings, err := s.baseService.GetLDAPSettings(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get LDAP settings: %w", err)
 	}
 	if settings.Enabled {
+		if !allowChangePassword {
+			for i, user := range users {
+				if user.IsLDAPUser() {
+					users[i].DisableChangePassword = true
+				}
+			}
+		}
 		ldapSession, err := s.ldapService.GetLDAPSession(ctx)
 		if err != nil {
 			return nil, 0, fmt.Errorf("failed to get LDAP session: %w", err)
@@ -754,6 +780,7 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 			if err != nil {
 				continue
 			}
+
 			if len(result.Entries) == 0 {
 				continue
 			}
@@ -773,17 +800,20 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 				}
 			}
 		}
-		users = w.Map(users, func(user model.User) model.User {
-			if user.IsDeleted() {
-				user.Status = model.UserStatusDeleted
-			} else if user.IsLocked() {
-				user.Status = model.UserStatusLocked
-			} else if user.IsPasswordExpired(passwordExpiryDays) {
+	}
+	users = w.Map(users, func(user model.User) model.User {
+		if user.IsDeleted() {
+			user.Status = model.UserStatusDeleted
+		} else if user.IsLocked() {
+			user.Status = model.UserStatusLocked
+		} else if (user.IsLDAPUser() && allowChangePassword) || (!user.IsLDAPUser()) {
+			if user.IsPasswordExpired(passwordExpiryDays) {
 				user.Status = model.UserStatusPasswordExpired
 			}
-			return user
-		})
-	}
+		}
+		return user
+	})
+
 	return users, total, nil
 }
 
@@ -915,6 +945,7 @@ func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 
 // ChangePassword changes the user's password
 func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangePasswordRequest) error {
+	logger := log.GetContextLogger(ctx)
 	dbConn := db.Session(ctx)
 	var ldapSession clientsldap.Conn
 
@@ -935,6 +966,10 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 		if err != nil {
 			return fmt.Errorf("failed to get LDAP settings: %w", err)
 		}
+		if user.LDAPDN == "" {
+			level.Error(logger).Log("msg", "user is LDAP user but LDAPDN is empty", "user_id", user.ResourceID)
+			return util.NewError("E40032", "old password is incorrect")
+		}
 		loginConn, err := clientsldap.NewConn(ctx, settings)
 		if err != nil {
 			return fmt.Errorf("failed to create LDAP connection: %w", err)
@@ -944,6 +979,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 		// Try to bind with user credentials
 		userDN := user.LDAPDN
 		if err := loginConn.Bind(userDN, req.OldPassword); err != nil {
+			level.Error(logger).Log("msg", "failed to bind with user credentials", "user_id", user.ResourceID, "error", err)
 			return util.NewError("E40032", "old password is incorrect")
 		}
 		ldapSession, err = s.ldapService.GetLDAPSession(ctx)
@@ -1044,13 +1080,20 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 			return fmt.Errorf("save user info failed: %w", err)
 		}
 		// If user is LDAP user, update LDAP password
-		if user.Source == model.UserSourceLDAP {
+		if user.IsLDAPUser() {
+			if ok, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false); !ok {
+				return util.NewError("E40037", "The current system prohibits modifying LDAP user passwords.")
+			}
 			hashedPassword, err := util.Sha256CryptPassword("{CRYPT}", req.NewPassword)
 			if err != nil {
 				return fmt.Errorf("failed to hash password: %w", err)
 			}
 			modifyRequest := ldap.NewModifyRequest(user.LDAPDN, nil)
 			modifyRequest.Replace("userPassword", []string{hashedPassword})
+			if ldapSession == nil {
+				level.Error(logger).Log("msg", "failed to modify LDAP password: LDAP session is nil", "user_id", user.ResourceID)
+				return util.NewError("E50037", "The current system prohibits modifying LDAP user passwords.")
+			}
 			if err := ldapSession.Modify(modifyRequest); err != nil {
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
 			}
@@ -1062,6 +1105,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 
 // ResetPassword resets the user's password (administrator operation)
 func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassword string) (sendEmail bool, err error) {
+	logger := log.GetContextLogger(ctx)
 	dbConn := db.Session(ctx)
 	var user model.User
 	if err := dbConn.Where("resource_id = ?", userID).First(&user).Error; err != nil {
@@ -1112,6 +1156,13 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 		}
 		// If user is LDAP user, update LDAP password
 		if user.Source == model.UserSourceLDAP {
+			if user.LDAPDN == "" {
+				level.Error(logger).Log("msg", "user is LDAP user but LDAPDN is empty", "user_id", user.ResourceID)
+				return util.NewError("E40037", "The user is not found in LDAP.")
+			}
+			if ok, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false); !ok {
+				return util.NewError("E40037", "The current system prohibits modifying LDAP user passwords.")
+			}
 			ldapSession, err := s.ldapService.GetLDAPSession(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to get LDAP session: %w", err)

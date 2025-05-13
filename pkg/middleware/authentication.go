@@ -344,10 +344,16 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 			util.RespondWithError(c, util.NewError("E4012", "System configuration error", err))
 			return
 		}
+
+		if user.IsLDAPUser() {
+			allowChangePassword, _ := settingService.GetBoolSetting(c, model.SettingLDAPAllowManageUserPassword, false)
+			if !allowChangePassword {
+				passwordExpiryDays = 0
+			}
+		}
 		// When the user is not locked, and the password has expired, clear the user's roles/permissions,
 		if !user.IsLocked() && user.Status == model.UserStatusPasswordExpired || (passwordExpiryDays > 0 && user.IsPasswordExpired(passwordExpiryDays)) {
 			user.Roles = nil
-
 		} else if !user.IsActive() { // Check user status
 			util.RespondWithError(c, util.ErrorResponse{
 				HTTPCode: http.StatusUnauthorized,
