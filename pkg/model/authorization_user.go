@@ -27,8 +27,8 @@ const (
 // User represents a user account in the system
 type User struct {
 	Base
-	Username          string       `gorm:"uniqueIndex;size:50;not null" json:"username"`
-	Email             string       `gorm:"uniqueIndex;size:100;not null" json:"email"`
+	Username          string       `gorm:"size:50;not null" json:"username"`
+	Email             string       `gorm:"size:100;not null" json:"email"`
 	FullName          string       `gorm:"size:100;not null" json:"full_name"`
 	Password          string       `gorm:"size:255;not null" json:"-"`
 	Salt              string       `gorm:"size:32;not null" json:"-"`

@@ -38,7 +38,29 @@ type UserService struct {
 }
 
 // NewUserService creates a user service
-func NewUserService(baseService *BaseService, ldapService *LDAPService) *UserService {
+func NewUserService(ctx context.Context, baseService *BaseService, ldapService *LDAPService) *UserService {
+	{
+		logger := log.GetContextLogger(ctx)
+		// create Username+deleteAt index
+		conn := db.Session(ctx)
+		if !conn.Migrator().HasIndex(&model.User{}, "idx_t_user_username_deleteat") {
+			level.Info(logger).Log("msg", "Creating index idx_t_user_username_deleteat")
+			conn.Exec("CREATE UNIQUE INDEX idx_t_user_username_deleteat ON t_user (username, deleted_at)")
+		}
+		if conn.Migrator().HasIndex(&model.User{}, "idx_t_user_username") {
+			level.Info(logger).Log("msg", "Dropping index idx_t_user_username")
+			conn.Exec("DROP INDEX idx_t_user_username")
+		}
+		// create email+deleteAt index
+		if !conn.Migrator().HasIndex(&model.User{}, "idx_t_user_email_deleteat") {
+			level.Info(logger).Log("msg", "Creating index idx_t_user_email_deleteat")
+			conn.Exec("CREATE INDEX idx_t_user_email_deleteat ON t_user (email, deleted_at)")
+		}
+		if conn.Migrator().HasIndex(&model.User{}, "idx_t_user_email") {
+			level.Info(logger).Log("msg", "Dropping index idx_t_user_email")
+			conn.Exec("DROP INDEX idx_t_user_email")
+		}
+	}
 	return &UserService{
 		baseService: baseService,
 		ldapService: ldapService,

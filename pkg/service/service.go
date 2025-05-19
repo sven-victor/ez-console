@@ -40,7 +40,7 @@ func NewService(ctx context.Context) *Service {
 		GeoIPService:   geoipService,
 	}
 	ldapService := NewLDAPService(ctx, baseService)
-	userService := NewUserService(baseService, ldapService)
+	userService := NewUserService(ctx, baseService, ldapService)
 	// Create OAuth service and initialize it
 	oauthService := &OAuthService{
 		BaseService: baseService,
