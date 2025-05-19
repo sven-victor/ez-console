@@ -24,6 +24,13 @@ const (
 	SettingOAuthIconURL          SettingKey = "oauth_icon_url"          // OAuth icon URL
 	SettingOAuthDisplayName      SettingKey = "oauth_display_name"      // OAuth display name
 	SettingOAuthMFAEnabled       SettingKey = "oauth_mfa_enabled"       // Whether to enable MFA for OAuth authentication
+
+	SettingOAuthWellknownEndpoint SettingKey = "oauth_wellknown_endpoint" // OAuth wellknown endpoint
+	SettingOAuthJWKsURI           SettingKey = "oauth_jwks_uri"           // OAuth JWKs URL
+	SettingOAuthIssuer            SettingKey = "oauth_issuer"             // OAuth issuer
+	SettingOAuthVerifyToken       SettingKey = "oauth_verify_token"       // Whether to verify token
+	SettingOAuthVerifyNonce       SettingKey = "oauth_verify_nonce"       // Whether to verify nonce
+	SettingOAuthCodeVerifier      SettingKey = "oauth_code_verifier"      // Whether to verify PKCE
 )
 
 var OAuthSettingKeys = []SettingKey{
@@ -46,6 +53,9 @@ var OAuthSettingKeys = []SettingKey{
 	SettingOAuthAvatarField,
 	SettingOAuthRoleField,
 	SettingOAuthMFAEnabled,
+	SettingOAuthWellknownEndpoint,
+	SettingOAuthJWKsURI,
+	SettingOAuthIssuer,
 }
 
 func init() {
@@ -61,6 +71,8 @@ const (
 	OAuthProviderDingtalk OAuthProvider = "dingtalk" // DingTalk
 	OAuthProviderWeChat   OAuthProvider = "wechat"   // WeChat
 	OAuthProviderCustom   OAuthProvider = "custom"   // Custom
+
+	OAuthProviderAutoDiscover OAuthProvider = "autoDiscover" // Auto Discover
 )
 
 // OAuthSettings OAuth settings request and response structure
@@ -84,4 +96,8 @@ type OAuthSettings struct {
 	IconURL          string        `json:"icon_url"`     // Provider icon URL
 	DisplayName      string        `json:"display_name"` // Provider display name
 	MFAEnabled       bool          `json:"mfa_enabled"`
+
+	WellknownEndpoint string `json:"wellknown_endpoint"`
+	JWKsURI           string `json:"jwks_uri"`
+	Issuer            string `json:"issuer"`
 }

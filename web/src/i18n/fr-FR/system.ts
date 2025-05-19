@@ -76,6 +76,17 @@ export default {
       },
     },
     oauth: {
+      testConnection: {
+        button: 'Tester la connexion',
+        failed: 'Test de connexion échoué: {{error}}',
+        success: 'Test de connexion réussi',
+        callbackFailed: 'Test de connexion échoué',
+        missingRequiredParameters: 'Veuillez entrer les paramètres requis',
+        responseUserInfoIsNull: 'Les informations utilisateur sont nulles',
+        responseUserIsNull: 'L\'utilisateur est nul',
+        oauthUserInfo: 'Informations utilisateur OAuth',
+        loginUserInfo: 'Informations utilisateur de connexion',
+      },
       enabled: {
         label: 'Activer l\'authentification OAuth2.0',
         tooltip: 'Lorsque cette option est activée, les utilisateurs peuvent se connecter à l\'aide de services OAuth tiers',
@@ -88,6 +99,7 @@ export default {
           google: 'Google',
           dingtalk: 'DingTalk',
           wechat: 'WeChat',
+          autoDiscover: 'Auto Discover',
           custom: 'Personnalisé',
         },
         required: 'Veuillez sélectionner un fournisseur OAuth',
@@ -101,6 +113,13 @@ export default {
         label: 'Secret client',
         tooltip: 'Secret client de l\'application OAuth',
         required: 'Veuillez saisir le secret client',
+        unchanged: 'Ne pas modifier',
+      },
+      wellknownEndpoint: {
+        label: 'Point de terminaison Wellknown',
+        tooltip: 'URL du point de terminaison Wellknown du service OAuth',
+        required: 'Veuillez saisir l\'URL du point de terminaison Wellknown',
+        invalidUrl: 'Veuillez saisir une URL valide',
       },
       authEndpoint: {
         label: 'Point de terminaison d\'autorisation',

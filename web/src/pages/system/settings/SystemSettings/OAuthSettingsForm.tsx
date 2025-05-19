@@ -3,7 +3,7 @@ import { Form, Switch, Select, Input, Button, Space, message, Spin, Divider, Ale
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getOAuthSettings, updateOAuthSettings } from '@/api/system';
+import { getOAuthSettings, updateOAuthSettings, testOAuthConnection } from '@/api/system';
 
 // URL format regular expression
 const URL_PATTERN = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/;
@@ -95,9 +95,9 @@ const PROVIDER_FIELD_MAPPINGS = {
 const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRefresh }) => {
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<API.OAuthSettings>();
   const [currentProvider, setCurrentProvider] = useState<string>(initialData?.provider || 'custom');
-  const [showCustomFields, setShowCustomFields] = useState<boolean>(initialData?.provider === 'custom');
+  const [showCustomFields, setShowCustomFields] = useState<boolean>(initialData?.provider === 'custom' || initialData?.provider === 'autoDiscover');
   const [isEnabled, setIsEnabled] = useState<boolean>(initialData?.enabled || false);
   const [autoCreateUser, setAutoCreateUser] = useState<boolean>(initialData?.auto_create_user || false);
 
@@ -107,7 +107,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
     onSuccess: (data) => {
       form.setFieldsValue(data);
       setCurrentProvider(data.provider);
-      setShowCustomFields(data.provider === 'custom');
+      setShowCustomFields(data.provider === 'custom' || data.provider === 'autoDiscover');
       setIsEnabled(data.enabled);
       setAutoCreateUser(data.auto_create_user);
     },
@@ -122,7 +122,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
     if (initialData) {
       form.setFieldsValue(initialData);
       setCurrentProvider(initialData.provider);
-      setShowCustomFields(initialData.provider === 'custom');
+      setShowCustomFields(initialData.provider === 'custom' || initialData.provider === 'autoDiscover');
       setIsEnabled(initialData.enabled);
       setAutoCreateUser(initialData.auto_create_user);
     }
@@ -131,7 +131,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
   // Handle provider change
   const handleProviderChange = (value: string) => {
     setCurrentProvider(value);
-    setShowCustomFields(value === 'custom');
+    setShowCustomFields(value === 'custom' || value === 'autoDiscover');
 
     // Auto-fill preset values based on the selected provider
     const providerConfig = PROVIDER_FIELD_MAPPINGS[value as keyof typeof PROVIDER_FIELD_MAPPINGS];
@@ -194,6 +194,27 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
     }
   };
 
+  const { loading: testConnectionLoading, run: handleTestConnection } = useRequest(async ({ redirect_uri, ...values }: API.OAuthSettings) => {
+    let testRedirectURI: URL;
+    if (redirect_uri) {
+      testRedirectURI = new URL(redirect_uri);
+    } else {
+      testRedirectURI = new URL(window.location.origin);
+    }
+    testRedirectURI.pathname = '/console/system/settings/oauth/test-callback';
+    testRedirectURI.searchParams.set('provider', currentProvider);
+    return testOAuthConnection({ redirect_uri: testRedirectURI.toString(), ...values });
+  }, {
+    manual: true,
+    onSuccess: ({ url }) => {
+      window.open(url, '_blank');
+    },
+    onError: (error) => {
+      message.error(t('settings.oauth.testConnection.failed', { defaultValue: 'Failed to test connection: {{error}}', error: error.message }));
+      console.error('Failed to test OAuth connection', error);
+    }
+  });
+
   // Determine whether to display endpoint fields
   const shouldShowEndpoints = () => {
     return currentProvider === 'custom';
@@ -234,6 +255,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
             <Select.Option value="google">{t('settings.oauth.provider.options.google', { defaultValue: 'Google' })}</Select.Option>
             <Select.Option value="dingtalk">{t('settings.oauth.provider.options.dingtalk', { defaultValue: 'DingTalk' })}</Select.Option>
             <Select.Option value="wechat">{t('settings.oauth.provider.options.wechat', { defaultValue: 'WeChat' })}</Select.Option>
+            <Select.Option value="autoDiscover">{t('settings.oauth.provider.options.autoDiscover', { defaultValue: 'Auto Discover' })}</Select.Option>
             <Select.Option value="custom">{t('settings.oauth.provider.options.custom', { defaultValue: 'Custom' })}</Select.Option>
           </Select>
         </Form.Item>
@@ -292,7 +314,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
             }
           ]}
         >
-          <Input.Password disabled={!isEnabled} visibilityToggle={false} placeholder={t('settings.oauth.clientSecret.unchanged', { defaultValue: 'Leave blank to keep unchanged' })} />
+          <Input.Password disabled={!isEnabled} autoComplete="off" visibilityToggle={false} placeholder={t('settings.oauth.clientSecret.unchanged', { defaultValue: 'Leave blank to keep unchanged' })} />
         </Form.Item>
 
         {/* Authentication Endpoint - Only show when custom provider */}
@@ -315,7 +337,24 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
             <Input disabled={!isEnabled} />
           </Form.Item>
         )}
-
+        <Form.Item
+          name="wellknown_endpoint"
+          hidden={currentProvider !== 'autoDiscover'}
+          label={t('settings.oauth.wellknownEndpoint.label', { defaultValue: 'Wellknown Endpoint' })}
+          tooltip={t('settings.oauth.wellknownEndpoint.tooltip', { defaultValue: 'The wellknown endpoint URL of the OAuth provider.' })}
+          rules={[
+            {
+              pattern: URL_PATTERN,
+              message: t('settings.oauth.wellknownEndpoint.invalidUrl', { defaultValue: 'Please enter a valid URL.' })
+            },
+            {
+              required: isEnabled && currentProvider === 'autoDiscover',
+              message: t('settings.oauth.wellknownEndpoint.required', { defaultValue: 'Wellknown Endpoint is required.' })
+            },
+          ]}
+        >
+          <Input disabled={!isEnabled} />
+        </Form.Item>
         {/* Token Endpoint - Only show when custom provider */}
         {shouldShowEndpoints() && (
           <Form.Item
@@ -378,18 +417,17 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
           name="redirect_uri"
           label={t('settings.oauth.redirectUri.label', { defaultValue: 'Redirect URI' })}
           tooltip={t('settings.oauth.redirectUri.tooltip', { defaultValue: 'The Redirect URI registered with the OAuth provider. This should match the one configured in your application.' })}
-          rules={[
-            {
-              required: isEnabled,
-              message: t('settings.oauth.redirectUri.required', { defaultValue: 'Redirect URI is required.' })
-            },
-            {
-              pattern: URL_PATTERN,
-              message: t('settings.oauth.redirectUri.invalidUrl', { defaultValue: 'Please enter a valid URL.' })
+          rules={[(form) => {
+            if (form.getFieldValue('redirect_uri') !== '') {
+              return {
+                pattern: URL_PATTERN,
+                message: t('settings.oauth.redirectUri.invalidUrl', { defaultValue: 'Please enter a valid URL.' })
+              }
             }
-          ]}
+            return { required: false }
+          }]}
         >
-          <Input disabled={!isEnabled} />
+          <Input disabled={!isEnabled} placeholder={`http://${window.location.host}/console/login?provider=settings.${currentProvider}`} />
         </Form.Item>
 
         {/* Auto Create User */}
@@ -444,7 +482,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
           label={t('settings.oauth.fieldMapping.usernameField.label', { defaultValue: 'Username Field' })}
           tooltip={t('settings.oauth.fieldMapping.usernameField.tooltip', { defaultValue: 'The field name in the user info response that contains the username. (e.g., login, sub)' })}
         >
-          <Input placeholder="login" disabled={!isEnabled || !showCustomFields} />
+          <Input placeholder="login" autoComplete="off" disabled={!isEnabled || !showCustomFields} />
         </Form.Item>
 
         {/* Full Name Field */}
@@ -484,6 +522,15 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
               icon={<SaveOutlined />}
             >
               {tCommon('save', { defaultValue: 'Save' })}
+            </Button>
+            <Button
+              loading={testConnectionLoading}
+              onClick={async () => {
+                const values = form.getFieldsValue();
+                handleTestConnection(values);
+              }}
+            >
+              {t('settings.oauth.testConnection.button', { defaultValue: 'Test Connection' })}
             </Button>
             <Button
               onClick={handleRefresh}

@@ -7,11 +7,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
+	keyfunc "github.com/MicahParks/keyfunc/v3"
+	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/sven-victor/ez-utils/log"
+	"github.com/sven-victor/ez-utils/safe"
 	w "github.com/sven-victor/ez-utils/wrapper"
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
@@ -43,18 +48,119 @@ type OAuthCallbackRequest struct {
 }
 
 type OAuth2ProviderConfig struct {
-	oauth2.Config
-	Name           string
-	DisplayName    string
-	UserInfoURL    string
-	EmailField     string
-	UsernameField  string
-	FullNameField  string
-	AvatarField    string
-	RoleField      string
-	DefaultRole    string
-	AutoCreateUser bool
-	IconURL        string
+	model.OAuthSettings
+	Name         string `json:"name"`
+	Nonce        string `json:"nonce"`
+	CodeVerifier string `json:"code_verifier"`
+}
+
+func (c *OAuth2ProviderConfig) AuthCodeURL(state, nonce, codeChallenge string, opts ...oauth2.AuthCodeOption) string {
+	oauth2Config := &oauth2.Config{
+		ClientID:    c.ClientID,
+		RedirectURL: c.RedirectURI,
+		Scopes:      strings.Split(c.Scope, " "),
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  c.AuthEndpoint,
+			TokenURL: c.TokenEndpoint,
+		},
+	}
+
+	opts = append(opts, oauth2.SetAuthURLParam("nonce", nonce))
+	opts = append(opts, oauth2.S256ChallengeOption(codeChallenge))
+	return oauth2Config.AuthCodeURL(state, opts...)
+}
+
+func (c *OAuth2ProviderConfig) Exchange(ctx context.Context, code string) (*oauth2.Token, error) {
+	logger := log.GetContextLogger(ctx)
+	var clientSecret string
+	if c.ClientSecret != nil {
+		var err error
+		clientSecret, err = c.ClientSecret.UnsafeString()
+		if err != nil {
+			return nil, err
+		}
+	}
+	oauth2Config := &oauth2.Config{
+		ClientID:     c.ClientID,
+		ClientSecret: clientSecret,
+		RedirectURL:  c.RedirectURI,
+		Scopes:       strings.Split(c.Scope, " "),
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  c.AuthEndpoint,
+			TokenURL: c.TokenEndpoint,
+		},
+	}
+
+	var opts []oauth2.AuthCodeOption
+	if c.CodeVerifier != "" {
+		opts = append(opts, oauth2.VerifierOption(c.CodeVerifier))
+	}
+
+	token, err := oauth2Config.Exchange(ctx, code, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	var aToken *jwt.Token
+	if c.JWKsURI != "" {
+		k, err := keyfunc.NewDefaultCtx(ctx, []string{c.JWKsURI})
+		if err != nil {
+			level.Error(logger).Log("msg", "Failed to get JWKs", "err", err.Error())
+			return nil, err
+		}
+		aToken, err = jwt.Parse(token.AccessToken, k.Keyfunc)
+		if err != nil {
+			level.Error(logger).Log("msg", "Failed to parse token with JWKs", "err", err.Error())
+			return nil, err
+		}
+		if !aToken.Valid {
+			return nil, errors.New("invalid token")
+		}
+	}
+
+	if c.Issuer != "" {
+		if aToken == nil {
+			aToken, _, err = jwt.NewParser().ParseUnverified(token.AccessToken, jwt.MapClaims{})
+			if err != nil {
+				level.Error(logger).Log("msg", "Failed to parse token", "err", err.Error())
+				return nil, err
+			}
+		}
+		issuer, err := aToken.Claims.GetIssuer()
+		if err != nil {
+			level.Error(logger).Log("msg", "Failed to get issuer", "err", err.Error())
+			return nil, fmt.Errorf("invalid token: invalid issuer: %w", err)
+		}
+		if issuer != c.Issuer {
+			level.Error(logger).Log("msg", "Invalid token", "issuer", issuer, "expected", c.Issuer)
+			return nil, fmt.Errorf("invalid token: invalid issuer: %s", issuer)
+		}
+	}
+
+	if c.Nonce != "" {
+		if rawIDToken, ok := token.Extra("id_token").(string); ok {
+			idToken, _, err := jwt.NewParser().ParseUnverified(rawIDToken, jwt.MapClaims{})
+			if err != nil {
+				level.Error(logger).Log("msg", "Failed to parse id token", "err", err.Error())
+				return nil, err
+			}
+			claims, ok := idToken.Claims.(jwt.MapClaims)
+			if !ok {
+				level.Error(logger).Log("msg", "Invalid id token claims")
+				return nil, errors.New("invalid token")
+			}
+			nonce, ok := claims["nonce"].(string)
+			if !ok {
+				level.Error(logger).Log("msg", "Invalid id token nonce")
+				return nil, errors.New("invalid token")
+			}
+			if nonce != c.Nonce {
+				level.Error(logger).Log("msg", "Invalid id token nonce", "nonce", nonce, "expected", c.Nonce)
+				return nil, fmt.Errorf("invalid token: invalid nonce: %s", nonce)
+			}
+		}
+	}
+	return token, nil
 }
 
 func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2ProviderConfig {
@@ -67,32 +173,15 @@ func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2Prov
 		if settings.ClientID == "" || settings.ClientSecret.Size() == 0 {
 			level.Error(logger).Log("msg", "OAuth provider is not properly configured", "provider", settings.Provider)
 		} else {
-			secret, err := settings.ClientSecret.UnsafeString()
+			_, err := settings.ClientSecret.UnsafeString()
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to get OAuth provider secret", "provider", settings.Provider, "err", err.Error())
+			} else {
+				providers = append(providers, OAuth2ProviderConfig{
+					OAuthSettings: *settings,
+					Name:          fmt.Sprintf("settings.%s", settings.Provider),
+				})
 			}
-			providers = append(providers, OAuth2ProviderConfig{
-				Config: oauth2.Config{
-					ClientID:     settings.ClientID,
-					ClientSecret: secret,
-					RedirectURL:  settings.RedirectURI,
-					Scopes:       strings.Split(settings.Scope, " "),
-					Endpoint: oauth2.Endpoint{
-						AuthURL:  settings.AuthEndpoint,
-						TokenURL: settings.TokenEndpoint,
-					},
-				},
-				Name:           fmt.Sprintf("settings.%s", settings.Provider),
-				DisplayName:    settings.DisplayName,
-				IconURL:        settings.IconURL,
-				UserInfoURL:    settings.UserInfoEndpoint,
-				EmailField:     settings.EmailField,
-				UsernameField:  settings.UsernameField,
-				FullNameField:  settings.FullNameField,
-				AvatarField:    settings.AvatarField,
-				RoleField:      settings.RoleField,
-				AutoCreateUser: settings.AutoCreateUser,
-			})
 		}
 	}
 	cfg := config.GetConfig()
@@ -101,26 +190,26 @@ func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2Prov
 			if providerCfg.GetEnabled() {
 				if providerCfg.ClientID != "" && providerCfg.ClientSecret != "" {
 					providers = append(providers, OAuth2ProviderConfig{
-						Config: oauth2.Config{
-							ClientID:     providerCfg.ClientID,
-							ClientSecret: providerCfg.ClientSecret,
-							RedirectURL:  providerCfg.RedirectURL,
-							Scopes:       strings.Split(providerCfg.Scopes, ","),
-							Endpoint: oauth2.Endpoint{
-								AuthURL:  providerCfg.AuthURL,
-								TokenURL: providerCfg.TokenURL,
-							},
+						OAuthSettings: model.OAuthSettings{
+							ClientID:         providerCfg.ClientID,
+							ClientSecret:     safe.NewEncryptedString(providerCfg.ClientSecret, os.Getenv(safe.SecretEnvName)),
+							RedirectURI:      providerCfg.RedirectURL,
+							Scope:            providerCfg.Scopes,
+							AuthEndpoint:     providerCfg.AuthURL,
+							TokenEndpoint:    providerCfg.TokenURL,
+							DisplayName:      providerCfg.DisplayName,
+							IconURL:          providerCfg.IconURL,
+							UserInfoEndpoint: providerCfg.UserInfoURL,
+							EmailField:       providerCfg.EmailField,
+							UsernameField:    providerCfg.UsernameField,
+							FullNameField:    providerCfg.FullNameField,
+							AvatarField:      providerCfg.AvatarField,
+							RoleField:        providerCfg.RoleField,
+							AutoCreateUser:   providerCfg.AutoCreateUser,
+
+							WellknownEndpoint: providerCfg.WellknownEndpoint,
 						},
-						Name:           providerCfg.Name,
-						DisplayName:    providerCfg.DisplayName,
-						IconURL:        providerCfg.IconURL,
-						UserInfoURL:    providerCfg.UserInfoURL,
-						EmailField:     providerCfg.EmailField,
-						UsernameField:  providerCfg.UsernameField,
-						FullNameField:  providerCfg.FullNameField,
-						AvatarField:    providerCfg.AvatarField,
-						RoleField:      providerCfg.RoleField,
-						AutoCreateUser: providerCfg.AutoCreateUser,
+						Name: providerCfg.Name,
 					})
 				}
 			}
@@ -130,37 +219,99 @@ func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2Prov
 }
 
 // GetLoginURL gets OAuth login URL
-func (s *OAuthService) GetLoginURL(ctx context.Context, provider string) (*OAuthLoginURLResponse, error) {
-	var oauth2Config *oauth2.Config
+func (s *OAuthService) GetLoginURL(ctx *gin.Context, provider string) (*OAuthLoginURLResponse, error) {
+	var oauth2Config *OAuth2ProviderConfig
 
 	for _, cfg := range s.GetOAuth2ProviderConfig(ctx) {
 		if cfg.Name == provider {
-			oauth2Config = &cfg.Config
+			oauth2Config = &cfg
 			break
 		}
 	}
 
+	if oauth2Config == nil {
+		return nil, fmt.Errorf("provider not found or not enabled: %s", provider)
+	}
+
+	if oauth2Config.Provider == model.OAuthProviderAutoDiscover && oauth2Config.WellknownEndpoint != "" {
+		wellknownResp, err := s.autoDiscoverOAuth2Endpoint(ctx, oauth2Config.WellknownEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("failed to auto discover OAuth2 endpoint: %w", err)
+		}
+		oauth2Config.AuthEndpoint = wellknownResp.AuthorizationEndpoint
+		oauth2Config.TokenEndpoint = wellknownResp.TokenEndpoint
+		oauth2Config.UserInfoEndpoint = wellknownResp.UserInfoEndpoint
+		oauth2Config.JWKsURI = wellknownResp.JWKsURI
+		oauth2Config.Issuer = wellknownResp.Issuer
+	}
+
+	if oauth2Config.RedirectURI == "" {
+		rootURL := util.GetRootURL(ctx)
+		oauth2Config.RedirectURI = fmt.Sprintf("%s/console/login?provider=%s", rootURL, provider)
+	}
+
 	// Generate state value
 	state := util.GenerateRandomString(32)
+	oauth2Config.Nonce = util.GenerateRandomString(16)
+	oauth2Config.CodeVerifier = util.GenerateRandomString(32)
 
 	// Generate authorization URL
-	authURL := oauth2Config.AuthCodeURL(state)
+	authURL := oauth2Config.AuthCodeURL(state, oauth2Config.Nonce, oauth2Config.CodeVerifier)
+	// storage state
+	_, err := s.BaseService.CreateCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), w.JSONStringer(oauth2Config).String(), time.Now().Add(10*time.Minute))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create oauth state: %w", err)
+	}
 
 	return &OAuthLoginURLResponse{
-		URL:   authURL,
-		State: state,
+		URL: authURL,
 	}, nil
 }
 
 // HandleCallback handles OAuth callback
 func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequest) (*LoginResponse, error) {
 	logger := log.GetContextLogger(ctx)
-	oauth2Config := w.Find(s.GetOAuth2ProviderConfig(ctx), func(cfg OAuth2ProviderConfig) bool {
-		return cfg.Name == req.Provider
-	})
-	if oauth2Config.Name == "" {
-		return nil, fmt.Errorf("provider not found or not enabled: %s", req.Provider)
+	// check state
+	cache, err := s.BaseService.GetCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get oauth state: %w", err)
 	}
+	// delete state
+	s.BaseService.DeleteCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+
+	var oauth2Config OAuth2ProviderConfig
+	if err := json.Unmarshal([]byte(cache.Value), &oauth2Config); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal oauth2 config: %w", err)
+	}
+
+	if oauth2Config.TokenEndpoint == "" {
+		return nil, fmt.Errorf("invalid oauth2 config")
+	}
+	verifyToken, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyToken, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verify token setting: %w", err)
+	}
+	if !verifyToken {
+		oauth2Config.JWKsURI = ""
+		oauth2Config.Issuer = ""
+	}
+
+	verifyNonce, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyNonce, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verify nonce setting: %w", err)
+	}
+	if !verifyNonce {
+		oauth2Config.Nonce = ""
+	}
+
+	verifyCodeVerifier, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthCodeVerifier, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verify code verifier setting: %w", err)
+	}
+	if !verifyCodeVerifier {
+		oauth2Config.CodeVerifier = ""
+	}
+
 	// Verify OAuth callback, get token
 	token, err := oauth2Config.Exchange(ctx, req.Code)
 	if err != nil {
@@ -169,7 +320,7 @@ func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequ
 	}
 
 	// Get user information
-	userInfo, err := s.getUserInfo(token.AccessToken, oauth2Config.UserInfoURL)
+	userInfo, err := s.getUserInfo(token.AccessToken, oauth2Config.UserInfoEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info: %w", err)
 	}
@@ -217,8 +368,7 @@ func (s *OAuthService) getUserInfo(accessToken, userInfoURL string) (map[string]
 	return userInfo, nil
 }
 
-// processOAuthUser processes OAuth user, finds or creates user
-func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*LoginResponse, error) {
+func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*model.User, error) {
 	// Get OAuth user ID and Email
 	oauthID, ok := userInfo["id"].(string)
 	if !ok {
@@ -308,29 +458,59 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 		}
 	}
 
-	var roleName string
+	var roleNames []string
 	{
 		if provider.RoleField != "" {
-			roleName, _ = userInfo[provider.RoleField].(string)
+			if roleNames, ok = userInfo[provider.RoleField].([]string); !ok {
+				if roleName, ok := userInfo[provider.RoleField].(string); ok {
+					roleNames = []string{roleName}
+				}
+			}
 		} else {
-			if role, ok := userInfo["role"].(string); ok {
-				roleName = role
-			} else if roles, ok := userInfo["roles"].(string); ok {
-				roleName = roles
-			} else if name, ok := userInfo["name"].(string); ok {
-				roleName = name
-			} else if name, ok := userInfo["role_name"].(string); ok {
-				roleName = name
+			for _, role := range []string{"role", "roles", "name", "role_name"} {
+				if role, ok := userInfo[role].(string); ok {
+					roleNames = []string{role}
+					break
+				} else if roles, ok := userInfo[role].([]string); ok {
+					roleNames = roles
+					break
+				}
 			}
 		}
 	}
-	if len(roleName) == 0 {
-		roleName = provider.DefaultRole
+	if len(roleNames) == 0 && provider.DefaultRole != "" {
+		roleNames = []string{provider.DefaultRole}
+	}
+
+	var roles []model.Role
+	{
+		err := db.Session(ctx).Where("name IN ?", roleNames).Find(&roles).Error
+		if err != nil {
+			return nil, err
+		}
+		roles = w.Map(roleNames, func(roleName string) model.Role {
+			for _, role := range roles {
+				if role.Name == roleName {
+					return role
+				}
+			}
+			return model.Role{Name: roleName}
+		})
+	}
+	oauthUser := &model.User{
+		Username:      username,
+		Email:         email,
+		Avatar:        avatar,
+		FullName:      fullName,
+		Status:        model.UserStatusActive,
+		OAuthProvider: provider.Name,
+		OAuthID:       oauthID,
+		LastLogin:     time.Now(),
+		Roles:         roles,
 	}
 	var user model.User
-
 	// Check if the user exists (by OAuth ID)
-	err := db.Session(ctx).Where("oauth_provider = ? AND oauth_id = ?", provider.Name, oauthID).
+	err := db.Session(ctx).Where("oauth_provider = ? AND oauth_id = ?", provider.Name, user.OAuthID).
 		Preload("Roles.Permissions").
 		First(&user).Error
 	if err != nil {
@@ -338,37 +518,30 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 			return nil, err
 		}
 		// User does not exist, try to find by Email
-		err = db.Session(ctx).Where("email = ?", email).First(&user).Error
+		err = db.Session(ctx).Where("email = ?", oauthUser.Email).First(&user).Error
 		if err == nil {
 			// User found by Email, update OAuth information
 			user.OAuthProvider = provider.Name
-			user.OAuthID = oauthID
-			if avatar != "" && user.Avatar == "" {
-				user.Avatar = avatar
+			user.OAuthID = oauthUser.OAuthID
+			if oauthUser.Avatar != "" && user.Avatar == "" {
+				user.Avatar = oauthUser.Avatar
+			}
+			if len(oauthUser.Roles) > 0 {
+				user.Roles = oauthUser.Roles
 			}
 		} else {
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
 				return nil, err
 			}
 			if !provider.AutoCreateUser {
-				return nil, fmt.Errorf("it is not allowed to register new users through OAuth/OIDC. please add users to the system first: %s", email)
+				return nil, fmt.Errorf("it is not allowed to register new users through OAuth/OIDC. please add users to the system first: %s", oauthUser.Email)
 			}
 			// Create new user
-			user = model.User{
-				Username:      username,
-				Email:         email,
-				FullName:      fullName,
-				Status:        model.UserStatusActive,
-				OAuthProvider: provider.Name,
-				OAuthID:       oauthID,
-				LastLogin:     time.Now(),
-			}
+			user = *oauthUser
 
 			// Set avatar
-			if avatar != "" {
-				user.Avatar = avatar
-			} else {
-				user.Avatar = util.GenerateAvatar(username)
+			if user.Avatar == "" {
+				user.Avatar = util.GenerateAvatar(oauthUser.Username)
 			}
 
 			// Generate random password (user cannot use password login, only through OAuth)
@@ -377,7 +550,21 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 				return nil, fmt.Errorf("failed to set password: %w", err)
 			}
 		}
+	} else {
+		if len(oauthUser.Roles) > 0 {
+			user.Roles = oauthUser.Roles
+		}
 	}
+	return &user, nil
+}
+
+// processOAuthUser processes OAuth user, finds or creates user
+func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*LoginResponse, error) {
+	user, err := s.convertUserInfoToUser(ctx, userInfo, provider)
+	if err != nil {
+		return nil, err
+	}
+
 	// Start database transaction
 	txErr := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if tx.Error != nil {
@@ -393,15 +580,12 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 			if err := tx.Create(&user).Error; err != nil {
 				return fmt.Errorf("failed to create user: %w", err)
 			}
-			if roleName != "" {
-				var role model.Role
-				if err := tx.Where("name = ?", roleName).First(&role).Error; err != nil {
+
+			for idx, role := range user.Roles {
+				if err := tx.Where("name = ?", role.Name).First(&role).Error; err != nil {
 					if errors.Is(err, gorm.ErrRecordNotFound) {
-						role = model.Role{
-							Name:        roleName,
-							Description: "Role created by OAuth/OIDC",
-						}
-						if err := tx.Create(&role).Error; err != nil {
+						user.Roles[idx].Description = "Role created by OAuth/OIDC"
+						if err := tx.Create(&user.Roles[idx]).Error; err != nil {
 							return fmt.Errorf("failed to create role: %w", err)
 						}
 					} else {
@@ -457,7 +641,7 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 	}
 
 	if user.MFAEnabled {
-		return s.UserService.GenerateMFA(ctx, &user, middleware.JWTIssuerOAuth)
+		return s.UserService.GenerateMFA(ctx, user, middleware.JWTIssuerOAuth)
 	}
 
 	if user.MFAEnforced {
@@ -474,7 +658,151 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 
 	return &LoginResponse{
 		Token:     token,
-		User:      user,
+		User:      *user,
 		ExpiresAt: time.Now().Add(time.Duration(sessionTimeoutMinutes) * time.Minute),
+	}, nil
+}
+
+type WellknownResponse struct {
+	AuthorizationEndpoint string `json:"authorization_endpoint"`
+	TokenEndpoint         string `json:"token_endpoint"`
+	UserInfoEndpoint      string `json:"userinfo_endpoint"`
+	JWKsURI               string `json:"jwks_uri"`
+	Issuer                string `json:"issuer"`
+}
+
+func (s *OAuthService) autoDiscoverOAuth2Endpoint(ctx context.Context, endpoint string) (*WellknownResponse, error) {
+	logger := log.GetContextLogger(ctx)
+	if endpoint == "" {
+		return nil, fmt.Errorf("wellknown endpoint is required")
+	}
+	var err error
+	var resp *http.Response
+	level.Info(logger).Log("msg", "Getting wellknown endpoint", "endpoint", endpoint)
+	resp, err = http.Get(endpoint)
+	if err != nil {
+		level.Error(logger).Log("msg", "Failed to get wellknown endpoint", "err", err.Error())
+		for i := 0; i < 3; i++ {
+			level.Info(logger).Log("msg", "Getting wellknown endpoint", "endpoint", endpoint, "retry", i+1)
+			resp, err = http.Get(endpoint)
+			if err != nil {
+				level.Error(logger).Log("msg", "Failed to get wellknown endpoint", "err", err.Error())
+				continue
+			}
+			break
+		}
+	}
+	if resp.Body == nil {
+		return nil, fmt.Errorf("failed to get wellknown endpoint")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		level.Error(logger).Log("msg", "Failed to get wellknown endpoint", "status", resp.StatusCode)
+		return nil, fmt.Errorf("failed to get wellknown endpoint")
+	}
+	var wellknownResp WellknownResponse
+	if err := json.NewDecoder(resp.Body).Decode(&wellknownResp); err != nil {
+		level.Error(logger).Log("msg", "Failed to decode wellknown endpoint", "err", err.Error())
+		return nil, err
+	}
+	return &wellknownResp, nil
+}
+
+// TestOAuthConnection tests OAuth connection
+func (s *OAuthService) TestOAuthConnection(ctx context.Context, settings *model.OAuthSettings) (resp *OAuthLoginURLResponse, err error) {
+	oauth2Config := OAuth2ProviderConfig{
+		OAuthSettings: *settings,
+		Name:          fmt.Sprintf("settings.%s", settings.Provider),
+	}
+	// Test OAuth connection
+	if settings.Provider == model.OAuthProviderAutoDiscover && settings.WellknownEndpoint != "" {
+		wellknownResp, err := s.autoDiscoverOAuth2Endpoint(ctx, settings.WellknownEndpoint)
+		if err != nil {
+			return nil, err
+		}
+		oauth2Config.AuthEndpoint = wellknownResp.AuthorizationEndpoint
+		oauth2Config.TokenEndpoint = wellknownResp.TokenEndpoint
+		oauth2Config.UserInfoEndpoint = wellknownResp.UserInfoEndpoint
+		oauth2Config.JWKsURI = wellknownResp.JWKsURI
+		oauth2Config.Issuer = wellknownResp.Issuer
+	}
+
+	state := util.GenerateRandomString(32)
+	oauth2Config.Nonce = util.GenerateRandomString(16)
+	oauth2Config.CodeVerifier = util.GenerateRandomString(32)
+	authURL := oauth2Config.AuthCodeURL(state, oauth2Config.Nonce, oauth2Config.CodeVerifier)
+	// save state to cache
+	_, err = s.BaseService.CreateCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), w.JSONStringer(oauth2Config).String(), time.Now().Add(10*time.Minute))
+	if err != nil {
+		return nil, err
+	}
+	return &OAuthLoginURLResponse{
+		URL:   authURL,
+		State: state,
+	}, nil
+}
+
+type TestOAuthCallbackResponse struct {
+	UserInfo map[string]interface{} `json:"user_info"`
+	User     model.User             `json:"user"`
+}
+
+// TestOAuthCallback tests OAuth callback
+func (s *OAuthService) TestOAuthCallback(ctx context.Context, req *OAuthCallbackRequest) (resp *TestOAuthCallbackResponse, err error) {
+	logger := log.GetContextLogger(ctx)
+	// check state
+	cache, err := s.BaseService.GetCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+	if err != nil {
+		return nil, fmt.Errorf("failed to get oauth state: %w", err)
+	}
+	// delete state
+	s.BaseService.DeleteCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+
+	var oauth2Config OAuth2ProviderConfig
+	if err := json.Unmarshal([]byte(cache.Value), &oauth2Config); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal oauth2 config: %w", err)
+	}
+
+	if oauth2Config.TokenEndpoint == "" {
+		return nil, fmt.Errorf("invalid oauth2 config")
+	}
+
+	verifyToken, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyToken, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verify token setting: %w", err)
+	}
+	if !verifyToken {
+		oauth2Config.JWKsURI = ""
+		oauth2Config.Issuer = ""
+	}
+
+	verifyNonce, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyNonce, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get verify nonce setting: %w", err)
+	}
+	if !verifyNonce {
+		oauth2Config.Nonce = ""
+	}
+	// Verify OAuth callback, get token
+	token, err := oauth2Config.Exchange(ctx, req.Code)
+	if err != nil {
+		level.Error(logger).Log("msg", "Failed to exchange token", "err", err.Error())
+		return nil, fmt.Errorf("invalid token: %w", err)
+	}
+
+	// Get user information
+	userInfo, err := s.getUserInfo(token.AccessToken, oauth2Config.UserInfoEndpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user info: %w", err)
+	}
+
+	user, err := s.convertUserInfoToUser(ctx, userInfo, &oauth2Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert user info to user: %w", err)
+	}
+
+	return &TestOAuthCallbackResponse{
+		UserInfo: userInfo,
+		User:     *user,
 	}, nil
 }

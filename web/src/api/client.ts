@@ -21,13 +21,15 @@ export class ApiError extends Error {
 // Request interceptor
 client.interceptors.request.use(
   (config) => {
-    // Get token from localStorage
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Ensure headers object exists
-      config.headers = config.headers || {};
-      // Set Authorization header
-      config.headers.Authorization = `Bearer ${token}`;
+    if (!config.withoutAuth) {
+      // Get token from localStorage
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Ensure headers object exists
+        config.headers = config.headers || {};
+        // Set Authorization header
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     const i18nextLng = localStorage.getItem('i18nextLng');
     if (i18nextLng) {

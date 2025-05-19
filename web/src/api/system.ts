@@ -33,6 +33,16 @@ export const updateOAuthSettings = (settings: API.OAuthSettings): Promise<void> 
   return apiPut<void>(`${baseUrl}/oauth-settings`, settings);
 };
 
+// Test OAuth connection
+export const testOAuthConnection = (settings: API.OAuthSettings): Promise<API.OAuthLoginURLResponse> => {
+  return apiPost<API.OAuthLoginURLResponse>(`${baseUrl}/oauth-settings/test`, settings);
+};
+
+// Test OAuth callback
+export const testOAuthCallback = (settings: API.OAuthCallbackRequest): Promise<API.TestOAuthCallbackResponse> => {
+  return apiPost<API.TestOAuthCallbackResponse>(`${baseUrl}/oauth-settings/test-callback`, settings);
+};
+
 // Check password complexity
 export const checkPasswordComplexity = (password: string): Promise<{ is_valid: boolean }> => {
   return apiPost<{ is_valid: boolean }>(`${baseUrl}/security-settings/check-password`, { password });

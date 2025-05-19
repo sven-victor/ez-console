@@ -76,6 +76,17 @@ export default {
       },
     },
     oauth: {
+      testConnection: {
+        button: '测试连接',
+        failed: '测试连接失败: {{error}}',
+        success: '测试连接成功',
+        callbackFailed: '测试连接失败',
+        missingRequiredParameters: '缺少必要参数',
+        responseUserInfoIsNull: '响应用户信息为空',
+        responseUserIsNull: '响应用户为空',
+        oauthUserInfo: 'OAuth用户信息',
+        loginUserInfo: '登录用户信息',
+      },
       enabled: {
         label: '启用OAuth认证',
         tooltip: '启用后，用户可以通过第三方OAuth服务登录系统',
@@ -88,6 +99,7 @@ export default {
           google: 'Google',
           dingtalk: '钉钉',
           wechat: '微信',
+          autoDiscover: '自动发现',
           custom: '自定义',
         },
         required: '请选择OAuth提供商',
@@ -101,7 +113,13 @@ export default {
         label: '客户端密钥',
         tooltip: 'OAuth应用的客户端密钥',
         required: '请输入客户端密钥',
-        unChange: '不修改',
+        unchanged: '不修改',
+      },
+      wellknownEndpoint: {
+        label: 'Wellknown端点',
+        tooltip: 'OAuth服务的Wellknown端点URL',
+        required: '请输入Wellknown端点URL',
+        invalidUrl: '请输入有效的URL地址',
       },
       authEndpoint: {
         label: '认证端点',

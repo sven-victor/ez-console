@@ -76,6 +76,17 @@ export default {
       },
     },
     oauth: {
+      testConnection: {
+        button: 'اختبار الاتصال',
+        failed: 'اختبار الاتصال فشل: {{error}}',
+        success: 'اختبار الاتصال ناجح',
+        callbackFailed: 'اختبار الاتصال فشل',
+        missingRequiredParameters: 'من فضلك أدخل المعلمات المطلوبة',
+        responseUserInfoIsNull: 'الاستجابة المستخدم المعلومات هي فارغة',
+        responseUserIsNull: 'الاستجابة المستخدم هي فارغة',
+        oauthUserInfo: 'معلومات المستخدم OAuth',
+        loginUserInfo: 'معلومات المستخدم الدخول',
+      },
       enabled: {
         label: 'تمكين مصادقة OAuth2.0',
         tooltip: 'عند التمكين ، يمكن للمستخدمين تسجيل الدخول باستخدام خدمات OAuth التابعة لجهات خارجية',
@@ -88,6 +99,7 @@ export default {
           google: 'Google',
           dingtalk: 'DingTalk',
           wechat: 'WeChat',
+          autoDiscover: 'تلقائيا',
           custom: 'مخصص',
         },
         required: 'الرجاء تحديد مزود OAuth',
@@ -101,6 +113,13 @@ export default {
         label: 'سر العميل',
         tooltip: 'سر العميل لتطبيق OAuth',
         required: 'الرجاء إدخال سر العميل',
+        unchanged: 'الرجاء إدخال سر العميل',
+      },
+      wellknownEndpoint: {
+        label: 'نقطة نهاية المعرف',
+        tooltip: 'عنوان URL لنقطة نهاية المعرف لخدمة OAuth',
+        required: 'الرجاء إدخال عنوان URL لنقطة نهاية المعرف',
+        invalidUrl: 'الرجاء إدخال عنوان URL صالح',
       },
       authEndpoint: {
         label: 'نقطة نهاية التفويض',

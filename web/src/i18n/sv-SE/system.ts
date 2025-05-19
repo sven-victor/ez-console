@@ -76,6 +76,17 @@ export default {
       },
     },
     oauth: {
+      testConnection: {
+        button: 'Testa anslutning',
+        failed: 'Testa anslutning misslyckades: {{error}}',
+        success: 'Testa anslutning lyckades',
+        callbackFailed: 'Testa anslutning misslyckades',
+        missingRequiredParameters: 'Vänligen ange de obligatoriska parametrarna',
+        responseUserInfoIsNull: 'Användarinformationen är null',
+        responseUserIsNull: 'Användaren är null',
+        oauthUserInfo: 'OAuth-användarinformation',
+        loginUserInfo: 'Inloggningsanvändarinformation',
+      },
       enabled: {
         label: 'Aktivera OAuth2.0-autentisering',
         tooltip: 'När detta är aktiverat kan användare logga in med tredjeparts OAuth-tjänster',
@@ -88,6 +99,7 @@ export default {
           google: 'Google',
           dingtalk: 'DingTalk',
           wechat: 'WeChat',
+          autoDiscover: 'Auto Discover',
           custom: 'Anpassad',
         },
         required: 'Vänligen välj en OAuth-leverantör',
@@ -101,6 +113,13 @@ export default {
         label: 'Klienthemlighet',
         tooltip: 'Klienthemlighet för OAuth-applikationen',
         required: 'Vänligen ange klienthemligheten',
+        unchanged: 'Lämna oförändrad',
+      },
+      wellknownEndpoint: {
+        label: 'Wellknown-slutpunkt',
+        tooltip: 'Wellknown-slutpunkts-URL för OAuth-tjänsten',
+        required: 'Vänligen ange wellknown-slutpunkts-URL',
+        invalidUrl: 'Vänligen ange en giltig URL',
       },
       authEndpoint: {
         label: 'Auktoriseringsslutpunkt',

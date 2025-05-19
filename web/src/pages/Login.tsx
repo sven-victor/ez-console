@@ -103,6 +103,7 @@ const Login: React.FC = () => {
           setError(t('login.oauthError', { defaultValue: 'OAuth login failed: {{error}}', error: error }));
         }
         navigate('/login', { replace: true });
+        fetchProviders()
       }
     } finally {
       setLoading(false);

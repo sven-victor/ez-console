@@ -32,6 +32,12 @@ func (c *OAuthSettingController) RegisterRoutes(router *gin.RouterGroup) {
 
 		// Update OAuth settings
 		oauth.PUT("", middleware.RequirePermission("system:settings:update"), c.UpdateOAuthSettings)
+
+		// Test OAuth connection
+		oauth.POST("/test", middleware.RequirePermission("system:settings:update"), c.TestOAuthConnection)
+
+		// Test OAuth callback
+		oauth.POST("/test-callback", middleware.RequirePermission("system:settings:update"), c.TestOAuthCallback)
 	}
 }
 
@@ -110,4 +116,81 @@ func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 	if err != nil {
 		util.RespondWithError(ctx, err)
 	}
+}
+
+// TestOAuthConnection Test OAuth connection
+// @Summary Test OAuth connection
+// @Description Test OAuth connection
+// @Accept json
+// @Produce json
+// @Success 200 {object} util.Response{data=string,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/system/oauth-settings/test [post]
+func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
+	// Parse request body
+	var req UpdateOAuthSettingsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4002",
+			Err:      err,
+		})
+		return
+	}
+	if req.ClientSecret != "" && !strings.HasPrefix(req.ClientSecret, "{CRYPT}") {
+		req.OAuthSettings.ClientSecret = safe.NewEncryptedString(req.ClientSecret, os.Getenv(safe.SecretEnvName))
+	} else {
+		settings, err := c.service.GetSetting(ctx, model.SettingOAuthClientSecret)
+		if err != nil {
+			util.RespondWithError(ctx, util.ErrorResponse{
+				HTTPCode: http.StatusInternalServerError,
+				Code:     "E5003",
+				Err:      err,
+			})
+			return
+		}
+		req.OAuthSettings.ClientSecret = safe.NewEncryptedString(settings.Value, os.Getenv(safe.SecretEnvName))
+	}
+
+	// Test OAuth connection
+	resp, err := c.service.TestOAuthConnection(ctx, &req.OAuthSettings)
+	if err != nil {
+		util.RespondWithError(ctx, util.ErrorResponse{
+			HTTPCode: http.StatusInternalServerError,
+			Code:     "E5004",
+			Err:      err,
+		})
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, resp)
+}
+
+// TestOAuthCallback Test OAuth callback
+// @Summary Test OAuth callback
+// @Description Test OAuth callback
+// @Accept json
+// @Produce json
+// @Success 200 {object} util.Response{data=string,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/system/oauth-settings/test-callback [post]
+func (c *OAuthSettingController) TestOAuthCallback(ctx *gin.Context) {
+	var req service.OAuthCallbackRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4002",
+			Err:      err,
+		})
+		return
+	}
+	resp, err := c.service.TestOAuthCallback(ctx, &req)
+	if err != nil {
+		util.RespondWithError(ctx, util.ErrorResponse{
+			HTTPCode: http.StatusInternalServerError,
+			Code:     "E5005",
+			Err:      err,
+		})
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, resp)
 }

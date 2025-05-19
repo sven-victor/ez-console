@@ -20,6 +20,7 @@ const RoleList = lazy(() => import('@/pages/authorization/role/RoleList'));
 
 // System management pages
 const SystemSettings = lazy(() => import('@/pages/system/settings/SystemSettings/index'));
+const OAuthTestCallback = lazy(() => import('@/pages/system/settings/SystemSettings/OAuthTestCallback'));
 const AuditLogs = lazy(() => import('@/pages/system/audit/AuditLogs'));
 
 // Service account pages
@@ -48,6 +49,11 @@ export const publicRoutes: IRoute[] = [
   {
     path: '/403',
     element: withSuspense(Forbidden),
+    index: true,
+  },
+  {
+    path: '/system/settings/oauth/test-callback',
+    element: withSuspense(OAuthTestCallback),
     index: true,
   },
 ];

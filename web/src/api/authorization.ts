@@ -184,7 +184,7 @@ export const getOAuthLoginURL = async (provider: string): Promise<API.OAuthLogin
 
 // Handle OAuth callback
 export const handleOAuthCallback = async (data: API.OAuthCallbackRequest): Promise<API.LoginResponse> => {
-  return apiPost<API.LoginResponse>(`${oauthUrl}/callback`, data);
+  return apiPost<API.LoginResponse>(`${oauthUrl}/callback`, data, { withoutAuth: true });
 };
 
 // MFA related interfaces

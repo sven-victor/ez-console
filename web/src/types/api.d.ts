@@ -86,10 +86,18 @@ namespace API {
     auth_endpoint: string;
     token_endpoint: string;
     userinfo_endpoint: string;
+    wellknown_endpoint: string;
     scope: string;
     redirect_uri: string;
     auto_create_user: boolean;
     default_role: string;
+    email_field: string;
+    username_field: string;
+    full_name_field: string;
+    avatar_field: string;
+    role_field: string;
+    icon_url: string;
+    display_name: string;
   }
 
   // LDAP settings related interfaces
@@ -280,12 +288,18 @@ namespace API {
 
   export interface OAuthLoginURLResponse {
     url: string;
+    state: string;
   }
 
   export interface OAuthCallbackRequest {
     provider: string;
     code: string;
     state?: string;
+  }
+
+  export interface TestOAuthCallbackResponse {
+    user_info: Record<string, any>;
+    user: User;
   }
 
   export interface MFAVerifyRequest {

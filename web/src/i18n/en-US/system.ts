@@ -76,6 +76,15 @@ export default {
       },
     },
     oauth: {
+      testConnection: {
+        button: 'Test Connection',
+        failed: 'Test Connection Failed: {{error}}',
+        success: 'Test Connection Success',
+        callbackFailed: 'Test Connection Failed',
+        missingRequiredParameters: 'Please enter the required parameters',
+        responseUserInfoIsNull: 'The user information is null',
+        responseUserIsNull: 'The user is null',
+      },
       enabled: {
         label: 'Enable OAuth2.0 Authentication',
         tooltip: 'When enabled, users can log in using third-party OAuth services',
@@ -88,6 +97,7 @@ export default {
           google: 'Google',
           dingtalk: 'DingTalk',
           wechat: 'WeChat',
+          autoDiscover: 'Auto Discover',
           custom: 'Custom',
         },
         required: 'Please select an OAuth provider',
@@ -101,6 +111,13 @@ export default {
         label: 'Client Secret',
         tooltip: 'Client secret of the OAuth application',
         required: 'Please enter the client secret',
+        unchanged: 'Leave blank to keep unchanged',
+      },
+      wellknownEndpoint: {
+        label: 'Wellknown Endpoint',
+        tooltip: 'Wellknown endpoint URL of the OAuth service',
+        required: 'Please enter the wellknown endpoint URL',
+        invalidUrl: 'Please enter a valid URL',
       },
       authEndpoint: {
         label: 'Authorization Endpoint',

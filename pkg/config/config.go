@@ -110,6 +110,8 @@ type ProviderConfig struct {
 	AvatarField    string `yaml:"avatar_field" mapstructure:"avatar_field"`
 	RoleField      string `yaml:"role_field" mapstructure:"role_field"`
 	AutoCreateUser bool   `yaml:"auto_create_user" mapstructure:"auto_create_user"`
+
+	WellknownEndpoint string `yaml:"wellknown_endpoint" mapstructure:"wellknown_endpoint"`
 }
 
 func (p *ProviderConfig) GetEnabled() bool {

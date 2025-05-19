@@ -38,6 +38,8 @@ func (s *SettingService) GetOAuthSettings(ctx context.Context) (*model.OAuthSett
 		AvatarField:      "",
 		RoleField:        "",
 		MFAEnabled:       false,
+
+		WellknownEndpoint: "",
 	}
 	var oauthSettingMap = map[string]any{}
 	for _, key := range model.OAuthSettingKeys {
@@ -88,6 +90,8 @@ func (s *SettingService) UpdateOAuthSettings(ctx context.Context, settings *mode
 		string(model.SettingOAuthDisplayName):      settings.DisplayName,
 		string(model.SettingOAuthIconURL):          settings.IconURL,
 		string(model.SettingOAuthMFAEnabled):       boolToString(settings.MFAEnabled),
+
+		string(model.SettingOAuthWellknownEndpoint): settings.WellknownEndpoint,
 	}
 	if settings.ClientSecret != nil {
 		settingsMap[string(model.SettingOAuthClientSecret)] = settings.ClientSecret.String()
