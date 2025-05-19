@@ -8,26 +8,6 @@ export const getPermissions = (current: number = 1, pageSize: number = 1000): Pr
   return apiGet<API.PermissionGroup[]>(`${baseUrl}/permissions`, { params: { current, page_size: pageSize } });
 };
 
-// Get permission details
-export const getPermissionById = (id: string): Promise<API.Permission> => {
-  return apiGet<API.Permission>(`${baseUrl}/permissions/${id}`);
-};
-
-// Create permission
-export const createPermission = (data: { code: string, name: string, description?: string, module?: string }): Promise<API.Permission> => {
-  return apiPost<API.Permission>(`${baseUrl}/permissions`, data);
-};
-
-// Update permission
-export const updatePermission = (id: string, data: { name?: string, description?: string, module?: string }): Promise<API.Permission> => {
-  return apiPut<API.Permission>(`${baseUrl}/permissions/${id}`, data);
-};
-
-// Delete permission
-export const deletePermission = (id: string): Promise<{ message: string }> => {
-  return apiDelete<{ message: string }>(`${baseUrl}/permissions/${id}`);
-};
-
 // Get role list
 export const getRoles = (current: number = 1, pageSize: number = 10, keywords?: string): Promise<API.PaginationResponse<API.Role>> => {
   return apiGet<API.PaginationResponse<API.Role>>(`${baseUrl}/roles`, { params: { current, page_size: pageSize, search: keywords } });
