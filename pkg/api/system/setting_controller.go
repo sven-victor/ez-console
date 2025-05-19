@@ -34,6 +34,13 @@ func (c *SettingController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // GetSettings Get all system settings
+// @Summary Get all system settings
+// @Description Get all system settings
+// @Accept json
+// @Produce json
+// @Success 200 {object} util.Response{data=model.SystemSettings,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/base-settings [get]
 func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 	settings, err := c.service.GetSystemSettings(ctx)
 	if err != nil {
@@ -52,6 +59,13 @@ func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 }
 
 // UpdateSettings Batch update system settings
+// @Summary Batch update system settings
+// @Description Batch update system settings
+// @Accept json
+// @Produce json
+// @Success 200 {object} util.Response{data=model.SystemSettings,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/base-settings [put]
 func (c *SettingController) UpdateSystemBaseSettings(ctx *gin.Context) {
 	// Parse request body
 	var req model.SystemSettings

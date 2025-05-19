@@ -36,6 +36,14 @@ func (c *OAuthController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // GetProviders gets the list of available OAuth providers
+// @Summary Get the list of available OAuth providers
+// @Description Get the list of available OAuth providers
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Success 200 {object} util.Response{data=[]gin.H}
+// @Failure 500 {object} util.ErrorResponse
+// @Router /api/authorization/oauth/providers [get]
 func (c *OAuthController) GetProviders(ctx *gin.Context) {
 
 	// Only return enabled providers, without sensitive information
@@ -52,6 +60,16 @@ func (c *OAuthController) GetProviders(ctx *gin.Context) {
 }
 
 // GetLoginURL gets the OAuth login URL
+// @Summary Get the OAuth login URL
+// @Description Get the OAuth login URL
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param provider path string true "Provider"
+// @Success 200 {object} util.Response{data=string}
+// @Failure 400 {object} util.ErrorResponse
+// @Failure 500 {object} util.ErrorResponse
+// @Router /api/authorization/oauth/login/{provider} [get]
 func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 	provider := ctx.Param("provider")
 	if provider == "" {
@@ -78,6 +96,18 @@ func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 }
 
 // HandleCallback handles the OAuth callback
+// @Summary Handle the OAuth callback
+// @Description Handle the OAuth callback
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param code query string true "Code"
+// @Param state query string true "State"
+// @Param provider query string true "Provider"
+// @Success 200 {object} util.Response{data=string}
+// @Failure 400 {object} util.ErrorResponse
+// @Failure 500 {object} util.ErrorResponse
+// @Router /api/authorization/oauth/callback [get]
 func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 	// Get parameters from URL
 	code := ctx.Query("code")

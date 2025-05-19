@@ -1,0 +1,3538 @@
+definitions:
+  gin.H:
+    additionalProperties: {}
+    type: object
+  ldap.Options:
+    properties:
+      base_dn:
+        type: string
+      bind_dn:
+        type: string
+      bind_password:
+        $ref: '#/definitions/safe.String'
+      ca_cert:
+        type: string
+      client_cert:
+        type: string
+      client_key:
+        $ref: '#/definitions/safe.String'
+      default_role:
+        type: string
+      display_name_attr:
+        type: string
+      email_attr:
+        type: string
+      enabled:
+        type: boolean
+      insecure:
+        type: boolean
+      server_url:
+        type: string
+      start_tls:
+        type: boolean
+      timeout:
+        $ref: '#/definitions/time.Duration'
+      user_attr:
+        type: string
+      user_filter:
+        type: string
+    type: object
+  model.AccessType:
+    enum:
+    - public
+    - private
+    - owner
+    type: string
+    x-enum-varnames:
+    - AccessTypePublic
+    - AccessTypePrivate
+    - AccessTypeOwner
+  model.AuditLog:
+    properties:
+      action:
+        description: Operation type
+        type: string
+      action_name:
+        description: Operation name
+        type: string
+      created_at:
+        type: string
+      details:
+        allOf:
+        - $ref: '#/definitions/model.AuditLogDetail'
+        description: Operation details, in JSON format
+      id:
+        type: string
+      ip:
+        description: IP address of the operation
+        type: string
+      ref_id:
+        description: Associated resource ID
+        type: string
+      status:
+        description: 'Operation status: success, failed'
+        type: string
+      timestamp:
+        description: Timestamp of the operation
+        type: string
+      updated_at:
+        type: string
+      user_agent:
+        description: User agent information
+        type: string
+      user_id:
+        description: User ID of the operator
+        type: string
+      username:
+        description: Username of the operator
+        type: string
+    type: object
+  model.AuditLogDetail:
+    properties:
+      new_data: {}
+      old_data: {}
+      request: {}
+    type: object
+  model.Condition:
+    additionalProperties: true
+    type: object
+  model.File:
+    properties:
+      access:
+        $ref: '#/definitions/model.AccessType'
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
+      type:
+        $ref: '#/definitions/model.FileType'
+      updated_at:
+        type: string
+    type: object
+  model.FileType:
+    enum:
+    - image
+    type: string
+    x-enum-varnames:
+    - FileTypeImage
+  model.OAuthProvider:
+    enum:
+    - github
+    - google
+    - dingtalk
+    - wechat
+    - custom
+    - autoDiscover
+    type: string
+    x-enum-comments:
+      OAuthProviderAutoDiscover: Auto Discover
+      OAuthProviderCustom: Custom
+      OAuthProviderDingtalk: DingTalk
+      OAuthProviderGitHub: GitHub
+      OAuthProviderGoogle: Google
+      OAuthProviderWeChat: WeChat
+    x-enum-varnames:
+    - OAuthProviderGitHub
+    - OAuthProviderGoogle
+    - OAuthProviderDingtalk
+    - OAuthProviderWeChat
+    - OAuthProviderCustom
+    - OAuthProviderAutoDiscover
+  model.OAuthSettings:
+    properties:
+      auth_endpoint:
+        type: string
+      auto_create_user:
+        type: boolean
+      avatar_field:
+        type: string
+      client_id:
+        type: string
+      client_secret:
+        $ref: '#/definitions/safe.String'
+      default_role:
+        type: string
+      display_name:
+        description: Provider display name
+        type: string
+      email_field:
+        type: string
+      enabled:
+        type: boolean
+      full_name_field:
+        type: string
+      icon_url:
+        description: Provider icon URL
+        type: string
+      issuer:
+        type: string
+      jwks_uri:
+        type: string
+      mfa_enabled:
+        type: boolean
+      provider:
+        $ref: '#/definitions/model.OAuthProvider'
+      redirect_uri:
+        type: string
+      role_field:
+        type: string
+      scope:
+        type: string
+      token_endpoint:
+        type: string
+      userinfo_endpoint:
+        type: string
+      username_field:
+        type: string
+      wellknown_endpoint:
+        type: string
+    type: object
+  model.PasswordComplexity:
+    enum:
+    - low
+    - medium
+    - high
+    - very_high
+    type: string
+    x-enum-comments:
+      PasswordComplexityHigh: 'Secure: must include uppercase, lowercase, and numbers'
+      PasswordComplexityLow: 'Insecure: any characters allowed'
+      PasswordComplexityMedium: 'Medium: combination of any two of uppercase, lowercase,
+        and numbers'
+      PasswordComplexityVeryHigh: 'Very secure: must include uppercase, lowercase,
+        numbers, and special characters'
+    x-enum-varnames:
+    - PasswordComplexityLow
+    - PasswordComplexityMedium
+    - PasswordComplexityHigh
+    - PasswordComplexityVeryHigh
+  model.Permission:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.PermissionGroup:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/model.Permission'
+        type: array
+    type: object
+  model.PolicyDocument:
+    properties:
+      Statement:
+        items:
+          $ref: '#/definitions/model.StatementEntry'
+        type: array
+    type: object
+  model.Role:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/model.Permission'
+        type: array
+      policy_document:
+        allOf:
+        - $ref: '#/definitions/model.PolicyDocument'
+        description: Permission configuration based on IAM-style policies, stored
+          in JSON format
+      updated_at:
+        type: string
+    type: object
+  model.SMTPSettings:
+    properties:
+      enabled:
+        type: boolean
+      encryption:
+        description: None, SSL/TLS, STARTTLS
+        type: string
+      from_address:
+        type: string
+      from_name:
+        type: string
+      host:
+        type: string
+      mfa_code_template:
+        type: string
+      password:
+        $ref: '#/definitions/safe.String'
+      port:
+        type: integer
+      reset_password_template:
+        type: string
+      user_locked_template:
+        type: string
+      username:
+        type: string
+    type: object
+  model.SMTPTestRequest:
+    properties:
+      enabled:
+        type: boolean
+      encryption:
+        description: None, SSL/TLS, STARTTLS
+        type: string
+      from_address:
+        type: string
+      from_name:
+        type: string
+      host:
+        type: string
+      mfa_code_template:
+        type: string
+      password:
+        type: string
+      port:
+        type: integer
+      reset_password_template:
+        type: string
+      to:
+        type: string
+      user_locked_template:
+        type: string
+      username:
+        type: string
+    required:
+    - to
+    type: object
+  model.SecuritySettings:
+    properties:
+      history_password_check:
+        type: boolean
+      history_password_count:
+        type: integer
+      login_failure_attempts:
+        type: integer
+      login_failure_lock:
+        type: boolean
+      login_failure_lockout_minutes:
+        type: integer
+      mfa_enforced:
+        type: boolean
+      password_complexity:
+        $ref: '#/definitions/model.PasswordComplexity'
+      password_expiry_days:
+        type: integer
+      password_min_length:
+        type: integer
+      session_idle_timeout_minutes:
+        type: integer
+      session_timeout_minutes:
+        type: integer
+      user_inactive_days:
+        type: integer
+    type: object
+  model.ServiceAccount:
+    properties:
+      access_keys:
+        items:
+          $ref: '#/definitions/model.ServiceAccountAccessKey'
+        type: array
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      last_access:
+        type: string
+      name:
+        type: string
+      policy_document:
+        $ref: '#/definitions/model.PolicyDocument'
+      roles:
+        description: Associations
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.ServiceAccountAccessKey:
+    properties:
+      access_key_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      last_used:
+        type: string
+      name:
+        type: string
+      service_account_id:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  model.Session:
+    properties:
+      created_at:
+        type: string
+      expired_at:
+        type: string
+      id:
+        type: string
+      ip_address:
+        type: string
+      is_valid:
+        type: boolean
+      last_active_at:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+      user_agent:
+        type: string
+      user_id:
+        type: string
+    type: object
+  model.StatementEntry:
+    properties:
+      Action:
+        description: List of actions, can contain wildcards "*"
+        items:
+          type: string
+        type: array
+      Condition:
+        additionalProperties:
+          $ref: '#/definitions/model.Condition'
+        description: Conditions
+        type: object
+      Effect:
+        description: '"Allow" or "Deny"'
+        type: string
+      Resource:
+        description: List of resources, can contain wildcards "*"
+        items:
+          type: string
+        type: array
+    type: object
+  model.SystemSettings:
+    properties:
+      home_page:
+        type: string
+      logo:
+        type: string
+      name:
+        type: string
+      name_i18n:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  model.User:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      disable_change_password:
+        type: boolean
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      last_login:
+        type: string
+      ldap_dn:
+        type: string
+      mfa_enabled:
+        type: boolean
+      mfa_enforced:
+        type: boolean
+      oauth_id:
+        type: string
+      oauth_provider:
+        type: string
+      password_changed_at:
+        type: string
+      phone:
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      source:
+        $ref: '#/definitions/model.UserSource'
+      status:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  model.UserSource:
+    enum:
+    - local
+    - ldap
+    - oauth
+    type: string
+    x-enum-varnames:
+    - UserSourceLocal
+    - UserSourceLDAP
+    - UserSourceOAuth
+  safe.String:
+    type: object
+  service.Chart:
+    properties:
+      color:
+        type: string
+      datasets:
+        items:
+          $ref: '#/definitions/service.Dataset'
+        type: array
+      icon:
+        type: string
+      labels:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      value:
+        type: integer
+      width:
+        type: integer
+    type: object
+  service.CreateUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      mfa_enforced:
+        type: boolean
+      password:
+        type: string
+      phone:
+        type: string
+      role_ids:
+        items:
+          type: string
+        type: array
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  service.Dataset:
+    properties:
+      color:
+        type: string
+      data:
+        items:
+          type: number
+        type: array
+      label:
+        type: string
+    type: object
+  service.HealthResult:
+    properties:
+      message:
+        type: string
+      reason:
+        type: string
+      status:
+        type: string
+    type: object
+  service.LoginResponse:
+    properties:
+      expires_at:
+        type: string
+      mfa_token:
+        type: string
+      mfa_type:
+        type: string
+      needs_mfa:
+        type: boolean
+      password_expired:
+        type: boolean
+      token:
+        type: string
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
+  service.SystemInfo:
+    properties:
+      cpu_cores:
+        type: integer
+      go_routines:
+        type: integer
+      go_version:
+        type: string
+      heap_objects:
+        type: integer
+      mem_usage:
+        type: integer
+      role_count:
+        type: integer
+      total_mem:
+        type: integer
+      uptime:
+        type: integer
+      user_count:
+        type: integer
+    type: object
+  service.UpdateUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      ldap_dn:
+        type: string
+      mfa_enforced:
+        type: boolean
+      phone:
+        type: string
+      role_ids:
+        items:
+          type: string
+        type: array
+      source:
+        type: string
+      status:
+        type: string
+    type: object
+  systemapi.SMTPTestResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  time.Duration:
+    enum:
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    type: integer
+    x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+  util.ErrorResponse:
+    properties:
+      code:
+        type: string
+      err: {}
+      message:
+        type: string
+    type: object
+  util.Response:
+    properties:
+      code:
+        type: string
+      data: {}
+      err:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/authorization/current:
+    get:
+      consumes:
+      - application/json
+      description: Get current user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get current user's information
+      tags:
+      - Authorization
+    put:
+      consumes:
+      - application/json
+      description: Update current user's information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update current user's information
+      tags:
+      - Authorization
+  /api/authorization/current/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get current user's audit logs
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.AuditLog'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get current user's audit logs
+      tags:
+      - Authorization
+  /api/authorization/current/password:
+    put:
+      consumes:
+      - application/json
+      description: Change user password
+      parameters:
+      - description: Old password
+        in: body
+        name: old_password
+        required: true
+        schema:
+          type: string
+      - description: New password
+        in: body
+        name: new_password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Change user password
+      tags:
+      - Authorization
+  /api/authorization/ldap/users:
+    get:
+      consumes:
+      - application/json
+      description: Get LDAP users
+      parameters:
+      - default: false
+        description: Skip existing users
+        in: query
+        name: skip_existing
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.User'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get LDAP users
+      tags:
+      - Authorization
+  /api/authorization/login:
+    post:
+      consumes:
+      - application/json
+      description: User login
+      parameters:
+      - description: Username
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - description: Password
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      - description: MFA code
+        in: body
+        name: mfa_code
+        schema:
+          type: string
+      - description: MFA token
+        in: body
+        name: mfa_token
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/service.LoginResponse'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: User login
+      tags:
+      - Authorization
+  /api/authorization/logout:
+    post:
+      consumes:
+      - application/json
+      description: User logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: User logout
+      tags:
+      - Authorization
+  /api/authorization/mfa/disable:
+    post:
+      consumes:
+      - application/json
+      description: Disable MFA
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/gin.H'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Disable MFA
+      tags:
+      - Authorization
+  /api/authorization/mfa/enable:
+    post:
+      consumes:
+      - application/json
+      description: Enable MFA
+      parameters:
+      - description: MFA Type
+        in: body
+        name: mfa_type
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/gin.H'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Enable MFA
+      tags:
+      - Authorization
+  /api/authorization/mfa/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify and activate MFA
+      parameters:
+      - description: Code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: Token
+        in: query
+        name: token
+        required: true
+        type: string
+      - description: MFA Type
+        in: body
+        name: mfa_type
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/gin.H'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Verify and activate MFA
+      tags:
+      - Authorization
+  /api/authorization/oauth/callback:
+    get:
+      consumes:
+      - application/json
+      description: Handle the OAuth callback
+      parameters:
+      - description: Code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: State
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: Provider
+        in: query
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Handle the OAuth callback
+      tags:
+      - Authorization
+  /api/authorization/oauth/login/{provider}:
+    get:
+      consumes:
+      - application/json
+      description: Get the OAuth login URL
+      parameters:
+      - description: Provider
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get the OAuth login URL
+      tags:
+      - Authorization
+  /api/authorization/oauth/providers:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of available OAuth providers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/gin.H'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get the list of available OAuth providers
+      tags:
+      - Authorization
+  /api/authorization/permissions:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of permissions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.PermissionGroup'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get a list of permissions
+      tags:
+      - Authorization
+  /api/authorization/profile/sessions:
+    get:
+      consumes:
+      - application/json
+      description: Get all sessions for the user
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.Session'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get all sessions for the user
+      tags:
+      - Authorization
+  /api/authorization/profile/sessions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Terminate the specified session
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Terminate the specified session
+      tags:
+      - Authorization
+  /api/authorization/profile/sessions/terminate-others:
+    post:
+      consumes:
+      - application/json
+      description: Terminate all sessions except the current one
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Terminate all sessions except the current one
+      tags:
+      - Authorization
+  /api/authorization/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh user's JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Refresh user's JWT token
+      tags:
+      - Authorization
+  /api/authorization/roles:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of roles
+      parameters:
+      - default: 1
+        description: Current page
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Role'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get a list of roles
+      tags:
+      - Authorization
+    post:
+      consumes:
+      - application/json
+      description: Create a new role
+      parameters:
+      - description: Role
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/model.Role'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create a new role
+      tags:
+      - Authorization
+  /api/authorization/roles/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete a role
+      tags:
+      - Authorization
+    get:
+      consumes:
+      - application/json
+      description: Get a role by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get a role by ID
+      tags:
+      - Authorization
+    put:
+      consumes:
+      - application/json
+      description: Update a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/model.Role'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update a role
+      tags:
+      - Authorization
+  /api/authorization/roles/{id}/permissions:
+    put:
+      consumes:
+      - application/json
+      description: Assign permissions to a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Permissions
+        in: body
+        name: permissions
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Assign permissions to a role
+      tags:
+      - Authorization
+  /api/authorization/roles/{id}/policy:
+    get:
+      consumes:
+      - application/json
+      description: Get the policy document for a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PolicyDocument'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get the policy document for a role
+      tags:
+      - Authorization
+    put:
+      consumes:
+      - application/json
+      description: Set the policy for a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Policy Document
+        in: body
+        name: policy_document
+        required: true
+        schema:
+          $ref: '#/definitions/model.PolicyDocument'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Role'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Set the policy for a role
+      tags:
+      - Authorization
+  /api/authorization/service-accounts:
+    get:
+      consumes:
+      - application/json
+      description: Get service account list
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.ServiceAccount'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get service account list
+      tags:
+      - Authorization
+    post:
+      consumes:
+      - application/json
+      description: Create service account
+      parameters:
+      - description: Name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Description
+        in: body
+        name: description
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.ServiceAccount'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Create service account
+      tags:
+      - Authorization
+  /api/authorization/service-accounts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete service account
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Delete service account
+      tags:
+      - Authorization
+    get:
+      consumes:
+      - application/json
+      description: Get service account by ID
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.ServiceAccount'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get service account by ID
+      tags:
+      - Authorization
+    put:
+      consumes:
+      - application/json
+      description: Update service account
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Description
+        in: body
+        name: description
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.ServiceAccount'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update service account
+      tags:
+      - Authorization
+  /api/authorization/service-accounts/{id}/access-keys:
+    get:
+      consumes:
+      - application/json
+      description: Get service account access keys
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.ServiceAccountAccessKey'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get service account access keys
+      tags:
+      - Authorization
+    post:
+      consumes:
+      - application/json
+      description: Create service account access key
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Description
+        in: body
+        name: description
+        schema:
+          type: string
+      - description: Expires in days
+        in: body
+        name: expires_in_days
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.ServiceAccountAccessKey'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Create service account access key
+      tags:
+      - Authorization
+  /api/authorization/service-accounts/{id}/access-keys/{keyId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete service account access key
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Access key ID
+        in: path
+        name: keyId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Delete service account access key
+      tags:
+      - Authorization
+    put:
+      consumes:
+      - application/json
+      description: Update service account access key
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Access key ID
+        in: path
+        name: keyId
+        required: true
+        type: string
+      - description: Name
+        in: body
+        name: name
+        required: true
+        schema:
+          type: string
+      - description: Description
+        in: body
+        name: description
+        schema:
+          type: string
+      - description: Status
+        in: body
+        name: status
+        required: true
+        schema:
+          type: string
+      - description: Expires at
+        in: body
+        name: expires_at
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.ServiceAccountAccessKey'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update service account access key
+      tags:
+      - Authorization
+  /api/authorization/service-accounts/{id}/policy:
+    get:
+      consumes:
+      - application/json
+      description: Get service account policy
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.PolicyDocument'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get service account policy
+      tags:
+      - Authorization
+    put:
+      consumes:
+      - application/json
+      description: Set service account policy
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Policy document
+        in: body
+        name: policy_document
+        required: true
+        schema:
+          $ref: '#/definitions/model.PolicyDocument'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.ServiceAccount'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Set service account policy
+      tags:
+      - Authorization
+  /api/authorization/service-accounts/{id}/roles:
+    get:
+      consumes:
+      - application/json
+      description: Get service account roles
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.Role'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get service account roles
+      tags:
+      - Authorization
+    post:
+      consumes:
+      - application/json
+      description: Assign roles to service account
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role IDs
+        in: body
+        name: role_ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.Role'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Assign roles to service account
+      tags:
+      - Authorization
+  /api/authorization/service-accounts/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Update service account status
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status
+        in: body
+        name: status
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.ServiceAccount'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update service account status
+      tags:
+      - Authorization
+  /api/authorization/users:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of users with optional filtering
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Keywords for searching
+        in: query
+        name: keywords
+        type: string
+      - description: Status of the user
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.User'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get user list
+      tags:
+      - Authorization
+    post:
+      consumes:
+      - application/json
+      description: Create a new user
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/service.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Create a new user
+      tags:
+      - Authorization
+  /api/authorization/users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Delete a user
+      tags:
+      - Authorization
+    get:
+      consumes:
+      - application/json
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get user by ID
+      tags:
+      - Authorization
+    put:
+      consumes:
+      - application/json
+      description: Update a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/service.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update a user
+      tags:
+      - Authorization
+  /api/authorization/users/{id}/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get user's audit logs
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.AuditLog'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get user's audit logs
+      tags:
+      - Authorization
+  /api/authorization/users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: Reset a user's password
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Reset a user's password
+      tags:
+      - Authorization
+  /api/authorization/users/{id}/restore:
+    post:
+      consumes:
+      - application/json
+      description: Restore a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Restore a user
+      tags:
+      - Authorization
+  /api/authorization/users/{id}/roles:
+    post:
+      consumes:
+      - application/json
+      description: Assign roles to a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role IDs
+        in: body
+        name: roles
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Assign roles to a user
+      tags:
+      - Authorization
+  /api/authorization/users/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Update a user's status
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status
+        in: body
+        name: status
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update a user's status
+      tags:
+      - Authorization
+  /api/authorization/users/{id}/unlock:
+    post:
+      consumes:
+      - application/json
+      description: Unlock a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Unlock a user
+      tags:
+      - Authorization
+  /api/base-settings:
+    get:
+      consumes:
+      - application/json
+      description: Get all system settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.SystemSettings'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get all system settings
+    put:
+      consumes:
+      - application/json
+      description: Batch update system settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.SystemSettings'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Batch update system settings
+  /api/files:
+    get:
+      description: Get file list
+      parameters:
+      - description: Current page
+        in: query
+        name: current
+        type: integer
+      - description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      - description: File type
+        in: query
+        name: file_type
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.File'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get file list
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload file
+      parameters:
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Access type
+        in: formData
+        name: access
+        type: string
+      - description: File type
+        in: formData
+        name: type
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.File'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Upload file
+  /api/files/{fileKey}:
+    get:
+      description: Download file
+      parameters:
+      - description: File key
+        in: path
+        name: fileKey
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.Response'
+      summary: Download file
+  /api/ldap-settings/test:
+    post:
+      consumes:
+      - application/json
+      description: Test LDAP connection
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Test LDAP connection
+  /api/statistics:
+    get:
+      description: Get statistics
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    items:
+                      $ref: '#/definitions/service.Chart'
+                    type: array
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get statistics
+  /api/system/audit-logs:
+    get:
+      consumes:
+      - application/json
+      description: Get all audit logs, supports multiple filtering conditions
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.AuditLog'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get audit logs
+  /api/system/health:
+    get:
+      consumes:
+      - application/json
+      description: Check the health of the system
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/service.HealthResult'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Health check
+  /api/system/info:
+    get:
+      consumes:
+      - application/json
+      description: Get system information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/service.SystemInfo'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get system information
+  /api/system/ldap-settings:
+    get:
+      consumes:
+      - application/json
+      description: Get LDAP settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/ldap.Options'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get LDAP settings
+    put:
+      consumes:
+      - application/json
+      description: Update LDAP settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/ldap.Options'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update LDAP settings
+  /api/system/ldap-settings/import:
+    post:
+      consumes:
+      - application/json
+      description: Import LDAP users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.User'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Import LDAP users
+  /api/system/oauth-settings:
+    get:
+      consumes:
+      - application/json
+      description: Get OAuth settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.OAuthSettings'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get OAuth settings
+    put:
+      consumes:
+      - application/json
+      description: Update OAuth settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.OAuthSettings'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update OAuth settings
+  /api/system/oauth-settings/test:
+    post:
+      consumes:
+      - application/json
+      description: Test OAuth connection
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Test OAuth connection
+  /api/system/oauth-settings/test-callback:
+    post:
+      consumes:
+      - application/json
+      description: Test OAuth callback
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Test OAuth callback
+  /api/system/security-settings:
+    get:
+      consumes:
+      - application/json
+      description: Get security settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.SecuritySettings'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get security settings
+    put:
+      consumes:
+      - application/json
+      description: Update security settings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.SecuritySettings'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update security settings
+  /api/system/security-settings/check-password:
+    post:
+      consumes:
+      - application/json
+      description: Check password complexity
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: boolean
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Check password complexity
+  /api/system/smtp-settings:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves the current SMTP settings.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved SMTP settings
+          schema:
+            $ref: '#/definitions/model.SMTPSettings'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get SMTP settings
+      tags:
+      - System Settings
+    put:
+      consumes:
+      - application/json
+      description: Updates the SMTP settings.
+      parameters:
+      - description: SMTP settings to update
+        in: body
+        name: settings
+        required: true
+        schema:
+          $ref: '#/definitions/model.SMTPSettings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated SMTP settings
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.SMTPSettings'
+              type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Update SMTP settings
+      tags:
+      - System Settings
+  /api/system/smtp-settings/test:
+    post:
+      consumes:
+      - application/json
+      description: Sends a test email to the specified recipient using the provided
+        or saved SMTP settings.
+      parameters:
+      - description: SMTP test request, including recipient and optional SMTP settings
+          to test with
+        in: body
+        name: testRequest
+        required: true
+        schema:
+          $ref: '#/definitions/model.SMTPTestRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: SMTP connection test result
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/systemapi.SMTPTestResponse'
+              type: object
+        "400":
+          description: Invalid request payload
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal server error during test
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Test SMTP connection
+      tags:
+      - System Settings
+swagger: "2.0"

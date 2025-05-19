@@ -42,6 +42,13 @@ func (c *OAuthSettingController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // GetOAuthSettings Get OAuth settings
+// @Summary Get OAuth settings
+// @Description Get OAuth settings
+// @Accept json
+// @Produce json
+// @Success 200 {object} util.Response{data=model.OAuthSettings,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/system/oauth-settings [get]
 func (c *OAuthSettingController) GetOAuthSettings(ctx *gin.Context) {
 	settings, err := c.service.GetOAuthSettings(ctx)
 	if err != nil {
@@ -65,6 +72,13 @@ type UpdateOAuthSettingsRequest struct {
 }
 
 // UpdateOAuthSettings Update OAuth settings
+// @Summary Update OAuth settings
+// @Description Update OAuth settings
+// @Accept json
+// @Produce json
+// @Success 200 {object} util.Response{data=model.OAuthSettings,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/system/oauth-settings [put]
 func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 	// Parse request body
 	var req UpdateOAuthSettingsRequest

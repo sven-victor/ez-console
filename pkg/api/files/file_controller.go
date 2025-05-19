@@ -36,9 +36,9 @@ func (c *FileController) RegisterRoutes(router *gin.RouterGroup) {
 // @Param file formData file true "File"
 // @Param access formData string false "Access type"
 // @Param type formData string false "File type"
-// @Success 200 {object} {object} util.Response{data=[model.File],code=string}
+// @Success 200 {object} util.Response{data=[]model.File,code=string}
 // @Failure 400 {object} util.Response{err=string,code=string}
-// @Router /files [post]
+// @Router /api/files [post]
 func (c *FileController) UploadFile(ctx *gin.Context) {
 	accessType := model.AccessType(ctx.PostForm("access"))
 	if accessType == "" {
@@ -116,7 +116,7 @@ func (c *FileController) UploadFile(ctx *gin.Context) {
 // @Param fileKey path string true "File key"
 // @Success 200
 // @Failure 400 {object} util.Response
-// @Router /files/{fileKey} [get]
+// @Router /api/files/{fileKey} [get]
 func (c *FileController) DownloadFile(ctx *gin.Context) {
 	fileKey := ctx.Param("fileKey")
 	if fileKey == "" {
@@ -146,9 +146,9 @@ func (c *FileController) DownloadFile(ctx *gin.Context) {
 // @Param page_size query int false "Page size"
 // @Param search query string false "Search"
 // @Param file_type query string false "File type"
-// @Success 200 {object} {object} util.Response{data=[model.File],code=string}
+// @Success 200 {object} util.Response{data=[]model.File,code=string}
 // @Failure 400 {object} util.Response{err=string,code=string}
-// @Router /files [get]
+// @Router /api/files [get]
 func (c *FileController) ListFiles(ctx *gin.Context) {
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))

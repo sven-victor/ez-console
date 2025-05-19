@@ -124,6 +124,17 @@ func init() {
 }
 
 // GetServiceAccounts Get service account list
+// @Summary Get service account list
+// @Description Get service account list
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param current query int false "Current page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Param search query string false "Search keyword"
+// @Success 200 {object} util.Response{data=[]model.ServiceAccount,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts [get]
 func (c *ServiceAccountController) GetServiceAccounts(ctx *gin.Context) {
 	// Get pagination parameters
 	page, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
@@ -152,6 +163,15 @@ func (c *ServiceAccountController) GetServiceAccounts(ctx *gin.Context) {
 }
 
 // GetServiceAccountByID Get service account by ID
+// @Summary Get service account by ID
+// @Description Get service account by ID
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Success 200 {object} util.Response{data=model.ServiceAccount,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id} [get]
 func (c *ServiceAccountController) GetServiceAccountByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -180,6 +200,16 @@ func (c *ServiceAccountController) GetServiceAccountByID(ctx *gin.Context) {
 }
 
 // CreateServiceAccount Create service account
+// @Summary Create service account
+// @Description Create service account
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param name body string true "Name"
+// @Param description body string false "Description"
+// @Success 200 {object} util.Response{data=model.ServiceAccount,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts [post]
 func (c *ServiceAccountController) CreateServiceAccount(ctx *gin.Context) {
 	var req struct {
 		Name        string `json:"name" binding:"required"`
@@ -219,6 +249,17 @@ func (c *ServiceAccountController) CreateServiceAccount(ctx *gin.Context) {
 }
 
 // UpdateServiceAccount Update service account
+// @Summary Update service account
+// @Description Update service account
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Param name body string true "Name"
+// @Param description body string false "Description"
+// @Success 200 {object} util.Response{data=model.ServiceAccount,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id} [put]
 func (c *ServiceAccountController) UpdateServiceAccount(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -278,6 +319,15 @@ func (c *ServiceAccountController) UpdateServiceAccount(ctx *gin.Context) {
 }
 
 // DeleteServiceAccount Delete service account
+// @Summary Delete service account
+// @Description Delete service account
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Success 200 {object} util.Response{data=string,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id} [delete]
 func (c *ServiceAccountController) DeleteServiceAccount(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -306,6 +356,16 @@ func (c *ServiceAccountController) DeleteServiceAccount(ctx *gin.Context) {
 }
 
 // UpdateServiceAccountStatus Update service account status
+// @Summary Update service account status
+// @Description Update service account status
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Param status body string true "Status"
+// @Success 200 {object} util.Response{data=model.ServiceAccount,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/status [put]
 func (c *ServiceAccountController) UpdateServiceAccountStatus(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -358,6 +418,15 @@ func (c *ServiceAccountController) UpdateServiceAccountStatus(ctx *gin.Context) 
 }
 
 // GetServiceAccountAccessKeys Get service account access keys
+// @Summary Get service account access keys
+// @Description Get service account access keys
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Success 200 {object} util.Response{data=[]model.ServiceAccountAccessKey,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/access-keys [get]
 func (c *ServiceAccountController) GetServiceAccountAccessKeys(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -386,6 +455,18 @@ func (c *ServiceAccountController) GetServiceAccountAccessKeys(ctx *gin.Context)
 }
 
 // CreateServiceAccountAccessKey Create service account access key
+// @Summary Create service account access key
+// @Description Create service account access key
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Param name body string true "Name"
+// @Param description body string false "Description"
+// @Param expires_in_days body int false "Expires in days"
+// @Success 200 {object} util.Response{data=model.ServiceAccountAccessKey,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/access-keys [post]
 func (c *ServiceAccountController) CreateServiceAccountAccessKey(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -441,6 +522,20 @@ func (c *ServiceAccountController) CreateServiceAccountAccessKey(ctx *gin.Contex
 }
 
 // UpdateServiceAccountAccessKey Update service account access key
+// @Summary Update service account access key
+// @Description Update service account access key
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Param keyId path string true "Access key ID"
+// @Param name body string true "Name"
+// @Param description body string false "Description"
+// @Param status body string true "Status"
+// @Param expires_at body string false "Expires at"
+// @Success 200 {object} util.Response{data=model.ServiceAccountAccessKey,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/access-keys/{keyId} [put]
 func (c *ServiceAccountController) UpdateServiceAccountAccessKey(ctx *gin.Context) {
 	serviceAccountID := ctx.Param("id")
 	keyID := ctx.Param("keyId")
@@ -485,6 +580,16 @@ func (c *ServiceAccountController) UpdateServiceAccountAccessKey(ctx *gin.Contex
 }
 
 // DeleteServiceAccountAccessKey Delete service account access key
+// @Summary Delete service account access key
+// @Description Delete service account access key
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Param keyId path string true "Access key ID"
+// @Success 200 {object} util.Response{data=string,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/access-keys/{keyId} [delete]
 func (c *ServiceAccountController) DeleteServiceAccountAccessKey(ctx *gin.Context) {
 	serviceAccountID := ctx.Param("id")
 	keyID := ctx.Param("keyId")
@@ -514,6 +619,15 @@ func (c *ServiceAccountController) DeleteServiceAccountAccessKey(ctx *gin.Contex
 }
 
 // GetServiceAccountRoles Get service account roles
+// @Summary Get service account roles
+// @Description Get service account roles
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Success 200 {object} util.Response{data=[]model.Role,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/roles [get]
 func (c *ServiceAccountController) GetServiceAccountRoles(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -542,6 +656,16 @@ func (c *ServiceAccountController) GetServiceAccountRoles(ctx *gin.Context) {
 }
 
 // AssignServiceAccountRoles Assign roles to service account
+// @Summary Assign roles to service account
+// @Description Assign roles to service account
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Param role_ids body []string true "Role IDs"
+// @Success 200 {object} util.Response{data=[]model.Role,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/roles [post]
 func (c *ServiceAccountController) AssignServiceAccountRoles(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -593,6 +717,15 @@ func (c *ServiceAccountController) AssignServiceAccountRoles(ctx *gin.Context) {
 }
 
 // GetServiceAccountPolicy Get service account policy
+// @Summary Get service account policy
+// @Description Get service account policy
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Success 200 {object} util.Response{data=model.PolicyDocument,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/policy [get]
 func (c *ServiceAccountController) GetServiceAccountPolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -621,6 +754,16 @@ func (c *ServiceAccountController) GetServiceAccountPolicy(ctx *gin.Context) {
 }
 
 // SetServiceAccountPolicy Set service account policy
+// @Summary Set service account policy
+// @Description Set service account policy
+// @Tags Authorization
+// @Accept json
+// @Produce json
+// @Param id path string true "Service account ID"
+// @Param policy_document body model.PolicyDocument true "Policy document"
+// @Success 200 {object} util.Response{data=model.ServiceAccount,code=string}
+// @Failure 500 {object} util.Response{err=string,code=string}
+// @Router /api/authorization/service-accounts/{id}/policy [put]
 func (c *ServiceAccountController) SetServiceAccountPolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
