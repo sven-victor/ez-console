@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"strconv"
 
@@ -180,6 +181,7 @@ func (s *SettingService) initJWTKeys(ctx context.Context) error {
 				return fmt.Errorf("failed to generate new JWT keys: %w", err)
 			}
 			globalConfig.JWT = *jwtConfig
+			globalConfig.JWT.KeyID = fmt.Sprintf("%x", sha256.Sum256([]byte(jwtKeySetting)))[:6]
 			return nil
 		}
 		level.Info(logger).Log("msg", "generating new JWT keys, auto write to database")
@@ -194,6 +196,7 @@ func (s *SettingService) initJWTKeys(ctx context.Context) error {
 			return fmt.Errorf("failed to generate new JWT keys: %w", err)
 		}
 		globalConfig.JWT = *jwtConfig
+		globalConfig.JWT.KeyID = fmt.Sprintf("%x", sha256.Sum256([]byte(pk)))[:6]
 		if err := s.UpdateSettings(ctx, map[string]string{
 			string(model.SettingJWTKey):    pk,
 			string(model.SettingJWTMethod): method,
