@@ -55,10 +55,10 @@ const OAuthTestCallback = () => {
         subTitle={message.error}
         extra={<Space style={{ display: !userInfo || !user ? 'none' : 'inline-block', textAlign: 'left' }} direction='vertical'>
           <Card title={t('settings.oauth.testConnection.oauthUserInfo', { defaultValue: 'OAuth User Info' })}>
-            <ReactJson src={userInfo} />
+            <ReactJson src={userInfo || {}} />
           </Card>
           <Card title={t('settings.oauth.testConnection.loginUserInfo', { defaultValue: 'Login User Info' })} style={{ marginTop: 16 }}>
-            <ReactJson src={user} />
+            <ReactJson src={user || {}} />
           </Card>
         </Space>}
       />
