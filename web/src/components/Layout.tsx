@@ -191,12 +191,12 @@ const AppLayout: React.FC = () => {
             style={{ fontSize: '16px', width: 64, height: 64 }}
           />
           <div style={{ marginRight: '20px' }}>
-            <HeaderDropdown menu={{
+            <HeaderDropdown hidden={navigation.length <= 1} menu={{
               items: navigation.map(item => ({
                 key: item.path,
                 style: { paddingRight: '20px' },
                 label: <a href={item.path}>{t(`menu.${item.name}`, { defaultValue: item.name })}</a>,
-              }))
+              })),
             }}>
               <SwapOutlined />
             </HeaderDropdown>
