@@ -190,6 +190,11 @@ var defaultSettings = []DefaultSetting{
 		Value:   "true",
 		Comment: "Allow manage user password",
 	},
+	{
+		Key:     model.SettingSystemDisableLocalUserLogin,
+		Value:   "false",
+		Comment: "Disable local user login (It will only take effect after configuring other authentication methods (such as OAuth2, LDAP)).",
+	},
 }
 
 func RegisterDefaultSettings(ctx context.Context, key model.SettingKey, value, comment string) error {
@@ -242,11 +247,14 @@ func (s *SettingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 		return nil, err
 	}
 
+	disableLocalUserLogin, _ := strconv.ParseBool(settings[string(model.SettingSystemDisableLocalUserLogin)])
 	baseSettings := &model.SystemSettings{
 		Name:     settings[string(model.SettingSystemName)],
 		NameI18n: map[string]string{},
 		Logo:     settings[string(model.SettingSystemLogo)],
 		HomePage: settings[string(model.SettingSystemHomePage)],
+
+		DisableLocalUserLogin: disableLocalUserLogin,
 	}
 	if err := json.Unmarshal([]byte(settings[string(model.SettingSystemNameI18n)]), &baseSettings.NameI18n); err != nil {
 		baseSettings.NameI18n = map[string]string{}
@@ -261,6 +269,35 @@ func (s *SettingService) UpdateSystemSettings(ctx context.Context, settings mode
 		string(model.SettingSystemNameI18n): w.JSONStringer(settings.NameI18n).String(),
 		string(model.SettingSystemLogo):     settings.Logo,
 		string(model.SettingSystemHomePage): settings.HomePage,
+
+		string(model.SettingSystemDisableLocalUserLogin): strconv.FormatBool(settings.DisableLocalUserLogin),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
+}
+
+// IsDisableLocalUserLogin checks if local user login is disabled
+// If local user login is disabled, it will check LDAP and OAuth2 settings to determine if local user login is allowed
+// If LDAP and OAuth2 are not enabled, it will return true
+func (s *SettingService) IsDisableLocalUserLogin(ctx context.Context) (bool, error) {
+	disableLocalUserLogin, err := s.GetBoolSetting(ctx, model.SettingSystemDisableLocalUserLogin, false)
+	if err != nil {
+		return false, err
+	}
+	if disableLocalUserLogin {
+		ldapEnabled, err := s.GetBoolSetting(ctx, model.SettingLDAPEnabled, false)
+		if err != nil {
+			return false, err
+		}
+		if ldapEnabled {
+			return true, nil
+		}
+		oauthEnabled, err := s.GetBoolSetting(ctx, model.SettingOAuthEnabled, false)
+		if err != nil {
+			return false, err
+		}
+		if oauthEnabled {
+			return true, nil
+		}
+	}
+	return false, nil
 }

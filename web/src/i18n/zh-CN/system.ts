@@ -17,7 +17,9 @@ export default {
     base: {
       name: '名称',
       logo: '图标',
-      home_page: '首页',
+      homePage: '首页',
+      disableLocalUserLogin: '禁用本地用户登录',
+      disableLocalUserLoginTooltip: '禁用本地用户登录，仅在其他认证方法启用时有效',
     },
     security: {
       mfa: {
@@ -170,6 +172,10 @@ export default {
         tooltip: 'OAuth提供商在登录页面显示的名称',
         required: '请输入显示名称',
       },
+      mfaEnabled: {
+        label: '启用MFA',
+        tooltip: '启用后，用户在OAuth登录时需要进行MFA认证',
+      },
       fieldMapping: {
         title: '字段映射',
         presetDescription: '当前使用预设的字段映射配置，如需自定义，请选择"自定义"提供商',
@@ -248,6 +254,8 @@ export default {
       clientKeyPlaceholder: '不修改',
       importTitle: '导入LDAP用户',
       checkAll: '全选',
+      timeout: '超时时间',
+      timeoutTooltip: 'LDAP连接超时时间（秒）',
     },
     smtp: {
       enabled: '启用SMTP',

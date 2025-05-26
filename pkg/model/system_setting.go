@@ -18,6 +18,8 @@ const (
 	SettingSystemNameI18n SettingKey = "system_name_i18n" // System name i18n
 	SettingSystemLogo     SettingKey = "system_logo"      // System Logo URL
 	SettingSystemHomePage SettingKey = "system_home_page" // System Home Page
+
+	SettingSystemDisableLocalUserLogin SettingKey = "system_disable_local_user_login" // Whether to disable local login
 )
 
 var SystemSettingKeys = []SettingKey{
@@ -25,6 +27,7 @@ var SystemSettingKeys = []SettingKey{
 	SettingSystemNameI18n,
 	SettingSystemLogo,
 	SettingSystemHomePage,
+	SettingSystemDisableLocalUserLogin,
 }
 
 var SettingKeys = []SettingKey{}
@@ -34,6 +37,8 @@ type SystemSettings struct {
 	NameI18n map[string]string `json:"name_i18n"`
 	Logo     string            `json:"logo"`
 	HomePage string            `json:"home_page"`
+
+	DisableLocalUserLogin bool `json:"disable_local_user_login"`
 }
 
 func init() {

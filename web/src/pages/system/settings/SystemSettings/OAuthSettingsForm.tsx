@@ -455,6 +455,16 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
           <Input disabled={!isEnabled || !autoCreateUser} />
         </Form.Item>
 
+        {/* MFA */}
+        <Form.Item
+          name="mfa_enabled"
+          label={t('settings.oauth.mfaEnabled.label', { defaultValue: 'MFA Enabled' })}
+          valuePropName="checked"
+          tooltip={t('settings.oauth.mfaEnabled.tooltip', { defaultValue: 'Enable MFA for OAuth login(Only valid when MFA is enabled by the user).' })}
+        >
+          <Switch disabled={!isEnabled} />
+        </Form.Item>
+
         {/* Field Mapping Divider */}
         <Divider>{t('settings.oauth.fieldMapping.title', { defaultValue: 'Field Mapping' })}</Divider>
 

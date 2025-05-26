@@ -17,7 +17,9 @@ export default {
     base: {
       name: 'Namn',
       logo: 'Logotyp',
-      home_page: 'Hem',
+      homePage: 'Hem',
+      disableLocalUserLogin: 'Inaktivera lokal användare',
+      disableLocalUserLoginTooltip: 'Inaktivera lokal användare, endast gällande när andra autentiseringsmetoder är aktiverade',
     },
     security: {
       mfa: {
@@ -170,6 +172,10 @@ export default {
         tooltip: 'Visningsnamnet för OAuth-leverantören som visas på inloggningssidan',
         required: 'Vänligen ange visningsnamnet',
       },
+      mfaEnabled: {
+        label: 'Aktivera MFA',
+        tooltip: 'Aktivera MFA för OAuth-inloggning (endast gällande när MFA är aktiverat av användaren)',
+      },
       fieldMapping: {
         title: 'Fältmappning',
         presetDescription: 'Använder för närvarande förinställd fältmappningskonfiguration. För att anpassa, välj "Anpassad" leverantör',
@@ -248,6 +254,8 @@ export default {
       clientKeyPlaceholder: 'Ändra inte',
       importTitle: 'Importera LDAP-användare',
       checkAll: 'Markera alla',
+      timeout: 'Timeout',
+      timeoutTooltip: 'LDAP-anslutningstid (sekunder)',
     },
     smtp: {
       enabled: 'Aktivera SMTP',

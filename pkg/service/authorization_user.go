@@ -405,25 +405,21 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 			Message:  "Invalid username or password",
 		}
 	}
+
+	if disableLocalUserLogin, err := s.baseService.IsDisableLocalUserLogin(ctx); err != nil {
+		return nil, util.NewError("E5001", "System error, please contact the administrator", err)
+	} else if disableLocalUserLogin {
+		return nil, util.NewError("E4011", "Local user login is disabled")
+	}
 	if user == nil {
 		// Find user
 		user = &model.User{}
 		err := dbConn.Where("username = ? OR email = ?", username, username).First(&user).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, util.ErrorResponse{
-					HTTPCode: http.StatusUnauthorized,
-					Code:     "E4011",
-					Err:      err,
-					Message:  "Invalid username or password",
-				}
+				return nil, util.NewError("E4011", "Invalid username or password", err)
 			}
-			return nil, util.ErrorResponse{
-				HTTPCode: http.StatusInternalServerError,
-				Code:     "E5001",
-				Err:      err,
-				Message:  "System error, please contact the administrator",
-			}
+			return nil, util.NewError("E5001", "System error, please contact the administrator", err)
 		}
 
 		// Verify password

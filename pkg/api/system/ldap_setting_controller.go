@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-utils/safe"
@@ -39,6 +40,11 @@ func (c *LDAPSettingController) RegisterRoutes(r *gin.RouterGroup) {
 	}
 }
 
+type LDAPSettings struct {
+	clientsldap.Options
+	Timeout int64 `json:"timeout"`
+}
+
 // GetLDAPSettings Get LDAP settings
 // @Summary Get LDAP settings
 // @Description Get LDAP settings
@@ -61,10 +67,17 @@ func (c *LDAPSettingController) GetLDAPSettings(ctx *gin.Context) {
 		settings.BindPassword.UpdateSecret(util.GenerateRandomPassword(128))
 	}
 	settings.ClientKey = nil
-	ctx.JSON(http.StatusOK, util.Response{
-		Code: "0",
-		Data: settings,
+	util.RespondWithSuccess(ctx, http.StatusOK, &LDAPSettings{
+		Options: settings,
+		Timeout: int64(settings.Timeout / time.Second),
 	})
+}
+
+type UpdateLDAPSettingsRequest struct {
+	clientsldap.Options
+	BindPassword string `json:"bind_password"`
+	ClientKey    string `json:"client_key"`
+	Timeout      int64  `json:"timeout"`
 }
 
 // UpdateLDAPSettings Update LDAP settings
@@ -76,11 +89,6 @@ func (c *LDAPSettingController) GetLDAPSettings(ctx *gin.Context) {
 // @Failure 500 {object} util.Response{err=string,code=string}
 // @Router /api/system/ldap-settings [put]
 func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
-	type UpdateLDAPSettingsRequest struct {
-		clientsldap.Options
-		BindPassword string `json:"bind_password"`
-		ClientKey    string `json:"client_key"`
-	}
 	var req UpdateLDAPSettingsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -98,6 +106,7 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 	if req.ClientKey != "" && !strings.HasPrefix(req.ClientKey, "{CRYPT}") {
 		req.Options.ClientKey = safe.NewEncryptedString(req.ClientKey, os.Getenv(safe.SecretEnvName))
 	}
+	req.Options.Timeout = time.Duration(req.Timeout) * time.Second
 	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
 		if err := c.service.UpdateLDAPSettings(ctx, &req.Options); err != nil {
 			return util.ErrorResponse{

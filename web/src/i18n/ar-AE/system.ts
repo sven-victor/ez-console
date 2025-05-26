@@ -17,7 +17,9 @@ export default {
     base: {
       name: 'الاسم',
       logo: 'الشعار',
-      home_page: 'الصفحة الرئيسية',
+      homePage: 'الصفحة الرئيسية',
+      disableLocalUserLogin: 'إلغاء تسجيل الدخول المحلي',
+      disableLocalUserLoginTooltip: 'إلغاء تسجيل الدخول المحلي، يعمل فقط عندما يكون هناك طريقة تحقق أخرى مفعلة',
     },
     security: {
       mfa: {
@@ -170,6 +172,10 @@ export default {
         tooltip: 'اسم العرض لمزود OAuth المعروض على صفحة تسجيل الدخول',
         required: 'الرجاء إدخال اسم العرض',
       },
+      mfaEnabled: {
+        label: 'تمكين المصادقة متعددة العوامل (MFA)',
+        tooltip: 'عند التمكين ، يجب على المستخدمين إعداد واستخدام المصادقة متعددة العوامل لتسجيل الدخول',
+      },
       fieldMapping: {
         title: 'تعيين الحقول',
         presetDescription: 'يستخدم حاليًا تكوين تعيين الحقول المحدد مسبقًا. للتخصيص ، يرجى تحديد مزود "مخصص"',
@@ -248,6 +254,8 @@ export default {
       clientKeyPlaceholder: 'لا تقم بالتعديل',
       importTitle: 'استيراد مستخدمي LDAP',
       checkAll: 'تحديد الكل',
+      timeout: 'وقت الإنتظار',
+      timeoutTooltip: 'وقت الإنتظار للاتصال LDAP (ثوان)',
     },
     smtp: {
       enabled: 'تمكين SMTP',

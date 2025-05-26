@@ -17,7 +17,9 @@ export default {
     base: {
       name: 'Name',
       logo: 'Logo',
-      home_page: 'Startseite',
+      homePage: 'Startseite',
+      disableLocalUserLogin: 'Lokale Benutzeranmeldung deaktivieren',
+      disableLocalUserLoginTooltip: 'Lokale Benutzeranmeldung deaktivieren, nur gültig, wenn andere Authentifizierungsmethoden aktiviert sind',
     },
     security: {
       mfa: {
@@ -170,6 +172,10 @@ export default {
         tooltip: 'Der Anzeigename des OAuth-Anbieters, der auf der Anmeldeseite angezeigt wird',
         required: 'Bitte geben Sie den Anzeigenamen ein',
       },
+      mfaEnabled: {
+        label: 'MFA aktivieren',
+        tooltip: 'Wenn aktiviert, wird die MFA-Authentifizierung für OAuth-Anmeldungen erzwungen',
+      },
       fieldMapping: {
         title: 'Feldzuordnung',
         presetDescription: 'Derzeit wird eine voreingestellte Feldzuordnungskonfiguration verwendet. Um sie anzupassen, wählen Sie bitte den Anbieter "Benutzerdefiniert" aus',
@@ -248,6 +254,8 @@ export default {
       clientKeyPlaceholder: 'Nicht ändern',
       importTitle: 'LDAP-Benutzer importieren',
       checkAll: 'Alle auswählen',
+      timeout: 'Timeout',
+      timeoutTooltip: 'LDAP-Verbindungstimeout (Sekunden)',
     },
     smtp: {
       enabled: 'SMTP aktivieren',

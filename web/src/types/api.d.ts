@@ -98,6 +98,7 @@ namespace API {
     role_field: string;
     icon_url: string;
     display_name: string;
+    mfa_enabled: boolean;
   }
 
   // LDAP settings related interfaces
@@ -117,6 +118,7 @@ namespace API {
     client_cert: string;
     client_key: string;
     insecure: boolean;
+    timeout: number;
   }
 
   export interface SystemBaseSettings {
@@ -124,6 +126,7 @@ namespace API {
     name_i18n: Record<string, string>;
     logo: string;
     home_page: string;
+    disable_local_user_login: boolean;
   }
 
   export interface SiteConfig {

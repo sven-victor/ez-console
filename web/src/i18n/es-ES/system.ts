@@ -17,7 +17,9 @@ export default {
     base: {
       name: 'Nombre',
       logo: 'Logo',
-      home_page: 'Página de inicio',
+      homePage: 'Página de inicio',
+      disableLocalUserLogin: 'Deshabilitar inicio de sesión local',
+      disableLocalUserLoginTooltip: 'Deshabilitar inicio de sesión local, solo válido cuando están habilitadas otras formas de autenticación',
     },
     security: {
       mfa: {
@@ -170,6 +172,10 @@ export default {
         tooltip: 'El nombre para mostrar del proveedor de OAuth que se muestra en la página de inicio de sesión',
         required: 'Por favor, introduce el nombre para mostrar',
       },
+      mfaEnabled: {
+        label: 'Habilitar MFA',
+        tooltip: 'Cuando está habilitado, los usuarios pueden iniciar sesión utilizando MFA',
+      },
       fieldMapping: {
         title: 'Asignación de campos',
         presetDescription: 'Actualmente se utiliza la configuración de asignación de campos preestablecida. Para personalizar, selecciona el proveedor "Personalizado"',
@@ -248,6 +254,8 @@ export default {
       clientKeyPlaceholder: 'No modificar',
       importTitle: 'Importar usuarios de LDAP',
       checkAll: 'Seleccionar todo',
+      timeout: 'Tiempo de espera',
+      timeoutTooltip: 'Tiempo de espera para la conexión LDAP (segundos)',
     },
     smtp: {
       enabled: 'Habilitar SMTP',

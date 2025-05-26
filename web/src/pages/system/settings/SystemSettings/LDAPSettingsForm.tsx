@@ -257,6 +257,14 @@ const LDAPSettingsForm: React.FC = () => {
           <Input disabled={!isEnabled} />
         </Form.Item>
 
+        <Form.Item
+          name="timeout"
+          label={t('settings.ldap.timeout', { defaultValue: 'Timeout' })}
+          tooltip={t('settings.ldap.timeoutTooltip', { defaultValue: 'Timeout for LDAP connection in seconds' })}
+        >
+          <Input type="number" defaultValue={15} disabled={!isEnabled} />
+        </Form.Item>
+
         <Divider>{t('settings.ldap.tlsDivider', { defaultValue: 'TLS Configuration' })}</Divider>
 
         <Form.Item

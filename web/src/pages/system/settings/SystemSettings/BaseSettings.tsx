@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Button, message, Space, Spin, Input, Tabs } from 'antd';
+import { Form, Button, message, Space, Spin, Input, Tabs, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -71,8 +71,15 @@ const BaseSettingsForm: React.FC = () => {
       <Form.Item label={t('settings.base.logo', { defaultValue: 'Logo' })} name="logo">
         <Input />
       </Form.Item>
-      <Form.Item label={t('settings.base.home_page', { defaultValue: 'Home Page' })} name="home_page">
+      <Form.Item label={t('settings.base.homePage', { defaultValue: 'Home Page' })} name="home_page">
         <Input />
+      </Form.Item>
+      <Form.Item
+        label={t('settings.base.disableLocalUserLogin', { defaultValue: 'Disable Local User Login' })}
+        name="disable_local_user_login"
+        tooltip={t('settings.base.disableLocalUserLoginTooltip', { defaultValue: 'Disable local user login, It is only valid when other authentication methods are enabled.' })}
+      >
+        <Switch />
       </Form.Item>
 
       {/* Submit Button */}

@@ -17,7 +17,9 @@ export default {
     base: {
       name: 'Nom',
       logo: 'Logo',
-      home_page: 'Page d\'accueil',
+      homePage: 'Page d\'accueil',
+      disableLocalUserLogin: 'Désactiver le login local',
+      disableLocalUserLoginTooltip: 'Désactiver le login local, valide uniquement lorsque d\'autres méthodes d\'authentification sont activées',
     },
     security: {
       mfa: {
@@ -170,6 +172,10 @@ export default {
         tooltip: 'Le nom d\'affichage du fournisseur OAuth affiché sur la page de connexion',
         required: 'Veuillez saisir le nom d\'affichage',
       },
+      mfaEnabled: {
+        label: 'Activer l\'authentification multifacteur (MFA)',
+        tooltip: 'Lorsque cette option est activée, les utilisateurs peuvent se connecter à l\'aide de l\'authentification multifacteur (MFA)',
+      },
       fieldMapping: {
         title: 'Mappage de champs',
         presetDescription: 'Utilise actuellement la configuration de mappage de champs prédéfinie. Pour personnaliser, veuillez sélectionner le fournisseur "Personnalisé"',
@@ -248,6 +254,8 @@ export default {
       clientKeyPlaceholder: 'Ne pas modifier',
       importTitle: 'Importer des utilisateurs LDAP',
       checkAll: 'Tout cocher',
+      timeout: 'Timeout',
+      timeoutTooltip: 'Temps d\'attente pour la connexion LDAP (secondes)',
     },
     smtp: {
       enabled: 'Activer SMTP',

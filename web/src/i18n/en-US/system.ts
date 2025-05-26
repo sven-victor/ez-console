@@ -17,7 +17,9 @@ export default {
     base: {
       name: 'Name',
       logo: 'Logo',
-      home_page: 'Home Page',
+      homePage: 'Home Page',
+      disableLocalUserLogin: 'Disable Local User Login',
+      disableLocalUserLoginTooltip: 'Disable local user login, It is only valid when other authentication methods are enabled.',
     },
     security: {
       mfa: {
@@ -168,6 +170,10 @@ export default {
         tooltip: 'The display name of the OAuth provider shown on the login page',
         required: 'Please enter the display name',
       },
+      mfaEnabled: {
+        label: 'Enable MFA',
+        tooltip: 'Enable MFA for OAuth login(Only valid when MFA is enabled by the user).',
+      },
       fieldMapping: {
         title: 'Field Mapping',
         presetDescription: 'Currently using preset field mapping configuration. To customize, please select "Custom" provider',
@@ -246,6 +252,8 @@ export default {
       clientKeyPlaceholder: 'Do not modify',
       importTitle: 'Import LDAP Users',
       checkAll: 'Check all',
+      timeout: 'Timeout',
+      timeoutTooltip: 'LDAP connection timeout (seconds)',
     },
     smtp: {
       enabled: 'Enable SMTP',
