@@ -28,14 +28,15 @@ func (c *PermissionController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // ListPermissions gets a list of permissions
-// @Summary Get a list of permissions
-// @Description Get a list of permissions
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=[]model.PermissionGroup}
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/permissions [get]
+//
+//	@Summary		Get a list of permissions
+//	@Description	Get a list of permissions
+//	@Tags			Authorization/Permission
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=[]model.PermissionGroup}
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/authorization/permissions [get]
 func (c *PermissionController) ListPermissions(ctx *gin.Context) {
 	permissions, err := c.service.ListPermissions(ctx)
 	if err != nil {

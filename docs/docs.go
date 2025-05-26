@@ -15,9 +15,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/api/authorization/current": {
-            "get": {
-                "description": "Get current user's information",
+        "/api/authorization/auth/login": {
+            "post": {
+                "description": "User login",
                 "consumes": [
                     "application/json"
                 ],
@@ -25,74 +25,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
-                "summary": "Get current user's information",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.User"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update current user's information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authorization"
-                ],
-                "summary": "Update current user's information",
+                "summary": "User login",
                 "parameters": [
                     {
-                        "description": "User information",
-                        "name": "user",
+                        "description": "Login request",
+                        "name": "login",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/service.UpdateUserRequest"
+                            "$ref": "#/definitions/authorizationapi.LoginRequest"
                         }
                     }
                 ],
@@ -111,7 +54,7 @@ const docTemplate = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/model.User"
+                                            "$ref": "#/definitions/service.LoginResponse"
                                         }
                                     }
                                 }
@@ -142,9 +85,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/authorization/current/logs": {
-            "get": {
-                "description": "Get current user's audit logs",
+        "/api/authorization/auth/logout": {
+            "post": {
+                "description": "User logout",
                 "consumes": [
                     "application/json"
                 ],
@@ -152,107 +95,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
-                "summary": "Get current user's audit logs",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Current page number",
-                        "name": "current",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 10,
-                        "description": "Number of items per page",
-                        "name": "page_size",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.AuditLog"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/api/authorization/current/password": {
-            "put": {
-                "description": "Change user password",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authorization"
-                ],
-                "summary": "Change user password",
-                "parameters": [
-                    {
-                        "description": "Old password",
-                        "name": "old_password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "New password",
-                        "name": "new_password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "summary": "User logout",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -309,7 +154,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Get LDAP users",
                 "parameters": [
@@ -370,160 +215,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/authorization/login": {
-            "post": {
-                "description": "User login",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authorization"
-                ],
-                "summary": "User login",
-                "parameters": [
-                    {
-                        "description": "Username",
-                        "name": "username",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "MFA code",
-                        "name": "mfa_code",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "MFA token",
-                        "name": "mfa_token",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/service.LoginResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/api/authorization/logout": {
-            "post": {
-                "description": "User logout",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authorization"
-                ],
-                "summary": "User logout",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
         "/api/authorization/mfa/disable": {
             "post": {
                 "description": "Disable MFA",
@@ -534,7 +225,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Profile/MFA"
                 ],
                 "summary": "Disable MFA",
                 "responses": {
@@ -581,7 +272,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Profile/MFA"
                 ],
                 "summary": "Enable MFA",
                 "parameters": [
@@ -639,7 +330,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Profile/MFA"
                 ],
                 "summary": "Verify and activate MFA",
                 "parameters": [
@@ -711,7 +402,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/OAuth"
                 ],
                 "summary": "Handle the OAuth callback",
                 "parameters": [
@@ -781,7 +472,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/OAuth"
                 ],
                 "summary": "Get the OAuth login URL",
                 "parameters": [
@@ -837,7 +528,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/OAuth"
                 ],
                 "summary": "Get the list of available OAuth providers",
                 "responses": {
@@ -881,7 +572,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Permission"
                 ],
                 "summary": "Get a list of permissions",
                 "responses": {
@@ -915,6 +606,281 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/authorization/profile": {
+            "get": {
+                "description": "Get current user's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Get current user's information",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/model.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "err": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update current user's information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Update current user's information",
+                "parameters": [
+                    {
+                        "description": "Update current user request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authorizationapi.UpdateCurrentUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "$ref": "#/definitions/model.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "err": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authorization/profile/logs": {
+            "get": {
+                "description": "Get current user's audit logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Get current user's audit logs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Current page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.AuditLog"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "err": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authorization/profile/password": {
+            "put": {
+                "description": "Change user password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Profile"
+                ],
+                "summary": "Change user password",
+                "parameters": [
+                    {
+                        "description": "Change password request",
+                        "name": "password",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authorizationapi.ChangePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/util.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
+                                        "err": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/api/authorization/profile/sessions": {
             "get": {
                 "description": "Get all sessions for the user",
@@ -925,7 +891,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Profile/Sessions"
                 ],
                 "summary": "Get all sessions for the user",
                 "parameters": [
@@ -1003,7 +969,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Profile/Sessions"
                 ],
                 "summary": "Terminate all sessions except the current one",
                 "responses": {
@@ -1062,7 +1028,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Profile/Sessions"
                 ],
                 "summary": "Terminate the specified session",
                 "parameters": [
@@ -1130,7 +1096,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Refresh user's JWT token",
                 "responses": {
@@ -1189,7 +1155,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Get a list of roles",
                 "parameters": [
@@ -1253,17 +1219,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Create a new role",
                 "parameters": [
                     {
-                        "description": "Role",
-                        "name": "role",
+                        "description": "Create role request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Role"
+                            "$ref": "#/definitions/authorizationapi.CreateRoleRequest"
                         }
                     }
                 ],
@@ -1311,7 +1277,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Get a role by ID",
                 "parameters": [
@@ -1365,7 +1331,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Update a role",
                 "parameters": [
@@ -1377,12 +1343,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Role",
-                        "name": "role",
+                        "description": "Update role request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.Role"
+                            "$ref": "#/definitions/authorizationapi.UpdateRoleRequest"
                         }
                     }
                 ],
@@ -1428,7 +1394,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Delete a role",
                 "parameters": [
@@ -1484,7 +1450,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Assign permissions to a role",
                 "parameters": [
@@ -1496,15 +1462,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Permissions",
-                        "name": "permissions",
+                        "description": "Assign permissions request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/authorizationapi.AssignPermissionsRequest"
                         }
                     }
                 ],
@@ -1552,7 +1515,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Get the policy document for a role",
                 "parameters": [
@@ -1606,7 +1569,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Role"
                 ],
                 "summary": "Set the policy for a role",
                 "parameters": [
@@ -1618,12 +1581,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Policy Document",
-                        "name": "policy_document",
+                        "description": "Set role policy request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PolicyDocument"
+                            "$ref": "#/definitions/authorizationapi.SetRolePolicyRequest"
                         }
                     }
                 ],
@@ -1671,7 +1634,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account list",
                 "parameters": [
@@ -1753,25 +1716,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Create service account",
                 "parameters": [
                     {
-                        "description": "Name",
-                        "name": "name",
+                        "description": "Create service account request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Description",
-                        "name": "description",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/authorizationapi.CreateServiceAccountRequest"
                         }
                     }
                 ],
@@ -1831,7 +1786,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account by ID",
                 "parameters": [
@@ -1897,7 +1852,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Update service account",
                 "parameters": [
@@ -1909,20 +1864,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Name",
-                        "name": "name",
+                        "description": "Update service account request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Description",
-                        "name": "description",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/authorizationapi.UpdateServiceAccountRequest"
                         }
                     }
                 ],
@@ -1980,7 +1927,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Delete service account",
                 "parameters": [
@@ -2048,7 +1995,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account access keys",
                 "parameters": [
@@ -2117,7 +2064,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Create service account access key",
                 "parameters": [
@@ -2129,28 +2076,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Name",
-                        "name": "name",
+                        "description": "Create service account access key request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Description",
-                        "name": "description",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Expires in days",
-                        "name": "expires_in_days",
-                        "in": "body",
-                        "schema": {
-                            "type": "integer"
+                            "$ref": "#/definitions/authorizationapi.CreateServiceAccountAccessKeyRequest"
                         }
                     }
                 ],
@@ -2210,7 +2141,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Update service account access key",
                 "parameters": [
@@ -2229,37 +2160,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Name",
-                        "name": "name",
+                        "description": "Update service account access key request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Description",
-                        "name": "description",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Status",
-                        "name": "status",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "description": "Expires at",
-                        "name": "expires_at",
-                        "in": "body",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/authorizationapi.UpdateServiceAccountAccessKeyRequest"
                         }
                     }
                 ],
@@ -2317,7 +2223,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Delete service account access key",
                 "parameters": [
@@ -2392,7 +2298,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account policy",
                 "parameters": [
@@ -2458,7 +2364,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Set service account policy",
                 "parameters": [
@@ -2470,12 +2376,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Policy document",
-                        "name": "policy_document",
+                        "description": "Set service account policy request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.PolicyDocument"
+                            "$ref": "#/definitions/authorizationapi.SetServiceAccountPolicyRequest"
                         }
                     }
                 ],
@@ -2535,7 +2441,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account roles",
                 "parameters": [
@@ -2604,7 +2510,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Assign roles to service account",
                 "parameters": [
@@ -2616,15 +2522,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Role IDs",
-                        "name": "role_ids",
+                        "description": "Assign roles to service account request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/authorizationapi.AssignServiceAccountRolesRequest"
                         }
                     }
                 ],
@@ -2687,7 +2590,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/ServiceAccount"
                 ],
                 "summary": "Update service account status",
                 "parameters": [
@@ -2699,12 +2602,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Status",
-                        "name": "status",
+                        "description": "Update service account status request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/authorizationapi.UpdateServiceAccountStatusRequest"
                         }
                     }
                 ],
@@ -2764,7 +2667,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Get user list",
                 "parameters": [
@@ -2852,7 +2755,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Create a new user",
                 "parameters": [
@@ -2922,7 +2825,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Get user by ID",
                 "parameters": [
@@ -2988,7 +2891,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Update a user",
                 "parameters": [
@@ -3063,7 +2966,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Delete a user",
                 "parameters": [
@@ -3131,7 +3034,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Get user's audit logs",
                 "parameters": [
@@ -3216,7 +3119,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Reset a user's password",
                 "parameters": [
@@ -3226,6 +3129,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Reset user password request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authorizationapi.ResetUserPasswordRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -3284,7 +3196,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Restore a user",
                 "parameters": [
@@ -3352,7 +3264,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Assign roles to a user",
                 "parameters": [
@@ -3364,15 +3276,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Role IDs",
-                        "name": "roles",
+                        "description": "Assign roles to user request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/authorizationapi.AssignRolesRequest"
                         }
                     }
                 ],
@@ -3432,7 +3341,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Update a user's status",
                 "parameters": [
@@ -3444,12 +3353,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Status",
-                        "name": "status",
+                        "description": "Update user status request",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/authorizationapi.UpdateUserStatusRequest"
                         }
                     }
                 ],
@@ -3509,7 +3418,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Authorization"
+                    "Authorization/Users"
                 ],
                 "summary": "Unlock a user",
                 "parameters": [
@@ -3576,6 +3485,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/Base"
+                ],
                 "summary": "Get all system settings",
                 "responses": {
                     "200": {
@@ -3630,6 +3542,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/Base"
+                ],
                 "summary": "Batch update system settings",
                 "responses": {
                     "200": {
@@ -3680,6 +3595,9 @@ const docTemplate = `{
         "/api/files": {
             "get": {
                 "description": "Get file list",
+                "tags": [
+                    "File Management"
+                ],
                 "summary": "Get file list",
                 "parameters": [
                     {
@@ -3760,6 +3678,9 @@ const docTemplate = `{
                 "consumes": [
                     "multipart/form-data"
                 ],
+                "tags": [
+                    "File Management"
+                ],
                 "summary": "Upload file",
                 "parameters": [
                     {
@@ -3834,6 +3755,9 @@ const docTemplate = `{
         "/api/files/{fileKey}": {
             "get": {
                 "description": "Download file",
+                "tags": [
+                    "File Management"
+                ],
                 "summary": "Download file",
                 "parameters": [
                     {
@@ -3865,6 +3789,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "System Settings/LDAP"
                 ],
                 "summary": "Test LDAP connection",
                 "responses": {
@@ -3916,6 +3843,9 @@ const docTemplate = `{
         "/api/statistics": {
             "get": {
                 "description": "Get statistics",
+                "tags": [
+                    "Statistics"
+                ],
                 "summary": "Get statistics",
                 "responses": {
                     "200": {
@@ -3977,6 +3907,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "System/Audit Log"
                 ],
                 "summary": "Get audit logs",
                 "parameters": [
@@ -4053,6 +3986,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System/Health"
+                ],
                 "summary": "Health check",
                 "responses": {
                     "200": {
@@ -4108,6 +4044,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "System/Info"
                 ],
                 "summary": "Get system information",
                 "responses": {
@@ -4165,6 +4104,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/LDAP"
+                ],
                 "summary": "Get LDAP settings",
                 "responses": {
                     "200": {
@@ -4181,7 +4123,7 @@ const docTemplate = `{
                                             "type": "string"
                                         },
                                         "data": {
-                                            "$ref": "#/definitions/ldap.Options"
+                                            "$ref": "#/definitions/systemapi.LDAPSettings"
                                         }
                                     }
                                 }
@@ -4219,7 +4161,21 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/LDAP"
+                ],
                 "summary": "Update LDAP settings",
+                "parameters": [
+                    {
+                        "description": "Update LDAP settings",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.UpdateLDAPSettingsRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4274,6 +4230,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "System Settings/LDAP"
                 ],
                 "summary": "Import LDAP users",
                 "responses": {
@@ -4334,6 +4293,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/OAuth"
+                ],
                 "summary": "Get OAuth settings",
                 "responses": {
                     "200": {
@@ -4387,6 +4349,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "System Settings/OAuth"
                 ],
                 "summary": "Update OAuth settings",
                 "responses": {
@@ -4444,6 +4409,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/OAuth"
+                ],
                 "summary": "Test OAuth connection",
                 "responses": {
                     "200": {
@@ -4499,6 +4467,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "System Settings/OAuth"
                 ],
                 "summary": "Test OAuth callback",
                 "responses": {
@@ -4556,6 +4527,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/Security"
+                ],
                 "summary": "Get security settings",
                 "responses": {
                     "200": {
@@ -4609,6 +4583,9 @@ const docTemplate = `{
                 ],
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "System Settings/Security"
                 ],
                 "summary": "Update security settings",
                 "responses": {
@@ -4666,7 +4643,21 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "System Settings/Security"
+                ],
                 "summary": "Check password complexity",
+                "parameters": [
+                    {
+                        "description": "Check password complexity request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.CheckPasswordComplexityRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4728,7 +4719,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "System Settings"
+                    "System Settings/SMTP"
                 ],
                 "summary": "Get SMTP settings",
                 "responses": {
@@ -4760,7 +4751,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "System Settings"
+                    "System Settings/SMTP"
                 ],
                 "summary": "Update SMTP settings",
                 "parameters": [
@@ -4826,7 +4817,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "System Settings"
+                    "System Settings/SMTP"
                 ],
                 "summary": "Test SMTP connection",
                 "parameters": [
@@ -4879,6 +4870,269 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "authorizationapi.AssignPermissionsRequest": {
+            "type": "object",
+            "required": [
+                "permission_ids"
+            ],
+            "properties": {
+                "permission_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "authorizationapi.AssignRolesRequest": {
+            "type": "object",
+            "required": [
+                "role_ids"
+            ],
+            "properties": {
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "authorizationapi.AssignServiceAccountRolesRequest": {
+            "type": "object",
+            "required": [
+                "role_ids"
+            ],
+            "properties": {
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "authorizationapi.ChangePasswordRequest": {
+            "type": "object",
+            "required": [
+                "new_password",
+                "old_password"
+            ],
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "old_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.CreateRoleRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "policy_document": {
+                    "$ref": "#/definitions/model.PolicyDocument"
+                }
+            }
+        },
+        "authorizationapi.CreateServiceAccountAccessKeyRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "expires_in_days": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.CreateServiceAccountRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "mfa_code": {
+                    "type": "string"
+                },
+                "mfa_token": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.ResetUserPasswordRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.SetRolePolicyRequest": {
+            "type": "object",
+            "properties": {
+                "policy_document": {
+                    "$ref": "#/definitions/model.PolicyDocument"
+                }
+            }
+        },
+        "authorizationapi.SetServiceAccountPolicyRequest": {
+            "type": "object",
+            "required": [
+                "policy_document"
+            ],
+            "properties": {
+                "policy_document": {
+                    "$ref": "#/definitions/model.PolicyDocument"
+                }
+            }
+        },
+        "authorizationapi.UpdateCurrentUserRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.UpdateRoleRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "policy_document": {
+                    "$ref": "#/definitions/model.PolicyDocument"
+                }
+            }
+        },
+        "authorizationapi.UpdateServiceAccountAccessKeyRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "status"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "disabled"
+                    ]
+                }
+            }
+        },
+        "authorizationapi.UpdateServiceAccountRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.UpdateServiceAccountStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "active",
+                        "disabled"
+                    ]
+                }
+            }
+        },
+        "authorizationapi.UpdateUserStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "gin.H": {
             "type": "object",
             "additionalProperties": {}
@@ -5530,6 +5784,9 @@ const docTemplate = `{
         "model.SystemSettings": {
             "type": "object",
             "properties": {
+                "disable_local_user_login": {
+                    "type": "boolean"
+                },
                 "home_page": {
                     "type": "string"
                 },
@@ -5821,6 +6078,70 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.CheckPasswordComplexityRequest": {
+            "type": "object",
+            "required": [
+                "password"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "systemapi.LDAPSettings": {
+            "type": "object",
+            "properties": {
+                "base_dn": {
+                    "type": "string"
+                },
+                "bind_dn": {
+                    "type": "string"
+                },
+                "bind_password": {
+                    "$ref": "#/definitions/safe.String"
+                },
+                "ca_cert": {
+                    "type": "string"
+                },
+                "client_cert": {
+                    "type": "string"
+                },
+                "client_key": {
+                    "$ref": "#/definitions/safe.String"
+                },
+                "default_role": {
+                    "type": "string"
+                },
+                "display_name_attr": {
+                    "type": "string"
+                },
+                "email_attr": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "insecure": {
+                    "type": "boolean"
+                },
+                "server_url": {
+                    "type": "string"
+                },
+                "start_tls": {
+                    "type": "boolean"
+                },
+                "timeout": {
+                    "type": "integer"
+                },
+                "user_attr": {
+                    "type": "string"
+                },
+                "user_filter": {
+                    "type": "string"
+                }
+            }
+        },
         "systemapi.SMTPTestResponse": {
             "type": "object",
             "properties": {
@@ -5829,6 +6150,59 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "systemapi.UpdateLDAPSettingsRequest": {
+            "type": "object",
+            "properties": {
+                "base_dn": {
+                    "type": "string"
+                },
+                "bind_dn": {
+                    "type": "string"
+                },
+                "bind_password": {
+                    "type": "string"
+                },
+                "ca_cert": {
+                    "type": "string"
+                },
+                "client_cert": {
+                    "type": "string"
+                },
+                "client_key": {
+                    "type": "string"
+                },
+                "default_role": {
+                    "type": "string"
+                },
+                "display_name_attr": {
+                    "type": "string"
+                },
+                "email_attr": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "insecure": {
+                    "type": "boolean"
+                },
+                "server_url": {
+                    "type": "string"
+                },
+                "start_tls": {
+                    "type": "boolean"
+                },
+                "timeout": {
+                    "type": "integer"
+                },
+                "user_attr": {
+                    "type": "string"
+                },
+                "user_filter": {
+                    "type": "string"
                 }
             }
         },
@@ -5842,23 +6216,11 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
                 "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -5896,11 +6258,11 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
+	Version:          "v1.4.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "",
+	Title:            "EZ Console API",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

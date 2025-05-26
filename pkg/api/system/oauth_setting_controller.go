@@ -42,13 +42,15 @@ func (c *OAuthSettingController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // GetOAuthSettings Get OAuth settings
-// @Summary Get OAuth settings
-// @Description Get OAuth settings
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=model.OAuthSettings,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/oauth-settings [get]
+//
+//	@Summary		Get OAuth settings
+//	@Description	Get OAuth settings
+//	@Tags			System Settings/OAuth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=model.OAuthSettings,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/oauth-settings [get]
 func (c *OAuthSettingController) GetOAuthSettings(ctx *gin.Context) {
 	settings, err := c.service.GetOAuthSettings(ctx)
 	if err != nil {
@@ -72,13 +74,15 @@ type UpdateOAuthSettingsRequest struct {
 }
 
 // UpdateOAuthSettings Update OAuth settings
-// @Summary Update OAuth settings
-// @Description Update OAuth settings
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=model.OAuthSettings,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/oauth-settings [put]
+//
+//	@Summary		Update OAuth settings
+//	@Description	Update OAuth settings
+//	@Tags			System Settings/OAuth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=model.OAuthSettings,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/oauth-settings [put]
 func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 	// Parse request body
 	var req UpdateOAuthSettingsRequest
@@ -133,13 +137,15 @@ func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 }
 
 // TestOAuthConnection Test OAuth connection
-// @Summary Test OAuth connection
-// @Description Test OAuth connection
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/oauth-settings/test [post]
+//
+//	@Summary		Test OAuth connection
+//	@Description	Test OAuth connection
+//	@Tags			System Settings/OAuth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/oauth-settings/test [post]
 func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 	// Parse request body
 	var req UpdateOAuthSettingsRequest
@@ -180,13 +186,15 @@ func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 }
 
 // TestOAuthCallback Test OAuth callback
-// @Summary Test OAuth callback
-// @Description Test OAuth callback
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/oauth-settings/test-callback [post]
+//
+//	@Summary		Test OAuth callback
+//	@Description	Test OAuth callback
+//	@Tags			System Settings/OAuth
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/oauth-settings/test-callback [post]
 func (c *OAuthSettingController) TestOAuthCallback(ctx *gin.Context) {
 	var req service.OAuthCallbackRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

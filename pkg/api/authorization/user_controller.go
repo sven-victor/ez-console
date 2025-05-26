@@ -65,18 +65,19 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // ListUsers gets a list of users
-// @Summary Get user list
-// @Description Get a list of users with optional filtering
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param current query int false "Current page number" default(1)
-// @Param page_size query int false "Number of items per page" default(10)
-// @Param keywords query string false "Keywords for searching"
-// @Param status query string false "Status of the user"
-// @Success 200 {object} util.Response{data=[]model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users [get]
+//
+//	@Summary		Get user list
+//	@Description	Get a list of users with optional filtering
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			current		query		int		false	"Current page number"		default(1)
+//	@Param			page_size	query		int		false	"Number of items per page"	default(10)
+//	@Param			keywords	query		string	false	"Keywords for searching"
+//	@Param			status		query		string	false	"Status of the user"
+//	@Success		200			{object}	util.Response{data=[]model.User,code=string}
+//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users [get]
 func (c *UserController) ListUsers(ctx *gin.Context) {
 	// Parse query parameters
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
@@ -104,15 +105,16 @@ func (c *UserController) ListUsers(ctx *gin.Context) {
 }
 
 // GetUser gets a user by ID
-// @Summary Get user by ID
-// @Description Get a user by ID
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Success 200 {object} util.Response{data=model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id} [get]
+//
+//	@Summary		Get user by ID
+//	@Description	Get a user by ID
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response{data=model.User,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id} [get]
 func (c *UserController) GetUser(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -159,15 +161,16 @@ func (c *UserController) GetUser(ctx *gin.Context) {
 }
 
 // CreateUser creates a new user
-// @Summary Create a new user
-// @Description Create a new user
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param user body service.CreateUserRequest true "User information"
-// @Success 200 {object} util.Response{data=model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users [post]
+//
+//	@Summary		Create a new user
+//	@Description	Create a new user
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		service.CreateUserRequest	true	"User information"
+//	@Success		200		{object}	util.Response{data=model.User,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users [post]
 func (c *UserController) CreateUser(ctx *gin.Context) {
 	var req service.CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -215,16 +218,17 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 }
 
 // UpdateUser updates a user
-// @Summary Update a user
-// @Description Update a user
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Param user body service.UpdateUserRequest true "User information"
-// @Success 200 {object} util.Response{data=model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id} [put]
+//
+//	@Summary		Update a user
+//	@Description	Update a user
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string						true	"User ID"
+//	@Param			user	body		service.UpdateUserRequest	true	"User information"
+//	@Success		200		{object}	util.Response{data=model.User,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id} [put]
 func (c *UserController) UpdateUser(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -302,15 +306,16 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 }
 
 // DeleteUser deletes a user
-// @Summary Delete a user
-// @Description Delete a user
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id} [delete]
+//
+//	@Summary		Delete a user
+//	@Description	Delete a user
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id} [delete]
 func (c *UserController) DeleteUser(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -359,17 +364,22 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 	}
 }
 
+type UpdateUserStatusRequest struct {
+	Status string `json:"status" binding:"required"`
+}
+
 // UpdateUserStatus updates a user's status
-// @Summary Update a user's status
-// @Description Update a user's status
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Param status body string true "Status"
-// @Success 200 {object} util.Response{data=model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id}/status [put]
+//
+//	@Summary		Update a user's status
+//	@Description	Update a user's status
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string	true	"User ID"
+//	@Param			request	body		UpdateUserStatusRequest	true	"Update user status request"
+//	@Success		200		{object}	util.Response{data=model.User,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id}/status [put]
 func (c *UserController) UpdateUserStatus(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -382,9 +392,7 @@ func (c *UserController) UpdateUserStatus(ctx *gin.Context) {
 	}
 
 	// Bind request body
-	var req struct {
-		Status string `json:"status" binding:"required"`
-	}
+	var req UpdateUserStatusRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
 			Code: "E4002",
@@ -430,16 +438,22 @@ func (c *UserController) UpdateUserStatus(ctx *gin.Context) {
 	}
 }
 
+type ResetUserPasswordRequest struct {
+	Password string `json:"password"`
+}
+
 // ResetUserPassword resets a user's password
-// @Summary Reset a user's password
-// @Description Reset a user's password
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id}/password [put]
+//
+//	@Summary		Reset a user's password
+//	@Description	Reset a user's password
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string		true	"User ID"
+//	@Param			request	body		ResetUserPasswordRequest	true	"Reset user password request"
+//	@Success		200		{object}	util.Response{data=string,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id}/password [put]
 func (c *UserController) ResetUserPassword(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -452,9 +466,7 @@ func (c *UserController) ResetUserPassword(ctx *gin.Context) {
 	}
 
 	// Bind request body
-	var req struct {
-		Password string `json:"password"`
-	}
+	var req ResetUserPasswordRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -503,17 +515,22 @@ func (c *UserController) ResetUserPassword(ctx *gin.Context) {
 	}
 }
 
+type AssignRolesRequest struct {
+	RoleIDs []string `json:"role_ids" binding:"required"`
+}
+
 // AssignRoles assigns roles to a user
-// @Summary Assign roles to a user
-// @Description Assign roles to a user
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Param roles body []string true "Role IDs"
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id}/roles [post]
+//
+//	@Summary		Assign roles to a user
+//	@Description	Assign roles to a user
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string		true	"User ID"
+//	@Param			request	body		AssignRolesRequest	true	"Assign roles to user request"
+//	@Success		200		{object}	util.Response{data=string,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id}/roles [post]
 func (c *UserController) AssignRoles(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -526,9 +543,7 @@ func (c *UserController) AssignRoles(ctx *gin.Context) {
 	}
 
 	// Bind request body
-	var req struct {
-		RoleIDs []string `json:"role_ids" binding:"required"`
-	}
+	var req AssignRolesRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
 			Code:    "E4002",
@@ -579,14 +594,15 @@ func (c *UserController) AssignRoles(ctx *gin.Context) {
 }
 
 // GetCurrentUser gets the current user's information
-// @Summary Get current user's information
-// @Description Get current user's information
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/current [get]
+//
+//	@Summary		Get current user's information
+//	@Description	Get current user's information
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=model.User,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/profile [get]
 func (c *UserController) GetCurrentUser(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
@@ -609,16 +625,24 @@ func (c *UserController) GetCurrentUser(ctx *gin.Context) {
 	})
 }
 
+type UpdateCurrentUserRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	FullName string `json:"full_name"`
+	Phone    string `json:"phone"`
+	Avatar   string `json:"avatar"`
+}
+
 // UpdateCurrentUser updates the current user's information
-// @Summary Update current user's information
-// @Description Update current user's information
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param user body service.UpdateUserRequest true "User information"
-// @Success 200 {object} util.Response{data=model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/current [put]
+//
+//	@Summary		Update current user's information
+//	@Description	Update current user's information
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		UpdateCurrentUserRequest	true	"Update current user request"
+//	@Success		200		{object}	util.Response{data=model.User,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/profile [put]
 func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
@@ -632,12 +656,7 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 	}
 
 	// Bind request body
-	var req struct {
-		Email    string `json:"email" binding:"required,email"`
-		FullName string `json:"full_name"`
-		Phone    string `json:"phone"`
-		Avatar   string `json:"avatar"`
-	}
+	var req UpdateCurrentUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -692,17 +711,22 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 	}
 }
 
+type ChangePasswordRequest struct {
+	OldPassword string `json:"old_password" binding:"required"`
+	NewPassword string `json:"new_password" binding:"required"`
+}
+
 // ChangePassword handles user password change
-// @Summary Change user password
-// @Description Change user password
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param old_password body string true "Old password"
-// @Param new_password body string true "New password"
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/current/password [put]
+//
+//	@Summary		Change user password
+//	@Description	Change user password
+//	@Tags			Authorization/Profile
+//	@Accept			json
+//	@Produce		json
+//	@Param			password	body		ChangePasswordRequest	true	"Change password request"
+//	@Success		200			{object}	util.Response{data=string,code=string}
+//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/profile/password [put]
 func (c *UserController) ChangePassword(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
@@ -716,10 +740,7 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 	}
 
 	// Bind request body
-	var req struct {
-		OldPassword string `json:"old_password" binding:"required"`
-		NewPassword string `json:"new_password" binding:"required"`
-	}
+	var req ChangePasswordRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -768,28 +789,28 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 	}
 }
 
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	MFACode  string `json:"mfa_code"`
+	MFAToken string `json:"mfa_token"`
+}
+
 // Login handles user login
-// @Summary User login
-// @Description User login
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param username body string true "Username"
-// @Param password body string true "Password"
-// @Param mfa_code body string false "MFA code"
-// @Param mfa_token body string false "MFA token"
-// @Success 200 {object} util.Response{data=service.LoginResponse,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/login [post]
+//
+//	@Summary		User login
+//	@Description	User login
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			login	body		LoginRequest	true	"Login request"
+//	@Success		200		{object}	util.Response{data=service.LoginResponse,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/auth/login [post]
 func (c *UserController) Login(ctx *gin.Context) {
 	logger := log.GetContextLogger(ctx)
 	// Bind request body
-	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-		MFACode  string `json:"mfa_code"`
-		MFAToken string `json:"mfa_token"`
-	}
+	var req LoginRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -893,14 +914,15 @@ func (c *UserController) Login(ctx *gin.Context) {
 }
 
 // RefreshToken refreshes the user's JWT token
-// @Summary Refresh user's JWT token
-// @Description Refresh user's JWT token
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/refresh [post]
+//
+//	@Summary		Refresh user's JWT token
+//	@Description	Refresh user's JWT token
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/refresh [post]
 func (c *UserController) RefreshToken(ctx *gin.Context) {
 	// Get user from context
 	userInterface, _ := ctx.Get("user")
@@ -943,14 +965,15 @@ func (c *UserController) RefreshToken(ctx *gin.Context) {
 }
 
 // Logout handles user logout
-// @Summary User logout
-// @Description User logout
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/logout [post]
+//
+//	@Summary		User logout
+//	@Description	User logout
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/auth/logout [post]
 func (c *UserController) Logout(ctx *gin.Context) {
 	// Get current user information
 	userInterface, _ := ctx.Get("user")
@@ -995,16 +1018,17 @@ func (c *UserController) Logout(ctx *gin.Context) {
 }
 
 // GetCurrentUserLogs gets the audit logs for the current user
-// @Summary Get current user's audit logs
-// @Description Get current user's audit logs
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param current query int false "Current page number" default(1)
-// @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} util.Response{data=[]model.AuditLog,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/current/logs [get]
+//
+//	@Summary		Get current user's audit logs
+//	@Description	Get current user's audit logs
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			current		query		int	false	"Current page number"		default(1)
+//	@Param			page_size	query		int	false	"Number of items per page"	default(10)
+//	@Success		200			{object}	util.Response{data=[]model.AuditLog,code=string}
+//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/profile/logs [get]
 func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 	var filters service.AuditLogFilters
 	if err := ctx.BindQuery(&filters); err != nil {
@@ -1058,17 +1082,18 @@ func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 }
 
 // GetUserLogs gets the audit logs for a specific user
-// @Summary Get user's audit logs
-// @Description Get user's audit logs
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Param current query int false "Current page number" default(1)
-// @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} util.Response{data=[]model.AuditLog,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id}/logs [get]
+//
+//	@Summary		Get user's audit logs
+//	@Description	Get user's audit logs
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string	true	"User ID"
+//	@Param			current		query		int		false	"Current page number"		default(1)
+//	@Param			page_size	query		int		false	"Number of items per page"	default(10)
+//	@Success		200			{object}	util.Response{data=[]model.AuditLog,code=string}
+//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id}/logs [get]
 func (c *UserController) GetUserLogs(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -1124,15 +1149,16 @@ func (c *UserController) GetUserLogs(ctx *gin.Context) {
 }
 
 // UnlockUser unlocks a user
-// @Summary Unlock a user
-// @Description Unlock a user
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id}/unlock [post]
+//
+//	@Summary		Unlock a user
+//	@Description	Unlock a user
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id}/unlock [post]
 func (c *UserController) UnlockUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -1161,15 +1187,16 @@ func (c *UserController) UnlockUser(ctx *gin.Context) {
 }
 
 // RestoreUser restores a user
-// @Summary Restore a user
-// @Description Restore a user
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/users/{id}/restore [post]
+//
+//	@Summary		Restore a user
+//	@Description	Restore a user
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/users/{id}/restore [post]
 func (c *UserController) RestoreUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -1194,15 +1221,16 @@ func (c *UserController) RestoreUser(ctx *gin.Context) {
 }
 
 // GetLdapUsers gets LDAP users
-// @Summary Get LDAP users
-// @Description Get LDAP users
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param skip_existing query bool false "Skip existing users" default(false)
-// @Success 200 {object} util.Response{data=[]model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/ldap/users [get]
+//
+//	@Summary		Get LDAP users
+//	@Description	Get LDAP users
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			skip_existing	query		bool	false	"Skip existing users"	default(false)
+//	@Success		200				{object}	util.Response{data=[]model.User,code=string}
+//	@Failure		500				{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/ldap/users [get]
 func (c *UserController) GetLdapUsers(ctx *gin.Context) {
 	skipExisting := ctx.Query("skip_existing") == "true"
 	users, err := c.service.GetLdapUsers(ctx, skipExisting)

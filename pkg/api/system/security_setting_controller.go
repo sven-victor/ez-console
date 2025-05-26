@@ -36,13 +36,15 @@ func (c *SecuritySettingController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // GetSecuritySettings Get security settings
-// @Summary Get security settings
-// @Description Get security settings
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=model.SecuritySettings,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/security-settings [get]
+//
+//	@Summary		Get security settings
+//	@Description	Get security settings
+//	@Tags			System Settings/Security
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=model.SecuritySettings,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/security-settings [get]
 func (c *SecuritySettingController) GetSecuritySettings(ctx *gin.Context) {
 	settings, err := c.service.GetSecuritySettings(ctx)
 	if err != nil {
@@ -61,13 +63,15 @@ func (c *SecuritySettingController) GetSecuritySettings(ctx *gin.Context) {
 }
 
 // UpdateSecuritySettings Update security settings
-// @Summary Update security settings
-// @Description Update security settings
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=model.SecuritySettings,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/security-settings [put]
+//
+//	@Summary		Update security settings
+//	@Description	Update security settings
+//	@Tags			System Settings/Security
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=model.SecuritySettings,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/security-settings [put]
 func (c *SecuritySettingController) UpdateSecuritySettings(ctx *gin.Context) {
 	// Parse request body
 	var req model.SecuritySettings
@@ -118,18 +122,23 @@ func (c *SecuritySettingController) UpdateSecuritySettings(ctx *gin.Context) {
 	}
 }
 
+type CheckPasswordComplexityRequest struct {
+	Password string `json:"password" binding:"required"`
+}
+
 // CheckPasswordComplexity Check password complexity
-// @Summary Check password complexity
-// @Description Check password complexity
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=bool,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/security-settings/check-password [post]
+//
+//	@Summary		Check password complexity
+//	@Description	Check password complexity
+//	@Tags			System Settings/Security
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		CheckPasswordComplexityRequest	true	"Check password complexity request"
+//	@Success		200	{object}	util.Response{data=bool,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/security-settings/check-password [post]
 func (c *SecuritySettingController) CheckPasswordComplexity(ctx *gin.Context) {
-	var req struct {
-		Password string `json:"password" binding:"required"`
-	}
+	var req CheckPasswordComplexityRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
 			HTTPCode: http.StatusBadRequest,

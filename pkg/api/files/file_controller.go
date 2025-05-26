@@ -30,15 +30,16 @@ func (c *FileController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // UploadFile Upload file
-// @Summary Upload file
-// @Description Upload file
-// @Accept multipart/form-data
-// @Param file formData file true "File"
-// @Param access formData string false "Access type"
-// @Param type formData string false "File type"
-// @Success 200 {object} util.Response{data=[]model.File,code=string}
-// @Failure 400 {object} util.Response{err=string,code=string}
-// @Router /api/files [post]
+//	@Summary		Upload file
+//	@Description	Upload file
+//	@Tags			File Management
+//	@Accept			multipart/form-data
+//	@Param			file	formData	file	true	"File"
+//	@Param			access	formData	string	false	"Access type"
+//	@Param			type	formData	string	false	"File type"
+//	@Success		200		{object}	util.Response{data=[]model.File,code=string}
+//	@Failure		400		{object}	util.Response{err=string,code=string}
+//	@Router			/api/files [post]
 func (c *FileController) UploadFile(ctx *gin.Context) {
 	accessType := model.AccessType(ctx.PostForm("access"))
 	if accessType == "" {
@@ -111,12 +112,13 @@ func (c *FileController) UploadFile(ctx *gin.Context) {
 }
 
 // DownloadFile Download file
-// @Summary Download file
-// @Description Download file
-// @Param fileKey path string true "File key"
-// @Success 200
-// @Failure 400 {object} util.Response
-// @Router /api/files/{fileKey} [get]
+//	@Summary		Download file
+//	@Description	Download file
+//	@Tags			File Management
+//	@Param			fileKey	path	string	true	"File key"
+//	@Success		200
+//	@Failure		400	{object}	util.Response
+//	@Router			/api/files/{fileKey} [get]
 func (c *FileController) DownloadFile(ctx *gin.Context) {
 	fileKey := ctx.Param("fileKey")
 	if fileKey == "" {
@@ -140,15 +142,16 @@ func (c *FileController) DownloadFile(ctx *gin.Context) {
 }
 
 // ListFiles Get file list
-// @Summary Get file list
-// @Description Get file list
-// @Param current query int false "Current page"
-// @Param page_size query int false "Page size"
-// @Param search query string false "Search"
-// @Param file_type query string false "File type"
-// @Success 200 {object} util.Response{data=[]model.File,code=string}
-// @Failure 400 {object} util.Response{err=string,code=string}
-// @Router /api/files [get]
+//	@Summary		Get file list
+//	@Description	Get file list
+//	@Tags			File Management
+//	@Param			current		query		int		false	"Current page"
+//	@Param			page_size	query		int		false	"Page size"
+//	@Param			search		query		string	false	"Search"
+//	@Param			file_type	query		string	false	"File type"
+//	@Success		200			{object}	util.Response{data=[]model.File,code=string}
+//	@Failure		400			{object}	util.Response{err=string,code=string}
+//	@Router			/api/files [get]
 func (c *FileController) ListFiles(ctx *gin.Context) {
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))

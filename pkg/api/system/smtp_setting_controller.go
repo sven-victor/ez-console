@@ -34,15 +34,16 @@ func (c *SMTPSettingController) RegisterRoutes(r *gin.RouterGroup) {
 }
 
 // GetSMTPSettings godoc
-// @Summary Get SMTP settings
-// @Description Retrieves the current SMTP settings.
-// @Tags System Settings
-// @Accept json
-// @Produce json
-// @Success 200 {object} model.SMTPSettings "Successfully retrieved SMTP settings"
-// @Failure 500 {object} util.ErrorResponse "Internal server error"
-// @Router /api/system/smtp-settings [get]
-// @Security ApiKeyAuth
+//
+//	@Summary		Get SMTP settings
+//	@Description	Retrieves the current SMTP settings.
+//	@Tags			System Settings/SMTP
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	model.SMTPSettings	"Successfully retrieved SMTP settings"
+//	@Failure		500	{object}	util.ErrorResponse	"Internal server error"
+//	@Router			/api/system/smtp-settings [get]
+//	@Security		ApiKeyAuth
 func (c *SMTPSettingController) GetSMTPSettings(ctx *gin.Context) {
 	settings, err := c.service.GetSMTPSettings(ctx)
 	if err != nil {
@@ -63,17 +64,18 @@ type SMTPSettingsRequest struct {
 }
 
 // UpdateSMTPSettings godoc
-// @Summary Update SMTP settings
-// @Description Updates the SMTP settings.
-// @Tags System Settings
-// @Accept json
-// @Produce json
-// @Param settings body model.SMTPSettings true "SMTP settings to update"
-// @Success 200 {object} util.Response{data=model.SMTPSettings,code=string} "Successfully updated SMTP settings"
-// @Failure 400 {object} util.ErrorResponse "Invalid request payload"
-// @Failure 500 {object} util.ErrorResponse "Internal server error"
-// @Router /api/system/smtp-settings [put]
-// @Security ApiKeyAuth
+//
+//	@Summary		Update SMTP settings
+//	@Description	Updates the SMTP settings.
+//	@Tags			System Settings/SMTP
+//	@Accept			json
+//	@Produce		json
+//	@Param			settings	body		model.SMTPSettings									true	"SMTP settings to update"
+//	@Success		200			{object}	util.Response{data=model.SMTPSettings,code=string}	"Successfully updated SMTP settings"
+//	@Failure		400			{object}	util.ErrorResponse									"Invalid request payload"
+//	@Failure		500			{object}	util.ErrorResponse									"Internal server error"
+//	@Router			/api/system/smtp-settings [put]
+//	@Security		ApiKeyAuth
 func (c *SMTPSettingController) UpdateSMTPSettings(ctx *gin.Context) {
 	var req SMTPSettingsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -107,17 +109,18 @@ type SMTPTestResponse struct {
 }
 
 // TestSMTPConnection godoc
-// @Summary Test SMTP connection
-// @Description Sends a test email to the specified recipient using the provided or saved SMTP settings.
-// @Tags System Settings
-// @Accept json
-// @Produce json
-// @Param testRequest body model.SMTPTestRequest true "SMTP test request, including recipient and optional SMTP settings to test with"
-// @Success 200 {object} util.Response{data=SMTPTestResponse,code=string} "SMTP connection test result"
-// @Failure 400 {object} util.ErrorResponse "Invalid request payload"
-// @Failure 500 {object} util.ErrorResponse "Internal server error during test"
-// @Router /api/system/smtp-settings/test [post]
-// @Security ApiKeyAuth
+//
+//	@Summary		Test SMTP connection
+//	@Description	Sends a test email to the specified recipient using the provided or saved SMTP settings.
+//	@Tags			System Settings/SMTP
+//	@Accept			json
+//	@Produce		json
+//	@Param			testRequest	body		model.SMTPTestRequest								true	"SMTP test request, including recipient and optional SMTP settings to test with"
+//	@Success		200			{object}	util.Response{data=SMTPTestResponse,code=string}	"SMTP connection test result"
+//	@Failure		400			{object}	util.ErrorResponse									"Invalid request payload"
+//	@Failure		500			{object}	util.ErrorResponse									"Internal server error during test"
+//	@Router			/api/system/smtp-settings/test [post]
+//	@Security		ApiKeyAuth
 func (c *SMTPSettingController) TestSMTPConnection(ctx *gin.Context) {
 	var req model.SMTPTestRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {

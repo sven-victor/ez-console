@@ -46,13 +46,15 @@ type LDAPSettings struct {
 }
 
 // GetLDAPSettings Get LDAP settings
-// @Summary Get LDAP settings
-// @Description Get LDAP settings
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=clientsldap.Options,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/ldap-settings [get]
+//
+//	@Summary		Get LDAP settings
+//	@Description	Get LDAP settings
+//	@Tags			System Settings/LDAP
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=LDAPSettings,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/ldap-settings [get]
 func (c *LDAPSettingController) GetLDAPSettings(ctx *gin.Context) {
 	settings, err := c.service.GetLDAPSettings(ctx)
 	if err != nil {
@@ -81,13 +83,16 @@ type UpdateLDAPSettingsRequest struct {
 }
 
 // UpdateLDAPSettings Update LDAP settings
-// @Summary Update LDAP settings
-// @Description Update LDAP settings
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=clientsldap.Options,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/ldap-settings [put]
+//
+//	@Summary		Update LDAP settings
+//	@Tags			System Settings/LDAP
+//	@Description	Update LDAP settings
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		UpdateLDAPSettingsRequest	true	"Update LDAP settings"
+//	@Success		200		{object}	util.Response{data=clientsldap.Options,code=string}
+//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/ldap-settings [put]
 func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 	var req UpdateLDAPSettingsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -128,13 +133,15 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 }
 
 // TestLDAPConnection Test LDAP connection
-// @Summary Test LDAP connection
-// @Description Test LDAP connection
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/ldap-settings/test [post]
+//
+//	@Summary		Test LDAP connection
+//	@Description	Test LDAP connection
+//	@Tags			System Settings/LDAP
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/ldap-settings/test [post]
 func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 	// LDAPTestRequest LDAP test request struct
 	type LDAPTestRequest struct {
@@ -186,13 +193,15 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 }
 
 // ImportLDAPUsers Import LDAP users
-// @Summary Import LDAP users
-// @Description Import LDAP users
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=[]model.User,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/ldap-settings/import [post]
+//
+//	@Summary		Import LDAP users
+//	@Description	Import LDAP users
+//	@Tags			System Settings/LDAP
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=[]model.User,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/ldap-settings/import [post]
 func (c *LDAPSettingController) ImportLDAPUsers(ctx *gin.Context) {
 	type ImportLDAPUsersRequest struct {
 		UserDN []string `json:"user_dn"`

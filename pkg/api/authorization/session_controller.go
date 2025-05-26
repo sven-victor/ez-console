@@ -33,16 +33,17 @@ func (c *SessionController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // GetUserSessions Get all sessions for the user
-// @Summary Get all sessions for the user
-// @Description Get all sessions for the user
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param current query int false "Current page number" default(1)
-// @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} util.Response{data=[]model.Session,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/profile/sessions [get]
+//
+//	@Summary		Get all sessions for the user
+//	@Description	Get all sessions for the user
+//	@Tags			Authorization/Profile/Sessions
+//	@Accept			json
+//	@Produce		json
+//	@Param			current		query		int	false	"Current page number"		default(1)
+//	@Param			page_size	query		int	false	"Number of items per page"	default(10)
+//	@Success		200			{object}	util.Response{data=[]model.Session,code=string}
+//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/profile/sessions [get]
 func (c *SessionController) GetUserSessions(ctx *gin.Context) {
 	// Get current user from context
 	userInterface, _ := ctx.Get("user")
@@ -82,15 +83,16 @@ func (c *SessionController) GetUserSessions(ctx *gin.Context) {
 }
 
 // TerminateSession Terminate the specified session
-// @Summary Terminate the specified session
-// @Description Terminate the specified session
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "Session ID"
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/profile/sessions/{id} [delete]
+//
+//	@Summary		Terminate the specified session
+//	@Description	Terminate the specified session
+//	@Tags			Authorization/Profile/Sessions
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Session ID"
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/profile/sessions/{id} [delete]
 func (c *SessionController) TerminateSession(ctx *gin.Context) {
 	// Get current user from context
 	userInterface, _ := ctx.Get("user")
@@ -144,14 +146,15 @@ func (c *SessionController) TerminateSession(ctx *gin.Context) {
 }
 
 // TerminateOtherSessions Terminate all sessions except the current one
-// @Summary Terminate all sessions except the current one
-// @Description Terminate all sessions except the current one
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=string,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/authorization/profile/sessions/terminate-others [post]
+//
+//	@Summary		Terminate all sessions except the current one
+//	@Description	Terminate all sessions except the current one
+//	@Tags			Authorization/Profile/Sessions
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=string,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/authorization/profile/sessions/terminate-others [post]
 func (c *SessionController) TerminateOtherSessions(ctx *gin.Context) {
 	// Get current user from context
 	userInterface, _ := ctx.Get("user")

@@ -37,17 +37,18 @@ func (c *RoleController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // ListRoles gets a list of roles
-// @Summary Get a list of roles
-// @Description Get a list of roles
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param current query int false "Current page" default(1)
-// @Param page_size query int false "Page size" default(10)
-// @Param search query string false "Search"
-// @Success 200 {object} util.Response{data=[]model.Role}
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles [get]
+//
+//	@Summary		Get a list of roles
+//	@Description	Get a list of roles
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			current		query		int		false	"Current page"	default(1)
+//	@Param			page_size	query		int		false	"Page size"		default(10)
+//	@Param			search		query		string	false	"Search"
+//	@Success		200			{object}	util.Response{data=[]model.Role}
+//	@Failure		500			{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles [get]
 func (c *RoleController) ListRoles(ctx *gin.Context) {
 	// Get pagination parameters
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
@@ -76,16 +77,17 @@ func (c *RoleController) ListRoles(ctx *gin.Context) {
 }
 
 // GetRole gets a role by ID
-// @Summary Get a role by ID
-// @Description Get a role by ID
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "Role ID"
-// @Success 200 {object} util.Response{data=model.Role}
-// @Failure 400 {object} util.ErrorResponse
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles/{id} [get]
+//
+//	@Summary		Get a role by ID
+//	@Description	Get a role by ID
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Role ID"
+//	@Success		200	{object}	util.Response{data=model.Role}
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles/{id} [get]
 func (c *RoleController) GetRole(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -113,24 +115,27 @@ func (c *RoleController) GetRole(ctx *gin.Context) {
 	})
 }
 
+type CreateRoleRequest struct {
+	Name           string               `json:"name" binding:"required"`
+	Description    string               `json:"description"`
+	PermissionIDs  []string             `json:"permissions"`
+	PolicyDocument model.PolicyDocument `json:"policy_document"`
+}
+
 // CreateRole creates a new role
-// @Summary Create a new role
-// @Description Create a new role
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param role body model.Role true "Role"
-// @Success 200 {object} util.Response{data=model.Role}
-// @Failure 400 {object} util.ErrorResponse
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles [post]
+//
+//	@Summary		Create a new role
+//	@Description	Create a new role
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		CreateRoleRequest	true	"Create role request"
+//	@Success		200		{object}	util.Response{data=model.Role}
+//	@Failure		400		{object}	util.ErrorResponse
+//	@Failure		500		{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles [post]
 func (c *RoleController) CreateRole(ctx *gin.Context) {
-	var req struct {
-		Name           string               `json:"name" binding:"required"`
-		Description    string               `json:"description"`
-		PermissionIDs  []string             `json:"permissions"`
-		PolicyDocument model.PolicyDocument `json:"policy_document"`
-	}
+	var req CreateRoleRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -173,18 +178,26 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 	}
 }
 
+type UpdateRoleRequest struct {
+	Name           string               `json:"name" binding:"required"`
+	Description    string               `json:"description"`
+	PermissionIDs  []string             `json:"permissions"`
+	PolicyDocument model.PolicyDocument `json:"policy_document"`
+}
+
 // UpdateRole updates a role
-// @Summary Update a role
-// @Description Update a role
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "Role ID"
-// @Param role body model.Role true "Role"
-// @Success 200 {object} util.Response{data=model.Role}
-// @Failure 400 {object} util.ErrorResponse
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles/{id} [put]
+//
+//	@Summary		Update a role
+//	@Description	Update a role
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string		true	"Role ID"
+//	@Param			request	body		UpdateRoleRequest	true	"Update role request"
+//	@Success		200		{object}	util.Response{data=model.Role}
+//	@Failure		400		{object}	util.ErrorResponse
+//	@Failure		500		{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles/{id} [put]
 func (c *RoleController) UpdateRole(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -196,12 +209,7 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Name           string               `json:"name" binding:"required"`
-		Description    string               `json:"description"`
-		PermissionIDs  []string             `json:"permissions"`
-		PolicyDocument model.PolicyDocument `json:"policy_document"`
-	}
+	var req UpdateRoleRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -251,16 +259,17 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 }
 
 // DeleteRole deletes a role
-// @Summary Delete a role
-// @Description Delete a role
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "Role ID"
-// @Success 200 {object} util.Response{data=model.Role}
-// @Failure 400 {object} util.ErrorResponse
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles/{id} [delete]
+//
+//	@Summary		Delete a role
+//	@Description	Delete a role
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Role ID"
+//	@Success		200	{object}	util.Response{data=model.Role}
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles/{id} [delete]
 func (c *RoleController) DeleteRole(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -309,18 +318,23 @@ func (c *RoleController) DeleteRole(ctx *gin.Context) {
 	}
 }
 
+type AssignPermissionsRequest struct {
+	PermissionIDs []string `json:"permission_ids" binding:"required"`
+}
+
 // AssignPermissions assigns permissions to a role
-// @Summary Assign permissions to a role
-// @Description Assign permissions to a role
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "Role ID"
-// @Param permissions body []string true "Permissions"
-// @Success 200 {object} util.Response{data=model.Role}
-// @Failure 400 {object} util.ErrorResponse
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles/{id}/permissions [put]
+//
+//	@Summary		Assign permissions to a role
+//	@Description	Assign permissions to a role
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string		true	"Role ID"
+//	@Param			request		body		AssignPermissionsRequest	true	"Assign permissions request"
+//	@Success		200			{object}	util.Response{data=model.Role}
+//	@Failure		400			{object}	util.ErrorResponse
+//	@Failure		500			{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles/{id}/permissions [put]
 func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -332,9 +346,7 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 		return
 	}
 
-	var req struct {
-		PermissionIDs []string `json:"permission_ids" binding:"required"`
-	}
+	var req AssignPermissionsRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{
@@ -384,16 +396,17 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 }
 
 // GetRolePolicy gets the policy document for a role
-// @Summary Get the policy document for a role
-// @Description Get the policy document for a role
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "Role ID"
-// @Success 200 {object} util.Response{data=model.PolicyDocument}
-// @Failure 400 {object} util.ErrorResponse
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles/{id}/policy [get]
+//
+//	@Summary		Get the policy document for a role
+//	@Description	Get the policy document for a role
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Role ID"
+//	@Success		200	{object}	util.Response{data=model.PolicyDocument}
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles/{id}/policy [get]
 func (c *RoleController) GetRolePolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -423,18 +436,23 @@ func (c *RoleController) GetRolePolicy(ctx *gin.Context) {
 	})
 }
 
+type SetRolePolicyRequest struct {
+	PolicyDocument model.PolicyDocument `json:"policy_document"`
+}
+
 // SetRolePolicy sets the policy for a role
-// @Summary Set the policy for a role
-// @Description Set the policy for a role
-// @Tags Authorization
-// @Accept json
-// @Produce json
-// @Param id path string true "Role ID"
-// @Param policy_document body model.PolicyDocument true "Policy Document"
-// @Success 200 {object} util.Response{data=model.Role}
-// @Failure 400 {object} util.ErrorResponse
-// @Failure 500 {object} util.ErrorResponse
-// @Router /api/authorization/roles/{id}/policy [put]
+//
+//	@Summary		Set the policy for a role
+//	@Description	Set the policy for a role
+//	@Tags			Authorization/Role
+//	@Accept			json
+//	@Produce		json
+//	@Param			id				path		string					true	"Role ID"
+//	@Param			request		body		SetRolePolicyRequest	true	"Set role policy request"
+//	@Success		200				{object}	util.Response{data=model.Role}
+//	@Failure		400				{object}	util.ErrorResponse
+//	@Failure		500				{object}	util.ErrorResponse
+//	@Router			/api/authorization/roles/{id}/policy [put]
 func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -446,9 +464,7 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 		return
 	}
 
-	var req struct {
-		PolicyDocument model.PolicyDocument `json:"policy_document"`
-	}
+	var req SetRolePolicyRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.ErrorResponse{

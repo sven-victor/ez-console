@@ -1,4 +1,175 @@
 definitions:
+  authorizationapi.AssignPermissionsRequest:
+    properties:
+      permission_ids:
+        items:
+          type: string
+        type: array
+    required:
+    - permission_ids
+    type: object
+  authorizationapi.AssignRolesRequest:
+    properties:
+      role_ids:
+        items:
+          type: string
+        type: array
+    required:
+    - role_ids
+    type: object
+  authorizationapi.AssignServiceAccountRolesRequest:
+    properties:
+      role_ids:
+        items:
+          type: string
+        type: array
+    required:
+    - role_ids
+    type: object
+  authorizationapi.ChangePasswordRequest:
+    properties:
+      new_password:
+        type: string
+      old_password:
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  authorizationapi.CreateRoleRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      policy_document:
+        $ref: '#/definitions/model.PolicyDocument'
+    required:
+    - name
+    type: object
+  authorizationapi.CreateServiceAccountAccessKeyRequest:
+    properties:
+      description:
+        type: string
+      expires_in_days:
+        type: integer
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  authorizationapi.CreateServiceAccountRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  authorizationapi.LoginRequest:
+    properties:
+      mfa_code:
+        type: string
+      mfa_token:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  authorizationapi.ResetUserPasswordRequest:
+    properties:
+      password:
+        type: string
+    type: object
+  authorizationapi.SetRolePolicyRequest:
+    properties:
+      policy_document:
+        $ref: '#/definitions/model.PolicyDocument'
+    type: object
+  authorizationapi.SetServiceAccountPolicyRequest:
+    properties:
+      policy_document:
+        $ref: '#/definitions/model.PolicyDocument'
+    required:
+    - policy_document
+    type: object
+  authorizationapi.UpdateCurrentUserRequest:
+    properties:
+      avatar:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      phone:
+        type: string
+    required:
+    - email
+    type: object
+  authorizationapi.UpdateRoleRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      permissions:
+        items:
+          type: string
+        type: array
+      policy_document:
+        $ref: '#/definitions/model.PolicyDocument'
+    required:
+    - name
+    type: object
+  authorizationapi.UpdateServiceAccountAccessKeyRequest:
+    properties:
+      description:
+        type: string
+      expires_at:
+        type: string
+      name:
+        type: string
+      status:
+        enum:
+        - active
+        - disabled
+        type: string
+    required:
+    - name
+    - status
+    type: object
+  authorizationapi.UpdateServiceAccountRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  authorizationapi.UpdateServiceAccountStatusRequest:
+    properties:
+      status:
+        enum:
+        - active
+        - disabled
+        type: string
+    required:
+    - status
+    type: object
+  authorizationapi.UpdateUserStatusRequest:
+    properties:
+      status:
+        type: string
+    required:
+    - status
+    type: object
   gin.H:
     additionalProperties: {}
     type: object
@@ -445,6 +616,8 @@ definitions:
     type: object
   model.SystemSettings:
     properties:
+      disable_local_user_login:
+        type: boolean
       home_page:
         type: string
       logo:
@@ -638,12 +811,89 @@ definitions:
       status:
         type: string
     type: object
+  systemapi.CheckPasswordComplexityRequest:
+    properties:
+      password:
+        type: string
+    required:
+    - password
+    type: object
+  systemapi.LDAPSettings:
+    properties:
+      base_dn:
+        type: string
+      bind_dn:
+        type: string
+      bind_password:
+        $ref: '#/definitions/safe.String'
+      ca_cert:
+        type: string
+      client_cert:
+        type: string
+      client_key:
+        $ref: '#/definitions/safe.String'
+      default_role:
+        type: string
+      display_name_attr:
+        type: string
+      email_attr:
+        type: string
+      enabled:
+        type: boolean
+      insecure:
+        type: boolean
+      server_url:
+        type: string
+      start_tls:
+        type: boolean
+      timeout:
+        type: integer
+      user_attr:
+        type: string
+      user_filter:
+        type: string
+    type: object
   systemapi.SMTPTestResponse:
     properties:
       message:
         type: string
       success:
         type: boolean
+    type: object
+  systemapi.UpdateLDAPSettingsRequest:
+    properties:
+      base_dn:
+        type: string
+      bind_dn:
+        type: string
+      bind_password:
+        type: string
+      ca_cert:
+        type: string
+      client_cert:
+        type: string
+      client_key:
+        type: string
+      default_role:
+        type: string
+      display_name_attr:
+        type: string
+      email_attr:
+        type: string
+      enabled:
+        type: boolean
+      insecure:
+        type: boolean
+      server_url:
+        type: string
+      start_tls:
+        type: boolean
+      timeout:
+        type: integer
+      user_attr:
+        type: string
+      user_filter:
+        type: string
     type: object
   time.Duration:
     enum:
@@ -655,22 +905,10 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
     - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -695,51 +933,21 @@ definitions:
     type: object
 info:
   contact: {}
+  title: EZ Console API
+  version: v1.4.0
 paths:
-  /api/authorization/current:
-    get:
+  /api/authorization/auth/login:
+    post:
       consumes:
       - application/json
-      description: Get current user's information
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
-      summary: Get current user's information
-      tags:
-      - Authorization
-    put:
-      consumes:
-      - application/json
-      description: Update current user's information
+      description: User login
       parameters:
-      - description: User information
+      - description: Login request
         in: body
-        name: user
+        name: login
         required: true
         schema:
-          $ref: '#/definitions/service.UpdateUserRequest'
+          $ref: '#/definitions/authorizationapi.LoginRequest'
       produces:
       - application/json
       responses:
@@ -752,7 +960,7 @@ paths:
                 code:
                   type: string
                 data:
-                  $ref: '#/definitions/model.User'
+                  $ref: '#/definitions/service.LoginResponse'
               type: object
         "500":
           description: Internal Server Error
@@ -765,73 +973,14 @@ paths:
                 err:
                   type: string
               type: object
-      summary: Update current user's information
+      summary: User login
       tags:
-      - Authorization
-  /api/authorization/current/logs:
-    get:
+      - Authorization/Users
+  /api/authorization/auth/logout:
+    post:
       consumes:
       - application/json
-      description: Get current user's audit logs
-      parameters:
-      - default: 1
-        description: Current page number
-        in: query
-        name: current
-        type: integer
-      - default: 10
-        description: Number of items per page
-        in: query
-        name: page_size
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.AuditLog'
-                  type: array
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
-      summary: Get current user's audit logs
-      tags:
-      - Authorization
-  /api/authorization/current/password:
-    put:
-      consumes:
-      - application/json
-      description: Change user password
-      parameters:
-      - description: Old password
-        in: body
-        name: old_password
-        required: true
-        schema:
-          type: string
-      - description: New password
-        in: body
-        name: new_password
-        required: true
-        schema:
-          type: string
+      description: User logout
       produces:
       - application/json
       responses:
@@ -857,9 +1006,9 @@ paths:
                 err:
                   type: string
               type: object
-      summary: Change user password
+      summary: User logout
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/ldap/users:
     get:
       consumes:
@@ -900,96 +1049,7 @@ paths:
               type: object
       summary: Get LDAP users
       tags:
-      - Authorization
-  /api/authorization/login:
-    post:
-      consumes:
-      - application/json
-      description: User login
-      parameters:
-      - description: Username
-        in: body
-        name: username
-        required: true
-        schema:
-          type: string
-      - description: Password
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
-      - description: MFA code
-        in: body
-        name: mfa_code
-        schema:
-          type: string
-      - description: MFA token
-        in: body
-        name: mfa_token
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/service.LoginResponse'
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
-      summary: User login
-      tags:
-      - Authorization
-  /api/authorization/logout:
-    post:
-      consumes:
-      - application/json
-      description: User logout
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
-      summary: User logout
-      tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/mfa/disable:
     post:
       consumes:
@@ -1017,7 +1077,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Disable MFA
       tags:
-      - Authorization
+      - Authorization/Profile/MFA
   /api/authorization/mfa/enable:
     post:
       consumes:
@@ -1052,7 +1112,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Enable MFA
       tags:
-      - Authorization
+      - Authorization/Profile/MFA
   /api/authorization/mfa/verify:
     post:
       consumes:
@@ -1097,7 +1157,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Verify and activate MFA
       tags:
-      - Authorization
+      - Authorization/Profile/MFA
   /api/authorization/oauth/callback:
     get:
       consumes:
@@ -1141,7 +1201,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Handle the OAuth callback
       tags:
-      - Authorization
+      - Authorization/OAuth
   /api/authorization/oauth/login/{provider}:
     get:
       consumes:
@@ -1175,7 +1235,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get the OAuth login URL
       tags:
-      - Authorization
+      - Authorization/OAuth
   /api/authorization/oauth/providers:
     get:
       consumes:
@@ -1201,7 +1261,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get the list of available OAuth providers
       tags:
-      - Authorization
+      - Authorization/OAuth
   /api/authorization/permissions:
     get:
       consumes:
@@ -1227,7 +1287,165 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get a list of permissions
       tags:
-      - Authorization
+      - Authorization/Permission
+  /api/authorization/profile:
+    get:
+      consumes:
+      - application/json
+      description: Get current user's information
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get current user's information
+      tags:
+      - Authorization/Users
+    put:
+      consumes:
+      - application/json
+      description: Update current user's information
+      parameters:
+      - description: Update current user request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authorizationapi.UpdateCurrentUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Update current user's information
+      tags:
+      - Authorization/Users
+  /api/authorization/profile/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get current user's audit logs
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  items:
+                    $ref: '#/definitions/model.AuditLog'
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Get current user's audit logs
+      tags:
+      - Authorization/Users
+  /api/authorization/profile/password:
+    put:
+      consumes:
+      - application/json
+      description: Change user password
+      parameters:
+      - description: Change password request
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/authorizationapi.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/util.Response'
+            - properties:
+                code:
+                  type: string
+                err:
+                  type: string
+              type: object
+      summary: Change user password
+      tags:
+      - Authorization/Profile
   /api/authorization/profile/sessions:
     get:
       consumes:
@@ -1273,7 +1491,7 @@ paths:
               type: object
       summary: Get all sessions for the user
       tags:
-      - Authorization
+      - Authorization/Profile/Sessions
   /api/authorization/profile/sessions/{id}:
     delete:
       consumes:
@@ -1312,7 +1530,7 @@ paths:
               type: object
       summary: Terminate the specified session
       tags:
-      - Authorization
+      - Authorization/Profile/Sessions
   /api/authorization/profile/sessions/terminate-others:
     post:
       consumes:
@@ -1345,7 +1563,7 @@ paths:
               type: object
       summary: Terminate all sessions except the current one
       tags:
-      - Authorization
+      - Authorization/Profile/Sessions
   /api/authorization/refresh:
     post:
       consumes:
@@ -1378,7 +1596,7 @@ paths:
               type: object
       summary: Refresh user's JWT token
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/roles:
     get:
       consumes:
@@ -1419,18 +1637,18 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get a list of roles
       tags:
-      - Authorization
+      - Authorization/Role
     post:
       consumes:
       - application/json
       description: Create a new role
       parameters:
-      - description: Role
+      - description: Create role request
         in: body
-        name: role
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/model.Role'
+          $ref: '#/definitions/authorizationapi.CreateRoleRequest'
       produces:
       - application/json
       responses:
@@ -1453,7 +1671,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Create a new role
       tags:
-      - Authorization
+      - Authorization/Role
   /api/authorization/roles/{id}:
     delete:
       consumes:
@@ -1487,7 +1705,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Delete a role
       tags:
-      - Authorization
+      - Authorization/Role
     get:
       consumes:
       - application/json
@@ -1520,7 +1738,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get a role by ID
       tags:
-      - Authorization
+      - Authorization/Role
     put:
       consumes:
       - application/json
@@ -1531,12 +1749,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Role
+      - description: Update role request
         in: body
-        name: role
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/model.Role'
+          $ref: '#/definitions/authorizationapi.UpdateRoleRequest'
       produces:
       - application/json
       responses:
@@ -1559,7 +1777,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Update a role
       tags:
-      - Authorization
+      - Authorization/Role
   /api/authorization/roles/{id}/permissions:
     put:
       consumes:
@@ -1571,14 +1789,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Permissions
+      - description: Assign permissions request
         in: body
-        name: permissions
+        name: request
         required: true
         schema:
-          items:
-            type: string
-          type: array
+          $ref: '#/definitions/authorizationapi.AssignPermissionsRequest'
       produces:
       - application/json
       responses:
@@ -1601,7 +1817,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Assign permissions to a role
       tags:
-      - Authorization
+      - Authorization/Role
   /api/authorization/roles/{id}/policy:
     get:
       consumes:
@@ -1635,7 +1851,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get the policy document for a role
       tags:
-      - Authorization
+      - Authorization/Role
     put:
       consumes:
       - application/json
@@ -1646,12 +1862,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Policy Document
+      - description: Set role policy request
         in: body
-        name: policy_document
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/model.PolicyDocument'
+          $ref: '#/definitions/authorizationapi.SetRolePolicyRequest'
       produces:
       - application/json
       responses:
@@ -1674,7 +1890,7 @@ paths:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Set the policy for a role
       tags:
-      - Authorization
+      - Authorization/Role
   /api/authorization/service-accounts:
     get:
       consumes:
@@ -1724,23 +1940,18 @@ paths:
               type: object
       summary: Get service account list
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
     post:
       consumes:
       - application/json
       description: Create service account
       parameters:
-      - description: Name
+      - description: Create service account request
         in: body
-        name: name
+        name: request
         required: true
         schema:
-          type: string
-      - description: Description
-        in: body
-        name: description
-        schema:
-          type: string
+          $ref: '#/definitions/authorizationapi.CreateServiceAccountRequest'
       produces:
       - application/json
       responses:
@@ -1768,7 +1979,7 @@ paths:
               type: object
       summary: Create service account
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}:
     delete:
       consumes:
@@ -1807,7 +2018,7 @@ paths:
               type: object
       summary: Delete service account
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
     get:
       consumes:
       - application/json
@@ -1845,7 +2056,7 @@ paths:
               type: object
       summary: Get service account by ID
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
     put:
       consumes:
       - application/json
@@ -1856,17 +2067,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Name
+      - description: Update service account request
         in: body
-        name: name
+        name: request
         required: true
         schema:
-          type: string
-      - description: Description
-        in: body
-        name: description
-        schema:
-          type: string
+          $ref: '#/definitions/authorizationapi.UpdateServiceAccountRequest'
       produces:
       - application/json
       responses:
@@ -1894,7 +2100,7 @@ paths:
               type: object
       summary: Update service account
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}/access-keys:
     get:
       consumes:
@@ -1935,7 +2141,7 @@ paths:
               type: object
       summary: Get service account access keys
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
     post:
       consumes:
       - application/json
@@ -1946,22 +2152,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Name
+      - description: Create service account access key request
         in: body
-        name: name
+        name: request
         required: true
         schema:
-          type: string
-      - description: Description
-        in: body
-        name: description
-        schema:
-          type: string
-      - description: Expires in days
-        in: body
-        name: expires_in_days
-        schema:
-          type: integer
+          $ref: '#/definitions/authorizationapi.CreateServiceAccountAccessKeyRequest'
       produces:
       - application/json
       responses:
@@ -1989,7 +2185,7 @@ paths:
               type: object
       summary: Create service account access key
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}/access-keys/{keyId}:
     delete:
       consumes:
@@ -2033,7 +2229,7 @@ paths:
               type: object
       summary: Delete service account access key
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
     put:
       consumes:
       - application/json
@@ -2049,28 +2245,12 @@ paths:
         name: keyId
         required: true
         type: string
-      - description: Name
+      - description: Update service account access key request
         in: body
-        name: name
+        name: request
         required: true
         schema:
-          type: string
-      - description: Description
-        in: body
-        name: description
-        schema:
-          type: string
-      - description: Status
-        in: body
-        name: status
-        required: true
-        schema:
-          type: string
-      - description: Expires at
-        in: body
-        name: expires_at
-        schema:
-          type: string
+          $ref: '#/definitions/authorizationapi.UpdateServiceAccountAccessKeyRequest'
       produces:
       - application/json
       responses:
@@ -2098,7 +2278,7 @@ paths:
               type: object
       summary: Update service account access key
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}/policy:
     get:
       consumes:
@@ -2137,7 +2317,7 @@ paths:
               type: object
       summary: Get service account policy
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
     put:
       consumes:
       - application/json
@@ -2148,12 +2328,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Policy document
+      - description: Set service account policy request
         in: body
-        name: policy_document
+        name: request
         required: true
         schema:
-          $ref: '#/definitions/model.PolicyDocument'
+          $ref: '#/definitions/authorizationapi.SetServiceAccountPolicyRequest'
       produces:
       - application/json
       responses:
@@ -2181,7 +2361,7 @@ paths:
               type: object
       summary: Set service account policy
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}/roles:
     get:
       consumes:
@@ -2222,7 +2402,7 @@ paths:
               type: object
       summary: Get service account roles
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
     post:
       consumes:
       - application/json
@@ -2233,14 +2413,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Role IDs
+      - description: Assign roles to service account request
         in: body
-        name: role_ids
+        name: request
         required: true
         schema:
-          items:
-            type: string
-          type: array
+          $ref: '#/definitions/authorizationapi.AssignServiceAccountRolesRequest'
       produces:
       - application/json
       responses:
@@ -2270,7 +2448,7 @@ paths:
               type: object
       summary: Assign roles to service account
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}/status:
     put:
       consumes:
@@ -2282,12 +2460,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Status
+      - description: Update service account status request
         in: body
-        name: status
+        name: request
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/authorizationapi.UpdateServiceAccountStatusRequest'
       produces:
       - application/json
       responses:
@@ -2315,7 +2493,7 @@ paths:
               type: object
       summary: Update service account status
       tags:
-      - Authorization
+      - Authorization/ServiceAccount
   /api/authorization/users:
     get:
       consumes:
@@ -2369,7 +2547,7 @@ paths:
               type: object
       summary: Get user list
       tags:
-      - Authorization
+      - Authorization/Users
     post:
       consumes:
       - application/json
@@ -2408,7 +2586,7 @@ paths:
               type: object
       summary: Create a new user
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/users/{id}:
     delete:
       consumes:
@@ -2447,7 +2625,7 @@ paths:
               type: object
       summary: Delete a user
       tags:
-      - Authorization
+      - Authorization/Users
     get:
       consumes:
       - application/json
@@ -2485,7 +2663,7 @@ paths:
               type: object
       summary: Get user by ID
       tags:
-      - Authorization
+      - Authorization/Users
     put:
       consumes:
       - application/json
@@ -2529,7 +2707,7 @@ paths:
               type: object
       summary: Update a user
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/users/{id}/logs:
     get:
       consumes:
@@ -2580,7 +2758,7 @@ paths:
               type: object
       summary: Get user's audit logs
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/users/{id}/password:
     put:
       consumes:
@@ -2592,6 +2770,12 @@ paths:
         name: id
         required: true
         type: string
+      - description: Reset user password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authorizationapi.ResetUserPasswordRequest'
       produces:
       - application/json
       responses:
@@ -2619,7 +2803,7 @@ paths:
               type: object
       summary: Reset a user's password
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/users/{id}/restore:
     post:
       consumes:
@@ -2658,7 +2842,7 @@ paths:
               type: object
       summary: Restore a user
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/users/{id}/roles:
     post:
       consumes:
@@ -2670,14 +2854,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Role IDs
+      - description: Assign roles to user request
         in: body
-        name: roles
+        name: request
         required: true
         schema:
-          items:
-            type: string
-          type: array
+          $ref: '#/definitions/authorizationapi.AssignRolesRequest'
       produces:
       - application/json
       responses:
@@ -2705,7 +2887,7 @@ paths:
               type: object
       summary: Assign roles to a user
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/users/{id}/status:
     put:
       consumes:
@@ -2717,12 +2899,12 @@ paths:
         name: id
         required: true
         type: string
-      - description: Status
+      - description: Update user status request
         in: body
-        name: status
+        name: request
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/authorizationapi.UpdateUserStatusRequest'
       produces:
       - application/json
       responses:
@@ -2750,7 +2932,7 @@ paths:
               type: object
       summary: Update a user's status
       tags:
-      - Authorization
+      - Authorization/Users
   /api/authorization/users/{id}/unlock:
     post:
       consumes:
@@ -2789,7 +2971,7 @@ paths:
               type: object
       summary: Unlock a user
       tags:
-      - Authorization
+      - Authorization/Users
   /api/base-settings:
     get:
       consumes:
@@ -2821,6 +3003,8 @@ paths:
                   type: string
               type: object
       summary: Get all system settings
+      tags:
+      - System Settings/Base
     put:
       consumes:
       - application/json
@@ -2851,6 +3035,8 @@ paths:
                   type: string
               type: object
       summary: Batch update system settings
+      tags:
+      - System Settings/Base
   /api/files:
     get:
       description: Get file list
@@ -2897,6 +3083,8 @@ paths:
                   type: string
               type: object
       summary: Get file list
+      tags:
+      - File Management
     post:
       consumes:
       - multipart/form-data
@@ -2941,6 +3129,8 @@ paths:
                   type: string
               type: object
       summary: Upload file
+      tags:
+      - File Management
   /api/files/{fileKey}:
     get:
       description: Download file
@@ -2958,6 +3148,8 @@ paths:
           schema:
             $ref: '#/definitions/util.Response'
       summary: Download file
+      tags:
+      - File Management
   /api/ldap-settings/test:
     post:
       consumes:
@@ -2989,6 +3181,8 @@ paths:
                   type: string
               type: object
       summary: Test LDAP connection
+      tags:
+      - System Settings/LDAP
   /api/statistics:
     get:
       description: Get statistics
@@ -3020,6 +3214,8 @@ paths:
                   type: string
               type: object
       summary: Get statistics
+      tags:
+      - Statistics
   /api/system/audit-logs:
     get:
       consumes:
@@ -3064,6 +3260,8 @@ paths:
                   type: string
               type: object
       summary: Get audit logs
+      tags:
+      - System/Audit Log
   /api/system/health:
     get:
       consumes:
@@ -3095,6 +3293,8 @@ paths:
                   type: string
               type: object
       summary: Health check
+      tags:
+      - System/Health
   /api/system/info:
     get:
       consumes:
@@ -3126,6 +3326,8 @@ paths:
                   type: string
               type: object
       summary: Get system information
+      tags:
+      - System/Info
   /api/system/ldap-settings:
     get:
       consumes:
@@ -3143,7 +3345,7 @@ paths:
                 code:
                   type: string
                 data:
-                  $ref: '#/definitions/ldap.Options'
+                  $ref: '#/definitions/systemapi.LDAPSettings'
               type: object
         "500":
           description: Internal Server Error
@@ -3157,10 +3359,19 @@ paths:
                   type: string
               type: object
       summary: Get LDAP settings
+      tags:
+      - System Settings/LDAP
     put:
       consumes:
       - application/json
       description: Update LDAP settings
+      parameters:
+      - description: Update LDAP settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.UpdateLDAPSettingsRequest'
       produces:
       - application/json
       responses:
@@ -3187,6 +3398,8 @@ paths:
                   type: string
               type: object
       summary: Update LDAP settings
+      tags:
+      - System Settings/LDAP
   /api/system/ldap-settings/import:
     post:
       consumes:
@@ -3220,6 +3433,8 @@ paths:
                   type: string
               type: object
       summary: Import LDAP users
+      tags:
+      - System Settings/LDAP
   /api/system/oauth-settings:
     get:
       consumes:
@@ -3251,6 +3466,8 @@ paths:
                   type: string
               type: object
       summary: Get OAuth settings
+      tags:
+      - System Settings/OAuth
     put:
       consumes:
       - application/json
@@ -3281,6 +3498,8 @@ paths:
                   type: string
               type: object
       summary: Update OAuth settings
+      tags:
+      - System Settings/OAuth
   /api/system/oauth-settings/test:
     post:
       consumes:
@@ -3312,6 +3531,8 @@ paths:
                   type: string
               type: object
       summary: Test OAuth connection
+      tags:
+      - System Settings/OAuth
   /api/system/oauth-settings/test-callback:
     post:
       consumes:
@@ -3343,6 +3564,8 @@ paths:
                   type: string
               type: object
       summary: Test OAuth callback
+      tags:
+      - System Settings/OAuth
   /api/system/security-settings:
     get:
       consumes:
@@ -3374,6 +3597,8 @@ paths:
                   type: string
               type: object
       summary: Get security settings
+      tags:
+      - System Settings/Security
     put:
       consumes:
       - application/json
@@ -3404,11 +3629,20 @@ paths:
                   type: string
               type: object
       summary: Update security settings
+      tags:
+      - System Settings/Security
   /api/system/security-settings/check-password:
     post:
       consumes:
       - application/json
       description: Check password complexity
+      parameters:
+      - description: Check password complexity request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.CheckPasswordComplexityRequest'
       produces:
       - application/json
       responses:
@@ -3435,6 +3669,8 @@ paths:
                   type: string
               type: object
       summary: Check password complexity
+      tags:
+      - System Settings/Security
   /api/system/smtp-settings:
     get:
       consumes:
@@ -3455,7 +3691,7 @@ paths:
       - ApiKeyAuth: []
       summary: Get SMTP settings
       tags:
-      - System Settings
+      - System Settings/SMTP
     put:
       consumes:
       - application/json
@@ -3493,7 +3729,7 @@ paths:
       - ApiKeyAuth: []
       summary: Update SMTP settings
       tags:
-      - System Settings
+      - System Settings/SMTP
   /api/system/smtp-settings/test:
     post:
       consumes:
@@ -3534,5 +3770,5 @@ paths:
       - ApiKeyAuth: []
       summary: Test SMTP connection
       tags:
-      - System Settings
+      - System Settings/SMTP
 swagger: "2.0"

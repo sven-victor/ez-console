@@ -52,15 +52,17 @@ func (c *SystemController) GetSite(ctx *gin.Context) {
 }
 
 // GetAuditLogs gets all audit logs, supports multiple filtering conditions
-// @Summary Get audit logs
-// @Description Get all audit logs, supports multiple filtering conditions
-// @Accept json
-// @Produce json
-// @Param current query int false "Current page number" default(1)
-// @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} util.Response{data=[]model.AuditLog,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/audit-logs [get]
+//
+//	@Summary		Get audit logs
+//	@Description	Get all audit logs, supports multiple filtering conditions
+//	@Tags			System/Audit Log
+//	@Accept			json
+//	@Produce		json
+//	@Param			current		query		int	false	"Current page number"		default(1)
+//	@Param			page_size	query		int	false	"Number of items per page"	default(10)
+//	@Success		200			{object}	util.Response{data=[]model.AuditLog,code=string}
+//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/audit-logs [get]
 func (c *SystemController) GetAuditLogs(ctx *gin.Context) {
 	// Parse pagination parameters
 	page, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
@@ -105,13 +107,15 @@ func (c *SystemController) GetAuditLogs(ctx *gin.Context) {
 }
 
 // GetSystemInfo gets system information
-// @Summary Get system information
-// @Description Get system information
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=service.SystemInfo,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/info [get]
+//
+//	@Summary		Get system information
+//	@Description	Get system information
+//	@Tags			System/Info
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=service.SystemInfo,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/info [get]
 func (c *SystemController) GetSystemInfo(ctx *gin.Context) {
 	info, err := c.service.GetSystemInfo(ctx)
 	if err != nil {
@@ -130,13 +134,15 @@ func (c *SystemController) GetSystemInfo(ctx *gin.Context) {
 }
 
 // HealthCheck provides a simple health check
-// @Summary Health check
-// @Description Check the health of the system
-// @Accept json
-// @Produce json
-// @Success 200 {object} util.Response{data=service.HealthResult,code=string}
-// @Failure 500 {object} util.Response{err=string,code=string}
-// @Router /api/system/health [get]
+//
+//	@Summary		Health check
+//	@Description	Check the health of the system
+//	@Tags			System/Health
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response{data=service.HealthResult,code=string}
+//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Router			/api/system/health [get]
 func (c *SystemController) HealthCheck(ctx *gin.Context) {
 	result, err := c.service.HealthCheck(ctx)
 	if err != nil {
