@@ -692,7 +692,7 @@ func (s *OAuthService) autoDiscoverOAuth2Endpoint(ctx context.Context, endpoint 
 			break
 		}
 	}
-	if resp.Body == nil {
+	if resp == nil {
 		return nil, fmt.Errorf("failed to get wellknown endpoint")
 	}
 	defer resp.Body.Close()
