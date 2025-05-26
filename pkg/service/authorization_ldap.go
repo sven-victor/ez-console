@@ -403,14 +403,15 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 		return nil, util.NewError("E50013", "System error, please contact the administrator", err)
 	}
 	defer ldapClient.Close()
+	settings = ldapClient.GetOptions()
 
 	// Build user search filter
-	userFilter := fmt.Sprintf("(&(%s=%s)%s)", ldapClient.GetOptions().UserAttr, ldap.EscapeFilter(username), ldapClient.GetOptions().UserFilter)
+	userFilter := settings.BuildUserFilter(username)
 	searchRequest := ldap.NewSearchRequest(
-		ldapClient.GetOptions().BaseDN,
+		settings.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
 		userFilter,
-		[]string{ldapClient.GetOptions().UserAttr, ldapClient.GetOptions().EmailAttr, ldapClient.GetOptions().DisplayNameAttr, "entryUUID", "createTimestamp", "modifyTimestamp"},
+		[]string{settings.UserAttr, settings.EmailAttr, settings.DisplayNameAttr, "entryUUID", "createTimestamp", "modifyTimestamp"},
 		nil,
 	)
 	level.Info(logger).Log("msg", "Searching LDAP user", "userFilter", userFilter)
