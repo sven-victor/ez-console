@@ -68,6 +68,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get user list
 //	@Description	Get a list of users with optional filtering
+//	@ID             listUsers
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -108,6 +109,7 @@ func (c *UserController) ListUsers(ctx *gin.Context) {
 //
 //	@Summary		Get user by ID
 //	@Description	Get a user by ID
+//	@ID             getUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -164,6 +166,7 @@ func (c *UserController) GetUser(ctx *gin.Context) {
 //
 //	@Summary		Create a new user
 //	@Description	Create a new user
+//	@ID             createUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -221,6 +224,7 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 //
 //	@Summary		Update a user
 //	@Description	Update a user
+//	@ID             updateUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -309,6 +313,7 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 //
 //	@Summary		Delete a user
 //	@Description	Delete a user
+//	@ID             deleteUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -372,6 +377,7 @@ type UpdateUserStatusRequest struct {
 //
 //	@Summary		Update a user's status
 //	@Description	Update a user's status
+//	@ID             updateUserStatus
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -446,6 +452,7 @@ type ResetUserPasswordRequest struct {
 //
 //	@Summary		Reset a user's password
 //	@Description	Reset a user's password
+//	@ID             resetUserPassword
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -523,6 +530,7 @@ type AssignRolesRequest struct {
 //
 //	@Summary		Assign roles to a user
 //	@Description	Assign roles to a user
+//	@ID             assignRoles
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -597,6 +605,7 @@ func (c *UserController) AssignRoles(ctx *gin.Context) {
 //
 //	@Summary		Get current user's information
 //	@Description	Get current user's information
+//	@ID             getCurrentUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -636,6 +645,7 @@ type UpdateCurrentUserRequest struct {
 //
 //	@Summary		Update current user's information
 //	@Description	Update current user's information
+//	@ID             updateCurrentUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -720,6 +730,7 @@ type ChangePasswordRequest struct {
 //
 //	@Summary		Change user password
 //	@Description	Change user password
+//	@ID             changePassword
 //	@Tags			Authorization/Profile
 //	@Accept			json
 //	@Produce		json
@@ -800,6 +811,7 @@ type LoginRequest struct {
 //
 //	@Summary		User login
 //	@Description	User login
+//	@ID             login
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -917,6 +929,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 //
 //	@Summary		Refresh user's JWT token
 //	@Description	Refresh user's JWT token
+//	@ID             refreshToken
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -968,6 +981,7 @@ func (c *UserController) RefreshToken(ctx *gin.Context) {
 //
 //	@Summary		User logout
 //	@Description	User logout
+//	@ID             logout
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -1021,6 +1035,7 @@ func (c *UserController) Logout(ctx *gin.Context) {
 //
 //	@Summary		Get current user's audit logs
 //	@Description	Get current user's audit logs
+//	@ID             getCurrentUserLogs
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -1085,6 +1100,7 @@ func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 //
 //	@Summary		Get user's audit logs
 //	@Description	Get user's audit logs
+//	@ID             getUserLogs
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -1152,6 +1168,7 @@ func (c *UserController) GetUserLogs(ctx *gin.Context) {
 //
 //	@Summary		Unlock a user
 //	@Description	Unlock a user
+//	@ID             unlockUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -1190,6 +1207,7 @@ func (c *UserController) UnlockUser(ctx *gin.Context) {
 //
 //	@Summary		Restore a user
 //	@Description	Restore a user
+//	@ID             restoreUser
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
@@ -1224,6 +1242,7 @@ func (c *UserController) RestoreUser(ctx *gin.Context) {
 //
 //	@Summary		Get LDAP users
 //	@Description	Get LDAP users
+//	@ID             getLdapUsers
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json

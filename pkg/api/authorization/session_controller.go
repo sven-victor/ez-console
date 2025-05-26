@@ -36,6 +36,7 @@ func (c *SessionController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get all sessions for the user
 //	@Description	Get all sessions for the user
+//	@ID             getUserSessions
 //	@Tags			Authorization/Profile/Sessions
 //	@Accept			json
 //	@Produce		json
@@ -86,6 +87,7 @@ func (c *SessionController) GetUserSessions(ctx *gin.Context) {
 //
 //	@Summary		Terminate the specified session
 //	@Description	Terminate the specified session
+//	@ID             terminateSession
 //	@Tags			Authorization/Profile/Sessions
 //	@Accept			json
 //	@Produce		json
@@ -149,6 +151,7 @@ func (c *SessionController) TerminateSession(ctx *gin.Context) {
 //
 //	@Summary		Terminate all sessions except the current one
 //	@Description	Terminate all sessions except the current one
+//	@ID             terminateOtherSessions
 //	@Tags			Authorization/Profile/Sessions
 //	@Accept			json
 //	@Produce		json

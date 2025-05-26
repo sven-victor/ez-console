@@ -39,6 +39,7 @@ type EnableMFARequest struct {
 //
 //	@Summary		Enable MFA
 //	@Description	Enable MFA
+//	@ID             enableMfa
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
 //	@Produce		json
@@ -110,6 +111,7 @@ type VerifyAndActivateMFARequest struct {
 //
 //	@Summary		Verify and activate MFA
 //	@Description	Verify and activate MFA
+//	@ID             verifyAndActivateMfa
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
 //	@Produce		json
@@ -182,6 +184,7 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 //
 //	@Summary		Disable MFA
 //	@Description	Disable MFA
+//	@ID             disableMfa
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
 //	@Produce		json

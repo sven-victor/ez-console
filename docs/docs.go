@@ -28,6 +28,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "User login",
+                "operationId": "login",
                 "parameters": [
                     {
                         "description": "Login request",
@@ -98,6 +99,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "User logout",
+                "operationId": "logout",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -157,6 +159,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Get LDAP users",
+                "operationId": "getLdapUsers",
                 "parameters": [
                     {
                         "type": "boolean",
@@ -228,6 +231,7 @@ const docTemplate = `{
                     "Authorization/Profile/MFA"
                 ],
                 "summary": "Disable MFA",
+                "operationId": "disableMfa",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -275,6 +279,7 @@ const docTemplate = `{
                     "Authorization/Profile/MFA"
                 ],
                 "summary": "Enable MFA",
+                "operationId": "enableMfa",
                 "parameters": [
                     {
                         "description": "MFA Type",
@@ -333,6 +338,7 @@ const docTemplate = `{
                     "Authorization/Profile/MFA"
                 ],
                 "summary": "Verify and activate MFA",
+                "operationId": "verifyAndActivateMfa",
                 "parameters": [
                     {
                         "type": "string",
@@ -405,6 +411,7 @@ const docTemplate = `{
                     "Authorization/OAuth"
                 ],
                 "summary": "Handle the OAuth callback",
+                "operationId": "handleCallback",
                 "parameters": [
                     {
                         "type": "string",
@@ -475,6 +482,7 @@ const docTemplate = `{
                     "Authorization/OAuth"
                 ],
                 "summary": "Get the OAuth login URL",
+                "operationId": "getLoginUrl",
                 "parameters": [
                     {
                         "type": "string",
@@ -531,6 +539,7 @@ const docTemplate = `{
                     "Authorization/OAuth"
                 ],
                 "summary": "Get the list of available OAuth providers",
+                "operationId": "getProviders",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -575,6 +584,7 @@ const docTemplate = `{
                     "Authorization/Permission"
                 ],
                 "summary": "Get a list of permissions",
+                "operationId": "listPermissions",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -619,6 +629,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Get current user's information",
+                "operationId": "getCurrentUser",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -676,6 +687,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Update current user's information",
+                "operationId": "updateCurrentUser",
                 "parameters": [
                     {
                         "description": "Update current user request",
@@ -746,6 +758,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Get current user's audit logs",
+                "operationId": "getCurrentUserLogs",
                 "parameters": [
                     {
                         "type": "integer",
@@ -824,6 +837,7 @@ const docTemplate = `{
                     "Authorization/Profile"
                 ],
                 "summary": "Change user password",
+                "operationId": "changePassword",
                 "parameters": [
                     {
                         "description": "Change password request",
@@ -894,6 +908,7 @@ const docTemplate = `{
                     "Authorization/Profile/Sessions"
                 ],
                 "summary": "Get all sessions for the user",
+                "operationId": "getUserSessions",
                 "parameters": [
                     {
                         "type": "integer",
@@ -972,6 +987,7 @@ const docTemplate = `{
                     "Authorization/Profile/Sessions"
                 ],
                 "summary": "Terminate all sessions except the current one",
+                "operationId": "terminateOtherSessions",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1031,6 +1047,7 @@ const docTemplate = `{
                     "Authorization/Profile/Sessions"
                 ],
                 "summary": "Terminate the specified session",
+                "operationId": "terminateSession",
                 "parameters": [
                     {
                         "type": "string",
@@ -1099,6 +1116,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Refresh user's JWT token",
+                "operationId": "refreshToken",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1158,6 +1176,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Get a list of roles",
+                "operationId": "listRoles",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1222,6 +1241,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Create a new role",
+                "operationId": "createRole",
                 "parameters": [
                     {
                         "description": "Create role request",
@@ -1280,6 +1300,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Get a role by ID",
+                "operationId": "getRole",
                 "parameters": [
                     {
                         "type": "string",
@@ -1334,6 +1355,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Update a role",
+                "operationId": "updateRole",
                 "parameters": [
                     {
                         "type": "string",
@@ -1397,6 +1419,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Delete a role",
+                "operationId": "deleteRole",
                 "parameters": [
                     {
                         "type": "string",
@@ -1453,6 +1476,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Assign permissions to a role",
+                "operationId": "assignPermissions",
                 "parameters": [
                     {
                         "type": "string",
@@ -1518,6 +1542,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Get the policy document for a role",
+                "operationId": "getRolePolicy",
                 "parameters": [
                     {
                         "type": "string",
@@ -1572,6 +1597,7 @@ const docTemplate = `{
                     "Authorization/Role"
                 ],
                 "summary": "Set the policy for a role",
+                "operationId": "setRolePolicy",
                 "parameters": [
                     {
                         "type": "string",
@@ -1637,6 +1663,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account list",
+                "operationId": "getServiceAccounts",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1719,6 +1746,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Create service account",
+                "operationId": "createServiceAccount",
                 "parameters": [
                     {
                         "description": "Create service account request",
@@ -1789,6 +1817,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account by ID",
+                "operationId": "getServiceAccountById",
                 "parameters": [
                     {
                         "type": "string",
@@ -1855,6 +1884,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Update service account",
+                "operationId": "updateServiceAccount",
                 "parameters": [
                     {
                         "type": "string",
@@ -1930,6 +1960,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Delete service account",
+                "operationId": "deleteServiceAccount",
                 "parameters": [
                     {
                         "type": "string",
@@ -1998,6 +2029,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account access keys",
+                "operationId": "getServiceAccountAccessKeys",
                 "parameters": [
                     {
                         "type": "string",
@@ -2067,6 +2099,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Create service account access key",
+                "operationId": "createServiceAccountAccessKey",
                 "parameters": [
                     {
                         "type": "string",
@@ -2144,6 +2177,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Update service account access key",
+                "operationId": "updateServiceAccountAccessKey",
                 "parameters": [
                     {
                         "type": "string",
@@ -2226,6 +2260,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Delete service account access key",
+                "operationId": "deleteServiceAccountAccessKey",
                 "parameters": [
                     {
                         "type": "string",
@@ -2301,6 +2336,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account policy",
+                "operationId": "getServiceAccountPolicy",
                 "parameters": [
                     {
                         "type": "string",
@@ -2367,6 +2403,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Set service account policy",
+                "operationId": "setServiceAccountPolicy",
                 "parameters": [
                     {
                         "type": "string",
@@ -2444,6 +2481,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Get service account roles",
+                "operationId": "getServiceAccountRoles",
                 "parameters": [
                     {
                         "type": "string",
@@ -2513,6 +2551,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Assign roles to service account",
+                "operationId": "assignServiceAccountRoles",
                 "parameters": [
                     {
                         "type": "string",
@@ -2593,6 +2632,7 @@ const docTemplate = `{
                     "Authorization/ServiceAccount"
                 ],
                 "summary": "Update service account status",
+                "operationId": "updateServiceAccountStatus",
                 "parameters": [
                     {
                         "type": "string",
@@ -2670,6 +2710,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Get user list",
+                "operationId": "listUsers",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2758,6 +2799,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Create a new user",
+                "operationId": "createUser",
                 "parameters": [
                     {
                         "description": "User information",
@@ -2828,6 +2870,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Get user by ID",
+                "operationId": "getUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -2894,6 +2937,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Update a user",
+                "operationId": "updateUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -2969,6 +3013,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Delete a user",
+                "operationId": "deleteUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -3037,6 +3082,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Get user's audit logs",
+                "operationId": "getUserLogs",
                 "parameters": [
                     {
                         "type": "string",
@@ -3122,6 +3168,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Reset a user's password",
+                "operationId": "resetUserPassword",
                 "parameters": [
                     {
                         "type": "string",
@@ -3199,6 +3246,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Restore a user",
+                "operationId": "restoreUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -3267,6 +3315,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Assign roles to a user",
+                "operationId": "assignRoles",
                 "parameters": [
                     {
                         "type": "string",
@@ -3344,6 +3393,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Update a user's status",
+                "operationId": "updateUserStatus",
                 "parameters": [
                     {
                         "type": "string",
@@ -3421,6 +3471,7 @@ const docTemplate = `{
                     "Authorization/Users"
                 ],
                 "summary": "Unlock a user",
+                "operationId": "unlockUser",
                 "parameters": [
                     {
                         "type": "string",
@@ -3489,6 +3540,7 @@ const docTemplate = `{
                     "System Settings/Base"
                 ],
                 "summary": "Get all system settings",
+                "operationId": "getSystemBaseSettings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3546,6 +3598,7 @@ const docTemplate = `{
                     "System Settings/Base"
                 ],
                 "summary": "Batch update system settings",
+                "operationId": "updateSystemBaseSettings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3599,6 +3652,7 @@ const docTemplate = `{
                     "File Management"
                 ],
                 "summary": "Get file list",
+                "operationId": "listFiles",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3682,6 +3736,7 @@ const docTemplate = `{
                     "File Management"
                 ],
                 "summary": "Upload file",
+                "operationId": "uploadFile",
                 "parameters": [
                     {
                         "type": "file",
@@ -3759,6 +3814,7 @@ const docTemplate = `{
                     "File Management"
                 ],
                 "summary": "Download file",
+                "operationId": "downloadFile",
                 "parameters": [
                     {
                         "type": "string",
@@ -3794,6 +3850,7 @@ const docTemplate = `{
                     "System Settings/LDAP"
                 ],
                 "summary": "Test LDAP connection",
+                "operationId": "testLdapConnection",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3847,6 +3904,7 @@ const docTemplate = `{
                     "Statistics"
                 ],
                 "summary": "Get statistics",
+                "operationId": "getStatistics",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3912,6 +3970,7 @@ const docTemplate = `{
                     "System/Audit Log"
                 ],
                 "summary": "Get audit logs",
+                "operationId": "getAuditLogs",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3990,6 +4049,7 @@ const docTemplate = `{
                     "System/Health"
                 ],
                 "summary": "Health check",
+                "operationId": "healthCheck",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4049,6 +4109,7 @@ const docTemplate = `{
                     "System/Info"
                 ],
                 "summary": "Get system information",
+                "operationId": "getSystemInfo",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4108,6 +4169,7 @@ const docTemplate = `{
                     "System Settings/LDAP"
                 ],
                 "summary": "Get LDAP settings",
+                "operationId": "getLdapSettings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4165,6 +4227,7 @@ const docTemplate = `{
                     "System Settings/LDAP"
                 ],
                 "summary": "Update LDAP settings",
+                "operationId": "updateLdapSettings",
                 "parameters": [
                     {
                         "description": "Update LDAP settings",
@@ -4235,6 +4298,7 @@ const docTemplate = `{
                     "System Settings/LDAP"
                 ],
                 "summary": "Import LDAP users",
+                "operationId": "importLdapUsers",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4297,6 +4361,7 @@ const docTemplate = `{
                     "System Settings/OAuth"
                 ],
                 "summary": "Get OAuth settings",
+                "operationId": "getOauthSettings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4354,6 +4419,7 @@ const docTemplate = `{
                     "System Settings/OAuth"
                 ],
                 "summary": "Update OAuth settings",
+                "operationId": "updateOauthSettings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4413,6 +4479,7 @@ const docTemplate = `{
                     "System Settings/OAuth"
                 ],
                 "summary": "Test OAuth connection",
+                "operationId": "testOauthConnection",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4472,6 +4539,7 @@ const docTemplate = `{
                     "System Settings/OAuth"
                 ],
                 "summary": "Test OAuth callback",
+                "operationId": "testOauthCallback",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4531,6 +4599,7 @@ const docTemplate = `{
                     "System Settings/Security"
                 ],
                 "summary": "Get security settings",
+                "operationId": "getSecuritySettings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4588,6 +4657,7 @@ const docTemplate = `{
                     "System Settings/Security"
                 ],
                 "summary": "Update security settings",
+                "operationId": "updateSecuritySettings",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -4647,6 +4717,7 @@ const docTemplate = `{
                     "System Settings/Security"
                 ],
                 "summary": "Check password complexity",
+                "operationId": "checkPasswordComplexity",
                 "parameters": [
                     {
                         "description": "Check password complexity request",
@@ -4722,6 +4793,7 @@ const docTemplate = `{
                     "System Settings/SMTP"
                 ],
                 "summary": "Get SMTP settings",
+                "operationId": "getSmtpSettings",
                 "responses": {
                     "200": {
                         "description": "Successfully retrieved SMTP settings",
@@ -4754,6 +4826,7 @@ const docTemplate = `{
                     "System Settings/SMTP"
                 ],
                 "summary": "Update SMTP settings",
+                "operationId": "updateSmtpSettings",
                 "parameters": [
                     {
                         "description": "SMTP settings to update",
@@ -4820,6 +4893,7 @@ const docTemplate = `{
                     "System Settings/SMTP"
                 ],
                 "summary": "Test SMTP connection",
+                "operationId": "testSmtpConnection",
                 "parameters": [
                     {
                         "description": "SMTP test request, including recipient and optional SMTP settings to test with",

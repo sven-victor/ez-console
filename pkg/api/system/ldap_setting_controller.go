@@ -49,6 +49,7 @@ type LDAPSettings struct {
 //
 //	@Summary		Get LDAP settings
 //	@Description	Get LDAP settings
+//	@ID             getLdapSettings
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json
@@ -87,6 +88,7 @@ type UpdateLDAPSettingsRequest struct {
 //	@Summary		Update LDAP settings
 //	@Tags			System Settings/LDAP
 //	@Description	Update LDAP settings
+//	@ID             updateLdapSettings
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		UpdateLDAPSettingsRequest	true	"Update LDAP settings"
@@ -136,6 +138,7 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 //
 //	@Summary		Test LDAP connection
 //	@Description	Test LDAP connection
+//	@ID             testLdapConnection
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json
@@ -196,6 +199,7 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 //
 //	@Summary		Import LDAP users
 //	@Description	Import LDAP users
+//	@ID             importLdapUsers
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json

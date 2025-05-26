@@ -31,6 +31,7 @@ func (c *PermissionController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get a list of permissions
 //	@Description	Get a list of permissions
+//	@ID             listPermissions
 //	@Tags			Authorization/Permission
 //	@Accept			json
 //	@Produce		json

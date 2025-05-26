@@ -37,6 +37,7 @@ func (c *SettingController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get all system settings
 //	@Description	Get all system settings
+//	@ID             getSystemBaseSettings
 //	@Tags			System Settings/Base
 //	@Accept			json
 //	@Produce		json
@@ -64,6 +65,7 @@ func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 //
 //	@Summary		Batch update system settings
 //	@Description	Batch update system settings
+//	@ID             updateSystemBaseSettings
 //	@Tags			System Settings/Base
 //	@Accept			json
 //	@Produce		json

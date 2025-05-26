@@ -127,6 +127,7 @@ func init() {
 //
 //	@Summary		Get service account list
 //	@Description	Get service account list
+//	@ID             getServiceAccounts
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -167,6 +168,7 @@ func (c *ServiceAccountController) GetServiceAccounts(ctx *gin.Context) {
 //
 //	@Summary		Get service account by ID
 //	@Description	Get service account by ID
+//	@ID             getServiceAccountById
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -210,6 +212,7 @@ type CreateServiceAccountRequest struct {
 //
 //	@Summary		Create service account
 //	@Description	Create service account
+//	@ID             createServiceAccount
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -261,6 +264,7 @@ type UpdateServiceAccountRequest struct {
 //
 //	@Summary		Update service account
 //	@Description	Update service account
+//	@ID             updateServiceAccount
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -328,6 +332,7 @@ func (c *ServiceAccountController) UpdateServiceAccount(ctx *gin.Context) {
 //
 //	@Summary		Delete service account
 //	@Description	Delete service account
+//	@ID             deleteServiceAccount
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -370,6 +375,7 @@ type UpdateServiceAccountStatusRequest struct {
 //
 //	@Summary		Update service account status
 //	@Description	Update service account status
+//	@ID             updateServiceAccountStatus
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -431,6 +437,7 @@ func (c *ServiceAccountController) UpdateServiceAccountStatus(ctx *gin.Context) 
 //
 //	@Summary		Get service account access keys
 //	@Description	Get service account access keys
+//	@ID             getServiceAccountAccessKeys
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -475,6 +482,7 @@ type CreateServiceAccountAccessKeyRequest struct {
 //
 //	@Summary		Create service account access key
 //	@Description	Create service account access key
+//	@ID             createServiceAccountAccessKey
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -544,6 +552,7 @@ type UpdateServiceAccountAccessKeyRequest struct {
 //
 //	@Summary		Update service account access key
 //	@Description	Update service account access key
+//	@ID             updateServiceAccountAccessKey
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -595,6 +604,7 @@ func (c *ServiceAccountController) UpdateServiceAccountAccessKey(ctx *gin.Contex
 //
 //	@Summary		Delete service account access key
 //	@Description	Delete service account access key
+//	@ID             deleteServiceAccountAccessKey
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -635,6 +645,7 @@ func (c *ServiceAccountController) DeleteServiceAccountAccessKey(ctx *gin.Contex
 //
 //	@Summary		Get service account roles
 //	@Description	Get service account roles
+//	@ID             getServiceAccountRoles
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -677,6 +688,7 @@ type AssignServiceAccountRolesRequest struct {
 //
 //	@Summary		Assign roles to service account
 //	@Description	Assign roles to service account
+//	@ID             assignServiceAccountRoles
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -737,6 +749,7 @@ func (c *ServiceAccountController) AssignServiceAccountRoles(ctx *gin.Context) {
 //
 //	@Summary		Get service account policy
 //	@Description	Get service account policy
+//	@ID             getServiceAccountPolicy
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
@@ -779,6 +792,7 @@ type SetServiceAccountPolicyRequest struct {
 //
 //	@Summary		Set service account policy
 //	@Description	Set service account policy
+//	@ID             setServiceAccountPolicy
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json

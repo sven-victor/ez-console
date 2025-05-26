@@ -55,6 +55,7 @@ func (c *SystemController) GetSite(ctx *gin.Context) {
 //
 //	@Summary		Get audit logs
 //	@Description	Get all audit logs, supports multiple filtering conditions
+//	@ID             getAuditLogs
 //	@Tags			System/Audit Log
 //	@Accept			json
 //	@Produce		json
@@ -110,6 +111,7 @@ func (c *SystemController) GetAuditLogs(ctx *gin.Context) {
 //
 //	@Summary		Get system information
 //	@Description	Get system information
+//	@ID             getSystemInfo
 //	@Tags			System/Info
 //	@Accept			json
 //	@Produce		json
@@ -137,6 +139,7 @@ func (c *SystemController) GetSystemInfo(ctx *gin.Context) {
 //
 //	@Summary		Health check
 //	@Description	Check the health of the system
+//	@ID             healthCheck
 //	@Tags			System/Health
 //	@Accept			json
 //	@Produce		json

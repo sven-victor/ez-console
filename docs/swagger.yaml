@@ -941,6 +941,7 @@ paths:
       consumes:
       - application/json
       description: User login
+      operationId: login
       parameters:
       - description: Login request
         in: body
@@ -981,6 +982,7 @@ paths:
       consumes:
       - application/json
       description: User logout
+      operationId: logout
       produces:
       - application/json
       responses:
@@ -1014,6 +1016,7 @@ paths:
       consumes:
       - application/json
       description: Get LDAP users
+      operationId: getLdapUsers
       parameters:
       - default: false
         description: Skip existing users
@@ -1055,6 +1058,7 @@ paths:
       consumes:
       - application/json
       description: Disable MFA
+      operationId: disableMfa
       produces:
       - application/json
       responses:
@@ -1083,6 +1087,7 @@ paths:
       consumes:
       - application/json
       description: Enable MFA
+      operationId: enableMfa
       parameters:
       - description: MFA Type
         in: body
@@ -1118,6 +1123,7 @@ paths:
       consumes:
       - application/json
       description: Verify and activate MFA
+      operationId: verifyAndActivateMfa
       parameters:
       - description: Code
         in: query
@@ -1163,6 +1169,7 @@ paths:
       consumes:
       - application/json
       description: Handle the OAuth callback
+      operationId: handleCallback
       parameters:
       - description: Code
         in: query
@@ -1207,6 +1214,7 @@ paths:
       consumes:
       - application/json
       description: Get the OAuth login URL
+      operationId: getLoginUrl
       parameters:
       - description: Provider
         in: path
@@ -1241,6 +1249,7 @@ paths:
       consumes:
       - application/json
       description: Get the list of available OAuth providers
+      operationId: getProviders
       produces:
       - application/json
       responses:
@@ -1267,6 +1276,7 @@ paths:
       consumes:
       - application/json
       description: Get a list of permissions
+      operationId: listPermissions
       produces:
       - application/json
       responses:
@@ -1293,6 +1303,7 @@ paths:
       consumes:
       - application/json
       description: Get current user's information
+      operationId: getCurrentUser
       produces:
       - application/json
       responses:
@@ -1325,6 +1336,7 @@ paths:
       consumes:
       - application/json
       description: Update current user's information
+      operationId: updateCurrentUser
       parameters:
       - description: Update current user request
         in: body
@@ -1365,6 +1377,7 @@ paths:
       consumes:
       - application/json
       description: Get current user's audit logs
+      operationId: getCurrentUserLogs
       parameters:
       - default: 1
         description: Current page number
@@ -1411,6 +1424,7 @@ paths:
       consumes:
       - application/json
       description: Change user password
+      operationId: changePassword
       parameters:
       - description: Change password request
         in: body
@@ -1451,6 +1465,7 @@ paths:
       consumes:
       - application/json
       description: Get all sessions for the user
+      operationId: getUserSessions
       parameters:
       - default: 1
         description: Current page number
@@ -1497,6 +1512,7 @@ paths:
       consumes:
       - application/json
       description: Terminate the specified session
+      operationId: terminateSession
       parameters:
       - description: Session ID
         in: path
@@ -1536,6 +1552,7 @@ paths:
       consumes:
       - application/json
       description: Terminate all sessions except the current one
+      operationId: terminateOtherSessions
       produces:
       - application/json
       responses:
@@ -1569,6 +1586,7 @@ paths:
       consumes:
       - application/json
       description: Refresh user's JWT token
+      operationId: refreshToken
       produces:
       - application/json
       responses:
@@ -1602,6 +1620,7 @@ paths:
       consumes:
       - application/json
       description: Get a list of roles
+      operationId: listRoles
       parameters:
       - default: 1
         description: Current page
@@ -1642,6 +1661,7 @@ paths:
       consumes:
       - application/json
       description: Create a new role
+      operationId: createRole
       parameters:
       - description: Create role request
         in: body
@@ -1677,6 +1697,7 @@ paths:
       consumes:
       - application/json
       description: Delete a role
+      operationId: deleteRole
       parameters:
       - description: Role ID
         in: path
@@ -1710,6 +1731,7 @@ paths:
       consumes:
       - application/json
       description: Get a role by ID
+      operationId: getRole
       parameters:
       - description: Role ID
         in: path
@@ -1743,6 +1765,7 @@ paths:
       consumes:
       - application/json
       description: Update a role
+      operationId: updateRole
       parameters:
       - description: Role ID
         in: path
@@ -1783,6 +1806,7 @@ paths:
       consumes:
       - application/json
       description: Assign permissions to a role
+      operationId: assignPermissions
       parameters:
       - description: Role ID
         in: path
@@ -1823,6 +1847,7 @@ paths:
       consumes:
       - application/json
       description: Get the policy document for a role
+      operationId: getRolePolicy
       parameters:
       - description: Role ID
         in: path
@@ -1856,6 +1881,7 @@ paths:
       consumes:
       - application/json
       description: Set the policy for a role
+      operationId: setRolePolicy
       parameters:
       - description: Role ID
         in: path
@@ -1896,6 +1922,7 @@ paths:
       consumes:
       - application/json
       description: Get service account list
+      operationId: getServiceAccounts
       parameters:
       - default: 1
         description: Current page number
@@ -1945,6 +1972,7 @@ paths:
       consumes:
       - application/json
       description: Create service account
+      operationId: createServiceAccount
       parameters:
       - description: Create service account request
         in: body
@@ -1985,6 +2013,7 @@ paths:
       consumes:
       - application/json
       description: Delete service account
+      operationId: deleteServiceAccount
       parameters:
       - description: Service account ID
         in: path
@@ -2023,6 +2052,7 @@ paths:
       consumes:
       - application/json
       description: Get service account by ID
+      operationId: getServiceAccountById
       parameters:
       - description: Service account ID
         in: path
@@ -2061,6 +2091,7 @@ paths:
       consumes:
       - application/json
       description: Update service account
+      operationId: updateServiceAccount
       parameters:
       - description: Service account ID
         in: path
@@ -2106,6 +2137,7 @@ paths:
       consumes:
       - application/json
       description: Get service account access keys
+      operationId: getServiceAccountAccessKeys
       parameters:
       - description: Service account ID
         in: path
@@ -2146,6 +2178,7 @@ paths:
       consumes:
       - application/json
       description: Create service account access key
+      operationId: createServiceAccountAccessKey
       parameters:
       - description: Service account ID
         in: path
@@ -2191,6 +2224,7 @@ paths:
       consumes:
       - application/json
       description: Delete service account access key
+      operationId: deleteServiceAccountAccessKey
       parameters:
       - description: Service account ID
         in: path
@@ -2234,6 +2268,7 @@ paths:
       consumes:
       - application/json
       description: Update service account access key
+      operationId: updateServiceAccountAccessKey
       parameters:
       - description: Service account ID
         in: path
@@ -2284,6 +2319,7 @@ paths:
       consumes:
       - application/json
       description: Get service account policy
+      operationId: getServiceAccountPolicy
       parameters:
       - description: Service account ID
         in: path
@@ -2322,6 +2358,7 @@ paths:
       consumes:
       - application/json
       description: Set service account policy
+      operationId: setServiceAccountPolicy
       parameters:
       - description: Service account ID
         in: path
@@ -2367,6 +2404,7 @@ paths:
       consumes:
       - application/json
       description: Get service account roles
+      operationId: getServiceAccountRoles
       parameters:
       - description: Service account ID
         in: path
@@ -2407,6 +2445,7 @@ paths:
       consumes:
       - application/json
       description: Assign roles to service account
+      operationId: assignServiceAccountRoles
       parameters:
       - description: Service account ID
         in: path
@@ -2454,6 +2493,7 @@ paths:
       consumes:
       - application/json
       description: Update service account status
+      operationId: updateServiceAccountStatus
       parameters:
       - description: Service account ID
         in: path
@@ -2499,6 +2539,7 @@ paths:
       consumes:
       - application/json
       description: Get a list of users with optional filtering
+      operationId: listUsers
       parameters:
       - default: 1
         description: Current page number
@@ -2552,6 +2593,7 @@ paths:
       consumes:
       - application/json
       description: Create a new user
+      operationId: createUser
       parameters:
       - description: User information
         in: body
@@ -2592,6 +2634,7 @@ paths:
       consumes:
       - application/json
       description: Delete a user
+      operationId: deleteUser
       parameters:
       - description: User ID
         in: path
@@ -2630,6 +2673,7 @@ paths:
       consumes:
       - application/json
       description: Get a user by ID
+      operationId: getUser
       parameters:
       - description: User ID
         in: path
@@ -2668,6 +2712,7 @@ paths:
       consumes:
       - application/json
       description: Update a user
+      operationId: updateUser
       parameters:
       - description: User ID
         in: path
@@ -2713,6 +2758,7 @@ paths:
       consumes:
       - application/json
       description: Get user's audit logs
+      operationId: getUserLogs
       parameters:
       - description: User ID
         in: path
@@ -2764,6 +2810,7 @@ paths:
       consumes:
       - application/json
       description: Reset a user's password
+      operationId: resetUserPassword
       parameters:
       - description: User ID
         in: path
@@ -2809,6 +2856,7 @@ paths:
       consumes:
       - application/json
       description: Restore a user
+      operationId: restoreUser
       parameters:
       - description: User ID
         in: path
@@ -2848,6 +2896,7 @@ paths:
       consumes:
       - application/json
       description: Assign roles to a user
+      operationId: assignRoles
       parameters:
       - description: User ID
         in: path
@@ -2893,6 +2942,7 @@ paths:
       consumes:
       - application/json
       description: Update a user's status
+      operationId: updateUserStatus
       parameters:
       - description: User ID
         in: path
@@ -2938,6 +2988,7 @@ paths:
       consumes:
       - application/json
       description: Unlock a user
+      operationId: unlockUser
       parameters:
       - description: User ID
         in: path
@@ -2977,6 +3028,7 @@ paths:
       consumes:
       - application/json
       description: Get all system settings
+      operationId: getSystemBaseSettings
       produces:
       - application/json
       responses:
@@ -3009,6 +3061,7 @@ paths:
       consumes:
       - application/json
       description: Batch update system settings
+      operationId: updateSystemBaseSettings
       produces:
       - application/json
       responses:
@@ -3040,6 +3093,7 @@ paths:
   /api/files:
     get:
       description: Get file list
+      operationId: listFiles
       parameters:
       - description: Current page
         in: query
@@ -3089,6 +3143,7 @@ paths:
       consumes:
       - multipart/form-data
       description: Upload file
+      operationId: uploadFile
       parameters:
       - description: File
         in: formData
@@ -3134,6 +3189,7 @@ paths:
   /api/files/{fileKey}:
     get:
       description: Download file
+      operationId: downloadFile
       parameters:
       - description: File key
         in: path
@@ -3155,6 +3211,7 @@ paths:
       consumes:
       - application/json
       description: Test LDAP connection
+      operationId: testLdapConnection
       produces:
       - application/json
       responses:
@@ -3186,6 +3243,7 @@ paths:
   /api/statistics:
     get:
       description: Get statistics
+      operationId: getStatistics
       responses:
         "200":
           description: OK
@@ -3221,6 +3279,7 @@ paths:
       consumes:
       - application/json
       description: Get all audit logs, supports multiple filtering conditions
+      operationId: getAuditLogs
       parameters:
       - default: 1
         description: Current page number
@@ -3267,6 +3326,7 @@ paths:
       consumes:
       - application/json
       description: Check the health of the system
+      operationId: healthCheck
       produces:
       - application/json
       responses:
@@ -3300,6 +3360,7 @@ paths:
       consumes:
       - application/json
       description: Get system information
+      operationId: getSystemInfo
       produces:
       - application/json
       responses:
@@ -3333,6 +3394,7 @@ paths:
       consumes:
       - application/json
       description: Get LDAP settings
+      operationId: getLdapSettings
       produces:
       - application/json
       responses:
@@ -3365,6 +3427,7 @@ paths:
       consumes:
       - application/json
       description: Update LDAP settings
+      operationId: updateLdapSettings
       parameters:
       - description: Update LDAP settings
         in: body
@@ -3405,6 +3468,7 @@ paths:
       consumes:
       - application/json
       description: Import LDAP users
+      operationId: importLdapUsers
       produces:
       - application/json
       responses:
@@ -3440,6 +3504,7 @@ paths:
       consumes:
       - application/json
       description: Get OAuth settings
+      operationId: getOauthSettings
       produces:
       - application/json
       responses:
@@ -3472,6 +3537,7 @@ paths:
       consumes:
       - application/json
       description: Update OAuth settings
+      operationId: updateOauthSettings
       produces:
       - application/json
       responses:
@@ -3505,6 +3571,7 @@ paths:
       consumes:
       - application/json
       description: Test OAuth connection
+      operationId: testOauthConnection
       produces:
       - application/json
       responses:
@@ -3538,6 +3605,7 @@ paths:
       consumes:
       - application/json
       description: Test OAuth callback
+      operationId: testOauthCallback
       produces:
       - application/json
       responses:
@@ -3571,6 +3639,7 @@ paths:
       consumes:
       - application/json
       description: Get security settings
+      operationId: getSecuritySettings
       produces:
       - application/json
       responses:
@@ -3603,6 +3672,7 @@ paths:
       consumes:
       - application/json
       description: Update security settings
+      operationId: updateSecuritySettings
       produces:
       - application/json
       responses:
@@ -3636,6 +3706,7 @@ paths:
       consumes:
       - application/json
       description: Check password complexity
+      operationId: checkPasswordComplexity
       parameters:
       - description: Check password complexity request
         in: body
@@ -3676,6 +3747,7 @@ paths:
       consumes:
       - application/json
       description: Retrieves the current SMTP settings.
+      operationId: getSmtpSettings
       produces:
       - application/json
       responses:
@@ -3696,6 +3768,7 @@ paths:
       consumes:
       - application/json
       description: Updates the SMTP settings.
+      operationId: updateSmtpSettings
       parameters:
       - description: SMTP settings to update
         in: body
@@ -3736,6 +3809,7 @@ paths:
       - application/json
       description: Sends a test email to the specified recipient using the provided
         or saved SMTP settings.
+      operationId: testSmtpConnection
       parameters:
       - description: SMTP test request, including recipient and optional SMTP settings
           to test with

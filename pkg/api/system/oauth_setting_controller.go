@@ -45,6 +45,7 @@ func (c *OAuthSettingController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get OAuth settings
 //	@Description	Get OAuth settings
+//	@ID             getOauthSettings
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
@@ -77,6 +78,7 @@ type UpdateOAuthSettingsRequest struct {
 //
 //	@Summary		Update OAuth settings
 //	@Description	Update OAuth settings
+//	@ID             updateOauthSettings
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
@@ -140,6 +142,7 @@ func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 //
 //	@Summary		Test OAuth connection
 //	@Description	Test OAuth connection
+//	@ID             testOauthConnection
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
@@ -189,6 +192,7 @@ func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 //
 //	@Summary		Test OAuth callback
 //	@Description	Test OAuth callback
+//	@ID             testOauthCallback
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json

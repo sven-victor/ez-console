@@ -30,8 +30,10 @@ func (c *FileController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // UploadFile Upload file
+//
 //	@Summary		Upload file
 //	@Description	Upload file
+//	@ID             uploadFile
 //	@Tags			File Management
 //	@Accept			multipart/form-data
 //	@Param			file	formData	file	true	"File"
@@ -112,8 +114,10 @@ func (c *FileController) UploadFile(ctx *gin.Context) {
 }
 
 // DownloadFile Download file
+//
 //	@Summary		Download file
 //	@Description	Download file
+//	@ID             downloadFile
 //	@Tags			File Management
 //	@Param			fileKey	path	string	true	"File key"
 //	@Success		200
@@ -142,8 +146,10 @@ func (c *FileController) DownloadFile(ctx *gin.Context) {
 }
 
 // ListFiles Get file list
+//
 //	@Summary		Get file list
 //	@Description	Get file list
+//	@ID             listFiles
 //	@Tags			File Management
 //	@Param			current		query		int		false	"Current page"
 //	@Param			page_size	query		int		false	"Page size"

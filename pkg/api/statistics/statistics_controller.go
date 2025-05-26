@@ -24,8 +24,10 @@ func (c *StatisticsController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // GetStatistics Get statistics
+//
 //	@Summary		Get statistics
 //	@Description	Get statistics
+//	@ID             getStatistics
 //	@Tags			Statistics
 //	@Success		200	{object}	util.Response{data=service.Charts,code=string}
 //	@Failure		400	{object}	util.Response{err=string,code=string}

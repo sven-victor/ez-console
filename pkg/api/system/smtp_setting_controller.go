@@ -37,6 +37,7 @@ func (c *SMTPSettingController) RegisterRoutes(r *gin.RouterGroup) {
 //
 //	@Summary		Get SMTP settings
 //	@Description	Retrieves the current SMTP settings.
+//	@ID             getSmtpSettings
 //	@Tags			System Settings/SMTP
 //	@Accept			json
 //	@Produce		json
@@ -67,6 +68,7 @@ type SMTPSettingsRequest struct {
 //
 //	@Summary		Update SMTP settings
 //	@Description	Updates the SMTP settings.
+//	@ID             updateSmtpSettings
 //	@Tags			System Settings/SMTP
 //	@Accept			json
 //	@Produce		json
@@ -112,6 +114,7 @@ type SMTPTestResponse struct {
 //
 //	@Summary		Test SMTP connection
 //	@Description	Sends a test email to the specified recipient using the provided or saved SMTP settings.
+//	@ID             testSmtpConnection
 //	@Tags			System Settings/SMTP
 //	@Accept			json
 //	@Produce		json

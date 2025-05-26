@@ -39,6 +39,7 @@ func (c *SecuritySettingController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get security settings
 //	@Description	Get security settings
+//	@ID             getSecuritySettings
 //	@Tags			System Settings/Security
 //	@Accept			json
 //	@Produce		json
@@ -66,6 +67,7 @@ func (c *SecuritySettingController) GetSecuritySettings(ctx *gin.Context) {
 //
 //	@Summary		Update security settings
 //	@Description	Update security settings
+//	@ID             updateSecuritySettings
 //	@Tags			System Settings/Security
 //	@Accept			json
 //	@Produce		json
@@ -130,6 +132,7 @@ type CheckPasswordComplexityRequest struct {
 //
 //	@Summary		Check password complexity
 //	@Description	Check password complexity
+//	@ID             checkPasswordComplexity
 //	@Tags			System Settings/Security
 //	@Accept			json
 //	@Produce		json

@@ -40,6 +40,7 @@ func (c *RoleController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get a list of roles
 //	@Description	Get a list of roles
+//	@ID             listRoles
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
@@ -80,6 +81,7 @@ func (c *RoleController) ListRoles(ctx *gin.Context) {
 //
 //	@Summary		Get a role by ID
 //	@Description	Get a role by ID
+//	@ID             getRole
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
@@ -126,6 +128,7 @@ type CreateRoleRequest struct {
 //
 //	@Summary		Create a new role
 //	@Description	Create a new role
+//	@ID             createRole
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
@@ -189,6 +192,7 @@ type UpdateRoleRequest struct {
 //
 //	@Summary		Update a role
 //	@Description	Update a role
+//	@ID             updateRole
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
@@ -262,6 +266,7 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 //
 //	@Summary		Delete a role
 //	@Description	Delete a role
+//	@ID             deleteRole
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
@@ -326,6 +331,7 @@ type AssignPermissionsRequest struct {
 //
 //	@Summary		Assign permissions to a role
 //	@Description	Assign permissions to a role
+//	@ID             assignPermissions
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
@@ -399,6 +405,7 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 //
 //	@Summary		Get the policy document for a role
 //	@Description	Get the policy document for a role
+//	@ID             getRolePolicy
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
@@ -444,6 +451,7 @@ type SetRolePolicyRequest struct {
 //
 //	@Summary		Set the policy for a role
 //	@Description	Set the policy for a role
+//	@ID             setRolePolicy
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json

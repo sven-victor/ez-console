@@ -39,6 +39,7 @@ func (c *OAuthController) RegisterRoutes(router *gin.RouterGroup) {
 //
 //	@Summary		Get the list of available OAuth providers
 //	@Description	Get the list of available OAuth providers
+//	@ID             getProviders
 //	@Tags			Authorization/OAuth
 //	@Accept			json
 //	@Produce		json
@@ -64,6 +65,7 @@ func (c *OAuthController) GetProviders(ctx *gin.Context) {
 //
 //	@Summary		Get the OAuth login URL
 //	@Description	Get the OAuth login URL
+//	@ID             getLoginUrl
 //	@Tags			Authorization/OAuth
 //	@Accept			json
 //	@Produce		json
@@ -101,6 +103,7 @@ func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 //
 //	@Summary		Handle the OAuth callback
 //	@Description	Handle the OAuth callback
+//	@ID             handleCallback
 //	@Tags			Authorization/OAuth
 //	@Accept			json
 //	@Produce		json
