@@ -931,8 +931,24 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -1590,16 +1606,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response-array_model_PermissionGroup'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.PermissionGroup'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.Response-array_model_PermissionGroup'
         "500":
           description: Internal Server Error
           schema:
