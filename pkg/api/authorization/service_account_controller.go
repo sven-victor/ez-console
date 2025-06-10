@@ -1,7 +1,6 @@
 package authorizationapi
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -134,8 +133,8 @@ func init() {
 //	@Param			current		query		int		false	"Current page number"		default(1)
 //	@Param			page_size	query		int		false	"Number of items per page"	default(10)
 //	@Param			search		query		string	false	"Search keyword"
-//	@Success		200			{object}	util.Response{data=[]model.ServiceAccount,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.PaginationResponse[model.ServiceAccount]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts [get]
 func (c *ServiceAccountController) GetServiceAccounts(ctx *gin.Context) {
 	// Get pagination parameters
@@ -146,22 +145,12 @@ func (c *ServiceAccountController) GetServiceAccounts(ctx *gin.Context) {
 	// Call service layer to get data
 	serviceAccounts, total, err := c.service.GetServiceAccountList(ctx, page, pageSize, search)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
 	// Return data
-	ctx.JSON(http.StatusOK, gin.H{
-		"code":      "0",
-		"data":      serviceAccounts,
-		"total":     total,
-		"current":   page,
-		"page_size": pageSize,
-	})
+	util.RespondWithSuccessList(ctx, http.StatusOK, serviceAccounts, total, page, pageSize)
 }
 
 // GetServiceAccountByID Get service account by ID
@@ -173,34 +162,23 @@ func (c *ServiceAccountController) GetServiceAccounts(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Service account ID"
-//	@Success		200	{object}	util.Response{data=model.ServiceAccount,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.ServiceAccount]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id} [get]
 func (c *ServiceAccountController) GetServiceAccountByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	serviceAccount, err := c.service.GetServiceAccountByID(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": serviceAccount,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, serviceAccount)
 }
 
 type CreateServiceAccountRequest struct {
@@ -217,18 +195,14 @@ type CreateServiceAccountRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request		body		CreateServiceAccountRequest	true	"Create service account request"
-//	@Success		200			{object}	util.Response{data=model.ServiceAccount,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.Response[model.ServiceAccount]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts [post]
 func (c *ServiceAccountController) CreateServiceAccount(ctx *gin.Context) {
 	var req CreateServiceAccountRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
@@ -241,18 +215,11 @@ func (c *ServiceAccountController) CreateServiceAccount(ctx *gin.Context) {
 
 	err := c.service.CreateServiceAccount(ctx, serviceAccount)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5003",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5003", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": serviceAccount,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, serviceAccount)
 }
 
 type UpdateServiceAccountRequest struct {
@@ -270,28 +237,20 @@ type UpdateServiceAccountRequest struct {
 //	@Produce		json
 //	@Param			id			path		string	true	"Service account ID"
 //	@Param			request		body		UpdateServiceAccountRequest	true	"Update service account request"
-//	@Success		200			{object}	util.Response{data=model.ServiceAccount,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.Response[model.ServiceAccount]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id} [put]
 func (c *ServiceAccountController) UpdateServiceAccount(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	var req UpdateServiceAccountRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
@@ -303,29 +262,18 @@ func (c *ServiceAccountController) UpdateServiceAccount(ctx *gin.Context) {
 
 	err := c.service.UpdateServiceAccount(ctx, id, serviceAccount)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5004",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5004", err))
 		return
 	}
 
 	// Get the updated service account
 	updatedServiceAccount, err := c.service.GetServiceAccountByID(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": updatedServiceAccount,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, updatedServiceAccount)
 }
 
 // DeleteServiceAccount Delete service account
@@ -337,34 +285,23 @@ func (c *ServiceAccountController) UpdateServiceAccount(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Service account ID"
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id} [delete]
 func (c *ServiceAccountController) DeleteServiceAccount(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	err := c.service.DeleteServiceAccount(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5005",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5005", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": gin.H{"message": "Service account deleted successfully"},
-	})
+	util.RespondWithMessage(ctx, "Service account deleted successfully")
 }
 
 type UpdateServiceAccountStatusRequest struct {
@@ -381,56 +318,37 @@ type UpdateServiceAccountStatusRequest struct {
 //	@Produce		json
 //	@Param			id		path		string	true	"Service account ID"
 //	@Param			request	body		UpdateServiceAccountStatusRequest	true	"Update service account status request"
-//	@Success		200		{object}	util.Response{data=model.ServiceAccount,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[model.ServiceAccount]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/status [put]
 func (c *ServiceAccountController) UpdateServiceAccountStatus(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	var req UpdateServiceAccountStatusRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
 	err := c.service.UpdateServiceAccountStatus(ctx, id, req.Status)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5006",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5006", err))
 		return
 	}
 
 	// Get the updated service account
 	updatedServiceAccount, err := c.service.GetServiceAccountByID(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": updatedServiceAccount,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, updatedServiceAccount)
 }
 
 // GetServiceAccountAccessKeys Get service account access keys
@@ -442,34 +360,23 @@ func (c *ServiceAccountController) UpdateServiceAccountStatus(ctx *gin.Context) 
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Service account ID"
-//	@Success		200	{object}	util.Response{data=[]model.ServiceAccountAccessKey,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.PaginationResponse[model.ServiceAccountAccessKey]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/access-keys [get]
 func (c *ServiceAccountController) GetServiceAccountAccessKeys(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	keys, err := c.service.GetServiceAccountAccessKeys(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5007",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5007", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": keys,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, keys)
 }
 
 type CreateServiceAccountAccessKeyRequest struct {
@@ -488,56 +395,41 @@ type CreateServiceAccountAccessKeyRequest struct {
 //	@Produce		json
 //	@Param			id				path		string	true	"Service account ID"
 //	@Param			request		body		CreateServiceAccountAccessKeyRequest	true	"Create service account access key request"
-//	@Success		200				{object}	util.Response{data=model.ServiceAccountAccessKey,code=string}
-//	@Failure		500				{object}	util.Response{err=string,code=string}
+//	@Success		200				{object}	util.Response[model.ServiceAccountAccessKey]
+//	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/access-keys [post]
 func (c *ServiceAccountController) CreateServiceAccountAccessKey(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	var req CreateServiceAccountAccessKeyRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
 	accessKey, secretKey, err := c.service.CreateServiceAccountAccessKey(ctx, id, req.Name, req.Description, req.ExpiresInDays)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5008",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5008", err))
 		return
 	}
 
 	// Note: This is the only time the secret key is returned. The client needs to save it securely.
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": map[string]interface{}{
-			"id":                 accessKey.ResourceID,
-			"created_at":         accessKey.CreatedAt,
-			"updated_at":         accessKey.UpdatedAt,
-			"service_account_id": accessKey.ServiceAccountID,
-			"access_key_id":      accessKey.AccessKeyID,
-			"status":             accessKey.Status,
-			"name":               accessKey.Name,
-			"description":        accessKey.Description,
-			"expires_at":         accessKey.ExpiresAt,
-			"secret_access_key":  secretKey, // The actual secret key
-		},
+	util.RespondWithSuccess(ctx, http.StatusOK, map[string]interface{}{
+		"id":                 accessKey.ResourceID,
+		"created_at":         accessKey.CreatedAt,
+		"updated_at":         accessKey.UpdatedAt,
+		"service_account_id": accessKey.ServiceAccountID,
+		"access_key_id":      accessKey.AccessKeyID,
+		"status":             accessKey.Status,
+		"name":               accessKey.Name,
+		"description":        accessKey.Description,
+		"expires_at":         accessKey.ExpiresAt,
+		"secret_access_key":  secretKey, // The actual secret key
 	})
 }
 
@@ -559,45 +451,30 @@ type UpdateServiceAccountAccessKeyRequest struct {
 //	@Param			id			path		string	true	"Service account ID"
 //	@Param			keyId		path		string	true	"Access key ID"
 //	@Param			request		body		UpdateServiceAccountAccessKeyRequest	true	"Update service account access key request"
-//	@Success		200			{object}	util.Response{data=model.ServiceAccountAccessKey,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.Response[model.ServiceAccountAccessKey]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/access-keys/{keyId} [put]
 func (c *ServiceAccountController) UpdateServiceAccountAccessKey(ctx *gin.Context) {
 	serviceAccountID := ctx.Param("id")
 	keyID := ctx.Param("keyId")
 	if serviceAccountID == "" || keyID == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID or key ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID or key ID"))
 		return
 	}
 	var req UpdateServiceAccountAccessKeyRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
 	updatedKey, err := c.service.UpdateServiceAccountAccessKey(ctx, serviceAccountID, keyID, req.Name, req.Description, req.Status, req.ExpiresAt)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5009",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5009", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": updatedKey,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, updatedKey)
 }
 
 // DeleteServiceAccountAccessKey Delete service account access key
@@ -610,35 +487,24 @@ func (c *ServiceAccountController) UpdateServiceAccountAccessKey(ctx *gin.Contex
 //	@Produce		json
 //	@Param			id		path		string	true	"Service account ID"
 //	@Param			keyId	path		string	true	"Access key ID"
-//	@Success		200		{object}	util.Response{data=string,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[util.MessageData]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/access-keys/{keyId} [delete]
 func (c *ServiceAccountController) DeleteServiceAccountAccessKey(ctx *gin.Context) {
 	serviceAccountID := ctx.Param("id")
 	keyID := ctx.Param("keyId")
 	if serviceAccountID == "" || keyID == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID or key ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID or key ID"))
 		return
 	}
 
 	err := c.service.DeleteServiceAccountAccessKey(ctx, serviceAccountID, keyID)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5010",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5010", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": gin.H{"message": "Service account access key deleted successfully"},
-	})
+	util.RespondWithMessage(ctx, "Service account access key deleted successfully")
 }
 
 // GetServiceAccountRoles Get service account roles
@@ -650,34 +516,23 @@ func (c *ServiceAccountController) DeleteServiceAccountAccessKey(ctx *gin.Contex
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Service account ID"
-//	@Success		200	{object}	util.Response{data=[]model.Role,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.PaginationResponse[model.Role]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/roles [get]
 func (c *ServiceAccountController) GetServiceAccountRoles(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	roles, err := c.service.GetServiceAccountRoles(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5011",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5011", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": roles,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, roles)
 }
 
 type AssignServiceAccountRolesRequest struct {
@@ -694,55 +549,36 @@ type AssignServiceAccountRolesRequest struct {
 //	@Produce		json
 //	@Param			id			path		string		true	"Service account ID"
 //	@Param			request		body		AssignServiceAccountRolesRequest	true	"Assign roles to service account request"
-//	@Success		200			{object}	util.Response{data=[]model.Role,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.PaginationResponse[model.Role]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/roles [post]
 func (c *ServiceAccountController) AssignServiceAccountRoles(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	var req AssignServiceAccountRolesRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
 	err := c.service.AssignServiceAccountRoles(ctx, id, req.RoleIDs)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5012",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5012", err))
 		return
 	}
 
 	// Get the updated roles
 	updatedRoles, err := c.service.GetServiceAccountRoles(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5010",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5010", err))
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": updatedRoles,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, updatedRoles)
 }
 
 // GetServiceAccountPolicy Get service account policy
@@ -754,34 +590,23 @@ func (c *ServiceAccountController) AssignServiceAccountRoles(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Service account ID"
-//	@Success		200	{object}	util.Response{data=model.PolicyDocument,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.PolicyDocument]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/policy [get]
 func (c *ServiceAccountController) GetServiceAccountPolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	policy, err := c.service.GetServiceAccountPolicy(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5013",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5013", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": policy,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, policy)
 }
 
 type SetServiceAccountPolicyRequest struct {
@@ -798,54 +623,35 @@ type SetServiceAccountPolicyRequest struct {
 //	@Produce		json
 //	@Param			id				path		string					true	"Service account ID"
 //	@Param			request		body		SetServiceAccountPolicyRequest	true	"Set service account policy request"
-//	@Success		200				{object}	util.Response{data=model.ServiceAccount,code=string}
-//	@Failure		500				{object}	util.Response{err=string,code=string}
+//	@Success		200				{object}	util.Response[model.ServiceAccount]
+//	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/policy [put]
 func (c *ServiceAccountController) SetServiceAccountPolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("missing service account ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "missing service account ID"))
 		return
 	}
 
 	var req SetServiceAccountPolicyRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 	err := c.service.StartAudit(ctx, id, func(auditLog *model.AuditLog) error {
 		return c.service.SetServiceAccountPolicy(ctx, id, req.PolicyDocument)
 	})
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5014",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5014", err))
 		return
 	}
 	// Get the updated service account
 	updatedServiceAccount, err := c.service.GetServiceAccountByID(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": updatedServiceAccount,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, updatedServiceAccount)
 }

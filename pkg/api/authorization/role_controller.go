@@ -1,7 +1,6 @@
 package authorizationapi
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
 
@@ -47,7 +46,7 @@ func (c *RoleController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Param			current		query		int		false	"Current page"	default(1)
 //	@Param			page_size	query		int		false	"Page size"		default(10)
 //	@Param			search		query		string	false	"Search"
-//	@Success		200			{object}	util.Response{data=[]model.Role}
+//	@Success		200			{object}	util.PaginationResponse[model.Role]
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles [get]
 func (c *RoleController) ListRoles(ctx *gin.Context) {
@@ -59,22 +58,12 @@ func (c *RoleController) ListRoles(ctx *gin.Context) {
 	// Call service to get role list
 	roles, total, err := c.service.ListRoles(ctx, current, pageSize, search)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
 	// Return paginated data
-	ctx.JSON(http.StatusOK, gin.H{
-		"code":      "0",
-		"data":      roles,
-		"total":     total,
-		"current":   current,
-		"page_size": pageSize,
-	})
+	util.RespondWithSuccessList(ctx, http.StatusOK, roles, total, current, pageSize)
 }
 
 // GetRole gets a role by ID
@@ -86,35 +75,24 @@ func (c *RoleController) ListRoles(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Role ID"
-//	@Success		200	{object}	util.Response{data=model.Role}
+//	@Success		200	{object}	util.Response[model.Role]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id} [get]
 func (c *RoleController) GetRole(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("invalid role ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "invalid role ID"))
 		return
 	}
 
 	role, err := c.service.GetRole(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": role,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, role)
 }
 
 type CreateRoleRequest struct {
@@ -133,7 +111,7 @@ type CreateRoleRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		CreateRoleRequest	true	"Create role request"
-//	@Success		200		{object}	util.Response{data=model.Role}
+//	@Success		200		{object}	util.Response[model.Role]
 //	@Failure		400		{object}	util.ErrorResponse
 //	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles [post]
@@ -141,11 +119,7 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 	var req CreateRoleRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
@@ -156,19 +130,12 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 		func(auditLog *model.AuditLog) error {
 			role, err := c.service.CreateRole(ctx, req.Name, req.Description, req.PermissionIDs, req.PolicyDocument)
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				}
+				return util.NewError("E5001", err)
 			}
 			auditLog.Details.NewData = role
 			auditLog.ResourceID = role.ResourceID
 
-			ctx.JSON(http.StatusCreated, gin.H{
-				"code": "0",
-				"data": role,
-			})
+			util.RespondWithSuccess(ctx, http.StatusCreated, role)
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -198,29 +165,21 @@ type UpdateRoleRequest struct {
 //	@Produce		json
 //	@Param			id		path		string		true	"Role ID"
 //	@Param			request	body		UpdateRoleRequest	true	"Update role request"
-//	@Success		200		{object}	util.Response{data=model.Role}
+//	@Success		200		{object}	util.Response[model.Role]
 //	@Failure		400		{object}	util.ErrorResponse
 //	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id} [put]
 func (c *RoleController) UpdateRole(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("invalid role ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "invalid role ID"))
 		return
 	}
 
 	var req UpdateRoleRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
@@ -231,19 +190,12 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 		func(auditLog *model.AuditLog) error {
 			role, err := c.service.UpdateRole(ctx, id, req.Name, req.Description, req.PermissionIDs, req.PolicyDocument)
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				}
+				return util.NewError("E5001", err)
 			}
 
 			middleware.ClearUserCache()
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": role,
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, role)
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -271,18 +223,14 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Role ID"
-//	@Success		200	{object}	util.Response{data=model.Role}
+//	@Success		200	{object}	util.Response[model.Role]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id} [delete]
 func (c *RoleController) DeleteRole(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("invalid role ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "invalid role ID"))
 		return
 	}
 
@@ -293,19 +241,12 @@ func (c *RoleController) DeleteRole(ctx *gin.Context) {
 		func(auditLog *model.AuditLog) error {
 			err := c.service.DeleteRole(ctx, id)
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				}
+				return util.NewError("E5001", err)
 			}
 
 			middleware.ClearUserCache()
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "Role deleted successfully"},
-			})
+			util.RespondWithMessage(ctx, "Role deleted successfully")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -337,29 +278,21 @@ type AssignPermissionsRequest struct {
 //	@Produce		json
 //	@Param			id			path		string		true	"Role ID"
 //	@Param			request		body		AssignPermissionsRequest	true	"Assign permissions request"
-//	@Success		200			{object}	util.Response{data=model.Role}
+//	@Success		200			{object}	util.Response[model.Role]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id}/permissions [put]
 func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("invalid role ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "invalid role ID"))
 		return
 	}
 
 	var req AssignPermissionsRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
@@ -370,19 +303,12 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 		func(auditLog *model.AuditLog) error {
 			err := c.service.AssignPermissions(ctx, id, req.PermissionIDs)
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				}
+				return util.NewError("E5001", err)
 			}
 
 			middleware.ClearUserCache()
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "Permissions assigned successfully"},
-			})
+			util.RespondWithMessage(ctx, "Permissions assigned successfully")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -410,41 +336,24 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Role ID"
-//	@Success		200	{object}	util.Response{data=model.PolicyDocument}
+//	@Success		200	{object}	util.Response[model.PolicyDocument]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id}/policy [get]
 func (c *RoleController) GetRolePolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("invalid role ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "invalid role ID"))
 		return
 	}
 
 	policyDocument, err := c.service.GetRolePolicy(ctx, id)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": gin.H{
-			"policy_document": policyDocument,
-		},
-	})
-}
-
-type SetRolePolicyRequest struct {
-	PolicyDocument model.PolicyDocument `json:"policy_document"`
+	util.RespondWithSuccess(ctx, http.StatusOK, policyDocument)
 }
 
 // SetRolePolicy sets the policy for a role
@@ -456,30 +365,22 @@ type SetRolePolicyRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id				path		string					true	"Role ID"
-//	@Param			request		body		SetRolePolicyRequest	true	"Set role policy request"
-//	@Success		200				{object}	util.Response{data=model.Role}
+//	@Param			request		body		model.PolicyDocument	true	"Set role policy request"
+//	@Success		200				{object}	util.Response[model.Role]
 //	@Failure		400				{object}	util.ErrorResponse
 //	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id}/policy [put]
 func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("invalid role ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "invalid role ID"))
 		return
 	}
 
-	var req SetRolePolicyRequest
+	var req model.PolicyDocument
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
@@ -489,21 +390,14 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 		id,
 		func(auditLog *model.AuditLog) error {
 			// Update policy document for the role
-			role, err := c.service.SetRolePolicy(ctx, id, req.PolicyDocument)
+			role, err := c.service.SetRolePolicy(ctx, id, req)
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				}
+				return util.NewError("E5001", err)
 			}
 
 			middleware.ClearUserCache()
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": role,
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, role)
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {

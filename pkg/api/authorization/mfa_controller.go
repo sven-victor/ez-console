@@ -1,7 +1,6 @@
 package authorizationapi
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +43,7 @@ type EnableMFARequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			mfa_type	body		string	true	"MFA Type"
-//	@Success		200			{object}	util.Response{data=gin.H}
+//	@Success		200			{object}	util.Response[service.EnableMFAResponse]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/mfa/enable [post]
@@ -53,21 +52,13 @@ func (c *MFAController) EnableMFA(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4012",
-			Err:      errors.New("failed to get user information"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user information"))
 		return
 	}
 
 	var req EnableMFARequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
@@ -78,17 +69,10 @@ func (c *MFAController) EnableMFA(ctx *gin.Context) {
 		func(auditLog *model.AuditLog) error {
 			response, err := c.service.EnableMFA(ctx, user.ResourceID, req.MFAType)
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5002",
-					Err:      err,
-				}
+				return util.NewError("E5002", err)
 			}
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": response,
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, response)
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -118,7 +102,7 @@ type VerifyAndActivateMFARequest struct {
 //	@Param			code		query		string	true	"Code"
 //	@Param			token		query		string	true	"Token"
 //	@Param			mfa_type	body		string	true	"MFA Type"
-//	@Success		200			{object}	util.Response{data=gin.H}
+//	@Success		200			{object}	util.Response[util.MessageData]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/mfa/verify [post]
@@ -127,22 +111,14 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4012",
-			Err:      errors.New("failed to get user information"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user information"))
 		return
 	}
 
 	var req VerifyAndActivateMFARequest
 	// Get verification code
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
@@ -159,15 +135,9 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 				err = c.service.VerifyAndActivateEmailMFA(ctx, user.ResourceID, req.Token, req.Code)
 			}
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5002",
-					Err:      err,
-					Message:  "failed to verify and activate MFA",
-				}
+				return util.NewErrorMessage("E5002", "failed to verify and activate MFA", err)
 			}
-
-			util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Multi-factor authentication (MFA) has been successfully enabled"})
+			util.RespondWithMessage(ctx, "Multi-factor authentication (MFA) has been successfully enabled")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -188,7 +158,7 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=gin.H}
+//	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/mfa/disable [post]
@@ -197,11 +167,7 @@ func (c *MFAController) DisableMFA(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E5001",
-			Err:      errors.New("failed to get user information"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("5001", "failed to get user information"))
 		return
 	}
 
@@ -213,14 +179,9 @@ func (c *MFAController) DisableMFA(ctx *gin.Context) {
 			// Call service to disable MFA
 			err := c.service.DisableMFA(ctx, user.ResourceID)
 			if err != nil {
-				return util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5002",
-					Err:      err,
-					Message:  "failed to disable MFA",
-				}
+				return util.NewErrorMessage("E5002", "failed to disable MFA", err)
 			}
-			util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Multi-factor authentication (MFA) has been successfully disabled"})
+			util.RespondWithMessage(ctx, "Multi-factor authentication (MFA) has been successfully disabled")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {

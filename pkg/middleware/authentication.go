@@ -126,7 +126,7 @@ func JWTAuthenticationFunc(c *gin.Context) {
 				return
 			}
 		}
-		util.RespondWithError(c, util.NewError("E4011", "Unauthorized"))
+		util.RespondWithError(c, util.NewErrorMessage("E4011", "Unauthorized"))
 		return
 	}
 }
@@ -261,22 +261,22 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 	cfg := config.GetConfig()
 	token, err := cfg.JWT.ParseWithClaims(tokenString, jwt.MapClaims{})
 	if err != nil {
-		util.RespondWithError(c, util.NewError("E4011", "Invalid token", err))
+		util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
 		return
 	}
 
 	iat, err := token.Claims.GetIssuedAt()
 	if err != nil {
-		util.RespondWithError(c, util.NewError("E4011", "Invalid token", err))
+		util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
 		return
 	}
 	sessionIdleTimeoutMinutes, err := settingService.GetIntSetting(c, model.SettingSessionIdleTimeoutMinutes, 0)
 	if err != nil {
-		util.RespondWithError(c, util.NewError("E4011", "Invalid token", err))
+		util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
 		return
 	}
 	if sessionIdleTimeoutMinutes > 0 && time.Since(iat.Time) > time.Duration(sessionIdleTimeoutMinutes)*time.Minute {
-		util.RespondWithError(c, util.NewError("E4011", "Session expired, please login again"))
+		util.RespondWithError(c, util.NewErrorMessage("E4011", "Session expired, please login again"))
 		return
 	}
 
@@ -285,17 +285,17 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		// Check if token has expired
 		exp, err := claims.GetExpirationTime()
 		if err != nil {
-			util.RespondWithError(c, util.NewError("E4011", "Invalid token", err))
+			util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
 			return
 		}
 		if exp.Before(time.Now()) {
-			util.RespondWithError(c, util.NewError("E4011", "Token expired"))
+			util.RespondWithError(c, util.NewErrorMessage("E4011", "Token expired"))
 			return
 		}
 		// Get user information
 		userID, ok := claims["user_id"].(string)
 		if !ok {
-			util.RespondWithError(c, util.NewError("E4012", "Invalid user ID"))
+			util.RespondWithError(c, util.NewErrorMessage("E4012", "Invalid user ID"))
 			return
 		}
 
@@ -307,7 +307,7 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 				// Session has expired, mark as invalid
 				session.Invalidate()
 				db.Session(c).Select("IsValid").Save(&session)
-				util.RespondWithError(c, util.NewError("E4011", "Session expired, please login again"))
+				util.RespondWithError(c, util.NewErrorMessage("E4011", "Session expired, please login again"))
 				return
 			}
 
@@ -318,7 +318,7 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 			// Store session information in context
 			c.Set("session", &session)
 		} else {
-			util.RespondWithError(c, util.NewError("E4011", "Session expired, please login again", err))
+			util.RespondWithError(c, util.NewErrorMessage("E4011", "Session expired, please login again", err))
 			return
 		}
 
@@ -341,7 +341,7 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		}
 		passwordExpiryDays, err := settingService.GetIntSetting(c, model.SettingPasswordExpiryDays, 0)
 		if err != nil {
-			util.RespondWithError(c, util.NewError("E4012", "System configuration error", err))
+			util.RespondWithError(c, util.NewErrorMessage("E4012", "System configuration error", err))
 			return
 		}
 

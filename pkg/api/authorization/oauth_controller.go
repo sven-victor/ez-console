@@ -1,7 +1,6 @@
 package authorizationapi
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -35,6 +34,12 @@ func (c *OAuthController) RegisterRoutes(router *gin.RouterGroup) {
 	}
 }
 
+type OAuthProvider struct {
+	Name        string `json:"name"`
+	DisplayName string `json:"display_name"`
+	IconURL     string `json:"icon_url"`
+}
+
 // GetProviders gets the list of available OAuth providers
 //
 //	@Summary		Get the list of available OAuth providers
@@ -43,18 +48,18 @@ func (c *OAuthController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Tags			Authorization/OAuth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=[]gin.H}
+//	@Success		200	{object}	util.Response[[]OAuthProvider]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/oauth/providers [get]
 func (c *OAuthController) GetProviders(ctx *gin.Context) {
 
 	// Only return enabled providers, without sensitive information
-	providers := []gin.H{}
+	providers := []OAuthProvider{}
 	for _, p := range c.service.GetOAuth2ProviderConfig(ctx) {
-		providers = append(providers, gin.H{
-			"name":         p.Name,
-			"display_name": p.DisplayName,
-			"icon_url":     p.IconURL,
+		providers = append(providers, OAuthProvider{
+			Name:        p.Name,
+			DisplayName: p.DisplayName,
+			IconURL:     p.IconURL,
 		})
 	}
 
@@ -70,29 +75,20 @@ func (c *OAuthController) GetProviders(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			provider	path		string	true	"Provider"
-//	@Success		200			{object}	util.Response{data=string}
+//	@Success		200			{object}	util.Response[service.OAuthLoginURLResponse]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/oauth/login/{provider} [get]
 func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 	provider := ctx.Param("provider")
 	if provider == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("OAuth provider is required"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "OAuth provider is required"))
 		return
 	}
 
 	resp, err := c.service.GetLoginURL(ctx, provider)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-			Message:  "failed to get login URL",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "failed to get login URL", err))
 		return
 	}
 
@@ -110,7 +106,7 @@ func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 //	@Param			code		query		string	true	"Code"
 //	@Param			state		query		string	true	"State"
 //	@Param			provider	query		string	true	"Provider"
-//	@Success		200			{object}	util.Response{data=string}
+//	@Success		200			{object}	util.Response[service.LoginResponse]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/oauth/callback [get]
@@ -130,12 +126,7 @@ func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 	// Handle requests sent directly by the frontend via API
 	var req service.OAuthCallbackRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-			Message:  "invalid request parameters",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "invalid request parameters", err))
 		return
 	}
 
@@ -153,21 +144,13 @@ func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 
 			loginResp, err := c.service.HandleCallback(ctx, req)
 			if err != nil {
-				return &util.ErrorResponse{
-					HTTPCode: http.StatusUnauthorized,
-					Code:     "E4012",
-					Err:      err,
-				}
+				return util.NewError("E4012", err)
 			}
 			auditLog.UserID = loginResp.User.ResourceID
 			auditLog.Username = loginResp.User.Username
 			_, err = c.service.CreateSession(ctx, loginResp.User.ResourceID, loginResp.Token, ctx.ClientIP(), ctx.Request.UserAgent(), loginResp.ExpiresAt)
 			if err != nil {
-				return &util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				}
+				return util.NewError("E5001", err)
 			}
 			util.RespondWithSuccess(ctx, http.StatusOK, loginResp)
 			return nil

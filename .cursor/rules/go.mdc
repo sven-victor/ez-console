@@ -50,29 +50,18 @@ This project follows the standard Go project layout:
     ```go
     userID := ctx.Param("id")
     if userID == "" {
-        util.RespondWithError(ctx, util.ErrorResponse{
-            Code: "E4001",
-            Err:  errors.New("User ID cannot be empty"),
-        })
+        util.RespondWithError(ctx, util.NewErrorMessage("E4001","User ID cannot be empty"))
         return
     }
     var filters service.AuditLogFilters
     if err := ctx.BindQuery(&filters); err != nil {
-        util.RespondWithError(ctx, util.ErrorResponse{
-            Code:    "E4001",
-            Err:     err,
-            Message: "failed to parse query parameters",
-        })
+        util.RespondWithError(ctx, util.NewError("E4001",err))
         return
     }
 
     logs, total, err := c.service.GetAuditLogs(ctx, filters, page, pageSize)
     if err != nil {
-        util.RespondWithError(ctx, util.ErrorResponse{
-            Code:    "E5001",
-            Err:     err,
-            Message: "failed to get audit logs",
-        })
+        util.RespondWithError(ctx, util.NewErrorMessage("E5001","failed to get audit logs",err))
         return
     }
     ```
@@ -119,3 +108,137 @@ This project follows the standard Go project layout:
 -   For writing audit logs, use the `Service.StartAudit` method whenever possible.
 -   The definition of the `StartAudit` method is: `StartAudit(ctx *gin.Context, resourceID string, handleFunc func(auditLog *model.AuditLog) error, withOptions ...withStartAuditOptions) error`. The `handleFunc` is used to execute the actual operation. The necessary information for the audit log, such as `userID`, `username`, `ip`, `userAgent`, etc., are all obtained from the `ctx`.
 
+## Response Structure
+
+### Success Response Format
+For successful operations, use `RespondWithSuccess`:
+```go
+util.RespondWithSuccess(ctx, http.StatusOK, data)
+```
+
+**Response Structure:**
+```json
+{
+  "code": "0",
+  "data": {} // The actual response data
+}
+```
+
+### List Response Format
+For paginated list responses, use `RespondWithSuccessList`:
+```go
+util.RespondWithSuccessList(ctx, http.StatusOK, data, total, current, pageSize)
+```
+
+**Response Structure:**
+```json
+{
+  "code": "0",
+  "data": [],
+  "total": 100,
+  "current": 1,
+  "page_size": 10
+}
+```
+
+### Error Response Format
+For error responses, use `RespondWithError`:
+```go
+util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Error message"))
+```
+
+**Response Structure:**
+```json
+{
+  "code": "E4001",
+  "err": "Error message"
+}
+```
+
+## Error Code Standards
+
+### Error Code Format
+- Use format: `E` + 3-digit HTTP status code + sequence number
+- Examples: `E4001`, `E4012`, `E5001`
+
+### Common Error Codes
+- `E4001`: Bad Request (invalid parameters)
+- `E4012`: Unauthorized (invalid auth token)
+- `E5001`: Internal Server Error
+
+### Creating Error Responses
+
+**For simple errors:**
+```go
+util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Parameter is required"))
+```
+
+**For errors with underlying cause:**
+```go
+util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Database operation failed", err))
+```
+
+**For wrapped errors:**
+```go
+util.RespondWithError(ctx, util.NewError("E5001", err))
+```
+
+## Implementation Guidelines
+
+### Controller Error Handling Pattern
+```go
+func (c *Controller) SomeMethod(ctx *gin.Context) {
+    // Parameter validation
+    param := ctx.Param("id")
+    if param == "" {
+        util.RespondWithError(ctx, util.NewErrorMessage("E4001", "ID parameter is required"))
+        return
+    }
+
+    // Business logic with error handling
+    result, err := c.service.SomeOperation(ctx, param)
+    if err != nil {
+        util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Operation failed", err))
+        return
+    }
+
+    // Success response
+    util.RespondWithSuccess(ctx, http.StatusOK, result)
+}
+```
+
+### List Query Pattern
+```go
+func (c *Controller) ListItems(ctx *gin.Context) {
+    var filters service.Filters
+    if err := ctx.BindQuery(&filters); err != nil {
+        util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid query parameters", err))
+        return
+    }
+
+    items, total, err := c.service.ListItems(ctx, filters, page, pageSize)
+    if err != nil {
+        util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get items", err))
+        return
+    }
+
+    util.RespondWithSuccessList(ctx, http.StatusOK, items, total, current, pageSize)
+}
+```
+
+## Key Points
+
+1. **Always use utility functions**: Never construct JSON responses manually
+2. **Consistent error codes**: Follow the E4xxx/E5xxx pattern
+3. **English error messages**: All error messages must be in English
+4. **Proper HTTP status codes**: Use appropriate HTTP status codes
+5. **Early return on errors**: Return immediately after calling `RespondWithError`
+6. **Logging**: Error responses are automatically logged with context
+
+## Response Utility Functions
+
+- `RespondWithSuccess(ctx, httpCode, data)`: For single item responses
+- `RespondWithSuccessList(ctx, httpCode, data, total, current, pageSize)`: For paginated lists
+- `RespondWithError(ctx, err)`: For error responses
+- `NewError(code, err)`: Create error with underlying cause
+- `NewErrorMessage(code, message, err...)`: Create error with custom message

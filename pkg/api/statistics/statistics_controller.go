@@ -29,8 +29,8 @@ func (c *StatisticsController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Description	Get statistics
 //	@ID             getStatistics
 //	@Tags			Statistics
-//	@Success		200	{object}	util.Response{data=service.Charts,code=string}
-//	@Failure		400	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[service.Charts]
+//	@Failure		400	{object}	util.ErrorResponse
 //	@Router			/api/statistics [get]
 func (c *StatisticsController) GetStatistics(ctx *gin.Context) {
 	roles := middleware.GetRolesFromContext(ctx)

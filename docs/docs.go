@@ -44,43 +44,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/service.LoginResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_LoginResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -104,43 +74,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-string"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -173,46 +113,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.User"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -236,19 +143,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/gin.H"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "400": {
@@ -295,19 +190,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/gin.H"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_EnableMFAResponse"
                         }
                     },
                     "400": {
@@ -368,19 +251,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/gin.H"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "400": {
@@ -439,19 +310,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_LoginResponse"
                         }
                     },
                     "400": {
@@ -496,19 +355,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_OAuthLoginURLResponse"
                         }
                     },
                     "400": {
@@ -544,22 +391,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/gin.H"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-array_authorizationapi_OAuthProvider"
                         }
                     },
                     "500": {
@@ -591,11 +423,14 @@ const docTemplate = `{
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/util.Response"
+                                    "$ref": "#/definitions/util.Response-array_model_PermissionGroup"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "code": {
+                                            "type": "string"
+                                        },
                                         "data": {
                                             "type": "array",
                                             "items": {
@@ -634,43 +469,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -703,43 +508,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -779,46 +554,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.AuditLog"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_AuditLog"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -853,43 +595,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-string"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -929,46 +641,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.Session"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_Session"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -992,43 +671,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -1061,43 +710,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -1121,43 +740,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-authorizationapi_TokenResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -1203,22 +792,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.Role"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_Role"
                         }
                     },
                     "500": {
@@ -1257,19 +831,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Role"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_Role"
                         }
                     },
                     "400": {
@@ -1314,19 +876,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Role"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_Role"
                         }
                     },
                     "400": {
@@ -1378,19 +928,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Role"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_Role"
                         }
                     },
                     "400": {
@@ -1433,19 +971,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Role"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_Role"
                         }
                     },
                     "400": {
@@ -1499,19 +1025,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Role"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_Role"
                         }
                     },
                     "400": {
@@ -1556,19 +1070,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.PolicyDocument"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_PolicyDocument"
                         }
                     },
                     "400": {
@@ -1612,7 +1114,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/authorizationapi.SetRolePolicyRequest"
+                            "$ref": "#/definitions/model.PolicyDocument"
                         }
                     }
                 ],
@@ -1620,19 +1122,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Role"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_Role"
                         }
                     },
                     "400": {
@@ -1690,46 +1180,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.ServiceAccount"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_ServiceAccount"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -1762,43 +1219,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.ServiceAccount"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_ServiceAccount"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -1831,43 +1258,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.ServiceAccount"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_ServiceAccount"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -1907,43 +1304,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.ServiceAccount"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_ServiceAccount"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -1974,43 +1341,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2043,46 +1380,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.ServiceAccountAccessKey"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_ServiceAccountAccessKey"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2122,43 +1426,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.ServiceAccountAccessKey"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_ServiceAccountAccessKey"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2207,43 +1481,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.ServiceAccountAccessKey"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_ServiceAccountAccessKey"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2281,43 +1525,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2350,43 +1564,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.PolicyDocument"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_PolicyDocument"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2426,43 +1610,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.ServiceAccount"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_ServiceAccount"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2495,46 +1649,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.Role"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_Role"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2574,46 +1695,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.Role"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_Role"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2655,43 +1743,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.ServiceAccount"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_ServiceAccount"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2743,46 +1801,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.User"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2815,43 +1840,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2884,43 +1879,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -2960,43 +1925,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3027,43 +1962,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3110,46 +2015,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.AuditLog"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_AuditLog"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3191,43 +2063,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-string"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3260,43 +2102,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-string"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3338,43 +2150,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3416,43 +2198,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3485,43 +2237,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-string"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3545,43 +2267,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.SystemSettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_SystemSettings"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3603,43 +2295,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.SystemSettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3683,46 +2345,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.File"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_File"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3762,46 +2391,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.File"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_File"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3831,7 +2427,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/util.Response"
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3855,43 +2451,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_LDAPTestResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3909,49 +2475,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "type": "array",
-                                                "items": {
-                                                    "$ref": "#/definitions/service.Chart"
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_Charts"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -3991,46 +2521,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.AuditLog"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_AuditLog"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4054,43 +2551,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/service.HealthResult"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_HealthResult"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4114,43 +2581,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/service.SystemInfo"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_SystemInfo"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4174,43 +2611,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/systemapi.LDAPSettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-systemapi_LDAPSettings"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4243,43 +2650,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/ldap.Options"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4303,46 +2680,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/model.User"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.PaginationResponse-model_User"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4366,43 +2710,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.OAuthSettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_OAuthSettings"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4424,43 +2738,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.OAuthSettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_OAuthSettings"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4484,43 +2768,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_OAuthLoginURLResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4544,43 +2798,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-service_TestOAuthCallbackResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4604,43 +2828,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.SecuritySettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_SecuritySettings"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4662,43 +2856,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.SecuritySettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_SecuritySettings"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4733,43 +2897,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "boolean"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-systemapi_CheckPasswordComplexityResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "err": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -4840,24 +2974,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Successfully updated SMTP settings",
+                        "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/model.SMTPSettings"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-model_SMTPSettings"
                         }
                     },
                     "400": {
@@ -4907,24 +3026,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "SMTP connection test result",
+                        "description": "OK",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/util.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "code": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "$ref": "#/definitions/systemapi.SMTPTestResponse"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/util.Response-systemapi_SMTPTestResponse"
                         }
                     },
                     "400": {
@@ -5072,19 +3176,25 @@ const docTemplate = `{
                 }
             }
         },
+        "authorizationapi.OAuthProvider": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string"
+                },
+                "icon_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "authorizationapi.ResetUserPasswordRequest": {
             "type": "object",
             "properties": {
                 "password": {
                     "type": "string"
-                }
-            }
-        },
-        "authorizationapi.SetRolePolicyRequest": {
-            "type": "object",
-            "properties": {
-                "policy_document": {
-                    "$ref": "#/definitions/model.PolicyDocument"
                 }
             }
         },
@@ -5096,6 +3206,14 @@ const docTemplate = `{
             "properties": {
                 "policy_document": {
                     "$ref": "#/definitions/model.PolicyDocument"
+                }
+            }
+        },
+        "authorizationapi.TokenResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
                 }
             }
         },
@@ -5203,63 +3321,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "status": {
-                    "type": "string"
-                }
-            }
-        },
-        "gin.H": {
-            "type": "object",
-            "additionalProperties": {}
-        },
-        "ldap.Options": {
-            "type": "object",
-            "properties": {
-                "base_dn": {
-                    "type": "string"
-                },
-                "bind_dn": {
-                    "type": "string"
-                },
-                "bind_password": {
-                    "$ref": "#/definitions/safe.String"
-                },
-                "ca_cert": {
-                    "type": "string"
-                },
-                "client_cert": {
-                    "type": "string"
-                },
-                "client_key": {
-                    "$ref": "#/definitions/safe.String"
-                },
-                "default_role": {
-                    "type": "string"
-                },
-                "display_name_attr": {
-                    "type": "string"
-                },
-                "email_attr": {
-                    "type": "string"
-                },
-                "enabled": {
-                    "type": "boolean"
-                },
-                "insecure": {
-                    "type": "boolean"
-                },
-                "server_url": {
-                    "type": "string"
-                },
-                "start_tls": {
-                    "type": "boolean"
-                },
-                "timeout": {
-                    "$ref": "#/definitions/time.Duration"
-                },
-                "user_attr": {
-                    "type": "string"
-                },
-                "user_filter": {
                     "type": "string"
                 }
             }
@@ -5381,6 +3442,34 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "FileTypeImage"
             ]
+        },
+        "model.LDAPTestMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "model.LDAPTestResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.LDAPTestMessage"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                }
+            }
         },
         "model.OAuthProvider": {
             "type": "string",
@@ -6045,6 +4134,20 @@ const docTemplate = `{
                 }
             }
         },
+        "service.EnableMFAResponse": {
+            "type": "object",
+            "properties": {
+                "qr_code": {
+                    "type": "string"
+                },
+                "secret": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "service.HealthResult": {
             "type": "object",
             "properties": {
@@ -6085,6 +4188,17 @@ const docTemplate = `{
                 }
             }
         },
+        "service.OAuthLoginURLResponse": {
+            "type": "object",
+            "properties": {
+                "state": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "service.SystemInfo": {
             "type": "object",
             "properties": {
@@ -6114,6 +4228,18 @@ const docTemplate = `{
                 },
                 "user_count": {
                     "type": "integer"
+                }
+            }
+        },
+        "service.TestOAuthCallbackResponse": {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "user_info": {
+                    "type": "object",
+                    "additionalProperties": true
                 }
             }
         },
@@ -6160,6 +4286,14 @@ const docTemplate = `{
             "properties": {
                 "password": {
                     "type": "string"
+                }
+            }
+        },
+        "systemapi.CheckPasswordComplexityResponse": {
+            "type": "object",
+            "properties": {
+                "is_valid": {
+                    "type": "boolean"
                 }
             }
         },
@@ -6290,9 +4424,25 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -6315,13 +4465,553 @@ const docTemplate = `{
                 }
             }
         },
-        "util.Response": {
+        "util.MessageData": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.PaginationResponse-model_AuditLog": {
             "type": "object",
             "properties": {
                 "code": {
                     "type": "string"
                 },
-                "data": {},
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AuditLog"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_File": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.File"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_Role": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Role"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_ServiceAccount": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ServiceAccount"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_ServiceAccountAccessKey": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ServiceAccountAccessKey"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_Session": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Session"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_User": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.User"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.Response-array_authorizationapi_OAuthProvider": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/authorizationapi.OAuthProvider"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_model_PermissionGroup": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.PermissionGroup"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-authorizationapi_TokenResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/authorizationapi.TokenResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_LDAPTestResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.LDAPTestResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_OAuthSettings": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.OAuthSettings"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_PolicyDocument": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.PolicyDocument"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_Role": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.Role"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_SMTPSettings": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.SMTPSettings"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_SecuritySettings": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.SecuritySettings"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_ServiceAccount": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.ServiceAccount"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_ServiceAccountAccessKey": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.ServiceAccountAccessKey"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_SystemSettings": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.SystemSettings"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_User": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.User"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_Charts": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/service.Chart"
+                        }
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_EnableMFAResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.EnableMFAResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_HealthResult": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.HealthResult"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_LoginResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.LoginResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_OAuthLoginURLResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.OAuthLoginURLResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_SystemInfo": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.SystemInfo"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_TestOAuthCallbackResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.TestOAuthCallbackResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-string": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "string"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-systemapi_CheckPasswordComplexityResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/systemapi.CheckPasswordComplexityResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-systemapi_LDAPSettings": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/systemapi.LDAPSettings"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-systemapi_SMTPTestResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/systemapi.SMTPTestResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-util_MessageData": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/util.MessageData"
+                },
                 "err": {
                     "type": "string"
                 }

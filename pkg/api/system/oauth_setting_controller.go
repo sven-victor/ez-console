@@ -49,24 +49,17 @@ func (c *OAuthSettingController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=model.OAuthSettings,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.OAuthSettings]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/oauth-settings [get]
 func (c *OAuthSettingController) GetOAuthSettings(ctx *gin.Context) {
 	settings, err := c.service.GetOAuthSettings(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 	settings.ClientSecret.UpdateSecret(util.GenerateRandomPassword(128))
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": settings,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, settings)
 }
 
 type UpdateOAuthSettingsRequest struct {
@@ -82,18 +75,14 @@ type UpdateOAuthSettingsRequest struct {
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=model.OAuthSettings,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.OAuthSettings]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/oauth-settings [put]
 func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 	// Parse request body
 	var req UpdateOAuthSettingsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 	if req.ClientSecret != "" && !strings.HasPrefix(req.ClientSecret, "{CRYPT}") {
@@ -115,10 +104,7 @@ func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 				}
 			}
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "OAuth settings updated successfully"},
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "OAuth settings updated successfully"})
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -146,18 +132,14 @@ func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[service.OAuthLoginURLResponse]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/oauth-settings/test [post]
 func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 	// Parse request body
 	var req UpdateOAuthSettingsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 	if req.ClientSecret != "" && !strings.HasPrefix(req.ClientSecret, "{CRYPT}") {
@@ -165,11 +147,7 @@ func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 	} else {
 		settings, err := c.service.GetSetting(ctx, model.SettingOAuthClientSecret)
 		if err != nil {
-			util.RespondWithError(ctx, util.ErrorResponse{
-				HTTPCode: http.StatusInternalServerError,
-				Code:     "E5003",
-				Err:      err,
-			})
+			util.RespondWithError(ctx, util.NewError("E5003", err))
 			return
 		}
 		req.OAuthSettings.ClientSecret = safe.NewEncryptedString(settings.Value, os.Getenv(safe.SecretEnvName))
@@ -178,11 +156,7 @@ func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 	// Test OAuth connection
 	resp, err := c.service.TestOAuthConnection(ctx, &req.OAuthSettings)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5004",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5004", err))
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, resp)
@@ -196,26 +170,18 @@ func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[service.TestOAuthCallbackResponse]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/oauth-settings/test-callback [post]
 func (c *OAuthSettingController) TestOAuthCallback(ctx *gin.Context) {
 	var req service.OAuthCallbackRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 	resp, err := c.service.TestOAuthCallback(ctx, &req)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5005",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5005", err))
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, resp)

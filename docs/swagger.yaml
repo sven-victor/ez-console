@@ -82,15 +82,19 @@ definitions:
       username:
         type: string
     type: object
+  authorizationapi.OAuthProvider:
+    properties:
+      display_name:
+        type: string
+      icon_url:
+        type: string
+      name:
+        type: string
+    type: object
   authorizationapi.ResetUserPasswordRequest:
     properties:
       password:
         type: string
-    type: object
-  authorizationapi.SetRolePolicyRequest:
-    properties:
-      policy_document:
-        $ref: '#/definitions/model.PolicyDocument'
     type: object
   authorizationapi.SetServiceAccountPolicyRequest:
     properties:
@@ -98,6 +102,11 @@ definitions:
         $ref: '#/definitions/model.PolicyDocument'
     required:
     - policy_document
+    type: object
+  authorizationapi.TokenResponse:
+    properties:
+      token:
+        type: string
     type: object
   authorizationapi.UpdateCurrentUserRequest:
     properties:
@@ -169,44 +178,6 @@ definitions:
         type: string
     required:
     - status
-    type: object
-  gin.H:
-    additionalProperties: {}
-    type: object
-  ldap.Options:
-    properties:
-      base_dn:
-        type: string
-      bind_dn:
-        type: string
-      bind_password:
-        $ref: '#/definitions/safe.String'
-      ca_cert:
-        type: string
-      client_cert:
-        type: string
-      client_key:
-        $ref: '#/definitions/safe.String'
-      default_role:
-        type: string
-      display_name_attr:
-        type: string
-      email_attr:
-        type: string
-      enabled:
-        type: boolean
-      insecure:
-        type: boolean
-      server_url:
-        type: string
-      start_tls:
-        type: boolean
-      timeout:
-        $ref: '#/definitions/time.Duration'
-      user_attr:
-        type: string
-      user_filter:
-        type: string
     type: object
   model.AccessType:
     enum:
@@ -290,6 +261,24 @@ definitions:
     type: string
     x-enum-varnames:
     - FileTypeImage
+  model.LDAPTestMessage:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  model.LDAPTestResponse:
+    properties:
+      message:
+        items:
+          $ref: '#/definitions/model.LDAPTestMessage'
+        type: array
+      success:
+        type: boolean
+      user:
+        $ref: '#/definitions/model.User'
+    type: object
   model.OAuthProvider:
     enum:
     - github
@@ -741,6 +730,15 @@ definitions:
       label:
         type: string
     type: object
+  service.EnableMFAResponse:
+    properties:
+      qr_code:
+        type: string
+      secret:
+        type: string
+      token:
+        type: string
+    type: object
   service.HealthResult:
     properties:
       message:
@@ -767,6 +765,13 @@ definitions:
       user:
         $ref: '#/definitions/model.User'
     type: object
+  service.OAuthLoginURLResponse:
+    properties:
+      state:
+        type: string
+      url:
+        type: string
+    type: object
   service.SystemInfo:
     properties:
       cpu_cores:
@@ -787,6 +792,14 @@ definitions:
         type: integer
       user_count:
         type: integer
+    type: object
+  service.TestOAuthCallbackResponse:
+    properties:
+      user:
+        $ref: '#/definitions/model.User'
+      user_info:
+        additionalProperties: true
+        type: object
     type: object
   service.UpdateUserRequest:
     properties:
@@ -817,6 +830,11 @@ definitions:
         type: string
     required:
     - password
+    type: object
+  systemapi.CheckPasswordComplexityResponse:
+    properties:
+      is_valid:
+        type: boolean
     type: object
   systemapi.LDAPSettings:
     properties:
@@ -905,8 +923,24 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -923,11 +957,360 @@ definitions:
       message:
         type: string
     type: object
-  util.Response:
+  util.MessageData:
+    properties:
+      message:
+        type: string
+    type: object
+  util.PaginationResponse-model_AuditLog:
     properties:
       code:
         type: string
-      data: {}
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.AuditLog'
+        type: array
+      err:
+        type: string
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  util.PaginationResponse-model_File:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.File'
+        type: array
+      err:
+        type: string
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  util.PaginationResponse-model_Role:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      err:
+        type: string
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  util.PaginationResponse-model_ServiceAccount:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.ServiceAccount'
+        type: array
+      err:
+        type: string
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  util.PaginationResponse-model_ServiceAccountAccessKey:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.ServiceAccountAccessKey'
+        type: array
+      err:
+        type: string
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  util.PaginationResponse-model_Session:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.Session'
+        type: array
+      err:
+        type: string
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  util.PaginationResponse-model_User:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+      err:
+        type: string
+      page_size:
+        type: integer
+      total:
+        type: integer
+    type: object
+  util.Response-array_authorizationapi_OAuthProvider:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/authorizationapi.OAuthProvider'
+        type: array
+      err:
+        type: string
+    type: object
+  util.Response-array_model_PermissionGroup:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.PermissionGroup'
+        type: array
+      err:
+        type: string
+    type: object
+  util.Response-authorizationapi_TokenResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/authorizationapi.TokenResponse'
+      err:
+        type: string
+    type: object
+  util.Response-model_LDAPTestResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.LDAPTestResponse'
+      err:
+        type: string
+    type: object
+  util.Response-model_OAuthSettings:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.OAuthSettings'
+      err:
+        type: string
+    type: object
+  util.Response-model_PolicyDocument:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.PolicyDocument'
+      err:
+        type: string
+    type: object
+  util.Response-model_Role:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.Role'
+      err:
+        type: string
+    type: object
+  util.Response-model_SMTPSettings:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.SMTPSettings'
+      err:
+        type: string
+    type: object
+  util.Response-model_SecuritySettings:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.SecuritySettings'
+      err:
+        type: string
+    type: object
+  util.Response-model_ServiceAccount:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.ServiceAccount'
+      err:
+        type: string
+    type: object
+  util.Response-model_ServiceAccountAccessKey:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.ServiceAccountAccessKey'
+      err:
+        type: string
+    type: object
+  util.Response-model_SystemSettings:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.SystemSettings'
+      err:
+        type: string
+    type: object
+  util.Response-model_User:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.User'
+      err:
+        type: string
+    type: object
+  util.Response-service_Charts:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          items:
+            $ref: '#/definitions/service.Chart'
+          type: array
+        type: array
+      err:
+        type: string
+    type: object
+  util.Response-service_EnableMFAResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/service.EnableMFAResponse'
+      err:
+        type: string
+    type: object
+  util.Response-service_HealthResult:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/service.HealthResult'
+      err:
+        type: string
+    type: object
+  util.Response-service_LoginResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/service.LoginResponse'
+      err:
+        type: string
+    type: object
+  util.Response-service_OAuthLoginURLResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/service.OAuthLoginURLResponse'
+      err:
+        type: string
+    type: object
+  util.Response-service_SystemInfo:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/service.SystemInfo'
+      err:
+        type: string
+    type: object
+  util.Response-service_TestOAuthCallbackResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/service.TestOAuthCallbackResponse'
+      err:
+        type: string
+    type: object
+  util.Response-string:
+    properties:
+      code:
+        type: string
+      data:
+        type: string
+      err:
+        type: string
+    type: object
+  util.Response-systemapi_CheckPasswordComplexityResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/systemapi.CheckPasswordComplexityResponse'
+      err:
+        type: string
+    type: object
+  util.Response-systemapi_LDAPSettings:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/systemapi.LDAPSettings'
+      err:
+        type: string
+    type: object
+  util.Response-systemapi_SMTPTestResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/systemapi.SMTPTestResponse'
+      err:
+        type: string
+    type: object
+  util.Response-util_MessageData:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/util.MessageData'
       err:
         type: string
     type: object
@@ -955,25 +1338,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/service.LoginResponse'
-              type: object
+            $ref: '#/definitions/util.Response-service_LoginResponse'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: User login
       tags:
       - Authorization/Users
@@ -989,25 +1358,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-string'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: User logout
       tags:
       - Authorization/Users
@@ -1029,27 +1384,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.User'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get LDAP users
       tags:
       - Authorization/Users
@@ -1065,12 +1404,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/gin.H'
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "400":
           description: Bad Request
           schema:
@@ -1101,12 +1435,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/gin.H'
-              type: object
+            $ref: '#/definitions/util.Response-service_EnableMFAResponse'
         "400":
           description: Bad Request
           schema:
@@ -1147,12 +1476,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/gin.H'
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "400":
           description: Bad Request
           schema:
@@ -1192,12 +1516,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-service_LoginResponse'
         "400":
           description: Bad Request
           schema:
@@ -1227,12 +1546,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-service_OAuthLoginURLResponse'
         "400":
           description: Bad Request
           schema:
@@ -1256,14 +1570,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/gin.H'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.Response-array_authorizationapi_OAuthProvider'
         "500":
           description: Internal Server Error
           schema:
@@ -1284,8 +1591,10 @@ paths:
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/util.Response'
+            - $ref: '#/definitions/util.Response-array_model_PermissionGroup'
             - properties:
+                code:
+                  type: string
                 data:
                   items:
                     $ref: '#/definitions/model.PermissionGroup'
@@ -1310,25 +1619,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
+            $ref: '#/definitions/util.Response-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get current user's information
       tags:
       - Authorization/Users
@@ -1350,25 +1645,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
+            $ref: '#/definitions/util.Response-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update current user's information
       tags:
       - Authorization/Users
@@ -1395,27 +1676,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.AuditLog'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_AuditLog'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get current user's audit logs
       tags:
       - Authorization/Users
@@ -1438,25 +1703,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-string'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Change user password
       tags:
       - Authorization/Profile
@@ -1483,27 +1734,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.Session'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_Session'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get all sessions for the user
       tags:
       - Authorization/Profile/Sessions
@@ -1525,25 +1760,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Terminate the specified session
       tags:
       - Authorization/Profile/Sessions
@@ -1559,25 +1780,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Terminate all sessions except the current one
       tags:
       - Authorization/Profile/Sessions
@@ -1593,25 +1800,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-authorizationapi_TokenResponse'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Refresh user's JWT token
       tags:
       - Authorization/Users
@@ -1642,14 +1835,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/model.Role'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_Role'
         "500":
           description: Internal Server Error
           schema:
@@ -1675,12 +1861,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Role'
-              type: object
+            $ref: '#/definitions/util.Response-model_Role'
         "400":
           description: Bad Request
           schema:
@@ -1710,12 +1891,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Role'
-              type: object
+            $ref: '#/definitions/util.Response-model_Role'
         "400":
           description: Bad Request
           schema:
@@ -1744,12 +1920,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Role'
-              type: object
+            $ref: '#/definitions/util.Response-model_Role'
         "400":
           description: Bad Request
           schema:
@@ -1784,12 +1955,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Role'
-              type: object
+            $ref: '#/definitions/util.Response-model_Role'
         "400":
           description: Bad Request
           schema:
@@ -1825,12 +1991,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Role'
-              type: object
+            $ref: '#/definitions/util.Response-model_Role'
         "400":
           description: Bad Request
           schema:
@@ -1860,12 +2021,7 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.PolicyDocument'
-              type: object
+            $ref: '#/definitions/util.Response-model_PolicyDocument'
         "400":
           description: Bad Request
           schema:
@@ -1893,19 +2049,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/authorizationapi.SetRolePolicyRequest'
+          $ref: '#/definitions/model.PolicyDocument'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Role'
-              type: object
+            $ref: '#/definitions/util.Response-model_Role'
         "400":
           description: Bad Request
           schema:
@@ -1944,27 +2095,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.ServiceAccount'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_ServiceAccount'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get service account list
       tags:
       - Authorization/ServiceAccount
@@ -1986,25 +2121,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.ServiceAccount'
-              type: object
+            $ref: '#/definitions/util.Response-model_ServiceAccount'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Create service account
       tags:
       - Authorization/ServiceAccount
@@ -2026,25 +2147,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Delete service account
       tags:
       - Authorization/ServiceAccount
@@ -2065,25 +2172,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.ServiceAccount'
-              type: object
+            $ref: '#/definitions/util.Response-model_ServiceAccount'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get service account by ID
       tags:
       - Authorization/ServiceAccount
@@ -2110,25 +2203,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.ServiceAccount'
-              type: object
+            $ref: '#/definitions/util.Response-model_ServiceAccount'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update service account
       tags:
       - Authorization/ServiceAccount
@@ -2150,27 +2229,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.ServiceAccountAccessKey'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_ServiceAccountAccessKey'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get service account access keys
       tags:
       - Authorization/ServiceAccount
@@ -2197,25 +2260,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.ServiceAccountAccessKey'
-              type: object
+            $ref: '#/definitions/util.Response-model_ServiceAccountAccessKey'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Create service account access key
       tags:
       - Authorization/ServiceAccount
@@ -2242,25 +2291,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Delete service account access key
       tags:
       - Authorization/ServiceAccount
@@ -2292,25 +2327,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.ServiceAccountAccessKey'
-              type: object
+            $ref: '#/definitions/util.Response-model_ServiceAccountAccessKey'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update service account access key
       tags:
       - Authorization/ServiceAccount
@@ -2332,25 +2353,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.PolicyDocument'
-              type: object
+            $ref: '#/definitions/util.Response-model_PolicyDocument'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get service account policy
       tags:
       - Authorization/ServiceAccount
@@ -2377,25 +2384,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.ServiceAccount'
-              type: object
+            $ref: '#/definitions/util.Response-model_ServiceAccount'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Set service account policy
       tags:
       - Authorization/ServiceAccount
@@ -2417,27 +2410,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.Role'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_Role'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get service account roles
       tags:
       - Authorization/ServiceAccount
@@ -2464,27 +2441,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.Role'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_Role'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Assign roles to service account
       tags:
       - Authorization/ServiceAccount
@@ -2512,25 +2473,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.ServiceAccount'
-              type: object
+            $ref: '#/definitions/util.Response-model_ServiceAccount'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update service account status
       tags:
       - Authorization/ServiceAccount
@@ -2565,27 +2512,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.User'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get user list
       tags:
       - Authorization/Users
@@ -2607,25 +2538,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
+            $ref: '#/definitions/util.Response-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Create a new user
       tags:
       - Authorization/Users
@@ -2647,25 +2564,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Delete a user
       tags:
       - Authorization/Users
@@ -2686,25 +2589,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
+            $ref: '#/definitions/util.Response-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get user by ID
       tags:
       - Authorization/Users
@@ -2731,25 +2620,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
+            $ref: '#/definitions/util.Response-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update a user
       tags:
       - Authorization/Users
@@ -2781,27 +2656,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.AuditLog'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_AuditLog'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get user's audit logs
       tags:
       - Authorization/Users
@@ -2829,25 +2688,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-string'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Reset a user's password
       tags:
       - Authorization/Users
@@ -2869,25 +2714,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-string'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Restore a user
       tags:
       - Authorization/Users
@@ -2915,25 +2746,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Assign roles to a user
       tags:
       - Authorization/Users
@@ -2961,25 +2778,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
+            $ref: '#/definitions/util.Response-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update a user's status
       tags:
       - Authorization/Users
@@ -3001,25 +2804,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-string'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Unlock a user
       tags:
       - Authorization/Users
@@ -3035,25 +2824,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.SystemSettings'
-              type: object
+            $ref: '#/definitions/util.Response-model_SystemSettings'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get all system settings
       tags:
       - System Settings/Base
@@ -3068,25 +2843,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.SystemSettings'
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Batch update system settings
       tags:
       - System Settings/Base
@@ -3115,27 +2876,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.File'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_File'
         "400":
           description: Bad Request
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get file list
       tags:
       - File Management
@@ -3162,27 +2907,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.File'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_File'
         "400":
           description: Bad Request
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Upload file
       tags:
       - File Management
@@ -3202,7 +2931,7 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/util.Response'
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Download file
       tags:
       - File Management
@@ -3218,25 +2947,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-model_LDAPTestResponse'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Test LDAP connection
       tags:
       - System Settings/LDAP
@@ -3248,29 +2963,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    items:
-                      $ref: '#/definitions/service.Chart'
-                    type: array
-                  type: array
-              type: object
+            $ref: '#/definitions/util.Response-service_Charts'
         "400":
           description: Bad Request
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get statistics
       tags:
       - Statistics
@@ -3297,27 +2994,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.AuditLog'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_AuditLog'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get audit logs
       tags:
       - System/Audit Log
@@ -3333,25 +3014,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/service.HealthResult'
-              type: object
+            $ref: '#/definitions/util.Response-service_HealthResult'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Health check
       tags:
       - System/Health
@@ -3367,25 +3034,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/service.SystemInfo'
-              type: object
+            $ref: '#/definitions/util.Response-service_SystemInfo'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get system information
       tags:
       - System/Info
@@ -3401,25 +3054,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/systemapi.LDAPSettings'
-              type: object
+            $ref: '#/definitions/util.Response-systemapi_LDAPSettings'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get LDAP settings
       tags:
       - System Settings/LDAP
@@ -3441,25 +3080,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/ldap.Options'
-              type: object
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update LDAP settings
       tags:
       - System Settings/LDAP
@@ -3475,27 +3100,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  items:
-                    $ref: '#/definitions/model.User'
-                  type: array
-              type: object
+            $ref: '#/definitions/util.PaginationResponse-model_User'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Import LDAP users
       tags:
       - System Settings/LDAP
@@ -3511,25 +3120,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.OAuthSettings'
-              type: object
+            $ref: '#/definitions/util.Response-model_OAuthSettings'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get OAuth settings
       tags:
       - System Settings/OAuth
@@ -3544,25 +3139,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.OAuthSettings'
-              type: object
+            $ref: '#/definitions/util.Response-model_OAuthSettings'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update OAuth settings
       tags:
       - System Settings/OAuth
@@ -3578,25 +3159,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-service_OAuthLoginURLResponse'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Test OAuth connection
       tags:
       - System Settings/OAuth
@@ -3612,25 +3179,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.Response-service_TestOAuthCallbackResponse'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Test OAuth callback
       tags:
       - System Settings/OAuth
@@ -3646,25 +3199,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.SecuritySettings'
-              type: object
+            $ref: '#/definitions/util.Response-model_SecuritySettings'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Get security settings
       tags:
       - System Settings/Security
@@ -3679,25 +3218,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.SecuritySettings'
-              type: object
+            $ref: '#/definitions/util.Response-model_SecuritySettings'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Update security settings
       tags:
       - System Settings/Security
@@ -3720,25 +3245,11 @@ paths:
         "200":
           description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  type: boolean
-              type: object
+            $ref: '#/definitions/util.Response-systemapi_CheckPasswordComplexityResponse'
         "500":
           description: Internal Server Error
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                err:
-                  type: string
-              type: object
+            $ref: '#/definitions/util.ErrorResponse'
       summary: Check password complexity
       tags:
       - System Settings/Security
@@ -3780,16 +3291,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: Successfully updated SMTP settings
+          description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/model.SMTPSettings'
-              type: object
+            $ref: '#/definitions/util.Response-model_SMTPSettings'
         "400":
           description: Invalid request payload
           schema:
@@ -3822,16 +3326,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: SMTP connection test result
+          description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/util.Response'
-            - properties:
-                code:
-                  type: string
-                data:
-                  $ref: '#/definitions/systemapi.SMTPTestResponse'
-              type: object
+            $ref: '#/definitions/util.Response-systemapi_SMTPTestResponse'
         "400":
           description: Invalid request payload
           schema:

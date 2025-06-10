@@ -219,35 +219,35 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 
 	cache, err := s.baseService.GetCache(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
 	if err != nil || cache == nil {
-		return nil, util.NewError("E5001", "Failed to get MFA code", err)
+		return nil, util.NewErrorMessage("E5001", "Failed to get MFA code", err)
 	}
 
 	safeToken := safe.NewEncryptedString(cache.Value, os.Getenv(safe.SecretEnvName))
 	rawTokenData, err := safeToken.UnsafeString()
 	if err != nil {
-		return nil, util.NewError("E5001", "Failed to get MFA code", err)
+		return nil, util.NewErrorMessage("E5001", "Failed to get MFA code", err)
 	}
 	tokenData := MFATokenData{}
 	err = json.Unmarshal([]byte(rawTokenData), &tokenData)
 	if err != nil {
-		return nil, util.NewError("E5001", "Failed to unmarshal MFA code", err)
+		return nil, util.NewErrorMessage("E5001", "Failed to unmarshal MFA code", err)
 	}
 
 	user, err := s.GetUserByID(ctx, tokenData.UserID, WithPermissions(true), WithCache(true))
 	if err != nil {
-		return nil, util.NewError("E5001", "Failed to get user", err)
+		return nil, util.NewErrorMessage("E5001", "Failed to get user", err)
 	}
 	if user.IsLocked() {
 		if time.Until(user.LockedUntil) < time.Minute*3 {
-			return nil, util.NewError("E4013", fmt.Sprintf("The account has been locked for %s, please try again later", time.Until(user.LockedUntil).Truncate(time.Second).String()))
+			return nil, util.NewErrorMessage("E4013", fmt.Sprintf("The account has been locked for %s, please try again later", time.Until(user.LockedUntil).Truncate(time.Second).String()))
 		}
-		return nil, util.NewError("E4011", "Account is locked, please try again later")
+		return nil, util.NewErrorMessage("E4011", "Account is locked, please try again later")
 	}
 	if tokenData.MFAType == "email" && tokenData.Code != mfaCode {
 		user.Lock(time.Duration(time.Second * 30))
 		s.UserLoginFailed(ctx, user)
 		middleware.SetUserCache(user.ResourceID, *user, time.Minute*10)
-		return nil, util.NewError("E40036", "MFA verification code is invalid")
+		return nil, util.NewErrorMessage("E40036", "MFA verification code is invalid")
 	}
 
 	// Verify MFA code
@@ -257,20 +257,20 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 			var mfaSecret safe.String
 			err = db.Session(ctx).Model(&user).Where("resource_id = ?", tokenData.UserID).Select("MFASecret").First(&mfaSecret).Error
 			if err != nil {
-				return nil, util.NewError("E5001", "Failed to get MFA secret", err)
+				return nil, util.NewErrorMessage("E5001", "Failed to get MFA secret", err)
 			}
 			user.MFASecret = &mfaSecret
 		}
 		secret, err := user.MFASecret.UnsafeString()
 		if err != nil {
-			return nil, util.NewError("E5001", "MFA secret is invalid", err)
+			return nil, util.NewErrorMessage("E5001", "MFA secret is invalid", err)
 		}
 		valid := totp.Validate(mfaCode, secret)
 		if !valid {
 			user.Lock(time.Duration(time.Second * 30))
 			s.UserLoginFailed(ctx, user)
 			middleware.SetUserCache(user.ResourceID, *user, time.Minute*10)
-			return nil, util.NewError("E40036", "MFA verification code is invalid")
+			return nil, util.NewErrorMessage("E40036", "MFA verification code is invalid")
 		}
 	case "email":
 		valid := tokenData.Code == mfaCode
@@ -278,10 +278,10 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 			user.Lock(time.Duration(time.Second * 30))
 			s.UserLoginFailed(ctx, user)
 			middleware.SetUserCache(user.ResourceID, *user, time.Minute*10)
-			return nil, util.NewError("E40036", "MFA verification code is invalid")
+			return nil, util.NewErrorMessage("E40036", "MFA verification code is invalid")
 		}
 	default:
-		return nil, util.NewError("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
+		return nil, util.NewErrorMessage("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
 	}
 	s.baseService.DeleteCache(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
 	// Verify user status
@@ -352,7 +352,7 @@ func (s *UserService) GenerateMFA(ctx context.Context, user *model.User, source 
 	case "email":
 		token.Code = util.GenerateRandomString(6)
 		if user.Email == "" {
-			return nil, util.NewError("E40036", "Email is not set")
+			return nil, util.NewErrorMessage("E40036", "Email is not set")
 		}
 		level.Info(logger).Log("msg", "Sending MFA code to user", "user", user.Username, "email", user.Email)
 		err = s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "MFA Verification Code", model.SettingSMTPMFACodeTemplate, map[string]any{
@@ -365,15 +365,15 @@ func (s *UserService) GenerateMFA(ctx context.Context, user *model.User, source 
 			"Expires":  expiresAt,
 		})
 		if err != nil {
-			return nil, util.NewError("E5001", "Failed to send MFA code", err)
+			return nil, util.NewErrorMessage("E5001", "Failed to send MFA code", err)
 		}
 	default:
-		return nil, util.NewError("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
+		return nil, util.NewErrorMessage("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
 	}
 	safeToken := safe.NewEncryptedString(w.JSONStringer(token).String(), os.Getenv(safe.SecretEnvName))
 	_, err = s.baseService.CreateCache(ctx, fmt.Sprintf("ez-console:login:code:%s", token.Token), safeToken.String(), expiresAt)
 	if err != nil {
-		return nil, util.NewError("E5001", "Failed to create MFA code", err)
+		return nil, util.NewErrorMessage("E5001", "Failed to create MFA code", err)
 	}
 	return &LoginResponse{
 		User:     *user,
@@ -407,9 +407,9 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 	}
 
 	if disableLocalUserLogin, err := s.baseService.IsDisableLocalUserLogin(ctx); err != nil {
-		return nil, util.NewError("E5001", "System error, please contact the administrator", err)
+		return nil, util.NewErrorMessage("E5001", "System error, please contact the administrator", err)
 	} else if disableLocalUserLogin {
-		return nil, util.NewError("E4011", "Local user login is disabled")
+		return nil, util.NewErrorMessage("E4011", "Local user login is disabled")
 	}
 	if user == nil {
 		// Find user
@@ -417,9 +417,9 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 		err := dbConn.Where("username = ? OR email = ?", username, username).First(&user).Error
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return nil, util.NewError("E4011", "Invalid username or password", err)
+				return nil, util.NewErrorMessage("E4011", "Invalid username or password", err)
 			}
-			return nil, util.NewError("E5001", "System error, please contact the administrator", err)
+			return nil, util.NewErrorMessage("E5001", "System error, please contact the administrator", err)
 		}
 
 		// Verify password
@@ -700,7 +700,7 @@ func (s *UserService) GetUserByID(ctx context.Context, id string, opts ...WithGe
 	// If not found in cache, get from database
 	if err := query.First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, util.NewError("E4041", "user not found", err)
+			return nil, util.NewErrorMessage("E4041", "user not found", err)
 		}
 		return nil, err
 	}
@@ -974,7 +974,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 
 	// Check if new password is the same as old password
 	if req.OldPassword == req.NewPassword {
-		return util.NewError("E40031", "new password cannot be the same as the old password")
+		return util.NewErrorMessage("E40031", "new password cannot be the same as the old password")
 	}
 
 	// Check if old password is correct
@@ -986,7 +986,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 		}
 		if user.LDAPDN == "" {
 			level.Error(logger).Log("msg", "user is LDAP user but LDAPDN is empty", "user_id", user.ResourceID)
-			return util.NewError("E40032", "old password is incorrect")
+			return util.NewErrorMessage("E40032", "old password is incorrect")
 		}
 		loginConn, err := clientsldap.NewConn(ctx, settings)
 		if err != nil {
@@ -998,7 +998,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 		userDN := user.LDAPDN
 		if err := loginConn.Bind(userDN, req.OldPassword); err != nil {
 			level.Error(logger).Log("msg", "failed to bind with user credentials", "user_id", user.ResourceID, "error", err)
-			return util.NewError("E40032", "old password is incorrect")
+			return util.NewErrorMessage("E40032", "old password is incorrect")
 		}
 		ldapSession, err = s.ldapService.GetLDAPSession(ctx)
 		if err != nil {
@@ -1008,16 +1008,16 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 
 	case model.UserSourceLocal:
 		if !user.CheckPassword(req.OldPassword) {
-			return util.NewError("E40032", "old password is incorrect")
+			return util.NewErrorMessage("E40032", "old password is incorrect")
 		}
 	default:
-		return util.NewError("E40033", "Your account does not support changing passwords", fmt.Errorf("user source %s is not supported", user.Source))
+		return util.NewErrorMessage("E40033", "Your account does not support changing passwords", fmt.Errorf("user source %s is not supported", user.Source))
 	}
 
 	// Check password complexity
 	isValid, err := s.baseService.IsPasswordComplexityMet(ctx, req.NewPassword)
 	if err != nil {
-		return util.NewError("E40034", "check password complexity failed", err)
+		return util.NewErrorMessage("E40034", "check password complexity failed", err)
 	}
 	if !isValid {
 		minLength, _ := s.baseService.GetIntSetting(ctx, model.SettingPasswordMinLength, 8)
@@ -1035,7 +1035,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 			complexityMessage = "must contain uppercase letters, lowercase letters, numbers, and special characters"
 		}
 
-		return util.NewError("E40035", fmt.Sprintf("password does not meet complexity requirements, password length must be at least %d, %s", minLength, complexityMessage))
+		return util.NewErrorMessage("E40035", fmt.Sprintf("password does not meet complexity requirements, password length must be at least %d, %s", minLength, complexityMessage))
 	}
 
 	// If history password check is enabled, check if new password has been used recently
@@ -1053,7 +1053,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 			// Check if new password is the same as history password
 			err := bcrypt.CompareHashAndPassword([]byte(history.PasswordHash), []byte(req.NewPassword+history.Salt))
 			if err == nil {
-				return util.NewError("E40036", fmt.Sprintf("new password cannot be the same as the last %d passwords", historyCount))
+				return util.NewErrorMessage("E40036", fmt.Sprintf("new password cannot be the same as the last %d passwords", historyCount))
 			}
 		}
 	}
@@ -1100,7 +1100,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 		// If user is LDAP user, update LDAP password
 		if user.IsLDAPUser() {
 			if ok, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false); !ok {
-				return util.NewError("E40037", "The current system prohibits modifying LDAP user passwords.")
+				return util.NewErrorMessage("E40037", "The current system prohibits modifying LDAP user passwords.")
 			}
 			hashedPassword, err := util.Sha256CryptPassword("{CRYPT}", req.NewPassword)
 			if err != nil {
@@ -1110,7 +1110,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 			modifyRequest.Replace("userPassword", []string{hashedPassword})
 			if ldapSession == nil {
 				level.Error(logger).Log("msg", "failed to modify LDAP password: LDAP session is nil", "user_id", user.ResourceID)
-				return util.NewError("E50037", "The current system prohibits modifying LDAP user passwords.")
+				return util.NewErrorMessage("E50037", "The current system prohibits modifying LDAP user passwords.")
 			}
 			if err := ldapSession.Modify(modifyRequest); err != nil {
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
@@ -1176,10 +1176,10 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 		if user.Source == model.UserSourceLDAP {
 			if user.LDAPDN == "" {
 				level.Error(logger).Log("msg", "user is LDAP user but LDAPDN is empty", "user_id", user.ResourceID)
-				return util.NewError("E40037", "The user is not found in LDAP.")
+				return util.NewErrorMessage("E40037", "The user is not found in LDAP.")
 			}
 			if ok, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false); !ok {
-				return util.NewError("E40037", "The current system prohibits modifying LDAP user passwords.")
+				return util.NewErrorMessage("E40037", "The current system prohibits modifying LDAP user passwords.")
 			}
 			ldapSession, err := s.ldapService.GetLDAPSession(ctx)
 			if err != nil {

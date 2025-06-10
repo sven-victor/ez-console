@@ -48,11 +48,7 @@ func (c *SMTPSettingController) RegisterRoutes(r *gin.RouterGroup) {
 func (c *SMTPSettingController) GetSMTPSettings(ctx *gin.Context) {
 	settings, err := c.service.GetSMTPSettings(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5001",
-			Err:     err,
-			Message: "Failed to get SMTP settings",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get SMTP settings", err))
 		return
 	}
 	settings.Password.UpdateSecret(util.GenerateRandomPassword(128))
@@ -73,7 +69,7 @@ type SMTPSettingsRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			settings	body		model.SMTPSettings									true	"SMTP settings to update"
-//	@Success		200			{object}	util.Response{data=model.SMTPSettings,code=string}	"Successfully updated SMTP settings"
+//	@Success		200			{object}	util.Response[model.SMTPSettings]
 //	@Failure		400			{object}	util.ErrorResponse									"Invalid request payload"
 //	@Failure		500			{object}	util.ErrorResponse									"Internal server error"
 //	@Router			/api/system/smtp-settings [put]
@@ -81,11 +77,7 @@ type SMTPSettingsRequest struct {
 func (c *SMTPSettingController) UpdateSMTPSettings(ctx *gin.Context) {
 	var req SMTPSettingsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4001",
-			Err:     err,
-			Message: "Invalid request payload: " + err.Error(),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid request payload", err))
 		return
 	}
 
@@ -95,11 +87,7 @@ func (c *SMTPSettingController) UpdateSMTPSettings(ctx *gin.Context) {
 	}
 
 	if err := c.service.UpdateSMTPSettings(ctx, &req.SMTPSettings); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5001",
-			Err:     err,
-			Message: "Failed to update SMTP settings",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to update SMTP settings", err))
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, "SMTP settings updated successfully")
@@ -119,7 +107,7 @@ type SMTPTestResponse struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			testRequest	body		model.SMTPTestRequest								true	"SMTP test request, including recipient and optional SMTP settings to test with"
-//	@Success		200			{object}	util.Response{data=SMTPTestResponse,code=string}	"SMTP connection test result"
+//	@Success		200			{object}	util.Response[SMTPTestResponse]
 //	@Failure		400			{object}	util.ErrorResponse									"Invalid request payload"
 //	@Failure		500			{object}	util.ErrorResponse									"Internal server error during test"
 //	@Router			/api/system/smtp-settings/test [post]
@@ -127,11 +115,7 @@ type SMTPTestResponse struct {
 func (c *SMTPSettingController) TestSMTPConnection(ctx *gin.Context) {
 	var req model.SMTPTestRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4001",
-			Err:     err,
-			Message: "Invalid request payload: " + err.Error(),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid request payload", err))
 		return
 	}
 	if strings.HasPrefix(req.Password, "{CRYPT}") {

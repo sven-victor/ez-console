@@ -37,18 +37,11 @@ func (c *SystemController) RegisterRoutes(router *gin.RouterGroup) {
 func (c *SystemController) GetSite(ctx *gin.Context) {
 	navigation, err := c.service.GetSite(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": navigation,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, navigation)
 }
 
 // GetAuditLogs gets all audit logs, supports multiple filtering conditions
@@ -61,8 +54,8 @@ func (c *SystemController) GetSite(ctx *gin.Context) {
 //	@Produce		json
 //	@Param			current		query		int	false	"Current page number"		default(1)
 //	@Param			page_size	query		int	false	"Number of items per page"	default(10)
-//	@Success		200			{object}	util.Response{data=[]model.AuditLog,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.PaginationResponse[model.AuditLog]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/system/audit-logs [get]
 func (c *SystemController) GetAuditLogs(ctx *gin.Context) {
 	// Parse pagination parameters
@@ -79,32 +72,18 @@ func (c *SystemController) GetAuditLogs(ctx *gin.Context) {
 	var filters service.AuditLogFilters
 
 	if err := ctx.BindQuery(&filters); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
 	// Query audit logs
 	logs, total, err := c.service.GetAuditLogs(ctx, filters, page, pageSize)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code":      "0",
-		"data":      logs,
-		"total":     total,
-		"current":   page,
-		"page_size": pageSize,
-	})
+	util.RespondWithSuccessList(ctx, http.StatusOK, logs, total, page, pageSize)
 }
 
 // GetSystemInfo gets system information
@@ -115,24 +94,17 @@ func (c *SystemController) GetAuditLogs(ctx *gin.Context) {
 //	@Tags			System/Info
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=service.SystemInfo,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[service.SystemInfo]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/info [get]
 func (c *SystemController) GetSystemInfo(ctx *gin.Context) {
 	info, err := c.service.GetSystemInfo(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": info,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, info)
 }
 
 // HealthCheck provides a simple health check
@@ -143,17 +115,13 @@ func (c *SystemController) GetSystemInfo(ctx *gin.Context) {
 //	@Tags			System/Health
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=service.HealthResult,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[service.HealthResult]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/health [get]
 func (c *SystemController) HealthCheck(ctx *gin.Context) {
 	result, err := c.service.HealthCheck(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
 	}
 
@@ -162,10 +130,7 @@ func (c *SystemController) HealthCheck(ctx *gin.Context) {
 		status = http.StatusServiceUnavailable
 	}
 
-	ctx.JSON(status, gin.H{
-		"code": "0",
-		"data": result,
-	})
+	util.RespondWithSuccess(ctx, status, result)
 }
 
 func init() {

@@ -386,11 +386,11 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 	logger := log.GetContextLogger(ctx)
 	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
-		return nil, util.NewError("E50012", "System error, please contact the administrator", err)
+		return nil, util.NewErrorMessage("E50012", "System error, please contact the administrator", err)
 	}
 	settings, err := s.baseService.GetLDAPSettings(ctx)
 	if err != nil {
-		return nil, util.NewError("E50012", "System error, please contact the administrator", err)
+		return nil, util.NewErrorMessage("E50012", "System error, please contact the administrator", err)
 	}
 
 	if !settings.Enabled {
@@ -400,7 +400,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 	// Connect to LDAP server
 	ldapClient, err := s.GetLDAPSession(ctx)
 	if err != nil {
-		return nil, util.NewError("E50013", "System error, please contact the administrator", err)
+		return nil, util.NewErrorMessage("E50013", "System error, please contact the administrator", err)
 	}
 	defer ldapClient.Close()
 	settings = ldapClient.GetOptions()
@@ -426,7 +426,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 			}
 		}
 		level.Error(logger).Log("msg", "Failed to search LDAP user", "err", err.Error())
-		return nil, util.NewError("E50015", "System error, please contact the administrator", err)
+		return nil, util.NewErrorMessage("E50015", "System error, please contact the administrator", err)
 	}
 	level.Info(logger).Log("msg", "LDAP user search result", "resultTotal", len(result.Entries))
 
@@ -435,7 +435,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 		return nil, nil
 	}
 	if len(result.Entries) > 1 {
-		return nil, util.NewError("E50016", "found multiple users with the same user filter, please contact the administrator", errors.New("found multiple users with the same user filter, please contact the administrator"))
+		return nil, util.NewErrorMessage("E50016", "found multiple users with the same user filter, please contact the administrator", errors.New("found multiple users with the same user filter, please contact the administrator"))
 	}
 	allowChangePassword, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
 
@@ -494,7 +494,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 			existingUser = existingUsers[index]
 		}
 		if index < 0 {
-			return nil, util.NewError("E4011", "Invalid username or password", errors.New("User not found"))
+			return nil, util.NewErrorMessage("E4011", "Invalid username or password", errors.New("User not found"))
 		}
 
 	} else if len(existingUsers) == 0 {

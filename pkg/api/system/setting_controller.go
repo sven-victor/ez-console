@@ -41,24 +41,17 @@ func (c *SettingController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Tags			System Settings/Base
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=model.SystemSettings,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.SystemSettings]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/base-settings [get]
 func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 	settings, err := c.service.GetSystemSettings(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": settings,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, settings)
 }
 
 // UpdateSettings Batch update system settings
@@ -69,18 +62,14 @@ func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 //	@Tags			System Settings/Base
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=model.SystemSettings,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/base-settings [put]
 func (c *SettingController) UpdateSystemBaseSettings(ctx *gin.Context) {
 	// Parse request body
 	var req model.SystemSettings
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
@@ -95,10 +84,7 @@ func (c *SettingController) UpdateSystemBaseSettings(ctx *gin.Context) {
 				return err
 			}
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "System settings updated successfully"},
-			})
+			util.RespondWithMessage(ctx, "System settings updated successfully")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -106,11 +92,7 @@ func (c *SettingController) UpdateSystemBaseSettings(ctx *gin.Context) {
 			// Get settings before update for audit log
 			oldSettings, err := c.service.SettingService.GetSettingsMap(ctx)
 			if err != nil {
-				util.RespondWithError(ctx, util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				})
+				util.RespondWithError(ctx, util.NewError("E5001", err))
 				return
 			}
 

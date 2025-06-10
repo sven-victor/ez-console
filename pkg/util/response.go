@@ -17,7 +17,7 @@ type ErrorResponse struct {
 	HTTPCode int    `json:"-"`
 	Code     string `json:"code"`
 	Err      error  `json:"err"`
-	Message  string `json:"message"`
+	Message  string `json:"message,omitempty"`
 }
 
 func (e ErrorResponse) Error() string {
@@ -39,15 +39,15 @@ func (e ErrorResponse) String() string {
 	return buf.String()
 }
 
-type Response struct {
+type Response[T any] struct {
 	Code string `json:"code"`
-	Data any    `json:"data,omitempty"`
+	Data T      `json:"data,omitempty"`
 	Err  string `json:"err,omitempty"`
 }
 
-type PaginationResponse struct {
+type PaginationResponse[T any] struct {
 	Code     string `json:"code"`
-	Data     any    `json:"data,omitempty"`
+	Data     []T    `json:"data,omitempty"`
 	Err      string `json:"err,omitempty"`
 	Total    int64  `json:"total,omitempty"`
 	Current  int    `json:"current,omitempty"`
@@ -56,9 +56,10 @@ type PaginationResponse struct {
 
 // RespondWithErrorMessage returns an error response
 func RespondWithErrorMessage(c *gin.Context, httpCode int, errorCode string, message string) {
-	c.JSON(httpCode, Response{
-		Code: errorCode,
-		Err:  message,
+	c.JSON(httpCode, ErrorResponse{
+		Code:    errorCode,
+		Err:     errors.New(message),
+		Message: message,
 	})
 }
 
@@ -90,30 +91,37 @@ func RespondWithError(c *gin.Context, err error) {
 		if errorResponse.Message == "" {
 			errorResponse.Message = errorResponse.Err.Error()
 		}
-		c.AbortWithStatusJSON(errorResponse.HTTPCode, Response{
+		c.AbortWithStatusJSON(errorResponse.HTTPCode, ErrorResponse{
 			Code: errorResponse.Code,
-			Err:  errorResponse.Message,
+			Err:  errors.New(errorResponse.Message),
 		})
 		return
 	}
 	level.Error(logger).Log("msg", "RespondWithError", "error", err.Error())
-	c.AbortWithStatusJSON(http.StatusInternalServerError, Response{
+	c.AbortWithStatusJSON(http.StatusInternalServerError, ErrorResponse{
 		Code: "E5000",
-		Err:  err.Error(),
+		Err:  err,
 	})
 }
 
 // RespondWithSuccess returns a successful response
-func RespondWithSuccess(c *gin.Context, httpCode int, data interface{}) {
-	c.JSON(httpCode, Response{
+func RespondWithSuccess[T any](c *gin.Context, httpCode int, data T) {
+	c.JSON(httpCode, Response[T]{
 		Code: "0",
 		Data: data,
 	})
 }
 
+func RespondWithMessage(c *gin.Context, message string) {
+	c.JSON(http.StatusOK, Response[MessageData]{
+		Code: "0",
+		Data: MessageData{Message: message},
+	})
+}
+
 // RespondWithSuccessList returns a list response with pagination
-func RespondWithSuccessList(c *gin.Context, httpCode int, data interface{}, total int64, current int, pageSize int) {
-	c.JSON(httpCode, PaginationResponse{
+func RespondWithSuccessList[T any](c *gin.Context, httpCode int, data []T, total int64, current int, pageSize int) {
+	c.JSON(httpCode, PaginationResponse[T]{
 		Code:     "0",
 		Data:     data,
 		Total:    total,
@@ -122,7 +130,22 @@ func RespondWithSuccessList(c *gin.Context, httpCode int, data interface{}, tota
 	})
 }
 
-func NewError(code string, msg string, err ...error) error {
+func NewError(code string, err error) error {
+	httpCode := http.StatusInternalServerError
+	if len(code) >= 4 && (strings.HasPrefix(code, "E4") || strings.HasPrefix(code, "E5")) {
+		if c, err := strconv.Atoi(code[1:4]); err == nil {
+			httpCode = c
+		}
+	}
+	return ErrorResponse{
+		HTTPCode: httpCode,
+		Code:     code,
+		Err:      err,
+		Message:  err.Error(),
+	}
+}
+
+func NewErrorMessage(code string, msg string, err ...error) error {
 	httpCode := http.StatusInternalServerError
 	if len(code) >= 4 && (strings.HasPrefix(code, "E4") || strings.HasPrefix(code, "E5")) {
 		if c, err := strconv.Atoi(code[1:4]); err == nil {
@@ -143,4 +166,8 @@ func NewError(code string, msg string, err ...error) error {
 		Message:  msg,
 		Err:      errors.New(msg),
 	}
+}
+
+type MessageData struct {
+	Message string `json:"message"`
 }

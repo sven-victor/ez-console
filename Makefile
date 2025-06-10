@@ -13,6 +13,11 @@ $(SWAG):
 docs: $(SWAG)
 	$(SWAG) init -g main.go -o docs -pd
 
+clean-docs:
+	rm -rf docs
+
+
+
 web/node_modules:
 	cd web && pnpm install
 

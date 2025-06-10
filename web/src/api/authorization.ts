@@ -213,13 +213,13 @@ export const getUserAuditLogsByID = async (userId: string, params?: API.AuditLog
 
 
 // Get role policy document
-export const getRolePolicy = (roleId: string): Promise<{ policy_document: string }> => {
-  return apiGet<{ policy_document: string }>(`${baseUrl}/roles/${roleId}/policy`);
+export const getRolePolicy = (roleId: string): Promise<API.PolicyDocument> => {
+  return apiGet<API.PolicyDocument>(`${baseUrl}/roles/${roleId}/policy`);
 };
 
 // Set role policy document
-export const setRolePolicy = (roleId: string, policyDocument: string): Promise<API.Role> => {
-  return apiPut<API.Role>(`${baseUrl}/roles/${roleId}/policy`, { policy_document: policyDocument });
+export const setRolePolicy = (roleId: string, policyDocument: API.PolicyDocument): Promise<API.Role> => {
+  return apiPut<API.Role>(`${baseUrl}/roles/${roleId}/policy`, policyDocument);
 };
 
 

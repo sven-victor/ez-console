@@ -53,17 +53,13 @@ type LDAPSettings struct {
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=LDAPSettings,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[LDAPSettings]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/ldap-settings [get]
 func (c *LDAPSettingController) GetLDAPSettings(ctx *gin.Context) {
 	settings, err := c.service.GetLDAPSettings(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 	if settings.BindPassword != nil {
@@ -92,17 +88,13 @@ type UpdateLDAPSettingsRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		UpdateLDAPSettingsRequest	true	"Update LDAP settings"
-//	@Success		200		{object}	util.Response{data=clientsldap.Options,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[util.MessageData]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/system/ldap-settings [put]
 func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 	var req UpdateLDAPSettingsRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 	req.Options.BindPassword = nil
@@ -116,11 +108,7 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 	req.Options.Timeout = time.Duration(req.Timeout) * time.Second
 	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
 		if err := c.service.UpdateLDAPSettings(ctx, &req.Options); err != nil {
-			return util.ErrorResponse{
-				HTTPCode: http.StatusInternalServerError,
-				Code:     "E5001",
-				Err:      err,
-			}
+			return util.NewError("E5001", err)
 		}
 		return nil
 	})
@@ -128,10 +116,7 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 		util.RespondWithError(ctx, err)
 		return
 	}
-	ctx.JSON(http.StatusOK, util.Response{
-		Code: "0",
-		Data: gin.H{"message": "LDAP settings updated successfully"},
-	})
+	util.RespondWithMessage(ctx, "LDAP settings updated successfully")
 }
 
 // TestLDAPConnection Test LDAP connection
@@ -142,8 +127,8 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.LDAPTestResponse]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ldap-settings/test [post]
 func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 	// LDAPTestRequest LDAP test request struct
@@ -155,11 +140,7 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 	}
 	var req LDAPTestRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
 
@@ -167,11 +148,7 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 		if strings.HasPrefix(req.BindPassword, "{CRYPT}") {
 			settings, err := c.service.GetLDAPSettings(ctx)
 			if err != nil {
-				util.RespondWithError(ctx, util.ErrorResponse{
-					HTTPCode: http.StatusInternalServerError,
-					Code:     "E5001",
-					Err:      err,
-				})
+				util.RespondWithError(ctx, util.NewError("E5001", err))
 				return
 			}
 			req.Options.BindPassword = settings.BindPassword
@@ -181,18 +158,10 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 	}
 	resp, err := c.service.TestLDAPConnection(ctx, req.Options, req.Username, req.Password)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", err.Error(), err))
 		return
 	}
-
-	ctx.JSON(http.StatusOK, util.Response{
-		Code: "0",
-		Data: resp,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, resp)
 }
 
 // ImportLDAPUsers Import LDAP users
@@ -203,8 +172,8 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=[]model.User,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.PaginationResponse[model.User]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/ldap-settings/import [post]
 func (c *LDAPSettingController) ImportLDAPUsers(ctx *gin.Context) {
 	type ImportLDAPUsersRequest struct {
@@ -212,11 +181,7 @@ func (c *LDAPSettingController) ImportLDAPUsers(ctx *gin.Context) {
 	}
 	var req ImportLDAPUsersRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", err.Error()))
 		return
 	}
 	if len(req.UserDN) == 0 {
@@ -234,10 +199,7 @@ func (c *LDAPSettingController) ImportLDAPUsers(ctx *gin.Context) {
 		if err != nil {
 			return err
 		}
-		ctx.JSON(http.StatusOK, util.Response{
-			Code: "0",
-			Data: users,
-		})
+		util.RespondWithSuccess(ctx, http.StatusOK, users)
 		return nil
 	})
 	if err != nil {

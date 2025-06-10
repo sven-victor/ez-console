@@ -35,17 +35,13 @@ func (c *PermissionController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Tags			Authorization/Permission
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=[]model.PermissionGroup}
+//	@Success		200	{object}	util.Response[[]model.PermissionGroup]{data=[]model.PermissionGroup,code=string}
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/permissions [get]
 func (c *PermissionController) ListPermissions(ctx *gin.Context) {
 	permissions, err := c.service.ListPermissions(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5001",
-			Err:     err,
-			Message: "failed to get permissions",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "failed to get permissions", err))
 		return
 	}
 	var data []*model.PermissionGroup
@@ -76,10 +72,7 @@ loop:
 	if len(other.Permissions) > 0 {
 		data = append(data, &other)
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": data,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, data)
 }
 
 func init() {

@@ -260,7 +260,7 @@ func (p *Pool) Close() {
 	p.pool.Close()
 }
 
-var ErrLDAPDisabled = util.NewError("E50039", "LDAP authentication is not enabled")
+var ErrLDAPDisabled = util.NewErrorMessage("E50039", "LDAP authentication is not enabled")
 
 func NewPool(ctx context.Context, optionsFactory func(ctx context.Context) (Options, error)) (*Pool, error) {
 	ldapPool, err := pool.NewPool(ctx, pool.Config[*conn]{

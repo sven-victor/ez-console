@@ -76,8 +76,8 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Param			page_size	query		int		false	"Number of items per page"	default(10)
 //	@Param			keywords	query		string	false	"Keywords for searching"
 //	@Param			status		query		string	false	"Status of the user"
-//	@Success		200			{object}	util.Response{data=[]model.User,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.PaginationResponse[model.User]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/users [get]
 func (c *UserController) ListUsers(ctx *gin.Context) {
 	// Parse query parameters
@@ -88,21 +88,11 @@ func (c *UserController) ListUsers(ctx *gin.Context) {
 
 	users, total, err := c.service.ListUsers(ctx, keywords, status, current, pageSize)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5001",
-			Err:     err,
-			Message: "Failed to get user list",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get user list", err))
 		return
 	}
 	// Return user list
-	ctx.JSON(http.StatusOK, gin.H{
-		"code":      "0",
-		"data":      users,
-		"total":     total,
-		"current":   current,
-		"page_size": pageSize,
-	})
+	util.RespondWithSuccessList(ctx, http.StatusOK, users, total, current, pageSize)
 }
 
 // GetUser gets a user by ID
@@ -114,33 +104,26 @@ func (c *UserController) ListUsers(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"User ID"
-//	@Success		200	{object}	util.Response{data=model.User,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.User]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id} [get]
 func (c *UserController) GetUser(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4001",
-			Err:  errors.New("Invalid user ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid user ID"))
 		return
 	}
 
 	passwordExpiryDays, err := c.service.GetIntSetting(ctx, model.SettingPasswordExpiryDays, 0)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5003",
-			Err:     err,
-			Message: "Failed to get password expiry days",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5003", "Failed to get password expiry days", err))
 		return
 	}
 	// Get user from database with roles
 	user, err := c.service.GetUserByID(ctx, id, service.WithRoles(true), service.WithCache(true), service.WithSoftDeleted(true))
 	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5002", "Failed to get user", err))
+		util.RespondWithError(ctx, util.NewErrorMessage("E5002", "Failed to get user", err))
 		return
 	}
 	if user.IsLDAPUser() {
@@ -156,10 +139,7 @@ func (c *UserController) GetUser(ctx *gin.Context) {
 	} else if user.IsPasswordExpired(passwordExpiryDays) {
 		user.Status = model.UserStatusPasswordExpired
 	}
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": user,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, user)
 }
 
 // CreateUser creates a new user
@@ -171,16 +151,13 @@ func (c *UserController) GetUser(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			user	body		service.CreateUserRequest	true	"User information"
-//	@Success		200		{object}	util.Response{data=model.User,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[model.User]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/users [post]
 func (c *UserController) CreateUser(ctx *gin.Context) {
 	var req service.CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4002",
-			Err:  err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 	if len(req.RoleIDs) != 0 {
@@ -203,20 +180,13 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 			req.Password = ""
 			auditLog.Details.Request = req
 
-			ctx.JSON(http.StatusCreated, gin.H{
-				"code": "0",
-				"data": user,
-			})
+			util.RespondWithSuccess(ctx, http.StatusCreated, user)
 			return nil
 		},
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5003",
-			Err:     err,
-			Message: "Failed to create user",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5003", "Failed to create user", err))
 	}
 }
 
@@ -230,32 +200,26 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 //	@Produce		json
 //	@Param			id		path		string						true	"User ID"
 //	@Param			user	body		service.UpdateUserRequest	true	"User information"
-//	@Success		200		{object}	util.Response{data=model.User,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[model.User]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id} [put]
 func (c *UserController) UpdateUser(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4001",
-			Err:  errors.New("Invalid user ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid user ID"))
 		return
 	}
 
 	// Bind request body
 	var req service.UpdateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4002",
-			Err:  err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 	user, err := c.service.GetUserByID(ctx, id, service.WithCache(true), service.WithRoles(true))
 	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5002", "Failed to get user", err))
+		util.RespondWithError(ctx, util.NewErrorMessage("E5002", "Failed to get user", err))
 		return
 	}
 
@@ -318,8 +282,8 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"User ID"
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id} [delete]
 func (c *UserController) DeleteUser(ctx *gin.Context) {
 	// Get user ID from URL
@@ -344,10 +308,7 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 			// Clear user cache
 			middleware.DeleteUserCache(id)
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "User deleted successfully"},
-			})
+			util.RespondWithMessage(ctx, "User deleted successfully")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -361,11 +322,7 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5005",
-			Err:     err,
-			Message: "Failed to delete user",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5005", "Failed to delete user", err))
 	}
 }
 
@@ -383,33 +340,27 @@ type UpdateUserStatusRequest struct {
 //	@Produce		json
 //	@Param			id		path		string	true	"User ID"
 //	@Param			request	body		UpdateUserStatusRequest	true	"Update user status request"
-//	@Success		200		{object}	util.Response{data=model.User,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[model.User]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/status [put]
 func (c *UserController) UpdateUserStatus(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4001",
-			Err:  errors.New("Invalid user ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid user ID"))
 		return
 	}
 
 	// Bind request body
 	var req UpdateUserStatusRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4002",
-			Err:  err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
 	user, err := c.service.GetUserByID(ctx, id, service.WithCache(true), service.WithRoles(true))
 	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5002", "Failed to get user", err))
+		util.RespondWithError(ctx, util.NewErrorMessage("E5002", "Failed to get user", err))
 		return
 	}
 
@@ -424,10 +375,7 @@ func (c *UserController) UpdateUserStatus(ctx *gin.Context) {
 			}
 			auditLog.Details.NewData = *newUser
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": newUser,
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, newUser)
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -436,11 +384,7 @@ func (c *UserController) UpdateUserStatus(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5006",
-			Err:     err,
-			Message: "Failed to update user status",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5006", "Failed to update user status", err))
 	}
 }
 
@@ -458,17 +402,14 @@ type ResetUserPasswordRequest struct {
 //	@Produce		json
 //	@Param			id		path		string		true	"User ID"
 //	@Param			request	body		ResetUserPasswordRequest	true	"Reset user password request"
-//	@Success		200		{object}	util.Response{data=string,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[string]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/password [put]
 func (c *UserController) ResetUserPassword(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4001",
-			Err:  errors.New("Invalid user ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid user ID"))
 		return
 	}
 
@@ -476,11 +417,7 @@ func (c *UserController) ResetUserPassword(ctx *gin.Context) {
 	var req ResetUserPasswordRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4002",
-			Err:     err,
-			Message: "Invalid request body",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Invalid request body", err))
 		return
 	}
 	if req.Password == "" {
@@ -514,11 +451,7 @@ func (c *UserController) ResetUserPassword(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5007",
-			Err:     err,
-			Message: "Failed to reset user password",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5007", "Failed to reset user password", err))
 	}
 }
 
@@ -536,28 +469,21 @@ type AssignRolesRequest struct {
 //	@Produce		json
 //	@Param			id		path		string		true	"User ID"
 //	@Param			request	body		AssignRolesRequest	true	"Assign roles to user request"
-//	@Success		200		{object}	util.Response{data=string,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[util.MessageData]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/roles [post]
 func (c *UserController) AssignRoles(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code: "E4001",
-			Err:  errors.New("Invalid user ID"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid user ID"))
 		return
 	}
 
 	// Bind request body
 	var req AssignRolesRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4002",
-			Err:     err,
-			Message: "Invalid request body",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Invalid request body", err))
 		return
 	}
 
@@ -574,10 +500,7 @@ func (c *UserController) AssignRoles(ctx *gin.Context) {
 			// Clear user cache
 			middleware.DeleteUserCache(id)
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "Role assignment successful"},
-			})
+			util.RespondWithMessage(ctx, "Role assignment successful")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -593,11 +516,7 @@ func (c *UserController) AssignRoles(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5008",
-			Err:     err,
-			Message: "Failed to assign roles to user",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5008", "Failed to assign roles to user", err))
 	}
 }
 
@@ -609,8 +528,8 @@ func (c *UserController) AssignRoles(ctx *gin.Context) {
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=model.User,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.User]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/profile [get]
 func (c *UserController) GetCurrentUser(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
@@ -628,10 +547,7 @@ func (c *UserController) GetCurrentUser(ctx *gin.Context) {
 		user.DisableChangePassword = !allowChangePassword
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": user,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, user)
 }
 
 type UpdateCurrentUserRequest struct {
@@ -650,18 +566,14 @@ type UpdateCurrentUserRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		UpdateCurrentUserRequest	true	"Update current user request"
-//	@Success		200		{object}	util.Response{data=model.User,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[model.User]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/profile [put]
 func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4012",
-			Err:      errors.New("failed to get user info"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user info"))
 		return
 	}
 
@@ -669,11 +581,7 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 	var req UpdateCurrentUserRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4002",
-			Err:     err,
-			Message: "Invalid request body",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Invalid request body", err))
 		return
 	}
 
@@ -700,10 +608,7 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 			}
 			auditLog.Details.NewData = *newUser
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": newUser,
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, newUser)
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -713,11 +618,7 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5010",
-			Err:     err,
-			Message: "Failed to update current user",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5010", "Failed to update current user", err))
 	}
 }
 
@@ -735,18 +636,14 @@ type ChangePasswordRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			password	body		ChangePasswordRequest	true	"Change password request"
-//	@Success		200			{object}	util.Response{data=string,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.Response[string]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/profile/password [put]
 func (c *UserController) ChangePassword(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4012",
-			Err:      errors.New("failed to get user info"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user info"))
 		return
 	}
 
@@ -754,11 +651,7 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 	var req ChangePasswordRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4002",
-			Err:     err,
-			Message: "Invalid request body",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Invalid request body", err))
 		return
 	}
 
@@ -775,10 +668,7 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 				return err
 			}
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "Password changed successfully"},
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Password changed successfully"})
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -792,11 +682,7 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5011",
-			Err:     err,
-			Message: "Failed to change password",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5011", "Failed to change password", err))
 	}
 }
 
@@ -816,8 +702,8 @@ type LoginRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			login	body		LoginRequest	true	"Login request"
-//	@Success		200		{object}	util.Response{data=service.LoginResponse,code=string}
-//	@Failure		500		{object}	util.Response{err=string,code=string}
+//	@Success		200		{object}	util.Response[service.LoginResponse]
+//	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/auth/login [post]
 func (c *UserController) Login(ctx *gin.Context) {
 	logger := log.GetContextLogger(ctx)
@@ -825,29 +711,17 @@ func (c *UserController) Login(ctx *gin.Context) {
 	var req LoginRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4002",
-			Err:     err,
-			Message: "Invalid request body",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Invalid request body", err))
 		return
 	}
 	if req.MFAToken != "" {
 		if req.MFACode == "" {
-			util.RespondWithError(ctx, util.ErrorResponse{
-				Code:    "E4002",
-				Err:     errors.New("mfa_code is required"),
-				Message: "MFA code is required",
-			})
+			util.RespondWithError(ctx, util.NewErrorMessage("E4002", "MFA code is required"))
 			return
 		}
 	} else {
 		if req.Username == "" || req.Password == "" {
-			util.RespondWithError(ctx, util.ErrorResponse{
-				Code:    "E4002",
-				Err:     errors.New("username and password are required"),
-				Message: "Username and password are required",
-			})
+			util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Username and password are required"))
 			return
 		}
 	}
@@ -917,12 +791,12 @@ func (c *UserController) Login(ctx *gin.Context) {
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5011",
-			Err:     err,
-			Message: "Failed to login",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5011", "Failed to login", err))
 	}
+}
+
+type TokenResponse struct {
+	Token string `json:"token"`
 }
 
 // RefreshToken refreshes the user's JWT token
@@ -933,48 +807,30 @@ func (c *UserController) Login(ctx *gin.Context) {
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[TokenResponse]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/refresh [post]
 func (c *UserController) RefreshToken(ctx *gin.Context) {
 	// Get user from context
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4012",
-			Err:      errors.New("failed to get user info"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user info"))
 		return
 	}
 
 	securitySettings, err := c.service.SettingService.GetSecuritySettings(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5012",
-			Err:      err,
-			Message:  "Failed to get security settings",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5012", "Failed to get security settings", err))
 	}
 	// Generate new token
 	token, err := middleware.GenerateToken(ctx, middleware.JWTIssuerLogin, user.ResourceID, user.Username, time.Duration(securitySettings.SessionTimeoutMinutes)*time.Minute)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5012",
-			Err:     err,
-			Message: "Failed to generate token",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5012", "Failed to generate token", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": gin.H{
-			"token": token,
-		},
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, TokenResponse{Token: token})
 }
 
 // Logout handles user logout
@@ -985,19 +841,15 @@ func (c *UserController) RefreshToken(ctx *gin.Context) {
 //	@Tags			Authorization/Users
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[string]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/auth/logout [post]
 func (c *UserController) Logout(ctx *gin.Context) {
 	// Get current user information
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4012",
-			Err:      errors.New("failed to get user info"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user info"))
 		return
 	}
 
@@ -1014,20 +866,13 @@ func (c *UserController) Logout(ctx *gin.Context) {
 				c.service.DeleteSession(ctx, user.ResourceID, after)
 			}
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "Logout successful"},
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Logout successful"})
 			return nil
 		},
 	)
 
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5009",
-			Err:     err,
-			Message: "Failed to logout",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5009", "Failed to logout", err))
 	}
 }
 
@@ -1041,17 +886,13 @@ func (c *UserController) Logout(ctx *gin.Context) {
 //	@Produce		json
 //	@Param			current		query		int	false	"Current page number"		default(1)
 //	@Param			page_size	query		int	false	"Number of items per page"	default(10)
-//	@Success		200			{object}	util.Response{data=[]model.AuditLog,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.PaginationResponse[model.AuditLog]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/profile/logs [get]
 func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 	var filters service.AuditLogFilters
 	if err := ctx.BindQuery(&filters); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4001",
-			Err:     err,
-			Message: "Failed to parse query parameters",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Failed to parse query parameters", err))
 		return
 	}
 	page, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
@@ -1067,11 +908,7 @@ func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4012",
-			Err:      errors.New("failed to get user info"),
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user info"))
 		return
 	}
 	filters.UserID = user.ResourceID
@@ -1079,21 +916,11 @@ func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 	// Query audit logs for the current user
 	logs, total, err := c.service.GetAuditLogs(ctx, filters, page, pageSize)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5001",
-			Err:     err,
-			Message: "Failed to get audit logs",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get audit logs", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code":      "0",
-		"data":      logs,
-		"total":     total,
-		"current":   page,
-		"page_size": pageSize,
-	})
+	util.RespondWithSuccessList(ctx, http.StatusOK, logs, total, page, pageSize)
 }
 
 // GetUserLogs gets the audit logs for a specific user
@@ -1107,18 +934,14 @@ func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 //	@Param			id			path		string	true	"User ID"
 //	@Param			current		query		int		false	"Current page number"		default(1)
 //	@Param			page_size	query		int		false	"Number of items per page"	default(10)
-//	@Success		200			{object}	util.Response{data=[]model.AuditLog,code=string}
-//	@Failure		500			{object}	util.Response{err=string,code=string}
+//	@Success		200			{object}	util.PaginationResponse[model.AuditLog]
+//	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/logs [get]
 func (c *UserController) GetUserLogs(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4001",
-			Err:     errors.New("User ID cannot be empty"),
-			Message: "User ID cannot be empty",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "User ID cannot be empty"))
 		return
 	}
 
@@ -1134,11 +957,7 @@ func (c *UserController) GetUserLogs(ctx *gin.Context) {
 	}
 	var filters service.AuditLogFilters
 	if err := ctx.BindQuery(&filters); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E4001",
-			Err:     err,
-			Message: "Failed to parse query parameters",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Failed to parse query parameters", err))
 		return
 	}
 
@@ -1147,21 +966,11 @@ func (c *UserController) GetUserLogs(ctx *gin.Context) {
 	// Query audit logs for the specified user
 	logs, total, err := c.service.GetAuditLogs(ctx, filters, current, pageSize)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5001",
-			Err:     err,
-			Message: "Failed to get audit logs",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get audit logs", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code":      "0",
-		"data":      logs,
-		"total":     total,
-		"current":   current,
-		"page_size": pageSize,
-	})
+	util.RespondWithSuccessList(ctx, http.StatusOK, logs, total, current, pageSize)
 }
 
 // UnlockUser unlocks a user
@@ -1173,13 +982,13 @@ func (c *UserController) GetUserLogs(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"User ID"
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[string]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/unlock [post]
 func (c *UserController) UnlockUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.NewError("E4001", "User ID cannot be empty"))
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "User ID cannot be empty"))
 		return
 	}
 	err := c.service.AuditLogService.StartAudit(
@@ -1195,11 +1004,7 @@ func (c *UserController) UnlockUser(ctx *gin.Context) {
 		},
 	)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			Code:    "E5001",
-			Err:     err,
-			Message: "Failed to unlock user",
-		})
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to unlock user", err))
 	}
 }
 
@@ -1212,13 +1017,13 @@ func (c *UserController) UnlockUser(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"User ID"
-//	@Success		200	{object}	util.Response{data=string,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[string]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/restore [post]
 func (c *UserController) RestoreUser(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
-		util.RespondWithError(ctx, util.NewError("E4001", "User ID cannot be empty"))
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "User ID cannot be empty"))
 		return
 	}
 	err := c.service.AuditLogService.StartAudit(
@@ -1234,7 +1039,7 @@ func (c *UserController) RestoreUser(ctx *gin.Context) {
 		},
 	)
 	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5001", "Failed to restore user"))
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to restore user"))
 	}
 }
 
@@ -1247,14 +1052,14 @@ func (c *UserController) RestoreUser(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			skip_existing	query		bool	false	"Skip existing users"	default(false)
-//	@Success		200				{object}	util.Response{data=[]model.User,code=string}
-//	@Failure		500				{object}	util.Response{err=string,code=string}
+//	@Success		200				{object}	util.PaginationResponse[model.User]
+//	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/ldap/users [get]
 func (c *UserController) GetLdapUsers(ctx *gin.Context) {
 	skipExisting := ctx.Query("skip_existing") == "true"
 	users, err := c.service.GetLdapUsers(ctx, skipExisting)
 	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5001", "Failed to get LDAP users"))
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get LDAP users"))
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, users)

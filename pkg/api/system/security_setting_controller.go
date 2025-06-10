@@ -43,24 +43,17 @@ func (c *SecuritySettingController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Tags			System Settings/Security
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=model.SecuritySettings,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.SecuritySettings]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/security-settings [get]
 func (c *SecuritySettingController) GetSecuritySettings(ctx *gin.Context) {
 	settings, err := c.service.GetSecuritySettings(ctx)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": settings,
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, settings)
 }
 
 // UpdateSecuritySettings Update security settings
@@ -71,18 +64,14 @@ func (c *SecuritySettingController) GetSecuritySettings(ctx *gin.Context) {
 //	@Tags			System Settings/Security
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response{data=model.SecuritySettings,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[model.SecuritySettings]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/security-settings [put]
 func (c *SecuritySettingController) UpdateSecuritySettings(ctx *gin.Context) {
 	// Parse request body
 	var req model.SecuritySettings
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
@@ -101,10 +90,7 @@ func (c *SecuritySettingController) UpdateSecuritySettings(ctx *gin.Context) {
 				}
 			}
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": gin.H{"message": "Security settings updated successfully"},
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Security settings updated successfully"})
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -128,6 +114,10 @@ type CheckPasswordComplexityRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type CheckPasswordComplexityResponse struct {
+	IsValid bool `json:"is_valid"`
+}
+
 // CheckPasswordComplexity Check password complexity
 //
 //	@Summary		Check password complexity
@@ -137,37 +127,24 @@ type CheckPasswordComplexityRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			request	body		CheckPasswordComplexityRequest	true	"Check password complexity request"
-//	@Success		200	{object}	util.Response{data=bool,code=string}
-//	@Failure		500	{object}	util.Response{err=string,code=string}
+//	@Success		200	{object}	util.Response[CheckPasswordComplexityResponse]
+//	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/security-settings/check-password [post]
 func (c *SecuritySettingController) CheckPasswordComplexity(ctx *gin.Context) {
 	var req CheckPasswordComplexityRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4002",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
 	// Check password complexity
 	isMet, err := c.service.IsPasswordComplexityMet(ctx, req.Password)
 	if err != nil {
-		util.RespondWithError(ctx, util.ErrorResponse{
-			HTTPCode: http.StatusInternalServerError,
-			Code:     "E5001",
-			Err:      err,
-		})
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": "0",
-		"data": gin.H{
-			"is_valid": isMet,
-		},
-	})
+	util.RespondWithSuccess(ctx, http.StatusOK, CheckPasswordComplexityResponse{IsValid: isMet})
 }
 
 func init() {
