@@ -154,7 +154,7 @@ const RoleList: React.FC = () => {
   // Handle form submission
   const handleSubmit = async (values: any) => {
     try {
-      values.policy_document = JSON.parse(values.policy_document);
+      values.policy_document = JSON.parse(values.policy_document ?? {});
       setLoading(true);
       if (editingRole) {
         await updateRole(editingRole.id, {
@@ -398,7 +398,7 @@ const RoleList: React.FC = () => {
             <TextArea rows={4} placeholder={t('role.descriptionPlaceholder', { defaultValue: 'Enter role description' })} />
           </Form.Item>
           <Collapse accordion bordered={false} className={styles.rolePolicy}>
-            <Collapse.Panel key="permissions" header={t('role.permissions', { defaultValue: 'Permissions' })} style={{ padding: 0 }}>
+            <Collapse.Panel forceRender key="permissions" header={t('role.permissions', { defaultValue: 'Permissions' })} style={{ padding: 0 }}>
               <Form.Item
                 name="permissions"
                 rules={[{
@@ -445,7 +445,7 @@ const RoleList: React.FC = () => {
                 </div>
               </Form.Item>
             </Collapse.Panel>
-            <Collapse.Panel key="policy_document" header={t('role.policyDocument', { defaultValue: 'Policy Document (JSON)' })}>
+            <Collapse.Panel forceRender key="policy_document" header={t('role.policyDocument', { defaultValue: 'Policy Document (JSON)' })}>
               <Form.Item
                 // label={t('role.policyDocument')}
                 name="policy_document"
