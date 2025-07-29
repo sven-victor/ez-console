@@ -47,11 +47,10 @@ type Response[T any] struct {
 
 type PaginationResponse[T any] struct {
 	Code     string `json:"code"`
-	Data     []T    `json:"data,omitempty"`
-	Err      string `json:"err,omitempty"`
-	Total    int64  `json:"total,omitempty"`
-	Current  int    `json:"current,omitempty"`
-	PageSize int    `json:"page_size,omitempty"`
+	Data     []T    `json:"data"`
+	Total    int64  `json:"total"`
+	Current  int    `json:"current"`
+	PageSize int    `json:"page_size"`
 }
 
 // RespondWithErrorMessage returns an error response

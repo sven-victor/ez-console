@@ -223,7 +223,7 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Role ID"
-//	@Success		200	{object}	util.Response[model.Role]
+//	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id} [delete]
@@ -278,7 +278,7 @@ type AssignPermissionsRequest struct {
 //	@Produce		json
 //	@Param			id			path		string		true	"Role ID"
 //	@Param			request		body		AssignPermissionsRequest	true	"Assign permissions request"
-//	@Success		200			{object}	util.Response[model.Role]
+//	@Success		200			{object}	util.Response[util.MessageData]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles/{id}/permissions [put]

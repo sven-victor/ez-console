@@ -392,6 +392,10 @@ type ResetUserPasswordRequest struct {
 	Password string `json:"password"`
 }
 
+type ResetUserPasswordResponse struct {
+	NewPassword string `json:"new_password,omitempty"`
+}
+
 // ResetUserPassword resets a user's password
 //
 //	@Summary		Reset a user's password
@@ -402,7 +406,7 @@ type ResetUserPasswordRequest struct {
 //	@Produce		json
 //	@Param			id		path		string		true	"User ID"
 //	@Param			request	body		ResetUserPasswordRequest	true	"Reset user password request"
-//	@Success		200		{object}	util.Response[string]
+//	@Success		200		{object}	util.Response[ResetUserPasswordResponse]
 //	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/password [put]
 func (c *UserController) ResetUserPassword(ctx *gin.Context) {
@@ -435,9 +439,9 @@ func (c *UserController) ResetUserPassword(ctx *gin.Context) {
 			}
 
 			if !sendEmail {
-				util.RespondWithSuccess(ctx, 200, gin.H{"new_password": req.Password})
+				util.RespondWithSuccess(ctx, 200, ResetUserPasswordResponse{NewPassword: req.Password})
 			} else {
-				util.RespondWithSuccess(ctx, 200, gin.H{})
+				util.RespondWithSuccess(ctx, 200, ResetUserPasswordResponse{})
 			}
 			return nil
 		},
@@ -636,7 +640,7 @@ type ChangePasswordRequest struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			password	body		ChangePasswordRequest	true	"Change password request"
-//	@Success		200			{object}	util.Response[string]
+//	@Success		200			{object}	util.Response[util.MessageData]
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/profile/password [put]
 func (c *UserController) ChangePassword(ctx *gin.Context) {
@@ -668,7 +672,7 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 				return err
 			}
 
-			util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "Password changed successfully"})
+			util.RespondWithMessage(ctx, "Password changed successfully")
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -982,7 +986,7 @@ func (c *UserController) GetUserLogs(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"User ID"
-//	@Success		200	{object}	util.Response[string]
+//	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/users/{id}/unlock [post]
 func (c *UserController) UnlockUser(ctx *gin.Context) {
