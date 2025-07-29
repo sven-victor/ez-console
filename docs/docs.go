@@ -577,7 +577,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-string"
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
@@ -953,7 +953,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-model_Role"
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "400": {
@@ -1007,7 +1007,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-model_Role"
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "400": {
@@ -2045,7 +2045,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-string"
+                            "$ref": "#/definitions/util.Response-authorizationapi_ResetUserPasswordResponse"
                         }
                     },
                     "500": {
@@ -2219,7 +2219,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-string"
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
@@ -3090,7 +3090,10 @@ const docTemplate = `{
         "authorizationapi.CreateRoleRequest": {
             "type": "object",
             "required": [
-                "name"
+                "description",
+                "name",
+                "permissions",
+                "policy_document"
             ],
             "properties": {
                 "description": {
@@ -3113,6 +3116,8 @@ const docTemplate = `{
         "authorizationapi.CreateServiceAccountAccessKeyRequest": {
             "type": "object",
             "required": [
+                "description",
+                "expires_in_days",
                 "name"
             ],
             "properties": {
@@ -3130,6 +3135,7 @@ const docTemplate = `{
         "authorizationapi.CreateServiceAccountRequest": {
             "type": "object",
             "required": [
+                "description",
                 "name"
             ],
             "properties": {
@@ -3143,6 +3149,12 @@ const docTemplate = `{
         },
         "authorizationapi.LoginRequest": {
             "type": "object",
+            "required": [
+                "mfa_code",
+                "mfa_token",
+                "password",
+                "username"
+            ],
             "properties": {
                 "mfa_code": {
                     "type": "string"
@@ -3160,6 +3172,11 @@ const docTemplate = `{
         },
         "authorizationapi.OAuthProvider": {
             "type": "object",
+            "required": [
+                "display_name",
+                "icon_url",
+                "name"
+            ],
             "properties": {
                 "display_name": {
                     "type": "string"
@@ -3174,8 +3191,22 @@ const docTemplate = `{
         },
         "authorizationapi.ResetUserPasswordRequest": {
             "type": "object",
+            "required": [
+                "password"
+            ],
             "properties": {
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.ResetUserPasswordResponse": {
+            "type": "object",
+            "required": [
+                "new_password"
+            ],
+            "properties": {
+                "new_password": {
                     "type": "string"
                 }
             }
@@ -3193,6 +3224,9 @@ const docTemplate = `{
         },
         "authorizationapi.TokenResponse": {
             "type": "object",
+            "required": [
+                "token"
+            ],
             "properties": {
                 "token": {
                     "type": "string"
@@ -3202,7 +3236,10 @@ const docTemplate = `{
         "authorizationapi.UpdateCurrentUserRequest": {
             "type": "object",
             "required": [
-                "email"
+                "avatar",
+                "email",
+                "full_name",
+                "phone"
             ],
             "properties": {
                 "avatar": {
@@ -3222,7 +3259,10 @@ const docTemplate = `{
         "authorizationapi.UpdateRoleRequest": {
             "type": "object",
             "required": [
-                "name"
+                "description",
+                "name",
+                "permissions",
+                "policy_document"
             ],
             "properties": {
                 "description": {
@@ -3245,6 +3285,8 @@ const docTemplate = `{
         "authorizationapi.UpdateServiceAccountAccessKeyRequest": {
             "type": "object",
             "required": [
+                "description",
+                "expires_at",
                 "name",
                 "status"
             ],
@@ -3270,6 +3312,7 @@ const docTemplate = `{
         "authorizationapi.UpdateServiceAccountRequest": {
             "type": "object",
             "required": [
+                "description",
                 "name"
             ],
             "properties": {
@@ -3322,6 +3365,21 @@ const docTemplate = `{
         },
         "model.AuditLog": {
             "type": "object",
+            "required": [
+                "action",
+                "action_name",
+                "created_at",
+                "details",
+                "id",
+                "ip",
+                "ref_id",
+                "status",
+                "timestamp",
+                "updated_at",
+                "user_agent",
+                "user_id",
+                "username"
+            ],
             "properties": {
                 "action": {
                     "description": "Operation type",
@@ -3380,6 +3438,11 @@ const docTemplate = `{
         },
         "model.AuditLogDetail": {
             "type": "object",
+            "required": [
+                "new_data",
+                "old_data",
+                "request"
+            ],
             "properties": {
                 "new_data": {},
                 "old_data": {},
@@ -3392,6 +3455,15 @@ const docTemplate = `{
         },
         "model.File": {
             "type": "object",
+            "required": [
+                "access",
+                "created_at",
+                "id",
+                "name",
+                "size",
+                "type",
+                "updated_at"
+            ],
             "properties": {
                 "access": {
                     "$ref": "#/definitions/model.AccessType"
@@ -3427,6 +3499,10 @@ const docTemplate = `{
         },
         "model.LDAPTestMessage": {
             "type": "object",
+            "required": [
+                "message",
+                "success"
+            ],
             "properties": {
                 "message": {
                     "type": "string"
@@ -3438,6 +3514,11 @@ const docTemplate = `{
         },
         "model.LDAPTestResponse": {
             "type": "object",
+            "required": [
+                "message",
+                "success",
+                "user"
+            ],
             "properties": {
                 "message": {
                     "type": "array",
@@ -3482,6 +3563,30 @@ const docTemplate = `{
         },
         "model.OAuthSettings": {
             "type": "object",
+            "required": [
+                "auth_endpoint",
+                "auto_create_user",
+                "avatar_field",
+                "client_id",
+                "client_secret",
+                "default_role",
+                "display_name",
+                "email_field",
+                "enabled",
+                "full_name_field",
+                "icon_url",
+                "issuer",
+                "jwks_uri",
+                "mfa_enabled",
+                "provider",
+                "redirect_uri",
+                "role_field",
+                "scope",
+                "token_endpoint",
+                "userinfo_endpoint",
+                "username_field",
+                "wellknown_endpoint"
+            ],
             "properties": {
                 "auth_endpoint": {
                     "type": "string"
@@ -3576,6 +3681,14 @@ const docTemplate = `{
         },
         "model.Permission": {
             "type": "object",
+            "required": [
+                "code",
+                "created_at",
+                "description",
+                "id",
+                "name",
+                "updated_at"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -3599,6 +3712,11 @@ const docTemplate = `{
         },
         "model.PermissionGroup": {
             "type": "object",
+            "required": [
+                "description",
+                "name",
+                "permissions"
+            ],
             "properties": {
                 "description": {
                     "type": "string"
@@ -3616,6 +3734,9 @@ const docTemplate = `{
         },
         "model.PolicyDocument": {
             "type": "object",
+            "required": [
+                "Statement"
+            ],
             "properties": {
                 "Statement": {
                     "type": "array",
@@ -3627,6 +3748,15 @@ const docTemplate = `{
         },
         "model.Role": {
             "type": "object",
+            "required": [
+                "created_at",
+                "description",
+                "id",
+                "name",
+                "permissions",
+                "policy_document",
+                "updated_at"
+            ],
             "properties": {
                 "created_at": {
                     "type": "string"
@@ -3661,6 +3791,19 @@ const docTemplate = `{
         },
         "model.SMTPSettings": {
             "type": "object",
+            "required": [
+                "enabled",
+                "encryption",
+                "from_address",
+                "from_name",
+                "host",
+                "mfa_code_template",
+                "password",
+                "port",
+                "reset_password_template",
+                "user_locked_template",
+                "username"
+            ],
             "properties": {
                 "enabled": {
                     "type": "boolean"
@@ -3701,7 +3844,19 @@ const docTemplate = `{
         "model.SMTPTestRequest": {
             "type": "object",
             "required": [
-                "to"
+                "enabled",
+                "encryption",
+                "from_address",
+                "from_name",
+                "host",
+                "mfa_code_template",
+                "password",
+                "password",
+                "port",
+                "reset_password_template",
+                "to",
+                "user_locked_template",
+                "username"
             ],
             "properties": {
                 "enabled": {
@@ -3745,6 +3900,20 @@ const docTemplate = `{
         },
         "model.SecuritySettings": {
             "type": "object",
+            "required": [
+                "history_password_check",
+                "history_password_count",
+                "login_failure_attempts",
+                "login_failure_lock",
+                "login_failure_lockout_minutes",
+                "mfa_enforced",
+                "password_complexity",
+                "password_expiry_days",
+                "password_min_length",
+                "session_idle_timeout_minutes",
+                "session_timeout_minutes",
+                "user_inactive_days"
+            ],
             "properties": {
                 "history_password_check": {
                     "type": "boolean"
@@ -3786,6 +3955,18 @@ const docTemplate = `{
         },
         "model.ServiceAccount": {
             "type": "object",
+            "required": [
+                "access_keys",
+                "created_at",
+                "description",
+                "id",
+                "last_access",
+                "name",
+                "policy_document",
+                "roles",
+                "status",
+                "updated_at"
+            ],
             "properties": {
                 "access_keys": {
                     "type": "array",
@@ -3828,6 +4009,18 @@ const docTemplate = `{
         },
         "model.ServiceAccountAccessKey": {
             "type": "object",
+            "required": [
+                "access_key_id",
+                "created_at",
+                "description",
+                "expires_at",
+                "id",
+                "last_used",
+                "name",
+                "service_account_id",
+                "status",
+                "updated_at"
+            ],
             "properties": {
                 "access_key_id": {
                     "type": "string"
@@ -3863,6 +4056,18 @@ const docTemplate = `{
         },
         "model.Session": {
             "type": "object",
+            "required": [
+                "created_at",
+                "expired_at",
+                "id",
+                "ip_address",
+                "is_valid",
+                "last_active_at",
+                "updated_at",
+                "user",
+                "user_agent",
+                "user_id"
+            ],
             "properties": {
                 "created_at": {
                     "type": "string"
@@ -3898,6 +4103,12 @@ const docTemplate = `{
         },
         "model.StatementEntry": {
             "type": "object",
+            "required": [
+                "Action",
+                "Condition",
+                "Effect",
+                "Resource"
+            ],
             "properties": {
                 "Action": {
                     "description": "List of actions, can contain wildcards \"*\"",
@@ -3928,6 +4139,13 @@ const docTemplate = `{
         },
         "model.SystemSettings": {
             "type": "object",
+            "required": [
+                "disable_local_user_login",
+                "home_page",
+                "logo",
+                "name",
+                "name_i18n"
+            ],
             "properties": {
                 "disable_local_user_login": {
                     "type": "boolean"
@@ -3951,6 +4169,27 @@ const docTemplate = `{
         },
         "model.User": {
             "type": "object",
+            "required": [
+                "avatar",
+                "created_at",
+                "disable_change_password",
+                "email",
+                "full_name",
+                "id",
+                "last_login",
+                "ldap_dn",
+                "mfa_enabled",
+                "mfa_enforced",
+                "oauth_id",
+                "oauth_provider",
+                "password_changed_at",
+                "phone",
+                "roles",
+                "source",
+                "status",
+                "updated_at",
+                "username"
+            ],
             "properties": {
                 "avatar": {
                     "type": "string"
@@ -4032,6 +4271,15 @@ const docTemplate = `{
         },
         "service.Chart": {
             "type": "object",
+            "required": [
+                "color",
+                "datasets",
+                "icon",
+                "labels",
+                "title",
+                "value",
+                "width"
+            ],
             "properties": {
                 "color": {
                     "type": "string"
@@ -4065,8 +4313,13 @@ const docTemplate = `{
         "service.CreateUserRequest": {
             "type": "object",
             "required": [
+                "avatar",
                 "email",
+                "full_name",
+                "mfa_enforced",
                 "password",
+                "phone",
+                "role_ids",
                 "username"
             ],
             "properties": {
@@ -4101,6 +4354,11 @@ const docTemplate = `{
         },
         "service.Dataset": {
             "type": "object",
+            "required": [
+                "color",
+                "data",
+                "label"
+            ],
             "properties": {
                 "color": {
                     "type": "string"
@@ -4118,6 +4376,11 @@ const docTemplate = `{
         },
         "service.EnableMFAResponse": {
             "type": "object",
+            "required": [
+                "qr_code",
+                "secret",
+                "token"
+            ],
             "properties": {
                 "qr_code": {
                     "type": "string"
@@ -4132,6 +4395,11 @@ const docTemplate = `{
         },
         "service.HealthResult": {
             "type": "object",
+            "required": [
+                "message",
+                "reason",
+                "status"
+            ],
             "properties": {
                 "message": {
                     "type": "string"
@@ -4146,6 +4414,15 @@ const docTemplate = `{
         },
         "service.LoginResponse": {
             "type": "object",
+            "required": [
+                "expires_at",
+                "mfa_token",
+                "mfa_type",
+                "needs_mfa",
+                "password_expired",
+                "token",
+                "user"
+            ],
             "properties": {
                 "expires_at": {
                     "type": "string"
@@ -4172,6 +4449,10 @@ const docTemplate = `{
         },
         "service.OAuthLoginURLResponse": {
             "type": "object",
+            "required": [
+                "state",
+                "url"
+            ],
             "properties": {
                 "state": {
                     "type": "string"
@@ -4183,6 +4464,17 @@ const docTemplate = `{
         },
         "service.SystemInfo": {
             "type": "object",
+            "required": [
+                "cpu_cores",
+                "go_routines",
+                "go_version",
+                "heap_objects",
+                "mem_usage",
+                "role_count",
+                "total_mem",
+                "uptime",
+                "user_count"
+            ],
             "properties": {
                 "cpu_cores": {
                     "type": "integer"
@@ -4215,6 +4507,10 @@ const docTemplate = `{
         },
         "service.TestOAuthCallbackResponse": {
             "type": "object",
+            "required": [
+                "user",
+                "user_info"
+            ],
             "properties": {
                 "user": {
                     "$ref": "#/definitions/model.User"
@@ -4227,6 +4523,17 @@ const docTemplate = `{
         },
         "service.UpdateUserRequest": {
             "type": "object",
+            "required": [
+                "avatar",
+                "email",
+                "full_name",
+                "ldap_dn",
+                "mfa_enforced",
+                "phone",
+                "role_ids",
+                "source",
+                "status"
+            ],
             "properties": {
                 "avatar": {
                     "type": "string"
@@ -4273,6 +4580,9 @@ const docTemplate = `{
         },
         "systemapi.CheckPasswordComplexityResponse": {
             "type": "object",
+            "required": [
+                "is_valid"
+            ],
             "properties": {
                 "is_valid": {
                     "type": "boolean"
@@ -4281,6 +4591,25 @@ const docTemplate = `{
         },
         "systemapi.LDAPSettings": {
             "type": "object",
+            "required": [
+                "base_dn",
+                "bind_dn",
+                "bind_password",
+                "ca_cert",
+                "client_cert",
+                "client_key",
+                "default_role",
+                "display_name_attr",
+                "email_attr",
+                "enabled",
+                "insecure",
+                "server_url",
+                "start_tls",
+                "timeout",
+                "timeout",
+                "user_attr",
+                "user_filter"
+            ],
             "properties": {
                 "base_dn": {
                     "type": "string"
@@ -4334,6 +4663,10 @@ const docTemplate = `{
         },
         "systemapi.SMTPTestResponse": {
             "type": "object",
+            "required": [
+                "message",
+                "success"
+            ],
             "properties": {
                 "message": {
                     "type": "string"
@@ -4345,6 +4678,27 @@ const docTemplate = `{
         },
         "systemapi.UpdateLDAPSettingsRequest": {
             "type": "object",
+            "required": [
+                "base_dn",
+                "bind_dn",
+                "bind_password",
+                "bind_password",
+                "ca_cert",
+                "client_cert",
+                "client_key",
+                "client_key",
+                "default_role",
+                "display_name_attr",
+                "email_attr",
+                "enabled",
+                "insecure",
+                "server_url",
+                "start_tls",
+                "timeout",
+                "timeout",
+                "user_attr",
+                "user_filter"
+            ],
             "properties": {
                 "base_dn": {
                     "type": "string"
@@ -4407,16 +4761,10 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
-                60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -4433,16 +4781,10 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -4453,6 +4795,11 @@ const docTemplate = `{
         },
         "util.ErrorResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "err",
+                "message"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4465,6 +4812,9 @@ const docTemplate = `{
         },
         "util.MessageData": {
             "type": "object",
+            "required": [
+                "message"
+            ],
             "properties": {
                 "message": {
                     "type": "string"
@@ -4473,6 +4823,13 @@ const docTemplate = `{
         },
         "util.PaginationResponse-model_AuditLog": {
             "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4486,9 +4843,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.AuditLog"
                     }
                 },
-                "err": {
-                    "type": "string"
-                },
                 "page_size": {
                     "type": "integer"
                 },
@@ -4499,6 +4853,13 @@ const docTemplate = `{
         },
         "util.PaginationResponse-model_File": {
             "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4512,9 +4873,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.File"
                     }
                 },
-                "err": {
-                    "type": "string"
-                },
                 "page_size": {
                     "type": "integer"
                 },
@@ -4525,6 +4883,13 @@ const docTemplate = `{
         },
         "util.PaginationResponse-model_Role": {
             "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4538,9 +4903,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Role"
                     }
                 },
-                "err": {
-                    "type": "string"
-                },
                 "page_size": {
                     "type": "integer"
                 },
@@ -4551,6 +4913,13 @@ const docTemplate = `{
         },
         "util.PaginationResponse-model_ServiceAccount": {
             "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4564,9 +4933,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.ServiceAccount"
                     }
                 },
-                "err": {
-                    "type": "string"
-                },
                 "page_size": {
                     "type": "integer"
                 },
@@ -4577,6 +4943,13 @@ const docTemplate = `{
         },
         "util.PaginationResponse-model_ServiceAccountAccessKey": {
             "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4590,9 +4963,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.ServiceAccountAccessKey"
                     }
                 },
-                "err": {
-                    "type": "string"
-                },
                 "page_size": {
                     "type": "integer"
                 },
@@ -4603,6 +4973,13 @@ const docTemplate = `{
         },
         "util.PaginationResponse-model_Session": {
             "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4616,9 +4993,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Session"
                     }
                 },
-                "err": {
-                    "type": "string"
-                },
                 "page_size": {
                     "type": "integer"
                 },
@@ -4629,6 +5003,13 @@ const docTemplate = `{
         },
         "util.PaginationResponse-model_User": {
             "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4642,9 +5023,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.User"
                     }
                 },
-                "err": {
-                    "type": "string"
-                },
                 "page_size": {
                     "type": "integer"
                 },
@@ -4655,6 +5033,11 @@ const docTemplate = `{
         },
         "util.Response-array_authorizationapi_OAuthProvider": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4672,6 +5055,11 @@ const docTemplate = `{
         },
         "util.Response-array_model_PermissionGroup": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4687,8 +5075,32 @@ const docTemplate = `{
                 }
             }
         },
+        "util.Response-authorizationapi_ResetUserPasswordResponse": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/authorizationapi.ResetUserPasswordResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-authorizationapi_TokenResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4703,6 +5115,11 @@ const docTemplate = `{
         },
         "util.Response-model_LDAPTestResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4717,6 +5134,11 @@ const docTemplate = `{
         },
         "util.Response-model_OAuthSettings": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4731,6 +5153,11 @@ const docTemplate = `{
         },
         "util.Response-model_PolicyDocument": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4745,6 +5172,11 @@ const docTemplate = `{
         },
         "util.Response-model_Role": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4759,6 +5191,11 @@ const docTemplate = `{
         },
         "util.Response-model_SMTPSettings": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4773,6 +5210,11 @@ const docTemplate = `{
         },
         "util.Response-model_SecuritySettings": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4787,6 +5229,11 @@ const docTemplate = `{
         },
         "util.Response-model_ServiceAccount": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4801,6 +5248,11 @@ const docTemplate = `{
         },
         "util.Response-model_ServiceAccountAccessKey": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4815,6 +5267,11 @@ const docTemplate = `{
         },
         "util.Response-model_SystemSettings": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4829,6 +5286,11 @@ const docTemplate = `{
         },
         "util.Response-model_User": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4843,6 +5305,11 @@ const docTemplate = `{
         },
         "util.Response-service_Charts": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4863,6 +5330,11 @@ const docTemplate = `{
         },
         "util.Response-service_EnableMFAResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4877,6 +5349,11 @@ const docTemplate = `{
         },
         "util.Response-service_HealthResult": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4891,6 +5368,11 @@ const docTemplate = `{
         },
         "util.Response-service_LoginResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4905,6 +5387,11 @@ const docTemplate = `{
         },
         "util.Response-service_OAuthLoginURLResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4919,6 +5406,11 @@ const docTemplate = `{
         },
         "util.Response-service_SystemInfo": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4933,6 +5425,11 @@ const docTemplate = `{
         },
         "util.Response-service_TestOAuthCallbackResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4947,6 +5444,11 @@ const docTemplate = `{
         },
         "util.Response-string": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4961,6 +5463,11 @@ const docTemplate = `{
         },
         "util.Response-systemapi_CheckPasswordComplexityResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4975,6 +5482,11 @@ const docTemplate = `{
         },
         "util.Response-systemapi_LDAPSettings": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -4989,6 +5501,11 @@ const docTemplate = `{
         },
         "util.Response-systemapi_SMTPTestResponse": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"
@@ -5003,6 +5520,11 @@ const docTemplate = `{
         },
         "util.Response-util_MessageData": {
             "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
             "properties": {
                 "code": {
                     "type": "string"

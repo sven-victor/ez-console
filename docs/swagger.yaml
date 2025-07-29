@@ -49,7 +49,10 @@ definitions:
       policy_document:
         $ref: '#/definitions/model.PolicyDocument'
     required:
+    - description
     - name
+    - permissions
+    - policy_document
     type: object
   authorizationapi.CreateServiceAccountAccessKeyRequest:
     properties:
@@ -60,6 +63,8 @@ definitions:
       name:
         type: string
     required:
+    - description
+    - expires_in_days
     - name
     type: object
   authorizationapi.CreateServiceAccountRequest:
@@ -69,6 +74,7 @@ definitions:
       name:
         type: string
     required:
+    - description
     - name
     type: object
   authorizationapi.LoginRequest:
@@ -81,6 +87,11 @@ definitions:
         type: string
       username:
         type: string
+    required:
+    - mfa_code
+    - mfa_token
+    - password
+    - username
     type: object
   authorizationapi.OAuthProvider:
     properties:
@@ -90,11 +101,24 @@ definitions:
         type: string
       name:
         type: string
+    required:
+    - display_name
+    - icon_url
+    - name
     type: object
   authorizationapi.ResetUserPasswordRequest:
     properties:
       password:
         type: string
+    required:
+    - password
+    type: object
+  authorizationapi.ResetUserPasswordResponse:
+    properties:
+      new_password:
+        type: string
+    required:
+    - new_password
     type: object
   authorizationapi.SetServiceAccountPolicyRequest:
     properties:
@@ -107,6 +131,8 @@ definitions:
     properties:
       token:
         type: string
+    required:
+    - token
     type: object
   authorizationapi.UpdateCurrentUserRequest:
     properties:
@@ -119,7 +145,10 @@ definitions:
       phone:
         type: string
     required:
+    - avatar
     - email
+    - full_name
+    - phone
     type: object
   authorizationapi.UpdateRoleRequest:
     properties:
@@ -134,7 +163,10 @@ definitions:
       policy_document:
         $ref: '#/definitions/model.PolicyDocument'
     required:
+    - description
     - name
+    - permissions
+    - policy_document
     type: object
   authorizationapi.UpdateServiceAccountAccessKeyRequest:
     properties:
@@ -150,6 +182,8 @@ definitions:
         - disabled
         type: string
     required:
+    - description
+    - expires_at
     - name
     - status
     type: object
@@ -160,6 +194,7 @@ definitions:
       name:
         type: string
     required:
+    - description
     - name
     type: object
   authorizationapi.UpdateServiceAccountStatusRequest:
@@ -228,12 +263,30 @@ definitions:
       username:
         description: Username of the operator
         type: string
+    required:
+    - action
+    - action_name
+    - created_at
+    - details
+    - id
+    - ip
+    - ref_id
+    - status
+    - timestamp
+    - updated_at
+    - user_agent
+    - user_id
+    - username
     type: object
   model.AuditLogDetail:
     properties:
       new_data: {}
       old_data: {}
       request: {}
+    required:
+    - new_data
+    - old_data
+    - request
     type: object
   model.Condition:
     additionalProperties: true
@@ -254,6 +307,14 @@ definitions:
         $ref: '#/definitions/model.FileType'
       updated_at:
         type: string
+    required:
+    - access
+    - created_at
+    - id
+    - name
+    - size
+    - type
+    - updated_at
     type: object
   model.FileType:
     enum:
@@ -267,6 +328,9 @@ definitions:
         type: string
       success:
         type: boolean
+    required:
+    - message
+    - success
     type: object
   model.LDAPTestResponse:
     properties:
@@ -278,6 +342,10 @@ definitions:
         type: boolean
       user:
         $ref: '#/definitions/model.User'
+    required:
+    - message
+    - success
+    - user
     type: object
   model.OAuthProvider:
     enum:
@@ -350,6 +418,29 @@ definitions:
         type: string
       wellknown_endpoint:
         type: string
+    required:
+    - auth_endpoint
+    - auto_create_user
+    - avatar_field
+    - client_id
+    - client_secret
+    - default_role
+    - display_name
+    - email_field
+    - enabled
+    - full_name_field
+    - icon_url
+    - issuer
+    - jwks_uri
+    - mfa_enabled
+    - provider
+    - redirect_uri
+    - role_field
+    - scope
+    - token_endpoint
+    - userinfo_endpoint
+    - username_field
+    - wellknown_endpoint
     type: object
   model.PasswordComplexity:
     enum:
@@ -384,6 +475,13 @@ definitions:
         type: string
       updated_at:
         type: string
+    required:
+    - code
+    - created_at
+    - description
+    - id
+    - name
+    - updated_at
     type: object
   model.PermissionGroup:
     properties:
@@ -395,6 +493,10 @@ definitions:
         items:
           $ref: '#/definitions/model.Permission'
         type: array
+    required:
+    - description
+    - name
+    - permissions
     type: object
   model.PolicyDocument:
     properties:
@@ -402,6 +504,8 @@ definitions:
         items:
           $ref: '#/definitions/model.StatementEntry'
         type: array
+    required:
+    - Statement
     type: object
   model.Role:
     properties:
@@ -424,6 +528,14 @@ definitions:
           in JSON format
       updated_at:
         type: string
+    required:
+    - created_at
+    - description
+    - id
+    - name
+    - permissions
+    - policy_document
+    - updated_at
     type: object
   model.SMTPSettings:
     properties:
@@ -450,6 +562,18 @@ definitions:
         type: string
       username:
         type: string
+    required:
+    - enabled
+    - encryption
+    - from_address
+    - from_name
+    - host
+    - mfa_code_template
+    - password
+    - port
+    - reset_password_template
+    - user_locked_template
+    - username
     type: object
   model.SMTPTestRequest:
     properties:
@@ -479,7 +603,19 @@ definitions:
       username:
         type: string
     required:
+    - enabled
+    - encryption
+    - from_address
+    - from_name
+    - host
+    - mfa_code_template
+    - password
+    - password
+    - port
+    - reset_password_template
     - to
+    - user_locked_template
+    - username
     type: object
   model.SecuritySettings:
     properties:
@@ -507,6 +643,19 @@ definitions:
         type: integer
       user_inactive_days:
         type: integer
+    required:
+    - history_password_check
+    - history_password_count
+    - login_failure_attempts
+    - login_failure_lock
+    - login_failure_lockout_minutes
+    - mfa_enforced
+    - password_complexity
+    - password_expiry_days
+    - password_min_length
+    - session_idle_timeout_minutes
+    - session_timeout_minutes
+    - user_inactive_days
     type: object
   model.ServiceAccount:
     properties:
@@ -535,6 +684,17 @@ definitions:
         type: string
       updated_at:
         type: string
+    required:
+    - access_keys
+    - created_at
+    - description
+    - id
+    - last_access
+    - name
+    - policy_document
+    - roles
+    - status
+    - updated_at
     type: object
   model.ServiceAccountAccessKey:
     properties:
@@ -558,6 +718,17 @@ definitions:
         type: string
       updated_at:
         type: string
+    required:
+    - access_key_id
+    - created_at
+    - description
+    - expires_at
+    - id
+    - last_used
+    - name
+    - service_account_id
+    - status
+    - updated_at
     type: object
   model.Session:
     properties:
@@ -581,6 +752,17 @@ definitions:
         type: string
       user_id:
         type: string
+    required:
+    - created_at
+    - expired_at
+    - id
+    - ip_address
+    - is_valid
+    - last_active_at
+    - updated_at
+    - user
+    - user_agent
+    - user_id
     type: object
   model.StatementEntry:
     properties:
@@ -602,6 +784,11 @@ definitions:
         items:
           type: string
         type: array
+    required:
+    - Action
+    - Condition
+    - Effect
+    - Resource
     type: object
   model.SystemSettings:
     properties:
@@ -617,6 +804,12 @@ definitions:
         additionalProperties:
           type: string
         type: object
+    required:
+    - disable_local_user_login
+    - home_page
+    - logo
+    - name
+    - name_i18n
     type: object
   model.User:
     properties:
@@ -660,6 +853,26 @@ definitions:
         type: string
       username:
         type: string
+    required:
+    - avatar
+    - created_at
+    - disable_change_password
+    - email
+    - full_name
+    - id
+    - last_login
+    - ldap_dn
+    - mfa_enabled
+    - mfa_enforced
+    - oauth_id
+    - oauth_provider
+    - password_changed_at
+    - phone
+    - roles
+    - source
+    - status
+    - updated_at
+    - username
     type: object
   model.UserSource:
     enum:
@@ -693,6 +906,14 @@ definitions:
         type: integer
       width:
         type: integer
+    required:
+    - color
+    - datasets
+    - icon
+    - labels
+    - title
+    - value
+    - width
     type: object
   service.CreateUserRequest:
     properties:
@@ -715,8 +936,13 @@ definitions:
       username:
         type: string
     required:
+    - avatar
     - email
+    - full_name
+    - mfa_enforced
     - password
+    - phone
+    - role_ids
     - username
     type: object
   service.Dataset:
@@ -729,6 +955,10 @@ definitions:
         type: array
       label:
         type: string
+    required:
+    - color
+    - data
+    - label
     type: object
   service.EnableMFAResponse:
     properties:
@@ -738,6 +968,10 @@ definitions:
         type: string
       token:
         type: string
+    required:
+    - qr_code
+    - secret
+    - token
     type: object
   service.HealthResult:
     properties:
@@ -747,6 +981,10 @@ definitions:
         type: string
       status:
         type: string
+    required:
+    - message
+    - reason
+    - status
     type: object
   service.LoginResponse:
     properties:
@@ -764,6 +1002,14 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/model.User'
+    required:
+    - expires_at
+    - mfa_token
+    - mfa_type
+    - needs_mfa
+    - password_expired
+    - token
+    - user
     type: object
   service.OAuthLoginURLResponse:
     properties:
@@ -771,6 +1017,9 @@ definitions:
         type: string
       url:
         type: string
+    required:
+    - state
+    - url
     type: object
   service.SystemInfo:
     properties:
@@ -792,6 +1041,16 @@ definitions:
         type: integer
       user_count:
         type: integer
+    required:
+    - cpu_cores
+    - go_routines
+    - go_version
+    - heap_objects
+    - mem_usage
+    - role_count
+    - total_mem
+    - uptime
+    - user_count
     type: object
   service.TestOAuthCallbackResponse:
     properties:
@@ -800,6 +1059,9 @@ definitions:
       user_info:
         additionalProperties: true
         type: object
+    required:
+    - user
+    - user_info
     type: object
   service.UpdateUserRequest:
     properties:
@@ -823,6 +1085,16 @@ definitions:
         type: string
       status:
         type: string
+    required:
+    - avatar
+    - email
+    - full_name
+    - ldap_dn
+    - mfa_enforced
+    - phone
+    - role_ids
+    - source
+    - status
     type: object
   systemapi.CheckPasswordComplexityRequest:
     properties:
@@ -835,6 +1107,8 @@ definitions:
     properties:
       is_valid:
         type: boolean
+    required:
+    - is_valid
     type: object
   systemapi.LDAPSettings:
     properties:
@@ -870,6 +1144,24 @@ definitions:
         type: string
       user_filter:
         type: string
+    required:
+    - base_dn
+    - bind_dn
+    - bind_password
+    - ca_cert
+    - client_cert
+    - client_key
+    - default_role
+    - display_name_attr
+    - email_attr
+    - enabled
+    - insecure
+    - server_url
+    - start_tls
+    - timeout
+    - timeout
+    - user_attr
+    - user_filter
     type: object
   systemapi.SMTPTestResponse:
     properties:
@@ -877,6 +1169,9 @@ definitions:
         type: string
       success:
         type: boolean
+    required:
+    - message
+    - success
     type: object
   systemapi.UpdateLDAPSettingsRequest:
     properties:
@@ -912,6 +1207,26 @@ definitions:
         type: string
       user_filter:
         type: string
+    required:
+    - base_dn
+    - bind_dn
+    - bind_password
+    - bind_password
+    - ca_cert
+    - client_cert
+    - client_key
+    - client_key
+    - default_role
+    - display_name_attr
+    - email_attr
+    - enabled
+    - insecure
+    - server_url
+    - start_tls
+    - timeout
+    - timeout
+    - user_attr
+    - user_filter
     type: object
   time.Duration:
     enum:
@@ -923,16 +1238,10 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
-    - 60000000000
-    - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -949,16 +1258,10 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -972,11 +1275,17 @@ definitions:
       err: {}
       message:
         type: string
+    required:
+    - code
+    - err
+    - message
     type: object
   util.MessageData:
     properties:
       message:
         type: string
+    required:
+    - message
     type: object
   util.PaginationResponse-model_AuditLog:
     properties:
@@ -988,12 +1297,16 @@ definitions:
         items:
           $ref: '#/definitions/model.AuditLog'
         type: array
-      err:
-        type: string
       page_size:
         type: integer
       total:
         type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.PaginationResponse-model_File:
     properties:
@@ -1005,12 +1318,16 @@ definitions:
         items:
           $ref: '#/definitions/model.File'
         type: array
-      err:
-        type: string
       page_size:
         type: integer
       total:
         type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.PaginationResponse-model_Role:
     properties:
@@ -1022,12 +1339,16 @@ definitions:
         items:
           $ref: '#/definitions/model.Role'
         type: array
-      err:
-        type: string
       page_size:
         type: integer
       total:
         type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.PaginationResponse-model_ServiceAccount:
     properties:
@@ -1039,12 +1360,16 @@ definitions:
         items:
           $ref: '#/definitions/model.ServiceAccount'
         type: array
-      err:
-        type: string
       page_size:
         type: integer
       total:
         type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.PaginationResponse-model_ServiceAccountAccessKey:
     properties:
@@ -1056,12 +1381,16 @@ definitions:
         items:
           $ref: '#/definitions/model.ServiceAccountAccessKey'
         type: array
-      err:
-        type: string
       page_size:
         type: integer
       total:
         type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.PaginationResponse-model_Session:
     properties:
@@ -1073,12 +1402,16 @@ definitions:
         items:
           $ref: '#/definitions/model.Session'
         type: array
-      err:
-        type: string
       page_size:
         type: integer
       total:
         type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.PaginationResponse-model_User:
     properties:
@@ -1090,12 +1423,16 @@ definitions:
         items:
           $ref: '#/definitions/model.User'
         type: array
-      err:
-        type: string
       page_size:
         type: integer
       total:
         type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.Response-array_authorizationapi_OAuthProvider:
     properties:
@@ -1107,6 +1444,10 @@ definitions:
         type: array
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-array_model_PermissionGroup:
     properties:
@@ -1118,6 +1459,23 @@ definitions:
         type: array
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-authorizationapi_ResetUserPasswordResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/authorizationapi.ResetUserPasswordResponse'
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-authorizationapi_TokenResponse:
     properties:
@@ -1127,6 +1485,10 @@ definitions:
         $ref: '#/definitions/authorizationapi.TokenResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_LDAPTestResponse:
     properties:
@@ -1136,6 +1498,10 @@ definitions:
         $ref: '#/definitions/model.LDAPTestResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_OAuthSettings:
     properties:
@@ -1145,6 +1511,10 @@ definitions:
         $ref: '#/definitions/model.OAuthSettings'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_PolicyDocument:
     properties:
@@ -1154,6 +1524,10 @@ definitions:
         $ref: '#/definitions/model.PolicyDocument'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_Role:
     properties:
@@ -1163,6 +1537,10 @@ definitions:
         $ref: '#/definitions/model.Role'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_SMTPSettings:
     properties:
@@ -1172,6 +1550,10 @@ definitions:
         $ref: '#/definitions/model.SMTPSettings'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_SecuritySettings:
     properties:
@@ -1181,6 +1563,10 @@ definitions:
         $ref: '#/definitions/model.SecuritySettings'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_ServiceAccount:
     properties:
@@ -1190,6 +1576,10 @@ definitions:
         $ref: '#/definitions/model.ServiceAccount'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_ServiceAccountAccessKey:
     properties:
@@ -1199,6 +1589,10 @@ definitions:
         $ref: '#/definitions/model.ServiceAccountAccessKey'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_SystemSettings:
     properties:
@@ -1208,6 +1602,10 @@ definitions:
         $ref: '#/definitions/model.SystemSettings'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-model_User:
     properties:
@@ -1217,6 +1615,10 @@ definitions:
         $ref: '#/definitions/model.User'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-service_Charts:
     properties:
@@ -1230,6 +1632,10 @@ definitions:
         type: array
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-service_EnableMFAResponse:
     properties:
@@ -1239,6 +1645,10 @@ definitions:
         $ref: '#/definitions/service.EnableMFAResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-service_HealthResult:
     properties:
@@ -1248,6 +1658,10 @@ definitions:
         $ref: '#/definitions/service.HealthResult'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-service_LoginResponse:
     properties:
@@ -1257,6 +1671,10 @@ definitions:
         $ref: '#/definitions/service.LoginResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-service_OAuthLoginURLResponse:
     properties:
@@ -1266,6 +1684,10 @@ definitions:
         $ref: '#/definitions/service.OAuthLoginURLResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-service_SystemInfo:
     properties:
@@ -1275,6 +1697,10 @@ definitions:
         $ref: '#/definitions/service.SystemInfo'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-service_TestOAuthCallbackResponse:
     properties:
@@ -1284,6 +1710,10 @@ definitions:
         $ref: '#/definitions/service.TestOAuthCallbackResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-string:
     properties:
@@ -1293,6 +1723,10 @@ definitions:
         type: string
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-systemapi_CheckPasswordComplexityResponse:
     properties:
@@ -1302,6 +1736,10 @@ definitions:
         $ref: '#/definitions/systemapi.CheckPasswordComplexityResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-systemapi_LDAPSettings:
     properties:
@@ -1311,6 +1749,10 @@ definitions:
         $ref: '#/definitions/systemapi.LDAPSettings'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-systemapi_SMTPTestResponse:
     properties:
@@ -1320,6 +1762,10 @@ definitions:
         $ref: '#/definitions/systemapi.SMTPTestResponse'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-util_MessageData:
     properties:
@@ -1329,6 +1775,10 @@ definitions:
         $ref: '#/definitions/util.MessageData'
       err:
         type: string
+    required:
+    - code
+    - data
+    - err
     type: object
 info:
   contact: {}
@@ -1710,7 +2160,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-string'
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
@@ -1898,7 +2348,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-model_Role'
+            $ref: '#/definitions/util.Response-util_MessageData'
         "400":
           description: Bad Request
           schema:
@@ -1998,7 +2448,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-model_Role'
+            $ref: '#/definitions/util.Response-util_MessageData'
         "400":
           description: Bad Request
           schema:
@@ -2695,7 +3145,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-string'
+            $ref: '#/definitions/util.Response-authorizationapi_ResetUserPasswordResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -2811,7 +3261,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-string'
+            $ref: '#/definitions/util.Response-util_MessageData'
         "500":
           description: Internal Server Error
           schema:
