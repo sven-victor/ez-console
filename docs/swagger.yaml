@@ -58,14 +58,51 @@ definitions:
     properties:
       description:
         type: string
-      expires_in_days:
-        type: integer
+      expires_at:
+        type: string
       name:
         type: string
     required:
     - description
-    - expires_in_days
+    - expires_at
     - name
+    type: object
+  authorizationapi.CreateServiceAccountAccessKeyResponse:
+    properties:
+      access_key_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      expires_at:
+        type: string
+      id:
+        type: string
+      last_used:
+        type: string
+      name:
+        type: string
+      secret_access_key:
+        type: string
+      service_account_id:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - access_key_id
+    - created_at
+    - description
+    - expires_at
+    - id
+    - last_used
+    - name
+    - secret_access_key
+    - service_account_id
+    - status
+    - updated_at
     type: object
   authorizationapi.CreateServiceAccountRequest:
     properties:
@@ -214,6 +251,18 @@ definitions:
     required:
     - status
     type: object
+  authorizationapi.VerifyAndActivateMFARequest:
+    properties:
+      code:
+        type: string
+      mfa_type:
+        type: string
+      token:
+        type: string
+    required:
+    - code
+    - mfa_type
+    type: object
   model.AccessType:
     enum:
     - public
@@ -347,7 +396,7 @@ definitions:
     - success
     - user
     type: object
-  model.OAuthProvider:
+  model.OAuthProviderType:
     enum:
     - github
     - google
@@ -381,7 +430,7 @@ definitions:
       client_id:
         type: string
       client_secret:
-        $ref: '#/definitions/safe.String'
+        type: string
       default_role:
         type: string
       display_name:
@@ -403,7 +452,7 @@ definitions:
       mfa_enabled:
         type: boolean
       provider:
-        $ref: '#/definitions/model.OAuthProvider'
+        $ref: '#/definitions/model.OAuthProviderType'
       redirect_uri:
         type: string
       role_field:
@@ -553,7 +602,7 @@ definitions:
       mfa_code_template:
         type: string
       password:
-        $ref: '#/definitions/safe.String'
+        type: string
       port:
         type: integer
       reset_password_template:
@@ -730,40 +779,6 @@ definitions:
     - status
     - updated_at
     type: object
-  model.Session:
-    properties:
-      created_at:
-        type: string
-      expired_at:
-        type: string
-      id:
-        type: string
-      ip_address:
-        type: string
-      is_valid:
-        type: boolean
-      last_active_at:
-        type: string
-      updated_at:
-        type: string
-      user:
-        $ref: '#/definitions/model.User'
-      user_agent:
-        type: string
-      user_id:
-        type: string
-    required:
-    - created_at
-    - expired_at
-    - id
-    - ip_address
-    - is_valid
-    - last_active_at
-    - updated_at
-    - user
-    - user_agent
-    - user_id
-    type: object
   model.StatementEntry:
     properties:
       Action:
@@ -884,8 +899,6 @@ definitions:
     - UserSourceLocal
     - UserSourceLDAP
     - UserSourceOAuth
-  safe.String:
-    type: object
   service.Chart:
     properties:
       color:
@@ -936,12 +949,10 @@ definitions:
       username:
         type: string
     required:
-    - avatar
     - email
     - full_name
     - mfa_enforced
     - password
-    - phone
     - role_ids
     - username
     type: object
@@ -1011,6 +1022,32 @@ definitions:
     - token
     - user
     type: object
+  service.MenuConfig:
+    properties:
+      hide:
+        type: boolean
+      icon:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+    required:
+    - hide
+    - icon
+    - name
+    - path
+    type: object
+  service.Navigation:
+    properties:
+      name:
+        type: string
+      path:
+        type: string
+    required:
+    - name
+    - path
+    type: object
   service.OAuthLoginURLResponse:
     properties:
       state:
@@ -1020,6 +1057,62 @@ definitions:
     required:
     - state
     - url
+    type: object
+  service.SessionInfo:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      ip_address:
+        type: string
+      is_current:
+        type: boolean
+      last_active_at:
+        type: string
+      location:
+        type: string
+      user_agent:
+        type: string
+    required:
+    - created_at
+    - id
+    - ip_address
+    - is_current
+    - last_active_at
+    - location
+    - user_agent
+    type: object
+  service.SiteConfig:
+    properties:
+      disable_local_user_login:
+        type: boolean
+      home_page:
+        type: string
+      logo:
+        type: string
+      menu:
+        items:
+          $ref: '#/definitions/service.MenuConfig'
+        type: array
+      name:
+        type: string
+      name_i18n:
+        additionalProperties:
+          type: string
+        type: object
+      navigation:
+        items:
+          $ref: '#/definitions/service.Navigation'
+        type: array
+    required:
+    - disable_local_user_login
+    - home_page
+    - logo
+    - menu
+    - name
+    - name_i18n
+    - navigation
     type: object
   service.SystemInfo:
     properties:
@@ -1085,16 +1178,6 @@ definitions:
         type: string
       status:
         type: string
-    required:
-    - avatar
-    - email
-    - full_name
-    - ldap_dn
-    - mfa_enforced
-    - phone
-    - role_ids
-    - source
-    - status
     type: object
   systemapi.CheckPasswordComplexityRequest:
     properties:
@@ -1110,6 +1193,13 @@ definitions:
     required:
     - is_valid
     type: object
+  systemapi.ImportLDAPUsersRequest:
+    properties:
+      user_dn:
+        items:
+          type: string
+        type: array
+    type: object
   systemapi.LDAPSettings:
     properties:
       base_dn:
@@ -1117,13 +1207,13 @@ definitions:
       bind_dn:
         type: string
       bind_password:
-        $ref: '#/definitions/safe.String'
+        type: string
       ca_cert:
         type: string
       client_cert:
         type: string
       client_key:
-        $ref: '#/definitions/safe.String'
+        type: string
       default_role:
         type: string
       display_name_attr:
@@ -1162,6 +1252,65 @@ definitions:
     - timeout
     - user_attr
     - user_filter
+    type: object
+  systemapi.LDAPTestRequest:
+    properties:
+      base_dn:
+        type: string
+      bind_dn:
+        type: string
+      bind_password:
+        type: string
+      ca_cert:
+        type: string
+      client_cert:
+        type: string
+      client_key:
+        type: string
+      default_role:
+        type: string
+      display_name_attr:
+        type: string
+      email_attr:
+        type: string
+      enabled:
+        type: boolean
+      insecure:
+        type: boolean
+      password:
+        type: string
+      server_url:
+        type: string
+      start_tls:
+        type: boolean
+      timeout:
+        $ref: '#/definitions/time.Duration'
+      user_attr:
+        type: string
+      user_filter:
+        type: string
+      username:
+        type: string
+    required:
+    - base_dn
+    - bind_dn
+    - bind_password
+    - bind_password
+    - ca_cert
+    - client_cert
+    - client_key
+    - default_role
+    - display_name_attr
+    - email_attr
+    - enabled
+    - insecure
+    - password
+    - server_url
+    - start_tls
+    - timeout
+    - user_attr
+    - user_filter
+    - username
     type: object
   systemapi.SMTPTestResponse:
     properties:
@@ -1228,6 +1377,79 @@ definitions:
     - user_attr
     - user_filter
     type: object
+  systemapi.UpdateOAuthSettingsRequest:
+    properties:
+      auth_endpoint:
+        type: string
+      auto_create_user:
+        type: boolean
+      avatar_field:
+        type: string
+      client_id:
+        type: string
+      client_secret:
+        type: string
+      default_role:
+        type: string
+      display_name:
+        description: Provider display name
+        type: string
+      email_field:
+        type: string
+      enabled:
+        type: boolean
+      full_name_field:
+        type: string
+      icon_url:
+        description: Provider icon URL
+        type: string
+      issuer:
+        type: string
+      jwks_uri:
+        type: string
+      mfa_enabled:
+        type: boolean
+      provider:
+        $ref: '#/definitions/model.OAuthProviderType'
+      redirect_uri:
+        type: string
+      role_field:
+        type: string
+      scope:
+        type: string
+      token_endpoint:
+        type: string
+      userinfo_endpoint:
+        type: string
+      username_field:
+        type: string
+      wellknown_endpoint:
+        type: string
+    required:
+    - auth_endpoint
+    - auto_create_user
+    - avatar_field
+    - client_id
+    - client_secret
+    - client_secret
+    - default_role
+    - display_name
+    - email_field
+    - enabled
+    - full_name_field
+    - icon_url
+    - issuer
+    - jwks_uri
+    - mfa_enabled
+    - provider
+    - redirect_uri
+    - role_field
+    - scope
+    - token_endpoint
+    - userinfo_endpoint
+    - username_field
+    - wellknown_endpoint
+    type: object
   time.Duration:
     enum:
     - -9223372036854775808
@@ -1238,10 +1460,8 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -1258,10 +1478,8 @@ definitions:
     - Second
     - Minute
     - Hour
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -1371,48 +1589,6 @@ definitions:
     - page_size
     - total
     type: object
-  util.PaginationResponse-model_ServiceAccountAccessKey:
-    properties:
-      code:
-        type: string
-      current:
-        type: integer
-      data:
-        items:
-          $ref: '#/definitions/model.ServiceAccountAccessKey'
-        type: array
-      page_size:
-        type: integer
-      total:
-        type: integer
-    required:
-    - code
-    - current
-    - data
-    - page_size
-    - total
-    type: object
-  util.PaginationResponse-model_Session:
-    properties:
-      code:
-        type: string
-      current:
-        type: integer
-      data:
-        items:
-          $ref: '#/definitions/model.Session'
-        type: array
-      page_size:
-        type: integer
-      total:
-        type: integer
-    required:
-    - code
-    - current
-    - data
-    - page_size
-    - total
-    type: object
   util.PaginationResponse-model_User:
     properties:
       code:
@@ -1449,6 +1625,21 @@ definitions:
     - data
     - err
     type: object
+  util.Response-array_model_File:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.File'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
   util.Response-array_model_PermissionGroup:
     properties:
       code:
@@ -1457,6 +1648,64 @@ definitions:
         items:
           $ref: '#/definitions/model.PermissionGroup'
         type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-array_model_ServiceAccountAccessKey:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.ServiceAccountAccessKey'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-array_model_User:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.User'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-array_service_SessionInfo:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/service.SessionInfo'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-authorizationapi_CreateServiceAccountAccessKeyResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/authorizationapi.CreateServiceAccountAccessKeyResponse'
       err:
         type: string
     required:
@@ -1689,6 +1938,19 @@ definitions:
     - data
     - err
     type: object
+  util.Response-service_SiteConfig:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/service.SiteConfig'
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
   util.Response-service_SystemInfo:
     properties:
       code:
@@ -1850,7 +2112,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.PaginationResponse-model_User'
+            $ref: '#/definitions/util.Response-array_model_User'
         "500":
           description: Internal Server Error
           schema:
@@ -1920,22 +2182,12 @@ paths:
       description: Verify and activate MFA
       operationId: verifyAndActivateMfa
       parameters:
-      - description: Code
-        in: query
-        name: code
-        required: true
-        type: string
-      - description: Token
-        in: query
-        name: token
-        required: true
-        type: string
       - description: MFA Type
         in: body
-        name: mfa_type
+        name: request
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/authorizationapi.VerifyAndActivateMFARequest'
       produces:
       - application/json
       responses:
@@ -1954,96 +2206,6 @@ paths:
       summary: Verify and activate MFA
       tags:
       - Authorization/Profile/MFA
-  /api/authorization/oauth/callback:
-    get:
-      consumes:
-      - application/json
-      description: Handle the OAuth callback
-      operationId: handleCallback
-      parameters:
-      - description: Code
-        in: query
-        name: code
-        required: true
-        type: string
-      - description: State
-        in: query
-        name: state
-        required: true
-        type: string
-      - description: Provider
-        in: query
-        name: provider
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-service_LoginResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Handle the OAuth callback
-      tags:
-      - Authorization/OAuth
-  /api/authorization/oauth/login/{provider}:
-    get:
-      consumes:
-      - application/json
-      description: Get the OAuth login URL
-      operationId: getLoginUrl
-      parameters:
-      - description: Provider
-        in: path
-        name: provider
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-service_OAuthLoginURLResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Get the OAuth login URL
-      tags:
-      - Authorization/OAuth
-  /api/authorization/oauth/providers:
-    get:
-      consumes:
-      - application/json
-      description: Get the list of available OAuth providers
-      operationId: getProviders
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-array_authorizationapi_OAuthProvider'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Get the list of available OAuth providers
-      tags:
-      - Authorization/OAuth
   /api/authorization/permissions:
     get:
       consumes:
@@ -2110,7 +2272,7 @@ paths:
       summary: Update current user's information
       tags:
       - Authorization/Users
-  /api/authorization/profile/logs:
+  /api/authorization/profile/audit-logs:
     get:
       consumes:
       - application/json
@@ -2191,7 +2353,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.PaginationResponse-model_Session'
+            $ref: '#/definitions/util.Response-array_service_SessionInfo'
         "500":
           description: Internal Server Error
           schema:
@@ -2686,7 +2848,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.PaginationResponse-model_ServiceAccountAccessKey'
+            $ref: '#/definitions/util.Response-array_model_ServiceAccountAccessKey'
         "500":
           description: Internal Server Error
           schema:
@@ -2717,7 +2879,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-model_ServiceAccountAccessKey'
+            $ref: '#/definitions/util.Response-authorizationapi_CreateServiceAccountAccessKeyResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -3085,7 +3247,7 @@ paths:
       summary: Update a user
       tags:
       - Authorization/Users
-  /api/authorization/users/{id}/logs:
+  /api/authorization/users/{id}/audit-logs:
     get:
       consumes:
       - application/json
@@ -3269,45 +3431,6 @@ paths:
       summary: Unlock a user
       tags:
       - Authorization/Users
-  /api/base-settings:
-    get:
-      consumes:
-      - application/json
-      description: Get all system settings
-      operationId: getSystemBaseSettings
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-model_SystemSettings'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Get all system settings
-      tags:
-      - System Settings/Base
-    put:
-      consumes:
-      - application/json
-      description: Batch update system settings
-      operationId: updateSystemBaseSettings
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-util_MessageData'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Batch update system settings
-      tags:
-      - System Settings/Base
   /api/files:
     get:
       description: Get file list
@@ -3328,6 +3451,10 @@ paths:
       - description: File type
         in: query
         name: file_type
+        type: string
+      - description: Access Type
+        in: query
+        name: access
         type: string
       responses:
         "200":
@@ -3364,7 +3491,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.PaginationResponse-model_File'
+            $ref: '#/definitions/util.Response-array_model_File'
         "400":
           description: Bad Request
           schema:
@@ -3398,6 +3525,13 @@ paths:
       - application/json
       description: Test LDAP connection
       operationId: testLdapConnection
+      parameters:
+      - description: LDAP test request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.LDAPTestRequest'
       produces:
       - application/json
       responses:
@@ -3412,6 +3546,96 @@ paths:
       summary: Test LDAP connection
       tags:
       - System Settings/LDAP
+  /api/oauth/callback:
+    get:
+      consumes:
+      - application/json
+      description: Handle the OAuth callback
+      operationId: handleCallback
+      parameters:
+      - description: Code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: State
+        in: query
+        name: state
+        required: true
+        type: string
+      - description: Provider
+        in: query
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-service_LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Handle the OAuth callback
+      tags:
+      - OAuth
+  /api/oauth/login/{provider}:
+    get:
+      consumes:
+      - application/json
+      description: Get the OAuth login URL
+      operationId: getLoginUrl
+      parameters:
+      - description: Provider
+        in: path
+        name: provider
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-service_OAuthLoginURLResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get the OAuth login URL
+      tags:
+      - OAuth
+  /api/oauth/providers:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of available OAuth providers
+      operationId: getProviders
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_authorizationapi_OAuthProvider'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get the list of available OAuth providers
+      tags:
+      - OAuth
   /api/statistics:
     get:
       description: Get statistics
@@ -3459,6 +3683,52 @@ paths:
       summary: Get audit logs
       tags:
       - System/Audit Log
+  /api/system/base-settings:
+    get:
+      consumes:
+      - application/json
+      description: Get all system settings
+      operationId: getSystemBaseSettings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_SystemSettings'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get all system settings
+      tags:
+      - System Settings/Base
+    put:
+      consumes:
+      - application/json
+      description: Batch update system settings
+      operationId: updateSystemBaseSettings
+      parameters:
+      - description: Base system settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.SystemSettings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Batch update system settings
+      tags:
+      - System Settings/Base
   /api/system/health:
     get:
       consumes:
@@ -3551,13 +3821,19 @@ paths:
       - application/json
       description: Import LDAP users
       operationId: importLdapUsers
+      parameters:
+      - description: import ldap user request
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/systemapi.ImportLDAPUsersRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.PaginationResponse-model_User'
+            $ref: '#/definitions/util.Response-array_model_User'
         "500":
           description: Internal Server Error
           schema:
@@ -3590,6 +3866,13 @@ paths:
       - application/json
       description: Update OAuth settings
       operationId: updateOauthSettings
+      parameters:
+      - description: Update OAuth settings request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.UpdateOAuthSettingsRequest'
       produces:
       - application/json
       responses:
@@ -3669,6 +3952,13 @@ paths:
       - application/json
       description: Update security settings
       operationId: updateSecuritySettings
+      parameters:
+      - description: Update security settings request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.SecuritySettings'
       produces:
       - application/json
       responses:
@@ -3710,6 +4000,26 @@ paths:
       summary: Check password complexity
       tags:
       - System Settings/Security
+  /api/system/site:
+    get:
+      consumes:
+      - application/json
+      description: Get site config
+      operationId: getSiteConfig
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-service_SiteConfig'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get site config
+      tags:
+      - System/Site
   /api/system/smtp-settings:
     get:
       consumes:
@@ -3722,7 +4032,7 @@ paths:
         "200":
           description: Successfully retrieved SMTP settings
           schema:
-            $ref: '#/definitions/model.SMTPSettings'
+            $ref: '#/definitions/util.Response-model_SMTPSettings'
         "500":
           description: Internal server error
           schema:

@@ -28,7 +28,7 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import { getRoles, createRole, updateRole, deleteRole, getPermissions } from '@/api/authorization';
+import api from '@/service/api';
 import { Table } from '@/components/Table';
 import { TableRef } from '@/components/Table';
 import { useRef } from 'react';
@@ -125,7 +125,7 @@ const RoleList: React.FC = () => {
   // Handle delete role
   const handleDelete = async (id: string) => {
     try {
-      await deleteRole(id);
+      await api.authorization.deleteRole({ id });
       message.success(t('role.deleteSuccess', { defaultValue: 'Role deleted successfully.' }));
       tableRef.current?.reload?.();
     } catch (error) {
@@ -157,13 +157,13 @@ const RoleList: React.FC = () => {
       values.policy_document = JSON.parse(values.policy_document ?? {});
       setLoading(true);
       if (editingRole) {
-        await updateRole(editingRole.id, {
+        await api.authorization.updateRole({ id: editingRole.id }, {
           ...values,
           permissions: checkedKeys.filter((key) => !key.startsWith('[group]-')),
         });
         message.success(t('role.updateSuccess', { defaultValue: 'Role updated successfully.' }));
       } else {
-        await createRole({
+        await api.authorization.createRole({
           ...values,
           permissions: checkedKeys.filter((key) => !key.startsWith('[group]-')),
         });
@@ -313,7 +313,7 @@ const RoleList: React.FC = () => {
   }
 
   const fetchPermissions = async () => {
-    getPermissions().then((res) => {
+    api.authorization.listPermissions().then((res) => {
       setAllPermissions(res.map((item, idx) => ({
         key: `[group]-${idx}`,
         title: item.name,
@@ -364,7 +364,7 @@ const RoleList: React.FC = () => {
 
         <Table<API.Role>
           request={async ({ page_size, current }) => {
-            return getRoles(current, page_size)
+            return api.authorization.listRoles({ current, page_size })
           }}
           columns={columns}
           actionRef={tableRef}

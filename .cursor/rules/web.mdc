@@ -98,7 +98,7 @@ alwaysApply: false
 - Call Hooks at the top level of a component, not inside loops, conditions, or nested functions.
 
 ## API Call Guidelines
-- Use the encapsulated API client (implemented in `src/api/client.ts`) for requests; do not use Axios directly.
+- Use the encapsulated API client (implemented in `src/service/client.ts`) for requests; do not use Axios directly.
 - Name API call functions like `getXxx`, `createXxx`, `updateXxx`, `deleteXxx`, etc.
 - All API functions should return a `Promise`.
 - Use interceptors to handle errors and authorization uniformly.

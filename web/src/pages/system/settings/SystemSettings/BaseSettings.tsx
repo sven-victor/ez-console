@@ -3,7 +3,7 @@ import { Form, Button, message, Space, Spin, Input, Tabs, Switch } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getSystemBaseSettings, updateSystemBaseSettings } from '@/api/system';
+import api from '@/service/api';
 import { AllLangUIConfig } from '@/components/LanguageSwitch';
 
 
@@ -13,7 +13,7 @@ const BaseSettingsForm: React.FC = () => {
   const [form] = Form.useForm();
 
   // Get system settings data
-  const { loading, data, refresh } = useRequest(getSystemBaseSettings, {
+  const { loading, data, refresh } = useRequest(api.system.getSystemBaseSettings, {
     onSuccess: (data) => {
       form.setFieldsValue(data);
     },
@@ -24,7 +24,7 @@ const BaseSettingsForm: React.FC = () => {
   });
 
   // Handle form submission
-  const { loading: submitting, run: submitUpdate } = useRequest(updateSystemBaseSettings, {
+  const { loading: submitting, run: submitUpdate } = useRequest(api.system.updateSystemBaseSettings, {
     manual: true,
     onSuccess: () => {
       message.success(t('settings.updateSuccess', { defaultValue: 'Settings updated successfully' }));
@@ -36,7 +36,7 @@ const BaseSettingsForm: React.FC = () => {
     }
   });
 
-  const handleSubmit = (values: API.SystemBaseSettings) => {
+  const handleSubmit = (values: API.SystemSettings) => {
     submitUpdate(values);
   };
 

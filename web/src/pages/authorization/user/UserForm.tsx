@@ -10,8 +10,7 @@ import {
   Switch,
 } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getUser, updateUser, createUser } from '@/api/authorization';
-import { getRoles } from '@/api/authorization';
+import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { AvatarUpload } from '@/components/Avatar';
@@ -40,7 +39,7 @@ const UserForm: React.FC = () => {
 
   // Get role list
   const { data: rolesData, loading: rolesLoading } = useRequest(async () => {
-    const response = await getRoles();
+    const response = await api.authorization.listRoles({});
     return response.data.map((role: API.Role) => ({
       ...role,
       label: role.name,
@@ -55,7 +54,7 @@ const UserForm: React.FC = () => {
     }
 
     try {
-      const userData = await getUser(id);
+      const userData = await api.authorization.getUser({ id });
 
       form.setFieldsValue({
         username: userData.username,
@@ -77,7 +76,7 @@ const UserForm: React.FC = () => {
     try {
       if (isEditMode) {
         // Update user basic information
-        await updateUser(id, {
+        await api.authorization.updateUser({ id }, {
           email: values.email,
           avatar: values.avatar,
           full_name: values.full_name,
@@ -100,7 +99,7 @@ const UserForm: React.FC = () => {
           role_ids: values.role_ids,
         };
 
-        const newUser = await createUser(userData);
+        const newUser = await api.authorization.createUser(userData);
         message.success(t('user.createSuccess', { defaultValue: 'User created successfully' }));
         navigate(`/authorization/users/${newUser.id}`);
       }

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Select, Button, message, Tag, Space, Typography, Skeleton, Empty } from 'antd';
-import {
-  assignServiceAccountRoles,
-  getRoles,
-} from '@/api/authorization';;
+import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
 import { SyncOutlined, LockOutlined } from '@ant-design/icons';
 import { useRequest } from 'ahooks';
@@ -20,18 +17,18 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
   const { id: serviceAccountId } = serviceAccount || {};
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
-  const [availableRoles, setAvailableRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at'>[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at'>[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions'>[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions'>[]>([]);
 
   useEffect(() => {
     setSelectedRoles(serviceAccount?.roles || []);
   }, [serviceAccount]);
   const [searchKeywords, setSearchKeywords] = useState<string | undefined>(undefined);
   const { loading: rolesLoading } = useRequest(async () => {
-    return getRoles(1, 20, searchKeywords)
+    return api.authorization.listRoles({ current: 1, page_size: 20, search: searchKeywords })
   }, {
     onSuccess: (data) => {
-      const roles: Omit<API.Role, 'created_at' | 'updated_at'>[] = data.data;
+      const roles: Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions'>[] = data.data;
       selectedRoles.forEach(role => {
         const roleData = roles.find(r => r.id === role.id);
         if (!roleData) {
@@ -50,7 +47,7 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
   // Submit role assignment
   const { run: assignRoles, loading: submitting } = useRequest(async () => {
     if (!serviceAccountId) return;
-    return assignServiceAccountRoles(serviceAccountId, { role_ids: selectedRoles.map(role => role.id) });
+    return api.authorization.assignServiceAccountRoles({ id: serviceAccountId }, { role_ids: selectedRoles.map(role => role.id) });
   }, {
     onSuccess: () => {
       message.success(t('serviceAccount.assignRolesSuccess', { defaultValue: 'Roles assigned successfully.' }));

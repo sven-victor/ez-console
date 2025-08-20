@@ -113,7 +113,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.PaginationResponse-model_User"
+                            "$ref": "#/definitions/util.Response-array_model_User"
                         }
                     },
                     "500": {
@@ -224,26 +224,12 @@ const docTemplate = `{
                 "operationId": "verifyAndActivateMfa",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Code",
-                        "name": "code",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Token",
-                        "name": "token",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
                         "description": "MFA Type",
-                        "name": "mfa_type",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/authorizationapi.VerifyAndActivateMFARequest"
                         }
                     }
                 ],
@@ -258,140 +244,6 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/authorization/oauth/callback": {
-            "get": {
-                "description": "Handle the OAuth callback",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authorization/OAuth"
-                ],
-                "summary": "Handle the OAuth callback",
-                "operationId": "handleCallback",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Code",
-                        "name": "code",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "State",
-                        "name": "state",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Provider",
-                        "name": "provider",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/util.Response-service_LoginResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/authorization/oauth/login/{provider}": {
-            "get": {
-                "description": "Get the OAuth login URL",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authorization/OAuth"
-                ],
-                "summary": "Get the OAuth login URL",
-                "operationId": "getLoginUrl",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Provider",
-                        "name": "provider",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/util.Response-service_OAuthLoginURLResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/authorization/oauth/providers": {
-            "get": {
-                "description": "Get the list of available OAuth providers",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Authorization/OAuth"
-                ],
-                "summary": "Get the list of available OAuth providers",
-                "operationId": "getProviders",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/util.Response-array_authorizationapi_OAuthProvider"
                         }
                     },
                     "500": {
@@ -502,7 +354,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/authorization/profile/logs": {
+        "/api/authorization/profile/audit-logs": {
             "get": {
                 "description": "Get current user's audit logs",
                 "consumes": [
@@ -623,7 +475,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.PaginationResponse-model_Session"
+                            "$ref": "#/definitions/util.Response-array_service_SessionInfo"
                         }
                     },
                     "500": {
@@ -1362,7 +1214,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.PaginationResponse-model_ServiceAccountAccessKey"
+                            "$ref": "#/definitions/util.Response-array_model_ServiceAccountAccessKey"
                         }
                     },
                     "500": {
@@ -1408,7 +1260,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-model_ServiceAccountAccessKey"
+                            "$ref": "#/definitions/util.Response-authorizationapi_CreateServiceAccountAccessKeyResponse"
                         }
                     },
                     "500": {
@@ -1956,7 +1808,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/authorization/users/{id}/logs": {
+        "/api/authorization/users/{id}/audit-logs": {
             "get": {
                 "description": "Get user's audit logs",
                 "consumes": [
@@ -2231,64 +2083,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/base-settings": {
-            "get": {
-                "description": "Get all system settings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "System Settings/Base"
-                ],
-                "summary": "Get all system settings",
-                "operationId": "getSystemBaseSettings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/util.Response-model_SystemSettings"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Batch update system settings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "System Settings/Base"
-                ],
-                "summary": "Batch update system settings",
-                "operationId": "updateSystemBaseSettings",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/util.Response-util_MessageData"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/util.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/api/files": {
             "get": {
                 "description": "Get file list",
@@ -2320,6 +2114,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "File type",
                         "name": "file_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Access Type",
+                        "name": "access",
                         "in": "query"
                     }
                 ],
@@ -2373,7 +2173,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.PaginationResponse-model_File"
+                            "$ref": "#/definitions/util.Response-array_model_File"
                         }
                     },
                     "400": {
@@ -2429,11 +2229,156 @@ const docTemplate = `{
                 ],
                 "summary": "Test LDAP connection",
                 "operationId": "testLdapConnection",
+                "parameters": [
+                    {
+                        "description": "LDAP test request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.LDAPTestRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/util.Response-model_LDAPTestResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/oauth/callback": {
+            "get": {
+                "description": "Handle the OAuth callback",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Handle the OAuth callback",
+                "operationId": "handleCallback",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "State",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Provider",
+                        "name": "provider",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-service_LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/oauth/login/{provider}": {
+            "get": {
+                "description": "Get the OAuth login URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Get the OAuth login URL",
+                "operationId": "getLoginUrl",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Provider",
+                        "name": "provider",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-service_OAuthLoginURLResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/oauth/providers": {
+            "get": {
+                "description": "Get the list of available OAuth providers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OAuth"
+                ],
+                "summary": "Get the list of available OAuth providers",
+                "operationId": "getProviders",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_authorizationapi_OAuthProvider"
                         }
                     },
                     "500": {
@@ -2504,6 +2449,75 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/util.PaginationResponse-model_AuditLog"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/base-settings": {
+            "get": {
+                "description": "Get all system settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Base"
+                ],
+                "summary": "Get all system settings",
+                "operationId": "getSystemBaseSettings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_SystemSettings"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Batch update system settings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Base"
+                ],
+                "summary": "Batch update system settings",
+                "operationId": "updateSystemBaseSettings",
+                "parameters": [
+                    {
+                        "description": "Base system settings",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.SystemSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
                         }
                     },
                     "500": {
@@ -2658,11 +2672,21 @@ const docTemplate = `{
                 ],
                 "summary": "Import LDAP users",
                 "operationId": "importLdapUsers",
+                "parameters": [
+                    {
+                        "description": "import ldap user request",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.ImportLDAPUsersRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.PaginationResponse-model_User"
+                            "$ref": "#/definitions/util.Response-array_model_User"
                         }
                     },
                     "500": {
@@ -2716,6 +2740,17 @@ const docTemplate = `{
                 ],
                 "summary": "Update OAuth settings",
                 "operationId": "updateOauthSettings",
+                "parameters": [
+                    {
+                        "description": "Update OAuth settings request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.UpdateOAuthSettingsRequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2834,6 +2869,17 @@ const docTemplate = `{
                 ],
                 "summary": "Update security settings",
                 "operationId": "updateSecuritySettings",
+                "parameters": [
+                    {
+                        "description": "Update security settings request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.SecuritySettings"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2891,6 +2937,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/site": {
+            "get": {
+                "description": "Get site config",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System/Site"
+                ],
+                "summary": "Get site config",
+                "operationId": "getSiteConfig",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-service_SiteConfig"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/smtp-settings": {
             "get": {
                 "security": [
@@ -2914,7 +2990,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Successfully retrieved SMTP settings",
                         "schema": {
-                            "$ref": "#/definitions/model.SMTPSettings"
+                            "$ref": "#/definitions/util.Response-model_SMTPSettings"
                         }
                     },
                     "500": {
@@ -3117,17 +3193,68 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "description",
-                "expires_in_days",
+                "expires_at",
                 "name"
             ],
             "properties": {
                 "description": {
                     "type": "string"
                 },
-                "expires_in_days": {
-                    "type": "integer"
+                "expires_at": {
+                    "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.CreateServiceAccountAccessKeyResponse": {
+            "type": "object",
+            "required": [
+                "access_key_id",
+                "created_at",
+                "description",
+                "expires_at",
+                "id",
+                "last_used",
+                "name",
+                "secret_access_key",
+                "service_account_id",
+                "status",
+                "updated_at"
+            ],
+            "properties": {
+                "access_key_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_used": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "secret_access_key": {
+                    "type": "string"
+                },
+                "service_account_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -3350,6 +3477,24 @@ const docTemplate = `{
                 }
             }
         },
+        "authorizationapi.VerifyAndActivateMFARequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "mfa_type"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "mfa_type": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "model.AccessType": {
             "type": "string",
             "enum": [
@@ -3534,7 +3679,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.OAuthProvider": {
+        "model.OAuthProviderType": {
             "type": "string",
             "enum": [
                 "github",
@@ -3601,7 +3746,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "client_secret": {
-                    "$ref": "#/definitions/safe.String"
+                    "type": "string"
                 },
                 "default_role": {
                     "type": "string"
@@ -3633,7 +3778,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "provider": {
-                    "$ref": "#/definitions/model.OAuthProvider"
+                    "$ref": "#/definitions/model.OAuthProviderType"
                 },
                 "redirect_uri": {
                     "type": "string"
@@ -3825,7 +3970,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "$ref": "#/definitions/safe.String"
+                    "type": "string"
                 },
                 "port": {
                     "type": "integer"
@@ -4054,53 +4199,6 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Session": {
-            "type": "object",
-            "required": [
-                "created_at",
-                "expired_at",
-                "id",
-                "ip_address",
-                "is_valid",
-                "last_active_at",
-                "updated_at",
-                "user",
-                "user_agent",
-                "user_id"
-            ],
-            "properties": {
-                "created_at": {
-                    "type": "string"
-                },
-                "expired_at": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "ip_address": {
-                    "type": "string"
-                },
-                "is_valid": {
-                    "type": "boolean"
-                },
-                "last_active_at": {
-                    "type": "string"
-                },
-                "updated_at": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/model.User"
-                },
-                "user_agent": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
-        },
         "model.StatementEntry": {
             "type": "object",
             "required": [
@@ -4266,9 +4364,6 @@ const docTemplate = `{
                 "UserSourceOAuth"
             ]
         },
-        "safe.String": {
-            "type": "object"
-        },
         "service.Chart": {
             "type": "object",
             "required": [
@@ -4313,12 +4408,10 @@ const docTemplate = `{
         "service.CreateUserRequest": {
             "type": "object",
             "required": [
-                "avatar",
                 "email",
                 "full_name",
                 "mfa_enforced",
                 "password",
-                "phone",
                 "role_ids",
                 "username"
             ],
@@ -4447,6 +4540,44 @@ const docTemplate = `{
                 }
             }
         },
+        "service.MenuConfig": {
+            "type": "object",
+            "required": [
+                "hide",
+                "icon",
+                "name",
+                "path"
+            ],
+            "properties": {
+                "hide": {
+                    "type": "boolean"
+                },
+                "icon": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.Navigation": {
+            "type": "object",
+            "required": [
+                "name",
+                "path"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                }
+            }
+        },
         "service.OAuthLoginURLResponse": {
             "type": "object",
             "required": [
@@ -4459,6 +4590,85 @@ const docTemplate = `{
                 },
                 "url": {
                     "type": "string"
+                }
+            }
+        },
+        "service.SessionInfo": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "ip_address",
+                "is_current",
+                "last_active_at",
+                "location",
+                "user_agent"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ip_address": {
+                    "type": "string"
+                },
+                "is_current": {
+                    "type": "boolean"
+                },
+                "last_active_at": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "user_agent": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.SiteConfig": {
+            "type": "object",
+            "required": [
+                "disable_local_user_login",
+                "home_page",
+                "logo",
+                "menu",
+                "name",
+                "name_i18n",
+                "navigation"
+            ],
+            "properties": {
+                "disable_local_user_login": {
+                    "type": "boolean"
+                },
+                "home_page": {
+                    "type": "string"
+                },
+                "logo": {
+                    "type": "string"
+                },
+                "menu": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.MenuConfig"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "name_i18n": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "navigation": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.Navigation"
+                    }
                 }
             }
         },
@@ -4523,17 +4733,6 @@ const docTemplate = `{
         },
         "service.UpdateUserRequest": {
             "type": "object",
-            "required": [
-                "avatar",
-                "email",
-                "full_name",
-                "ldap_dn",
-                "mfa_enforced",
-                "phone",
-                "role_ids",
-                "source",
-                "status"
-            ],
             "properties": {
                 "avatar": {
                     "type": "string"
@@ -4589,6 +4788,17 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.ImportLDAPUsersRequest": {
+            "type": "object",
+            "properties": {
+                "user_dn": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "systemapi.LDAPSettings": {
             "type": "object",
             "required": [
@@ -4618,7 +4828,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "bind_password": {
-                    "$ref": "#/definitions/safe.String"
+                    "type": "string"
                 },
                 "ca_cert": {
                     "type": "string"
@@ -4627,7 +4837,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "client_key": {
-                    "$ref": "#/definitions/safe.String"
+                    "type": "string"
                 },
                 "default_role": {
                     "type": "string"
@@ -4657,6 +4867,86 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_filter": {
+                    "type": "string"
+                }
+            }
+        },
+        "systemapi.LDAPTestRequest": {
+            "type": "object",
+            "required": [
+                "base_dn",
+                "bind_dn",
+                "bind_password",
+                "bind_password",
+                "ca_cert",
+                "client_cert",
+                "client_key",
+                "default_role",
+                "display_name_attr",
+                "email_attr",
+                "enabled",
+                "insecure",
+                "password",
+                "server_url",
+                "start_tls",
+                "timeout",
+                "user_attr",
+                "user_filter",
+                "username"
+            ],
+            "properties": {
+                "base_dn": {
+                    "type": "string"
+                },
+                "bind_dn": {
+                    "type": "string"
+                },
+                "bind_password": {
+                    "type": "string"
+                },
+                "ca_cert": {
+                    "type": "string"
+                },
+                "client_cert": {
+                    "type": "string"
+                },
+                "client_key": {
+                    "type": "string"
+                },
+                "default_role": {
+                    "type": "string"
+                },
+                "display_name_attr": {
+                    "type": "string"
+                },
+                "email_attr": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "insecure": {
+                    "type": "boolean"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "server_url": {
+                    "type": "string"
+                },
+                "start_tls": {
+                    "type": "boolean"
+                },
+                "timeout": {
+                    "$ref": "#/definitions/time.Duration"
+                },
+                "user_attr": {
+                    "type": "string"
+                },
+                "user_filter": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -4750,6 +5040,104 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.UpdateOAuthSettingsRequest": {
+            "type": "object",
+            "required": [
+                "auth_endpoint",
+                "auto_create_user",
+                "avatar_field",
+                "client_id",
+                "client_secret",
+                "client_secret",
+                "default_role",
+                "display_name",
+                "email_field",
+                "enabled",
+                "full_name_field",
+                "icon_url",
+                "issuer",
+                "jwks_uri",
+                "mfa_enabled",
+                "provider",
+                "redirect_uri",
+                "role_field",
+                "scope",
+                "token_endpoint",
+                "userinfo_endpoint",
+                "username_field",
+                "wellknown_endpoint"
+            ],
+            "properties": {
+                "auth_endpoint": {
+                    "type": "string"
+                },
+                "auto_create_user": {
+                    "type": "boolean"
+                },
+                "avatar_field": {
+                    "type": "string"
+                },
+                "client_id": {
+                    "type": "string"
+                },
+                "client_secret": {
+                    "type": "string"
+                },
+                "default_role": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "description": "Provider display name",
+                    "type": "string"
+                },
+                "email_field": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "full_name_field": {
+                    "type": "string"
+                },
+                "icon_url": {
+                    "description": "Provider icon URL",
+                    "type": "string"
+                },
+                "issuer": {
+                    "type": "string"
+                },
+                "jwks_uri": {
+                    "type": "string"
+                },
+                "mfa_enabled": {
+                    "type": "boolean"
+                },
+                "provider": {
+                    "$ref": "#/definitions/model.OAuthProviderType"
+                },
+                "redirect_uri": {
+                    "type": "string"
+                },
+                "role_field": {
+                    "type": "string"
+                },
+                "scope": {
+                    "type": "string"
+                },
+                "token_endpoint": {
+                    "type": "string"
+                },
+                "userinfo_endpoint": {
+                    "type": "string"
+                },
+                "username_field": {
+                    "type": "string"
+                },
+                "wellknown_endpoint": {
+                    "type": "string"
+                }
+            }
+        },
         "time.Duration": {
             "type": "integer",
             "enum": [
@@ -4761,10 +5149,8 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -4781,10 +5167,8 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -4941,66 +5325,6 @@ const docTemplate = `{
                 }
             }
         },
-        "util.PaginationResponse-model_ServiceAccountAccessKey": {
-            "type": "object",
-            "required": [
-                "code",
-                "current",
-                "data",
-                "page_size",
-                "total"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "current": {
-                    "type": "integer"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.ServiceAccountAccessKey"
-                    }
-                },
-                "page_size": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "util.PaginationResponse-model_Session": {
-            "type": "object",
-            "required": [
-                "code",
-                "current",
-                "data",
-                "page_size",
-                "total"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "current": {
-                    "type": "integer"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Session"
-                    }
-                },
-                "page_size": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
         "util.PaginationResponse-model_User": {
             "type": "object",
             "required": [
@@ -5053,6 +5377,28 @@ const docTemplate = `{
                 }
             }
         },
+        "util.Response-array_model_File": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.File"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-array_model_PermissionGroup": {
             "type": "object",
             "required": [
@@ -5069,6 +5415,91 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/model.PermissionGroup"
                     }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_model_ServiceAccountAccessKey": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ServiceAccountAccessKey"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_model_User": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.User"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_service_SessionInfo": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.SessionInfo"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-authorizationapi_CreateServiceAccountAccessKeyResponse": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/authorizationapi.CreateServiceAccountAccessKeyResponse"
                 },
                 "err": {
                     "type": "string"
@@ -5398,6 +5829,25 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/service.OAuthLoginURLResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_SiteConfig": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.SiteConfig"
                 },
                 "err": {
                     "type": "string"

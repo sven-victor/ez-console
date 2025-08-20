@@ -25,7 +25,7 @@ import {
   EditOutlined,
   DeleteOutlined,
 } from '@ant-design/icons';
-import { getServiceAccountAccessKeys, createServiceAccountAccessKey, updateServiceAccountAccessKey, deleteServiceAccountAccessKey } from '@/api/authorization';
+import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/utils';
 import dayjs from 'dayjs';
@@ -46,7 +46,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState<API.ServiceAccountAccessKey | null>(null);
-  const [newKey, setNewKey] = useState<API.ServiceAccountAccessKey | null>(null);
+  const [newKey, setNewKey] = useState<API.CreateServiceAccountAccessKeyResponse | null>(null);
   const [showSecretModal, setShowSecretModal] = useState(false);
 
   // Load access key list
@@ -55,7 +55,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
 
     setLoading(true);
     try {
-      const result = await getServiceAccountAccessKeys(serviceAccountId);
+      const result = await api.authorization.getServiceAccountAccessKeys({ id: serviceAccountId });
       setAccessKeys(result);
     } catch (error) {
       console.error('Failed to load access keys:', error);
@@ -110,7 +110,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
     async () => {
       const values = await form.validateFields();
       if (editingKey) {
-        const result = await updateServiceAccountAccessKey(serviceAccountId, editingKey.id, {
+        const result = await api.authorization.updateServiceAccountAccessKey({ id: serviceAccountId, keyId: editingKey.id }, {
           name: values.name,
           description: values.description,
           status: values.status ? 'active' : 'disabled',
@@ -120,7 +120,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
         return result;
       } else {
         // Create key
-        const result = await createServiceAccountAccessKey(serviceAccountId, {
+        const result = await api.authorization.createServiceAccountAccessKey({ id: serviceAccountId }, {
           name: values.name,
           description: values.description,
           expires_at: values.expires_at ? values.expires_at.toISOString() : undefined,
@@ -144,7 +144,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
   // Delete key
   const handleDelete = async (keyId: string) => {
     try {
-      await deleteServiceAccountAccessKey(serviceAccountId, keyId);
+      await api.authorization.deleteServiceAccountAccessKey({ id: serviceAccountId, keyId });
       message.success(t('serviceAccount.deleteKeySuccess', { defaultValue: 'Access key deleted successfully.' }));
       fetchAccessKeys();
     } catch (error) {

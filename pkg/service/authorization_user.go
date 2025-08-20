@@ -116,23 +116,23 @@ type CreateUserRequest struct {
 	Password    string   `json:"password" binding:"required"`
 	Email       string   `json:"email" binding:"required,email"`
 	FullName    string   `json:"full_name"`
-	Phone       string   `json:"phone"`
-	Avatar      string   `json:"avatar"`
+	Phone       string   `json:"phone" validate:"optional"`
+	Avatar      string   `json:"avatar" validate:"optional"`
 	RoleIDs     []string `json:"role_ids"`
 	MFAEnforced bool     `json:"mfa_enforced"`
 }
 
 // UpdateUserRequest update user request parameters
 type UpdateUserRequest struct {
-	Email       string    `json:"email"`
-	FullName    string    `json:"full_name"`
-	Phone       string    `json:"phone"`
-	Status      string    `json:"status"`
-	Avatar      string    `json:"avatar"`
-	RoleIDs     *[]string `json:"role_ids"`
-	MFAEnforced *bool     `json:"mfa_enforced"`
-	LDAPDN      string    `json:"ldap_dn"`
-	Source      string    `json:"source"`
+	Email       string    `json:"email" validate:"optional"`
+	FullName    string    `json:"full_name" validate:"optional"`
+	Phone       string    `json:"phone" validate:"optional"`
+	Status      string    `json:"status" validate:"optional"`
+	Avatar      string    `json:"avatar" validate:"optional"`
+	RoleIDs     *[]string `json:"role_ids" validate:"optional"`
+	MFAEnforced *bool     `json:"mfa_enforced" validate:"optional"`
+	LDAPDN      string    `json:"ldap_dn" validate:"optional"`
+	Source      string    `json:"source" validate:"optional"`
 }
 
 // ChangePasswordRequest change password request parameters

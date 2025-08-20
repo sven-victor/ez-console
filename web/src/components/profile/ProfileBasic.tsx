@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { updateCurrentUser } from '../../api/authorization';
+import api from '@/service/api';
 import { AvatarUpload } from '../Avatar';
 
 interface ProfileBasicProps {
@@ -30,7 +30,7 @@ const ProfileBasic: React.FC<ProfileBasicProps> = ({ user, onSuccess }) => {
   const handleSubmit = async (values: any) => {
     try {
       setLoading(true);
-      await updateCurrentUser(values);
+      await api.authorization.updateCurrentUser(values);
       message.success(tCommon('updateSuccess'));
       onSuccess();
     } catch (error) {

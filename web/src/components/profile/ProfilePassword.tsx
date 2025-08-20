@@ -1,9 +1,9 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { changePassword } from '@/api/authorization';
+import api from '@/service/api';
 import { useRequest } from 'ahooks';
-import { ApiError } from '@/api/client';
+import { ApiError } from '@/service/client';
 
 const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({ onSuccess, token }) => {
   const { t } = useTranslation('authorization');
@@ -11,7 +11,7 @@ const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({
   const [form] = Form.useForm();
 
   const { run: handleSubmit, loading } = useRequest(async (v: API.ChangePasswordRequest) => {
-    return changePassword(v, token)
+    return api.authorization.changePassword(v, token ? { headers: { Authorization: `Bearer ${token}` } } : {})
   }, {
     manual: true,
     onSuccess: () => {

@@ -119,6 +119,13 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 	util.RespondWithMessage(ctx, "LDAP settings updated successfully")
 }
 
+type LDAPTestRequest struct {
+	Username     string `json:"username" binding:"required"`
+	Password     string `json:"password" binding:"required"`
+	BindPassword string `json:"bind_password"`
+	clientsldap.Options
+}
+
 // TestLDAPConnection Test LDAP connection
 //
 //	@Summary		Test LDAP connection
@@ -127,17 +134,13 @@ func (c *LDAPSettingController) UpdateLDAPSettings(ctx *gin.Context) {
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json
+//	@Param			request	body		LDAPTestRequest	true	"LDAP test request"
 //	@Success		200	{object}	util.Response[model.LDAPTestResponse]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ldap-settings/test [post]
 func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 	// LDAPTestRequest LDAP test request struct
-	type LDAPTestRequest struct {
-		Username     string `json:"username" binding:"required"`
-		Password     string `json:"password" binding:"required"`
-		BindPassword string `json:"bind_password"`
-		clientsldap.Options
-	}
+
 	var req LDAPTestRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
@@ -164,6 +167,10 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 	util.RespondWithSuccess(ctx, http.StatusOK, resp)
 }
 
+type ImportLDAPUsersRequest struct {
+	UserDN []string `json:"user_dn" validate:"optional"`
+}
+
 // ImportLDAPUsers Import LDAP users
 //
 //	@Summary		Import LDAP users
@@ -172,13 +179,11 @@ func (c *LDAPSettingController) TestLDAPConnection(ctx *gin.Context) {
 //	@Tags			System Settings/LDAP
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.PaginationResponse[model.User]
+//	@Param			request	body		ImportLDAPUsersRequest	false	"import ldap user request"
+//	@Success		200	{object}	util.Response[[]model.User]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/ldap-settings/import [post]
 func (c *LDAPSettingController) ImportLDAPUsers(ctx *gin.Context) {
-	type ImportLDAPUsersRequest struct {
-		UserDN []string `json:"user_dn"`
-	}
 	var req ImportLDAPUsersRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", err.Error()))

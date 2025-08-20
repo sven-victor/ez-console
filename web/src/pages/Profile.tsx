@@ -6,7 +6,7 @@ import ProfilePassword from '../components/profile/ProfilePassword';
 import ProfileMFA from '../components/profile/ProfileMFA';
 import ProfileSessions from '../components/profile/ProfileSessions';
 import { useAuth } from '../contexts/AuthContext';
-import { getCurrentUser } from '../api/authorization';
+import api from '@/service/api';
 import UserAuditLogs from '@/components/authorization/UserAuditLogs';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
-      const userData = await getCurrentUser();
+      const userData = await api.authorization.getCurrentUser();
       updateUser(userData);
     } catch (error) {
       message.error(tCommon('fetchFailed', { defaultValue: 'Failed to fetch data' }));

@@ -3,7 +3,7 @@ import { Form, Switch, Select, InputNumber, Button, message, Space, Spin } from 
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getSecuritySettings, updateSecuritySettings } from '@/api/system';
+import api from '@/service/api';
 
 
 const SecuritySettingForm: React.FC = () => {
@@ -12,7 +12,7 @@ const SecuritySettingForm: React.FC = () => {
   const [form] = Form.useForm();
 
   // Get system settings data
-  const { loading, data, refresh } = useRequest(getSecuritySettings, {
+  const { loading, data, refresh } = useRequest(api.system.getSecuritySettings, {
     onSuccess: (data) => {
       form.setFieldsValue(data);
     },
@@ -23,7 +23,7 @@ const SecuritySettingForm: React.FC = () => {
   });
 
   // Handle form submission
-  const { loading: submitting, run: submitUpdate } = useRequest(updateSecuritySettings, {
+  const { loading: submitting, run: submitUpdate } = useRequest(api.system.updateSecuritySettings, {
     manual: true,
     onSuccess: () => {
       message.success(t('settings.updateSuccess', { defaultValue: 'Settings updated successfully' }));

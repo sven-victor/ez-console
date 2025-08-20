@@ -41,7 +41,7 @@ func (c *SMTPSettingController) RegisterRoutes(r *gin.RouterGroup) {
 //	@Tags			System Settings/SMTP
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	model.SMTPSettings	"Successfully retrieved SMTP settings"
+//	@Success		200	{object}	util.Response[model.SMTPSettings]	"Successfully retrieved SMTP settings"
 //	@Failure		500	{object}	util.ErrorResponse	"Internal server error"
 //	@Router			/api/system/smtp-settings [get]
 //	@Security		ApiKeyAuth

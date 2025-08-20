@@ -5,7 +5,7 @@ import ReactJson from 'react-json-view'
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import Loading from "@/components/Loading";
-import { testOAuthCallback } from "@/api/system";
+import api from '@/service/api';
 const OAuthTestCallback = () => {
   const { t } = useTranslation('system');
   const [searchParams] = useSearchParams();
@@ -23,7 +23,7 @@ const OAuthTestCallback = () => {
     if (!code || !state || !provider) {
       throw new Error(t('settings.oauth.testConnection.missingRequiredParameters', { defaultValue: 'Missing required parameters' }));
     }
-    const response = await testOAuthCallback({ code: code, state: state, provider: provider });
+    const response = await api.system.testOauthCallback({ code: code, state: state, provider: provider });
     if (!response.user_info) {
       throw new Error(t('settings.oauth.testConnection.responseUserInfoIsNull', { defaultValue: 'response user_info is null' }));
     }

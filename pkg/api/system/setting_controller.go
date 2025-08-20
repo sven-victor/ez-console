@@ -24,9 +24,10 @@ func NewSettingController(service *service.Service) *SettingController {
 func (c *SettingController) RegisterRoutes(router *gin.RouterGroup) {
 	// System settings routes, require administrator privileges
 	settings := router.Group("/base-settings")
+	middleware.WithoutAuthentication(settings)
 	{
 		// Get settings
-		settings.GET("", middleware.RequirePermission("system:settings:view"), c.GetSystemBaseSettings)
+		settings.GET("", c.GetSystemBaseSettings)
 
 		// Update settings
 		settings.PUT("", middleware.RequirePermission("system:settings:update"), c.UpdateSystemBaseSettings)
@@ -43,7 +44,7 @@ func (c *SettingController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Produce		json
 //	@Success		200	{object}	util.Response[model.SystemSettings]
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/base-settings [get]
+//	@Router			/api/system/base-settings [get]
 func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 	settings, err := c.service.GetSystemSettings(ctx)
 	if err != nil {
@@ -62,9 +63,10 @@ func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 //	@Tags			System Settings/Base
 //	@Accept			json
 //	@Produce		json
+//	@Param			request	body	model.SystemSettings	true	"Base system settings"
 //	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/base-settings [put]
+//	@Router			/api/system/base-settings [put]
 func (c *SettingController) UpdateSystemBaseSettings(ctx *gin.Context) {
 	// Parse request body
 	var req model.SystemSettings

@@ -28,7 +28,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import { getServiceAccounts, deleteServiceAccount, updateServiceAccountStatus } from '@/api/authorization';
+import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { PAGINATION } from '@/constants';
 import { useTranslation } from 'react-i18next';
@@ -63,7 +63,7 @@ const ServiceAccountList: React.FC = () => {
   const fetchServiceAccounts = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await getServiceAccounts(queryParams);
+      const response = await api.authorization.getServiceAccounts(queryParams);
       setServiceAccounts(response.data || []);
       setTotal(response.total || 0);
     } catch (error) {
@@ -128,7 +128,7 @@ const ServiceAccountList: React.FC = () => {
   // Delete service account
   const handleDelete = async (id: string) => {
     try {
-      await deleteServiceAccount(id);
+      await api.authorization.deleteServiceAccount({ id });
       message.success(t('serviceAccount.deleteSuccess', { defaultValue: 'Service account deleted successfully' }));
       fetchServiceAccounts();
     } catch (error) {
@@ -141,7 +141,7 @@ const ServiceAccountList: React.FC = () => {
   const handleToggleStatus = async (record: API.ServiceAccount) => {
     const newStatus = record.status === 'active' ? 'disabled' : 'active';
     try {
-      await updateServiceAccountStatus(record.id, newStatus);
+      await api.authorization.updateServiceAccountStatus({ id: record.id }, { status: newStatus });
       message.success(t('serviceAccount.statusUpdateSuccess', { defaultValue: 'Status updated successfully' }));
       fetchServiceAccounts();
     } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Switch, Button, message, Modal, Spin, Radio, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { getSMTPSettings, updateSMTPSettings, testSMTPConnection } from '@/api/system';
+import api from '@/service/api';
 import { useRequest } from 'ahooks';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import ReactQuill from 'react-quill';
@@ -15,7 +15,7 @@ const SMTPSettingsForm: React.FC = () => {
   const [testModalVisible, setTestModalVisible] = useState(false);
   const [testForm] = Form.useForm();
   const [isEnabled, setIsEnabled] = useState(false);
-  const { loading: loadingSettings } = useRequest(getSMTPSettings, {
+  const { loading: loadingSettings } = useRequest(api.system.getSmtpSettings, {
     onSuccess: (data: API.SMTPSettings) => {
       form.setFieldsValue(data);
       setIsEnabled(data.enabled);
@@ -29,7 +29,7 @@ const SMTPSettingsForm: React.FC = () => {
     setTestResult(null);
   }, [testModalVisible]);
 
-  const { run: handleSubmit, loading: submitLoading } = useRequest(({ port, ...values }) => updateSMTPSettings({ ...values, port: Number(port) }), {
+  const { run: handleSubmit, loading: submitLoading } = useRequest(({ port, ...values }) => api.system.updateSmtpSettings({ ...values, port: Number(port) }), {
     manual: true,
     onSuccess: () => {
       message.success(t('settings.smtp.saveSuccess', { defaultValue: 'SMTP settings saved successfully.' }));
@@ -41,7 +41,7 @@ const SMTPSettingsForm: React.FC = () => {
 
   const { run: handleTest, loading: testLoading } = useRequest(async (values: API.SMTPTestRequest) => {
     const { port, ...smtpSettings } = await form.validateFields();
-    return await testSMTPConnection({
+    return await api.system.testSmtpConnection({
       ...values,
       ...smtpSettings,
       port: Number(port),

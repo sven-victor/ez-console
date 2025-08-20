@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { Form, Input, Switch, Button, message, Modal, Spin, Steps, Skeleton, Descriptions, Divider, Tag, Table } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { getLDAPSettings, updateLDAPSettings, testLDAPConnection, importLDAPUsers } from '@/api/system';
+import api from '@/service/api';
 import { useRequest } from 'ahooks';
 import { CheckCircleTwoTone, LoadingOutlined } from '@ant-design/icons';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import { ColumnType } from 'antd/es/table';
 
 
-interface ImportColumnType<T extends { imported: boolean, ldap_dn: string }> extends Omit<ColumnType<T>, 'render'> {
+interface ImportColumnType<T extends { status: string, ldap_dn: string }> extends Omit<ColumnType<T>, 'render'> {
   render?: (value: any, record: T, index: number, loading: boolean) => React.ReactNode;
 }
 
-const ImportLDAPEntryModal = <T extends { imported: boolean, ldap_dn: string }>({ fetchItems, importItems, columns, ...props }: {
+const ImportLDAPEntryModal = <T extends { status: string, ldap_dn: string }>({ fetchItems, importItems, columns, ...props }: {
   visible: boolean,
   onCancel: () => void,
   fetchItems: () => Promise<T[]>,
@@ -39,7 +39,7 @@ const ImportLDAPEntryModal = <T extends { imported: boolean, ldap_dn: string }>(
   const { run: handleImport, loading: importLoading } = useRequest(async () => {
     for (const item of checkedList.filter((item) => {
       const importItem = items.find((u) => u.ldap_dn === item)
-      if (!importItem || importItem.imported) {
+      if (!importItem || importItem.status === 'imported') {
         return false;
       }
       return true;
@@ -50,7 +50,7 @@ const ImportLDAPEntryModal = <T extends { imported: boolean, ldap_dn: string }>(
         return newItems.map((item) => {
           for (const newItem of data) {
             if (item.ldap_dn === newItem.ldap_dn) {
-              return { ...newItem, imported: true };
+              return { ...newItem, status: 'imported' };
             }
           }
           return item;
@@ -86,7 +86,7 @@ const ImportLDAPEntryModal = <T extends { imported: boolean, ldap_dn: string }>(
           setCheckedList(selectedRowKeys as string[]);
         },
         getCheckboxProps: (record) => ({
-          disabled: record.imported,
+          disabled: record.status === "imported",
         }),
       }}
       columns={columns.map(({ render, ...column }): ColumnType<T> => {
@@ -94,7 +94,7 @@ const ImportLDAPEntryModal = <T extends { imported: boolean, ldap_dn: string }>(
           return {
             ...column,
             render: (value: any, record: T, index: number) => {
-              const loading = checkedList.includes(record.ldap_dn) && importLoading && !record.imported;
+              const loading = checkedList.includes(record.ldap_dn) && importLoading && record.status !== "imported";
               return render(value, record, index, loading)
             }
           }
@@ -119,7 +119,7 @@ const LDAPSettingsForm: React.FC = () => {
 
   const [isEnabled, setIsEnabled] = useState(false);
 
-  useRequest(getLDAPSettings, {
+  useRequest(api.system.getLdapSettings, {
     onSuccess: (data) => {
       form.setFieldsValue(data);
       setIsEnabled(data.enabled);
@@ -137,7 +137,7 @@ const LDAPSettingsForm: React.FC = () => {
   const handleSubmit = async (values: API.LDAPSettings) => {
     setLoading(true);
     try {
-      await updateLDAPSettings(values);
+      await api.system.updateLdapSettings(values);
       message.success(t('settings.ldap.saveSuccess', { defaultValue: 'LDAP settings saved successfully.' }));
     } catch (error) {
       message.error(t('settings.ldap.saveError', { defaultValue: 'Failed to save LDAP settings.' }));
@@ -148,7 +148,7 @@ const LDAPSettingsForm: React.FC = () => {
 
   const { run: handleTest, loading: testLoading } = useRequest(async (values: API.LDAPTestRequest) => {
     const ldapSettings = await form.validateFields();
-    return await testLDAPConnection({
+    return await api.system.testLdapConnection({
       ...values,
       ...ldapSettings,
     });
@@ -393,11 +393,11 @@ const LDAPSettingsForm: React.FC = () => {
           </Skeleton>
         </Spin>
       </Modal>
-      <ImportLDAPEntryModal<API.ImportLDAPUsersResponse>
+      <ImportLDAPEntryModal<API.User>
         visible={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
-        fetchItems={() => importLDAPUsers()}
-        importItems={(dn: string[]) => importLDAPUsers({ user_dn: dn })}
+        fetchItems={() => api.system.importLdapUsers({})}
+        importItems={(dn: string[]) => api.system.importLdapUsers({ user_dn: dn })}
         columns={[{
           title: t('settings.ldap.username', { defaultValue: 'Username' }),
           dataIndex: 'username',

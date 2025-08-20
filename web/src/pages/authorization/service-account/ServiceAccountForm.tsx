@@ -1,11 +1,7 @@
 import { useRequest } from "ahooks";
 import { Modal, Space, Button, Input, Form, message } from "antd";
 import TextArea from "antd/es/input/TextArea";
-import {
-  getServiceAccountById,
-  createServiceAccount,
-  updateServiceAccount,
-} from '@/api/authorization';
+import api from '@/service/api';
 import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 
@@ -28,9 +24,9 @@ const ServiceAccountForm = ({
 
   const { run: saveServiceAccount, loading } = useRequest((values: any) => {
     if (serviceAccountID) {
-      return updateServiceAccount(serviceAccountID, values);
+      return api.authorization.updateServiceAccount({ id: serviceAccountID }, values);
     }
-    return createServiceAccount(values);
+    return api.authorization.createServiceAccount(values);
   }, {
     onSuccess: () => {
       message.success(t('serviceAccount.saveSuccess', { defaultValue: 'Service account saved successfully.' }));
@@ -45,7 +41,7 @@ const ServiceAccountForm = ({
 
   useEffect(() => {
     if (open && serviceAccountID) {
-      getServiceAccountById(serviceAccountID).then((res) => {
+      api.authorization.getServiceAccountById({ id: serviceAccountID }).then((res) => {
         form.setFieldsValue({
           name: res.name,
           description: res.description,

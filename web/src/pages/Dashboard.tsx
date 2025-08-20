@@ -14,7 +14,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useRequest } from 'ahooks';
-import { getStatistics } from '@/api/base';
+import api from '@/service/api';
 import { transparentize } from '@/utils';
 
 ChartJS.register(
@@ -29,13 +29,13 @@ const Dashboard: React.FC = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
 
-  const { data: statistics = [], loading } = useRequest(getStatistics, {
+  const { data: statistics = [], loading } = useRequest(api.base.getStatistics, {
     onError: (error) => {
       message.error(t('dashboard.fetchStatisticsError', { defaultValue: 'Error fetching statistics: {{error}}', error: error.message }),);
     },
   });
 
-  const renderChart = (chart: API.Chart) => {
+  const renderChart = (chart: Omit<API.Chart, 'value'> & { value?: number }) => {
     if ('value' in chart) {
       return (
         <Card>

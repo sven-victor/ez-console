@@ -1,9 +1,9 @@
 import ImgCrop from 'antd-img-crop';
 import { Upload, UploadFile, UploadProps, Avatar as AntdAvatar, AvatarProps, Divider, List, Popover, Skeleton, Modal } from 'antd';
-import { getFileList, uploadFile } from '@/api/base';
+import api from '@/service/api';
 import { RcFile } from 'antd/es/upload';
 import React, { useEffect, useState } from 'react';
-import { baseURL } from '@/api/client';
+import { baseURL } from '@/service/client';
 import { UploadOutlined } from '@ant-design/icons';
 import { useRequest } from 'ahooks';
 import InfiniteScroll from 'react-infinite-scroll-component';
@@ -52,10 +52,10 @@ const AvatarSelect = ({ onChange, shape = 'square' }: AvatarUploadProps) => {
   const [iconListPageNumber, setIconListPageNumber] = useState<number>(0);
 
   const { run: fetchFileList, loading: loadingFileList } = useRequest(() => {
-    return getFileList(iconListPageNumber + 1, 40, "avatar", "public", "");
+    return api.base.listFiles({ current: iconListPageNumber + 1, page_size: 40, file_type: "avatar", access: "public", search: "" });
   }, {
     manual: true,
-    onSuccess: (data) => {
+    onSuccess: ({ data }) => {
       setIconList([...iconList, ...data]);
       setIconListHasMore(data.length === 40);
       setIconListPageNumber(iconListPageNumber + 1);
@@ -155,7 +155,7 @@ export const AvatarUpload = ({ value, onChange, shape, ...props }: AvatarUploadP
     <ImgCrop
       beforeCrop={async (file: RcFile): Promise<boolean> => {
         if (file.type === 'image/svg+xml') {
-          const files = await uploadFile(file, "avatar");
+          const files = await api.base.uploadFile({ type: "avatar" }, file);
           if (files.length > 0) {
             onChange?.(files[0].id)
           }
@@ -166,7 +166,7 @@ export const AvatarUpload = ({ value, onChange, shape, ...props }: AvatarUploadP
     >
       <Upload
         customRequest={async (options) => {
-          const files = await uploadFile(options.file as File, "avatar", 'public');
+          const files = await api.base.uploadFile({ type: "avatar", access: 'public' }, options.file as File);
           if (files.length > 0) {
             options.onSuccess?.(files[0].id);
             onChange?.(files[0].id);

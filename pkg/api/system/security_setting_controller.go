@@ -64,6 +64,7 @@ func (c *SecuritySettingController) GetSecuritySettings(ctx *gin.Context) {
 //	@Tags			System Settings/Security
 //	@Accept			json
 //	@Produce		json
+//	@Param			request		body		model.SecuritySettings	true	"Update security settings request"
 //	@Success		200	{object}	util.Response[model.SecuritySettings]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/security-settings [put]

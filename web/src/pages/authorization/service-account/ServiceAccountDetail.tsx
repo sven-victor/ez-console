@@ -26,12 +26,8 @@ import {
   RollbackOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import {
-  getServiceAccountById,
-  deleteServiceAccount,
-  updateServiceAccountStatus,
-  setServiceAccountPolicy,
-} from '@/api/authorization';
+
+import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { useTranslation } from 'react-i18next';
 import TextArea from 'antd/es/input/TextArea';
@@ -159,7 +155,7 @@ const ServiceAccountDetail: React.FC = () => {
   // Load service account details
   const { run: fetchServiceAccountDetail, loading } = useRequest(async () => {
     if (!id) return;
-    return getServiceAccountById(id);
+    return api.authorization.getServiceAccountById({ id });
   }, {
     onSuccess: (data) => {
       setServiceAccount(data || null);
@@ -180,7 +176,7 @@ const ServiceAccountDetail: React.FC = () => {
     if (!id) return;
 
     try {
-      await deleteServiceAccount(id);
+      await api.authorization.deleteServiceAccount({ id });
       message.success(t('serviceAccount.deleteSuccess', { defaultValue: 'Service account deleted successfully.' }));
       navigate('/authorization/service-accounts');
     } catch (error) {
@@ -192,7 +188,7 @@ const ServiceAccountDetail: React.FC = () => {
   // Update service account status
   const { run: handleToggleStatus, loading: updateStatusLoading } = useRequest(async () => {
     if (!serviceAccount) return;
-    return updateServiceAccountStatus(id, serviceAccount.status === 'active' ? 'disabled' : 'active');
+    return api.authorization.updateServiceAccountStatus({ id }, { status: serviceAccount.status === 'active' ? 'disabled' : 'active' });
   }, {
     onSuccess: (data) => {
       setServiceAccount(data || null);
@@ -219,7 +215,7 @@ const ServiceAccountDetail: React.FC = () => {
         return;
       }
 
-      await setServiceAccountPolicy(id, { policy_document: policyObj });
+      await api.authorization.setServiceAccountPolicy({ id }, { policy_document: policyObj });
       message.success(t('serviceAccount.policyUpdateSuccess', { defaultValue: 'Policy document updated successfully.' }));
       setPolicyModalVisible(false);
       fetchServiceAccountDetail();

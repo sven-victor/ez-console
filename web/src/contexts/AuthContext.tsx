@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { message } from 'antd';
-import { login as apiLogin, getCurrentUser, handleOAuthCallback, logout as apiLogout } from '../api/authorization';
-import client from '../api/client';
+import api from '@/service/api';
+import client from '@/service/client';
 import { useRequest } from 'ahooks';
 
 // Auth context type
@@ -9,8 +9,8 @@ export interface AuthContextType {
   user: API.User | null;
   token: string | null;
   loading: boolean;
-  login: (data: API.LoginRequest) => Promise<API.User | void>;
-  oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | void>;
+  login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
+  oauthLogin: (data: API.handleCallbackParams) => Promise<API.User | void>;
   logout: () => void;
   updateUser: (user: API.User) => void;
 }
@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       setAuthToken(storedToken, false);
-      return getCurrentUser()
+      return api.authorization.getCurrentUser()
     }
     return null;
   }, {
@@ -78,9 +78,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     fetchCurrentUser();
   }, []);
 
-  const login = async (data: API.LoginRequest) => {
+  const login = async (data: Partial<API.LoginRequest>) => {
     try {
-      const response = await apiLogin(data);
+      const response = await api.authorization.login(data as API.LoginRequest);
 
       const { token, user: userData, needs_mfa, password_expired, mfa_token, mfa_type } = response;
 
@@ -108,9 +108,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const oauthLogin = useCallback(async (data: API.OAuthCallbackRequest) => {
+  const oauthLogin = useCallback(async (data: API.handleCallbackParams) => {
     try {
-      const response = await handleOAuthCallback(data);
+      const response = await api.oauth.handleCallback(data);
       // Handle new API response format
       let token = '';
       let userData = null;
@@ -156,7 +156,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, []);
 
   const logout = () => {
-    apiLogout();
+    api.authorization.logout();
     setAuthToken(null); // Use unified token setting function
     setToken(null);
     setUser(null);

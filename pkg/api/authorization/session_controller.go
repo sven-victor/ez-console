@@ -41,7 +41,7 @@ func (c *SessionController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Produce		json
 //	@Param			current		query		int	false	"Current page number"		default(1)
 //	@Param			page_size	query		int	false	"Number of items per page"	default(10)
-//	@Success		200			{object}	util.PaginationResponse[model.Session]
+//	@Success		200			{object}	util.Response[[]service.SessionInfo]
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/authorization/profile/sessions [get]
 func (c *SessionController) GetUserSessions(ctx *gin.Context) {

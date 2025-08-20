@@ -116,7 +116,7 @@ func (s *ServiceAccountService) GetServiceAccountAccessKeys(ctx *gin.Context, se
 }
 
 // CreateServiceAccountAccessKey creates an access key for a service account
-func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx *gin.Context, serviceAccountID, name, description string, expiresInDays int) (*model.ServiceAccountAccessKey, string, error) {
+func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx *gin.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error) {
 	// Check if the service account exists
 	var serviceAccount model.ServiceAccount
 	err := db.Session(ctx).Where("resource_id = ?", serviceAccountID).First(&serviceAccount).Error
@@ -127,13 +127,6 @@ func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx *gin.Context, 
 	// Generate access key ID and secret
 	accessKeyID := fmt.Sprintf("ASK-%s", util.GenerateRandomString(20))
 	secretAccessKey := util.GenerateRandomString(40)
-
-	// Calculate expiration time
-	var expiresAt *time.Time
-	if expiresInDays > 0 {
-		expires := time.Now().AddDate(0, 0, expiresInDays)
-		expiresAt = &expires
-	}
 
 	// Create access key record
 	accessKey := &model.ServiceAccountAccessKey{

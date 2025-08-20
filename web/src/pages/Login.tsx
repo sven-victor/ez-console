@@ -4,11 +4,10 @@ import { LockOutlined, UserOutlined, GithubOutlined, KeyOutlined } from '@ant-de
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
-import { getOAuthProviders, getOAuthLoginURL } from '@/api/authorization';
-import { ApiError } from '@/api/client';
+import api from '@/service/api';
+import { ApiError } from '@/service/client';
 import ProfilePassword from '@/components/profile/ProfilePassword';
 import { maskEmail } from '@/utils';
-import { getSiteConfig } from '@/api/system';
 import LanguageSwitch from '@/components/LanguageSwitch';
 import Loading from '@/components/Loading';
 
@@ -111,7 +110,7 @@ const Login: React.FC = () => {
   }
 
   const fetchProviders = async () => {
-    setProviders(await getOAuthProviders() || []);
+    setProviders(await api.oauth.getProviders() || []);
   }
 
   // Handle OAuth callback
@@ -141,7 +140,7 @@ const Login: React.FC = () => {
   const handleOAuthLogin = async (provider: string) => {
     try {
       setOAuthLoading({ ...oauthLoading, [provider]: true });
-      const { url } = await getOAuthLoginURL(provider);
+      const { url } = await api.oauth.getLoginUrl({ provider });
       window.location.href = url;
     } catch (error) {
       message.error(t('login.oauthError', { defaultValue: 'OAuth login failed' }));
@@ -167,7 +166,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     const fetchSiteConfig = async () => {
-      const siteConfig = await getSiteConfig()
+      const siteConfig = await api.system.getSiteConfig()
       setSiteName(siteConfig.name)
       setSiteConfig(siteConfig)
       window.document.title = siteConfig.name

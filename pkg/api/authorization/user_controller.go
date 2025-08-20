@@ -690,6 +690,15 @@ func (c *UserController) ChangePassword(ctx *gin.Context) {
 	}
 }
 
+type MFALoginRequest struct {
+	MFACode  string `json:"mfa_code"`
+	MFAToken string `json:"mfa_token"`
+}
+type PasswordLoginRequest struct {
+	MFACode  string `json:"mfa_code"`
+	MFAToken string `json:"mfa_token"`
+}
+
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -892,7 +901,7 @@ func (c *UserController) Logout(ctx *gin.Context) {
 //	@Param			page_size	query		int	false	"Number of items per page"	default(10)
 //	@Success		200			{object}	util.PaginationResponse[model.AuditLog]
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/authorization/profile/logs [get]
+//	@Router			/api/authorization/profile/audit-logs [get]
 func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 	var filters service.AuditLogFilters
 	if err := ctx.BindQuery(&filters); err != nil {
@@ -940,7 +949,7 @@ func (c *UserController) GetCurrentUserLogs(ctx *gin.Context) {
 //	@Param			page_size	query		int		false	"Number of items per page"	default(10)
 //	@Success		200			{object}	util.PaginationResponse[model.AuditLog]
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/authorization/users/{id}/logs [get]
+//	@Router			/api/authorization/users/{id}/audit-logs [get]
 func (c *UserController) GetUserLogs(ctx *gin.Context) {
 	// Get user ID from URL
 	id := ctx.Param("id")
@@ -1056,7 +1065,7 @@ func (c *UserController) RestoreUser(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			skip_existing	query		bool	false	"Skip existing users"	default(false)
-//	@Success		200				{object}	util.PaginationResponse[model.User]
+//	@Success		200				{object}	util.Response[[]model.User]
 //	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/ldap/users [get]
 func (c *UserController) GetLdapUsers(ctx *gin.Context) {

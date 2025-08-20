@@ -360,7 +360,7 @@ func (c *ServiceAccountController) UpdateServiceAccountStatus(ctx *gin.Context) 
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Service account ID"
-//	@Success		200	{object}	util.PaginationResponse[model.ServiceAccountAccessKey]
+//	@Success		200	{object}	util.Response[[]model.ServiceAccountAccessKey]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/access-keys [get]
 func (c *ServiceAccountController) GetServiceAccountAccessKeys(ctx *gin.Context) {
@@ -380,9 +380,21 @@ func (c *ServiceAccountController) GetServiceAccountAccessKeys(ctx *gin.Context)
 }
 
 type CreateServiceAccountAccessKeyRequest struct {
-	Name          string `json:"name" binding:"required"`
-	Description   string `json:"description"`
-	ExpiresInDays int    `json:"expires_in_days"`
+	Name        string     `json:"name" binding:"required"`
+	Description string     `json:"description"`
+	ExpiresAt   *time.Time `json:"expires_at"`
+}
+
+type CreateServiceAccountAccessKeyResponse struct {
+	model.Base
+	Name             string     `json:"name" gorm:"size:255;not null"`
+	ServiceAccountID string     `json:"service_account_id" gorm:"size:36;not null;index"`
+	AccessKeyID      string     `json:"access_key_id" gorm:"size:100;not null;uniqueIndex"`
+	SecretAccessKey  string     `json:"secret_access_key" gorm:"size:255;not null"`
+	Status           string     `json:"status" gorm:"size:20;default:'active'"`
+	Description      string     `json:"description" gorm:"size:255"`
+	LastUsed         *time.Time `json:"last_used" gorm:"default:null"`
+	ExpiresAt        *time.Time `json:"expires_at" gorm:"default:null"`
 }
 
 // CreateServiceAccountAccessKey Create service account access key
@@ -395,7 +407,7 @@ type CreateServiceAccountAccessKeyRequest struct {
 //	@Produce		json
 //	@Param			id				path		string	true	"Service account ID"
 //	@Param			request		body		CreateServiceAccountAccessKeyRequest	true	"Create service account access key request"
-//	@Success		200				{object}	util.Response[model.ServiceAccountAccessKey]
+//	@Success		200				{object}	util.Response[CreateServiceAccountAccessKeyResponse]
 //	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts/{id}/access-keys [post]
 func (c *ServiceAccountController) CreateServiceAccountAccessKey(ctx *gin.Context) {
@@ -412,7 +424,7 @@ func (c *ServiceAccountController) CreateServiceAccountAccessKey(ctx *gin.Contex
 		return
 	}
 
-	accessKey, secretKey, err := c.service.CreateServiceAccountAccessKey(ctx, id, req.Name, req.Description, req.ExpiresInDays)
+	accessKey, secretKey, err := c.service.CreateServiceAccountAccessKey(ctx, id, req.Name, req.Description, req.ExpiresAt)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5008", err))
 		return

@@ -282,7 +282,7 @@ func (s *LDAPService) ImportLDAPUsers(ctx context.Context, userDNs []string) ([]
 					// If username or email matches, mark as bindable (return ID field)
 					users = append(users, model.User{
 						LDAPDN:            entry.DN,
-						Status:            "active",
+						Status:            "imported",
 						Username:          entry.GetAttributeValue(settings.UserAttr),
 						Email:             entry.GetAttributeValue(settings.EmailAttr),
 						FullName:          entry.GetAttributeValue(settings.DisplayNameAttr),
@@ -298,7 +298,7 @@ func (s *LDAPService) ImportLDAPUsers(ctx context.Context, userDNs []string) ([]
 				// If username or email does not match, mark as new user (do not return ID field)
 				users = append(users, model.User{
 					LDAPDN:            entry.DN,
-					Status:            "active",
+					Status:            "imported",
 					Username:          entry.GetAttributeValue(settings.UserAttr),
 					Email:             entry.GetAttributeValue(settings.EmailAttr),
 					FullName:          entry.GetAttributeValue(settings.DisplayNameAttr),

@@ -31,7 +31,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import { getUsers, deleteUser, resetPassword, restoreUser, updateUser, getLdapUsers, unlockUser } from '@/api/authorization';
+import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { PAGINATION } from '@/constants';
 import { useTranslation } from 'react-i18next';
@@ -48,7 +48,7 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
   const [ldapUserDN, setLdapUserDN] = useState<string | null>(null);
 
 
-  const { run: handleUpdateUser, loading: updateUserLoading } = useRequest(updateUser, {
+  const { run: handleUpdateUser, loading: updateUserLoading } = useRequest(api.authorization.updateUser, {
     onSuccess: () => {
       message.success(t('user.updateUserSuccess', { defaultValue: 'User updated successfully' }));
       onSuccess();
@@ -61,7 +61,7 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
 
   const { data: ldapUsers, loading: ldapUsersLoading } = useRequest(async () => {
     if (fixMethod === 'bind') {
-      return getLdapUsers(true).then((users) => {
+      return api.authorization.getLdapUsers({ skip_existing: true }).then((users) => {
         const recommend = []
         const other = []
         for (const ldapUser of users) {
@@ -96,13 +96,13 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
     onOk={() => {
       if (user) {
         if (fixMethod === 'local') {
-          return handleUpdateUser(user.id, { source: 'local' });
+          return handleUpdateUser({ id: user.id }, { source: 'local' });
         } else if (fixMethod === 'bind') {
           if (!ldapUserDN) {
             message.error(t('user.ldapUserDNRequired', { defaultValue: 'LDAP User DN is required' }));
             return;
           }
-          return handleUpdateUser(user.id, { source: 'ldap', ldap_dn: ldapUserDN });
+          return handleUpdateUser({ id: user.id }, { source: 'ldap', ldap_dn: ldapUserDN });
         } else {
           message.error(t('user.unknownFixMethod', { defaultValue: 'Unknown fix method' }));
           return;
@@ -153,7 +153,11 @@ const UserList: React.FC = () => {
       status: queryParams.status,
       keywords: queryParams.keywords
     };
-    return getUsers(queryParams.current, queryParams.page_size, filters);
+    return api.authorization.listUsers({
+      current: queryParams.current,
+      page_size: queryParams.page_size,
+      ...filters
+    });
   }, {
     onSuccess: (result) => {
       setUsers(result.data || []);
@@ -196,7 +200,7 @@ const UserList: React.FC = () => {
   };
 
   // Restore user
-  const { run: handleRestore } = useRequest(restoreUser, {
+  const { run: handleRestore } = useRequest(api.authorization.restoreUser, {
     onSuccess: () => {
       message.success(t('user.restoreSuccess', { defaultValue: 'User restored successfully' }));
       fetchUsers();
@@ -208,7 +212,7 @@ const UserList: React.FC = () => {
   });
 
   // Delete user
-  const { run: handleDelete } = useRequest(deleteUser, {
+  const { run: handleDelete } = useRequest(api.authorization.deleteUser, {
     onSuccess: () => {
       message.success(t('user.deleteSuccess', { defaultValue: 'User deleted successfully' }));
       fetchUsers();
@@ -228,7 +232,7 @@ const UserList: React.FC = () => {
       cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
       onOk: async () => {
         try {
-          const res = await resetPassword(id, '');  // Pass an empty password, the backend will generate a random password
+          const res = await api.authorization.resetUserPassword({ id }, { password: '' });  // Pass an empty password, the backend will generate a random password
           message.success(t('user.resetPasswordSuccess', { defaultValue: 'Password reset successfully' }));
           if (res.new_password) {
             Modal.info({
@@ -255,7 +259,7 @@ const UserList: React.FC = () => {
       content: t('user.unlockConfirm', { defaultValue: 'Are you sure you want to unlock this user?' }),
       onOk: async () => {
         try {
-          await unlockUser(id);
+          await api.authorization.unlockUser({ id });
           message.success(t('user.unlockSuccess', { defaultValue: 'User unlocked successfully' }));
           fetchUsers();
         } catch (error) {
@@ -418,7 +422,7 @@ const UserList: React.FC = () => {
           hidden: record.status !== 'deleted',
           confirm: {
             title: t('user.restoreConfirm', { defaultValue: 'Are you sure you want to restore this user?' }),
-            onConfirm: () => handleRestore(record.id),
+            onConfirm: () => handleRestore({ id: record.id }),
           }
 
         }, {
@@ -429,7 +433,7 @@ const UserList: React.FC = () => {
           danger: true,
           confirm: {
             title: t('user.deleteConfirm', { defaultValue: 'Are you sure you want to delete this user?' }),
-            onConfirm: () => handleDelete(record.id),
+            onConfirm: () => handleDelete({ id: record.id }),
             okText: tCommon('confirm', { defaultValue: 'Confirm' }),
             cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
           }

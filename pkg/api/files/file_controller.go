@@ -38,7 +38,7 @@ func (c *FileController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Param			file	formData	file	true	"File"
 //	@Param			access	formData	string	false	"Access type"
 //	@Param			type	formData	string	false	"File type"
-//	@Success		200		{object}	util.PaginationResponse[model.File]
+//	@Success		200		{object}	util.Response[[]model.File]
 //	@Failure		400		{object}	util.ErrorResponse
 //	@Router			/api/files [post]
 func (c *FileController) UploadFile(ctx *gin.Context) {
@@ -130,6 +130,7 @@ func (c *FileController) DownloadFile(ctx *gin.Context) {
 //	@Param			page_size	query		int		false	"Page size"
 //	@Param			search		query		string	false	"Search"
 //	@Param			file_type	query		string	false	"File type"
+//	@Param			access		query		string	false	"Access Type"
 //	@Success		200			{object}	util.PaginationResponse[model.File]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Router			/api/files [get]

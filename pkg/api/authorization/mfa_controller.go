@@ -87,7 +87,7 @@ func (c *MFAController) EnableMFA(ctx *gin.Context) {
 
 type VerifyAndActivateMFARequest struct {
 	Code    string `json:"code" binding:"required"`
-	Token   string `json:"token"`
+	Token   string `json:"token" validate:"optional"`
 	MFAType string `json:"mfa_type" binding:"required"`
 }
 
@@ -99,9 +99,7 @@ type VerifyAndActivateMFARequest struct {
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
 //	@Produce		json
-//	@Param			code		query		string	true	"Code"
-//	@Param			token		query		string	true	"Token"
-//	@Param			mfa_type	body		string	true	"MFA Type"
+//	@Param			request	body		VerifyAndActivateMFARequest	true	"MFA Type"
 //	@Success		200			{object}	util.Response[util.MessageData]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse

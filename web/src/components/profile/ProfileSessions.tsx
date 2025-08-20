@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Tag, Popconfirm, message, Space, Card, Typography, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { getUserSessions, terminateSession, terminateOtherSessions } from '../../api/authorization';
+import api from '@/service/api';
 import { GlobalOutlined, ClockCircleOutlined, LaptopOutlined, EnvironmentOutlined } from '@ant-design/icons';
 
 const { Text } = Typography;
 
-// Mock session type (because the backend API is not yet implemented)
-interface Session {
-  id: string;
-  ip_address: string;
-  user_agent: string;
-  location: string;
-  created_at: string;
-  last_active_at: string;
-  is_current: boolean;
-}
 
 const ProfileSessions: React.FC = () => {
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [sessions, setSessions] = useState<API.SessionInfo[]>([]);
   const [loading, setLoading] = useState(false);
   const [terminatingId, setTerminatingId] = useState<string | null>(null);
   const [terminatingAll, setTerminatingAll] = useState(false);
@@ -29,7 +19,7 @@ const ProfileSessions: React.FC = () => {
     try {
       setLoading(true);
       // Use actual API to get session list
-      const data = await getUserSessions();
+      const data = await api.authorization.getUserSessions({});
       setSessions(data);
     } catch (error) {
       message.error(t('session.getSessionsFailed', { error: error, defaultValue: 'Failed to get session list: {{error}}' }));
@@ -46,7 +36,7 @@ const ProfileSessions: React.FC = () => {
     try {
       setTerminatingId(sessionId);
       // Call actual API to terminate session
-      await terminateSession(sessionId);
+      await api.authorization.terminateSession({ id: sessionId });
 
       // Update local status
       setSessions(sessions.filter(session => session.id !== sessionId));
@@ -62,7 +52,7 @@ const ProfileSessions: React.FC = () => {
     try {
       setTerminatingAll(true);
       // Call actual API to terminate all other sessions
-      await terminateOtherSessions();
+      await api.authorization.terminateOtherSessions();
 
       // Update local status, only keep current session
       setSessions(sessions.filter(session => session.is_current));
@@ -79,7 +69,7 @@ const ProfileSessions: React.FC = () => {
       title: t('session.device'),
       dataIndex: 'user_agent',
       key: 'device',
-      render: (userAgent: string, record: Session) => (
+      render: (userAgent: string, record: API.SessionInfo) => (
         <Space direction="vertical" size={0}>
           <Space>
             <LaptopOutlined />
@@ -117,7 +107,7 @@ const ProfileSessions: React.FC = () => {
     {
       title: t('session.status'),
       key: 'status',
-      render: (record: Session) => (
+      render: (record: API.SessionInfo) => (
         record.is_current ? (
           <Tag color="green">{t('session.current')}</Tag>
         ) : (
@@ -128,7 +118,7 @@ const ProfileSessions: React.FC = () => {
     {
       title: tCommon('actions'),
       key: 'action',
-      render: (record: Session) => {
+      render: (record: API.SessionInfo) => {
         if (record.is_current) {
           return <Text type="secondary">{t('session.currentSession')}</Text>;
         }

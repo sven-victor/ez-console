@@ -116,4 +116,31 @@ export const apiDelete = async <T>(url: string, config?: AxiosRequestConfig): Pr
   return client.delete<T, T>(url, config);
 };
 
+type ListResult = { data: any; current: number; total: number; page_size: number };
+type Result<T extends { data: any }> = T extends ListResult ? T : T["data"];
+
+interface RequestConfig extends AxiosRequestConfig {
+  requestType?: 'form'
+}
+
+export const request = async <T extends { data: any, current: number, total: number, page_size: number } | { data: any }>(url: string, config?: RequestConfig): Promise<Result<T>> => {
+  const { requestType, ...requestConfig } = config || {};
+  if (requestType === 'form') {
+    return client.request<T, Result<T>>({
+      url,
+      baseURL: "",
+      ...requestConfig,
+      headers: {
+        ...config?.headers,
+        "Content-Type": "multipart/form-data",
+      }
+    });
+  }
+  return client.request<T, Result<T>>({
+    url,
+    baseURL: "",
+    ...requestConfig
+  });
+};
+
 export default client; 

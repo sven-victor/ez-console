@@ -3,7 +3,7 @@ import { Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Sel
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { getUserAuditLogs } from '@/api/authorization';
+import api from '@/service/api';
 import { formatDate } from '@/utils';
 
 const { RangePicker } = DatePicker;
@@ -65,7 +65,7 @@ const ProfileAuditLogs: React.FC = () => {
         params.end_time = filters.dateRange[1].toISOString();
       }
 
-      const res = await getUserAuditLogs(params);
+      const res = await api.authorization.getCurrentUserLogs(params);
       setAuditLogs(res.data);
       setPagination({
         ...pagination,

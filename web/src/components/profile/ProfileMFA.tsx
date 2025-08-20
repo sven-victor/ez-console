@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, Button, Steps, Input, Alert, message, Result, QRCode, Space, Modal, Segmented, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { enableMFA, verifyAndActivateMFA, disableMFA } from '../../api/authorization';
+import api from '@/service/api';
 import { ClockCircleFilled, EyeInvisibleOutlined, EyeOutlined, MailOutlined } from '@ant-design/icons';
 import { useRequest } from 'ahooks';
 
@@ -20,7 +20,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
   const [mfaType, setMfaType] = useState<'totp' | 'email'>('totp');
 
   const { run: handleEnableMFA, data: enableMFAData = { secret: '', qr_code: '', token: undefined } } = useRequest(
-    () => enableMFA(mfaType),
+    () => api.authorization.enableMfa(mfaType),
     {
       manual: true,
       onSuccess: () => {
@@ -36,7 +36,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
       message.warning(t('mfa.enterVerificationCode'));
       return;
     }
-    const data: API.MFAVerifyRequest = {
+    const data: API.VerifyAndActivateMFARequest = {
       code: verificationCode,
       mfa_type: mfaType,
     }
@@ -45,7 +45,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
     }
     try {
       setLoading(true);
-      await verifyAndActivateMFA(data);
+      await api.authorization.verifyAndActivateMfa(data);
       message.success(t('mfa.enableSuccess'));
       setCurrentStep(2);
       onSuccess();
@@ -60,7 +60,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
   const handleDisableMFA = async () => {
     try {
       setLoading(true);
-      await disableMFA();
+      await api.authorization.disableMfa();
       message.success(t('mfa.disableSuccess'));
       onSuccess();
     } catch (error) {

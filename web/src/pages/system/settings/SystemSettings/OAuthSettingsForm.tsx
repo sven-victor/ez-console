@@ -3,7 +3,7 @@ import { Form, Switch, Select, Input, Button, Space, message, Spin, Divider, Ale
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
-import { getOAuthSettings, updateOAuthSettings, testOAuthConnection } from '@/api/system';
+import api from '@/service/api';
 
 // URL format regular expression
 const URL_PATTERN = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/;
@@ -102,7 +102,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
   const [autoCreateUser, setAutoCreateUser] = useState<boolean>(initialData?.auto_create_user || false);
 
   // Load data
-  const { loading, data, refresh } = useRequest(getOAuthSettings, {
+  const { loading, data, refresh } = useRequest(api.system.getOauthSettings, {
     manual: !!initialData,
     onSuccess: (data) => {
       form.setFieldsValue(data);
@@ -166,7 +166,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
   };
 
   // Handle form submission
-  const { loading: submitting, run: submitUpdate } = useRequest(updateOAuthSettings, {
+  const { loading: submitting, run: submitUpdate } = useRequest(api.system.updateOauthSettings, {
     manual: true,
     onSuccess: () => {
       message.success(t('settings.updateSuccess', { defaultValue: 'Settings updated successfully' }));
@@ -203,7 +203,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
     }
     testRedirectURI.pathname = '/console/system/settings/oauth/test-callback';
     testRedirectURI.searchParams.set('provider', currentProvider);
-    return testOAuthConnection({ redirect_uri: testRedirectURI.toString(), ...values });
+    return api.system.testOauthConnection({ redirect_uri: testRedirectURI.toString(), ...values });
   }, {
     manual: true,
     onSuccess: ({ url }) => {

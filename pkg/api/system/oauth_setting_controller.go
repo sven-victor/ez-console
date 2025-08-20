@@ -75,6 +75,7 @@ type UpdateOAuthSettingsRequest struct {
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
+//	@Param			request	body		UpdateOAuthSettingsRequest	true	"Update OAuth settings request"
 //	@Success		200	{object}	util.Response[model.OAuthSettings]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/oauth-settings [put]

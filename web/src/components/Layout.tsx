@@ -15,7 +15,7 @@ import Avatar from './Avatar';
 import { useTranslation } from 'react-i18next';
 import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
-import { getSiteConfig } from '@/api/system';
+import api from '@/service/api';
 import _ from 'lodash';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -63,7 +63,7 @@ const AppLayout: React.FC = () => {
   ];
 
   useEffect(() => {
-    getSiteConfig().then((siteConfig) => {
+    api.system.getSiteConfig().then((siteConfig) => {
       const navigation = siteConfig.navigation.filter(item => item.path !== siteConfig.home_page)
       const newNavigation = [...(siteConfig.home_page ? [{
         name: 'home',

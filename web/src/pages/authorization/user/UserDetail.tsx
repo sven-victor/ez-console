@@ -17,12 +17,12 @@ import {
   ArrowLeftOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getUser } from '@/api/authorization';
+import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { useTranslation } from 'react-i18next';
 import UserAuditLogs from '@/components/authorization/UserAuditLogs';
 import { Avatar } from '@/components/Avatar';
-import { ApiError } from '@/api/client';
+import { ApiError } from '@/service/client';
 import usePermission from '@/hooks/usePermission';
 
 const { Title } = Typography;
@@ -42,7 +42,7 @@ const UserDetail: React.FC = () => {
       if (!id) return;
       setLoading(true);
       try {
-        const userData = await getUser(id);
+        const userData = await api.authorization.getUser({ id });
         setUser(userData);
       } catch (error) {
         if (!(error instanceof ApiError && error.code === "E4041")) {

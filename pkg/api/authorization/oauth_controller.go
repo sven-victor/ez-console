@@ -45,12 +45,12 @@ type OAuthProvider struct {
 //	@Summary		Get the list of available OAuth providers
 //	@Description	Get the list of available OAuth providers
 //	@ID             getProviders
-//	@Tags			Authorization/OAuth
+//	@Tags			OAuth
 //	@Accept			json
 //	@Produce		json
 //	@Success		200	{object}	util.Response[[]OAuthProvider]
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/authorization/oauth/providers [get]
+//	@Router			/api/oauth/providers [get]
 func (c *OAuthController) GetProviders(ctx *gin.Context) {
 
 	// Only return enabled providers, without sensitive information
@@ -71,14 +71,14 @@ func (c *OAuthController) GetProviders(ctx *gin.Context) {
 //	@Summary		Get the OAuth login URL
 //	@Description	Get the OAuth login URL
 //	@ID             getLoginUrl
-//	@Tags			Authorization/OAuth
+//	@Tags			OAuth
 //	@Accept			json
 //	@Produce		json
 //	@Param			provider	path		string	true	"Provider"
 //	@Success		200			{object}	util.Response[service.OAuthLoginURLResponse]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/authorization/oauth/login/{provider} [get]
+//	@Router			/api/oauth/login/{provider} [get]
 func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 	provider := ctx.Param("provider")
 	if provider == "" {
@@ -100,7 +100,7 @@ func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 //	@Summary		Handle the OAuth callback
 //	@Description	Handle the OAuth callback
 //	@ID             handleCallback
-//	@Tags			Authorization/OAuth
+//	@Tags			OAuth
 //	@Accept			json
 //	@Produce		json
 //	@Param			code		query		string	true	"Code"
@@ -109,7 +109,7 @@ func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 //	@Success		200			{object}	util.Response[service.LoginResponse]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/authorization/oauth/callback [get]
+//	@Router			/api/oauth/callback [get]
 func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 	// Get parameters from URL
 	code := ctx.Query("code")

@@ -63,39 +63,39 @@ func init() {
 }
 
 // OAuthProvider OAuth provider type
-type OAuthProvider string
+type OAuthProviderType string
 
 const (
-	OAuthProviderGitHub   OAuthProvider = "github"   // GitHub
-	OAuthProviderGoogle   OAuthProvider = "google"   // Google
-	OAuthProviderDingtalk OAuthProvider = "dingtalk" // DingTalk
-	OAuthProviderWeChat   OAuthProvider = "wechat"   // WeChat
-	OAuthProviderCustom   OAuthProvider = "custom"   // Custom
+	OAuthProviderGitHub   OAuthProviderType = "github"   // GitHub
+	OAuthProviderGoogle   OAuthProviderType = "google"   // Google
+	OAuthProviderDingtalk OAuthProviderType = "dingtalk" // DingTalk
+	OAuthProviderWeChat   OAuthProviderType = "wechat"   // WeChat
+	OAuthProviderCustom   OAuthProviderType = "custom"   // Custom
 
-	OAuthProviderAutoDiscover OAuthProvider = "autoDiscover" // Auto Discover
+	OAuthProviderAutoDiscover OAuthProviderType = "autoDiscover" // Auto Discover
 )
 
 // OAuthSettings OAuth settings request and response structure
 type OAuthSettings struct {
-	Enabled          bool          `json:"enabled"`
-	Provider         OAuthProvider `json:"provider"`
-	ClientID         string        `json:"client_id"`
-	ClientSecret     *safe.String  `json:"client_secret"`
-	AuthEndpoint     string        `json:"auth_endpoint"`
-	TokenEndpoint    string        `json:"token_endpoint"`
-	UserInfoEndpoint string        `json:"userinfo_endpoint"`
-	Scope            string        `json:"scope"`
-	RedirectURI      string        `json:"redirect_uri"`
-	AutoCreateUser   bool          `json:"auto_create_user"`
-	DefaultRole      string        `json:"default_role"`
-	EmailField       string        `json:"email_field"`
-	UsernameField    string        `json:"username_field"`
-	FullNameField    string        `json:"full_name_field"`
-	AvatarField      string        `json:"avatar_field"`
-	RoleField        string        `json:"role_field"`
-	IconURL          string        `json:"icon_url"`     // Provider icon URL
-	DisplayName      string        `json:"display_name"` // Provider display name
-	MFAEnabled       bool          `json:"mfa_enabled"`
+	Enabled          bool              `json:"enabled"`
+	Provider         OAuthProviderType `json:"provider"`
+	ClientID         string            `json:"client_id"`
+	ClientSecret     *safe.String      `json:"client_secret"`
+	AuthEndpoint     string            `json:"auth_endpoint"`
+	TokenEndpoint    string            `json:"token_endpoint"`
+	UserInfoEndpoint string            `json:"userinfo_endpoint"`
+	Scope            string            `json:"scope"`
+	RedirectURI      string            `json:"redirect_uri"`
+	AutoCreateUser   bool              `json:"auto_create_user"`
+	DefaultRole      string            `json:"default_role"`
+	EmailField       string            `json:"email_field"`
+	UsernameField    string            `json:"username_field"`
+	FullNameField    string            `json:"full_name_field"`
+	AvatarField      string            `json:"avatar_field"`
+	RoleField        string            `json:"role_field"`
+	IconURL          string            `json:"icon_url"`     // Provider icon URL
+	DisplayName      string            `json:"display_name"` // Provider display name
+	MFAEnabled       bool              `json:"mfa_enabled"`
 
 	WellknownEndpoint string `json:"wellknown_endpoint"`
 	JWKsURI           string `json:"jwks_uri"`

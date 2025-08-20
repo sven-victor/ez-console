@@ -33,7 +33,17 @@ func (c *SystemController) RegisterRoutes(router *gin.RouterGroup) {
 	}
 }
 
-// GetNavigation gets the navigation bar
+// GetSite gets the site config
+//
+//	@Summary		Get site config
+//	@Description	Get site config
+//	@ID             getSiteConfig
+//	@Tags			System/Site
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response[service.SiteConfig]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/site [get]
 func (c *SystemController) GetSite(ctx *gin.Context) {
 	navigation, err := c.service.GetSite(ctx)
 	if err != nil {

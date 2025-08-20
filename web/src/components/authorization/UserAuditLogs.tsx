@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal, message } from 'antd';
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { getUserAuditLogs, getUserAuditLogsByID } from '@/api/authorization';
+import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { useRequest } from 'ahooks';
 
@@ -25,17 +25,17 @@ const getStatusTag = (status: string, t: any) => {
 
 interface UserAuditLogsProps {
   userId?: string;
-  request?: (params: API.PaginationRequest & API.AuditLogFilters) => Promise<API.PaginationResponse<API.AuditLog>>;
+  request?: (params: API.PaginationRequest & API.getCurrentUserLogsParams) => Promise<API.PaginationResponse<API.AuditLog>>;
   columnsFilter?: (columns: any[]) => any[];
 }
 
 const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
   userId,
-  request = (params: API.PaginationRequest & API.AuditLogFilters) => {
+  request = (params: API.PaginationRequest & API.getCurrentUserLogsParams) => {
     if (!userId) {
-      return getUserAuditLogs(params);
+      return api.authorization.getCurrentUserLogs(params);
     }
-    return getUserAuditLogsByID(userId, params);
+    return api.authorization.getUserLogs({ id: userId, ...params });
   },
   columnsFilter = (columns: any[]) => columns,
 }) => {
@@ -46,9 +46,9 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
     pageSize: 10,
     total: 0,
   });
-  const [filters, setFilters] = useState<API.AuditLogFilters>({});
+  const [filters, setFilters] = useState<API.getCurrentUserLogsParams>({});
   const [form] = Form.useForm();
-  const { loading, run, data: { data } = {} } = useRequest(async (params: API.AuditLogFilters = filters, page = 1, pageSize = 10) => {
+  const { loading, run, data: { data } = {} } = useRequest(async (params: API.getCurrentUserLogsParams = filters, page = 1, pageSize = 10) => {
     return request({
       ...params,
       current: page ?? 1,
