@@ -2,6 +2,7 @@ package util
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -19,6 +20,30 @@ type ErrorResponse struct {
 	Err      error  `json:"err"`
 	Message  string `json:"message,omitempty"`
 }
+
+// MarshalJSON implements json.Marshaler.
+func (e ErrorResponse) MarshalJSON() ([]byte, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	buf.WriteString(`{"code": `)
+	if err := enc.Encode(e.Code); err != nil {
+		return nil, err
+	}
+	buf.WriteString(`,"err":`)
+	if err := enc.Encode(e.Err.Error()); err != nil {
+		return nil, err
+	}
+	if e.Message != "" {
+		buf.WriteString(`,"message":`)
+		if err := enc.Encode(e.Message); err != nil {
+			return nil, err
+		}
+	}
+	buf.WriteString(`}`)
+	return buf.Bytes(), nil
+}
+
+var _ json.Marshaler = &ErrorResponse{}
 
 func (e ErrorResponse) Error() string {
 	if e.Message != "" {
