@@ -8,7 +8,7 @@ import {
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import routes, { IRoute } from '../routes';
+import { type IRoute } from '../routes';
 import LanguageSwitch from './LanguageSwitch';
 import HeaderDropdown from './HeaderDropdown';
 import Avatar from './Avatar';
@@ -20,8 +20,12 @@ import _ from 'lodash';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
+export interface AppLayoutProps {
+  routes: IRoute[];
+  element?: React.ReactNode | null;
+}
 
-const AppLayout: React.FC = () => {
+const AppLayout: React.FC<AppLayoutProps> = ({ element, routes }) => {
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const [collapsed, setCollapsed] = useState(false);
@@ -216,7 +220,7 @@ const AppLayout: React.FC = () => {
             return <span>{route.title}</span>
           }} items={getBreadcrumbs()} />
           <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-            <Outlet />
+            {element ?? <Outlet />}
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>

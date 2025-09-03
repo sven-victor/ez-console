@@ -28,7 +28,7 @@ const ServiceAccountList = lazy(() => import('@/pages/authorization/service-acco
 const ServiceAccountDetail = lazy(() => import('@/pages/authorization/service-account/ServiceAccountDetail'));
 
 // Wrap lazy loaded components
-const withSuspense = (Component: React.LazyExoticComponent<any>) => (
+export const withSuspense = (Component: React.LazyExoticComponent<React.ComponentClass<any> | React.FC<any>>) => (
   <Suspense fallback={<Loading />}>
     <Component />
   </Suspense>

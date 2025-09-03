@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { usePermission } from '../hooks/usePermission';
 
-interface PermissionGuardProps {
+export interface PermissionGuardProps {
   permission?: string;
   permissions?: string[];
   checkAll?: boolean; // whether to check all permissions, default is false (check any one permission)

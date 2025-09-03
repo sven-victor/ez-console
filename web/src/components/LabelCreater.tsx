@@ -2,7 +2,7 @@ import { PlusOutlined } from "@ant-design/icons";
 import { Button, Input, Space } from "antd";
 import { useState } from "react";
 
-interface LabelCreaterProps {
+export interface LabelCreaterProps {
   onChange: (name: string, value: string) => void;
 }
 

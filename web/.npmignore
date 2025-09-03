@@ -1,0 +1,10 @@
+dist/
+src/
+node_modules/
+.vscode/
+.idea/
+.gitignore
+.git/
+scripts/
+swagger.json
+.env

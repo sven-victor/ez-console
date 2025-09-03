@@ -33,12 +33,13 @@ const getFileSrc = <T = React.ReactNode>(fileSrc?: T) => {
 };
 
 
-
 export const Avatar = ({ src, ...props }: AvatarProps) => {
   return <AntdAvatar src={getFileSrc(src)} {...props} />;
 };
 
-interface AvatarUploadProps extends Omit<UploadProps, 'onChange'> {
+export type { AvatarProps }
+
+export interface AvatarUploadProps extends Omit<UploadProps, 'onChange'> {
   value?: string;
   onChange?: (value?: string) => void;
   shape?: 'circle' | 'square';

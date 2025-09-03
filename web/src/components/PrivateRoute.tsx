@@ -4,7 +4,7 @@ import { Spin } from 'antd';
 import { useAuth } from '../hooks/useAuth';
 import { usePermission } from '../hooks/usePermission';
 
-interface PrivateRouteProps {
+export interface PrivateRouteProps {
   element: React.ReactElement;
   requiredPermission?: string;
   requiredPermissions?: string[];

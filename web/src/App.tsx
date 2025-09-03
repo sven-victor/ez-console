@@ -12,10 +12,13 @@ import frFR from 'antd/lib/locale/fr_FR';
 import arEG from 'antd/lib/locale/ar_EG';
 import svSE from 'antd/lib/locale/sv_SE';
 
-import routes, { IRoute } from './routes';
+import routes, { type IRoute } from './routes';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import AppLayout from './components/Layout';
+
+import './index.css'
+import './i18n'
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -37,7 +40,15 @@ const antdLocales: { [key: string]: any } = {
   'sv-SE': svSE,
 };
 
-function App() {
+export interface AppProps {
+  basePath?: string;
+  onRouteRender?: (routes: IRoute[]) => IRoute[];
+}
+
+function App({
+  basePath = "/console/",
+  onRouteRender = (routes) => routes,
+}: AppProps) {
   const { i18n } = useTranslation();
   const [antdLocale, setAntdLocale] = useState(antdLocales[i18n.language] || enUS);
 
@@ -45,9 +56,20 @@ function App() {
     setAntdLocale(antdLocales[i18n.language] || enUS);
   }, [i18n.language]);
 
-  const renderRoutes = (routes: IRoute[], parentRoute?: IRoute) => {
+  const deepCopyRouters = (routes: IRoute[]): IRoute[] => {
+    return routes.map((route) => {
+      if (route.children === undefined) {
+        return route
+      }
+      return {
+        ...route,
+        children: deepCopyRouters(route.children),
+      }
+    })
+  }
 
-    return routes.flatMap((route) => {
+  const renderRoutes = (childrenRoutes: IRoute[], parentRoute?: IRoute): React.ReactElement[] => {
+    return childrenRoutes.flatMap((route) => {
       if (route.is_private) {
         return [route];
       }
@@ -56,7 +78,7 @@ function App() {
       }
       return [route];
     }).map((route, index) => {
-      const element = route.is_private ? <PrivateRoute element={<AppLayout />} /> : route.element
+      const element = route.is_private ? <PrivateRoute element={<AppLayout routes={onRouteRender(deepCopyRouters(routes))} element={route.element} />} /> : route.element
       if ('children' in route && route.children && route.children.length > 0) {
         return <Route key={route.path ?? route.name ?? index} path={route.path} element={element} >
           {renderRoutes(route.children, route)}
@@ -66,14 +88,13 @@ function App() {
       return <Route key={path ?? route.name ?? `${parentRoute?.path ?? ''}.${index}`} path={path} index={route.index} element={element} />
     }).filter(Boolean);
   }
-
   return (
     <QueryClientProvider client={queryClient}>
       <ConfigProvider locale={antdLocale}>
         <AuthProvider>
-          <Router basename="/console/">
+          <Router basename={basePath}>
             <Routes>
-              {renderRoutes(routes)}
+              {renderRoutes(onRouteRender(deepCopyRouters(routes)))}
             </Routes>
           </Router>
         </AuthProvider>

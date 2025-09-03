@@ -7,7 +7,9 @@ export const getIconByName = (name: string) => {
   return iconMap[name];
 };
 
-export const DynamicIcon = ({ iconName }: { iconName: string }) => {
+export interface DynamicIconProps { iconName: string }
+
+export const DynamicIcon = ({ iconName }: DynamicIconProps) => {
   if (!iconName) {
     return null;
   }

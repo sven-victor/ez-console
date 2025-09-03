@@ -1,15 +1,17 @@
-import { defineConfig } from 'vite'
+import { defineConfig, UserConfig, ConfigEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import dts from 'vite-plugin-dts'
 import path from 'path'
 
 function toSnakeCase(str: string) {
   return str.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
 }
 
-// https://vitejs.dev/config/
-export default defineConfig({
+const baseConfig: UserConfig = {
   base: '/console/',
-  plugins: [react()],
+  plugins: [
+    react(),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -61,4 +63,58 @@ export default defineConfig({
       },
     },
   },
-}) 
+}
+
+// https://vitejs.dev/config/
+export default defineConfig((env: ConfigEnv) => {
+  if (env.mode === 'lib') {
+    return {
+      ...baseConfig,
+      plugins: [
+        ...baseConfig.plugins,
+        dts({
+          insertTypesEntry: true,
+          entryRoot: 'src',
+          outDir: 'types',
+          copyDtsFiles: true,
+          rollupTypes: true,
+        })
+      ],
+      build: {
+        ...baseConfig.build,
+        outDir: 'lib',
+        lib: {
+          entry: './src/index.ts',
+          name: 'EZ-Console',
+          formats: ['es', 'cjs'],
+          fileName: (format) => `ez-console.${format}.js`,
+        },
+        sourcemap: false,
+        rollupOptions: {
+          ...baseConfig.build.rollupOptions,
+          treeshake: true,
+          output: {
+            ...baseConfig.build.rollupOptions.output,
+            entryFileNames: 'ez-console.[format].js',
+            chunkFileNames: '[format]/[name].js',
+            assetFileNames: (chunkInfo) => {
+              if (chunkInfo.names?.find((name) => name === 'style.css')) {
+                return "[name].[ext]"
+              }
+              return '[format]/[name].[ext]'
+            },
+
+            globals: {
+              react: 'React',
+              'react-dom': 'ReactDOM',
+              'react-router-dom': 'ReactRouterDOM',
+            },
+          },
+          external: ['react', 'react-dom', 'react-router-dom'],
+        },
+        cssCodeSplit: false
+      }
+    }
+  }
+  return baseConfig
+})

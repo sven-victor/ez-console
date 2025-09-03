@@ -7,7 +7,7 @@ import React, {
 import { Table as AntTable, TablePaginationConfig, TableProps as AntTableProps } from 'antd';
 import { useRequest } from 'ahooks';
 
-interface TableProps<T extends API.Entity> extends AntTableProps<T> {
+export interface TableProps<T extends API.Entity> extends AntTableProps<T> {
     request: (params: API.PaginationRequest) => Promise<API.PaginationResponse<T>>;
     tableRef?: React.LegacyRef<{
 
@@ -71,11 +71,11 @@ const TableDef = <T extends API.Entity>(
     );
 }
 
-interface TableActionRefProps<T extends API.Entity> extends TableProps<T> {
+export interface TableActionRefProps<T extends API.Entity> extends TableProps<T> {
     actionRef?: React.LegacyRef<TableRef<T>>;
 }
 
-interface TableRefProps<T extends API.Entity> extends TableProps<T> {
+export interface TableRefProps<T extends API.Entity> extends TableProps<T> {
     ref?: React.LegacyRef<TableRef<T>>;
 }
 export const Table = <T extends API.Entity>({ actionRef, ...props }: TableActionRefProps<T>) => {
