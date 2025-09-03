@@ -246,8 +246,12 @@ func (s *OAuthService) GetLoginURL(ctx *gin.Context, provider string) (*OAuthLog
 	}
 
 	if oauth2Config.RedirectURI == "" {
+		basePath := ctx.GetHeader("X-Base-Path")
+		if basePath == "" {
+			basePath = "/"
+		}
 		rootURL := util.GetRootURL(ctx)
-		oauth2Config.RedirectURI = fmt.Sprintf("%s/console/login?provider=%s", rootURL, provider)
+		oauth2Config.RedirectURI = fmt.Sprintf("%s%s/login?provider=%s", rootURL, basePath, provider)
 	}
 
 	// Generate state value

@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { Spin } from 'antd';
 import { useAuth } from '../hooks/useAuth';
 import { usePermission } from '../hooks/usePermission';
+import { getURL } from '@/utils';
 
 export interface PrivateRouteProps {
   element: React.ReactElement;
@@ -43,7 +44,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
 
   // if not logged in, redirect to login page
   if (!user) {
-    window.location.href = '/console/login?redirect=' + encodeURIComponent(window.location.href);
+    window.location.href = getURL('/login?redirect=' + encodeURIComponent(window.location.href));
     return null;
   }
 
@@ -84,7 +85,7 @@ export const AdminRoute: React.FC<{ element: React.ReactElement }> = ({ element 
 
   // if not logged in, redirect to login page
   if (!user) {
-    window.location.href = '/console/login?redirect=' + encodeURIComponent(window.location.href);
+    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.href);
     return null;
   }
 

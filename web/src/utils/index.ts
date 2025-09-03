@@ -282,3 +282,20 @@ export const maskEmail = (email?: string) => {
     return user[0] + '*'.repeat(user.length - 2) + user[user.length - 1] + '@' + domain;
   }
 }
+
+export const getURL = (uri?: string): string => {
+  const baseURL = import.meta.env.BASE_URL
+  if (!uri) {
+    return baseURL;
+  }
+  if (baseURL.endsWith('/')) {
+    if (uri.startsWith('/')) {
+      return baseURL + uri.substring(1);
+    }
+    return baseURL + uri;
+  }
+  if (uri.startsWith('/')) {
+    return baseURL + uri;
+  }
+  return baseURL + '/' + uri;
+}

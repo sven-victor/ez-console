@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
 import api from '@/service/api';
+import { getURL } from '@/utils';
 
 // URL format regular expression
 const URL_PATTERN = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/;
@@ -201,7 +202,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
     } else {
       testRedirectURI = new URL(window.location.origin);
     }
-    testRedirectURI.pathname = '/console/system/settings/oauth/test-callback';
+    testRedirectURI.pathname = getURL('/system/settings/oauth/test-callback');
     testRedirectURI.searchParams.set('provider', currentProvider);
     return api.system.testOauthConnection({ redirect_uri: testRedirectURI.toString(), ...values });
   }, {
@@ -427,7 +428,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
             return { required: false }
           }]}
         >
-          <Input disabled={!isEnabled} placeholder={`http://${window.location.host}/console/login?provider=settings.${currentProvider}`} />
+          <Input disabled={!isEnabled} placeholder={`http://${window.location.host}${getURL(`/login?provider=settings.${currentProvider}`)}`} />
         </Form.Item>
 
         {/* Auto Create User */}

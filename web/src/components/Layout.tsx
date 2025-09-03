@@ -17,6 +17,7 @@ import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
 import api from '@/service/api';
 import _ from 'lodash';
+import { getURL } from '@/utils';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
@@ -49,9 +50,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ element, routes }) => {
     }
   }
 
+
   const handleLogout = () => {
     logout();
-    window.location.href = '/console/login?redirect=' + encodeURIComponent(window.location.href);
+    window.location.href = getURL('/login?redirect=' + encodeURIComponent(window.location.href));
   };
 
   const userMenu = [

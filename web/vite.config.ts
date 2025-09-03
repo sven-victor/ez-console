@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import dts from 'vite-plugin-dts'
 import path from 'path'
 
+
 function toSnakeCase(str: string) {
   return str.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
 }
@@ -70,6 +71,7 @@ export default defineConfig((env: ConfigEnv) => {
   if (env.mode === 'lib') {
     return {
       ...baseConfig,
+      base: '/',
       plugins: [
         ...baseConfig.plugins,
         dts({

@@ -19,6 +19,7 @@ import AppLayout from './components/Layout';
 
 import './index.css'
 import './i18n'
+import { getURL } from './utils';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -46,7 +47,6 @@ export interface AppProps {
 }
 
 function App({
-  basePath = "/console/",
   onRouteRender = (routes) => routes,
 }: AppProps) {
   const { i18n } = useTranslation();
@@ -92,7 +92,7 @@ function App({
     <QueryClientProvider client={queryClient}>
       <ConfigProvider locale={antdLocale}>
         <AuthProvider>
-          <Router basename={basePath}>
+          <Router basename={getURL()}>
             <Routes>
               {renderRoutes(onRouteRender(deepCopyRouters(routes)))}
             </Routes>

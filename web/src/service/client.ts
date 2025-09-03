@@ -1,3 +1,4 @@
+import { getURL } from '@/utils';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 export const baseURL = '/api';
@@ -73,13 +74,13 @@ client.interceptors.response.use(
   },
   (error: AxiosError) => {
     // Handle 401 unauthorized error
-    if (error.response?.status === 401 && window.location.pathname !== '/console/login') {
+    if (error.response?.status === 401 && window.location.pathname !== getURL('/login')) {
       // Clear token
       localStorage.removeItem('token');
       // Clear Authorization header
       delete client.defaults.headers.common['Authorization'];
       // Redirect to login page
-      window.location.href = '/console/login?redirect=' + encodeURIComponent(window.location.href);
+      window.location.href = getURL('/login?redirect=' + encodeURIComponent(window.location.href));
     }
 
     // Extract error message

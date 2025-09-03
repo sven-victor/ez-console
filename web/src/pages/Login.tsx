@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { ApiError } from '@/service/client';
 import ProfilePassword from '@/components/profile/ProfilePassword';
-import { maskEmail } from '@/utils';
+import { getURL, maskEmail } from '@/utils';
 import LanguageSwitch from '@/components/LanguageSwitch';
 import Loading from '@/components/Loading';
 
@@ -140,7 +140,7 @@ const Login: React.FC = () => {
   const handleOAuthLogin = async (provider: string) => {
     try {
       setOAuthLoading({ ...oauthLoading, [provider]: true });
-      const { url } = await api.oauth.getLoginUrl({ provider });
+      const { url } = await api.oauth.getLoginUrl({ provider }, { headers: { 'X-Base-Path': getURL() } });
       window.location.href = url;
     } catch (error) {
       message.error(t('login.oauthError', { defaultValue: 'OAuth login failed' }));
