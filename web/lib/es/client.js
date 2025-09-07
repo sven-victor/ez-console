@@ -1,9 +1,10 @@
-var u = Object.defineProperty;
-var d = (t, e, r) => e in t ? u(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
-var c = (t, e, r) => d(t, typeof e != "symbol" ? e + "" : e, r);
-import { b as p } from "./vendor.js";
-const l = "/api", s = p.create({
-  baseURL: l,
+var d = Object.defineProperty;
+var p = (t, e, r) => e in t ? d(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
+var c = (t, e, r) => p(t, typeof e != "symbol" ? e + "" : e, r);
+import { g as u } from "./base.js";
+import { b as l } from "./vendor.js";
+const m = "/api", s = l.create({
+  baseURL: m,
   timeout: 3e4,
   headers: {
     "Content-Type": "application/json"
@@ -39,13 +40,13 @@ s.interceptors.response.use(
   },
   (t) => {
     var o, n, i;
-    ((o = t.response) == null ? void 0 : o.status) === 401 && window.location.pathname !== "/console/login" && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = "/console/login?redirect=" + encodeURIComponent(window.location.href));
+    ((o = t.response) == null ? void 0 : o.status) === 401 && window.location.pathname !== u("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = u("/login?redirect=" + encodeURIComponent(window.location.href)));
     const e = (n = t.response) == null ? void 0 : n.data;
     let r = new a(((i = t.response) == null ? void 0 : i.status.toString()) || "500", t.message);
     return console.log("errorResponse", e), e && (e.err ? r = new a(e.code, e.err) : e.error && (r = new a(e.code, e.error))), Promise.reject(r);
   }
 );
-const w = async (t, e) => s.get(t, e), g = async (t, e, r) => s.post(t, e, r), f = async (t, e, r) => s.put(t, e, r), y = async (t, e) => s.delete(t, e), q = async (t, e) => {
+const f = async (t, e) => s.get(t, e), y = async (t, e, r) => s.post(t, e, r), L = async (t, e, r) => s.put(t, e, r), R = async (t, e) => s.delete(t, e), q = async (t, e) => {
   const { requestType: r, ...o } = e || {};
   return r === "form" ? s.request({
     url: t,
@@ -63,11 +64,11 @@ const w = async (t, e) => s.get(t, e), g = async (t, e, r) => s.post(t, e, r), f
 };
 export {
   a as A,
-  y as a,
-  l as b,
+  R as a,
+  m as b,
   s as c,
-  g as d,
-  w as e,
-  f,
+  y as d,
+  f as e,
+  L as f,
   q as r
 };

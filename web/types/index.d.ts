@@ -491,7 +491,7 @@ export declare interface ErrorResponse {
     message: string;
 }
 
-export declare function EZApp({ basePath, onRouteRender, }: EZAppProps): JSX_2.Element;
+export declare function EZApp({ onRouteRender, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;

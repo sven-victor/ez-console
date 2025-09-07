@@ -1,24 +1,24 @@
-import { j as e, aa as ee, ab as te, ac as $, ad as ne, ae as ie, af as ae, ag as I, ah as S, u as k, ai as se, S as oe, m as re, aj as le, ak as ce, al as he, am as me, an as de, ao as ue, ap as pe, aq as fe, ar as xe, as as ge, at as N, au as je, av as ve, aw as ye } from "./vendor.js";
-import { useLocation as ze, useNavigate as we, Link as _, Outlet as be, matchRoutes as _e, BrowserRouter as $e, Routes as Se, Route as D } from "react-router-dom";
-import { lazy as l, Suspense as Ae, useState as g, useEffect as A } from "react";
-import { L as Re, H as E, A as F, a as Le, P as Ie } from "./components.js";
-import { a as ke, u as Ne, A as Ce } from "./contexts.js";
+import { j as e, aa as te, ab as ne, ac as _, ad as ie, ae, af as se, ag as L, ah as $, u as I, ai as oe, S as re, m as le, aj as ce, ak as he, al as me, am as de, an as ue, ao as pe, ap as fe, aq as xe, ar as ge, as as je, at as k, au as ve, av as ye, aw as ze } from "./vendor.js";
+import { useLocation as we, useNavigate as be, Link as b, Outlet as _e, matchRoutes as $e, BrowserRouter as Se, Routes as Ae, Route as U } from "react-router-dom";
+import { lazy as l, Suspense as Re, useState as j, useEffect as S } from "react";
+import { L as Le, H as D, A as E, a as Ie, P as ke } from "./components.js";
+import { a as Ne, u as Ce, A as Pe } from "./contexts.js";
 import { a as O } from "./authorization.js";
-import { b as V } from "./base.js";
-import { s as q } from "./system.js";
-import { o as K } from "./oauth.js";
+import { b as V, g as q } from "./base.js";
+import { s as K } from "./system.js";
+import { o as T } from "./oauth.js";
 import "./forbidden.js";
 import "./not_found.js";
 import "./client.js";
-const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js")), De = l(() => import("./profile.js")), T = l(() => import("./not_found.js")), Ee = l(() => import("./forbidden.js")), Fe = l(() => import("./users.js").then((a) => a.U)), Me = l(() => import("./users.js").then((a) => a.a)), M = l(() => import("./users.js").then((a) => a.b)), Ue = l(() => import("./roles.js")), He = l(() => import("./system-settings.js").then((a) => a.i)), Oe = l(() => import("./system-settings.js").then((a) => a.O)), Ve = l(() => import("./audit.js")), qe = l(() => import("./service-accounts.js").then((a) => a.S)), Ke = l(() => import("./service-accounts.js").then((a) => a.a)), r = (a) => /* @__PURE__ */ e.jsx(Ae, { fallback: /* @__PURE__ */ e.jsx(Re, {}), children: /* @__PURE__ */ e.jsx(a, {}) }), Te = [
+const Be = l(() => import("./dashboard.js")), Ue = l(() => import("./login.js")), De = l(() => import("./profile.js")), Q = l(() => import("./not_found.js")), Ee = l(() => import("./forbidden.js")), Fe = l(() => import("./users.js").then((a) => a.U)), Me = l(() => import("./users.js").then((a) => a.a)), F = l(() => import("./users.js").then((a) => a.b)), He = l(() => import("./roles.js")), Oe = l(() => import("./system-settings.js").then((a) => a.i)), Ve = l(() => import("./system-settings.js").then((a) => a.O)), qe = l(() => import("./audit.js")), Ke = l(() => import("./service-accounts.js").then((a) => a.S)), Te = l(() => import("./service-accounts.js").then((a) => a.a)), r = (a) => /* @__PURE__ */ e.jsx(Re, { fallback: /* @__PURE__ */ e.jsx(Le, {}), children: /* @__PURE__ */ e.jsx(a, {}) }), Qe = [
   {
     path: "/login",
-    element: r(Be),
+    element: r(Ue),
     index: !0
   },
   {
     path: "/404",
-    element: r(T),
+    element: r(Q),
     index: !0
   },
   {
@@ -28,19 +28,19 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
   },
   {
     path: "/system/settings/oauth/test-callback",
-    element: r(Oe),
+    element: r(Ve),
     index: !0
   }
-], Qe = [
+], We = [
   {
     path: "/",
     is_private: !0,
     children: [
       {
         path: "/",
-        element: r(Pe),
+        element: r(Be),
         name: "dashboard",
-        icon: /* @__PURE__ */ e.jsx(ee, {}),
+        icon: /* @__PURE__ */ e.jsx(te, {}),
         index: !0
       },
       {
@@ -51,18 +51,18 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
       },
       {
         name: "authorization",
-        icon: /* @__PURE__ */ e.jsx($, {}),
+        icon: /* @__PURE__ */ e.jsx(_, {}),
         permissions: ["authorization:user:view", "authorization:user:create", "authorization:user:update", "authorization:user:delete", "authorization:service_account:view", "authorization:service_account:create", "authorization:service_account:update", "authorization:service_account:delete"],
         children: [
           // Role management
           {
             path: "/authorization/roles",
             name: "roles",
-            icon: /* @__PURE__ */ e.jsx(te, {}),
+            icon: /* @__PURE__ */ e.jsx(ne, {}),
             permissions: ["authorization:role:view", "authorization:role:create", "authorization:role:update", "authorization:role:delete"],
             children: [
               {
-                element: r(Ue),
+                element: r(He),
                 permissions: ["authorization:role:view"],
                 index: !0
               }
@@ -72,7 +72,7 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
           {
             path: "/authorization/users",
             name: "users",
-            icon: /* @__PURE__ */ e.jsx($, {}),
+            icon: /* @__PURE__ */ e.jsx(_, {}),
             permissions: ["authorization:user:view", "authorization:user:list", "authorization:user:create", "authorization:user:update", "authorization:user:delete"],
             children: [
               {
@@ -82,7 +82,7 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
               },
               {
                 path: "/authorization/users/create",
-                element: r(M),
+                element: r(F),
                 permissions: ["authorization:user:create"],
                 index: !0
               },
@@ -94,7 +94,7 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
               },
               {
                 path: "/authorization/users/:id/edit",
-                element: r(M),
+                element: r(F),
                 permissions: ["authorization:user:update"],
                 index: !0
               }
@@ -104,17 +104,17 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
           {
             path: "/authorization/service-accounts",
             name: "serviceAccounts",
-            icon: /* @__PURE__ */ e.jsx($, {}),
+            icon: /* @__PURE__ */ e.jsx(_, {}),
             permissions: ["authorization:service_account:view"],
             children: [
               {
-                element: r(qe),
+                element: r(Ke),
                 permissions: ["authorization:service_account:view"],
                 index: !0
               },
               {
                 path: "/authorization/service-accounts/:id",
-                element: r(Ke),
+                element: r(Te),
                 permissions: ["authorization:service_account:view"],
                 index: !0
               }
@@ -125,155 +125,155 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
       // System management menu
       {
         name: "system",
-        icon: /* @__PURE__ */ e.jsx(ae, {}),
+        icon: /* @__PURE__ */ e.jsx(se, {}),
         permissions: ["system:settings:view", "system:settings:update", "system:audit:view"],
         children: [
           // System settings
           {
             path: "/system/settings",
-            icon: /* @__PURE__ */ e.jsx(ne, {}),
+            icon: /* @__PURE__ */ e.jsx(ie, {}),
             index: !0,
             name: "settings",
             permissions: ["system:settings:view", "system:settings:update"],
-            element: r(He)
+            element: r(Oe)
           },
           // Audit logs
           {
             path: "/system/audit",
-            icon: /* @__PURE__ */ e.jsx(ie, {}),
+            icon: /* @__PURE__ */ e.jsx(ae, {}),
             name: "audit",
             permissions: ["system:audit:view"],
             index: !0,
-            element: r(Ve)
+            element: r(qe)
           }
         ]
       },
       // Redirect and error handling
       {
         path: "*",
-        element: r(T),
+        element: r(Q),
         index: !0
       }
     ]
   }
-], U = [...Te, ...Qe], We = {
+], M = [...Qe, ...We], Ye = {
   authorization: O,
   base: V,
-  system: q,
-  oauth: K
-}, { Header: Ye, Content: Ge, Footer: Je, Sider: Xe } = I, { SubMenu: Ze } = S, et = ({ element: a, routes: f }) => {
-  const { t: c, i18n: j } = k(), { t: v } = k("common"), [u, y] = g(!1), d = ze(), { hasPermission: h } = ke(), i = we(), { logout: w, user: o } = Ne(), [z, C] = g([]), [P, Q] = g(null), [R, W] = g("Loading..."), [p, Y] = g(null);
-  d.pathname !== "/profile" && (o && o.mfa_enforced && !o.mfa_enabled ? i("/profile#mfa") : o && o.status === "password_expired" && i("/profile#password"));
-  const G = () => {
-    w(), window.location.href = "/console/login?redirect=" + encodeURIComponent(window.location.href);
-  }, J = [
+  system: K,
+  oauth: T
+}, { Header: Ge, Content: Je, Footer: Xe, Sider: Ze } = L, { SubMenu: et } = $, tt = ({ element: a, routes: m }) => {
+  const { t: d, i18n: v } = I(), { t: u } = I("common"), [f, x] = j(!1), c = we(), { hasPermission: i } = Ne(), y = be(), { logout: z, user: o } = Ce(), [N, C] = j([]), [P, W] = j(null), [A, Y] = j("Loading..."), [p, G] = j(null);
+  c.pathname !== "/profile" && (o && o.mfa_enforced && !o.mfa_enabled ? y("/profile#mfa") : o && o.status === "password_expired" && y("/profile#password"));
+  const J = () => {
+    z(), window.location.href = q("/login?redirect=" + encodeURIComponent(window.location.href));
+  }, X = [
     {
       key: "profile",
-      label: /* @__PURE__ */ e.jsx(_, { to: "/profile", children: v("profile") })
+      label: /* @__PURE__ */ e.jsx(b, { to: "/profile", children: u("profile") })
     },
     {
       key: "logout",
-      label: v("logout"),
-      onClick: G
+      label: u("logout"),
+      onClick: J
     }
   ];
-  A(() => {
-    We.system.getSiteConfig().then((n) => {
+  S(() => {
+    Ye.system.getSiteConfig().then((n) => {
       var t;
-      const s = n.navigation.filter((m) => m.path !== n.home_page), x = [...n.home_page ? [{
+      const s = n.navigation.filter((h) => h.path !== n.home_page), g = [...n.home_page ? [{
         name: "home",
         path: n.home_page
       }] : [], ...s];
-      x.length > 1 ? C(x) : C([]), Q(n.logo), Y(n), (t = document.getElementById("site-icon")) == null || t.setAttribute("href", n.logo);
+      g.length > 1 ? C(g) : C([]), W(n.logo), G(n), (t = document.getElementById("site-icon")) == null || t.setAttribute("href", n.logo);
     });
-  }, []), A(() => {
-    j.language && W((p == null ? void 0 : p.name_i18n[j.language]) || (p == null ? void 0 : p.name) || "");
-  }, [p, j.language]);
-  const L = () => {
-    const n = _e(f, d.pathname), s = [];
+  }, []), S(() => {
+    v.language && Y((p == null ? void 0 : p.name_i18n[v.language]) || (p == null ? void 0 : p.name) || "");
+  }, [p, v.language]);
+  const R = () => {
+    const n = $e(m, c.pathname), s = [];
     if (n) {
-      for (const [x, t] of n.entries())
+      for (const [g, t] of n.entries())
         if (t.route.path === "/" && !t.route.name)
           s.push({
             href: t.route.path,
-            title: v("home"),
+            title: u("home"),
             key: "home"
           });
         else if (t.route.name) {
-          const m = n.slice(0, x + 1).map((b) => b.route.name).filter(Boolean).join(".");
+          const h = n.slice(0, g + 1).map((w) => w.route.name).filter(Boolean).join(".");
           s.push({
             path: t.route.path,
-            title: t.route.name ? c(`breadcrumbs.${m}`) : void 0,
+            title: t.route.name ? d(`breadcrumbs.${h}`) : void 0,
             key: t.route.path
           });
         }
     }
     return s;
-  }, X = (n) => n.some((s) => h(s)), Z = se.flatMapDeep(f, (n) => n.children).map((n) => n == null ? void 0 : n.name).filter((n) => n !== void 0), B = (n, s = []) => {
-    const x = (t) => t && t.replace(/_/g, " ").split(" ").map((m) => m.charAt(0).toUpperCase() + m.slice(1)).join(" ");
+  }, Z = (n) => n.some((s) => i(s)), ee = oe.flatMapDeep(m, (n) => n.children).map((n) => n == null ? void 0 : n.name).filter((n) => n !== void 0), B = (n, s = []) => {
+    const g = (t) => t && t.replace(/_/g, " ").split(" ").map((h) => h.charAt(0).toUpperCase() + h.slice(1)).join(" ");
     return n.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
-      if (t.permissions && !X(t.permissions))
+      if (t.permissions && !Z(t.permissions))
         return null;
-      const m = x(t.name);
+      const h = g(t.name);
       if (!t.name)
         return null;
       if ("children" in t && t.children) {
-        const b = B(t.children, [...s, t.name]);
-        return b.length == 0 && t.path ? /* @__PURE__ */ e.jsx(S.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(_, { to: t.path, children: c(`menu.${[...s, t.name].join(".")}`, { defaultValue: m }) }) }, t.path) : /* @__PURE__ */ e.jsx(Ze, { icon: t.icon, title: c(`menu.${[...s, t.name, t.name].join(".")}`, { defaultValue: m }), children: b }, t.path ?? t.name);
+        const w = B(t.children, [...s, t.name]);
+        return w.length == 0 && t.path ? /* @__PURE__ */ e.jsx($.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(b, { to: t.path, children: d(`menu.${[...s, t.name].join(".")}`, { defaultValue: h }) }) }, t.path) : /* @__PURE__ */ e.jsx(et, { icon: t.icon, title: d(`menu.${[...s, t.name, t.name].join(".")}`, { defaultValue: h }), children: w }, t.path ?? t.name);
       }
-      return t.name && t.path ? /* @__PURE__ */ e.jsx(S.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(_, { to: t.path, children: c(`menu.${[...s, t.name].join(".")}`, { defaultValue: m }) }) }, t.path) : null;
+      return t.name && t.path ? /* @__PURE__ */ e.jsx($.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(b, { to: t.path, children: d(`menu.${[...s, t.name].join(".")}`, { defaultValue: h }) }) }, t.path) : null;
     }).filter(Boolean);
   };
-  return A(() => {
-    const n = L().filter((s) => s.path !== "/").map((s) => s.title).join(" - ");
-    n ? document.title = `${R} | ${n}` : document.title = R;
-  }, [L, d.pathname]), /* @__PURE__ */ e.jsxs(I, { style: { minHeight: "100vh" }, children: [
-    /* @__PURE__ */ e.jsxs(Xe, { collapsible: !0, collapsed: u, onCollapse: y, children: [
-      /* @__PURE__ */ e.jsx("div", { className: "logo", style: { margin: "8px", display: "flex" }, children: /* @__PURE__ */ e.jsx("div", { style: { width: "100%", height: "100%", textAlign: "center" }, children: P ? /* @__PURE__ */ e.jsx("img", { src: P, alt: "logo", style: { height: "32px", width: "32px" } }) : /* @__PURE__ */ e.jsx(oe, { size: "large", tip: "Loading..." }) }) }),
-      /* @__PURE__ */ e.jsx(S, { theme: "dark", defaultOpenKeys: Z, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [d.pathname], children: B(f) })
+  return S(() => {
+    const n = R().filter((s) => s.path !== "/").map((s) => s.title).join(" - ");
+    n ? document.title = `${A} | ${n}` : document.title = A;
+  }, [R, c.pathname]), /* @__PURE__ */ e.jsxs(L, { style: { minHeight: "100vh" }, children: [
+    /* @__PURE__ */ e.jsxs(Ze, { collapsible: !0, collapsed: f, onCollapse: x, children: [
+      /* @__PURE__ */ e.jsx("div", { className: "logo", style: { margin: "8px", display: "flex" }, children: /* @__PURE__ */ e.jsx("div", { style: { width: "100%", height: "100%", textAlign: "center" }, children: P ? /* @__PURE__ */ e.jsx("img", { src: P, alt: "logo", style: { height: "32px", width: "32px" } }) : /* @__PURE__ */ e.jsx(re, { size: "large", tip: "Loading..." }) }) }),
+      /* @__PURE__ */ e.jsx($, { theme: "dark", defaultOpenKeys: ee, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [c.pathname], children: B(m) })
     ] }),
-    /* @__PURE__ */ e.jsxs(I, { className: "site-layout", children: [
-      /* @__PURE__ */ e.jsxs(Ye, { className: "site-layout-background", style: { padding: 0, display: "flex", justifyContent: "space-between" }, children: [
+    /* @__PURE__ */ e.jsxs(L, { className: "site-layout", children: [
+      /* @__PURE__ */ e.jsxs(Ge, { className: "site-layout-background", style: { padding: 0, display: "flex", justifyContent: "space-between" }, children: [
         /* @__PURE__ */ e.jsx(
-          re,
+          le,
           {
             type: "text",
-            icon: u ? /* @__PURE__ */ e.jsx(le, {}) : /* @__PURE__ */ e.jsx(ce, {}),
-            onClick: () => y(!u),
+            icon: f ? /* @__PURE__ */ e.jsx(ce, {}) : /* @__PURE__ */ e.jsx(he, {}),
+            onClick: () => x(!f),
             style: { fontSize: "16px", width: 64, height: 64 }
           }
         ),
         /* @__PURE__ */ e.jsxs("div", { style: { marginRight: "20px" }, children: [
-          /* @__PURE__ */ e.jsx(E, { hidden: z.length <= 1, menu: {
-            items: z.map((n) => ({
+          /* @__PURE__ */ e.jsx(D, { hidden: N.length <= 1, menu: {
+            items: N.map((n) => ({
               key: n.path,
               style: { paddingRight: "20px" },
-              label: /* @__PURE__ */ e.jsx("a", { href: n.path, children: c(`menu.${n.name}`, { defaultValue: n.name }) })
+              label: /* @__PURE__ */ e.jsx("a", { href: n.path, children: d(`menu.${n.name}`, { defaultValue: n.name }) })
             }))
-          }, children: /* @__PURE__ */ e.jsx(he, {}) }),
-          /* @__PURE__ */ e.jsxs(E, { menu: { items: J }, children: [
-            o != null && o.avatar ? /* @__PURE__ */ e.jsx(F, { src: o.avatar }) : /* @__PURE__ */ e.jsx(F, { icon: /* @__PURE__ */ e.jsx($, {}) }),
+          }, children: /* @__PURE__ */ e.jsx(me, {}) }),
+          /* @__PURE__ */ e.jsxs(D, { menu: { items: X }, children: [
+            o != null && o.avatar ? /* @__PURE__ */ e.jsx(E, { src: o.avatar }) : /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(_, {}) }),
             /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em" }, children: (o == null ? void 0 : o.full_name) || (o == null ? void 0 : o.username) })
           ] }),
-          /* @__PURE__ */ e.jsx(Le, {})
+          /* @__PURE__ */ e.jsx(Ie, {})
         ] })
       ] }),
-      /* @__PURE__ */ e.jsxs(Ge, { style: { margin: "0 16px" }, children: [
-        /* @__PURE__ */ e.jsx(me, { style: { margin: "16px 0" }, itemRender: (n) => {
+      /* @__PURE__ */ e.jsxs(Je, { style: { margin: "0 16px" }, children: [
+        /* @__PURE__ */ e.jsx(de, { style: { margin: "16px 0" }, itemRender: (n) => {
           const s = n.href || n.path;
-          return s ? /* @__PURE__ */ e.jsx(_, { to: s, children: n.title }) : /* @__PURE__ */ e.jsx("span", { children: n.title });
-        }, items: L() }),
-        /* @__PURE__ */ e.jsx("div", { className: "site-layout-background", style: { padding: 24, minHeight: 360 }, children: a ?? /* @__PURE__ */ e.jsx(be, {}) })
+          return s ? /* @__PURE__ */ e.jsx(b, { to: s, children: n.title }) : /* @__PURE__ */ e.jsx("span", { children: n.title });
+        }, items: R() }),
+        /* @__PURE__ */ e.jsx("div", { className: "site-layout-background", style: { padding: 24, minHeight: 360 }, children: a ?? /* @__PURE__ */ e.jsx(_e, {}) })
       ] }),
-      /* @__PURE__ */ e.jsxs(Je, { style: { textAlign: "center" }, children: [
+      /* @__PURE__ */ e.jsxs(Xe, { style: { textAlign: "center" }, children: [
         " ©",
         (/* @__PURE__ */ new Date()).getFullYear(),
         " ",
-        R
+        A
       ] })
     ] })
   ] });
-}, tt = new de({
+}, nt = new ue({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: !1,
@@ -281,44 +281,43 @@ const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js"))
     }
   }
 }), H = {
-  "zh-CN": je,
-  "en-US": N,
-  "de-DE": ge,
-  "es-ES": xe,
-  "fr-FR": fe,
-  "ar-AE": pe,
-  "sv-SE": ue
+  "zh-CN": ve,
+  "en-US": k,
+  "de-DE": je,
+  "es-ES": ge,
+  "fr-FR": xe,
+  "ar-AE": fe,
+  "sv-SE": pe
 };
-function pt({
-  basePath: a = "/console/",
-  onRouteRender: f = (c) => c
+function ft({
+  onRouteRender: a = (m) => m
 }) {
-  const { i18n: c } = k(), [j, v] = g(H[c.language] || N);
-  A(() => {
-    v(H[c.language] || N);
-  }, [c.language]);
-  const u = (d) => d.map((h) => h.children === void 0 ? h : {
-    ...h,
-    children: u(h.children)
-  }), y = (d, h) => d.flatMap((i) => i.is_private ? [i] : "children" in i && i.children ? i.children : [i]).map((i, w) => {
-    const o = i.is_private ? /* @__PURE__ */ e.jsx(Ie, { element: /* @__PURE__ */ e.jsx(et, { routes: f(u(U)), element: i.element }) }) : i.element;
+  const { i18n: m } = I(), [d, v] = j(H[m.language] || k);
+  S(() => {
+    v(H[m.language] || k);
+  }, [m.language]);
+  const u = (x) => x.map((c) => c.children === void 0 ? c : {
+    ...c,
+    children: u(c.children)
+  }), f = (x, c) => x.flatMap((i) => i.is_private ? [i] : "children" in i && i.children ? i.children : [i]).map((i, y) => {
+    const z = i.is_private ? /* @__PURE__ */ e.jsx(ke, { element: /* @__PURE__ */ e.jsx(tt, { routes: a(u(M)), element: i.element }) }) : i.element;
     if ("children" in i && i.children && i.children.length > 0)
-      return /* @__PURE__ */ e.jsx(D, { path: i.path, element: o, children: y(i.children, i) }, i.path ?? i.name ?? w);
-    const { path: z } = i;
-    return /* @__PURE__ */ e.jsx(D, { path: z, index: i.index, element: o }, z ?? i.name ?? `${(h == null ? void 0 : h.path) ?? ""}.${w}`);
+      return /* @__PURE__ */ e.jsx(U, { path: i.path, element: z, children: f(i.children, i) }, i.path ?? i.name ?? y);
+    const { path: o } = i;
+    return /* @__PURE__ */ e.jsx(U, { path: o, index: i.index, element: z }, o ?? i.name ?? `${(c == null ? void 0 : c.path) ?? ""}.${y}`);
   }).filter(Boolean);
-  return /* @__PURE__ */ e.jsx(ve, { client: tt, children: /* @__PURE__ */ e.jsx(ye, { locale: j, children: /* @__PURE__ */ e.jsx(Ce, { children: /* @__PURE__ */ e.jsx($e, { basename: a, children: /* @__PURE__ */ e.jsx(Se, { children: y(f(u(U))) }) }) }) }) });
+  return /* @__PURE__ */ e.jsx(ye, { client: nt, children: /* @__PURE__ */ e.jsx(ze, { locale: d, children: /* @__PURE__ */ e.jsx(Pe, { children: /* @__PURE__ */ e.jsx(Se, { basename: q(), children: /* @__PURE__ */ e.jsx(Ae, { children: f(a(u(M))) }) }) }) }) });
 }
-const ft = {
+const xt = {
   ...O,
   ...V,
-  ...K,
-  ...q
+  ...T,
+  ...K
 };
 export {
-  pt as A,
-  We as a,
-  ft as b,
-  et as c,
+  ft as A,
+  Ye as a,
+  xt as b,
+  tt as c,
   r as w
 };

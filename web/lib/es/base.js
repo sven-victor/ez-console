@@ -1,18 +1,60 @@
 import { r as c } from "./client.js";
 import { i as h, B as v, a as f } from "./vendor.js";
-async function b(i, t) {
+const J = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
+  const r = t instanceof Date ? t : new Date(t), n = r.getFullYear(), o = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), d = String(r.getHours()).padStart(2, "0"), i = String(r.getMinutes()).padStart(2, "0"), s = String(r.getSeconds()).padStart(2, "0");
+  return e.replace("YYYY", String(n)).replace("MM", o).replace("DD", a).replace("HH", d).replace("mm", i).replace("ss", s);
+}, Q = (t, e) => {
+  if (typeof t != "string")
+    throw new Error("Color must be a string.");
+  const r = t.trim().toLowerCase();
+  if (r.startsWith("#")) {
+    let i = r.slice(1);
+    if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
+      throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
+    const s = parseInt(i.slice(0, 2), 16), l = parseInt(i.slice(2, 4), 16), u = parseInt(i.slice(4, 6), 16);
+    if (isNaN(s) || isNaN(l) || isNaN(u))
+      throw new Error("Invalid characters in HEX color value.");
+    return `rgba(${s}, ${l}, ${u}, ${e})`;
+  }
+  const n = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = r.match(n);
+  if (o) {
+    const i = parseInt(o[1], 10), s = parseInt(o[2], 10), l = parseInt(o[3], 10);
+    if (i < 0 || i > 255 || s < 0 || s > 255 || l < 0 || l > 255)
+      throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
+    return `rgba(${i}, ${s}, ${l}, ${e})`;
+  }
+  const a = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, d = r.match(a);
+  if (d) {
+    const i = parseInt(d[1], 10), s = parseInt(d[2], 10), l = parseInt(d[3], 10);
+    if (i < 0 || i > 255 || s < 0 || s > 255 || l < 0 || l > 255)
+      throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
+    return `rgba(${i}, ${s}, ${l}, ${e})`;
+  }
+  throw new Error(
+    "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
+  );
+}, Y = (t) => {
+  if (!t)
+    return "";
+  const [e, r] = t.split("@");
+  return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + r : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + r;
+}, $ = (t) => {
+  const e = "/";
+  return t ? e.endsWith("/") ? t.startsWith("/") ? e + t.substring(1) : e + t : t.startsWith("/") ? e + t : e + "/" + t : e;
+};
+async function b(t, e) {
   return c("/api/files", {
     method: "GET",
     params: {
-      ...i
+      ...t
     },
-    ...t || {}
+    ...e || {}
   });
 }
-async function A(i, t, r) {
+async function A(t, e, r) {
   const n = new FormData();
-  return t && n.append("file", t), Object.keys(i).forEach((o) => {
-    const a = i[o];
+  return e && n.append("file", e), Object.keys(t).forEach((o) => {
+    const a = t[o];
     a != null && (typeof a == "object" && !(a instanceof File) ? a instanceof Array ? a.forEach((d) => n.append(o, d || "")) : n.append(o, JSON.stringify(a)) : n.append(o, a));
   }), c("/api/files", {
     method: "POST",
@@ -21,21 +63,21 @@ async function A(i, t, r) {
     ...r || {}
   });
 }
-async function S(i, t) {
-  const { fileKey: r, ...n } = i;
+async function S(t, e) {
+  const { fileKey: r, ...n } = t;
   return c(`/api/files/${r}`, {
     method: "GET",
     params: { ...n },
+    ...e || {}
+  });
+}
+async function k(t) {
+  return c("/api/statistics", {
+    method: "GET",
     ...t || {}
   });
 }
-async function k(i) {
-  return c("/api/statistics", {
-    method: "GET",
-    ...i || {}
-  });
-}
-const J = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const X = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: S,
   getStatistics: k,
@@ -6319,52 +6361,15 @@ h.use(v).use(f).init({
     escapeValue: !1
   }
 });
-const Q = (i, t = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const r = i instanceof Date ? i : new Date(i), n = r.getFullYear(), o = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), d = String(r.getHours()).padStart(2, "0"), e = String(r.getMinutes()).padStart(2, "0"), s = String(r.getSeconds()).padStart(2, "0");
-  return t.replace("YYYY", String(n)).replace("MM", o).replace("DD", a).replace("HH", d).replace("mm", e).replace("ss", s);
-}, Y = (i, t) => {
-  if (typeof i != "string")
-    throw new Error("Color must be a string.");
-  const r = i.trim().toLowerCase();
-  if (r.startsWith("#")) {
-    let e = r.slice(1);
-    if (e.length === 3 && (e = e[0] + e[0] + e[1] + e[1] + e[2] + e[2]), e.length !== 6)
-      throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const s = parseInt(e.slice(0, 2), 16), l = parseInt(e.slice(2, 4), 16), u = parseInt(e.slice(4, 6), 16);
-    if (isNaN(s) || isNaN(l) || isNaN(u))
-      throw new Error("Invalid characters in HEX color value.");
-    return `rgba(${s}, ${l}, ${u}, ${t})`;
-  }
-  const n = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = r.match(n);
-  if (o) {
-    const e = parseInt(o[1], 10), s = parseInt(o[2], 10), l = parseInt(o[3], 10);
-    if (e < 0 || e > 255 || s < 0 || s > 255 || l < 0 || l > 255)
-      throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${e}, ${s}, ${l}, ${t})`;
-  }
-  const a = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, d = r.match(a);
-  if (d) {
-    const e = parseInt(d[1], 10), s = parseInt(d[2], 10), l = parseInt(d[3], 10);
-    if (e < 0 || e > 255 || s < 0 || s > 255 || l < 0 || l > 255)
-      throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${e}, ${s}, ${l}, ${t})`;
-  }
-  throw new Error(
-    "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
-  );
-}, $ = (i) => {
-  if (!i)
-    return "";
-  const [t, r] = i.split("@");
-  return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + r : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + r;
-}, X = {
+const ee = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
 export {
-  X as P,
-  J as b,
-  Q as f,
-  $ as m,
-  Y as t
+  ee as P,
+  X as b,
+  J as f,
+  $ as g,
+  Y as m,
+  Q as t
 };
