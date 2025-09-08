@@ -77,9 +77,9 @@ const Dashboard: React.FC = () => {
     <Skeleton active loading={loading}>
       <p>{t('dashboard.welcome', { defaultValue: 'Welcome, {{name}}!', name: user?.full_name || user?.username })}</p>
       {
-        statistics?.map((row) => (<Row gutter={16} style={{ marginTop: 20 }}>
+        statistics?.map((row, index) => (<Row gutter={16} style={{ marginTop: 20 }} key={index}>
           {
-            row.map((chart) => (<Col span={chart.width}>
+            row.map((chart, index) => (<Col span={chart.width} key={index}>
               {renderChart(chart)}
             </Col>))
           }
