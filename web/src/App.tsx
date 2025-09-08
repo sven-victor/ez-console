@@ -62,7 +62,7 @@ function App({
 }: AppProps) {
   const { i18n } = useTranslation();
   const [antdLocale, setAntdLocale] = useState(antdLocales[i18n.language] || enUS);
-  console.log(transformSettingTabs)
+
   useEffect(() => {
     setAntdLocale(antdLocales[i18n.language] || enUS);
   }, [i18n.language]);
