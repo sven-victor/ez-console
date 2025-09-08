@@ -13,7 +13,7 @@ export { default as Avatar, AvatarUpload, type AvatarProps, type AvatarUploadPro
 export { default as DynamicIcon, getIconByName, type DynamicIconProps } from '@/components/DynamicIcon';
 export { default as HeaderDropdown, type HeaderDropdownProps } from '@/components/HeaderDropdown';
 export { default as LabelCreater, type LabelCreaterProps } from '@/components/LabelCreater';
-export { default as LanguageSwitch, AllLangUIConfig } from '@/components/LanguageSwitch';
+export { default as LanguageSwitch, AllLangUIConfig, type LanguageSwitchProps } from '@/components/LanguageSwitch';
 export { default as AppLayout, type AppLayoutProps } from '@/components/Layout';
 export { PermissionGuard, type PermissionGuardProps, AdminGuard } from '@/components/PermissionGuard';
 export { default as PrivateRoute, type PrivateRouteProps } from '@/components/PrivateRoute';

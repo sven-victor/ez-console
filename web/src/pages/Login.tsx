@@ -8,12 +8,16 @@ import api from '@/service/api';
 import { ApiError } from '@/service/client';
 import ProfilePassword from '@/components/profile/ProfilePassword';
 import { getURL, maskEmail } from '@/utils';
-import LanguageSwitch from '@/components/LanguageSwitch';
+import LanguageSwitch, { LanguageConfig } from '@/components/LanguageSwitch';
 import Loading from '@/components/Loading';
 
 const { Title } = Typography;
 
-const Login: React.FC = () => {
+interface LoginProps {
+  transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+}
+
+const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -194,13 +198,6 @@ const Login: React.FC = () => {
   return (
     <div>
       <div style={{
-        position: 'absolute',
-        top: 0,
-        right: 0,
-      }}>
-        <LanguageSwitch />
-      </div>
-      <div style={{
         height: '100vh',
         display: 'flex',
         justifyContent: 'center',
@@ -208,6 +205,13 @@ const Login: React.FC = () => {
         background: '#f0f2f5'
       }}>
         <Card style={{ width: 400, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+          }}>
+            <LanguageSwitch transformLangConfig={transformLangConfig} />
+          </div>
           <div style={{ textAlign: 'center', marginBottom: 20 }}>
             <Title level={2}>{siteName}</Title>
             <p>{t('login.subtitle', { defaultValue: 'Enter your credentials to continue' })}</p>

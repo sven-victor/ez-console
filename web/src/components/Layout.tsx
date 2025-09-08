@@ -9,7 +9,7 @@ import {
 import { Link, Outlet, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { type IRoute } from '../routes';
-import LanguageSwitch from './LanguageSwitch';
+import LanguageSwitch, { type LanguageConfig } from './LanguageSwitch';
 import HeaderDropdown from './HeaderDropdown';
 import Avatar from './Avatar';
 import { useTranslation } from 'react-i18next';
@@ -24,9 +24,11 @@ const { SubMenu } = Menu;
 export interface AppLayoutProps {
   routes: IRoute[];
   element?: React.ReactNode | null;
+  transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+  menuStyle?: 'dark' | 'light';
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ element, routes }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ element, routes, transformLangConfig, menuStyle = 'dark' }) => {
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const [collapsed, setCollapsed] = useState(false);
@@ -178,13 +180,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({ element, routes }) => {
   }, [getBreadcrumbs, location.pathname])
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed}  >
+      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme={menuStyle}>
         <div className="logo" style={{ margin: '8px', display: 'flex' }}>
           <div style={{ width: '100%', height: '100%', textAlign: 'center' }}>
             {siteIcon ? <img src={siteIcon} alt="logo" style={{ height: '32px', width: '32px', }} /> : <Spin size="large" tip="Loading..." />}
           </div>
         </div>
-        <Menu theme="dark" defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[location.pathname]}>
+        <Menu theme={menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[location.pathname]}>
           {renderMenuItems(routes)}
         </Menu>
       </Sider>
@@ -210,7 +212,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ element, routes }) => {
               {user?.avatar ? <Avatar src={user.avatar} /> : <Avatar icon={<UserOutlined />} />}
               <span style={{ height: '1em', lineHeight: '1em' }}>{user?.full_name || user?.username}</span>
             </HeaderDropdown>
-            <LanguageSwitch />
+            <LanguageSwitch transformLangConfig={transformLangConfig} />
           </div>
         </Header>
         <Content style={{ margin: '0 16px' }}>

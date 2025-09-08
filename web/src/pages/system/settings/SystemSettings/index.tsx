@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Tabs } from 'antd';
+import { Card, Tabs, type TabsProps as AntTabsProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import OAuthSettingsForm from './OAuthSettingsForm';
 import SecuritySettingForm from './SecuritySettingForm';
@@ -8,7 +8,14 @@ import SMTPSettingsForm from './SMTPSettingsForm';
 import BaseSettingsForm from './BaseSettings';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-const SystemSettings: React.FC = () => {
+
+export interface SystemSettingsProps {
+  transformItems?: (items: AntTabsProps['items']) => AntTabsProps['items'];
+}
+
+const SystemSettings: React.FC<SystemSettingsProps> = ({
+  transformItems = (items) => items,
+}) => {
   const { t } = useTranslation('system');
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,7 +59,7 @@ const SystemSettings: React.FC = () => {
           navigate(`${location.pathname}#${key}`);
           // window.history.pushState({}, '', `${location.pathname}#${key}`);
         }}
-        items={items}
+        items={transformItems(items)}
       />
     </Card>
   );

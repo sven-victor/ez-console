@@ -1,9 +1,11 @@
 import { r as c } from "./client.js";
-import { i as h, B as v, a as f } from "./vendor.js";
-const J = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
+import h from "i18next";
+import { initReactI18next as v } from "react-i18next";
+import f from "i18next-browser-languagedetector";
+const Y = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
   const r = t instanceof Date ? t : new Date(t), n = r.getFullYear(), o = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), d = String(r.getHours()).padStart(2, "0"), i = String(r.getMinutes()).padStart(2, "0"), s = String(r.getSeconds()).padStart(2, "0");
   return e.replace("YYYY", String(n)).replace("MM", o).replace("DD", a).replace("HH", d).replace("mm", i).replace("ss", s);
-}, Q = (t, e) => {
+}, $ = (t, e) => {
   if (typeof t != "string")
     throw new Error("Color must be a string.");
   const r = t.trim().toLowerCase();
@@ -33,12 +35,12 @@ const J = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, Y = (t) => {
+}, X = (t) => {
   if (!t)
     return "";
   const [e, r] = t.split("@");
   return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + r : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + r;
-}, $ = (t) => {
+}, ee = (t) => {
   const e = "/";
   return t ? e.endsWith("/") ? t.startsWith("/") ? e + t.substring(1) : e + t : t.startsWith("/") ? e + t : e + "/" + t : e;
 };
@@ -77,7 +79,7 @@ async function k(t) {
     ...t || {}
   });
 }
-const X = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: S,
   getStatistics: k,
@@ -6308,7 +6310,7 @@ const X = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit: "سجلات التدقيق"
   }
 };
-h.use(v).use(f).init({
+h.use(f).use(v).init({
   ns: ["common", "authorization", "system"],
   defaultNS: "translation",
   resources: {
@@ -6361,15 +6363,15 @@ h.use(v).use(f).init({
     escapeValue: !1
   }
 });
-const ee = {
+const ie = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
 export {
-  ee as P,
-  X as b,
-  J as f,
-  $ as g,
-  Y as m,
-  Q as t
+  ie as P,
+  te as b,
+  Y as f,
+  ee as g,
+  X as m,
+  $ as t
 };

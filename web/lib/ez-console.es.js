@@ -1,39 +1,40 @@
-import { c as i, A as p, b as n, w as d } from "./es/index.js";
+import { c as p, A as i, b as n, w as d } from "./es/index.js";
+import { useTranslation as f } from "react-i18next";
 import "./es/base.js";
-import { b as u, h as f, e as A, A as l, c, D as g, H as x, d as L, a as b, L as P, f as w, P as D, T as h, g as v } from "./es/components.js";
-import { default as G } from "./es/forbidden.js";
-import { default as T } from "./es/not_found.js";
-import { A as E, a as F, e as H, d as N, f as S } from "./es/client.js";
+import { b as A, h as l, e as c, A as g, c as x, D as L, H as b, d as P, a as w, L as D, f as h, P as v, T as y, g as G } from "./es/components.js";
+import { default as T } from "./es/forbidden.js";
+import { default as E } from "./es/not_found.js";
+import { A as H, a as N, e as S, d as U, f as B } from "./es/client.js";
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";
-import { i as B, u as R } from "./es/vendor.js";
+import { default as Z } from "i18next";
 export {
-  u as Actions,
-  f as AdminGuard,
-  A as AllLangUIConfig,
-  E as ApiError,
-  i as AppLayout,
-  l as Avatar,
-  c as AvatarUpload,
-  g as DynamicIcon,
-  p as EZApp,
-  G as Forbidden,
-  x as HeaderDropdown,
-  L as LabelCreater,
-  b as LanguageSwitch,
-  P as Loading,
-  T as NotFound,
-  w as PermissionGuard,
-  D as PrivateRoute,
-  h as Table,
+  A as Actions,
+  l as AdminGuard,
+  c as AllLangUIConfig,
+  H as ApiError,
+  p as AppLayout,
+  g as Avatar,
+  x as AvatarUpload,
+  L as DynamicIcon,
+  i as EZApp,
+  T as Forbidden,
+  b as HeaderDropdown,
+  P as LabelCreater,
+  w as LanguageSwitch,
+  D as Loading,
+  E as NotFound,
+  h as PermissionGuard,
+  v as PrivateRoute,
+  y as Table,
   n as api,
-  F as apiDelete,
-  H as apiGet,
-  N as apiPost,
-  S as apiPut,
-  v as getIconByName,
-  B as i18n,
-  R as useTranslation,
+  N as apiDelete,
+  S as apiGet,
+  U as apiPost,
+  B as apiPut,
+  G as getIconByName,
+  Z as i18n,
+  f as useTranslation,
   d as withSuspense
 };

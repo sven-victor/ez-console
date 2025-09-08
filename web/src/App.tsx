@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, type TabsProps as AntTabsProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 
@@ -12,7 +12,7 @@ import frFR from 'antd/lib/locale/fr_FR';
 import arEG from 'antd/lib/locale/ar_EG';
 import svSE from 'antd/lib/locale/sv_SE';
 
-import routes, { type IRoute } from './routes';
+import { getRoutes, type IRoute } from './routes';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import AppLayout from './components/Layout';
@@ -20,6 +20,7 @@ import AppLayout from './components/Layout';
 import './index.css'
 import './i18n'
 import { getURL } from './utils';
+import { LanguageConfig } from './components/LanguageSwitch';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -43,15 +44,25 @@ const antdLocales: { [key: string]: any } = {
 
 export interface AppProps {
   basePath?: string;
-  onRouteRender?: (routes: IRoute[]) => IRoute[];
+  transformRouter?: (routes: IRoute[]) => IRoute[];
+  transformSettingTabs?: (items: AntTabsProps['items']) => AntTabsProps['items'];
+  transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+  extraPrivateRoutes?: IRoute[];
+  extraPublicRoutes?: IRoute[];
+  menuStyle?: 'dark' | 'light';
 }
 
 function App({
-  onRouteRender = (routes) => routes,
+  transformRouter = (routes) => routes,
+  transformSettingTabs = (items) => items,
+  transformLangConfig = (langs) => langs,
+  extraPrivateRoutes = [],
+  extraPublicRoutes = [],
+  menuStyle = 'dark',
 }: AppProps) {
   const { i18n } = useTranslation();
   const [antdLocale, setAntdLocale] = useState(antdLocales[i18n.language] || enUS);
-
+  console.log(transformSettingTabs)
   useEffect(() => {
     setAntdLocale(antdLocales[i18n.language] || enUS);
   }, [i18n.language]);
@@ -68,6 +79,12 @@ function App({
     })
   }
 
+
+  const routes = transformRouter(deepCopyRouters(getRoutes({
+    transformSettingTabs, transformLangConfig,
+    extraPrivateRoutes, extraPublicRoutes
+  })));
+
   const renderRoutes = (childrenRoutes: IRoute[], parentRoute?: IRoute): React.ReactElement[] => {
     return childrenRoutes.flatMap((route) => {
       if (route.is_private) {
@@ -78,7 +95,12 @@ function App({
       }
       return [route];
     }).map((route, index) => {
-      const element = route.is_private ? <PrivateRoute element={<AppLayout routes={onRouteRender(deepCopyRouters(routes))} element={route.element} />} /> : route.element
+      const element = route.is_private ? <PrivateRoute element={<AppLayout
+        routes={routes}
+        element={route.element}
+        transformLangConfig={transformLangConfig}
+        menuStyle={menuStyle}
+      />} /> : route.element
       if ('children' in route && route.children && route.children.length > 0) {
         return <Route key={route.path ?? route.name ?? index} path={route.path} element={element} >
           {renderRoutes(route.children, route)}
@@ -89,12 +111,14 @@ function App({
     }).filter(Boolean);
   }
   return (
-    <QueryClientProvider client={queryClient}>
-      <ConfigProvider locale={antdLocale}>
+    <QueryClientProvider client={queryClient} >
+      <ConfigProvider
+        locale={antdLocale}
+      >
         <AuthProvider>
           <Router basename={getURL()}>
             <Routes>
-              {renderRoutes(onRouteRender(deepCopyRouters(routes)))}
+              {renderRoutes(routes)}
             </Routes>
           </Router>
         </AuthProvider>

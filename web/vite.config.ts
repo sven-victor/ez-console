@@ -109,10 +109,37 @@ export default defineConfig((env: ConfigEnv) => {
             globals: {
               react: 'React',
               'react-dom': 'ReactDOM',
-              'react-router-dom': 'ReactRouterDOM',
+              'antd': 'Antd',
             },
           },
-          external: ['react', 'react-dom', 'react-router-dom'],
+          external: [
+            // react
+            'react',
+            'react-router-dom',
+            'react-quill',
+            'react-query',
+            'react-json-view',
+            'react-dom',
+            'react-chartjs-2',
+            // i18n
+            'react-i18next',
+            'i18next',
+            'i18next-browser-languagedetector',
+            // antd
+            'antd',
+            'antd-style',
+            'antd-img-crop',
+            '@ant-design/pro-components',
+            '@ant-design/icons',
+            // utils
+            'axios',
+            'lodash',
+            'moment',
+            'dayjs',
+            'classnames',
+            'chart.js',
+            'ahooks',
+          ],
         },
         cssCodeSplit: false
       }

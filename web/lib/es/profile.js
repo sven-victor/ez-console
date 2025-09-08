@@ -1,25 +1,27 @@
-import { u as l, j as e, C as m, aA as p, s as b } from "./vendor.js";
-import { useState as g, useEffect as j } from "react";
-import { j as x, i as y, k as P, l as A, U as V } from "./components.js";
-import { b as k } from "./contexts.js";
-import { a as w } from "./index.js";
+import { j as e } from "./vendor.js";
+import { useState as h, useEffect as p } from "react";
+import { Card as b, Tabs as g, message as j } from "antd";
+import { useTranslation as l } from "react-i18next";
+import { j as x, i as y, k as P, l as V, U as k } from "./components.js";
+import { b as w } from "./contexts.js";
+import { a as A } from "./index.js";
 import { useNavigate as L, useLocation as S } from "react-router-dom";
-const E = () => {
-  const { t: a } = l("authorization"), { t: n } = l("common"), { user: s, updateUser: c } = k(), [f, i] = g(!1), u = L(), r = S(), d = r.hash.replace("#", "") || "basic", o = async () => {
+const _ = () => {
+  const { t: a } = l("authorization"), { t: n } = l("common"), { user: s, updateUser: c } = w(), [f, i] = h(!1), u = L(), r = S(), d = r.hash.replace("#", "") || "basic", o = async () => {
     try {
       i(!0);
-      const t = await w.authorization.getCurrentUser();
+      const t = await A.authorization.getCurrentUser();
       c(t);
     } catch (t) {
-      b.error(n("fetchFailed", { defaultValue: "Failed to fetch data" })), console.error("Failed to fetch user profile:", t);
+      j.error(n("fetchFailed", { defaultValue: "Failed to fetch data" })), console.error("Failed to fetch user profile:", t);
     } finally {
       i(!1);
     }
   };
-  j(() => {
+  p(() => {
     o();
   }, []);
-  const h = [
+  const m = [
     {
       key: "basic",
       label: a("profile.basic", { defaultValue: "Basic Information" }),
@@ -39,27 +41,27 @@ const E = () => {
     {
       key: "sessions",
       label: a("profile.sessions", { defaultValue: "Sessions" }),
-      children: /* @__PURE__ */ e.jsx(A, {})
+      children: /* @__PURE__ */ e.jsx(V, {})
     },
     {
       key: "auditLogs",
       label: a("profile.auditLogs", { defaultValue: "Audit Logs" }),
-      children: /* @__PURE__ */ e.jsx(V, {})
+      children: /* @__PURE__ */ e.jsx(k, {})
     }
   ];
   return /* @__PURE__ */ e.jsx(
-    m,
+    b,
     {
       title: a("profile.title", { defaultValue: "Profile Settings" }),
       loading: f,
       children: /* @__PURE__ */ e.jsx(
-        p,
+        g,
         {
           defaultActiveKey: d,
           onChange: (t) => {
             u(`${r.pathname}#${t}`);
           },
-          items: h,
+          items: m,
           destroyInactiveTabPane: !0
         }
       )
@@ -67,5 +69,5 @@ const E = () => {
   );
 };
 export {
-  E as default
+  _ as default
 };

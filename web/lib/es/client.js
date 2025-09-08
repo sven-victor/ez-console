@@ -2,7 +2,7 @@ var d = Object.defineProperty;
 var p = (t, e, r) => e in t ? d(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
 var c = (t, e, r) => p(t, typeof e != "symbol" ? e + "" : e, r);
 import { g as u } from "./base.js";
-import { b as l } from "./vendor.js";
+import l from "axios";
 const m = "/api", s = l.create({
   baseURL: m,
   timeout: 3e4,

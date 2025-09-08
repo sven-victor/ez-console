@@ -29,7 +29,7 @@ const useStyles = createStyles(() => ({
   },
 }));
 
-export const AllLangUIConfig = [
+export const AllLangUIConfig: LanguageConfig[] = [
   { lang: 'en-US', label: 'English', icon: '🇺🇸' },
   { lang: 'sv-SE', label: 'Svenska', icon: '🇸🇪' },
   { lang: 'ar-AE', label: 'العربية', icon: '🇦🇪' },
@@ -39,7 +39,18 @@ export const AllLangUIConfig = [
   { lang: 'zh-CN', label: '中文', icon: '🇨🇳' },
 ];
 
-const LanguageSwitch: React.FC = () => {
+export interface LanguageConfig {
+  lang: string;
+  label: string;
+  icon: string;
+}
+export interface LanguageSwitchProps {
+  transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+}
+
+const LanguageSwitch: React.FC<LanguageSwitchProps> = ({
+  transformLangConfig = (langs) => langs,
+}) => {
   const { i18n } = useTranslation();
   const { styles } = useStyles();
 
@@ -50,7 +61,7 @@ const LanguageSwitch: React.FC = () => {
   const langMenu: MenuProps = {
     selectedKeys: [i18n.language],
     onClick: (info) => { handleLanguageChange(info.key) },
-    items: AllLangUIConfig.map((localeObj) => ({
+    items: transformLangConfig(AllLangUIConfig).map((localeObj) => ({
       key: localeObj.lang,
       className: styles.menuItemStyle,
       label: (

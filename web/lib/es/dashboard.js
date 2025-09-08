@@ -1,36 +1,41 @@
-import { u as d, e as u, j as e, h as m, X as c, Y as p, C as l, a1 as g, a2 as b, a3 as f, a4 as x, a5 as h, a6 as j, a7 as C, a8 as S, a9 as v, s as E } from "./vendor.js";
-import { u as y } from "./contexts.js";
-import { D as R } from "./components.js";
-import { a as _ } from "./index.js";
+import { j as r } from "./vendor.js";
+import { message as m, Skeleton as d, Row as p, Col as u, Card as i, Statistic as c } from "antd";
+import { u as f } from "./contexts.js";
+import { useTranslation as b } from "react-i18next";
+import { Chart as g, CategoryScale as x, LinearScale as j, BarElement as h, Title as C, Tooltip as S, Legend as v } from "chart.js";
+import { Bar as E } from "react-chartjs-2";
+import { D as y } from "./components.js";
+import { useRequest as R } from "ahooks";
+import { a as T } from "./index.js";
 import { t as w } from "./base.js";
-f.register(
+g.register(
   x,
-  h,
   j,
+  h,
   C,
   S,
   v
 );
-const W = () => {
-  const { user: r } = y(), { t } = d(), { data: o = [], loading: i } = u(_.base.getStatistics, {
-    onError: (a) => {
-      E.error(t("dashboard.fetchStatisticsError", { defaultValue: "Error fetching statistics: {{error}}", error: a.message }));
+const N = () => {
+  const { user: t } = f(), { t: s } = b(), { data: a = [], loading: l } = R(T.base.getStatistics, {
+    onError: (e) => {
+      m.error(s("dashboard.fetchStatisticsError", { defaultValue: "Error fetching statistics: {{error}}", error: e.message }));
     }
-  }), n = (a) => "value" in a ? /* @__PURE__ */ e.jsx(l, { children: /* @__PURE__ */ e.jsx(
-    g,
+  }), n = (e) => "value" in e ? /* @__PURE__ */ r.jsx(i, { children: /* @__PURE__ */ r.jsx(
+    c,
     {
-      title: a.title,
-      value: a.value,
-      prefix: /* @__PURE__ */ e.jsx(R, { iconName: a.icon }),
-      valueStyle: { color: a.color }
+      title: e.title,
+      value: e.value,
+      prefix: /* @__PURE__ */ r.jsx(y, { iconName: e.icon }),
+      valueStyle: { color: e.color }
     }
-  ) }) : /* @__PURE__ */ e.jsx(l, { children: /* @__PURE__ */ e.jsx(b, { data: {
-    labels: a.labels,
-    datasets: a.datasets.map((s) => ({
-      label: s.label,
-      data: s.data,
-      borderColor: s.color,
-      backgroundColor: w(s.color, 0.5),
+  ) }) : /* @__PURE__ */ r.jsx(i, { children: /* @__PURE__ */ r.jsx(E, { data: {
+    labels: e.labels,
+    datasets: e.datasets.map((o) => ({
+      label: o.label,
+      data: o.data,
+      borderColor: o.color,
+      backgroundColor: w(o.color, 0.5),
       borderRadius: 5,
       borderWidth: 2
     }))
@@ -42,11 +47,11 @@ const W = () => {
       }
     }
   } }) });
-  return /* @__PURE__ */ e.jsxs(m, { active: !0, loading: i, children: [
-    /* @__PURE__ */ e.jsx("p", { children: t("dashboard.welcome", { defaultValue: "Welcome, {{name}}!", name: (r == null ? void 0 : r.full_name) || (r == null ? void 0 : r.username) }) }),
-    o == null ? void 0 : o.map((a) => /* @__PURE__ */ e.jsx(c, { gutter: 16, style: { marginTop: 20 }, children: a.map((s) => /* @__PURE__ */ e.jsx(p, { span: s.width, children: n(s) })) }))
+  return /* @__PURE__ */ r.jsxs(d, { active: !0, loading: l, children: [
+    /* @__PURE__ */ r.jsx("p", { children: s("dashboard.welcome", { defaultValue: "Welcome, {{name}}!", name: (t == null ? void 0 : t.full_name) || (t == null ? void 0 : t.username) }) }),
+    a == null ? void 0 : a.map((e) => /* @__PURE__ */ r.jsx(p, { gutter: 16, style: { marginTop: 20 }, children: e.map((o) => /* @__PURE__ */ r.jsx(u, { span: o.width, children: n(o) })) }))
   ] });
 };
 export {
-  W as default
+  N as default
 };

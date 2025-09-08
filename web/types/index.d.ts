@@ -8,6 +8,7 @@ import { default as i18n } from 'i18next';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { ReactNode } from 'react';
 import { TableProps as TableProps_2 } from 'antd';
+import { TabsProps } from 'antd';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 
@@ -37,11 +38,7 @@ export declare const Actions: ({ actions }: {
  */
 export declare const AdminGuard: default_2.FC<Omit<PermissionGuardProps, 'permission' | 'permissions' | 'checkAll'>>;
 
-export declare const AllLangUIConfig: {
-    lang: string;
-    label: string;
-    icon: string;
-}[];
+export declare const AllLangUIConfig: LanguageConfig[];
 
 export declare const api: {
     testLdapConnection(body: API.LDAPTestRequest, options?: {
@@ -292,6 +289,8 @@ export declare const AppLayout: default_2.FC<AppLayoutProps>;
 export declare interface AppLayoutProps {
     routes: IRoute[];
     element?: default_2.ReactNode | null;
+    transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+    menuStyle?: 'dark' | 'light';
 }
 
 export declare interface assignPermissionsParams {
@@ -491,11 +490,16 @@ export declare interface ErrorResponse {
     message: string;
 }
 
-export declare function EZApp({ onRouteRender, }: EZAppProps): JSX_2.Element;
+export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;
-    onRouteRender?: (routes: IRoute[]) => IRoute[];
+    transformRouter?: (routes: IRoute[]) => IRoute[];
+    transformSettingTabs?: (items: TabsProps['items']) => TabsProps['items'];
+    transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+    extraPrivateRoutes?: IRoute[];
+    extraPublicRoutes?: IRoute[];
+    menuStyle?: 'dark' | 'light';
 }
 
 declare interface File_2 {
@@ -659,7 +663,17 @@ export declare interface LabelCreaterProps {
     onChange: (name: string, value: string) => void;
 }
 
-export declare const LanguageSwitch: default_2.FC;
+declare interface LanguageConfig {
+    lang: string;
+    label: string;
+    icon: string;
+}
+
+export declare const LanguageSwitch: default_2.FC<LanguageSwitchProps>;
+
+export declare interface LanguageSwitchProps {
+    transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+}
 
 export declare interface LDAPSettings {
     base_dn: string;
@@ -1485,7 +1499,7 @@ export declare interface VerifyAndActivateMFARequest {
     token?: string;
 }
 
-export declare const withSuspense: (Component: default_2.LazyExoticComponent<default_2.ComponentClass<any> | default_2.FC<any>>) => JSX_2.Element;
+export declare function withSuspense<T extends default_2.ComponentType<any>>(Component: default_2.LazyExoticComponent<T>, props?: default_2.ComponentProps<T>): JSX_2.Element;
 
 export { }
 

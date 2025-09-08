@@ -1,9 +1,15 @@
-import { u as C, r as l, e as I, j as e, S as U, aN as k, Z as T, p as i, g as G, z as ae, o as D, m as V, aT as K, a0 as W, s as x, aU as L, M as X, h as ie, aR as q, y as ne, aV as oe, aW as re, V as Y, F as de, aX as O, aY as H, aA as te, C as Z, t as ue, aZ as J } from "./vendor.js";
-import { useState as j, useEffect as B } from "react";
+import { j as e } from "./vendor.js";
+import { Form as l, message as x, Spin as U, Switch as F, Select as T, Input as i, Divider as Z, Alert as ae, Space as D, Button as V, InputNumber as L, Modal as K, Skeleton as ie, Descriptions as q, Steps as ne, Tag as Y, Table as oe, Radio as O, Tabs as te, Card as G, Result as re } from "antd";
+import { useTranslation as C } from "react-i18next";
+import { useState as y, useEffect as B } from "react";
+import { useRequest as I } from "ahooks";
+import { SaveOutlined as W, ReloadOutlined as X, LoadingOutlined as de, CheckCircleTwoTone as ue } from "@ant-design/icons";
 import { a as _ } from "./index.js";
-import { g as ee } from "./base.js";
+import { g as J } from "./base.js";
 import { f as N, e as ce, L as me } from "./components.js";
+import H from "react-quill";
 import { useNavigate as pe, useLocation as he, useSearchParams as ge } from "react-router-dom";
+import ee from "react-json-view";
 const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/, fe = {
   github: {
     email_field: "email",
@@ -80,23 +86,23 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
     },
     scope: ""
   }
-}, be = ({ initialData: t, onRefresh: g }) => {
-  const { t: s } = C("system"), { t: b } = C("common"), [u] = l.useForm(), [c, f] = j((t == null ? void 0 : t.provider) || "custom"), [h, m] = j((t == null ? void 0 : t.provider) === "custom" || (t == null ? void 0 : t.provider) === "autoDiscover"), [a, o] = j((t == null ? void 0 : t.enabled) || !1), [n, A] = j((t == null ? void 0 : t.auto_create_user) || !1), { loading: y, data: S, refresh: d } = I(_.system.getOauthSettings, {
+}, be = ({ initialData: t, onRefresh: u }) => {
+  const { t: s } = C("system"), { t: f } = C("common"), [c] = l.useForm(), [p, b] = y((t == null ? void 0 : t.provider) || "custom"), [g, m] = y((t == null ? void 0 : t.provider) === "custom" || (t == null ? void 0 : t.provider) === "autoDiscover"), [a, o] = y((t == null ? void 0 : t.enabled) || !1), [n, A] = y((t == null ? void 0 : t.auto_create_user) || !1), { loading: j, data: S, refresh: d } = I(_.system.getOauthSettings, {
     manual: !!t,
     onSuccess: (r) => {
-      u.setFieldsValue(r), f(r.provider), m(r.provider === "custom" || r.provider === "autoDiscover"), o(r.enabled), A(r.auto_create_user);
+      c.setFieldsValue(r), b(r.provider), m(r.provider === "custom" || r.provider === "autoDiscover"), o(r.enabled), A(r.auto_create_user);
     },
     onError: (r) => {
       x.error(s("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get OAuth settings", r);
     }
   });
   B(() => {
-    t && (u.setFieldsValue(t), f(t.provider), m(t.provider === "custom" || t.provider === "autoDiscover"), o(t.enabled), A(t.auto_create_user));
-  }, [t, u]);
+    t && (c.setFieldsValue(t), b(t.provider), m(t.provider === "custom" || t.provider === "autoDiscover"), o(t.enabled), A(t.auto_create_user));
+  }, [t, c]);
   const v = (r) => {
-    f(r), m(r === "custom" || r === "autoDiscover");
+    b(r), m(r === "custom" || r === "autoDiscover");
     const w = fe[r];
-    w && u.setFieldsValue({
+    w && c.setFieldsValue({
       auth_endpoint: w.endpoints.auth_endpoint,
       token_endpoint: w.endpoints.token_endpoint,
       userinfo_endpoint: w.endpoints.userinfo_endpoint,
@@ -111,25 +117,25 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
       icon_url: w.icon_url,
       display_name: w.display_name
     });
-  }, F = (r) => {
+  }, k = (r) => {
     o(r);
   }, E = (r) => {
     A(r);
-  }, { loading: p, run: P } = I(_.system.updateOauthSettings, {
+  }, { loading: h, run: P } = I(_.system.updateOauthSettings, {
     manual: !0,
     onSuccess: () => {
-      x.success(s("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), g ? g() : d();
+      x.success(s("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), u ? u() : d();
     },
     onError: (r) => {
       x.error(s("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update OAuth settings", r);
     }
   }), Q = (r) => {
     P(r);
-  }, $ = () => {
-    g ? g() : d();
+  }, z = () => {
+    u ? u() : d();
   }, { loading: se, run: le } = I(async ({ redirect_uri: r, ...w }) => {
     let M;
-    return r ? M = new URL(r) : M = new URL(window.location.origin), M.pathname = ee("/system/settings/oauth/test-callback"), M.searchParams.set("provider", c), _.system.testOauthConnection({ redirect_uri: M.toString(), ...w });
+    return r ? M = new URL(r) : M = new URL(window.location.origin), M.pathname = J("/system/settings/oauth/test-callback"), M.searchParams.set("provider", p), _.system.testOauthConnection({ redirect_uri: M.toString(), ...w });
   }, {
     manual: !0,
     onSuccess: ({ url: r }) => {
@@ -138,11 +144,11 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
     onError: (r) => {
       x.error(s("settings.oauth.testConnection.failed", { defaultValue: "Failed to test connection: {{error}}", error: r.message })), console.error("Failed to test OAuth connection", r);
     }
-  }), z = () => c === "custom";
-  return /* @__PURE__ */ e.jsx(U, { spinning: y, children: /* @__PURE__ */ e.jsxs(
+  }), $ = () => p === "custom";
+  return /* @__PURE__ */ e.jsx(U, { spinning: j, children: /* @__PURE__ */ e.jsxs(
     l,
     {
-      form: u,
+      form: c,
       layout: "vertical",
       onFinish: Q,
       initialValues: t || S,
@@ -154,7 +160,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             label: s("settings.oauth.enabled.label", { defaultValue: "Enable OAuth" }),
             valuePropName: "checked",
             tooltip: s("settings.oauth.enabled.tooltip", { defaultValue: "Enable or disable OAuth login for the system." }),
-            children: /* @__PURE__ */ e.jsx(k, { onChange: F })
+            children: /* @__PURE__ */ e.jsx(F, { onChange: k })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -189,7 +195,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               i,
               {
                 disabled: !a,
-                placeholder: c !== "custom" ? s(`settings.oauth.provider.options.${c}`, { defaultValue: c }) : ""
+                placeholder: p !== "custom" ? s(`settings.oauth.provider.options.${p}`, { defaultValue: p }) : ""
               }
             )
           }
@@ -239,7 +245,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             children: /* @__PURE__ */ e.jsx(i.Password, { disabled: !a, autoComplete: "off", visibilityToggle: !1, placeholder: s("settings.oauth.clientSecret.unchanged", { defaultValue: "Leave blank to keep unchanged" }) })
           }
         ),
-        z() && /* @__PURE__ */ e.jsx(
+        $() && /* @__PURE__ */ e.jsx(
           l.Item,
           {
             name: "auth_endpoint",
@@ -247,7 +253,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             tooltip: s("settings.oauth.authEndpoint.tooltip", { defaultValue: "The authorization endpoint URL of the OAuth provider." }),
             rules: [
               {
-                required: a && c === "custom",
+                required: a && p === "custom",
                 message: s("settings.oauth.authEndpoint.required", { defaultValue: "Authorization Endpoint is required." })
               },
               {
@@ -262,7 +268,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
           l.Item,
           {
             name: "wellknown_endpoint",
-            hidden: c !== "autoDiscover",
+            hidden: p !== "autoDiscover",
             label: s("settings.oauth.wellknownEndpoint.label", { defaultValue: "Wellknown Endpoint" }),
             tooltip: s("settings.oauth.wellknownEndpoint.tooltip", { defaultValue: "The wellknown endpoint URL of the OAuth provider." }),
             rules: [
@@ -271,14 +277,14 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
                 message: s("settings.oauth.wellknownEndpoint.invalidUrl", { defaultValue: "Please enter a valid URL." })
               },
               {
-                required: a && c === "autoDiscover",
+                required: a && p === "autoDiscover",
                 message: s("settings.oauth.wellknownEndpoint.required", { defaultValue: "Wellknown Endpoint is required." })
               }
             ],
             children: /* @__PURE__ */ e.jsx(i, { disabled: !a })
           }
         ),
-        z() && /* @__PURE__ */ e.jsx(
+        $() && /* @__PURE__ */ e.jsx(
           l.Item,
           {
             name: "token_endpoint",
@@ -286,7 +292,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             tooltip: s("settings.oauth.tokenEndpoint.tooltip", { defaultValue: "The token endpoint URL of the OAuth provider." }),
             rules: [
               {
-                required: a && c === "custom",
+                required: a && p === "custom",
                 message: s("settings.oauth.tokenEndpoint.required", { defaultValue: "Token Endpoint is required." })
               },
               {
@@ -297,7 +303,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             children: /* @__PURE__ */ e.jsx(i, { disabled: !a })
           }
         ),
-        z() && /* @__PURE__ */ e.jsx(
+        $() && /* @__PURE__ */ e.jsx(
           l.Item,
           {
             name: "userinfo_endpoint",
@@ -305,7 +311,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             tooltip: s("settings.oauth.userInfoEndpoint.tooltip", { defaultValue: "The user information endpoint URL of the OAuth provider." }),
             rules: [
               {
-                required: a && c === "custom",
+                required: a && p === "custom",
                 message: s("settings.oauth.userInfoEndpoint.required", { defaultValue: "User Info Endpoint is required." })
               },
               {
@@ -341,7 +347,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               pattern: R,
               message: s("settings.oauth.redirectUri.invalidUrl", { defaultValue: "Please enter a valid URL." })
             } : { required: !1 }],
-            children: /* @__PURE__ */ e.jsx(i, { disabled: !a, placeholder: `http://${window.location.host}${ee(`/login?provider=settings.${c}`)}` })
+            children: /* @__PURE__ */ e.jsx(i, { disabled: !a, placeholder: `http://${window.location.host}${J(`/login?provider=settings.${p}`)}` })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -351,7 +357,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             label: s("settings.oauth.autoCreateUser.label", { defaultValue: "Auto Create User" }),
             valuePropName: "checked",
             tooltip: s("settings.oauth.autoCreateUser.tooltip", { defaultValue: "Automatically create a new user if one does not exist with the OAuth email." }),
-            children: /* @__PURE__ */ e.jsx(k, { onChange: E, disabled: !a })
+            children: /* @__PURE__ */ e.jsx(F, { onChange: E, disabled: !a })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -376,10 +382,10 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             label: s("settings.oauth.mfaEnabled.label", { defaultValue: "MFA Enabled" }),
             valuePropName: "checked",
             tooltip: s("settings.oauth.mfaEnabled.tooltip", { defaultValue: "Enable MFA for OAuth login(Only valid when MFA is enabled by the user)." }),
-            children: /* @__PURE__ */ e.jsx(k, { disabled: !a })
+            children: /* @__PURE__ */ e.jsx(F, { disabled: !a })
           }
         ),
-        /* @__PURE__ */ e.jsx(G, { children: s("settings.oauth.fieldMapping.title", { defaultValue: "Field Mapping" }) }),
+        /* @__PURE__ */ e.jsx(Z, { children: s("settings.oauth.fieldMapping.title", { defaultValue: "Field Mapping" }) }),
         /* @__PURE__ */ e.jsx(
           ae,
           {
@@ -387,7 +393,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             type: "info",
             showIcon: !0,
             message: s("settings.oauth.fieldMapping.autoDetectHint", { defaultValue: "For preset providers, fields are typically auto-detected. Customize if needed." }),
-            description: h ? "" : s("settings.oauth.fieldMapping.presetDescription", { defaultValue: 'These fields are pre-filled based on the selected provider. You can switch to "Custom" provider to edit them directly.' })
+            description: g ? "" : s("settings.oauth.fieldMapping.presetDescription", { defaultValue: 'These fields are pre-filled based on the selected provider. You can switch to "Custom" provider to edit them directly.' })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -396,7 +402,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             name: "email_field",
             label: s("settings.oauth.fieldMapping.emailField.label", { defaultValue: "Email Field" }),
             tooltip: s("settings.oauth.fieldMapping.emailField.tooltip", { defaultValue: "The field name in the user info response that contains the user email. (e.g., email)" }),
-            children: /* @__PURE__ */ e.jsx(i, { placeholder: "email", disabled: !a || !h })
+            children: /* @__PURE__ */ e.jsx(i, { placeholder: "email", disabled: !a || !g })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -405,7 +411,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             name: "username_field",
             label: s("settings.oauth.fieldMapping.usernameField.label", { defaultValue: "Username Field" }),
             tooltip: s("settings.oauth.fieldMapping.usernameField.tooltip", { defaultValue: "The field name in the user info response that contains the username. (e.g., login, sub)" }),
-            children: /* @__PURE__ */ e.jsx(i, { placeholder: "login", autoComplete: "off", disabled: !a || !h })
+            children: /* @__PURE__ */ e.jsx(i, { placeholder: "login", autoComplete: "off", disabled: !a || !g })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -414,7 +420,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             name: "full_name_field",
             label: s("settings.oauth.fieldMapping.fullNameField.label", { defaultValue: "Full Name Field" }),
             tooltip: s("settings.oauth.fieldMapping.fullNameField.tooltip", { defaultValue: "The field name in the user info response that contains the user's full name. (e.g., name)" }),
-            children: /* @__PURE__ */ e.jsx(i, { placeholder: "name", disabled: !a || !h })
+            children: /* @__PURE__ */ e.jsx(i, { placeholder: "name", disabled: !a || !g })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -423,7 +429,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             name: "avatar_field",
             label: s("settings.oauth.fieldMapping.avatarField.label", { defaultValue: "Avatar URL Field" }),
             tooltip: s("settings.oauth.fieldMapping.avatarField.tooltip", { defaultValue: "The field name in the user info response that contains the URL to the user's avatar. (e.g., picture, avatar_url)" }),
-            children: /* @__PURE__ */ e.jsx(i, { placeholder: "avatar_url", disabled: !a || !h })
+            children: /* @__PURE__ */ e.jsx(i, { placeholder: "avatar_url", disabled: !a || !g })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -432,7 +438,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             name: "role_field",
             label: s("settings.oauth.fieldMapping.roleField.label", { defaultValue: "Role Field" }),
             tooltip: s("settings.oauth.fieldMapping.roleField.tooltip", { defaultValue: "The field name in the user info response that contains the user's role. (Optional)" }),
-            children: /* @__PURE__ */ e.jsx(i, { placeholder: "role", disabled: !a || !h })
+            children: /* @__PURE__ */ e.jsx(i, { placeholder: "role", disabled: !a || !g })
           }
         ),
         /* @__PURE__ */ e.jsx(l.Item, { children: /* @__PURE__ */ e.jsxs(D, { children: [
@@ -441,9 +447,9 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             {
               type: "primary",
               htmlType: "submit",
-              loading: p,
-              icon: /* @__PURE__ */ e.jsx(K, {}),
-              children: b("save", { defaultValue: "Save" })
+              loading: h,
+              icon: /* @__PURE__ */ e.jsx(W, {}),
+              children: f("save", { defaultValue: "Save" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -451,7 +457,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             {
               loading: se,
               onClick: async () => {
-                const r = u.getFieldsValue();
+                const r = c.getFieldsValue();
                 le(r);
               },
               children: s("settings.oauth.testConnection.button", { defaultValue: "Test Connection" })
@@ -460,9 +466,9 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
           /* @__PURE__ */ e.jsx(
             V,
             {
-              onClick: $,
-              icon: /* @__PURE__ */ e.jsx(W, {}),
-              children: b("refresh", { defaultValue: "Refresh" })
+              onClick: z,
+              icon: /* @__PURE__ */ e.jsx(X, {}),
+              children: f("refresh", { defaultValue: "Refresh" })
             }
           )
         ] }) })
@@ -470,31 +476,31 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
     }
   ) });
 }, xe = () => {
-  const { t } = C("system"), { t: g } = C("common"), [s] = l.useForm(), { loading: b, data: u, refresh: c } = I(_.system.getSecuritySettings, {
+  const { t } = C("system"), { t: u } = C("common"), [s] = l.useForm(), { loading: f, data: c, refresh: p } = I(_.system.getSecuritySettings, {
     onSuccess: (a) => {
       s.setFieldsValue(a);
     },
     onError: (a) => {
       x.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", a);
     }
-  }), { loading: f, run: h } = I(_.system.updateSecuritySettings, {
+  }), { loading: b, run: g } = I(_.system.updateSecuritySettings, {
     manual: !0,
     onSuccess: () => {
-      x.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), c();
+      x.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), p();
     },
     onError: (a) => {
       x.error(t("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update system settings", a);
     }
   }), m = (a) => {
-    h(a);
+    g(a);
   };
-  return /* @__PURE__ */ e.jsx(U, { spinning: b, children: /* @__PURE__ */ e.jsxs(
+  return /* @__PURE__ */ e.jsx(U, { spinning: f, children: /* @__PURE__ */ e.jsxs(
     l,
     {
       form: s,
       layout: "vertical",
       onFinish: m,
-      initialValues: u,
+      initialValues: c,
       children: [
         /* @__PURE__ */ e.jsx(
           l.Item,
@@ -503,7 +509,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             label: t("settings.security.mfa.label", { defaultValue: "Enforce Multi-Factor Authentication (MFA)" }),
             valuePropName: "checked",
             tooltip: t("settings.security.mfa.tooltip", { defaultValue: "If enabled, all users will be required to set up MFA." }),
-            children: /* @__PURE__ */ e.jsx(k, {})
+            children: /* @__PURE__ */ e.jsx(F, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -546,7 +552,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             label: t("settings.security.loginFailureLock.label", { defaultValue: "Lock Account on Login Failure" }),
             valuePropName: "checked",
             tooltip: t("settings.security.loginFailureLock.tooltip", { defaultValue: "Lock user accounts after a specified number of failed login attempts." }),
-            children: /* @__PURE__ */ e.jsx(k, {})
+            children: /* @__PURE__ */ e.jsx(F, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -588,7 +594,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             label: t("settings.security.historyPasswordCheck.label", { defaultValue: "Enforce Password History Policy" }),
             valuePropName: "checked",
             tooltip: t("settings.security.historyPasswordCheck.tooltip", { defaultValue: "Prevent users from reusing recent passwords." }),
-            children: /* @__PURE__ */ e.jsx(k, {})
+            children: /* @__PURE__ */ e.jsx(F, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -640,55 +646,55 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             {
               type: "primary",
               htmlType: "submit",
-              loading: f,
-              icon: /* @__PURE__ */ e.jsx(K, {}),
-              children: g("save", { defaultValue: "Save" })
+              loading: b,
+              icon: /* @__PURE__ */ e.jsx(W, {}),
+              children: u("save", { defaultValue: "Save" })
             }
           ),
           /* @__PURE__ */ e.jsx(
             V,
             {
-              onClick: () => c(),
-              icon: /* @__PURE__ */ e.jsx(W, {}),
-              children: g("refresh", { defaultValue: "Refresh" })
+              onClick: () => p(),
+              icon: /* @__PURE__ */ e.jsx(X, {}),
+              children: u("refresh", { defaultValue: "Refresh" })
             }
           )
         ] }) })
       ]
     }
   ) });
-}, ye = ({ fetchItems: t, importItems: g, columns: s, ...b }) => {
-  const { t: u } = C("system"), [c, f] = j([]), [h, m] = j([]), { run: a, loading: o } = I(t, {
-    onError: (y) => {
-      x.error(u("settings.ldap.importError", { error: `${y.message}` }));
+}, je = ({ fetchItems: t, importItems: u, columns: s, ...f }) => {
+  const { t: c } = C("system"), [p, b] = y([]), [g, m] = y([]), { run: a, loading: o } = I(t, {
+    onError: (j) => {
+      x.error(c("settings.ldap.importError", { error: `${j.message}` }));
     },
-    onSuccess: (y) => {
-      f(y);
+    onSuccess: (j) => {
+      b(j);
     },
     manual: !0
   }), { run: n, loading: A } = I(async () => {
-    for (const y of h.filter((S) => {
-      const d = c.find((v) => v.ldap_dn === S);
+    for (const j of g.filter((S) => {
+      const d = p.find((v) => v.ldap_dn === S);
       return !(!d || d.status === "imported");
     })) {
-      const S = await g([y]);
-      f((d) => [...d].map((F) => {
+      const S = await u([j]);
+      b((d) => [...d].map((k) => {
         for (const E of S)
-          if (F.ldap_dn === E.ldap_dn)
+          if (k.ldap_dn === E.ldap_dn)
             return { ...E, status: "imported" };
-        return F;
+        return k;
       }));
     }
   }, {
     manual: !0
   });
   return B(() => {
-    b.visible && (f([]), a(), m([]));
-  }, [b.visible]), /* @__PURE__ */ e.jsx(
-    X,
+    f.visible && (b([]), a(), m([]));
+  }, [f.visible]), /* @__PURE__ */ e.jsx(
+    K,
     {
-      title: u("settings.ldap.importTitle"),
-      ...b,
+      title: c("settings.ldap.importTitle"),
+      ...f,
       onOk: () => {
         n();
       },
@@ -696,65 +702,65 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
       confirmLoading: A,
       loading: o,
       children: /* @__PURE__ */ e.jsx(
-        de,
+        oe,
         {
           rowKey: "ldap_dn",
           rowSelection: {
-            onChange: (y) => {
-              m(y);
+            onChange: (j) => {
+              m(j);
             },
-            getCheckboxProps: (y) => ({
-              disabled: y.status === "imported"
+            getCheckboxProps: (j) => ({
+              disabled: j.status === "imported"
             })
           },
-          columns: s.map(({ render: y, ...S }) => y ? {
+          columns: s.map(({ render: j, ...S }) => j ? {
             ...S,
-            render: (d, v, F) => {
-              const E = h.includes(v.ldap_dn) && A && v.status !== "imported";
-              return y(d, v, F, E);
+            render: (d, v, k) => {
+              const E = g.includes(v.ldap_dn) && A && v.status !== "imported";
+              return j(d, v, k, E);
             }
           } : S),
-          dataSource: c,
+          dataSource: p,
           pagination: !1,
           scroll: { y: 400, x: "max-content" }
         }
       )
     }
   );
-}, je = () => {
-  var v, F, E;
-  const { t } = C("system"), [g] = l.useForm(), [s, b] = j(!1), [u, c] = j(null), [f, h] = j(!1), [m, a] = j(!1), [o] = l.useForm(), [n, A] = j(!1);
+}, ye = () => {
+  var v, k, E;
+  const { t } = C("system"), [u] = l.useForm(), [s, f] = y(!1), [c, p] = y(null), [b, g] = y(!1), [m, a] = y(!1), [o] = l.useForm(), [n, A] = y(!1);
   I(_.system.getLdapSettings, {
-    onSuccess: (p) => {
-      g.setFieldsValue(p), A(p.enabled);
+    onSuccess: (h) => {
+      u.setFieldsValue(h), A(h.enabled);
     },
-    onError: (p) => {
-      x.error(t("settings.ldap.loadError", { defaultValue: "Failed to load LDAP settings: {{error}}", error: `${p.message}` }));
+    onError: (h) => {
+      x.error(t("settings.ldap.loadError", { defaultValue: "Failed to load LDAP settings: {{error}}", error: `${h.message}` }));
     }
   }), B(() => {
-    c(null);
-  }, [f]);
-  const y = async (p) => {
-    b(!0);
+    p(null);
+  }, [b]);
+  const j = async (h) => {
+    f(!0);
     try {
-      await _.system.updateLdapSettings(p), x.success(t("settings.ldap.saveSuccess", { defaultValue: "LDAP settings saved successfully." }));
+      await _.system.updateLdapSettings(h), x.success(t("settings.ldap.saveSuccess", { defaultValue: "LDAP settings saved successfully." }));
     } catch {
       x.error(t("settings.ldap.saveError", { defaultValue: "Failed to save LDAP settings." }));
     } finally {
-      b(!1);
+      f(!1);
     }
-  }, { run: S, loading: d } = I(async (p) => {
-    const P = await g.validateFields();
+  }, { run: S, loading: d } = I(async (h) => {
+    const P = await u.validateFields();
     return await _.system.testLdapConnection({
-      ...p,
+      ...h,
       ...P
     });
   }, {
-    onSuccess: (p) => {
-      c(p);
+    onSuccess: (h) => {
+      p(h);
     },
-    onError: (p) => {
-      x.error(t("settings.ldap.testError", { defaultValue: "LDAP connection test failed: {{error}}", error: `${p.message}` }));
+    onError: (h) => {
+      x.error(t("settings.ldap.testError", { defaultValue: "LDAP connection test failed: {{error}}", error: `${h.message}` }));
     },
     manual: !0
   });
@@ -762,9 +768,9 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
     /* @__PURE__ */ e.jsxs(
       l,
       {
-        form: g,
+        form: u,
         layout: "vertical",
-        onFinish: y,
+        onFinish: j,
         initialValues: {
           user_attr: "uid",
           email_attr: "mail",
@@ -778,7 +784,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               label: t("settings.ldap.enabled", { defaultValue: "Enable LDAP Authentication" }),
               name: "enabled",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(k, { onChange: (p) => A(p) })
+              children: /* @__PURE__ */ e.jsx(F, { onChange: (h) => A(h) })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -870,14 +876,14 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               children: /* @__PURE__ */ e.jsx(i, { type: "number", defaultValue: 15, disabled: !n })
             }
           ),
-          /* @__PURE__ */ e.jsx(G, { children: t("settings.ldap.tlsDivider", { defaultValue: "TLS Configuration" }) }),
+          /* @__PURE__ */ e.jsx(Z, { children: t("settings.ldap.tlsDivider", { defaultValue: "TLS Configuration" }) }),
           /* @__PURE__ */ e.jsx(
             l.Item,
             {
               label: t("settings.ldap.startTls", { defaultValue: "Use StartTLS" }),
               name: "start_tls",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(k, { disabled: !n })
+              children: /* @__PURE__ */ e.jsx(F, { disabled: !n })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -886,7 +892,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               label: t("settings.ldap.insecure", { defaultValue: "Skip TLS Verification (Insecure)" }),
               name: "insecure",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(k, { disabled: !n })
+              children: /* @__PURE__ */ e.jsx(F, { disabled: !n })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -923,7 +929,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               {
                 disabled: !n,
                 style: { marginLeft: 8 },
-                onClick: () => h(!0),
+                onClick: () => g(!0),
                 children: t("settings.ldap.testConnection", { defaultValue: "Test Connection" })
               }
             ) }),
@@ -943,11 +949,11 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
       }
     ),
     /* @__PURE__ */ e.jsxs(
-      X,
+      K,
       {
         title: t("settings.ldap.test.title", { defaultValue: "Test LDAP Connection" }),
-        open: f,
-        onCancel: () => h(!1),
+        open: b,
+        onCancel: () => g(!1),
         footer: null,
         children: [
           /* @__PURE__ */ e.jsxs(
@@ -981,7 +987,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
                     V,
                     {
                       style: { marginLeft: 8 },
-                      onClick: () => h(!1),
+                      onClick: () => g(!1),
                       children: t("settings.ldap.test.cancel", { defaultValue: "Cancel" })
                     }
                   )
@@ -989,21 +995,21 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               ]
             }
           ),
-          /* @__PURE__ */ e.jsx(U, { spinning: d, children: /* @__PURE__ */ e.jsx(ie, { active: d, loading: d, children: u && (u.user ? /* @__PURE__ */ e.jsxs(q, { bordered: !0, children: [
-            /* @__PURE__ */ e.jsx(q.Item, { label: "Username", span: 3, children: u.user.username }),
-            /* @__PURE__ */ e.jsx(q.Item, { label: "Email", span: 3, children: u.user.email }),
-            /* @__PURE__ */ e.jsx(q.Item, { label: "FullName", span: 3, children: u.user.full_name }),
-            /* @__PURE__ */ e.jsx(q.Item, { label: "CreatedAt", span: 3, children: u.user.created_at }),
-            /* @__PURE__ */ e.jsx(q.Item, { label: "UpdatedAt", span: 3, children: u.user.updated_at })
+          /* @__PURE__ */ e.jsx(U, { spinning: d, children: /* @__PURE__ */ e.jsx(ie, { active: d, loading: d, children: c && (c.user ? /* @__PURE__ */ e.jsxs(q, { bordered: !0, children: [
+            /* @__PURE__ */ e.jsx(q.Item, { label: "Username", span: 3, children: c.user.username }),
+            /* @__PURE__ */ e.jsx(q.Item, { label: "Email", span: 3, children: c.user.email }),
+            /* @__PURE__ */ e.jsx(q.Item, { label: "FullName", span: 3, children: c.user.full_name }),
+            /* @__PURE__ */ e.jsx(q.Item, { label: "CreatedAt", span: 3, children: c.user.created_at }),
+            /* @__PURE__ */ e.jsx(q.Item, { label: "UpdatedAt", span: 3, children: c.user.updated_at })
           ] }) : /* @__PURE__ */ e.jsx(
             ne,
             {
               direction: "vertical",
-              current: (v = u.message) == null ? void 0 : v.findIndex((p) => !p.success),
-              status: (F = u.message) != null && F.find((p) => !p.success) ? "error" : "finish",
-              items: (E = u.message) == null ? void 0 : E.map((p) => ({
-                status: p.success ? "finish" : "error",
-                title: p.message
+              current: (v = c.message) == null ? void 0 : v.findIndex((h) => !h.success),
+              status: (k = c.message) != null && k.find((h) => !h.success) ? "error" : "finish",
+              items: (E = c.message) == null ? void 0 : E.map((h) => ({
+                status: h.success ? "finish" : "error",
+                title: h.message
               }))
             }
           )) }) })
@@ -1011,12 +1017,12 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
       }
     ),
     /* @__PURE__ */ e.jsx(
-      ye,
+      je,
       {
         visible: m,
         onCancel: () => a(!1),
         fetchItems: () => _.system.importLdapUsers({}),
-        importItems: (p) => _.system.importLdapUsers({ user_dn: p }),
+        importItems: (h) => _.system.importLdapUsers({ user_dn: h }),
         columns: [{
           title: t("settings.ldap.username", { defaultValue: "Username" }),
           dataIndex: "username"
@@ -1030,13 +1036,13 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
           title: t("settings.ldap.importStatus", { defaultValue: "Import Status" }),
           dataIndex: "imported",
           fixed: "right",
-          render: (p, P, Q, $) => $ ? /* @__PURE__ */ e.jsx(U, { indicator: /* @__PURE__ */ e.jsx(oe, { spin: !0 }) }) : p ? /* @__PURE__ */ e.jsx(re, { twoToneColor: "#52c41a" }) : P.id ? /* @__PURE__ */ e.jsx(Y, { color: "blue", children: t("settings.ldap.importTypeBound", { defaultValue: "Bound" }) }) : /* @__PURE__ */ e.jsx(Y, { color: "green", children: t("settings.ldap.importTypeNew", { defaultValue: "New" }) })
+          render: (h, P, Q, z) => z ? /* @__PURE__ */ e.jsx(U, { indicator: /* @__PURE__ */ e.jsx(de, { spin: !0 }) }) : h ? /* @__PURE__ */ e.jsx(ue, { twoToneColor: "#52c41a" }) : P.id ? /* @__PURE__ */ e.jsx(Y, { color: "blue", children: t("settings.ldap.importTypeBound", { defaultValue: "Bound" }) }) : /* @__PURE__ */ e.jsx(Y, { color: "green", children: t("settings.ldap.importTypeNew", { defaultValue: "New" }) })
         }]
       }
     )
   ] });
 }, Ve = () => {
-  const { t } = C("system"), { t: g } = C("common"), [s] = l.useForm(), [b, u] = j(null), [c, f] = j(!1), [h] = l.useForm(), [m, a] = j(!1), { loading: o } = I(_.system.getSmtpSettings, {
+  const { t } = C("system"), { t: u } = C("common"), [s] = l.useForm(), [f, c] = y(null), [p, b] = y(!1), [g] = l.useForm(), [m, a] = y(!1), { loading: o } = I(_.system.getSmtpSettings, {
     onSuccess: (d) => {
       s.setFieldsValue(d), a(d.enabled);
     },
@@ -1045,8 +1051,8 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
     }
   });
   B(() => {
-    u(null);
-  }, [c]);
+    c(null);
+  }, [p]);
   const { run: n, loading: A } = I(({ port: d, ...v }) => _.system.updateSmtpSettings({ ...v, port: Number(d) }), {
     manual: !0,
     onSuccess: () => {
@@ -1055,16 +1061,16 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
     onError: (d) => {
       x.error(t("settings.smtp.saveError", { defaultValue: "Failed to save SMTP settings: {{error}}", error: `${d.message}` }));
     }
-  }), { run: y, loading: S } = I(async (d) => {
-    const { port: v, ...F } = await s.validateFields();
+  }), { run: j, loading: S } = I(async (d) => {
+    const { port: v, ...k } = await s.validateFields();
     return await _.system.testSmtpConnection({
       ...d,
-      ...F,
+      ...k,
       port: Number(v)
     });
   }, {
     onSuccess: (d) => {
-      u(d);
+      c(d);
     },
     onError: (d) => {
       x.error(t("settings.smtp.testError", { defaultValue: "SMTP connection test failed: {{error}}", error: `${d.message}` }));
@@ -1089,7 +1095,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               label: t("settings.smtp.enabled", { defaultValue: "Enable SMTP" }),
               name: "enabled",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(k, { onChange: (d) => a(d) })
+              children: /* @__PURE__ */ e.jsx(F, { onChange: (d) => a(d) })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1160,7 +1166,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
               children: /* @__PURE__ */ e.jsx(i, { disabled: !m, placeholder: t("settings.smtp.fromNamePlaceholder", { defaultValue: "System Notifications" }) })
             }
           ),
-          /* @__PURE__ */ e.jsx(G, { children: t("settings.smtp.templateDivider", { defaultValue: "Template Configuration" }) }),
+          /* @__PURE__ */ e.jsx(Z, { children: t("settings.smtp.templateDivider", { defaultValue: "Template Configuration" }) }),
           /* @__PURE__ */ e.jsx(
             l.Item,
             {
@@ -1186,11 +1192,11 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             }
           ),
           /* @__PURE__ */ e.jsxs(l.Item, { children: [
-            /* @__PURE__ */ e.jsx(N, { permission: "system:setting:update", children: /* @__PURE__ */ e.jsx(V, { type: "primary", htmlType: "submit", loading: A, style: { marginRight: 8 }, children: g("save", { defaultValue: "Save" }) }) }),
+            /* @__PURE__ */ e.jsx(N, { permission: "system:setting:update", children: /* @__PURE__ */ e.jsx(V, { type: "primary", htmlType: "submit", loading: A, style: { marginRight: 8 }, children: u("save", { defaultValue: "Save" }) }) }),
             /* @__PURE__ */ e.jsx(
               V,
               {
-                onClick: () => f(!0),
+                onClick: () => b(!0),
                 disabled: !m || S,
                 loading: S,
                 children: t("settings.smtp.testConnection", { defaultValue: "Test Connection" })
@@ -1201,21 +1207,21 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
       }
     ) }),
     /* @__PURE__ */ e.jsx(
-      X,
+      K,
       {
         title: t("settings.smtp.testConnectionTitle", { defaultValue: "Test SMTP Connection" }),
-        open: c,
-        onCancel: () => f(!1),
+        open: p,
+        onCancel: () => b(!1),
         footer: [
-          /* @__PURE__ */ e.jsx(V, { onClick: () => f(!1), children: g("cancel", { defaultValue: "Cancel" }) }, "back"),
-          /* @__PURE__ */ e.jsx(V, { type: "primary", loading: S, onClick: () => h.submit(), children: t("settings.smtp.sendTestEmail", { defaultValue: "Send Test Email" }) }, "submit")
+          /* @__PURE__ */ e.jsx(V, { onClick: () => b(!1), children: u("cancel", { defaultValue: "Cancel" }) }, "back"),
+          /* @__PURE__ */ e.jsx(V, { type: "primary", loading: S, onClick: () => g.submit(), children: t("settings.smtp.sendTestEmail", { defaultValue: "Send Test Email" }) }, "submit")
         ],
         children: /* @__PURE__ */ e.jsxs(
           l,
           {
-            form: h,
+            form: g,
             layout: "vertical",
-            onFinish: (d) => y(d),
+            onFinish: (d) => j(d),
             children: [
               /* @__PURE__ */ e.jsx(
                 l.Item,
@@ -1229,7 +1235,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
                   children: /* @__PURE__ */ e.jsx(i, { placeholder: "test@example.com" })
                 }
               ),
-              b && /* @__PURE__ */ e.jsx(l.Item, { label: t("settings.smtp.testResult", { defaultValue: "Test Result" }), children: b.success ? /* @__PURE__ */ e.jsx("span", { style: { color: "green" }, children: t("settings.smtp.testSuccess", { defaultValue: "Connection successful!" }) }) : /* @__PURE__ */ e.jsx("span", { style: { color: "red" }, children: t("settings.smtp.testFailed", { defaultValue: "Connection failed: {{error}}", error: b.message }) }) })
+              f && /* @__PURE__ */ e.jsx(l.Item, { label: t("settings.smtp.testResult", { defaultValue: "Test Result" }), children: f.success ? /* @__PURE__ */ e.jsx("span", { style: { color: "green" }, children: t("settings.smtp.testSuccess", { defaultValue: "Connection successful!" }) }) : /* @__PURE__ */ e.jsx("span", { style: { color: "red" }, children: t("settings.smtp.testFailed", { defaultValue: "Connection failed: {{error}}", error: f.message }) }) })
             ]
           }
         )
@@ -1237,17 +1243,17 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
     )
   ] });
 }, _e = () => {
-  const { t, i18n: g } = C("system"), { t: s } = C("common"), [b] = l.useForm(), { loading: u, data: c, refresh: f } = I(_.system.getSystemBaseSettings, {
+  const { t, i18n: u } = C("system"), { t: s } = C("common"), [f] = l.useForm(), { loading: c, data: p, refresh: b } = I(_.system.getSystemBaseSettings, {
     onSuccess: (o) => {
-      b.setFieldsValue(o);
+      f.setFieldsValue(o);
     },
     onError: (o) => {
       x.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", o);
     }
-  }), { loading: h, run: m } = I(_.system.updateSystemBaseSettings, {
+  }), { loading: g, run: m } = I(_.system.updateSystemBaseSettings, {
     manual: !0,
     onSuccess: () => {
-      x.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), f();
+      x.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), b();
     },
     onError: (o) => {
       x.error(t("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update system settings", o);
@@ -1255,13 +1261,13 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
   }), a = (o) => {
     m(o);
   };
-  return /* @__PURE__ */ e.jsx(U, { spinning: u, children: /* @__PURE__ */ e.jsxs(
+  return /* @__PURE__ */ e.jsx(U, { spinning: c, children: /* @__PURE__ */ e.jsxs(
     l,
     {
-      form: b,
+      form: f,
       layout: "vertical",
       onFinish: a,
-      initialValues: c,
+      initialValues: p,
       children: [
         /* @__PURE__ */ e.jsx(l.Item, { label: t("settings.base.name", { defaultValue: "Name" }), children: /* @__PURE__ */ e.jsx(te, { items: [{
           key: "default",
@@ -1270,7 +1276,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
           children: /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(l.Item, { name: "name", children: /* @__PURE__ */ e.jsx(i, {}) }) })
         }, ...ce.map((o) => ({
           key: o.lang,
-          label: g.language !== o.lang ? s(`language.${o.lang}`, { defaultValue: o.label, lang: o.label }) : o.label,
+          label: u.language !== o.lang ? s(`language.${o.lang}`, { defaultValue: o.label, lang: o.label }) : o.label,
           forceRender: !0,
           children: /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(l.Item, { name: ["name_i18n", o.lang], children: /* @__PURE__ */ e.jsx(i, {}) }) })
         }))] }) }),
@@ -1282,7 +1288,7 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             label: t("settings.base.disableLocalUserLogin", { defaultValue: "Disable Local User Login" }),
             name: "disable_local_user_login",
             tooltip: t("settings.base.disableLocalUserLoginTooltip", { defaultValue: "Disable local user login, It is only valid when other authentication methods are enabled." }),
-            children: /* @__PURE__ */ e.jsx(k, {})
+            children: /* @__PURE__ */ e.jsx(F, {})
           }
         ),
         /* @__PURE__ */ e.jsx(l.Item, { children: /* @__PURE__ */ e.jsxs(D, { children: [
@@ -1291,16 +1297,16 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
             {
               type: "primary",
               htmlType: "submit",
-              loading: h,
-              icon: /* @__PURE__ */ e.jsx(K, {}),
+              loading: g,
+              icon: /* @__PURE__ */ e.jsx(W, {}),
               children: s("save", { defaultValue: "Save" })
             }
           ),
           /* @__PURE__ */ e.jsx(
             V,
             {
-              onClick: () => f(),
-              icon: /* @__PURE__ */ e.jsx(W, {}),
+              onClick: () => b(),
+              icon: /* @__PURE__ */ e.jsx(X, {}),
               children: s("refresh", { defaultValue: "Refresh" })
             }
           )
@@ -1308,58 +1314,60 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
       ]
     }
   ) });
-}, ve = () => {
-  const { t } = C("system"), g = pe(), s = he(), c = s.hash.replace("#", "") || "base", f = [
+}, ve = ({
+  transformItems: t = (u) => u
+}) => {
+  const { t: u } = C("system"), s = pe(), f = he(), b = f.hash.replace("#", "") || "base", g = [
     {
       key: "base",
-      label: t("settings.tabs.base", { defaultValue: "Base Settings" }),
+      label: u("settings.tabs.base", { defaultValue: "Base Settings" }),
       children: /* @__PURE__ */ e.jsx(_e, {})
     },
     {
       key: "security",
-      label: t("settings.tabs.security", { defaultValue: "Security Settings" }),
+      label: u("settings.tabs.security", { defaultValue: "Security Settings" }),
       children: /* @__PURE__ */ e.jsx(xe, {})
     },
     {
       key: "oauth",
-      label: t("settings.tabs.oauth", { defaultValue: "OAuth Settings" }),
+      label: u("settings.tabs.oauth", { defaultValue: "OAuth Settings" }),
       children: /* @__PURE__ */ e.jsx(be, {})
     },
     {
       key: "ldap",
-      label: t("settings.tabs.ldap", { defaultValue: "LDAP Settings" }),
-      children: /* @__PURE__ */ e.jsx(je, {})
+      label: u("settings.tabs.ldap", { defaultValue: "LDAP Settings" }),
+      children: /* @__PURE__ */ e.jsx(ye, {})
     },
     {
       key: "smtp",
-      label: t("settings.tabs.smtp", { defaultValue: "SMTP Settings" }),
+      label: u("settings.tabs.smtp", { defaultValue: "SMTP Settings" }),
       children: /* @__PURE__ */ e.jsx(Ve, {})
     }
   ];
-  return /* @__PURE__ */ e.jsx(Z, { title: t("settings.title", { defaultValue: "System Settings" }), children: /* @__PURE__ */ e.jsx(
+  return /* @__PURE__ */ e.jsx(G, { title: u("settings.title", { defaultValue: "System Settings" }), children: /* @__PURE__ */ e.jsx(
     te,
     {
-      defaultActiveKey: c,
-      onChange: (h) => {
-        g(`${s.pathname}#${h}`);
+      defaultActiveKey: b,
+      onChange: (m) => {
+        s(`${f.pathname}#${m}`);
       },
-      items: f
+      items: t(g)
     }
   ) });
-}, ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Ue = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: ve
 }, Symbol.toStringTag, { value: "Module" })), Ie = () => {
-  const { t } = C("system"), [g] = ge(), s = g.get("provider"), b = g.get("code"), u = g.get("state"), [c, f] = j(null), [h, m] = j(null), [a, o] = j(null);
+  const { t } = C("system"), [u] = ge(), s = u.get("provider"), f = u.get("code"), c = u.get("state"), [p, b] = y(null), [g, m] = y(null), [a, o] = y(null);
   return I(async () => {
-    if (!b || !u || !s)
+    if (!f || !c || !s)
       throw new Error(t("settings.oauth.testConnection.missingRequiredParameters", { defaultValue: "Missing required parameters" }));
-    const n = await _.system.testOauthCallback({ code: b, state: u, provider: s });
+    const n = await _.system.testOauthCallback({ code: f, state: c, provider: s });
     if (!n.user_info)
       throw new Error(t("settings.oauth.testConnection.responseUserInfoIsNull", { defaultValue: "response user_info is null" }));
     if (!n.user)
       throw new Error(t("settings.oauth.testConnection.responseUserIsNull", { defaultValue: "response user is null" }));
-    f(n.user), m(n.user_info);
+    b(n.user), m(n.user_info);
   }, {
     onSuccess: () => {
       o({
@@ -1375,22 +1383,22 @@ const R = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*
       });
     }
   }), a ? /* @__PURE__ */ e.jsx("div", { children: /* @__PURE__ */ e.jsx(
-    ue,
+    re,
     {
       status: a.status,
       title: a.message,
       subTitle: a.error,
-      extra: /* @__PURE__ */ e.jsxs(D, { style: { display: !h || !c ? "none" : "inline-block", textAlign: "left" }, direction: "vertical", children: [
-        /* @__PURE__ */ e.jsx(Z, { title: t("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(J, { src: h || {} }) }),
-        /* @__PURE__ */ e.jsx(Z, { title: t("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(J, { src: c || {} }) })
+      extra: /* @__PURE__ */ e.jsxs(D, { style: { display: !g || !p ? "none" : "inline-block", textAlign: "left" }, direction: "vertical", children: [
+        /* @__PURE__ */ e.jsx(G, { title: t("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(ee, { src: g || {} }) }),
+        /* @__PURE__ */ e.jsx(G, { title: t("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(ee, { src: p || {} }) })
       ] })
     }
   ) }) : /* @__PURE__ */ e.jsx(me, {});
-}, Ee = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Ie
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  Ee as O,
-  ke as i
+  Me as O,
+  Ue as i
 };
