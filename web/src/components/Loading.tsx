@@ -10,7 +10,7 @@ const Loading: React.FC = () => {
       height: '100vh',
       width: '100%'
     }}>
-      <Spin size="large" tip="Loading..." />
+      <Spin size="large" />
     </div>
   );
 };

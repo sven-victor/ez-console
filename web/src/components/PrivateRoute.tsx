@@ -1,9 +1,9 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { Spin } from 'antd';
 import { useAuth } from '../hooks/useAuth';
 import { usePermission } from '../hooks/usePermission';
 import { getURL } from '@/utils';
+import Loading from './Loading';
 
 export interface PrivateRouteProps {
   element: React.ReactElement;
@@ -30,16 +30,7 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
 
   // when loading, display loading state
   if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
-        <Spin size="large" tip="Loading..." />
-      </div>
-    );
+    return <Loading />
   }
 
   // if not logged in, redirect to login page
@@ -71,16 +62,7 @@ export const AdminRoute: React.FC<{ element: React.ReactElement }> = ({ element 
 
   // when loading, display loading state
   if (loading) {
-    return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh'
-      }}>
-        <Spin size="large" tip="Loading..." />
-      </div>
-    );
+    return <Loading />;
   }
 
   // if not logged in, redirect to login page
