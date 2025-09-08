@@ -7,8 +7,8 @@ import { lazy as l, Suspense as ye, useState as v, useEffect as R } from "react"
 import { L as ze, H as I, A as E, a as we, P as be } from "./components.js";
 import { DashboardOutlined as _e, SolutionOutlined as Se, UserOutlined as N, SafetyOutlined as Ae, FileSearchOutlined as Le, SettingOutlined as $e, MenuUnfoldOutlined as ke, MenuFoldOutlined as Oe, SwapOutlined as Re } from "@ant-design/icons";
 import { a as Ne, u as Ue, A as Fe } from "./contexts.js";
-import { a as q } from "./authorization.js";
-import { b as Q, g as T } from "./base.js";
+import { a as T } from "./authorization.js";
+import { b as q, g as Q } from "./base.js";
 import { s as W } from "./system.js";
 import { o as Y } from "./oauth.js";
 import Me from "lodash";
@@ -16,15 +16,15 @@ import "./forbidden.js";
 import "./not_found.js";
 import "./client.js";
 import "i18next";
-const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js")), Ce = l(() => import("./profile.js")), H = l(() => import("./not_found.js")), De = l(() => import("./forbidden.js")), Ie = l(() => import("./users.js").then((a) => a.U)), Ee = l(() => import("./users.js").then((a) => a.a)), V = l(() => import("./users.js").then((a) => a.b)), He = l(() => import("./roles.js")), Ve = l(() => import("./system-settings.js").then((a) => a.i)), Ke = l(() => import("./system-settings.js").then((a) => a.O)), qe = l(() => import("./audit.js")), Qe = l(() => import("./service-accounts.js").then((a) => a.S)), Te = l(() => import("./service-accounts.js").then((a) => a.a));
-function r(a, h) {
-  return /* @__PURE__ */ e.jsx(ye, { fallback: /* @__PURE__ */ e.jsx(ze, {}), children: /* @__PURE__ */ e.jsx(a, { ...h }) });
+const Pe = l(() => import("./dashboard.js")), Be = l(() => import("./login.js")), Ce = l(() => import("./profile.js")), H = l(() => import("./not_found.js")), De = l(() => import("./forbidden.js")), Ie = l(() => import("./users.js").then((a) => a.U)), Ee = l(() => import("./users.js").then((a) => a.a)), V = l(() => import("./users.js").then((a) => a.b)), He = l(() => import("./roles.js")), Ve = l(() => import("./system-settings.js").then((a) => a.i)), Ke = l(() => import("./system-settings.js").then((a) => a.O)), Te = l(() => import("./audit.js")), qe = l(() => import("./service-accounts.js").then((a) => a.S)), Qe = l(() => import("./service-accounts.js").then((a) => a.a));
+function r(a, m) {
+  return /* @__PURE__ */ e.jsx(ye, { fallback: /* @__PURE__ */ e.jsx(ze, {}), children: /* @__PURE__ */ e.jsx(a, { ...m }) });
 }
-const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoutes: f = [], extraPublicRoutes: g = [] }) => {
+const We = ({ transformSettingTabs: a, transformLangConfig: m, extraPrivateRoutes: f = [], extraPublicRoutes: g = [] }) => {
   const d = [
     {
       path: "/login",
-      element: r(Be, { transformLangConfig: h }),
+      element: r(Be, { transformLangConfig: m }),
       index: !0
     },
     {
@@ -120,13 +120,13 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
               permissions: ["authorization:service_account:view"],
               children: [
                 {
-                  element: r(Qe),
+                  element: r(qe),
                   permissions: ["authorization:service_account:view"],
                   index: !0
                 },
                 {
                   path: "/authorization/service-accounts/:id",
-                  element: r(Te),
+                  element: r(Qe),
                   permissions: ["authorization:service_account:view"],
                   index: !0
                 }
@@ -157,7 +157,7 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
               name: "audit",
               permissions: ["system:audit:view"],
               index: !0,
-              element: r(qe)
+              element: r(Te)
             }
           ]
         },
@@ -172,15 +172,15 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
   ];
   return [...d, ...u];
 }, Ye = {
-  authorization: q,
-  base: Q,
+  authorization: T,
+  base: q,
   system: W,
   oauth: Y
-}, { Header: Ge, Content: Je, Footer: Xe, Sider: Ze } = P, { SubMenu: et } = O, tt = ({ element: a, routes: h, transformLangConfig: f, menuStyle: g = "dark" }) => {
+}, { Header: Ge, Content: Je, Footer: Xe, Sider: Ze } = P, { SubMenu: et } = O, tt = ({ element: a, routes: m, transformLangConfig: f, menuStyle: g = "dark" }) => {
   const { t: d, i18n: u } = B(), { t: c } = B("common"), [y, S] = v(!1), p = he(), { hasPermission: A } = Ne(), z = me(), { logout: w, user: i } = Ue(), [s, b] = v([]), [_, L] = v(null), [U, G] = v("Loading..."), [x, J] = v(null);
   p.pathname !== "/profile" && (i && i.mfa_enforced && !i.mfa_enabled ? z("/profile#mfa") : i && i.status === "password_expired" && z("/profile#password"));
   const X = () => {
-    w(), window.location.href = T("/login?redirect=" + encodeURIComponent(window.location.href));
+    w(), window.location.href = Q("/login?redirect=" + encodeURIComponent(window.location.href));
   }, Z = [
     {
       key: "profile",
@@ -195,7 +195,7 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
   R(() => {
     Ye.system.getSiteConfig().then((n) => {
       var t;
-      const o = n.navigation.filter((m) => m.path !== n.home_page), j = [...n.home_page ? [{
+      const o = n.navigation.filter((h) => h.path !== n.home_page), j = [...n.home_page ? [{
         name: "home",
         path: n.home_page
       }] : [], ...o];
@@ -205,7 +205,7 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
     u.language && G((x == null ? void 0 : x.name_i18n[u.language]) || (x == null ? void 0 : x.name) || "");
   }, [x, u.language]);
   const F = () => {
-    const n = ue(h, p.pathname), o = [];
+    const n = ue(m, p.pathname), o = [];
     if (n) {
       for (const [j, t] of n.entries())
         if (t.route.path === "/" && !t.route.name)
@@ -215,28 +215,28 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
             key: "home"
           });
         else if (t.route.name) {
-          const m = n.slice(0, j + 1).map(($) => $.route.name).filter(Boolean).join(".");
+          const h = n.slice(0, j + 1).map(($) => $.route.name).filter(Boolean).join(".");
           o.push({
             path: t.route.path,
-            title: t.route.name ? d(`breadcrumbs.${m}`) : void 0,
+            title: t.route.name ? d(`breadcrumbs.${h}`) : void 0,
             key: t.route.path
           });
         }
     }
     return o;
-  }, ee = (n) => n.some((o) => A(o)), te = Me.flatMapDeep(h, (n) => n.children).map((n) => n == null ? void 0 : n.name).filter((n) => n !== void 0), C = (n, o = []) => {
-    const j = (t) => t && t.replace(/_/g, " ").split(" ").map((m) => m.charAt(0).toUpperCase() + m.slice(1)).join(" ");
+  }, ee = (n) => n.some((o) => A(o)), te = Me.flatMapDeep(m, (n) => n.children).map((n) => n == null ? void 0 : n.name).filter((n) => n !== void 0), C = (n, o = []) => {
+    const j = (t) => t && t.replace(/_/g, " ").split(" ").map((h) => h.charAt(0).toUpperCase() + h.slice(1)).join(" ");
     return n.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
       if (t.permissions && !ee(t.permissions))
         return null;
-      const m = j(t.name);
+      const h = j(t.name);
       if (!t.name)
         return null;
       if ("children" in t && t.children) {
         const $ = C(t.children, [...o, t.name]);
-        return $.length == 0 && t.path ? /* @__PURE__ */ e.jsx(O.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: d(`menu.${[...o, t.name].join(".")}`, { defaultValue: m }) }) }, t.path) : /* @__PURE__ */ e.jsx(et, { icon: t.icon, title: d(`menu.${[...o, t.name, t.name].join(".")}`, { defaultValue: m }), children: $ }, t.path ?? t.name);
+        return $.length == 0 && t.path ? /* @__PURE__ */ e.jsx(O.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: d(`menu.${[...o, t.name].join(".")}`, { defaultValue: h }) }) }, t.path) : /* @__PURE__ */ e.jsx(et, { icon: t.icon, title: d(`menu.${[...o, t.name, t.name].join(".")}`, { defaultValue: h }), children: $ }, t.path ?? t.name);
       }
-      return t.name && t.path ? /* @__PURE__ */ e.jsx(O.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: d(`menu.${[...o, t.name].join(".")}`, { defaultValue: m }) }) }, t.path) : null;
+      return t.name && t.path ? /* @__PURE__ */ e.jsx(O.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: d(`menu.${[...o, t.name].join(".")}`, { defaultValue: h }) }) }, t.path) : null;
     }).filter(Boolean);
   };
   return R(() => {
@@ -245,7 +245,7 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
   }, [F, p.pathname]), /* @__PURE__ */ e.jsxs(P, { style: { minHeight: "100vh" }, children: [
     /* @__PURE__ */ e.jsxs(Ze, { collapsible: !0, collapsed: y, onCollapse: S, theme: g, children: [
       /* @__PURE__ */ e.jsx("div", { className: "logo", style: { margin: "8px", display: "flex" }, children: /* @__PURE__ */ e.jsx("div", { style: { width: "100%", height: "100%", textAlign: "center" }, children: _ ? /* @__PURE__ */ e.jsx("img", { src: _, alt: "logo", style: { height: "32px", width: "32px" } }) : /* @__PURE__ */ e.jsx(fe, { size: "large", tip: "Loading..." }) }) }),
-      /* @__PURE__ */ e.jsx(O, { theme: g, defaultOpenKeys: te, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [p.pathname], children: C(h) })
+      /* @__PURE__ */ e.jsx(O, { theme: g, defaultOpenKeys: te, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [p.pathname], children: C(m) })
     ] }),
     /* @__PURE__ */ e.jsxs(P, { className: "site-layout", children: [
       /* @__PURE__ */ e.jsxs(Ge, { className: "site-layout-background", style: { padding: 0, display: "flex", justifyContent: "space-between" }, children: [
@@ -306,21 +306,21 @@ const We = ({ transformSettingTabs: a, transformLangConfig: h, extraPrivateRoute
 };
 function zt({
   transformRouter: a = (c) => c,
-  transformSettingTabs: h = (c) => c,
+  transformSettingTabs: m = (c) => c,
   transformLangConfig: f = (c) => c,
   extraPrivateRoutes: g = [],
   extraPublicRoutes: d = [],
   menuStyle: u = "dark"
 }) {
   const { i18n: c } = B(), [y, S] = v(K[c.language] || M);
-  console.log(h), R(() => {
+  R(() => {
     S(K[c.language] || M);
   }, [c.language]);
   const p = (w) => w.map((i) => i.children === void 0 ? i : {
     ...i,
     children: p(i.children)
   }), A = a(p(We({
-    transformSettingTabs: h,
+    transformSettingTabs: m,
     transformLangConfig: f,
     extraPrivateRoutes: g,
     extraPublicRoutes: d
@@ -343,13 +343,13 @@ function zt({
     ve,
     {
       locale: y,
-      children: /* @__PURE__ */ e.jsx(Fe, { children: /* @__PURE__ */ e.jsx(pe, { basename: T(), children: /* @__PURE__ */ e.jsx(xe, { children: z(A) }) }) })
+      children: /* @__PURE__ */ e.jsx(Fe, { children: /* @__PURE__ */ e.jsx(pe, { basename: Q(), children: /* @__PURE__ */ e.jsx(xe, { children: z(A) }) }) })
     }
   ) });
 }
 const wt = {
+  ...T,
   ...q,
-  ...Q,
   ...Y,
   ...W
 };
