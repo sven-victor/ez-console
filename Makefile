@@ -34,15 +34,25 @@ server/static: web/node_modules
 	cd web && pnpm build
 	cp -r web/dist/ server/static
 
+web/lib:
+	cd web && pnpm build:lib
+
+
+clean-web-lib:
+	rm -rf web/lib
+	rm -rf web/types
+
 dist/server:
 	go mod tidy
 	go build -o dist/server main.go
 
-clean:
+clean:clean-web-lib
 	rm -rf dist/server
 	rm -rf server/static
+	rm -rf web/lib
+	rm -rf web/types
 
 .PHONY: build
-build:server/static dist/server
+build:server/static dist/server web/lib
 
 	
