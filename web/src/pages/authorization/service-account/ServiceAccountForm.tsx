@@ -3,7 +3,7 @@ import { Modal, Space, Button, Input, Form, message } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import api from '@/service/api';
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface ServiceAccountFormProps {
   serviceAccountID?: string | null;
@@ -21,6 +21,7 @@ const ServiceAccountForm = ({
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();
+  const [loadingServiceAccount, setLoadingServiceAccount] = useState(false);
 
   const { run: saveServiceAccount, loading } = useRequest((values: any) => {
     if (serviceAccountID) {
@@ -40,22 +41,35 @@ const ServiceAccountForm = ({
   })
 
   useEffect(() => {
-    if (open && serviceAccountID) {
-      api.authorization.getServiceAccountById({ id: serviceAccountID }).then((res) => {
+    const loadServiceAccount = async (id: string) => {
+      setLoadingServiceAccount(true);
+      try {
+        const res = await api.authorization.getServiceAccountById({ id });
         form.setFieldsValue({
           name: res.name,
           description: res.description,
         });
-      });
-    } else {
+      } catch (error) {
+        message.error(t('serviceAccount.loadError', { defaultValue: 'Failed to load service account.' }));
+      } finally {
+        setLoadingServiceAccount(false);
+      }
+    }
+    if (open) {
       form.resetFields();
+      if (serviceAccountID) {
+        loadServiceAccount(serviceAccountID);
+      }
     }
   }, [serviceAccountID, open]);
 
   return <Modal
     title={serviceAccountID ? t('serviceAccount.edit', { defaultValue: 'Edit Service Account' }) : t('serviceAccount.create', { defaultValue: 'Create Service Account' })}
     width={500}
-    onClose={onClose}
+    onClose={() => {
+      form.resetFields();
+      onClose()
+    }}
     open={open}
     footer={
       <Space>
@@ -63,7 +77,7 @@ const ServiceAccountForm = ({
         <Button
           type="primary"
           onClick={form.submit}
-          loading={loading}
+          loading={loading || loadingServiceAccount}
         >
           {tCommon('save', { defaultValue: 'Save' })}
         </Button>
