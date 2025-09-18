@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ConfigProvider, type TabsProps as AntTabsProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
+import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 
 import zhCN from 'antd/lib/locale/zh_CN';
 import enUS from 'antd/lib/locale/en_US';
@@ -50,6 +51,8 @@ export interface AppProps {
   extraPrivateRoutes?: IRoute[];
   extraPublicRoutes?: IRoute[];
   menuStyle?: 'dark' | 'light';
+  transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
+  renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
 }
 
 function App({
@@ -59,6 +62,8 @@ function App({
   extraPrivateRoutes = [],
   extraPublicRoutes = [],
   menuStyle = 'dark',
+  transformHeaderItems = (items) => items,
+  renderLayout,
 }: AppProps) {
   const { i18n } = useTranslation();
   const [antdLocale, setAntdLocale] = useState(antdLocales[i18n.language] || enUS);
@@ -100,6 +105,8 @@ function App({
         element={route.element}
         transformLangConfig={transformLangConfig}
         menuStyle={menuStyle}
+        transformHeaderItems={transformHeaderItems}
+        renderLayout={renderLayout}
       />} /> : route.element
       if ('children' in route && route.children && route.children.length > 0) {
         return <Route key={route.path ?? route.name ?? index} path={route.path} element={element} >

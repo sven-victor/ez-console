@@ -13,7 +13,7 @@ import LanguageSwitch, { type LanguageConfig } from './LanguageSwitch';
 import HeaderDropdown from './HeaderDropdown';
 import Avatar from './Avatar';
 import { useTranslation } from 'react-i18next';
-import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
+import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
 import api from '@/service/api';
 import _ from 'lodash';
@@ -26,9 +26,18 @@ export interface AppLayoutProps {
   element?: React.ReactNode | null;
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
   menuStyle?: 'dark' | 'light';
+  transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
+  renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
 }
 
-const AppLayout: React.FC<AppLayoutProps> = ({ element, routes, transformLangConfig, menuStyle = 'dark' }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({
+  element,
+  routes,
+  transformLangConfig,
+  menuStyle = 'dark',
+  transformHeaderItems = (items) => items,
+  renderLayout,
+}) => {
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const [collapsed, setCollapsed] = useState(false);
@@ -126,7 +135,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ element, routes, transformLangCon
 
   const defaultOpenKeys: string[] = _.flatMapDeep(routes, item => item.children).map(item => item?.name).filter(item => item !== undefined)
 
-  const renderMenuItems = (routes: IRoute[], parent: (string | undefined)[] = []) => {
+  const renderMenuItems = (routes: IRoute[], parent: (string | undefined)[] = []): React.ReactNode[] => {
     const toTitle = (name: string | undefined) => {
       if (!name) return name;
       return name.replace(/_/g, ' ').split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
@@ -178,16 +187,34 @@ const AppLayout: React.FC<AppLayoutProps> = ({ element, routes, transformLangCon
       document.title = siteName
     }
   }, [getBreadcrumbs, location.pathname])
-  return (
+
+  const headerItems: React.ReactNode[] = [
+    <HeaderDropdown hidden={navigation.length <= 1} menu={{
+      items: navigation.map(item => ({
+        key: item.path,
+        style: { paddingRight: '20px' },
+        label: <a href={item.path}>{t(`menu.${item.name}`, { defaultValue: item.name })}</a>,
+      })),
+    }}>
+      <SwapOutlined />
+    </HeaderDropdown>,
+    <HeaderDropdown menu={{ items: userMenu }}>
+      {user?.avatar ? <Avatar src={user.avatar} /> : <Avatar icon={<UserOutlined />} />}
+      <span style={{ height: '1em', lineHeight: '1em', marginLeft: '5px' }}>{user?.full_name || user?.username}</span>
+    </HeaderDropdown>,
+    <LanguageSwitch transformLangConfig={transformLangConfig} />,
+  ]
+
+  const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme={menuStyle}>
         <div className="logo" style={{ margin: '8px', display: 'flex' }}>
           <div style={{ width: '100%', height: '100%', textAlign: 'center' }}>
-            {siteIcon ? <img src={siteIcon} alt="logo" style={{ height: '32px', width: '32px', }} /> : <Spin size="large" tip="Loading..." />}
+            {siteIconUrl ? <img src={siteIconUrl} alt="logo" style={{ height: '32px', width: '32px', }} /> : <Spin size="large" tip="Loading..." />}
           </div>
         </div>
         <Menu theme={menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[location.pathname]}>
-          {renderMenuItems(routes)}
+          {menuItems}
         </Menu>
       </Sider>
       <Layout className="site-layout">
@@ -199,20 +226,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ element, routes, transformLangCon
             style={{ fontSize: '16px', width: 64, height: 64 }}
           />
           <div style={{ marginRight: '20px' }}>
-            <HeaderDropdown hidden={navigation.length <= 1} menu={{
-              items: navigation.map(item => ({
-                key: item.path,
-                style: { paddingRight: '20px' },
-                label: <a href={item.path}>{t(`menu.${item.name}`, { defaultValue: item.name })}</a>,
-              })),
-            }}>
-              <SwapOutlined />
-            </HeaderDropdown>
-            <HeaderDropdown menu={{ items: userMenu }}>
-              {user?.avatar ? <Avatar src={user.avatar} /> : <Avatar icon={<UserOutlined />} />}
-              <span style={{ height: '1em', lineHeight: '1em' }}>{user?.full_name || user?.username}</span>
-            </HeaderDropdown>
-            <LanguageSwitch transformLangConfig={transformLangConfig} />
+            {headerItems}
           </div>
         </Header>
         <Content style={{ margin: '0 16px' }}>
@@ -222,15 +236,17 @@ const AppLayout: React.FC<AppLayoutProps> = ({ element, routes, transformLangCon
               return <Link to={path}>{route.title}</Link>
             }
             return <span>{route.title}</span>
-          }} items={getBreadcrumbs()} />
+          }} items={breadcrumbs} />
           <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-            {element ?? <Outlet />}
+            {content}
           </div>
         </Content>
         <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
     </Layout>
-  );
+  )
+
+  return (renderLayout ?? defaultRenderLayout)(siteIcon, renderMenuItems(routes), transformHeaderItems(headerItems), getBreadcrumbs(), element ?? <Outlet />)
 };
 
 export default AppLayout; 
