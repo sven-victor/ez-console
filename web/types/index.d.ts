@@ -5,6 +5,7 @@ import { ComponentType } from 'react';
 import { default as default_2 } from 'react';
 import { DropDownProps } from 'antd/es/dropdown';
 import { default as i18n } from 'i18next';
+import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { ReactNode } from 'react';
 import { TableProps as TableProps_2 } from 'antd';
@@ -291,6 +292,8 @@ export declare interface AppLayoutProps {
     element?: default_2.ReactNode | null;
     transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
     menuStyle?: 'dark' | 'light';
+    transformHeaderItems?: (items: default_2.ReactNode[]) => default_2.ReactNode[];
+    renderLayout?: (siteIconUrl: string | null, menuItems: default_2.ReactNode[], headerItems: default_2.ReactNode[], breadcrumbs: ItemType[], content: default_2.ReactNode) => default_2.ReactNode;
 }
 
 export declare interface assignPermissionsParams {
@@ -490,7 +493,7 @@ export declare interface ErrorResponse {
     message: string;
 }
 
-export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, }: EZAppProps): JSX_2.Element;
+export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;
@@ -500,6 +503,8 @@ export declare interface EZAppProps {
     extraPrivateRoutes?: IRoute[];
     extraPublicRoutes?: IRoute[];
     menuStyle?: 'dark' | 'light';
+    transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
+    renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
 }
 
 declare interface File_2 {
