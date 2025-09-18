@@ -93,6 +93,7 @@ type Service interface {
 	UpdateSetting(ctx context.Context, key model.SettingKey, value, comment string) (*model.Setting, error)
 	UpdateSettings(ctx context.Context, settings map[string]string) error
 	DeleteSetting(ctx context.Context, key model.SettingKey) error
+	GetSMTPSettings(ctx context.Context) (*model.SMTPSettings, error)
 
 	// Cache Service
 	CreateCache(ctx context.Context, key, value string, expiredAt time.Time) (*model.TempData, error)
