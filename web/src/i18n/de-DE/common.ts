@@ -48,6 +48,11 @@ export default {
   verify: 'Überprüfen',
   previous: 'Zurück',
   next: 'Weiter',
+  enter: 'Eingeben',
+  select: 'Auswählen',
+  pagination: {
+    total: '{{start}}-{{end}} von {{total}} Einträgen',
+  },
   language: {
     default: 'Standardsprache',
     'en-US': 'Englisch',
@@ -56,5 +61,6 @@ export default {
     'de-DE': 'Deutsch',
     'es-ES': 'Spanisch',
     'fr-FR': 'Französisch',
+    'zh-CN': 'Chinesisch',
   }
 } 

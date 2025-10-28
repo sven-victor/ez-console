@@ -48,6 +48,11 @@ export default {
   verify: 'Vérifier',
   previous: 'Précédent',
   next: 'Suivant',
+  enter: 'Entrer',
+  select: 'Sélectionner',
+  pagination: {
+    total: '{{start}}-{{end}} sur {{total}} éléments',
+  },
   language: {
     default: 'Langue par défaut',
     'en-US': 'Anglais',

@@ -1,5 +1,99 @@
 export type AccessType = "public" | "private" | "owner";
 
+export interface AIChatMessage {
+  /** Message content */
+  content: string;
+  created_at: string;
+  id: string;
+  /** Message timestamp */
+  message_time: string;
+  /** Additional metadata */
+  metadata: AIChatMessageMetadata;
+  /** Message role */
+  role: AIChatMessageRole;
+  /** Session ID */
+  session_id: string;
+  /** Message status */
+  status: AIChatMessageStatus;
+  /** Tokens used for this message */
+  tokens_used: number;
+  /** Tool call ID (for tool messages) */
+  tool_call_id: string;
+  /** Tool calls (for assistant messages) */
+  tool_calls: AIToolCall[];
+  updated_at: string;
+}
+
+export type AIChatMessageMetadata = true;
+
+export type AIChatMessageRole = "user" | "assistant" | "system" | "tool";
+
+export type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
+
+export interface AIChatSession {
+  created_at: string;
+  /** Session end time */
+  end_time: string;
+  id: string;
+  /** Messages */
+  messages: AIChatMessage[];
+  /** AI model ID used */
+  model_id: string;
+  /** Session start time */
+  start_time: string;
+  /** Session title */
+  title: string;
+  updated_at: string;
+  /** User ID */
+  user_id: string;
+}
+
+export interface AIFunctionCall {
+  arguments: string;
+  name: string;
+}
+
+export interface AIModel {
+  /** API key (encrypted) */
+  api_key: string;
+  /** Base URL (optional, for custom endpoints) */
+  base_url: string;
+  /** Additional configuration */
+  config: AIModelConfig;
+  created_at: string;
+  /** Creator user ID */
+  created_by: string;
+  /** Model description */
+  description: string;
+  id: string;
+  /** Whether this is the default model */
+  is_default: boolean;
+  /** Model ID (e.g., gpt-4, gpt-3.5-turbo) */
+  model_id: string;
+  /** Model name */
+  name: string;
+  /** Provider (openai, etc.) */
+  provider: AIModelProvider;
+  /** Status */
+  status: AIModelStatus;
+  updated_at: string;
+  /** Last updater user ID */
+  updated_by: string;
+}
+
+export type AIModelConfig = true;
+
+export type AIModelProvider = "openai";
+
+export type AIModelStatus = "enabled" | "disabled";
+
+export interface AIToolCall {
+  function: AIFunctionCall;
+  id: string;
+  index: number;
+  type: string;
+}
+
 export interface assignPermissionsParams {
   /** Role ID */
   id: string;
@@ -74,6 +168,14 @@ export interface Chart {
   width: number;
 }
 
+export interface ChatStreamEvent {
+  content: string;
+  event_type: EventType;
+  message_id: string;
+  role: AIChatMessageRole;
+  tool_calls: ToolCall[];
+}
+
 export interface CheckPasswordComplexityRequest {
   password: string;
 }
@@ -83,6 +185,36 @@ export interface CheckPasswordComplexityResponse {
 }
 
 export type Condition = true;
+
+export interface ConfigField {
+  default: string;
+  description: string;
+  name: string;
+  options: ConfigFieldOptions[];
+  required: boolean;
+  type: FieldType;
+}
+
+export interface ConfigFieldOptions {
+  label: string;
+  value: string;
+}
+
+export interface CreateAIModelRequest {
+  api_key: string;
+  base_url?: string;
+  config?: Record<string, any>;
+  description?: string;
+  is_default?: boolean;
+  model_id: string;
+  name: string;
+  provider: AIModelProvider;
+}
+
+export interface CreateChatSessionRequest {
+  model_id: string;
+  title: string;
+}
 
 export interface CreateRoleRequest {
   description: string;
@@ -121,6 +253,13 @@ export interface CreateServiceAccountRequest {
   name: string;
 }
 
+export interface CreateToolSetRequest {
+  config?: Record<string, any>;
+  description?: string;
+  name: string;
+  type: ToolSetType;
+}
+
 export interface CreateUserRequest {
   avatar?: string;
   email: string;
@@ -138,6 +277,16 @@ export interface Dataset {
   label: string;
 }
 
+export interface deleteAIModelParams {
+  /** AI model ID */
+  id: string;
+}
+
+export interface deleteChatSessionParams {
+  /** Chat session ID */
+  sessionId: string;
+}
+
 export interface deleteRoleParams {
   /** Role ID */
   id: string;
@@ -152,6 +301,11 @@ export interface deleteServiceAccountAccessKeyParams {
 
 export interface deleteServiceAccountParams {
   /** Service account ID */
+  id: string;
+}
+
+export interface deleteToolSetParams {
+  /** Toolset ID */
   id: string;
 }
 
@@ -187,6 +341,10 @@ export interface ErrorResponse {
   message: string;
 }
 
+export type EventType = "content" | "tool_call" | "error";
+
+export type FieldType = "string" | "number" | "boolean" | "array" | "object";
+
 export interface File {
   access: AccessType;
   created_at: string;
@@ -199,11 +357,27 @@ export interface File {
 
 export type FileType = "image";
 
+export interface FunctionCall {
+  /** call function with arguments in JSON format */
+  arguments: string;
+  name: string;
+}
+
+export interface getAIModelParams {
+  /** AI model ID */
+  id: string;
+}
+
 export interface getAuditLogsParams {
   /** Current page number */
   current?: number;
   /** Number of items per page */
   page_size?: number;
+}
+
+export interface getChatSessionParams {
+  /** Chat session ID */
+  sessionId: string;
 }
 
 export interface getCurrentUserLogsParams {
@@ -260,6 +434,11 @@ export interface getServiceAccountsParams {
   page_size?: number;
   /** Search keyword */
   search?: string;
+}
+
+export interface getToolSetParams {
+  /** Toolset ID */
+  id: string;
 }
 
 export interface getUserLogsParams {
@@ -353,6 +532,22 @@ export interface LDAPTestResponse {
   user: User;
 }
 
+export interface listAIModelsParams {
+  /** Current page number */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+  /** Search keyword */
+  search?: string;
+}
+
+export interface listChatSessionsParams {
+  /** Current page number */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+}
+
 export interface listFilesParams {
   /** Current page */
   current?: number;
@@ -372,6 +567,15 @@ export interface listRolesParams {
   /** Page size */
   page_size?: number;
   /** Search */
+  search?: string;
+}
+
+export interface listToolSetsParams {
+  /** Current page number */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+  /** Search keyword */
   search?: string;
 }
 
@@ -465,6 +669,22 @@ export interface OAuthSettings {
   wellknown_endpoint: string;
 }
 
+export interface PaginationResponseModelAIChatSession {
+  code: string;
+  current: number;
+  data: AIChatSession[];
+  page_size: number;
+  total: number;
+}
+
+export interface PaginationResponseModelAIModel {
+  code: string;
+  current: number;
+  data: AIModel[];
+  page_size: number;
+  total: number;
+}
+
 export interface PaginationResponseModelAuditLog {
   code: string;
   current: number;
@@ -493,6 +713,14 @@ export interface PaginationResponseModelServiceAccount {
   code: string;
   current: number;
   data: ServiceAccount[];
+  page_size: number;
+  total: number;
+}
+
+export interface PaginationResponseModelToolSet {
+  code: string;
+  current: number;
+  data: ToolSet[];
   page_size: number;
   total: number;
 }
@@ -575,6 +803,12 @@ export interface ResponseArrayServiceSessionInfo {
   err: string;
 }
 
+export interface ResponseArrayServiceToolSetTypeDefinition {
+  code: string;
+  data: ToolSetTypeDefinition[];
+  err: string;
+}
+
 export interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
   code: string;
   data: CreateServiceAccountAccessKeyResponse;
@@ -590,6 +824,18 @@ export interface ResponseAuthorizationapiResetUserPasswordResponse {
 export interface ResponseAuthorizationapiTokenResponse {
   code: string;
   data: TokenResponse;
+  err: string;
+}
+
+export interface ResponseModelAIChatSession {
+  code: string;
+  data: AIChatSession;
+  err: string;
+}
+
+export interface ResponseModelAIModel {
+  code: string;
+  data: AIModel;
   err: string;
 }
 
@@ -644,6 +890,12 @@ export interface ResponseModelSMTPSettings {
 export interface ResponseModelSystemSettings {
   code: string;
   data: SystemSettings;
+  err: string;
+}
+
+export interface ResponseModelToolSet {
+  code: string;
+  data: ToolSet;
   err: string;
 }
 
@@ -762,6 +1014,10 @@ export interface SecuritySettings {
   user_inactive_days: number;
 }
 
+export interface SendMessageRequest {
+  content: string;
+}
+
 export interface ServiceAccount {
   access_keys: ServiceAccountAccessKey[];
   created_at: string;
@@ -797,6 +1053,11 @@ export interface SessionInfo {
   last_active_at: string;
   location: string;
   user_agent: string;
+}
+
+export interface setDefaultAIModelParams {
+  /** AI model ID */
+  id: string;
 }
 
 export interface setRolePolicyParams {
@@ -895,18 +1156,91 @@ export interface terminateSessionParams {
   id: string;
 }
 
+export interface testAIModelParams {
+  /** AI model ID */
+  id: string;
+}
+
 export interface TestOAuthCallbackResponse {
   user: User;
   user_info: Record<string, any>;
+}
+
+export interface testToolSetParams {
+  /** Toolset ID */
+  id: string;
 }
 
 export interface TokenResponse {
   token: string;
 }
 
+export interface ToolCall {
+  error: string;
+  function: FunctionCall;
+  id: string;
+  /** Index is not nil only in chat completion chunk object */
+  index: number;
+  start_time: string;
+  status: ToolCallStatus;
+  type: ToolType;
+}
+
+export type ToolCallStatus = "pending" | "running" | "completed" | "failed";
+
+export interface ToolSet {
+  /** Additional configuration */
+  config: Record<string, any>;
+  created_at: string;
+  /** Creator user ID */
+  created_by: string;
+  /** Toolset description */
+  description: string;
+  id: string;
+  /** Toolset name */
+  name: string;
+  /** Status */
+  status: ToolSetStatus;
+  /** Toolset type (mcp, etc.) */
+  type: ToolSetType;
+  updated_at: string;
+  /** Last updater user ID */
+  updated_by: string;
+}
+
+export type ToolSetStatus = "enabled" | "disabled";
+
+export type ToolSetType = "mcp";
+
+export interface ToolSetTypeDefinition {
+  config_fields: ConfigField[];
+  description: string;
+  name: string;
+  tool_set_type: string;
+}
+
+export type ToolType = "function";
+
 export interface unlockUserParams {
   /** User ID */
   id: string;
+}
+
+export interface updateAIModelParams {
+  /** AI model ID */
+  id: string;
+}
+
+export interface UpdateAIModelRequest {
+  /** Optional for updates */
+  api_key: string;
+  base_url?: string;
+  config?: Record<string, any>;
+  description?: string;
+  is_default?: boolean;
+  model_id: string;
+  name: string;
+  provider: AIModelProvider;
 }
 
 export interface UpdateCurrentUserRequest {
@@ -1005,6 +1339,19 @@ export interface updateServiceAccountStatusParams {
 
 export interface UpdateServiceAccountStatusRequest {
   status: "active" | "disabled";
+}
+
+export interface updateToolSetParams {
+  /** Toolset ID */
+  id: string;
+}
+
+export interface UpdateToolSetRequest {
+  config?: Record<string, any>;
+  description?: string;
+  name: string;
+  status?: ToolSetStatus;
+  type: ToolSetType;
 }
 
 export interface updateUserParams {

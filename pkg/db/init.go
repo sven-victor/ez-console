@@ -22,6 +22,10 @@ var migrateModels = []interface{}{
 	&model.PasswordHistory{},
 	&model.File{},
 	&model.TempData{},
+	&model.AIModel{},
+	&model.ToolSet{},
+	&model.AIChatSession{},
+	&model.AIChatMessage{},
 }
 
 func RegisterModels(models ...interface{}) {

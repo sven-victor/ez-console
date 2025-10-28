@@ -1,5 +1,6 @@
 import { getURL } from '@/utils';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import { json } from 'stream/consumers';
 
 export const baseURL = '/api';
 
@@ -120,12 +121,83 @@ export const apiDelete = async <T>(url: string, config?: AxiosRequestConfig): Pr
 type ListResult = { data: any; current: number; total: number; page_size: number };
 type Result<T extends { data: any }> = T extends ListResult ? T : T["data"];
 
+interface SSEConfig extends RequestInit {
+  signal?: AbortSignal;
+}
+
+export async function fetchSSE(url: string, config?: SSEConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>> {
+  const { signal, ...fetchConfig } = config || {};
+
+  const response = await fetch(url, {
+    method: fetchConfig.method || 'GET',
+    headers: fetchConfig.headers,
+    body: fetchConfig.body,
+    signal: signal,
+  });
+
+  console.log(response)
+  if (!response.ok || !response.body) {
+    if (response.body) {
+      try {
+        const data = await response.json() as API.ErrorResponse;
+        throw new Error(`SSE connection failed: ${data.message}`);
+      } catch (error) {
+        throw new Error(`SSE connection failed: ${response.statusText}`);
+      }
+    }
+    throw new Error(`SSE connection failed: ${response.statusText}`);
+  }
+
+  if (response.status !== 200) {
+    const data = await response.json() as API.ErrorResponse;
+    throw new Error(`SSE connection failed: ${data.message}`);
+  }
+  return response.body;
+}
+
+
 interface RequestConfig extends AxiosRequestConfig {
   requestType?: 'form'
 }
+export interface SSERequestConfig extends Omit<RequestConfig, 'requestType' | 'signal'> {
+  requestType: 'sse';
+  signal?: AbortSignal;
+}
 
-export const request = async <T extends { data: any, current: number, total: number, page_size: number } | { data: any }>(url: string, config?: RequestConfig): Promise<Result<T>> => {
-  const { requestType, ...requestConfig } = config || {};
+function normalizeHeaders(headers?: AxiosRequestConfig['headers']): Record<string, string> | undefined {
+  if (!headers) return undefined;
+
+  if (typeof (headers as any).toJSON === 'function') {
+    return (headers as any).toJSON();
+  }
+
+  return Object.fromEntries(
+    Object.entries(headers).map(([k, v]) => [k, String(v)])
+  );
+}
+
+export function request<T extends any>(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
+export function request<T extends { data: any; current?: number; total?: number; page_size?: number }>(url: string, config?: RequestConfig): Promise<Result<T>>;
+export async function request<T extends { data: any; current?: number; total?: number; page_size?: number }>(
+  url: string,
+  config?: RequestConfig | SSERequestConfig
+): Promise<Result<T> | ReadableStream<Uint8Array<ArrayBuffer>>> {
+  const { requestType, signal, ...requestConfig } = config || {};
+  if (requestType === 'sse') {
+    return fetchSSE(url, {
+      headers: {
+        'Accept': 'text/event-stream',
+        'Content-Type': 'application/json',
+        'Accept-Language': localStorage.getItem('i18nextLng') || 'en-US',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        ...normalizeHeaders(requestConfig.headers),
+      },
+      method: requestConfig.method,
+      body: JSON.stringify(requestConfig.data),
+      signal: signal,
+    });
+  }
+
   if (requestType === 'form') {
     return client.request<T, Result<T>>({
       url,

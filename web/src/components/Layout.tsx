@@ -18,6 +18,7 @@ import usePermission from '@/hooks/usePermission';
 import api from '@/service/api';
 import _ from 'lodash';
 import { getURL } from '@/utils';
+import AIChatButton from './AIChatButton';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
@@ -240,6 +241,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
             {content}
           </div>
+          <AIChatButton />
         </Content>
         <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>

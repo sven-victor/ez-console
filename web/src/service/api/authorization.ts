@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@/service/client";
+import { request, type SSERequestConfig } from "@/service/client";
 
 /** User login User login POST /api/authorization/auth/login */
 export async function login(

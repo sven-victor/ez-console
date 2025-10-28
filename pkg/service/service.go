@@ -18,6 +18,9 @@ type Service struct {
 	*StatsService
 	*BaseService
 	*GeoIPService
+	*AIModelService
+	*ToolSetService
+	*AIChatService
 }
 
 type BaseService struct {
@@ -47,6 +50,11 @@ func NewService(ctx context.Context) *Service {
 		UserService: userService,
 	}
 
+	// Create AI services
+	aiModelService := NewAIModelService()
+	toolSetService := NewToolSetService()
+	aiChatService := NewAIChatService(aiModelService, toolSetService)
+
 	s := &Service{
 		UserService:           userService,
 		PermissionService:     new(PermissionService),
@@ -61,6 +69,9 @@ func NewService(ctx context.Context) *Service {
 		LDAPService:           ldapService,
 		StatsService:          NewStatsService(),
 		BaseService:           baseService,
+		AIModelService:        aiModelService,
+		ToolSetService:        toolSetService,
+		AIChatService:         aiChatService,
 	}
 	s.FileService = NewFileService(baseService)
 	return s

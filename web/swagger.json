@@ -6,6 +6,570 @@
         "version": "v1.4.0"
     },
     "paths": {
+        "/api/ai/chat/sessions": {
+            "get": {
+                "description": "List chat sessions for the current user with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Chat"
+                ],
+                "summary": "List chat sessions",
+                "operationId": "listChatSessions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Current page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_AIChatSession"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new chat session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Chat"
+                ],
+                "summary": "Create chat session",
+                "operationId": "createChatSession",
+                "parameters": [
+                    {
+                        "description": "Chat session data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.CreateChatSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_AIChatSession"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/chat/sessions/{sessionId}": {
+            "get": {
+                "description": "Get a chat session by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Chat"
+                ],
+                "summary": "Get chat session",
+                "operationId": "getChatSession",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat session ID",
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_AIChatSession"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Stream chat responses using Server-Sent Events",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "AI/Chat"
+                ],
+                "summary": "Stream chat",
+                "operationId": "streamChat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat session ID",
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Message data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.SendMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event stream",
+                        "schema": {
+                            "$ref": "#/definitions/ai.ChatStreamEvent"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a chat session and all its messages",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Chat"
+                ],
+                "summary": "Delete chat session",
+                "operationId": "deleteChatSession",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat session ID",
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/models": {
+            "get": {
+                "description": "List AI models with pagination and search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "List AI models",
+                "operationId": "listAIModels",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Current page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_AIModel"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new AI model",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Create AI model",
+                "operationId": "createAIModel",
+                "parameters": [
+                    {
+                        "description": "AI model data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.CreateAIModelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_AIModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/models/{id}": {
+            "get": {
+                "description": "Get an AI model by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Get AI model",
+                "operationId": "getAIModel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AI model ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_AIModel"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an AI model",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Update AI model",
+                "operationId": "updateAIModel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AI model ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "AI model data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.UpdateAIModelRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_AIModel"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an AI model",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Delete AI model",
+                "operationId": "deleteAIModel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AI model ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/models/{id}/set-default": {
+            "post": {
+                "description": "Set an AI model as default",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Set default AI model",
+                "operationId": "setDefaultAIModel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AI model ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/models/{id}/test": {
+            "post": {
+                "description": "Test an AI model connection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Test AI model",
+                "operationId": "testAIModel",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "AI model ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/authorization/auth/login": {
             "post": {
                 "description": "User login",
@@ -3094,9 +3658,582 @@
                     }
                 }
             }
+        },
+        "/api/toolsets": {
+            "get": {
+                "description": "List toolsets with pagination and search",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "List toolsets",
+                "operationId": "listToolSets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Current page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_ToolSet"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new toolset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Create toolset",
+                "operationId": "createToolSet",
+                "parameters": [
+                    {
+                        "description": "Toolset data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.CreateToolSetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_ToolSet"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/toolsets/types": {
+            "get": {
+                "description": "Get the type definitions for toolsets",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Get toolset type definitions",
+                "operationId": "getToolSetTypeDefinitions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_service_ToolSetTypeDefinition"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/toolsets/{id}": {
+            "get": {
+                "description": "Get a toolset by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Get toolset",
+                "operationId": "getToolSet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Toolset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_ToolSet"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a toolset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Update toolset",
+                "operationId": "updateToolSet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Toolset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Toolset data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.UpdateToolSetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_ToolSet"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a toolset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Delete toolset",
+                "operationId": "deleteToolSet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Toolset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/toolsets/{id}/test": {
+            "post": {
+                "description": "Test a toolset connection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Test toolset",
+                "operationId": "testToolSet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Toolset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "ai.ChatStreamEvent": {
+            "type": "object",
+            "required": [
+                "content",
+                "event_type",
+                "message_id",
+                "role",
+                "tool_calls"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/ai.EventType"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/model.AIChatMessageRole"
+                },
+                "tool_calls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ai.ToolCall"
+                    }
+                }
+            }
+        },
+        "ai.EventType": {
+            "type": "string",
+            "enum": [
+                "content",
+                "tool_call",
+                "error"
+            ],
+            "x-enum-varnames": [
+                "EventTypeContent",
+                "EventTypeToolCall",
+                "EventTypeError"
+            ]
+        },
+        "ai.FunctionCall": {
+            "type": "object",
+            "required": [
+                "arguments",
+                "name"
+            ],
+            "properties": {
+                "arguments": {
+                    "description": "call function with arguments in JSON format",
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ai.ToolCall": {
+            "type": "object",
+            "required": [
+                "error",
+                "function",
+                "id",
+                "index",
+                "start_time",
+                "status",
+                "type"
+            ],
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "function": {
+                    "$ref": "#/definitions/ai.FunctionCall"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "index": {
+                    "description": "Index is not nil only in chat completion chunk object",
+                    "type": "integer"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/ai.ToolCallStatus"
+                },
+                "type": {
+                    "$ref": "#/definitions/openai.ToolType"
+                }
+            }
+        },
+        "ai.ToolCallStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "running",
+                "completed",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "ToolCallStatusPending",
+                "ToolCallStatusRunning",
+                "ToolCallStatusCompleted",
+                "ToolCallStatusFailed"
+            ]
+        },
+        "aiapi.CreateAIModelRequest": {
+            "type": "object",
+            "required": [
+                "api_key",
+                "model_id",
+                "name",
+                "provider"
+            ],
+            "properties": {
+                "api_key": {
+                    "type": "string"
+                },
+                "base_url": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provider": {
+                    "$ref": "#/definitions/model.AIModelProvider"
+                }
+            }
+        },
+        "aiapi.CreateChatSessionRequest": {
+            "type": "object",
+            "required": [
+                "model_id",
+                "title"
+            ],
+            "properties": {
+                "model_id": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "aiapi.CreateToolSetRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.ToolSetType"
+                }
+            }
+        },
+        "aiapi.SendMessageRequest": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                }
+            }
+        },
+        "aiapi.UpdateAIModelRequest": {
+            "type": "object",
+            "required": [
+                "api_key",
+                "model_id",
+                "name",
+                "provider"
+            ],
+            "properties": {
+                "api_key": {
+                    "description": "Optional for updates",
+                    "type": "string"
+                },
+                "base_url": {
+                    "type": "string"
+                },
+                "config": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "is_default": {
+                    "type": "boolean"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provider": {
+                    "$ref": "#/definitions/model.AIModelProvider"
+                }
+            }
+        },
+        "aiapi.UpdateToolSetRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/model.ToolSetStatus"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.ToolSetType"
+                }
+            }
+        },
         "authorizationapi.AssignPermissionsRequest": {
             "type": "object",
             "required": [
@@ -3482,6 +4619,319 @@
                     "type": "string"
                 },
                 "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.AIChatMessage": {
+            "type": "object",
+            "required": [
+                "content",
+                "created_at",
+                "id",
+                "message_time",
+                "metadata",
+                "role",
+                "session_id",
+                "status",
+                "tokens_used",
+                "tool_call_id",
+                "tool_calls",
+                "updated_at"
+            ],
+            "properties": {
+                "content": {
+                    "description": "Message content",
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "message_time": {
+                    "description": "Message timestamp",
+                    "type": "string"
+                },
+                "metadata": {
+                    "description": "Additional metadata",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AIChatMessageMetadata"
+                        }
+                    ]
+                },
+                "role": {
+                    "description": "Message role",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AIChatMessageRole"
+                        }
+                    ]
+                },
+                "session_id": {
+                    "description": "Session ID",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Message status",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AIChatMessageStatus"
+                        }
+                    ]
+                },
+                "tokens_used": {
+                    "description": "Tokens used for this message",
+                    "type": "integer"
+                },
+                "tool_call_id": {
+                    "description": "Tool call ID (for tool messages)",
+                    "type": "string"
+                },
+                "tool_calls": {
+                    "description": "Tool calls (for assistant messages)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AIToolCall"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.AIChatMessageMetadata": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "model.AIChatMessageRole": {
+            "type": "string",
+            "enum": [
+                "user",
+                "assistant",
+                "system",
+                "tool"
+            ],
+            "x-enum-varnames": [
+                "AIChatMessageRoleUser",
+                "AIChatMessageRoleAssistant",
+                "AIChatMessageRoleSystem",
+                "AIChatMessageRoleTool"
+            ]
+        },
+        "model.AIChatMessageStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "streaming",
+                "completed",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "AIChatMessageStatusPending",
+                "AIChatMessageStatusStreaming",
+                "AIChatMessageStatusCompleted",
+                "AIChatMessageStatusFailed"
+            ]
+        },
+        "model.AIChatSession": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "end_time",
+                "id",
+                "messages",
+                "model_id",
+                "start_time",
+                "title",
+                "updated_at",
+                "user_id"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "description": "Session end time",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "messages": {
+                    "description": "Messages",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AIChatMessage"
+                    }
+                },
+                "model_id": {
+                    "description": "AI model ID used",
+                    "type": "string"
+                },
+                "start_time": {
+                    "description": "Session start time",
+                    "type": "string"
+                },
+                "title": {
+                    "description": "Session title",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "User ID",
+                    "type": "string"
+                }
+            }
+        },
+        "model.AIFunctionCall": {
+            "type": "object",
+            "required": [
+                "arguments",
+                "name"
+            ],
+            "properties": {
+                "arguments": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.AIModel": {
+            "type": "object",
+            "required": [
+                "api_key",
+                "base_url",
+                "config",
+                "created_at",
+                "created_by",
+                "description",
+                "id",
+                "is_default",
+                "model_id",
+                "name",
+                "provider",
+                "status",
+                "updated_at",
+                "updated_by"
+            ],
+            "properties": {
+                "api_key": {
+                    "description": "API key (encrypted)",
+                    "type": "string"
+                },
+                "base_url": {
+                    "description": "Base URL (optional, for custom endpoints)",
+                    "type": "string"
+                },
+                "config": {
+                    "description": "Additional configuration",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AIModelConfig"
+                        }
+                    ]
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "description": "Creator user ID",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Model description",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_default": {
+                    "description": "Whether this is the default model",
+                    "type": "boolean"
+                },
+                "model_id": {
+                    "description": "Model ID (e.g., gpt-4, gpt-3.5-turbo)",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Model name",
+                    "type": "string"
+                },
+                "provider": {
+                    "description": "Provider (openai, etc.)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AIModelProvider"
+                        }
+                    ]
+                },
+                "status": {
+                    "description": "Status",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.AIModelStatus"
+                        }
+                    ]
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "description": "Last updater user ID",
+                    "type": "string"
+                }
+            }
+        },
+        "model.AIModelConfig": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "model.AIModelProvider": {
+            "type": "string",
+            "enum": [
+                "openai"
+            ],
+            "x-enum-varnames": [
+                "AIModelProviderOpenAI"
+            ]
+        },
+        "model.AIModelStatus": {
+            "type": "string",
+            "enum": [
+                "enabled",
+                "disabled"
+            ],
+            "x-enum-varnames": [
+                "AIModelStatusEnabled",
+                "AIModelStatusDisabled"
+            ]
+        },
+        "model.AIToolCall": {
+            "type": "object",
+            "required": [
+                "function",
+                "id",
+                "index",
+                "type"
+            ],
+            "properties": {
+                "function": {
+                    "$ref": "#/definitions/model.AIFunctionCall"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "index": {
+                    "type": "integer"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -4256,6 +5706,88 @@
                 }
             }
         },
+        "model.ToolSet": {
+            "type": "object",
+            "required": [
+                "config",
+                "created_at",
+                "created_by",
+                "description",
+                "id",
+                "name",
+                "status",
+                "type",
+                "updated_at",
+                "updated_by"
+            ],
+            "properties": {
+                "config": {
+                    "description": "Additional configuration",
+                    "type": "object"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "description": "Creator user ID",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Toolset description",
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Toolset name",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Status",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ToolSetStatus"
+                        }
+                    ]
+                },
+                "type": {
+                    "description": "Toolset type (mcp, etc.)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ToolSetType"
+                        }
+                    ]
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "updated_by": {
+                    "description": "Last updater user ID",
+                    "type": "string"
+                }
+            }
+        },
+        "model.ToolSetStatus": {
+            "type": "string",
+            "enum": [
+                "enabled",
+                "disabled"
+            ],
+            "x-enum-varnames": [
+                "ToolSetStatusEnabled",
+                "ToolSetStatusDisabled"
+            ]
+        },
+        "model.ToolSetType": {
+            "type": "string",
+            "enum": [
+                "mcp"
+            ],
+            "x-enum-varnames": [
+                "ToolSetTypeMCP"
+            ]
+        },
         "model.User": {
             "type": "object",
             "required": [
@@ -4353,6 +5885,15 @@
                 "UserSourceLocal",
                 "UserSourceLDAP",
                 "UserSourceOAuth"
+            ]
+        },
+        "openai.ToolType": {
+            "type": "string",
+            "enum": [
+                "function"
+            ],
+            "x-enum-varnames": [
+                "ToolTypeFunction"
             ]
         },
         "service.Chart": {
@@ -4719,6 +6260,32 @@
                 "user_info": {
                     "type": "object",
                     "additionalProperties": true
+                }
+            }
+        },
+        "service.ToolSetTypeDefinition": {
+            "type": "object",
+            "required": [
+                "config_fields",
+                "description",
+                "name",
+                "tool_set_type"
+            ],
+            "properties": {
+                "config_fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toolset.ConfigField"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tool_set_type": {
+                    "type": "string"
                 }
             }
         },
@@ -5140,14 +6707,11 @@
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
-                60000000000,
-                3600000000000
+                60000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -5158,14 +6722,77 @@
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour"
+                "Minute"
+            ]
+        },
+        "toolset.ConfigField": {
+            "type": "object",
+            "required": [
+                "default",
+                "description",
+                "name",
+                "options",
+                "required",
+                "type"
+            ],
+            "properties": {
+                "default": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/toolset.ConfigFieldOptions"
+                    }
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "$ref": "#/definitions/toolset.FieldType"
+                }
+            }
+        },
+        "toolset.ConfigFieldOptions": {
+            "type": "object",
+            "required": [
+                "label",
+                "value"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "toolset.FieldType": {
+            "type": "string",
+            "enum": [
+                "string",
+                "number",
+                "boolean",
+                "array",
+                "object"
+            ],
+            "x-enum-varnames": [
+                "FieldTypeString",
+                "FieldTypeNumber",
+                "FieldTypeBoolean",
+                "FieldTypeArray",
+                "FieldTypeObject"
             ]
         },
         "util.ErrorResponse": {
@@ -5193,6 +6820,66 @@
             "properties": {
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "util.PaginationResponse-model_AIChatSession": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AIChatSession"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_AIModel": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AIModel"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
                 }
             }
         },
@@ -5306,6 +6993,36 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.ServiceAccount"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-model_ToolSet": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ToolSet"
                     }
                 },
                 "page_size": {
@@ -5478,6 +7195,28 @@
                 }
             }
         },
+        "util.Response-array_service_ToolSetTypeDefinition": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.ToolSetTypeDefinition"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-authorizationapi_CreateServiceAccountAccessKeyResponse": {
             "type": "object",
             "required": [
@@ -5529,6 +7268,44 @@
                 },
                 "data": {
                     "$ref": "#/definitions/authorizationapi.TokenResponse"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_AIChatSession": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.AIChatSession"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_AIModel": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.AIModel"
                 },
                 "err": {
                     "type": "string"
@@ -5700,6 +7477,25 @@
                 },
                 "data": {
                     "$ref": "#/definitions/model.SystemSettings"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_ToolSet": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.ToolSet"
                 },
                 "err": {
                     "type": "string"

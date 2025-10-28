@@ -48,6 +48,11 @@ export default {
   verify: 'Verifiera',
   previous: 'Föregående',
   next: 'Nästa',
+  enter: 'Ange',
+  select: 'Välj',
+  pagination: {
+    total: '{{start}}-{{end}} av {{total}} objekt',
+  },
   language: {
     default: 'Standardspråk',
     'en-US': 'Engelska',

@@ -1,4 +1,180 @@
 definitions:
+  ai.ChatStreamEvent:
+    properties:
+      content:
+        type: string
+      event_type:
+        $ref: '#/definitions/ai.EventType'
+      message_id:
+        type: string
+      role:
+        $ref: '#/definitions/model.AIChatMessageRole'
+      tool_calls:
+        items:
+          $ref: '#/definitions/ai.ToolCall'
+        type: array
+    required:
+    - content
+    - event_type
+    - message_id
+    - role
+    - tool_calls
+    type: object
+  ai.EventType:
+    enum:
+    - content
+    - tool_call
+    - error
+    type: string
+    x-enum-varnames:
+    - EventTypeContent
+    - EventTypeToolCall
+    - EventTypeError
+  ai.FunctionCall:
+    properties:
+      arguments:
+        description: call function with arguments in JSON format
+        type: string
+      name:
+        type: string
+    required:
+    - arguments
+    - name
+    type: object
+  ai.ToolCall:
+    properties:
+      error:
+        type: string
+      function:
+        $ref: '#/definitions/ai.FunctionCall'
+      id:
+        type: string
+      index:
+        description: Index is not nil only in chat completion chunk object
+        type: integer
+      start_time:
+        type: string
+      status:
+        $ref: '#/definitions/ai.ToolCallStatus'
+      type:
+        $ref: '#/definitions/openai.ToolType'
+    required:
+    - error
+    - function
+    - id
+    - index
+    - start_time
+    - status
+    - type
+    type: object
+  ai.ToolCallStatus:
+    enum:
+    - pending
+    - running
+    - completed
+    - failed
+    type: string
+    x-enum-varnames:
+    - ToolCallStatusPending
+    - ToolCallStatusRunning
+    - ToolCallStatusCompleted
+    - ToolCallStatusFailed
+  aiapi.CreateAIModelRequest:
+    properties:
+      api_key:
+        type: string
+      base_url:
+        type: string
+      config:
+        type: object
+      description:
+        type: string
+      is_default:
+        type: boolean
+      model_id:
+        type: string
+      name:
+        type: string
+      provider:
+        $ref: '#/definitions/model.AIModelProvider'
+    required:
+    - api_key
+    - model_id
+    - name
+    - provider
+    type: object
+  aiapi.CreateChatSessionRequest:
+    properties:
+      model_id:
+        type: string
+      title:
+        type: string
+    required:
+    - model_id
+    - title
+    type: object
+  aiapi.CreateToolSetRequest:
+    properties:
+      config:
+        type: object
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/model.ToolSetType'
+    required:
+    - name
+    - type
+    type: object
+  aiapi.SendMessageRequest:
+    properties:
+      content:
+        type: string
+    required:
+    - content
+    type: object
+  aiapi.UpdateAIModelRequest:
+    properties:
+      api_key:
+        description: Optional for updates
+        type: string
+      base_url:
+        type: string
+      config:
+        type: object
+      description:
+        type: string
+      is_default:
+        type: boolean
+      model_id:
+        type: string
+      name:
+        type: string
+      provider:
+        $ref: '#/definitions/model.AIModelProvider'
+    required:
+    - api_key
+    - model_id
+    - name
+    - provider
+    type: object
+  aiapi.UpdateToolSetRequest:
+    properties:
+      config:
+        type: object
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        $ref: '#/definitions/model.ToolSetStatus'
+      type:
+        $ref: '#/definitions/model.ToolSetType'
+    required:
+    - name
+    - type
+    type: object
   authorizationapi.AssignPermissionsRequest:
     properties:
       permission_ids:
@@ -262,6 +438,229 @@ definitions:
     required:
     - code
     - mfa_type
+    type: object
+  model.AIChatMessage:
+    properties:
+      content:
+        description: Message content
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      message_time:
+        description: Message timestamp
+        type: string
+      metadata:
+        allOf:
+        - $ref: '#/definitions/model.AIChatMessageMetadata'
+        description: Additional metadata
+      role:
+        allOf:
+        - $ref: '#/definitions/model.AIChatMessageRole'
+        description: Message role
+      session_id:
+        description: Session ID
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.AIChatMessageStatus'
+        description: Message status
+      tokens_used:
+        description: Tokens used for this message
+        type: integer
+      tool_call_id:
+        description: Tool call ID (for tool messages)
+        type: string
+      tool_calls:
+        description: Tool calls (for assistant messages)
+        items:
+          $ref: '#/definitions/model.AIToolCall'
+        type: array
+      updated_at:
+        type: string
+    required:
+    - content
+    - created_at
+    - id
+    - message_time
+    - metadata
+    - role
+    - session_id
+    - status
+    - tokens_used
+    - tool_call_id
+    - tool_calls
+    - updated_at
+    type: object
+  model.AIChatMessageMetadata:
+    additionalProperties: true
+    type: object
+  model.AIChatMessageRole:
+    enum:
+    - user
+    - assistant
+    - system
+    - tool
+    type: string
+    x-enum-varnames:
+    - AIChatMessageRoleUser
+    - AIChatMessageRoleAssistant
+    - AIChatMessageRoleSystem
+    - AIChatMessageRoleTool
+  model.AIChatMessageStatus:
+    enum:
+    - pending
+    - streaming
+    - completed
+    - failed
+    type: string
+    x-enum-varnames:
+    - AIChatMessageStatusPending
+    - AIChatMessageStatusStreaming
+    - AIChatMessageStatusCompleted
+    - AIChatMessageStatusFailed
+  model.AIChatSession:
+    properties:
+      created_at:
+        type: string
+      end_time:
+        description: Session end time
+        type: string
+      id:
+        type: string
+      messages:
+        description: Messages
+        items:
+          $ref: '#/definitions/model.AIChatMessage'
+        type: array
+      model_id:
+        description: AI model ID used
+        type: string
+      start_time:
+        description: Session start time
+        type: string
+      title:
+        description: Session title
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        description: User ID
+        type: string
+    required:
+    - created_at
+    - end_time
+    - id
+    - messages
+    - model_id
+    - start_time
+    - title
+    - updated_at
+    - user_id
+    type: object
+  model.AIFunctionCall:
+    properties:
+      arguments:
+        type: string
+      name:
+        type: string
+    required:
+    - arguments
+    - name
+    type: object
+  model.AIModel:
+    properties:
+      api_key:
+        description: API key (encrypted)
+        type: string
+      base_url:
+        description: Base URL (optional, for custom endpoints)
+        type: string
+      config:
+        allOf:
+        - $ref: '#/definitions/model.AIModelConfig'
+        description: Additional configuration
+      created_at:
+        type: string
+      created_by:
+        description: Creator user ID
+        type: string
+      description:
+        description: Model description
+        type: string
+      id:
+        type: string
+      is_default:
+        description: Whether this is the default model
+        type: boolean
+      model_id:
+        description: Model ID (e.g., gpt-4, gpt-3.5-turbo)
+        type: string
+      name:
+        description: Model name
+        type: string
+      provider:
+        allOf:
+        - $ref: '#/definitions/model.AIModelProvider'
+        description: Provider (openai, etc.)
+      status:
+        allOf:
+        - $ref: '#/definitions/model.AIModelStatus'
+        description: Status
+      updated_at:
+        type: string
+      updated_by:
+        description: Last updater user ID
+        type: string
+    required:
+    - api_key
+    - base_url
+    - config
+    - created_at
+    - created_by
+    - description
+    - id
+    - is_default
+    - model_id
+    - name
+    - provider
+    - status
+    - updated_at
+    - updated_by
+    type: object
+  model.AIModelConfig:
+    additionalProperties: true
+    type: object
+  model.AIModelProvider:
+    enum:
+    - openai
+    type: string
+    x-enum-varnames:
+    - AIModelProviderOpenAI
+  model.AIModelStatus:
+    enum:
+    - enabled
+    - disabled
+    type: string
+    x-enum-varnames:
+    - AIModelStatusEnabled
+    - AIModelStatusDisabled
+  model.AIToolCall:
+    properties:
+      function:
+        $ref: '#/definitions/model.AIFunctionCall'
+      id:
+        type: string
+      index:
+        type: integer
+      type:
+        type: string
+    required:
+    - function
+    - id
+    - index
+    - type
     type: object
   model.AccessType:
     enum:
@@ -826,6 +1225,63 @@ definitions:
     - name
     - name_i18n
     type: object
+  model.ToolSet:
+    properties:
+      config:
+        description: Additional configuration
+        type: object
+      created_at:
+        type: string
+      created_by:
+        description: Creator user ID
+        type: string
+      description:
+        description: Toolset description
+        type: string
+      id:
+        type: string
+      name:
+        description: Toolset name
+        type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/model.ToolSetStatus'
+        description: Status
+      type:
+        allOf:
+        - $ref: '#/definitions/model.ToolSetType'
+        description: Toolset type (mcp, etc.)
+      updated_at:
+        type: string
+      updated_by:
+        description: Last updater user ID
+        type: string
+    required:
+    - config
+    - created_at
+    - created_by
+    - description
+    - id
+    - name
+    - status
+    - type
+    - updated_at
+    - updated_by
+    type: object
+  model.ToolSetStatus:
+    enum:
+    - enabled
+    - disabled
+    type: string
+    x-enum-varnames:
+    - ToolSetStatusEnabled
+    - ToolSetStatusDisabled
+  model.ToolSetType:
+    enum:
+    - mcp
+    type: string
+    x-enum-varnames:
+    - ToolSetTypeMCP
   model.User:
     properties:
       avatar:
@@ -899,6 +1355,12 @@ definitions:
     - UserSourceLocal
     - UserSourceLDAP
     - UserSourceOAuth
+  openai.ToolType:
+    enum:
+    - function
+    type: string
+    x-enum-varnames:
+    - ToolTypeFunction
   service.Chart:
     properties:
       color:
@@ -1155,6 +1617,24 @@ definitions:
     required:
     - user
     - user_info
+    type: object
+  service.ToolSetTypeDefinition:
+    properties:
+      config_fields:
+        items:
+          $ref: '#/definitions/toolset.ConfigField'
+        type: array
+      description:
+        type: string
+      name:
+        type: string
+      tool_set_type:
+        type: string
+    required:
+    - config_fields
+    - description
+    - name
+    - tool_set_type
     type: object
   service.UpdateUserRequest:
     properties:
@@ -1460,14 +1940,11 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -1478,14 +1955,59 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
-    - Hour
+  toolset.ConfigField:
+    properties:
+      default:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      options:
+        items:
+          $ref: '#/definitions/toolset.ConfigFieldOptions'
+        type: array
+      required:
+        type: boolean
+      type:
+        $ref: '#/definitions/toolset.FieldType'
+    required:
+    - default
+    - description
+    - name
+    - options
+    - required
+    - type
+    type: object
+  toolset.ConfigFieldOptions:
+    properties:
+      label:
+        type: string
+      value:
+        type: string
+    required:
+    - label
+    - value
+    type: object
+  toolset.FieldType:
+    enum:
+    - string
+    - number
+    - boolean
+    - array
+    - object
+    type: string
+    x-enum-varnames:
+    - FieldTypeString
+    - FieldTypeNumber
+    - FieldTypeBoolean
+    - FieldTypeArray
+    - FieldTypeObject
   util.ErrorResponse:
     properties:
       code:
@@ -1504,6 +2026,48 @@ definitions:
         type: string
     required:
     - message
+    type: object
+  util.PaginationResponse-model_AIChatSession:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.AIChatSession'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    type: object
+  util.PaginationResponse-model_AIModel:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.AIModel'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
     type: object
   util.PaginationResponse-model_AuditLog:
     properties:
@@ -1577,6 +2141,27 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.ServiceAccount'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    type: object
+  util.PaginationResponse-model_ToolSet:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.ToolSet'
         type: array
       page_size:
         type: integer
@@ -1700,6 +2285,21 @@ definitions:
     - data
     - err
     type: object
+  util.Response-array_service_ToolSetTypeDefinition:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/service.ToolSetTypeDefinition'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
   util.Response-authorizationapi_CreateServiceAccountAccessKeyResponse:
     properties:
       code:
@@ -1732,6 +2332,32 @@ definitions:
         type: string
       data:
         $ref: '#/definitions/authorizationapi.TokenResponse'
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-model_AIChatSession:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.AIChatSession'
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-model_AIModel:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.AIModel'
       err:
         type: string
     required:
@@ -1849,6 +2475,19 @@ definitions:
         type: string
       data:
         $ref: '#/definitions/model.SystemSettings'
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-model_ToolSet:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.ToolSet'
       err:
         type: string
     required:
@@ -2047,6 +2686,384 @@ info:
   title: EZ Console API
   version: v1.4.0
 paths:
+  /api/ai/chat/sessions:
+    get:
+      consumes:
+      - application/json
+      description: List chat sessions for the current user with pagination
+      operationId: listChatSessions
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_AIChatSession'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List chat sessions
+      tags:
+      - AI/Chat
+    post:
+      consumes:
+      - application/json
+      description: Create a new chat session
+      operationId: createChatSession
+      parameters:
+      - description: Chat session data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.CreateChatSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/util.Response-model_AIChatSession'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create chat session
+      tags:
+      - AI/Chat
+  /api/ai/chat/sessions/{sessionId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a chat session and all its messages
+      operationId: deleteChatSession
+      parameters:
+      - description: Chat session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete chat session
+      tags:
+      - AI/Chat
+    get:
+      consumes:
+      - application/json
+      description: Get a chat session by ID
+      operationId: getChatSession
+      parameters:
+      - description: Chat session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_AIChatSession'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get chat session
+      tags:
+      - AI/Chat
+    post:
+      consumes:
+      - application/json
+      description: Stream chat responses using Server-Sent Events
+      operationId: streamChat
+      parameters:
+      - description: Chat session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      - description: Message data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.SendMessageRequest'
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: Event stream
+          schema:
+            $ref: '#/definitions/ai.ChatStreamEvent'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Stream chat
+      tags:
+      - AI/Chat
+  /api/ai/models:
+    get:
+      consumes:
+      - application/json
+      description: List AI models with pagination and search
+      operationId: listAIModels
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_AIModel'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List AI models
+      tags:
+      - AI/Models
+    post:
+      consumes:
+      - application/json
+      description: Create a new AI model
+      operationId: createAIModel
+      parameters:
+      - description: AI model data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.CreateAIModelRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/util.Response-model_AIModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create AI model
+      tags:
+      - AI/Models
+  /api/ai/models/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an AI model
+      operationId: deleteAIModel
+      parameters:
+      - description: AI model ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete AI model
+      tags:
+      - AI/Models
+    get:
+      consumes:
+      - application/json
+      description: Get an AI model by ID
+      operationId: getAIModel
+      parameters:
+      - description: AI model ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_AIModel'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get AI model
+      tags:
+      - AI/Models
+    put:
+      consumes:
+      - application/json
+      description: Update an AI model
+      operationId: updateAIModel
+      parameters:
+      - description: AI model ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: AI model data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.UpdateAIModelRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_AIModel'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update AI model
+      tags:
+      - AI/Models
+  /api/ai/models/{id}/set-default:
+    post:
+      consumes:
+      - application/json
+      description: Set an AI model as default
+      operationId: setDefaultAIModel
+      parameters:
+      - description: AI model ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Set default AI model
+      tags:
+      - AI/Models
+  /api/ai/models/{id}/test:
+    post:
+      consumes:
+      - application/json
+      description: Test an AI model connection
+      operationId: testAIModel
+      parameters:
+      - description: AI model ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Test AI model
+      tags:
+      - AI/Models
   /api/authorization/auth/login:
     post:
       consumes:
@@ -4109,4 +5126,219 @@ paths:
       summary: Test SMTP connection
       tags:
       - System Settings/SMTP
+  /api/toolsets:
+    get:
+      consumes:
+      - application/json
+      description: List toolsets with pagination and search
+      operationId: listToolSets
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_ToolSet'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List toolsets
+      tags:
+      - ToolSets
+    post:
+      consumes:
+      - application/json
+      description: Create a new toolset
+      operationId: createToolSet
+      parameters:
+      - description: Toolset data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.CreateToolSetRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/util.Response-model_ToolSet'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create toolset
+      tags:
+      - ToolSets
+  /api/toolsets/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a toolset
+      operationId: deleteToolSet
+      parameters:
+      - description: Toolset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete toolset
+      tags:
+      - ToolSets
+    get:
+      consumes:
+      - application/json
+      description: Get a toolset by ID
+      operationId: getToolSet
+      parameters:
+      - description: Toolset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_ToolSet'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get toolset
+      tags:
+      - ToolSets
+    put:
+      consumes:
+      - application/json
+      description: Update a toolset
+      operationId: updateToolSet
+      parameters:
+      - description: Toolset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Toolset data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.UpdateToolSetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_ToolSet'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update toolset
+      tags:
+      - ToolSets
+  /api/toolsets/{id}/test:
+    post:
+      consumes:
+      - application/json
+      description: Test a toolset connection
+      operationId: testToolSet
+      parameters:
+      - description: Toolset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Test toolset
+      tags:
+      - ToolSets
+  /api/toolsets/types:
+    get:
+      description: Get the type definitions for toolsets
+      operationId: getToolSetTypeDefinitions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_service_ToolSetTypeDefinition'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get toolset type definitions
+      tags:
+      - ToolSets
 swagger: "2.0"

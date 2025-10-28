@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request } from "@/service/client";
+import { request, type SSERequestConfig } from "@/service/client";
 
 /** Get file list Get file list GET /api/files */
 export async function listFiles(

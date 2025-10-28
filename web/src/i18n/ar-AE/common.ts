@@ -48,6 +48,11 @@ export default {
   verify: 'تحقق',
   previous: 'السابق',
   next: 'التالي',
+  enter: 'أدخل',
+  select: 'اختر',
+  pagination: {
+    total: '{{start}}-{{end}} من {{total}} عناصر',
+  },
   language: {
     default: 'اللغة الأساسية',
     'en-US': 'اللغة الإنجليزية',
@@ -56,5 +61,6 @@ export default {
     'de-DE': 'اللغة الألمانية',
     'es-ES': 'اللغة الإسبانية',
     'fr-FR': 'اللغة الفرنسية',
+    'zh-CN': 'اللغة الصينية',
   }
 } 

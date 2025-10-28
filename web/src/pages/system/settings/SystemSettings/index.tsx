@@ -6,6 +6,8 @@ import SecuritySettingForm from './SecuritySettingForm';
 import LDAPSettingsForm from './LDAPSettingsForm';
 import SMTPSettingsForm from './SMTPSettingsForm';
 import BaseSettingsForm from './BaseSettings';
+import AIModelSettings from './AIModelSettings';
+import ToolSetSettings from './ToolSetSettings';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 
@@ -48,6 +50,16 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
       key: 'smtp',
       label: t('settings.tabs.smtp', { defaultValue: 'SMTP Settings' }),
       children: <SMTPSettingsForm />,
+    },
+    {
+      key: 'ai-models',
+      label: t('settings.tabs.aiModels', { defaultValue: 'AI Models' }),
+      children: <AIModelSettings />,
+    },
+    {
+      key: 'ai-toolsets',
+      label: t('settings.tabs.toolSets', { defaultValue: 'Tool Sets' }),
+      children: <ToolSetSettings />,
     },
   ];
 

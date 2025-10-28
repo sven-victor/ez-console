@@ -2,6 +2,100 @@ declare global {
   namespace API {
     type AccessType = "public" | "private" | "owner";
   
+    interface AIChatMessage {
+      /** Message content */
+      content: string;
+      created_at: string;
+      id: string;
+      /** Message timestamp */
+      message_time: string;
+      /** Additional metadata */
+      metadata: AIChatMessageMetadata;
+      /** Message role */
+      role: AIChatMessageRole;
+      /** Session ID */
+      session_id: string;
+      /** Message status */
+      status: AIChatMessageStatus;
+      /** Tokens used for this message */
+      tokens_used: number;
+      /** Tool call ID (for tool messages) */
+      tool_call_id: string;
+      /** Tool calls (for assistant messages) */
+      tool_calls: AIToolCall[];
+      updated_at: string;
+    }
+  
+    type AIChatMessageMetadata = true;
+  
+    type AIChatMessageRole = "user" | "assistant" | "system" | "tool";
+  
+    type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
+  
+    interface AIChatSession {
+      created_at: string;
+      /** Session end time */
+      end_time: string;
+      id: string;
+      /** Messages */
+      messages: AIChatMessage[];
+      /** AI model ID used */
+      model_id: string;
+      /** Session start time */
+      start_time: string;
+      /** Session title */
+      title: string;
+      updated_at: string;
+      /** User ID */
+      user_id: string;
+    }
+  
+    interface AIFunctionCall {
+      arguments: string;
+      name: string;
+    }
+  
+    interface AIModel {
+      /** API key (encrypted) */
+      api_key: string;
+      /** Base URL (optional, for custom endpoints) */
+      base_url: string;
+      /** Additional configuration */
+      config: AIModelConfig;
+      created_at: string;
+      /** Creator user ID */
+      created_by: string;
+      /** Model description */
+      description: string;
+      id: string;
+      /** Whether this is the default model */
+      is_default: boolean;
+      /** Model ID (e.g., gpt-4, gpt-3.5-turbo) */
+      model_id: string;
+      /** Model name */
+      name: string;
+      /** Provider (openai, etc.) */
+      provider: AIModelProvider;
+      /** Status */
+      status: AIModelStatus;
+      updated_at: string;
+      /** Last updater user ID */
+      updated_by: string;
+    }
+  
+    type AIModelConfig = true;
+  
+    type AIModelProvider = "openai";
+  
+    type AIModelStatus = "enabled" | "disabled";
+  
+    interface AIToolCall {
+      function: AIFunctionCall;
+      id: string;
+      index: number;
+      type: string;
+    }
+  
     interface assignPermissionsParams {
       /** Role ID */
       id: string;
@@ -76,6 +170,14 @@ declare global {
       width: number;
     }
   
+    interface ChatStreamEvent {
+      content: string;
+      event_type: EventType;
+      message_id: string;
+      role: AIChatMessageRole;
+      tool_calls: ToolCall[];
+    }
+  
     interface CheckPasswordComplexityRequest {
       password: string;
     }
@@ -85,6 +187,36 @@ declare global {
     }
   
     type Condition = true;
+  
+    interface ConfigField {
+      default: string;
+      description: string;
+      name: string;
+      options: ConfigFieldOptions[];
+      required: boolean;
+      type: FieldType;
+    }
+  
+    interface ConfigFieldOptions {
+      label: string;
+      value: string;
+    }
+  
+    interface CreateAIModelRequest {
+      api_key: string;
+      base_url?: string;
+      config?: Record<string, any>;
+      description?: string;
+      is_default?: boolean;
+      model_id: string;
+      name: string;
+      provider: AIModelProvider;
+    }
+  
+    interface CreateChatSessionRequest {
+      model_id: string;
+      title: string;
+    }
   
     interface CreateRoleRequest {
       description: string;
@@ -123,6 +255,13 @@ declare global {
       name: string;
     }
   
+    interface CreateToolSetRequest {
+      config?: Record<string, any>;
+      description?: string;
+      name: string;
+      type: ToolSetType;
+    }
+  
     interface CreateUserRequest {
       avatar?: string;
       email: string;
@@ -140,6 +279,16 @@ declare global {
       label: string;
     }
   
+    interface deleteAIModelParams {
+      /** AI model ID */
+      id: string;
+    }
+  
+    interface deleteChatSessionParams {
+      /** Chat session ID */
+      sessionId: string;
+    }
+  
     interface deleteRoleParams {
       /** Role ID */
       id: string;
@@ -154,6 +303,11 @@ declare global {
   
     interface deleteServiceAccountParams {
       /** Service account ID */
+      id: string;
+    }
+  
+    interface deleteToolSetParams {
+      /** Toolset ID */
       id: string;
     }
   
@@ -189,6 +343,10 @@ declare global {
       message: string;
     }
   
+    type EventType = "content" | "tool_call" | "error";
+  
+    type FieldType = "string" | "number" | "boolean" | "array" | "object";
+  
     interface File {
       access: AccessType;
       created_at: string;
@@ -201,11 +359,27 @@ declare global {
   
     type FileType = "image";
   
+    interface FunctionCall {
+      /** call function with arguments in JSON format */
+      arguments: string;
+      name: string;
+    }
+  
+    interface getAIModelParams {
+      /** AI model ID */
+      id: string;
+    }
+  
     interface getAuditLogsParams {
       /** Current page number */
       current?: number;
       /** Number of items per page */
       page_size?: number;
+    }
+  
+    interface getChatSessionParams {
+      /** Chat session ID */
+      sessionId: string;
     }
   
     interface getCurrentUserLogsParams {
@@ -262,6 +436,11 @@ declare global {
       page_size?: number;
       /** Search keyword */
       search?: string;
+    }
+  
+    interface getToolSetParams {
+      /** Toolset ID */
+      id: string;
     }
   
     interface getUserLogsParams {
@@ -355,6 +534,22 @@ declare global {
       user: User;
     }
   
+    interface listAIModelsParams {
+      /** Current page number */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+      /** Search keyword */
+      search?: string;
+    }
+  
+    interface listChatSessionsParams {
+      /** Current page number */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+    }
+  
     interface listFilesParams {
       /** Current page */
       current?: number;
@@ -374,6 +569,15 @@ declare global {
       /** Page size */
       page_size?: number;
       /** Search */
+      search?: string;
+    }
+  
+    interface listToolSetsParams {
+      /** Current page number */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+      /** Search keyword */
       search?: string;
     }
   
@@ -467,6 +671,22 @@ declare global {
       wellknown_endpoint: string;
     }
   
+    interface PaginationResponseModelAIChatSession {
+      code: string;
+      current: number;
+      data: AIChatSession[];
+      page_size: number;
+      total: number;
+    }
+  
+    interface PaginationResponseModelAIModel {
+      code: string;
+      current: number;
+      data: AIModel[];
+      page_size: number;
+      total: number;
+    }
+  
     interface PaginationResponseModelAuditLog {
       code: string;
       current: number;
@@ -495,6 +715,14 @@ declare global {
       code: string;
       current: number;
       data: ServiceAccount[];
+      page_size: number;
+      total: number;
+    }
+  
+    interface PaginationResponseModelToolSet {
+      code: string;
+      current: number;
+      data: ToolSet[];
       page_size: number;
       total: number;
     }
@@ -577,6 +805,12 @@ declare global {
       err: string;
     }
   
+    interface ResponseArrayServiceToolSetTypeDefinition {
+      code: string;
+      data: ToolSetTypeDefinition[];
+      err: string;
+    }
+  
     interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
       code: string;
       data: CreateServiceAccountAccessKeyResponse;
@@ -592,6 +826,18 @@ declare global {
     interface ResponseAuthorizationapiTokenResponse {
       code: string;
       data: TokenResponse;
+      err: string;
+    }
+  
+    interface ResponseModelAIChatSession {
+      code: string;
+      data: AIChatSession;
+      err: string;
+    }
+  
+    interface ResponseModelAIModel {
+      code: string;
+      data: AIModel;
       err: string;
     }
   
@@ -646,6 +892,12 @@ declare global {
     interface ResponseModelSystemSettings {
       code: string;
       data: SystemSettings;
+      err: string;
+    }
+  
+    interface ResponseModelToolSet {
+      code: string;
+      data: ToolSet;
       err: string;
     }
   
@@ -764,6 +1016,10 @@ declare global {
       user_inactive_days: number;
     }
   
+    interface SendMessageRequest {
+      content: string;
+    }
+  
     interface ServiceAccount {
       access_keys: ServiceAccountAccessKey[];
       created_at: string;
@@ -799,6 +1055,11 @@ declare global {
       last_active_at: string;
       location: string;
       user_agent: string;
+    }
+  
+    interface setDefaultAIModelParams {
+      /** AI model ID */
+      id: string;
     }
   
     interface setRolePolicyParams {
@@ -897,18 +1158,91 @@ declare global {
       id: string;
     }
   
+    interface testAIModelParams {
+      /** AI model ID */
+      id: string;
+    }
+  
     interface TestOAuthCallbackResponse {
       user: User;
       user_info: Record<string, any>;
+    }
+  
+    interface testToolSetParams {
+      /** Toolset ID */
+      id: string;
     }
   
     interface TokenResponse {
       token: string;
     }
   
+    interface ToolCall {
+      error: string;
+      function: FunctionCall;
+      id: string;
+      /** Index is not nil only in chat completion chunk object */
+      index: number;
+      start_time: string;
+      status: ToolCallStatus;
+      type: ToolType;
+    }
+  
+    type ToolCallStatus = "pending" | "running" | "completed" | "failed";
+  
+    interface ToolSet {
+      /** Additional configuration */
+      config: Record<string, any>;
+      created_at: string;
+      /** Creator user ID */
+      created_by: string;
+      /** Toolset description */
+      description: string;
+      id: string;
+      /** Toolset name */
+      name: string;
+      /** Status */
+      status: ToolSetStatus;
+      /** Toolset type (mcp, etc.) */
+      type: ToolSetType;
+      updated_at: string;
+      /** Last updater user ID */
+      updated_by: string;
+    }
+  
+    type ToolSetStatus = "enabled" | "disabled";
+  
+    type ToolSetType = "mcp";
+  
+    interface ToolSetTypeDefinition {
+      config_fields: ConfigField[];
+      description: string;
+      name: string;
+      tool_set_type: string;
+    }
+  
+    type ToolType = "function";
+  
     interface unlockUserParams {
       /** User ID */
       id: string;
+    }
+  
+    interface updateAIModelParams {
+      /** AI model ID */
+      id: string;
+    }
+  
+    interface UpdateAIModelRequest {
+      /** Optional for updates */
+      api_key: string;
+      base_url?: string;
+      config?: Record<string, any>;
+      description?: string;
+      is_default?: boolean;
+      model_id: string;
+      name: string;
+      provider: AIModelProvider;
     }
   
     interface UpdateCurrentUserRequest {
@@ -1007,6 +1341,19 @@ declare global {
   
     interface UpdateServiceAccountStatusRequest {
       status: "active" | "disabled";
+    }
+  
+    interface updateToolSetParams {
+      /** Toolset ID */
+      id: string;
+    }
+  
+    interface UpdateToolSetRequest {
+      config?: Record<string, any>;
+      description?: string;
+      name: string;
+      status?: ToolSetStatus;
+      type: ToolSetType;
     }
   
     interface updateUserParams {
