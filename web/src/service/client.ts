@@ -1,6 +1,5 @@
 import { getURL } from '@/utils';
 import axios, { AxiosError, AxiosRequestConfig } from 'axios';
-import { json } from 'stream/consumers';
 
 export const baseURL = '/api';
 

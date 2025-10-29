@@ -7,7 +7,7 @@ import { u as ge } from "./contexts.js";
 import { useTranslation as he } from "react-i18next";
 import { a as L } from "./index.js";
 import { A as U } from "./client.js";
-import { L as pe, a as xe, i as we } from "./components.js";
+import { L as pe, a as xe, j as we } from "./components.js";
 import { m as je, g as ye } from "./base.js";
 const { Title: _e } = oe, Oe = ({ transformLangConfig: q }) => {
   const f = ue(), M = me(), [i] = fe(), { login: V, oauthLogin: k, user: A } = ge(), { t: r, i18n: x } = he(), [I, l] = s(null), [w, T] = s({}), [c, h] = s("login"), [$, D] = s(null), [j, N] = s(null), [u, z] = s(null), [p] = d.useForm(), P = ee(!1), [G, v] = s(!1), [F, K] = s([]), [y, _] = s(0), [W, S] = s("Loading..."), [n, X] = s(null), O = async (o) => {

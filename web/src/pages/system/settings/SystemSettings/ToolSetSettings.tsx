@@ -273,7 +273,7 @@ const ToolSetSettings: React.FC = () => {
   };
 
   // Render dynamic config fields based on type definition
-  const renderConfigField = (field: API.ConfigField) => {
+  const renderConfigField = (field: API.ToolSetConfigField) => {
     const hasOptions = field.options && field.options.length > 0;
 
     // Build rules
@@ -295,11 +295,11 @@ const ToolSetSettings: React.FC = () => {
             <Form.Item
               key={field.name}
               name={['config', field.name]}
-              label={field.name}
+              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
               rules={rules}
-              tooltip={field.description}
+              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
             >
-              <Input placeholder={`${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`} />
+              <Input placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })} />
             </Form.Item>
           );
 
@@ -308,13 +308,13 @@ const ToolSetSettings: React.FC = () => {
             <Form.Item
               key={field.name}
               name={['config', field.name]}
-              label={field.name}
+              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
               rules={rules}
-              tooltip={field.description}
+              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
             >
               <InputNumber
                 style={{ width: '100%' }}
-                placeholder={`${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`}
+                placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })}
               />
             </Form.Item>
           );
@@ -324,9 +324,9 @@ const ToolSetSettings: React.FC = () => {
             <Form.Item
               key={field.name}
               name={['config', field.name]}
-              label={field.name}
+              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
               valuePropName="checked"
-              tooltip={field.description}
+              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
             >
               <Switch />
             </Form.Item>
@@ -337,14 +337,14 @@ const ToolSetSettings: React.FC = () => {
             <Form.Item
               key={field.name}
               name={['config', field.name]}
-              label={field.name}
+              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
               rules={rules}
-              tooltip={field.description}
+              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
             >
               <Select
                 mode="tags"
                 style={{ width: '100%' }}
-                placeholder={`${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`}
+                placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })}
                 tokenSeparators={[',']}
               />
             </Form.Item>
@@ -355,7 +355,7 @@ const ToolSetSettings: React.FC = () => {
             <Form.Item
               key={field.name}
               name={['config', field.name]}
-              label={field.name}
+              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
               rules={[
                 ...rules,
                 {
@@ -370,15 +370,26 @@ const ToolSetSettings: React.FC = () => {
                   },
                 },
               ]}
-              tooltip={field.description}
+              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltips`, { defaultValue: field.description }) : undefined}
             >
               <TextArea
                 rows={4}
-                placeholder={`${t('common.enter', { defaultValue: 'Enter' })} ${field.name} (JSON format)`}
+                placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name} (JSON format)`) })}
               />
             </Form.Item>
           );
-
+        case 'password':
+          return (
+            <Form.Item
+              key={field.name}
+              name={['config', field.name]}
+              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
+              rules={rules}
+              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
+            >
+              <Input.Password placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })} autoComplete='new-password' />
+            </Form.Item>
+          );
         default:
           return null;
       }
@@ -392,11 +403,11 @@ const ToolSetSettings: React.FC = () => {
           <Form.Item
             key={field.name}
             name={['config', field.name]}
-            label={field.name}
+            label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
             rules={rules}
-            tooltip={field.description}
+            tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
           >
-            <Select placeholder={`${t('common.select', { defaultValue: 'Select' })} ${field.name}`}>
+            <Select allowClear placeholder={field.placeholder ? t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: field.description }) : (`${t('common.select', { defaultValue: 'Select' })} ${field.name}`)}>
               {field.options.map((option) => (
                 <Option key={option.value} value={option.value}>
                   {option.label}
@@ -411,9 +422,9 @@ const ToolSetSettings: React.FC = () => {
           <Form.Item
             key={field.name}
             name={['config', field.name]}
-            label={field.name}
+            label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
             rules={rules}
-            tooltip={field.description}
+            tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
           >
             <Checkbox.Group style={{ width: '100%' }}>
               <Space direction="vertical">

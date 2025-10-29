@@ -4168,7 +4168,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/model.ToolSetType"
+                    "$ref": "#/definitions/toolset.ToolSetType"
                 }
             }
         },
@@ -4239,7 +4239,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.ToolSetStatus"
                 },
                 "type": {
-                    "$ref": "#/definitions/model.ToolSetType"
+                    "$ref": "#/definitions/toolset.ToolSetType"
                 }
             }
         },
@@ -5764,7 +5764,7 @@ const docTemplate = `{
                     "description": "Toolset type (mcp, etc.)",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/model.ToolSetType"
+                            "$ref": "#/definitions/toolset.ToolSetType"
                         }
                     ]
                 },
@@ -5786,15 +5786,6 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "ToolSetStatusEnabled",
                 "ToolSetStatusDisabled"
-            ]
-        },
-        "model.ToolSetType": {
-            "type": "string",
-            "enum": [
-                "mcp"
-            ],
-            "x-enum-varnames": [
-                "ToolSetTypeMCP"
             ]
         },
         "model.User": {
@@ -6284,7 +6275,7 @@ const docTemplate = `{
                 "config_fields": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/toolset.ConfigField"
+                        "$ref": "#/definitions/toolset.ToolSetConfigField"
                     }
                 },
                 "description": {
@@ -6294,7 +6285,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "tool_set_type": {
-                    "type": "string"
+                    "$ref": "#/definitions/toolset.ToolSetType"
                 }
             }
         },
@@ -6720,7 +6711,12 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                60000000000
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -6735,16 +6731,23 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute"
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
             ]
         },
-        "toolset.ConfigField": {
+        "toolset.ToolSetConfigField": {
             "type": "object",
             "required": [
                 "default",
                 "description",
+                "display_name",
                 "name",
                 "options",
+                "placeholder",
                 "required",
                 "type"
             ],
@@ -6755,24 +6758,30 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "display_name": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
                 "options": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/toolset.ConfigFieldOptions"
+                        "$ref": "#/definitions/toolset.ToolSetConfigFieldOptions"
                     }
+                },
+                "placeholder": {
+                    "type": "string"
                 },
                 "required": {
                     "type": "boolean"
                 },
                 "type": {
-                    "$ref": "#/definitions/toolset.FieldType"
+                    "$ref": "#/definitions/toolset.ToolSetFieldType"
                 }
             }
         },
-        "toolset.ConfigFieldOptions": {
+        "toolset.ToolSetConfigFieldOptions": {
             "type": "object",
             "required": [
                 "label",
@@ -6787,10 +6796,11 @@ const docTemplate = `{
                 }
             }
         },
-        "toolset.FieldType": {
+        "toolset.ToolSetFieldType": {
             "type": "string",
             "enum": [
                 "string",
+                "password",
                 "number",
                 "boolean",
                 "array",
@@ -6798,10 +6808,20 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "FieldTypeString",
+                "FieldTypePassword",
                 "FieldTypeNumber",
                 "FieldTypeBoolean",
                 "FieldTypeArray",
                 "FieldTypeObject"
+            ]
+        },
+        "toolset.ToolSetType": {
+            "type": "string",
+            "enum": [
+                "utils"
+            ],
+            "x-enum-varnames": [
+                "ToolSetTypeUtils"
             ]
         },
         "util.ErrorResponse": {

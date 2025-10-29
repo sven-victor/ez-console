@@ -122,7 +122,7 @@ definitions:
       name:
         type: string
       type:
-        $ref: '#/definitions/model.ToolSetType'
+        $ref: '#/definitions/toolset.ToolSetType'
     required:
     - name
     - type
@@ -170,7 +170,7 @@ definitions:
       status:
         $ref: '#/definitions/model.ToolSetStatus'
       type:
-        $ref: '#/definitions/model.ToolSetType'
+        $ref: '#/definitions/toolset.ToolSetType'
     required:
     - name
     - type
@@ -1249,7 +1249,7 @@ definitions:
         description: Status
       type:
         allOf:
-        - $ref: '#/definitions/model.ToolSetType'
+        - $ref: '#/definitions/toolset.ToolSetType'
         description: Toolset type (mcp, etc.)
       updated_at:
         type: string
@@ -1276,12 +1276,6 @@ definitions:
     x-enum-varnames:
     - ToolSetStatusEnabled
     - ToolSetStatusDisabled
-  model.ToolSetType:
-    enum:
-    - mcp
-    type: string
-    x-enum-varnames:
-    - ToolSetTypeMCP
   model.User:
     properties:
       avatar:
@@ -1622,14 +1616,14 @@ definitions:
     properties:
       config_fields:
         items:
-          $ref: '#/definitions/toolset.ConfigField'
+          $ref: '#/definitions/toolset.ToolSetConfigField'
         type: array
       description:
         type: string
       name:
         type: string
       tool_set_type:
-        type: string
+        $ref: '#/definitions/toolset.ToolSetType'
     required:
     - config_fields
     - description
@@ -1944,7 +1938,12 @@ definitions:
     - 1000
     - 1000000
     - 1000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
     - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -1959,32 +1958,43 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
     - Minute
-  toolset.ConfigField:
+    - Hour
+  toolset.ToolSetConfigField:
     properties:
       default:
         type: string
       description:
         type: string
+      display_name:
+        type: string
       name:
         type: string
       options:
         items:
-          $ref: '#/definitions/toolset.ConfigFieldOptions'
+          $ref: '#/definitions/toolset.ToolSetConfigFieldOptions'
         type: array
+      placeholder:
+        type: string
       required:
         type: boolean
       type:
-        $ref: '#/definitions/toolset.FieldType'
+        $ref: '#/definitions/toolset.ToolSetFieldType'
     required:
     - default
     - description
+    - display_name
     - name
     - options
+    - placeholder
     - required
     - type
     type: object
-  toolset.ConfigFieldOptions:
+  toolset.ToolSetConfigFieldOptions:
     properties:
       label:
         type: string
@@ -1994,9 +2004,10 @@ definitions:
     - label
     - value
     type: object
-  toolset.FieldType:
+  toolset.ToolSetFieldType:
     enum:
     - string
+    - password
     - number
     - boolean
     - array
@@ -2004,10 +2015,17 @@ definitions:
     type: string
     x-enum-varnames:
     - FieldTypeString
+    - FieldTypePassword
     - FieldTypeNumber
     - FieldTypeBoolean
     - FieldTypeArray
     - FieldTypeObject
+  toolset.ToolSetType:
+    enum:
+    - utils
+    type: string
+    x-enum-varnames:
+    - ToolSetTypeUtils
   util.ErrorResponse:
     properties:
       code:

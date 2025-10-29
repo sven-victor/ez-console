@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request, type SSERequestConfig } from "@/service/client";
+import { request } from "@/service/client";
 
 /** List toolsets List toolsets with pagination and search GET /api/toolsets */
 export async function listToolSets(

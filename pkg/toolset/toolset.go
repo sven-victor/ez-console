@@ -8,27 +8,30 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-type ConfigFieldOptions struct {
+type ToolSetConfigFieldOptions struct {
 	Label string `json:"label"`
 	Value string `json:"value"`
 }
-type FieldType string
+type ToolSetFieldType string
 
 const (
-	FieldTypeString  FieldType = "string"
-	FieldTypeNumber  FieldType = "number"
-	FieldTypeBoolean FieldType = "boolean"
-	FieldTypeArray   FieldType = "array"
-	FieldTypeObject  FieldType = "object"
+	FieldTypeString   ToolSetFieldType = "string"
+	FieldTypePassword ToolSetFieldType = "password"
+	FieldTypeNumber   ToolSetFieldType = "number"
+	FieldTypeBoolean  ToolSetFieldType = "boolean"
+	FieldTypeArray    ToolSetFieldType = "array"
+	FieldTypeObject   ToolSetFieldType = "object"
 )
 
-type ConfigField struct {
-	Name        string               `json:"name"`
-	Description string               `json:"description"`
-	Type        FieldType            `json:"type"`
-	Required    bool                 `json:"required"`
-	Default     string               `json:"default"`
-	Options     []ConfigFieldOptions `json:"options"`
+type ToolSetConfigField struct {
+	Name        string                      `json:"name"`
+	DisplayName string                      `json:"display_name"`
+	Description string                      `json:"description"`
+	Type        ToolSetFieldType            `json:"type"`
+	Required    bool                        `json:"required"`
+	Default     string                      `json:"default"`
+	Options     []ToolSetConfigFieldOptions `json:"options"`
+	Placeholder string                      `json:"placeholder"`
 }
 
 type ToolSetType string
@@ -43,7 +46,7 @@ type ToolSet interface {
 }
 
 type ToolSetFactory interface {
-	GetConfigFields() []ConfigField
+	GetConfigFields() []ToolSetConfigField
 	CreateToolSet(configJSON string) (ToolSet, error)
 	GetName() string
 	GetDescription() string

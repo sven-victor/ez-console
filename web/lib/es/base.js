@@ -1,11 +1,11 @@
 import { r as c } from "./client.js";
 import h from "i18next";
-import { initReactI18next as v } from "react-i18next";
-import f from "i18next-browser-languagedetector";
-const Y = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const r = t instanceof Date ? t : new Date(t), n = r.getFullYear(), o = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), d = String(r.getHours()).padStart(2, "0"), i = String(r.getMinutes()).padStart(2, "0"), s = String(r.getSeconds()).padStart(2, "0");
-  return e.replace("YYYY", String(n)).replace("MM", o).replace("DD", a).replace("HH", d).replace("mm", i).replace("ss", s);
-}, $ = (t, e) => {
+import { initReactI18next as f } from "react-i18next";
+import v from "i18next-browser-languagedetector";
+const ae = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
+  const r = t instanceof Date ? t : new Date(t), o = r.getFullYear(), n = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), d = String(r.getHours()).padStart(2, "0"), i = String(r.getMinutes()).padStart(2, "0"), s = String(r.getSeconds()).padStart(2, "0");
+  return e.replace("YYYY", String(o)).replace("MM", n).replace("DD", a).replace("HH", d).replace("mm", i).replace("ss", s);
+}, se = (t, e) => {
   if (typeof t != "string")
     throw new Error("Color must be a string.");
   const r = t.trim().toLowerCase();
@@ -18,9 +18,9 @@ const Y = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
       throw new Error("Invalid characters in HEX color value.");
     return `rgba(${s}, ${l}, ${u}, ${e})`;
   }
-  const n = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = r.match(n);
-  if (o) {
-    const i = parseInt(o[1], 10), s = parseInt(o[2], 10), l = parseInt(o[3], 10);
+  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, n = r.match(o);
+  if (n) {
+    const i = parseInt(n[1], 10), s = parseInt(n[2], 10), l = parseInt(n[3], 10);
     if (i < 0 || i > 255 || s < 0 || s > 255 || l < 0 || l > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
     return `rgba(${i}, ${s}, ${l}, ${e})`;
@@ -35,12 +35,12 @@ const Y = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, X = (t) => {
+}, oe = (t) => {
   if (!t)
     return "";
   const [e, r] = t.split("@");
   return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + r : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + r;
-}, ee = (t) => {
+}, ne = (t) => {
   const e = "/";
   return t ? e.endsWith("/") ? t.startsWith("/") ? e + t.substring(1) : e + t : t.startsWith("/") ? e + t : e + "/" + t : e;
 };
@@ -54,35 +54,35 @@ async function b(t, e) {
   });
 }
 async function A(t, e, r) {
-  const n = new FormData();
-  return e && n.append("file", e), Object.keys(t).forEach((o) => {
-    const a = t[o];
-    a != null && (typeof a == "object" && !(a instanceof File) ? a instanceof Array ? a.forEach((d) => n.append(o, d || "")) : n.append(o, JSON.stringify(a)) : n.append(o, a));
+  const o = new FormData();
+  return e && o.append("file", e), Object.keys(t).forEach((n) => {
+    const a = t[n];
+    a != null && (typeof a == "object" && !(a instanceof File) ? a instanceof Array ? a.forEach((d) => o.append(n, d || "")) : o.append(n, JSON.stringify(a)) : o.append(n, a));
   }), c("/api/files", {
     method: "POST",
-    data: n,
+    data: o,
     requestType: "form",
     ...r || {}
   });
 }
 async function S(t, e) {
-  const { fileKey: r, ...n } = t;
+  const { fileKey: r, ...o } = t;
   return c(`/api/files/${r}`, {
     method: "GET",
-    params: { ...n },
+    params: { ...o },
     ...e || {}
   });
 }
-async function k(t) {
+async function P(t) {
   return c("/api/statistics", {
     method: "GET",
     ...t || {}
   });
 }
-const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: S,
-  getStatistics: k,
+  getStatistics: P,
   listFiles: b,
   uploadFile: A
 }, Symbol.toStringTag, { value: "Module" })), y = {
@@ -194,7 +194,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, P = {
+}, k = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -349,6 +349,11 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verify: "Verify",
   previous: "Previous",
   next: "Next",
+  enter: "Enter",
+  select: "Select",
+  pagination: {
+    total: "{{start}}-{{end}} of {{total}} items"
+  },
   language: {
     default: "Default language",
     "en-US": "English",
@@ -779,7 +784,9 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       oauth: "OAuth2.0 Authentication",
       ldap: "LDAP Authentication",
       smtp: "SMTP Settings",
-      base: "Base Settings"
+      base: "Base Settings",
+      toolSets: "Tool Sets Settings",
+      aiModels: "AI Models Settings"
     },
     days: "days",
     minutes: "minutes",
@@ -1056,6 +1063,56 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Reset Password Template",
       userLockedTemplate: "User Locked Template",
       mfaCodeTemplate: "MFA Code Template"
+    },
+    toolsets: {
+      name: "Name",
+      type: "Type",
+      status: "Status",
+      description: "Description",
+      configuration: "Configuration",
+      create: "Create Toolset",
+      edit: "Edit Toolset",
+      test: "Test Connection",
+      viewConfig: "View Configuration",
+      searchPlaceholder: "Search toolsets...",
+      namePlaceholder: "Enter toolset name",
+      descriptionPlaceholder: "Enter toolset description",
+      typePlaceholder: "Select type",
+      nameRequired: "Please enter toolset name",
+      typeRequired: "Please select type",
+      fieldRequired: "Please enter {{field}}",
+      invalidJSON: "Invalid JSON format",
+      fetchFailed: "Failed to fetch toolsets",
+      fetchTypeDefinitionsFailed: "Failed to fetch toolset type definitions",
+      createSuccess: "Toolset created successfully",
+      createFailed: "Failed to create toolset",
+      updateSuccess: "Toolset updated successfully",
+      updateFailed: "Failed to update toolset",
+      deleteSuccess: "Toolset deleted successfully",
+      deleteFailed: "Failed to delete toolset",
+      testSuccess: "Toolset connection test successful",
+      testFailed: "Toolset connection test failed",
+      deleteConfirm: "Are you sure you want to delete this toolset?",
+      mcp: {
+        protocol: "Protocol",
+        endpoint: "Endpoint",
+        username: "Username",
+        password: "Password",
+        token: "Token",
+        args: "Arguments",
+        protocolPlaceholder: "Select protocol",
+        endpointPlaceholder: "Enter endpoint",
+        usernamePlaceholder: "Enter username",
+        passwordPlaceholder: "Enter password",
+        tokenPlaceholder: "Enter token",
+        argsPlaceholder: 'Enter arguments, format: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: 'Arguments, format: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "Protocol, supports HTTP and WebSocket",
+        endpointTooltip: "Endpoint of the MCP server",
+        usernameTooltip: "Username of the MCP server",
+        passwordTooltip: "Password of the MCP server",
+        tokenTooltip: "Token of the MCP server"
+      }
     }
   },
   audit: {
@@ -1078,6 +1135,45 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit: "Audit Logs"
   }
 }, E = {
+  models: {
+    name: "Name",
+    provider: "Provider",
+    modelId: "Model ID",
+    status: "Status",
+    description: "Description",
+    apiKey: "API Key",
+    baseUrl: "Base URL",
+    create: "Create AI Model",
+    edit: "Edit AI Model",
+    test: "Test Connection",
+    setDefault: "Set as Default",
+    defaultModel: "Default Model",
+    searchPlaceholder: "Search AI models...",
+    namePlaceholder: "Enter model name",
+    descriptionPlaceholder: "Enter model description",
+    providerPlaceholder: "Select provider",
+    apiKeyPlaceholder: "Enter API key",
+    apiKeyPlaceholderEdit: "Leave empty to keep current API key",
+    baseUrlPlaceholder: "Optional: Custom API endpoint",
+    setAsDefault: "Set as default model",
+    nameRequired: "Please enter model name",
+    providerRequired: "Please select provider",
+    modelIdRequired: "Please enter model ID",
+    apiKeyRequired: "Please enter API key",
+    fetchFailed: "Failed to fetch AI models",
+    createSuccess: "AI model created successfully",
+    createFailed: "Failed to create AI model",
+    updateSuccess: "AI model updated successfully",
+    updateFailed: "Failed to update AI model",
+    deleteSuccess: "AI model deleted successfully",
+    deleteFailed: "Failed to delete AI model",
+    testSuccess: "AI model connection test successful",
+    testFailed: "AI model connection test failed",
+    setDefaultSuccess: "Default AI model set successfully",
+    setDefaultFailed: "Failed to set default AI model",
+    deleteConfirm: "Are you sure you want to delete this AI model?"
+  }
+}, z = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1182,7 +1278,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, L = {
+}, T = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -1287,7 +1383,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, z = {
+}, L = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -1392,7 +1488,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, T = {
+}, C = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -1977,6 +2073,11 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verify: "Verifiera",
   previous: "Föregående",
   next: "Nästa",
+  enter: "Ange",
+  select: "Välj",
+  pagination: {
+    total: "{{start}}-{{end}} av {{total}} objekt"
+  },
   language: {
     default: "Standardspråk",
     "en-US": "Engelska",
@@ -1996,7 +2097,9 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       oauth: "OAuth2.0-autentisering",
       ldap: "LDAP-autentisering",
       smtp: "SMTP-inställningar",
-      base: "Grundinställningar"
+      base: "Grundinställningar",
+      toolSets: "Verktygssättinställningar",
+      aiModels: "AI-modellinställningar"
     },
     days: "dagar",
     minutes: "minuter",
@@ -2275,6 +2378,56 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Mall för återställning av lösenord",
       userLockedTemplate: "Mall för låst användare",
       mfaCodeTemplate: "Mall för MFA-kod"
+    },
+    toolsets: {
+      name: "Namn",
+      type: "Typ",
+      status: "Status",
+      description: "Beskrivning",
+      configuration: "Konfiguration",
+      create: "Skapa verktygsset",
+      edit: "Redigera verktygsset",
+      test: "Testa anslutning",
+      viewConfig: "Visa konfiguration",
+      searchPlaceholder: "Sök verktygsset...",
+      namePlaceholder: "Ange verktygsset-namn",
+      descriptionPlaceholder: "Ange verktygsset-beskrivning",
+      typePlaceholder: "Välj typ",
+      nameRequired: "Vänligen ange verktygsset-namn",
+      typeRequired: "Vänligen välj typ",
+      fieldRequired: "Vänligen ange {{field}}",
+      invalidJSON: "Ogiltigt JSON-format",
+      fetchFailed: "Misslyckades med att hämta verktygsset",
+      fetchTypeDefinitionsFailed: "Misslyckades med att hämta verktygsset-typdefinitioner",
+      createSuccess: "Verktygsset skapat framgångsrikt",
+      createFailed: "Misslyckades med att skapa verktygsset",
+      updateSuccess: "Verktygsset uppdaterat framgångsrikt",
+      updateFailed: "Misslyckades med att uppdatera verktygsset",
+      deleteSuccess: "Verktygsset borttaget framgångsrikt",
+      deleteFailed: "Misslyckades med att ta bort verktygsset",
+      testSuccess: "Verktygsset-anslutningstest lyckades",
+      testFailed: "Verktygsset-anslutningstest misslyckades",
+      deleteConfirm: "Är du säker på att du vill ta bort detta verktygsset?",
+      mcp: {
+        protocol: "Protokoll",
+        endpoint: "Slutpunkt",
+        username: "Användarnamn",
+        password: "Lösenord",
+        token: "Token",
+        args: "Argument",
+        protocolPlaceholder: "Välj protokoll",
+        endpointPlaceholder: "Ange slutpunkten",
+        usernamePlaceholder: "Ange användarnamnet",
+        passwordPlaceholder: "Ange lösenordet",
+        tokenPlaceholder: "Ange token",
+        argsPlaceholder: 'Ange argument, format: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: 'Argument, format: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "Protokoll, stödjer HTTP och WebSocket",
+        endpointTooltip: "MCP-serverns slutpunkt",
+        usernameTooltip: "MCP-serverns användarnamn",
+        passwordTooltip: "MCP-serverns lösenord",
+        tokenTooltip: "MCP-serverns token"
+      }
     }
   },
   audit: {
@@ -2357,6 +2510,11 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verify: "验证",
   previous: "上一页",
   next: "下一页",
+  enter: "请输入",
+  select: "请选择",
+  pagination: {
+    total: "第 {{start}}-{{end}} 条，共 {{total}} 条"
+  },
   language: {
     default: "默认语言",
     "en-US": "英语",
@@ -2367,7 +2525,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, C = {
+}, F = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2806,7 +2964,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, F = {
+}, I = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -2815,7 +2973,9 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       oauth: "OAuth2.0认证设置",
       ldap: "LDAP认证设置",
       smtp: "SMTP设置",
-      base: "基础设置"
+      base: "基础设置",
+      toolSets: "工具集设置",
+      aiModels: "AI模型设置"
     },
     days: "天",
     minutes: "分钟",
@@ -3094,6 +3254,56 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "重置密码模板",
       userLockedTemplate: "用户锁定模板",
       mfaCodeTemplate: "MFA验证码模板"
+    },
+    toolsets: {
+      name: "名称",
+      type: "类型",
+      status: "状态",
+      description: "描述",
+      configuration: "配置",
+      create: "创建工具集",
+      edit: "编辑工具集",
+      test: "测试连接",
+      viewConfig: "查看配置",
+      searchPlaceholder: "搜索工具集...",
+      namePlaceholder: "请输入工具集名称",
+      descriptionPlaceholder: "请输入工具集描述",
+      typePlaceholder: "请选择类型",
+      nameRequired: "请输入工具集名称",
+      typeRequired: "请选择类型",
+      fieldRequired: "请输入{{field}}",
+      invalidJSON: "JSON格式无效",
+      fetchFailed: "获取工具集失败",
+      fetchTypeDefinitionsFailed: "获取工具集类型定义失败",
+      createSuccess: "工具集创建成功",
+      createFailed: "创建工具集失败",
+      updateSuccess: "工具集更新成功",
+      updateFailed: "更新工具集失败",
+      deleteSuccess: "工具集删除成功",
+      deleteFailed: "删除工具集失败",
+      testSuccess: "工具集连接测试成功",
+      testFailed: "工具集连接测试失败",
+      deleteConfirm: "确定要删除此工具集吗？",
+      mcp: {
+        protocol: "协议",
+        endpoint: "端点",
+        username: "用户名",
+        password: "密码",
+        token: "令牌",
+        args: "参数",
+        protocolPlaceholder: "请选择协议",
+        endpointPlaceholder: "请输入端点",
+        usernamePlaceholder: "请输入用户名",
+        passwordPlaceholder: "请输入密码",
+        tokenPlaceholder: "请输入令牌",
+        argsPlaceholder: '请输入参数, 格式为Json,例如: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: '参数，格式为Json,例如: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "协议，支持HTTP和WebSocket",
+        endpointTooltip: "MCP服务器的端点",
+        usernameTooltip: "MCP服务器的用户名",
+        passwordTooltip: "MCP服务器的密码",
+        tokenTooltip: "MCP服务器的令牌"
+      }
     }
   },
   audit: {
@@ -3116,6 +3326,45 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit: "审计日志"
   }
 }, M = {
+  models: {
+    name: "名称",
+    provider: "提供商",
+    modelId: "模型ID",
+    status: "状态",
+    description: "描述",
+    apiKey: "API密钥",
+    baseUrl: "基础URL",
+    create: "创建AI模型",
+    edit: "编辑AI模型",
+    test: "测试连接",
+    setDefault: "设为默认",
+    defaultModel: "默认模型",
+    searchPlaceholder: "搜索AI模型...",
+    namePlaceholder: "请输入模型名称",
+    descriptionPlaceholder: "请输入模型描述",
+    providerPlaceholder: "请选择提供商",
+    apiKeyPlaceholder: "请输入API密钥",
+    apiKeyPlaceholderEdit: "留空以保持当前API密钥",
+    baseUrlPlaceholder: "可选：自定义API端点",
+    setAsDefault: "设为默认模型",
+    nameRequired: "请输入模型名称",
+    providerRequired: "请选择提供商",
+    modelIdRequired: "请输入模型ID",
+    apiKeyRequired: "请输入API密钥",
+    fetchFailed: "获取AI模型失败",
+    createSuccess: "AI模型创建成功",
+    createFailed: "创建AI模型失败",
+    updateSuccess: "AI模型更新成功",
+    updateFailed: "更新AI模型失败",
+    deleteSuccess: "AI模型删除成功",
+    deleteFailed: "删除AI模型失败",
+    testSuccess: "AI模型连接测试成功",
+    testFailed: "AI模型连接测试失败",
+    setDefaultSuccess: "默认AI模型设置成功",
+    setDefaultFailed: "设置默认AI模型失败",
+    deleteConfirm: "确定要删除此AI模型吗？"
+  }
+}, N = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3165,6 +3414,11 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verify: "Überprüfen",
   previous: "Zurück",
   next: "Weiter",
+  enter: "Eingeben",
+  select: "Auswählen",
+  pagination: {
+    total: "{{start}}-{{end}} von {{total}} Einträgen"
+  },
   language: {
     default: "Standardsprache",
     "en-US": "Englisch",
@@ -3172,9 +3426,10 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "ar-AE": "Arabisch",
     "de-DE": "Deutsch",
     "es-ES": "Spanisch",
-    "fr-FR": "Französisch"
+    "fr-FR": "Französisch",
+    "zh-CN": "Chinesisch"
   }
-}, N = {
+}, B = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -3604,7 +3859,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, I = {
+}, V = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -3613,7 +3868,9 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       oauth: "OAuth2.0-Authentifizierung",
       ldap: "LDAP-Authentifizierung",
       smtp: "SMTP-Einstellungen",
-      base: "Grundinställningar"
+      base: "Grundinställningar",
+      toolSets: "Tool Sets Einstellungen",
+      aiModels: "AI Models Einstellungen"
     },
     days: "Tage",
     minutes: "Minuten",
@@ -3892,6 +4149,56 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Vorlage zum Zurücksetzen des Passworts",
       userLockedTemplate: "Vorlage für gesperrte Benutzer",
       mfaCodeTemplate: "MFA-Code-Vorlage"
+    },
+    toolsets: {
+      name: "Name",
+      type: "Typ",
+      status: "Status",
+      description: "Beschreibung",
+      configuration: "Konfiguration",
+      create: "Toolset erstellen",
+      edit: "Toolset bearbeiten",
+      test: "Verbindung testen",
+      viewConfig: "Konfiguration anzeigen",
+      searchPlaceholder: "Toolsets suchen...",
+      namePlaceholder: "Toolset-Name eingeben",
+      descriptionPlaceholder: "Toolset-Beschreibung eingeben",
+      typePlaceholder: "Typ auswählen",
+      nameRequired: "Bitte geben Sie den Toolset-Namen ein",
+      typeRequired: "Bitte wählen Sie einen Typ aus",
+      fieldRequired: "Bitte geben Sie {{field}} ein",
+      invalidJSON: "Ungültiges JSON-Format",
+      fetchFailed: "Toolsets konnten nicht abgerufen werden",
+      fetchTypeDefinitionsFailed: "Toolset-Typdefinitionen konnten nicht abgerufen werden",
+      createSuccess: "Toolset erfolgreich erstellt",
+      createFailed: "Toolset konnte nicht erstellt werden",
+      updateSuccess: "Toolset erfolgreich aktualisiert",
+      updateFailed: "Toolset konnte nicht aktualisiert werden",
+      deleteSuccess: "Toolset erfolgreich gelöscht",
+      deleteFailed: "Toolset konnte nicht gelöscht werden",
+      testSuccess: "Toolset-Verbindungstest erfolgreich",
+      testFailed: "Toolset-Verbindungstest fehlgeschlagen",
+      deleteConfirm: "Sind Sie sicher, dass Sie dieses Toolset löschen möchten?",
+      mcp: {
+        protocol: "Protokoll",
+        endpoint: "Endpunkt",
+        username: "Benutzername",
+        password: "Passwort",
+        token: "Token",
+        args: "Argumente",
+        protocolPlaceholder: "Protokoll auswählen",
+        endpointPlaceholder: "Endpunkt eingeben",
+        usernamePlaceholder: "Benutzername eingeben",
+        passwordPlaceholder: "Passwort eingeben",
+        tokenPlaceholder: "Token eingeben",
+        argsPlaceholder: 'Argumente eingeben, format: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: 'Argumente, format: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "Protokoll, unterstützt HTTP und WebSocket",
+        endpointTooltip: "Endpunkt des MCP-Servers",
+        usernameTooltip: "Benutzername des MCP-Servers",
+        passwordTooltip: "Passwort des MCP-Servers",
+        tokenTooltip: "Token des MCP-Servers"
+      }
     }
   },
   audit: {
@@ -3913,7 +4220,46 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, B = {
+}, O = {
+  models: {
+    name: "Name",
+    provider: "Anbieter",
+    modelId: "Modell-ID",
+    status: "Status",
+    description: "Beschreibung",
+    apiKey: "API-Schlüssel",
+    baseUrl: "Basis-URL",
+    create: "KI-Modell erstellen",
+    edit: "KI-Modell bearbeiten",
+    test: "Verbindung testen",
+    setDefault: "Als Standard festlegen",
+    defaultModel: "Standardmodell",
+    searchPlaceholder: "KI-Modelle suchen...",
+    namePlaceholder: "Modellname eingeben",
+    descriptionPlaceholder: "Modellbeschreibung eingeben",
+    providerPlaceholder: "Anbieter auswählen",
+    apiKeyPlaceholder: "API-Schlüssel eingeben",
+    apiKeyPlaceholderEdit: "Leer lassen, um aktuellen API-Schlüssel zu behalten",
+    baseUrlPlaceholder: "Optional: Benutzerdefinierter API-Endpunkt",
+    setAsDefault: "Als Standardmodell festlegen",
+    nameRequired: "Bitte geben Sie den Modellnamen ein",
+    providerRequired: "Bitte wählen Sie einen Anbieter aus",
+    modelIdRequired: "Bitte geben Sie die Modell-ID ein",
+    apiKeyRequired: "Bitte geben Sie den API-Schlüssel ein",
+    fetchFailed: "KI-Modelle konnten nicht abgerufen werden",
+    createSuccess: "KI-Modell erfolgreich erstellt",
+    createFailed: "KI-Modell konnte nicht erstellt werden",
+    updateSuccess: "KI-Modell erfolgreich aktualisiert",
+    updateFailed: "KI-Modell konnte nicht aktualisiert werden",
+    deleteSuccess: "KI-Modell erfolgreich gelöscht",
+    deleteFailed: "KI-Modell konnte nicht gelöscht werden",
+    testSuccess: "KI-Modell-Verbindungstest erfolgreich",
+    testFailed: "KI-Modell-Verbindungstest fehlgeschlagen",
+    setDefaultSuccess: "Standard-KI-Modell erfolgreich festgelegt",
+    setDefaultFailed: "Standard-KI-Modell konnte nicht festgelegt werden",
+    deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?"
+  }
+}, x = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -3963,6 +4309,11 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verify: "Verificar",
   previous: "Anterior",
   next: "Siguiente",
+  enter: "Ingresar",
+  select: "Seleccionar",
+  pagination: {
+    total: "{{start}}-{{end}} de {{total}} elementos"
+  },
   language: {
     default: "Idioma por defecto",
     "en-US": "Inglés",
@@ -3973,7 +4324,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, V = {
+}, K = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -4403,7 +4754,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, O = {
+}, _ = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -4412,7 +4763,9 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       oauth: "Autenticación OAuth2.0",
       ldap: "Autenticación LDAP",
       smtp: "Ajustes de SMTP",
-      base: "Ajustes de base"
+      base: "Ajustes de base",
+      toolSets: "Ajustes de conjuntos de herramientas",
+      aiModels: "Ajustes de modelos AI"
     },
     days: "días",
     minutes: "minutos",
@@ -4691,6 +5044,56 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Plantilla para restablecer la contraseña",
       userLockedTemplate: "Plantilla de usuario bloqueado",
       mfaCodeTemplate: "Plantilla de código MFA"
+    },
+    toolsets: {
+      name: "Nombre",
+      type: "Tipo",
+      status: "Estado",
+      description: "Descripción",
+      configuration: "Configuración",
+      create: "Crear conjunto de herramientas",
+      edit: "Editar conjunto de herramientas",
+      test: "Probar conexión",
+      viewConfig: "Ver configuración",
+      searchPlaceholder: "Buscar conjuntos de herramientas...",
+      namePlaceholder: "Ingrese el nombre del conjunto de herramientas",
+      descriptionPlaceholder: "Ingrese la descripción del conjunto de herramientas",
+      typePlaceholder: "Seleccione el tipo",
+      nameRequired: "Por favor ingrese el nombre del conjunto de herramientas",
+      typeRequired: "Por favor seleccione el tipo",
+      fieldRequired: "Por favor ingrese {{field}}",
+      invalidJSON: "Formato JSON inválido",
+      fetchFailed: "Error al obtener conjuntos de herramientas",
+      fetchTypeDefinitionsFailed: "Error al obtener definiciones de tipos de conjuntos de herramientas",
+      createSuccess: "Conjunto de herramientas creado exitosamente",
+      createFailed: "Error al crear conjunto de herramientas",
+      updateSuccess: "Conjunto de herramientas actualizado exitosamente",
+      updateFailed: "Error al actualizar conjunto de herramientas",
+      deleteSuccess: "Conjunto de herramientas eliminado exitosamente",
+      deleteFailed: "Error al eliminar conjunto de herramientas",
+      testSuccess: "Prueba de conexión del conjunto de herramientas exitosa",
+      testFailed: "Prueba de conexión del conjunto de herramientas fallida",
+      deleteConfirm: "¿Está seguro de que desea eliminar este conjunto de herramientas?",
+      mcp: {
+        protocol: "Protocolo",
+        endpoint: "Punto final",
+        username: "Nombre de usuario",
+        password: "Contraseña",
+        token: "Token",
+        args: "Argumentos",
+        protocolPlaceholder: "Seleccione el protocolo",
+        endpointPlaceholder: "Ingrese el punto final",
+        usernamePlaceholder: "Ingrese el nombre de usuario",
+        passwordPlaceholder: "Ingrese la contraseña",
+        tokenPlaceholder: "Ingrese el token",
+        argsPlaceholder: 'Ingrese los argumentos, format: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: 'Argumentos, format: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "Protocolo, soporta HTTP y WebSocket",
+        endpointTooltip: "Punto final del servidor MCP",
+        usernameTooltip: "Nombre de usuario del servidor MCP",
+        passwordTooltip: "Contraseña del servidor MCP",
+        tokenTooltip: "Token del servidor MCP"
+      }
     }
   },
   audit: {
@@ -4712,7 +5115,46 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, _ = {
+}, j = {
+  models: {
+    name: "Nombre",
+    provider: "Proveedor",
+    modelId: "ID del modelo",
+    status: "Estado",
+    description: "Descripción",
+    apiKey: "Clave API",
+    baseUrl: "URL base",
+    create: "Crear modelo de IA",
+    edit: "Editar modelo de IA",
+    test: "Probar conexión",
+    setDefault: "Establecer como predeterminado",
+    defaultModel: "Modelo predeterminado",
+    searchPlaceholder: "Buscar modelos de IA...",
+    namePlaceholder: "Ingrese el nombre del modelo",
+    descriptionPlaceholder: "Ingrese la descripción del modelo",
+    providerPlaceholder: "Seleccione el proveedor",
+    apiKeyPlaceholder: "Ingrese la clave API",
+    apiKeyPlaceholderEdit: "Dejar vacío para mantener la clave API actual",
+    baseUrlPlaceholder: "Opcional: Punto final API personalizado",
+    setAsDefault: "Establecer como modelo predeterminado",
+    nameRequired: "Por favor ingrese el nombre del modelo",
+    providerRequired: "Por favor seleccione el proveedor",
+    modelIdRequired: "Por favor ingrese el ID del modelo",
+    apiKeyRequired: "Por favor ingrese la clave API",
+    fetchFailed: "Error al obtener modelos de IA",
+    createSuccess: "Modelo de IA creado exitosamente",
+    createFailed: "Error al crear modelo de IA",
+    updateSuccess: "Modelo de IA actualizado exitosamente",
+    updateFailed: "Error al actualizar modelo de IA",
+    deleteSuccess: "Modelo de IA eliminado exitosamente",
+    deleteFailed: "Error al eliminar modelo de IA",
+    testSuccess: "Prueba de conexión del modelo de IA exitosa",
+    testFailed: "Prueba de conexión del modelo de IA fallida",
+    setDefaultSuccess: "Modelo de IA predeterminado establecido exitosamente",
+    setDefaultFailed: "Error al establecer modelo de IA predeterminado",
+    deleteConfirm: "¿Está seguro de que desea eliminar este modelo de IA?"
+  }
+}, G = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -4762,6 +5204,11 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verify: "Vérifier",
   previous: "Précédent",
   next: "Suivant",
+  enter: "Entrer",
+  select: "Sélectionner",
+  pagination: {
+    total: "{{start}}-{{end}} sur {{total}} éléments"
+  },
   language: {
     default: "Langue par défaut",
     "en-US": "Anglais",
@@ -4772,7 +5219,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, x = {
+}, W = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -5202,7 +5649,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, K = {
+}, H = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -5211,7 +5658,9 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       oauth: "Authentification OAuth2.0",
       ldap: "Authentification LDAP",
       smtp: "Paramètres SMTP",
-      base: "Paramètres de base"
+      base: "Paramètres de base",
+      toolSets: "Paramètres d'ensembles d'outils",
+      aiModels: "Paramètres de modèles AI"
     },
     days: "jours",
     minutes: "minutes",
@@ -5490,6 +5939,56 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Modèle de réinitialisation de mot de passe",
       userLockedTemplate: "Modèle d'utilisateur verrouillé",
       mfaCodeTemplate: "Modèle de code AMF"
+    },
+    toolsets: {
+      name: "Nom",
+      type: "Type",
+      status: "Statut",
+      description: "Description",
+      configuration: "Configuration",
+      create: "Créer un ensemble d'outils",
+      edit: "Modifier l'ensemble d'outils",
+      test: "Tester la connexion",
+      viewConfig: "Voir la configuration",
+      searchPlaceholder: "Rechercher des ensembles d'outils...",
+      namePlaceholder: "Entrez le nom de l'ensemble d'outils",
+      descriptionPlaceholder: "Entrez la description de l'ensemble d'outils",
+      typePlaceholder: "Sélectionnez le type",
+      nameRequired: "Veuillez entrer le nom de l'ensemble d'outils",
+      typeRequired: "Veuillez sélectionner le type",
+      fieldRequired: "Veuillez entrer {{field}}",
+      invalidJSON: "Format JSON invalide",
+      fetchFailed: "Échec de la récupération des ensembles d'outils",
+      fetchTypeDefinitionsFailed: "Échec de la récupération des définitions de types d'ensembles d'outils",
+      createSuccess: "Ensemble d'outils créé avec succès",
+      createFailed: "Échec de la création de l'ensemble d'outils",
+      updateSuccess: "Ensemble d'outils mis à jour avec succès",
+      updateFailed: "Échec de la mise à jour de l'ensemble d'outils",
+      deleteSuccess: "Ensemble d'outils supprimé avec succès",
+      deleteFailed: "Échec de la suppression de l'ensemble d'outils",
+      testSuccess: "Test de connexion de l'ensemble d'outils réussi",
+      testFailed: "Test de connexion de l'ensemble d'outils échoué",
+      deleteConfirm: "Êtes-vous sûr de vouloir supprimer cet ensemble d'outils ?",
+      mcp: {
+        protocol: "Protocole",
+        endpoint: "Point de terminaison",
+        username: "Nom d'utilisateur",
+        password: "Mot de passe",
+        token: "Jeton",
+        args: "Arguments",
+        protocolPlaceholder: "Sélectionnez le protocole",
+        endpointPlaceholder: "Entrez le point de terminaison",
+        usernamePlaceholder: "Entrez le nom d'utilisateur",
+        passwordPlaceholder: "Entrez le mot de passe",
+        tokenPlaceholder: "Entrez le jeton",
+        argsPlaceholder: 'Entrez les arguments, format: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: 'Arguments, format: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "Protocole, supporte HTTP et WebSocket",
+        endpointTooltip: "Point de terminaison du serveur MCP",
+        usernameTooltip: "Nom d'utilisateur du serveur MCP",
+        passwordTooltip: "Mot de passe du serveur MCP",
+        tokenTooltip: "Jeton du serveur MCP"
+      }
     }
   },
   audit: {
@@ -5511,7 +6010,46 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, j = {
+}, J = {
+  models: {
+    name: "Nom",
+    provider: "Fournisseur",
+    modelId: "ID du modèle",
+    status: "Statut",
+    description: "Description",
+    apiKey: "Clé API",
+    baseUrl: "URL de base",
+    create: "Créer un modèle IA",
+    edit: "Modifier le modèle IA",
+    test: "Tester la connexion",
+    setDefault: "Définir par défaut",
+    defaultModel: "Modèle par défaut",
+    searchPlaceholder: "Rechercher des modèles IA...",
+    namePlaceholder: "Entrez le nom du modèle",
+    descriptionPlaceholder: "Entrez la description du modèle",
+    providerPlaceholder: "Sélectionnez le fournisseur",
+    apiKeyPlaceholder: "Entrez la clé API",
+    apiKeyPlaceholderEdit: "Laisser vide pour conserver la clé API actuelle",
+    baseUrlPlaceholder: "Optionnel : Point de terminaison API personnalisé",
+    setAsDefault: "Définir comme modèle par défaut",
+    nameRequired: "Veuillez entrer le nom du modèle",
+    providerRequired: "Veuillez sélectionner le fournisseur",
+    modelIdRequired: "Veuillez entrer l'ID du modèle",
+    apiKeyRequired: "Veuillez entrer la clé API",
+    fetchFailed: "Échec de la récupération des modèles IA",
+    createSuccess: "Modèle IA créé avec succès",
+    createFailed: "Échec de la création du modèle IA",
+    updateSuccess: "Modèle IA mis à jour avec succès",
+    updateFailed: "Échec de la mise à jour du modèle IA",
+    deleteSuccess: "Modèle IA supprimé avec succès",
+    deleteFailed: "Échec de la suppression du modèle IA",
+    testSuccess: "Test de connexion du modèle IA réussi",
+    testFailed: "Test de connexion du modèle IA échoué",
+    setDefaultSuccess: "Modèle IA par défaut défini avec succès",
+    setDefaultFailed: "Échec de la définition du modèle IA par défaut",
+    deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce modèle IA ?"
+  }
+}, Z = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -5561,6 +6099,11 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verify: "تحقق",
   previous: "السابق",
   next: "التالي",
+  enter: "أدخل",
+  select: "اختر",
+  pagination: {
+    total: "{{start}}-{{end}} من {{total}} عناصر"
+  },
   language: {
     default: "اللغة الأساسية",
     "en-US": "اللغة الإنجليزية",
@@ -5568,9 +6111,10 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "ar-AE": "اللغة العربية",
     "de-DE": "اللغة الألمانية",
     "es-ES": "اللغة الإسبانية",
-    "fr-FR": "اللغة الفرنسية"
+    "fr-FR": "اللغة الفرنسية",
+    "zh-CN": "اللغة الصينية"
   }
-}, G = {
+}, Q = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -6000,7 +6544,7 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, W = {
+}, Y = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -6009,7 +6553,9 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       oauth: "مصادقة OAuth2.0",
       ldap: "مصادقة LDAP",
       smtp: "إعدادات SMTP",
-      base: "إعدادات الأساسية"
+      base: "إعدادات الأساسية",
+      toolSets: "إعدادات مجموعات الأدوات",
+      aiModels: "إعدادات مودلات AI"
     },
     days: "أيام",
     minutes: "دقائق",
@@ -6288,6 +6834,56 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "قالب إعادة تعيين كلمة المرور",
       userLockedTemplate: "قالب المستخدم المقفل",
       mfaCodeTemplate: "قالب رمز MFA"
+    },
+    toolsets: {
+      name: "الاسم",
+      type: "النوع",
+      status: "الحالة",
+      description: "الوصف",
+      configuration: "التكوين",
+      create: "إنشاء مجموعة أدوات",
+      edit: "تحرير مجموعة الأدوات",
+      test: "اختبار الاتصال",
+      viewConfig: "عرض التكوين",
+      searchPlaceholder: "البحث في مجموعات الأدوات...",
+      namePlaceholder: "أدخل اسم مجموعة الأدوات",
+      descriptionPlaceholder: "أدخل وصف مجموعة الأدوات",
+      typePlaceholder: "اختر النوع",
+      nameRequired: "يرجى إدخال اسم مجموعة الأدوات",
+      typeRequired: "يرجى اختيار النوع",
+      fieldRequired: "يرجى إدخال {{field}}",
+      invalidJSON: "تنسيق JSON غير صالح",
+      fetchFailed: "فشل في جلب مجموعات الأدوات",
+      fetchTypeDefinitionsFailed: "فشل في جلب تعريفات أنواع مجموعات الأدوات",
+      createSuccess: "تم إنشاء مجموعة الأدوات بنجاح",
+      createFailed: "فشل في إنشاء مجموعة الأدوات",
+      updateSuccess: "تم تحديث مجموعة الأدوات بنجاح",
+      updateFailed: "فشل في تحديث مجموعة الأدوات",
+      deleteSuccess: "تم حذف مجموعة الأدوات بنجاح",
+      deleteFailed: "فشل في حذف مجموعة الأدوات",
+      testSuccess: "نجح اختبار اتصال مجموعة الأدوات",
+      testFailed: "فشل اختبار اتصال مجموعة الأدوات",
+      deleteConfirm: "هل أنت متأكد من أنك تريد حذف مجموعة الأدوات هذه؟",
+      mcp: {
+        protocol: "البروتوكول",
+        endpoint: "النقطة النهائية",
+        username: "اسم المستخدم",
+        password: "كلمة المرور",
+        token: "الرمز",
+        args: "الوسائط",
+        protocolPlaceholder: "اختر البروتوكول",
+        endpointPlaceholder: "أدخل النقطة النهائية",
+        usernamePlaceholder: "أدخل اسم المستخدم",
+        passwordPlaceholder: "أدخل كلمة المرور",
+        tokenPlaceholder: "أدخل الرمز",
+        argsPlaceholder: 'أدخل الوسائط, format: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: 'الوسائط, format: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "البروتوكول, يدعم HTTP و WebSocket",
+        endpointTooltip: "النقطة النهائية لخادم MCP",
+        usernameTooltip: "اسم المستخدم لخادم MCP",
+        passwordTooltip: "كلمة المرور لخادم MCP",
+        tokenTooltip: "الرمز لخادم MCP"
+      }
     }
   },
   audit: {
@@ -6309,52 +6905,137 @@ const te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
+}, $ = {
+  models: {
+    name: "الاسم",
+    provider: "المزود",
+    modelId: "معرف النموذج",
+    status: "الحالة",
+    description: "الوصف",
+    apiKey: "مفتاح API",
+    baseUrl: "الرابط الأساسي",
+    create: "إنشاء نموذج ذكي",
+    edit: "تحرير النموذج الذكي",
+    test: "اختبار الاتصال",
+    setDefault: "تعيين كافتراضي",
+    defaultModel: "النموذج الافتراضي",
+    searchPlaceholder: "البحث في النماذج الذكية...",
+    namePlaceholder: "أدخل اسم النموذج",
+    descriptionPlaceholder: "أدخل وصف النموذج",
+    providerPlaceholder: "اختر المزود",
+    apiKeyPlaceholder: "أدخل مفتاح API",
+    apiKeyPlaceholderEdit: "اتركه فارغاً للاحتفاظ بمفتاح API الحالي",
+    baseUrlPlaceholder: "اختياري: نقطة نهاية API مخصصة",
+    setAsDefault: "تعيين كنموذج افتراضي",
+    nameRequired: "يرجى إدخال اسم النموذج",
+    providerRequired: "يرجى اختيار المزود",
+    modelIdRequired: "يرجى إدخال معرف النموذج",
+    apiKeyRequired: "يرجى إدخال مفتاح API",
+    fetchFailed: "فشل في جلب النماذج الذكية",
+    createSuccess: "تم إنشاء النموذج الذكي بنجاح",
+    createFailed: "فشل في إنشاء النموذج الذكي",
+    updateSuccess: "تم تحديث النموذج الذكي بنجاح",
+    updateFailed: "فشل في تحديث النموذج الذكي",
+    deleteSuccess: "تم حذف النموذج الذكي بنجاح",
+    deleteFailed: "فشل في حذف النموذج الذكي",
+    testSuccess: "نجح اختبار اتصال النموذج الذكي",
+    testFailed: "فشل اختبار اتصال النموذج الذكي",
+    setDefaultSuccess: "تم تعيين النموذج الذكي الافتراضي بنجاح",
+    setDefaultFailed: "فشل في تعيين النموذج الذكي الافتراضي",
+    deleteConfirm: "هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟"
+  }
+}, X = {
+  models: {
+    name: "Namn",
+    provider: "Leverantör",
+    modelId: "Modell-ID",
+    status: "Status",
+    description: "Beskrivning",
+    apiKey: "API-nyckel",
+    baseUrl: "Bas-URL",
+    create: "Skapa AI-modell",
+    edit: "Redigera AI-modell",
+    test: "Testa anslutning",
+    setDefault: "Ange som standard",
+    defaultModel: "Standardmodell",
+    searchPlaceholder: "Sök AI-modeller...",
+    namePlaceholder: "Ange modellnamn",
+    descriptionPlaceholder: "Ange modellbeskrivning",
+    providerPlaceholder: "Välj leverantör",
+    apiKeyPlaceholder: "Ange API-nyckel",
+    apiKeyPlaceholderEdit: "Lämna tomt för att behålla nuvarande API-nyckel",
+    baseUrlPlaceholder: "Valfritt: Anpassad API-slutpunkt",
+    setAsDefault: "Ange som standardmodell",
+    nameRequired: "Vänligen ange modellnamn",
+    providerRequired: "Vänligen välj leverantör",
+    modelIdRequired: "Vänligen ange modell-ID",
+    apiKeyRequired: "Vänligen ange API-nyckel",
+    fetchFailed: "Misslyckades med att hämta AI-modeller",
+    createSuccess: "AI-modell skapad framgångsrikt",
+    createFailed: "Misslyckades med att skapa AI-modell",
+    updateSuccess: "AI-modell uppdaterad framgångsrikt",
+    updateFailed: "Misslyckades med att uppdatera AI-modell",
+    deleteSuccess: "AI-modell borttagen framgångsrikt",
+    deleteFailed: "Misslyckades med att ta bort AI-modell",
+    testSuccess: "AI-modell-anslutningstest lyckades",
+    testFailed: "AI-modell-anslutningstest misslyckades",
+    setDefaultSuccess: "Standard AI-modell angiven framgångsrikt",
+    setDefaultFailed: "Misslyckades med att ange standard AI-modell",
+    deleteConfirm: "Är du säker på att du vill ta bort denna AI-modell?"
+  }
 };
-h.use(f).use(v).init({
-  ns: ["common", "authorization", "system"],
+h.use(v).use(f).init({
+  ns: ["common", "authorization", "system", "ai"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
       translation: y,
       common: U,
-      authorization: C,
-      system: F
+      authorization: F,
+      system: I,
+      ai: M
     },
     "en-US": {
-      translation: P,
+      translation: k,
       common: w,
       authorization: R,
-      system: D
+      system: D,
+      ai: E
     },
     "de-DE": {
-      translation: E,
-      common: M,
-      authorization: N,
-      system: I
+      translation: z,
+      common: N,
+      authorization: B,
+      system: V,
+      ai: O
     },
     "es-ES": {
-      translation: L,
-      common: B,
-      authorization: V,
-      system: O
+      translation: T,
+      common: x,
+      authorization: K,
+      system: _,
+      ai: j
     },
     "fr-FR": {
-      translation: z,
-      common: _,
-      authorization: x,
-      system: K
+      translation: L,
+      common: G,
+      authorization: W,
+      system: H,
+      ai: J
     },
     "ar-AE": {
-      translation: T,
-      common: j,
-      authorization: G,
-      system: W
+      translation: C,
+      common: Z,
+      authorization: Q,
+      system: Y,
+      ai: $
     },
     "sv-SE": {
       translation: q,
       common: p,
       authorization: m,
-      system: g
+      system: g,
+      ai: X
     }
   },
   fallbackLng: "en-US",
@@ -6363,15 +7044,15 @@ h.use(f).use(v).init({
     escapeValue: !1
   }
 });
-const ie = {
+const de = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
 export {
-  ie as P,
-  te as b,
-  Y as f,
-  ee as g,
-  X as m,
-  $ as t
+  de as P,
+  le as b,
+  ae as f,
+  ne as g,
+  oe as m,
+  se as t
 };

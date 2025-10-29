@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request, type SSERequestConfig } from "@/service/client";
+import { request } from "@/service/client";
 
 /** Handle the OAuth callback Handle the OAuth callback GET /api/oauth/callback */
 export async function handleCallback(

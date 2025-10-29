@@ -1,13 +1,17 @@
 package aiapi
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
+	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-utils/safe"
 )
 
 // ToolSetController handles toolset management
@@ -38,7 +42,7 @@ func (c *ToolSetController) RegisterRoutes(router *gin.RouterGroup) {
 type CreateToolSetRequest struct {
 	Name        string              `json:"name" binding:"required"`
 	Description string              `json:"description" validate:"optional"`
-	Type        model.ToolSetType   `json:"type" binding:"required"`
+	Type        toolset.ToolSetType `json:"type" binding:"required"`
 	Config      model.ToolSetConfig `json:"config" validate:"optional" swaggertype:"object"`
 }
 
@@ -46,7 +50,7 @@ type CreateToolSetRequest struct {
 type UpdateToolSetRequest struct {
 	Name        string              `json:"name" binding:"required"`
 	Description string              `json:"description" validate:"optional"`
-	Type        model.ToolSetType   `json:"type" binding:"required"`
+	Type        toolset.ToolSetType `json:"type" binding:"required"`
 	Config      model.ToolSetConfig `json:"config" validate:"optional" swaggertype:"object"`
 	Status      model.ToolSetStatus `json:"status" validate:"optional"`
 }
@@ -104,16 +108,36 @@ func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
 		return
 	}
+	factory, exists := toolset.GetToolSetFactory(req.Type)
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported toolset type: %s", req.Type)))
+		return
+	}
+	configFields := factory.GetConfigFields()
+	for _, configField := range configFields {
+		if configField.Required && req.Config[configField.Name] == "" {
+			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
+			return
+		}
+		if configField.Type == toolset.FieldTypePassword {
+			value, ok := req.Config[configField.Name]
+			if !ok || value == nil {
+				continue
+			}
+			switch v := value.(type) {
+			case string:
+				req.Config[configField.Name] = safe.NewEncryptedString(v, os.Getenv(safe.SecretEnvName)).String()
+			default:
+				util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is not a string", configField.Name)))
+				return
+			}
+		}
+	}
+
+	toolSet := model.NewToolSet(req.Name, req.Description, req.Type, req.Config, userID.(string))
 
 	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
-		toolset := model.NewToolSet(
-			req.Name,
-			req.Description,
-			req.Type,
-			req.Config,
-			userID.(string),
-		)
-		createdToolSet, err := c.service.CreateToolSet(ctx, toolset)
+		createdToolSet, err := c.service.CreateToolSet(ctx, toolSet)
 		if err != nil {
 			return util.NewError("E5001", err)
 		}
@@ -194,6 +218,31 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
 		return
 	}
+	factory, exists := toolset.GetToolSetFactory(req.Type)
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported toolset type: %s", req.Type)))
+		return
+	}
+	configFields := factory.GetConfigFields()
+	for _, configField := range configFields {
+		if configField.Required && req.Config[configField.Name] == "" {
+			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
+			return
+		}
+		if configField.Type == toolset.FieldTypePassword {
+			value, ok := req.Config[configField.Name]
+			if !ok || value == nil {
+				continue
+			}
+			switch v := value.(type) {
+			case string:
+				req.Config[configField.Name] = safe.NewEncryptedString(v, os.Getenv(safe.SecretEnvName)).String()
+			default:
+				util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is not a string", configField.Name)))
+				return
+			}
+		}
+	}
 
 	toolset := &model.ToolSet{
 		Name:        req.Name,
@@ -204,13 +253,22 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 		UpdatedBy:   userID.(string),
 	}
 
-	updatedToolSet, err := c.service.UpdateToolSet(ctx, id, toolset)
-	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5001", err))
-		return
-	}
+	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
+		updatedToolSet, err := c.service.UpdateToolSet(ctx, id, toolset)
+		if err != nil {
+			return util.NewError("E5001", err)
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, updatedToolSet)
+		return nil
+	},
+		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+			auditLog.Details.Request = req
+		}),
+	)
 
-	util.RespondWithSuccess(ctx, http.StatusOK, updatedToolSet)
+	if err != nil {
+		util.RespondWithError(ctx, err)
+	}
 }
 
 // DeleteToolSet deletes a toolset

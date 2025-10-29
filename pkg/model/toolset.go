@@ -4,13 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-)
 
-// ToolSetType represents the AI toolset type
-type ToolSetType string
-
-const (
-	ToolSetTypeMCP ToolSetType = "mcp"
+	"github.com/sven-victor/ez-console/pkg/toolset"
 )
 
 // ToolSetProtocol represents the protocol used by the toolset
@@ -58,13 +53,13 @@ func (c *ToolSetConfig) Scan(value interface{}) error {
 // ToolSet represents an AI toolset configuration
 type ToolSet struct {
 	Base
-	Name        string        `gorm:"size:100;not null" json:"name" binding:"required"` // Toolset name
-	Description string        `gorm:"size:500" json:"description"`                      // Toolset description
-	Type        ToolSetType   `gorm:"size:50;not null" json:"type" binding:"required"`  // Toolset type (mcp, etc.)
-	Config      ToolSetConfig `gorm:"type:text" json:"config" swaggertype:"object"`     // Additional configuration
-	Status      ToolSetStatus `gorm:"size:20;not null;default:'enabled'" json:"status"` // Status
-	CreatedBy   string        `gorm:"size:36;not null" json:"created_by"`               // Creator user ID
-	UpdatedBy   string        `gorm:"size:36" json:"updated_by"`                        // Last updater user ID
+	Name        string              `gorm:"size:100;not null" json:"name" binding:"required"` // Toolset name
+	Description string              `gorm:"size:500" json:"description"`                      // Toolset description
+	Type        toolset.ToolSetType `gorm:"size:50;not null" json:"type" binding:"required"`  // Toolset type (mcp, etc.)
+	Config      ToolSetConfig       `gorm:"type:text" json:"config" swaggertype:"object"`     // Additional configuration
+	Status      ToolSetStatus       `gorm:"size:20;not null;default:'enabled'" json:"status"` // Status
+	CreatedBy   string              `gorm:"size:36;not null" json:"created_by"`               // Creator user ID
+	UpdatedBy   string              `gorm:"size:36" json:"updated_by"`                        // Last updater user ID
 }
 
 // TableName returns the table name for ToolSet
@@ -73,7 +68,7 @@ func (ToolSet) TableName() string {
 }
 
 // NewToolSet creates a new AI toolset
-func NewToolSet(name, description string, toolsetType ToolSetType, config ToolSetConfig, createdBy string) *ToolSet {
+func NewToolSet(name, description string, toolsetType toolset.ToolSetType, config ToolSetConfig, createdBy string) *ToolSet {
 	return &ToolSet{
 		Name:        name,
 		Description: description,

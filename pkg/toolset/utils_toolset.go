@@ -111,14 +111,19 @@ func (f *UtilsToolSetFactory) GetName() string {
 	return (&UtilsToolSet{}).GetName()
 }
 
-func (f *UtilsToolSetFactory) GetConfigFields() []ConfigField {
-	return []ConfigField{}
+func (f *UtilsToolSetFactory) GetConfigFields() []ToolSetConfigField {
+	return []ToolSetConfigField{}
 }
 
 func (f *UtilsToolSetFactory) CreateToolSet(configJSON string) (ToolSet, error) {
 	return newUtilsToolSet(), nil
 }
+
+const (
+	ToolSetTypeUtils ToolSetType = "utils"
+)
+
 func init() {
 	// Register the MCP toolset factory
-	RegisterToolSet("utils", &UtilsToolSetFactory{})
+	RegisterToolSet(ToolSetTypeUtils, &UtilsToolSetFactory{})
 }

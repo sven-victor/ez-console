@@ -39,6 +39,100 @@ export declare const Actions: ({ actions }: {
  */
 export declare const AdminGuard: default_2.FC<Omit<PermissionGuardProps, 'permission' | 'permissions' | 'checkAll'>>;
 
+export declare interface AIChatMessage {
+    /** Message content */
+    content: string;
+    created_at: string;
+    id: string;
+    /** Message timestamp */
+    message_time: string;
+    /** Additional metadata */
+    metadata: AIChatMessageMetadata;
+    /** Message role */
+    role: AIChatMessageRole;
+    /** Session ID */
+    session_id: string;
+    /** Message status */
+    status: AIChatMessageStatus;
+    /** Tokens used for this message */
+    tokens_used: number;
+    /** Tool call ID (for tool messages) */
+    tool_call_id: string;
+    /** Tool calls (for assistant messages) */
+    tool_calls: AIToolCall[];
+    updated_at: string;
+}
+
+export declare type AIChatMessageMetadata = true;
+
+export declare type AIChatMessageRole = "user" | "assistant" | "system" | "tool";
+
+export declare type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
+
+export declare interface AIChatSession {
+    created_at: string;
+    /** Session end time */
+    end_time: string;
+    id: string;
+    /** Messages */
+    messages: AIChatMessage[];
+    /** AI model ID used */
+    model_id: string;
+    /** Session start time */
+    start_time: string;
+    /** Session title */
+    title: string;
+    updated_at: string;
+    /** User ID */
+    user_id: string;
+}
+
+export declare interface AIFunctionCall {
+    arguments: string;
+    name: string;
+}
+
+export declare interface AIModel {
+    /** API key (encrypted) */
+    api_key: string;
+    /** Base URL (optional, for custom endpoints) */
+    base_url: string;
+    /** Additional configuration */
+    config: AIModelConfig;
+    created_at: string;
+    /** Creator user ID */
+    created_by: string;
+    /** Model description */
+    description: string;
+    id: string;
+    /** Whether this is the default model */
+    is_default: boolean;
+    /** Model ID (e.g., gpt-4, gpt-3.5-turbo) */
+    model_id: string;
+    /** Model name */
+    name: string;
+    /** Provider (openai, etc.) */
+    provider: AIModelProvider;
+    /** Status */
+    status: AIModelStatus;
+    updated_at: string;
+    /** Last updater user ID */
+    updated_by: string;
+}
+
+export declare type AIModelConfig = true;
+
+export declare type AIModelProvider = "openai";
+
+export declare type AIModelStatus = "enabled" | "disabled";
+
+export declare interface AIToolCall {
+    function: AIFunctionCall;
+    id: string;
+    index: number;
+    type: string;
+}
+
 export declare const AllLangUIConfig: LanguageConfig[];
 
 export declare const api: {
@@ -382,6 +476,14 @@ export declare interface Chart {
     width: number;
 }
 
+export declare interface ChatStreamEvent {
+    content: string;
+    event_type: EventType;
+    message_id: string;
+    role: AIChatMessageRole;
+    tool_calls: ToolCall[];
+}
+
 export declare interface CheckPasswordComplexityRequest {
     password: string;
 }
@@ -391,6 +493,22 @@ export declare interface CheckPasswordComplexityResponse {
 }
 
 export declare type Condition = true;
+
+export declare interface CreateAIModelRequest {
+    api_key: string;
+    base_url?: string;
+    config?: Record<string, any>;
+    description?: string;
+    is_default?: boolean;
+    model_id: string;
+    name: string;
+    provider: AIModelProvider;
+}
+
+export declare interface CreateChatSessionRequest {
+    model_id: string;
+    title: string;
+}
 
 export declare interface CreateRoleRequest {
     description: string;
@@ -429,6 +547,13 @@ export declare interface CreateServiceAccountRequest {
     name: string;
 }
 
+export declare interface CreateToolSetRequest {
+    config?: Record<string, any>;
+    description?: string;
+    name: string;
+    type: ToolSetType;
+}
+
 export declare interface CreateUserRequest {
     avatar?: string;
     email: string;
@@ -446,6 +571,16 @@ export declare interface Dataset {
     label: string;
 }
 
+export declare interface deleteAIModelParams {
+    /** AI model ID */
+    id: string;
+}
+
+export declare interface deleteChatSessionParams {
+    /** Chat session ID */
+    sessionId: string;
+}
+
 export declare interface deleteRoleParams {
     /** Role ID */
     id: string;
@@ -460,6 +595,11 @@ export declare interface deleteServiceAccountAccessKeyParams {
 
 export declare interface deleteServiceAccountParams {
     /** Service account ID */
+    id: string;
+}
+
+export declare interface deleteToolSetParams {
+    /** Toolset ID */
     id: string;
 }
 
@@ -493,6 +633,8 @@ export declare interface ErrorResponse {
     message: string;
 }
 
+export declare type EventType = "content" | "tool_call" | "error";
+
 export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
@@ -522,11 +664,27 @@ export declare type FileType = "image";
 
 export declare const Forbidden: default_2.FC;
 
+export declare interface FunctionCall {
+    /** call function with arguments in JSON format */
+    arguments: string;
+    name: string;
+}
+
+export declare interface getAIModelParams {
+    /** AI model ID */
+    id: string;
+}
+
 export declare interface getAuditLogsParams {
     /** Current page number */
     current?: number;
     /** Number of items per page */
     page_size?: number;
+}
+
+export declare interface getChatSessionParams {
+    /** Chat session ID */
+    sessionId: string;
 }
 
 export declare interface getCurrentUserLogsParams {
@@ -585,6 +743,11 @@ export declare interface getServiceAccountsParams {
     page_size?: number;
     /** Search keyword */
     search?: string;
+}
+
+export declare interface getToolSetParams {
+    /** Toolset ID */
+    id: string;
 }
 
 export declare interface getUserLogsParams {
@@ -731,6 +894,22 @@ export declare interface LDAPTestResponse {
     user: User;
 }
 
+export declare interface listAIModelsParams {
+    /** Current page number */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+    /** Search keyword */
+    search?: string;
+}
+
+export declare interface listChatSessionsParams {
+    /** Current page number */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+}
+
 export declare interface listFilesParams {
     /** Current page */
     current?: number;
@@ -750,6 +929,15 @@ export declare interface listRolesParams {
     /** Page size */
     page_size?: number;
     /** Search */
+    search?: string;
+}
+
+export declare interface listToolSetsParams {
+    /** Current page number */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+    /** Search keyword */
     search?: string;
 }
 
@@ -841,6 +1029,22 @@ export declare interface OAuthSettings {
     wellknown_endpoint: string;
 }
 
+export declare interface PaginationResponseModelAIChatSession {
+    code: string;
+    current: number;
+    data: AIChatSession[];
+    page_size: number;
+    total: number;
+}
+
+export declare interface PaginationResponseModelAIModel {
+    code: string;
+    current: number;
+    data: AIModel[];
+    page_size: number;
+    total: number;
+}
+
 export declare interface PaginationResponseModelAuditLog {
     code: string;
     current: number;
@@ -869,6 +1073,14 @@ export declare interface PaginationResponseModelServiceAccount {
     code: string;
     current: number;
     data: ServiceAccount[];
+    page_size: number;
+    total: number;
+}
+
+export declare interface PaginationResponseModelToolSet {
+    code: string;
+    current: number;
+    data: ToolSet[];
     page_size: number;
     total: number;
 }
@@ -987,6 +1199,12 @@ export declare interface ResponseArrayServiceSessionInfo {
     err: string;
 }
 
+export declare interface ResponseArrayServiceToolSetTypeDefinition {
+    code: string;
+    data: ToolSetTypeDefinition[];
+    err: string;
+}
+
 export declare interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
     code: string;
     data: CreateServiceAccountAccessKeyResponse;
@@ -1002,6 +1220,18 @@ export declare interface ResponseAuthorizationapiResetUserPasswordResponse {
 export declare interface ResponseAuthorizationapiTokenResponse {
     code: string;
     data: TokenResponse;
+    err: string;
+}
+
+export declare interface ResponseModelAIChatSession {
+    code: string;
+    data: AIChatSession;
+    err: string;
+}
+
+export declare interface ResponseModelAIModel {
+    code: string;
+    data: AIModel;
     err: string;
 }
 
@@ -1056,6 +1286,12 @@ export declare interface ResponseModelSMTPSettings {
 export declare interface ResponseModelSystemSettings {
     code: string;
     data: SystemSettings;
+    err: string;
+}
+
+export declare interface ResponseModelToolSet {
+    code: string;
+    data: ToolSet;
     err: string;
 }
 
@@ -1174,6 +1410,10 @@ export declare interface SecuritySettings {
     user_inactive_days: number;
 }
 
+export declare interface SendMessageRequest {
+    content: string;
+}
+
 export declare interface ServiceAccount {
     access_keys: ServiceAccountAccessKey[];
     created_at: string;
@@ -1209,6 +1449,11 @@ export declare interface SessionInfo {
     last_active_at: string;
     location: string;
     user_agent: string;
+}
+
+export declare interface setDefaultAIModelParams {
+    /** AI model ID */
+    id: string;
 }
 
 export declare interface setRolePolicyParams {
@@ -1334,18 +1579,109 @@ export declare interface terminateSessionParams {
     id: string;
 }
 
+export declare interface testAIModelParams {
+    /** AI model ID */
+    id: string;
+}
+
 export declare interface TestOAuthCallbackResponse {
     user: User;
     user_info: Record<string, any>;
+}
+
+export declare interface testToolSetParams {
+    /** Toolset ID */
+    id: string;
 }
 
 export declare interface TokenResponse {
     token: string;
 }
 
+export declare interface ToolCall {
+    error: string;
+    function: FunctionCall;
+    id: string;
+    /** Index is not nil only in chat completion chunk object */
+    index: number;
+    start_time: string;
+    status: ToolCallStatus;
+    type: ToolType;
+}
+
+export declare type ToolCallStatus = "pending" | "running" | "completed" | "failed";
+
+export declare interface ToolSet {
+    /** Additional configuration */
+    config: Record<string, any>;
+    created_at: string;
+    /** Creator user ID */
+    created_by: string;
+    /** Toolset description */
+    description: string;
+    id: string;
+    /** Toolset name */
+    name: string;
+    /** Status */
+    status: ToolSetStatus;
+    /** Toolset type (mcp, etc.) */
+    type: ToolSetType;
+    updated_at: string;
+    /** Last updater user ID */
+    updated_by: string;
+}
+
+export declare interface ToolSetConfigField {
+    default: string;
+    description: string;
+    display_name: string;
+    name: string;
+    options: ToolSetConfigFieldOptions[];
+    placeholder: string;
+    required: boolean;
+    type: ToolSetFieldType;
+}
+
+export declare interface ToolSetConfigFieldOptions {
+    label: string;
+    value: string;
+}
+
+export declare type ToolSetFieldType = "string" | "password" | "number" | "boolean" | "array" | "object";
+
+export declare type ToolSetStatus = "enabled" | "disabled";
+
+export declare type ToolSetType = "utils";
+
+export declare interface ToolSetTypeDefinition {
+    config_fields: ToolSetConfigField[];
+    description: string;
+    name: string;
+    tool_set_type: ToolSetType;
+}
+
+export declare type ToolType = "function";
+
 export declare interface unlockUserParams {
     /** User ID */
     id: string;
+}
+
+export declare interface updateAIModelParams {
+    /** AI model ID */
+    id: string;
+}
+
+export declare interface UpdateAIModelRequest {
+    /** Optional for updates */
+    api_key: string;
+    base_url?: string;
+    config?: Record<string, any>;
+    description?: string;
+    is_default?: boolean;
+    model_id: string;
+    name: string;
+    provider: AIModelProvider;
 }
 
 export declare interface UpdateCurrentUserRequest {
@@ -1444,6 +1780,19 @@ export declare interface updateServiceAccountStatusParams {
 
 export declare interface UpdateServiceAccountStatusRequest {
     status: "active" | "disabled";
+}
+
+export declare interface updateToolSetParams {
+    /** Toolset ID */
+    id: string;
+}
+
+export declare interface UpdateToolSetRequest {
+    config?: Record<string, any>;
+    description?: string;
+    name: string;
+    status?: ToolSetStatus;
+    type: ToolSetType;
 }
 
 export declare interface updateUserParams {

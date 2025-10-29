@@ -5,7 +5,6 @@ import {
   PlusOutlined,
 } from '@ant-design/icons';
 import {
-  Attachments,
   Bubble,
   Conversations,
   Sender,
@@ -15,7 +14,7 @@ import {
 } from '@ant-design/x';
 import { MessageInfo } from '@ant-design/x/es/use-x-chat';
 import { useRequest } from 'ahooks';
-import { Button, Flex, type GetProp, Spin, message } from 'antd';
+import { Button, Flex, Spin, message } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -228,6 +227,7 @@ const AIChat: React.FC = () => {
   });
 
   const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (message?: string) => {
+    console.log("new chat ", message)
     return await api.ai.createChatSession({ title: "New Conversation", model_id: "" });
   }, {
     manual: true,
@@ -254,7 +254,7 @@ const AIChat: React.FC = () => {
     return await api.ai.deleteChatSession({ sessionId });
   }, {
     manual: true,
-    onError(error, params) {
+    onError(_, params) {
       message.error(t('ai.chat.deleteConversationFailed', { defaultValue: 'Failed to delete conversation.' }));
       setConversations((prev) => {
         return prev.map((item) => {
@@ -305,7 +305,7 @@ const AIChat: React.FC = () => {
         role: 'assistant' as API.AIChatMessageRole,
       };
     },
-    requestFallback: (message, { error }): ChatMessage => {
+    requestFallback: (_, { error }): ChatMessage => {
       if (error instanceof ChatError) {
         return {
           content: error.buffer.join(''),

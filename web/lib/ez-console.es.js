@@ -1,7 +1,7 @@
-import { c as p, A as i, b as n, w as d } from "./es/index.js";
+import { c as i, A as p, b as n, w as d } from "./es/index.js";
 import { useTranslation as f } from "react-i18next";
 import "./es/base.js";
-import { b as A, h as l, e as c, A as g, c as x, D as L, H as b, d as P, a as w, L as D, f as h, P as v, T as y, g as G } from "./es/components.js";
+import { c as A, i as l, f as c, A as g, d as x, D as L, H as P, e as b, a as w, L as D, h, P as v, T as y, g as G } from "./es/components.js";
 import { default as T } from "./es/forbidden.js";
 import { default as E } from "./es/not_found.js";
 import { A as H, a as N, e as S, d as U, f as B } from "./es/client.js";
@@ -14,14 +14,14 @@ export {
   l as AdminGuard,
   c as AllLangUIConfig,
   H as ApiError,
-  p as AppLayout,
+  i as AppLayout,
   g as Avatar,
   x as AvatarUpload,
   L as DynamicIcon,
-  i as EZApp,
+  p as EZApp,
   T as Forbidden,
-  b as HeaderDropdown,
-  P as LabelCreater,
+  P as HeaderDropdown,
+  b as LabelCreater,
   w as LanguageSwitch,
   D as Loading,
   E as NotFound,

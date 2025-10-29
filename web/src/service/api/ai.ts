@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request, type SSERequestConfig } from "@/service/client";
+import { request } from "@/service/client";
 
 /** List chat sessions List chat sessions for the current user with pagination GET /api/ai/chat/sessions */
 export async function listChatSessions(
@@ -185,6 +185,7 @@ export async function testAiModel(
   });
 }
 
+import { type SSERequestConfig } from '@/service/client'
 /** Stream chat Stream chat responses using Server-Sent Events POST /api/ai/chat/sessions/${param0} */
 export async function streamChat(
   params: {

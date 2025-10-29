@@ -1,6 +1,6 @@
 // @ts-ignore
 /* eslint-disable */
-import { request, type SSERequestConfig } from "@/service/client";
+import { request } from "@/service/client";
 
 /** Test LDAP connection Test LDAP connection POST /api/ldap-settings/test */
 export async function testLdapConnection(

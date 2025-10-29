@@ -186,20 +186,6 @@ export interface CheckPasswordComplexityResponse {
 
 export type Condition = true;
 
-export interface ConfigField {
-  default: string;
-  description: string;
-  name: string;
-  options: ConfigFieldOptions[];
-  required: boolean;
-  type: FieldType;
-}
-
-export interface ConfigFieldOptions {
-  label: string;
-  value: string;
-}
-
 export interface CreateAIModelRequest {
   api_key: string;
   base_url?: string;
@@ -342,8 +328,6 @@ export interface ErrorResponse {
 }
 
 export type EventType = "content" | "tool_call" | "error";
-
-export type FieldType = "string" | "number" | "boolean" | "array" | "object";
 
 export interface File {
   access: AccessType;
@@ -1208,15 +1192,39 @@ export interface ToolSet {
   updated_by: string;
 }
 
+export interface ToolSetConfigField {
+  default: string;
+  description: string;
+  display_name: string;
+  name: string;
+  options: ToolSetConfigFieldOptions[];
+  placeholder: string;
+  required: boolean;
+  type: ToolSetFieldType;
+}
+
+export interface ToolSetConfigFieldOptions {
+  label: string;
+  value: string;
+}
+
+export type ToolSetFieldType =
+  | "string"
+  | "password"
+  | "number"
+  | "boolean"
+  | "array"
+  | "object";
+
 export type ToolSetStatus = "enabled" | "disabled";
 
-export type ToolSetType = "mcp";
+export type ToolSetType = "utils";
 
 export interface ToolSetTypeDefinition {
-  config_fields: ConfigField[];
+  config_fields: ToolSetConfigField[];
   description: string;
   name: string;
-  tool_set_type: string;
+  tool_set_type: ToolSetType;
 }
 
 export type ToolType = "function";

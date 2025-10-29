@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -19,6 +20,9 @@ type MCPToolSet struct {
 	description string
 	endpoint    string
 	protocol    string
+	username    string
+	password    string
+	token       string
 	config      map[string]interface{}
 	httpClient  *http.Client
 }
@@ -65,12 +69,15 @@ type MCPListToolsResponse struct {
 }
 
 // NewMCPToolSet creates a new MCP toolset
-func NewMCPToolSet(name, description, endpoint, protocol string, config map[string]interface{}) *MCPToolSet {
+func NewMCPToolSet(name, description, endpoint, protocol string, username, password, token string, config map[string]interface{}) *MCPToolSet {
 	return &MCPToolSet{
 		name:        name,
 		description: description,
 		endpoint:    endpoint,
 		protocol:    protocol,
+		username:    username,
+		password:    password,
+		token:       token,
 		config:      config,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
@@ -210,14 +217,24 @@ func (m *MCPToolSet) makeHTTPRequest(ctx context.Context, request MCPRequest) (*
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-
-	// Add authentication headers if configured
-	if auth, ok := m.config["auth"].(map[string]interface{}); ok {
-		if token, ok := auth["token"].(string); ok {
-			req.Header.Set("Authorization", "Bearer "+token)
-		}
-		if apiKey, ok := auth["api_key"].(string); ok {
-			req.Header.Set("X-API-Key", apiKey)
+	if m.token != "" {
+		req.Header.Set("Authorization", "Bearer "+m.token)
+	}
+	if m.username != "" && m.password != "" {
+		req.SetBasicAuth(m.username, m.password)
+	}
+	if m.config["headers"] != nil {
+		for key, value := range m.config["headers"].(map[string]interface{}) {
+			switch value.(type) {
+			case string:
+				req.Header.Set(key, value.(string))
+			case []interface{}:
+				values := []string{}
+				for _, v := range value.([]interface{}) {
+					values = append(values, fmt.Sprintf("%v", v))
+				}
+				req.Header.Set(key, strings.Join(values, ","))
+			}
 		}
 	}
 
@@ -239,19 +256,39 @@ func (m *MCPToolSet) makeHTTPRequest(ctx context.Context, request MCPRequest) (*
 	return &response, nil
 }
 
-var mcpConfigFields = []toolset.ConfigField{
+var mcpConfigFields = []toolset.ToolSetConfigField{
 	{
 		Name:        "endpoint",
+		DisplayName: "Endpoint",
 		Description: "The endpoint of the MCP server",
-		Type:        "string",
+		Type:        toolset.FieldTypeString,
 		Required:    true,
 	}, {
+		Name:        "username",
+		DisplayName: "Username",
+		Description: "The username for the MCP server",
+		Type:        toolset.FieldTypeString,
+		Required:    false,
+	}, {
+		Name:        "password",
+		DisplayName: "Password",
+		Description: "The password for the MCP server",
+		Type:        toolset.FieldTypePassword,
+		Required:    false,
+	}, {
+		Name:        "token",
+		DisplayName: "Bearer Token",
+		Description: "The bearer token for the MCP server",
+		Type:        toolset.FieldTypePassword,
+		Required:    false,
+	}, {
 		Name:        "protocol",
+		DisplayName: "Protocol",
 		Description: "The protocol of the MCP server",
-		Type:        "string",
+		Type:        toolset.FieldTypeString,
 		Required:    true,
 		Default:     "http",
-		Options: []toolset.ConfigFieldOptions{
+		Options: []toolset.ToolSetConfigFieldOptions{
 			{
 				Label: "HTTP",
 				Value: "http",
@@ -263,6 +300,7 @@ var mcpConfigFields = []toolset.ConfigField{
 		},
 	}, {
 		Name:        "args",
+		DisplayName: "Arguments",
 		Description: "The arguments for the MCP server",
 		Type:        "object",
 		Required:    false,
@@ -282,7 +320,7 @@ func (f *MCPToolSetFactory) GetName() string {
 	return "MCP"
 }
 
-func (f *MCPToolSetFactory) GetConfigFields() []toolset.ConfigField {
+func (f *MCPToolSetFactory) GetConfigFields() []toolset.ToolSetConfigField {
 	return mcpConfigFields
 }
 
@@ -293,6 +331,9 @@ func (f *MCPToolSetFactory) CreateToolSet(configJSON string) (toolset.ToolSet, e
 		Description string                 `json:"description"`
 		Endpoint    string                 `json:"endpoint"`
 		Protocol    string                 `json:"protocol"`
+		Username    string                 `json:"username"`
+		Password    string                 `json:"password"`
+		Token       string                 `json:"token"`
 		Config      map[string]interface{} `json:"config"`
 	}
 
@@ -300,10 +341,14 @@ func (f *MCPToolSetFactory) CreateToolSet(configJSON string) (toolset.ToolSet, e
 		return nil, fmt.Errorf("failed to unmarshal MCP config: %w", err)
 	}
 
-	return NewMCPToolSet(config.Name, config.Description, config.Endpoint, config.Protocol, config.Config), nil
+	return NewMCPToolSet(config.Name, config.Description, config.Endpoint, config.Protocol, config.Username, config.Password, config.Token, config.Config), nil
 }
+
+const (
+	ToolSetTypeMCP toolset.ToolSetType = "mcp"
+)
 
 func init() {
 	// Register the MCP toolset factory
-	toolset.RegisterToolSet("mcp", &MCPToolSetFactory{})
+	toolset.RegisterToolSet(ToolSetTypeMCP, &MCPToolSetFactory{})
 }

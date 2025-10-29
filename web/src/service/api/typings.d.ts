@@ -188,20 +188,6 @@ declare global {
   
     type Condition = true;
   
-    interface ConfigField {
-      default: string;
-      description: string;
-      name: string;
-      options: ConfigFieldOptions[];
-      required: boolean;
-      type: FieldType;
-    }
-  
-    interface ConfigFieldOptions {
-      label: string;
-      value: string;
-    }
-  
     interface CreateAIModelRequest {
       api_key: string;
       base_url?: string;
@@ -344,8 +330,6 @@ declare global {
     }
   
     type EventType = "content" | "tool_call" | "error";
-  
-    type FieldType = "string" | "number" | "boolean" | "array" | "object";
   
     interface File {
       access: AccessType;
@@ -1210,15 +1194,39 @@ declare global {
       updated_by: string;
     }
   
+    interface ToolSetConfigField {
+      default: string;
+      description: string;
+      display_name: string;
+      name: string;
+      options: ToolSetConfigFieldOptions[];
+      placeholder: string;
+      required: boolean;
+      type: ToolSetFieldType;
+    }
+  
+    interface ToolSetConfigFieldOptions {
+      label: string;
+      value: string;
+    }
+  
+    type ToolSetFieldType =
+      | "string"
+      | "password"
+      | "number"
+      | "boolean"
+      | "array"
+      | "object";
+  
     type ToolSetStatus = "enabled" | "disabled";
   
-    type ToolSetType = "mcp";
+    type ToolSetType = "utils";
   
     interface ToolSetTypeDefinition {
-      config_fields: ConfigField[];
+      config_fields: ToolSetConfigField[];
       description: string;
       name: string;
-      tool_set_type: string;
+      tool_set_type: ToolSetType;
     }
   
     type ToolType = "function";
