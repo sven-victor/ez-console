@@ -35,7 +35,7 @@ import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { PAGINATION } from '@/constants';
 import { useTranslation } from 'react-i18next';
-import Actions from '@/components/Actions';
+import Actions, { Action } from '@/components/Actions';
 import { Avatar } from '@/components/Avatar';
 import { useRequest } from 'ahooks';
 
@@ -379,26 +379,26 @@ const UserList: React.FC = () => {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
       render: (_: any, record: API.User) => {
-        const actions = [{
+        const actions: Action[] = [{
           key: 'view',
           permission: "authorization:user:view",
           icon: <EyeOutlined />,
           tooltip: t('user.viewDetail', { defaultValue: 'View Detail' }),
-          onClick: () => navigate(`/authorization/users/${record.id}`),
+          onClick: async () => navigate(`/authorization/users/${record.id}`),
         }, {
           key: 'edit',
           permission: "authorization:user:update",
           icon: <EditOutlined />,
           tooltip: t('user.edit', { defaultValue: 'Edit' }),
           hidden: record.status === 'locked' || record.status === 'deleted',
-          onClick: () => navigate(`/authorization/users/${record.id}/edit`),
+          onClick: async () => navigate(`/authorization/users/${record.id}/edit`),
         }, {
           key: 'unlock',
           permission: "authorization:user:update",
           icon: <UnlockOutlined />,
           tooltip: t('user.unlock', { defaultValue: 'Unlock' }),
           hidden: record.status !== 'locked',
-          onClick: () => handleUnlock(record.id),
+          onClick: async () => handleUnlock(record.id),
         }, {
           key: 'resetPassword',
           permission: "authorization:user:resetPassword",
@@ -406,14 +406,14 @@ const UserList: React.FC = () => {
           disabled: record.disable_change_password,
           tooltip: record.disable_change_password ? t('user.resetPasswordDisabled', { defaultValue: 'The current system prohibits modifying the password of this user.' }) : t('user.resetPassword', { defaultValue: 'Reset Password' }),
           hidden: !((record.source === 'local' || (record.source === 'ldap' && record.ldap_dn)) && record.status !== 'deleted'),
-          onClick: () => handleResetPassword(record.id, record.username, record.email),
+          onClick: async () => handleResetPassword(record.id, record.username, record.email),
         }, {
           key: 'fixUser',
           permission: "authorization:user:update",
           icon: <ToolOutlined />,
           tooltip: t('user.fixUser', { defaultValue: 'Fix User' }),
           hidden: !(record.source === 'ldap' && !record.ldap_dn && record.status !== 'deleted'),
-          onClick: () => setFixUser(record),
+          onClick: async () => setFixUser(record),
         }, {
           key: 'restore',
           permission: "authorization:user:update",
@@ -422,7 +422,7 @@ const UserList: React.FC = () => {
           hidden: record.status !== 'deleted',
           confirm: {
             title: t('user.restoreConfirm', { defaultValue: 'Are you sure you want to restore this user?' }),
-            onConfirm: () => handleRestore({ id: record.id }),
+            onConfirm: async () => handleRestore({ id: record.id }),
           }
 
         }, {

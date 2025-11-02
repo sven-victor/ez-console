@@ -1,12 +1,15 @@
 import { Button, ButtonProps, Popconfirm, Tooltip } from 'antd';
 import { PermissionGuard } from './PermissionGuard';
+import { useState } from 'react';
+import { isAsyncFunction } from 'util/types';
+import { CheckCircleOutlined } from '@ant-design/icons';
 
-interface Action extends ButtonProps {
+export interface Action extends ButtonProps {
   key: string;
   permission?: string;
   icon?: React.ReactNode;
   tooltip?: string;
-  onClick?: () => void;
+  onClick?: () => Promise<any>;
   hidden?: boolean;
   confirm?: {
     title: string;
@@ -18,6 +21,7 @@ interface Action extends ButtonProps {
 
 
 const renderButton = (action: Action) => {
+  const [loading, setLoading] = useState(false);
   const { permission, icon, tooltip, onClick, confirm, ...rest } = action;
   if (permission) {
     return <PermissionGuard permission={permission} key={action.key}>
@@ -34,7 +38,19 @@ const renderButton = (action: Action) => {
       {renderButton({ icon, onClick, ...rest })}
     </Tooltip>
   }
-  return <Button type='text' size='small' icon={icon} onClick={onClick} {...rest} key={action.key} />
+
+  const handleClick = onClick ? async () => {
+    console.log(new Date(), "handleClick")
+    setLoading(true);
+    try {
+      await onClick();
+    } finally {
+      setLoading(false);
+      console.log(new Date(), "handleClick1")
+    }
+  } : undefined;
+
+  return <Button type='text' size='small' loading={loading} icon={icon} onClick={handleClick} {...rest} key={action.key} />
 }
 
 export const Actions = ({ actions }: { actions: Action[] }) => {
