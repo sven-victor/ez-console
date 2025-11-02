@@ -127,12 +127,37 @@ definitions:
     - name
     - type
     type: object
+  aiapi.FunctionDefinition:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      parameters: {}
+      strict:
+        type: boolean
+    required:
+    - description
+    - name
+    - parameters
+    - strict
+    type: object
   aiapi.SendMessageRequest:
     properties:
       content:
         type: string
     required:
     - content
+    type: object
+  aiapi.Tool:
+    properties:
+      function:
+        $ref: '#/definitions/aiapi.FunctionDefinition'
+      type:
+        type: string
+    required:
+    - function
+    - type
     type: object
   aiapi.UpdateAIModelRequest:
     properties:
@@ -1938,12 +1963,7 @@ definitions:
     - 1000
     - 1000000
     - 1000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
     - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -1958,12 +1978,7 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
     - Minute
-    - Hour
   toolset.ToolSetConfigField:
     properties:
       default:
@@ -2212,6 +2227,21 @@ definitions:
     - data
     - page_size
     - total
+    type: object
+  util.Response-array_aiapi_Tool:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/aiapi.Tool'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
     type: object
   util.Response-array_authorizationapi_OAuthProvider:
     properties:
@@ -5335,6 +5365,36 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Test toolset
+      tags:
+      - ToolSets
+  /api/toolsets/{id}/tools:
+    get:
+      consumes:
+      - application/json
+      description: Get tools from a toolset
+      operationId: getToolSetTools
+      parameters:
+      - description: Toolset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_aiapi_Tool'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get toolset tools
       tags:
       - ToolSets
   /api/toolsets/types:

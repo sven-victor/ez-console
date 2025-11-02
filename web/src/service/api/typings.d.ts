@@ -349,6 +349,13 @@ declare global {
       name: string;
     }
   
+    interface FunctionDefinition {
+      description: string;
+      name: string;
+      parameters: any;
+      strict: boolean;
+    }
+  
     interface getAIModelParams {
       /** AI model ID */
       id: string;
@@ -423,6 +430,11 @@ declare global {
     }
   
     interface getToolSetParams {
+      /** Toolset ID */
+      id: string;
+    }
+  
+    interface getToolSetToolsParams {
       /** Toolset ID */
       id: string;
     }
@@ -751,6 +763,12 @@ declare global {
   
     interface ResetUserPasswordResponse {
       new_password: string;
+    }
+  
+    interface ResponseArrayAiapiTool {
+      code: string;
+      data: Tool[];
+      err: string;
     }
   
     interface ResponseArrayAuthorizationapiOAuthProvider {
@@ -1159,6 +1177,11 @@ declare global {
   
     interface TokenResponse {
       token: string;
+    }
+  
+    interface Tool {
+      function: FunctionDefinition;
+      type: string;
     }
   
     interface ToolCall {

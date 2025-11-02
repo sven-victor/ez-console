@@ -97,6 +97,20 @@ export async function testToolSet(
   });
 }
 
+/** Get toolset tools Get tools from a toolset GET /api/toolsets/${param0}/tools */
+export async function getToolSetTools(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.getToolSetToolsParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseArrayAiapiTool>(`/api/toolsets/${param0}/tools`, {
+    method: "GET",
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
 /** Get toolset type definitions Get the type definitions for toolsets GET /api/toolsets/types */
 export async function getToolSetTypeDefinitions(options?: {
   [key: string]: any;

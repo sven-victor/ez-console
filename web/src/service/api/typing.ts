@@ -347,6 +347,13 @@ export interface FunctionCall {
   name: string;
 }
 
+export interface FunctionDefinition {
+  description: string;
+  name: string;
+  parameters: any;
+  strict: boolean;
+}
+
 export interface getAIModelParams {
   /** AI model ID */
   id: string;
@@ -421,6 +428,11 @@ export interface getServiceAccountsParams {
 }
 
 export interface getToolSetParams {
+  /** Toolset ID */
+  id: string;
+}
+
+export interface getToolSetToolsParams {
   /** Toolset ID */
   id: string;
 }
@@ -749,6 +761,12 @@ export interface ResetUserPasswordRequest {
 
 export interface ResetUserPasswordResponse {
   new_password: string;
+}
+
+export interface ResponseArrayAiapiTool {
+  code: string;
+  data: Tool[];
+  err: string;
 }
 
 export interface ResponseArrayAuthorizationapiOAuthProvider {
@@ -1157,6 +1175,11 @@ export interface testToolSetParams {
 
 export interface TokenResponse {
   token: string;
+}
+
+export interface Tool {
+  function: FunctionDefinition;
+  type: string;
 }
 
 export interface ToolCall {

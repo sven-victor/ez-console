@@ -3988,6 +3988,51 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/toolsets/{id}/tools": {
+            "get": {
+                "description": "Get tools from a toolset",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Get toolset tools",
+                "operationId": "getToolSetTools",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Toolset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_aiapi_Tool"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -4172,6 +4217,27 @@ const docTemplate = `{
                 }
             }
         },
+        "aiapi.FunctionDefinition": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "parameters",
+                "strict"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {},
+                "strict": {
+                    "type": "boolean"
+                }
+            }
+        },
         "aiapi.SendMessageRequest": {
             "type": "object",
             "required": [
@@ -4179,6 +4245,21 @@ const docTemplate = `{
             ],
             "properties": {
                 "content": {
+                    "type": "string"
+                }
+            }
+        },
+        "aiapi.Tool": {
+            "type": "object",
+            "required": [
+                "function",
+                "type"
+            ],
+            "properties": {
+                "function": {
+                    "$ref": "#/definitions/aiapi.FunctionDefinition"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -6711,12 +6792,7 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                60000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -6731,12 +6807,7 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "Minute"
             ]
         },
         "toolset.ToolSetConfigField": {
@@ -7089,6 +7160,28 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "util.Response-array_aiapi_Tool": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/aiapi.Tool"
+                    }
+                },
+                "err": {
+                    "type": "string"
                 }
             }
         },

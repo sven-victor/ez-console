@@ -25,6 +25,7 @@ import {
   ReloadOutlined,
   CheckCircleOutlined,
   SettingOutlined,
+  ToolOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
@@ -63,6 +64,8 @@ const ToolSetSettings: React.FC = () => {
   const [selectedConfig, setSelectedConfig] = useState<Record<string, any> | null>(null);
   const [selectedType, setSelectedType] = useState<string>('');
   const [testingToolSetId, setTestingToolSetId] = useState<string>('');
+  const [toolsModalVisible, setToolsModalVisible] = useState(false);
+  const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
 
   // Fetch toolsets
   const { loading, data, refresh } = useRequest(
@@ -162,6 +165,22 @@ const ToolSetSettings: React.FC = () => {
       onError: (error) => {
         message.error(t('settings.toolsets.testFailed', { defaultValue: 'toolset connection test failed' }));
         console.error('Failed to test toolset:', error);
+      },
+    }
+  );
+
+  // Get toolset tools
+  const { loading: loadingTools, run: fetchTools } = useRequest(
+    (id: string) => api.toolsets.getToolSetTools({ id }),
+    {
+      manual: true,
+      onSuccess: (response: any) => {
+        setSelectedTools(response || []);
+        setToolsModalVisible(true);
+      },
+      onError: (error) => {
+        message.error(t('settings.toolsets.fetchToolsFailed', { defaultValue: 'Failed to fetch tools' }));
+        console.error('Failed to fetch tools:', error);
       },
     }
   );
@@ -270,6 +289,10 @@ const ToolSetSettings: React.FC = () => {
   const handleViewConfig = (config: Record<string, any>) => {
     setSelectedConfig(config);
     setConfigModalVisible(true);
+  };
+
+  const handleViewTools = (id: string) => {
+    fetchTools(id);
   };
 
   // Render dynamic config fields based on type definition
@@ -479,6 +502,13 @@ const ToolSetSettings: React.FC = () => {
               onClick={() => handleTest(record.id)}
             />
           </Tooltip>
+          <Tooltip title={t('settings.toolsets.viewTools', { defaultValue: 'View Tools' })}>
+            <Button
+              type="text"
+              icon={<ToolOutlined />}
+              onClick={() => handleViewTools(record.id)}
+            />
+          </Tooltip>
           {record.config && Object.keys(record.config).length > 0 && (
             <Tooltip title={t('settings.toolsets.viewConfig', { defaultValue: 'View Configuration' })}>
               <Button
@@ -665,6 +695,59 @@ const ToolSetSettings: React.FC = () => {
         <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 4, overflow: 'auto' }}>
           {JSON.stringify(selectedConfig, null, 2)}
         </pre>
+      </Modal>
+
+      {/* Tools View Modal */}
+      <Modal
+        title={t('settings.toolsets.tools', { defaultValue: 'Tools' })}
+        open={toolsModalVisible}
+        onCancel={() => setToolsModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setToolsModalVisible(false)}>
+            {tCommon('close', { defaultValue: 'Close' })}
+          </Button>,
+        ]}
+        width={800}
+      >
+        <div style={{ maxHeight: '600px', overflow: 'auto' }}>
+          {loadingTools ? (
+            <div style={{ textAlign: 'center', padding: 40 }}>
+              <ReloadOutlined style={{ fontSize: 24 }} spin />
+            </div>
+          ) : selectedTools.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: '#999' }}>
+              {t('settings.toolsets.noTools', { defaultValue: 'No tools available' })}
+            </div>
+          ) : (
+            selectedTools.map((tool, index) => (
+              <Card
+                key={index}
+                style={{ marginBottom: 16 }}
+                title={
+                  <Space>
+                    <ToolOutlined />
+                    <strong>{tool.function?.name || 'Unknown'}</strong>
+                  </Space>
+                }
+              >
+                <Row gutter={16}>
+                  <Col span={24}>
+                    <p><strong>{t('settings.toolsets.description', { defaultValue: 'Description' })}:</strong></p>
+                    <p style={{ marginBottom: 16 }}>{tool.function?.description || '-'}</p>
+                  </Col>
+                  {tool.function?.parameters && (
+                    <Col span={24}>
+                      <p><strong>{t('settings.toolsets.parameters', { defaultValue: 'Parameters' })}:</strong></p>
+                      <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 4, overflow: 'auto', fontSize: 12 }}>
+                        {JSON.stringify(tool.function.parameters, null, 2)}
+                      </pre>
+                    </Col>
+                  )}
+                </Row>
+              </Card>
+            ))
+          )}
+        </div>
       </Modal>
     </div>
   );

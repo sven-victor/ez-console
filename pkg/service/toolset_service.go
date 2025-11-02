@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
@@ -192,4 +193,19 @@ func (s *ToolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSe
 		})
 	}
 	return definitions
+}
+
+// GetToolSetTools gets tools from a toolset
+func (s *ToolSetService) GetToolSetTools(ctx context.Context, id string) ([]openai.Tool, error) {
+	toolsetInstance, err := s.GetToolSetInstance(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get toolset instance: %w", err)
+	}
+
+	tools, err := toolsetInstance.ListTools(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tools: %w", err)
+	}
+
+	return tools, nil
 }

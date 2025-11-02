@@ -34,6 +34,7 @@ func (c *ToolSetController) RegisterRoutes(router *gin.RouterGroup) {
 		toolsets.PUT("/:id", c.UpdateToolSet)
 		toolsets.DELETE("/:id", c.DeleteToolSet)
 		toolsets.POST("/:id/test", c.TestToolSet)
+		toolsets.GET("/:id/tools", c.GetToolSetTools)
 		toolsets.GET("/types", c.GetToolSetTypeDefinitions)
 	}
 }
@@ -327,6 +328,65 @@ func (c *ToolSetController) TestToolSet(ctx *gin.Context) {
 	}
 
 	util.RespondWithMessage(ctx, "Toolset connection test successful")
+}
+
+// Tool represents an OpenAI-compatible tool
+type Tool struct {
+	Type     string              `json:"type"`
+	Function *FunctionDefinition `json:"function,omitempty"`
+}
+
+// FunctionDefinition represents the function definition in a tool
+type FunctionDefinition struct {
+	Name        string      `json:"name"`
+	Description string      `json:"description,omitempty"`
+	Parameters  interface{} `json:"parameters"`
+	Strict      bool        `json:"strict,omitempty"`
+}
+
+// GetToolSetTools gets tools from a toolset
+//
+//	@Summary		Get toolset tools
+//	@Description	Get tools from a toolset
+//	@ID             getToolSetTools
+//	@Tags			ToolSets
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Toolset ID"
+//	@Success		200	{object}	util.Response[[]Tool]
+//	@Failure		404	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/toolsets/{id}/tools [get]
+func (c *ToolSetController) GetToolSetTools(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
+		return
+	}
+
+	tools, err := c.service.GetToolSetTools(ctx, id)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	// Convert openai.Tool to our Tool type for JSON serialization
+	convertedTools := make([]Tool, len(tools))
+	for i, tool := range tools {
+		convertedTools[i] = Tool{
+			Type: string(tool.Type),
+		}
+		if tool.Function != nil {
+			convertedTools[i].Function = &FunctionDefinition{
+				Name:        tool.Function.Name,
+				Description: tool.Function.Description,
+				Parameters:  tool.Function.Parameters,
+				Strict:      tool.Function.Strict,
+			}
+		}
+	}
+
+	util.RespondWithSuccess(ctx, http.StatusOK, convertedTools)
 }
 
 // GetToolSetTypeDefinitions gets the type definitions for toolsets
