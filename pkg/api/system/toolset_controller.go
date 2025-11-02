@@ -1,4 +1,4 @@
-package aiapi
+package systemapi
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/toolset"
@@ -28,14 +29,15 @@ func NewToolSetController(service *service.Service) *ToolSetController {
 func (c *ToolSetController) RegisterRoutes(router *gin.RouterGroup) {
 	toolsets := router.Group("/toolsets")
 	{
-		toolsets.GET("", c.ListToolSets)
-		toolsets.POST("", c.CreateToolSet)
-		toolsets.GET("/:id", c.GetToolSet)
-		toolsets.PUT("/:id", c.UpdateToolSet)
-		toolsets.DELETE("/:id", c.DeleteToolSet)
-		toolsets.POST("/:id/test", c.TestToolSet)
-		toolsets.GET("/:id/tools", c.GetToolSetTools)
-		toolsets.GET("/types", c.GetToolSetTypeDefinitions)
+		toolsets.GET("", middleware.RequirePermission("system:toolsets:view"), c.ListToolSets)
+		toolsets.POST("", middleware.RequirePermission("system:toolsets:create"), c.CreateToolSet)
+		toolsets.GET("/:id", middleware.RequirePermission("system:toolsets:view"), c.GetToolSet)
+		toolsets.PUT("/:id", middleware.RequirePermission("system:toolsets:update"), c.UpdateToolSet)
+		toolsets.DELETE("/:id", middleware.RequirePermission("system:toolsets:delete"), c.DeleteToolSet)
+		toolsets.POST("/:id/test", middleware.RequirePermission("system:toolsets:test"), c.TestToolSet)
+		toolsets.GET("/:id/tools", middleware.RequirePermission("system:toolsets:view"), c.GetToolSetTools)
+		toolsets.PUT("/:id/status", middleware.RequirePermission("system:toolsets:update"), c.UpdateToolSetStatus)
+		toolsets.GET("/types", middleware.RequirePermission("system:toolsets:view"), c.GetToolSetTypeDefinitions)
 	}
 }
 
@@ -301,6 +303,63 @@ func (c *ToolSetController) DeleteToolSet(ctx *gin.Context) {
 	util.RespondWithMessage(ctx, "Toolset deleted successfully")
 }
 
+type UpdateToolSetStatusRequest struct {
+	Status model.ToolSetStatus `json:"status" binding:"required"`
+}
+
+// UpdateToolSetStatus updates a toolset's status
+//
+//	@Summary		Update toolset status
+//	@Description	Update a toolset's status
+//	@ID             updateToolSetStatus
+//	@Tags			ToolSets
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string						true	"Toolset ID"
+//	@Param			request	body		UpdateToolSetStatusRequest	true	"Update toolset status request"
+//	@Success		200		{object}	util.Response[model.ToolSet]
+//	@Failure		400		{object}	util.ErrorResponse
+//	@Failure		404		{object}	util.ErrorResponse
+//	@Failure		500		{object}	util.ErrorResponse
+//	@Router			/api/toolsets/{id}/status [put]
+func (c *ToolSetController) UpdateToolSetStatus(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
+		return
+	}
+
+	var req UpdateToolSetStatusRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+
+	toolset, err := c.service.GetToolSet(ctx, id)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	err = c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
+		updatedToolSet, err := c.service.UpdateToolSetStatus(ctx, id, req.Status)
+		if err != nil {
+			return util.NewError("E5001", err)
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, updatedToolSet)
+		return nil
+	},
+		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+			auditLog.Details.OldData = toolset
+			auditLog.Details.Request = req
+		}),
+	)
+
+	if err != nil {
+		util.RespondWithError(ctx, err)
+	}
+}
+
 // TestToolSet tests a toolset connection
 //
 //	@Summary		Test toolset
@@ -403,4 +462,34 @@ func (c *ToolSetController) GetToolSetTools(ctx *gin.Context) {
 func (c *ToolSetController) GetToolSetTypeDefinitions(ctx *gin.Context) {
 	response := c.service.GetToolSetTypeDefinitions(ctx)
 	util.RespondWithSuccess(ctx, http.StatusOK, response)
+}
+
+func init() {
+	middleware.RegisterPermission("Toolset Management", "Manage toolset creation, editing, deletion, and status updates", []model.Permission{
+		{
+			Code:        "system:toolsets:view",
+			Name:        "View toolsets",
+			Description: "View toolset list and details",
+		},
+		{
+			Code:        "system:toolsets:create",
+			Name:        "Create toolsets",
+			Description: "Create new toolsets",
+		},
+		{
+			Code:        "system:toolsets:update",
+			Name:        "Update toolsets",
+			Description: "Update toolset information",
+		},
+		{
+			Code:        "system:toolsets:delete",
+			Name:        "Delete toolsets",
+			Description: "Delete toolsets",
+		},
+		{
+			Code:        "system:toolsets:test",
+			Name:        "Test toolsets",
+			Description: "Test toolset connection",
+		},
+	})
 }

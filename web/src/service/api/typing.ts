@@ -1385,6 +1385,15 @@ export interface UpdateToolSetRequest {
   type: ToolSetType;
 }
 
+export interface updateToolSetStatusParams {
+  /** Toolset ID */
+  id: string;
+}
+
+export interface UpdateToolSetStatusRequest {
+  status: ToolSetStatus;
+}
+
 export interface updateUserParams {
   /** User ID */
   id: string;

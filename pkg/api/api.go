@@ -7,7 +7,6 @@ import (
 	fileapi "github.com/sven-victor/ez-console/pkg/api/files"
 	statisticsapi "github.com/sven-victor/ez-console/pkg/api/statistics"
 	systemapi "github.com/sven-victor/ez-console/pkg/api/system"
-	toolsetapi "github.com/sven-victor/ez-console/pkg/api/toolset"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/service"
 )
@@ -33,9 +32,6 @@ var controllers = []ControllerGenerator{
 	},
 	func(svc *service.Service) Controller {
 		return aiapi.NewController(svc)
-	},
-	func(svc *service.Service) Controller {
-		return toolsetapi.NewController(svc)
 	},
 }
 

@@ -46,11 +46,26 @@ func (s *ToolSetService) UpdateToolSet(ctx context.Context, id string, req *mode
 		return nil, fmt.Errorf("failed to find toolset: %w", err)
 	}
 
-	if err := conn.Model(&model.ToolSet{}).Where("resource_id = ?", id).Select("config", "name", "description", "type").Updates(req).Error; err != nil {
+	if err := conn.Model(&model.ToolSet{}).Where("resource_id = ?", id).Select("config", "name", "description", "type", "status").Updates(req).Error; err != nil {
 		return nil, fmt.Errorf("failed to update toolset: %w", err)
 	}
 
 	return req, nil
+}
+
+// UpdateToolSetStatus updates a toolset's status
+func (s *ToolSetService) UpdateToolSetStatus(ctx context.Context, id string, status model.ToolSetStatus) (*model.ToolSet, error) {
+	var toolset model.ToolSet
+	if err := db.Session(ctx).Where("resource_id = ?", id).First(&toolset).Error; err != nil {
+		return nil, fmt.Errorf("failed to find toolset: %w", err)
+	}
+
+	if err := db.Session(ctx).Model(&model.ToolSet{}).Where("resource_id = ?", id).Update("status", status).Error; err != nil {
+		return nil, fmt.Errorf("failed to update toolset status: %w", err)
+	}
+
+	toolset.Status = status
+	return &toolset, nil
 }
 
 // DeleteToolSet deletes an toolset

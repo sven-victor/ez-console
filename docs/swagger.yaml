@@ -200,6 +200,13 @@ definitions:
     - name
     - type
     type: object
+  aiapi.UpdateToolSetStatusRequest:
+    properties:
+      status:
+        $ref: '#/definitions/model.ToolSetStatus'
+    required:
+    - status
+    type: object
   authorizationapi.AssignPermissionsRequest:
     properties:
       permission_ids:
@@ -1959,11 +1966,30 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -1974,11 +2000,30 @@ definitions:
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
   toolset.ToolSetConfigField:
     properties:
       default:
@@ -5335,6 +5380,46 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Update toolset
+      tags:
+      - ToolSets
+  /api/toolsets/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Update a toolset's status
+      operationId: updateToolSetStatus
+      parameters:
+      - description: Toolset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update toolset status request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.UpdateToolSetStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_ToolSet'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update toolset status
       tags:
       - ToolSets
   /api/toolsets/{id}/test:

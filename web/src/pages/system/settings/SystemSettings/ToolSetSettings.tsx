@@ -9,9 +9,7 @@ import {
   Input,
   Select,
   message,
-  Popconfirm,
   Tag,
-  Tooltip,
   Row,
   Col,
   InputNumber,
@@ -26,11 +24,14 @@ import {
   CheckCircleOutlined,
   SettingOutlined,
   ToolOutlined,
+  ThunderboltOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
+import Actions from '@/components/Actions';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -63,7 +64,6 @@ const ToolSetSettings: React.FC = () => {
   const [configModalVisible, setConfigModalVisible] = useState(false);
   const [selectedConfig, setSelectedConfig] = useState<Record<string, any> | null>(null);
   const [selectedType, setSelectedType] = useState<string>('');
-  const [testingToolSetId, setTestingToolSetId] = useState<string>('');
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
 
@@ -155,7 +155,7 @@ const ToolSetSettings: React.FC = () => {
   );
 
   // Test toolset
-  const { loading: testing, run: testToolSet } = useRequest(
+  const { runAsync: testToolSet } = useRequest(
     (id: string) => api.toolsets.testToolSet({ id }),
     {
       manual: true,
@@ -170,7 +170,7 @@ const ToolSetSettings: React.FC = () => {
   );
 
   // Get toolset tools
-  const { loading: loadingTools, run: fetchTools } = useRequest(
+  const { loading: loadingTools, runAsync: fetchTools } = useRequest(
     (id: string) => api.toolsets.getToolSetTools({ id }),
     {
       manual: true,
@@ -181,6 +181,22 @@ const ToolSetSettings: React.FC = () => {
       onError: (error) => {
         message.error(t('settings.toolsets.fetchToolsFailed', { defaultValue: 'Failed to fetch tools' }));
         console.error('Failed to fetch tools:', error);
+      },
+    }
+  );
+
+  // Update toolset status
+  const { runAsync: updateToolSetStatus } = useRequest(
+    ({ id, status }: { id: string; status: API.ToolSetStatus }) => api.toolsets.updateToolSetStatus({ id }, { status }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('settings.toolsets.statusUpdateSuccess', { defaultValue: 'Status updated successfully' }));
+        refresh();
+      },
+      onError: (error) => {
+        message.error(t('settings.toolsets.statusUpdateFailed', { defaultValue: 'Failed to update status' }));
+        console.error('Failed to update status:', error);
       },
     }
   );
@@ -281,18 +297,18 @@ const ToolSetSettings: React.FC = () => {
     deleteToolSet(id);
   };
 
-  const handleTest = (id: string) => {
-    setTestingToolSetId(id);
-    testToolSet(id);
-  };
 
   const handleViewConfig = (config: Record<string, any>) => {
     setSelectedConfig(config);
     setConfigModalVisible(true);
   };
 
-  const handleViewTools = (id: string) => {
-    fetchTools(id);
+  const handleToggleStatus = (record: ToolSet) => {
+    console.log(new Date(), "handleToggleStatus")
+    const newStatus = record.status === 'enabled' ? 'disabled' : 'enabled';
+    return updateToolSetStatus({ id: record.id, status: newStatus }).then(() => {
+      console.log(new Date(), "handleToggleStatus1")
+    });
   };
 
   // Render dynamic config fields based on type definition
@@ -465,7 +481,7 @@ const ToolSetSettings: React.FC = () => {
         return null;
     }
   };
-
+  console.log(data)
   const columns: ColumnsType<ToolSet> = [
     {
       title: t('settings.toolsets.name', { defaultValue: 'Name' }),
@@ -492,51 +508,60 @@ const ToolSetSettings: React.FC = () => {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'actions',
       width: 200,
-      render: (_, record) => (
-        <Space>
-          <Tooltip title={t('settings.toolsets.test', { defaultValue: 'Test Connection' })}>
-            <Button
-              type="text"
-              icon={<CheckCircleOutlined />}
-              loading={testing && record.id === testingToolSetId}
-              onClick={() => handleTest(record.id)}
-            />
-          </Tooltip>
-          <Tooltip title={t('settings.toolsets.viewTools', { defaultValue: 'View Tools' })}>
-            <Button
-              type="text"
-              icon={<ToolOutlined />}
-              onClick={() => handleViewTools(record.id)}
-            />
-          </Tooltip>
-          {record.config && Object.keys(record.config).length > 0 && (
-            <Tooltip title={t('settings.toolsets.viewConfig', { defaultValue: 'View Configuration' })}>
-              <Button
-                type="text"
-                icon={<SettingOutlined />}
-                onClick={() => handleViewConfig(record.config!)}
-              />
-            </Tooltip>
-          )}
-          <Tooltip title={tCommon('edit', { defaultValue: 'Edit' })}>
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title={t('settings.toolsets.deleteConfirm', { defaultValue: 'Are you sure you want to delete this toolset?' })}
-            onConfirm={() => handleDelete(record.id)}
-            okText={tCommon('yes', { defaultValue: 'Yes' })}
-            cancelText={tCommon('no', { defaultValue: 'No' })}
-          >
-            <Tooltip title={tCommon('delete', { defaultValue: 'Delete' })}>
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
+      render: (_, record) => {
+        return <Actions key='actions' actions={[
+          {
+            key: 'test',
+            permission: 'system:toolsets:test',
+            tooltip: t('settings.toolsets.test', { defaultValue: 'Test Connection' }),
+            icon: <ThunderboltOutlined />,
+            onClick: async () => testToolSet(record.id),
+          },
+          {
+            key: 'viewTools',
+            icon: <ToolOutlined />,
+            permission: 'system:toolsets:view',
+            tooltip: t('settings.toolsets.viewTools', { defaultValue: 'View Tools' }),
+            onClick: async () => fetchTools(record.id),
+          },
+          {
+            key: 'viewConfig',
+            icon: <SettingOutlined />,
+            permission: 'system:toolsets:view',
+            tooltip: t('settings.toolsets.viewConfig', { defaultValue: 'View Configuration' }),
+            onClick: async () => handleViewConfig(record.config!),
+            disabled: !record.config,
+          },
+          {
+            key: 'edit',
+            permission: 'system:toolsets:update',
+            tooltip: t('settings.toolsets.edit', { defaultValue: 'Edit' }),
+            icon: <EditOutlined />,
+            onClick: async () => handleEdit(record),
+          }, {
+            key: 'toggleStatus',
+            icon: record.status === 'enabled' ? <LockOutlined /> : <CheckCircleOutlined />,
+            onClick: async () => handleToggleStatus(record),
+            permission: 'system:toolsets:update',
+            tooltip: record.status === 'enabled' ? tCommon('disable', { defaultValue: 'Disable' }) : tCommon('enable', { defaultValue: 'Enable' }),
+          },
+          {
+            key: 'delete',
+            icon: <DeleteOutlined />,
+            permission: 'system:toolsets:delete',
+            tooltip: tCommon('delete', { defaultValue: 'Delete' }),
+            onClick: async () => handleDelete(record.id),
+            danger: true,
+            confirm: {
+              title: t('settings.toolsets.deleteConfirm', { defaultValue: 'Are you sure you want to delete this toolset?' }),
+              onConfirm: async () => handleDelete(record.id),
+              okText: tCommon('confirm', { defaultValue: 'Confirm' }),
+              cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
+            }
+          }
+        ]
+        } />
+      },
     },
   ];
 

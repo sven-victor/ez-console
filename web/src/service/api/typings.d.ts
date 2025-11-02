@@ -1387,6 +1387,15 @@ declare global {
       type: ToolSetType;
     }
   
+    interface updateToolSetStatusParams {
+      /** Toolset ID */
+      id: string;
+    }
+  
+    interface UpdateToolSetStatusRequest {
+      status: ToolSetStatus;
+    }
+  
     interface updateUserParams {
       /** User ID */
       id: string;
