@@ -20,7 +20,7 @@ declare interface Action extends ButtonProps {
     permission?: string;
     icon?: React.ReactNode;
     tooltip?: string;
-    onClick?: () => void;
+    onClick?: () => Promise<any>;
     hidden?: boolean;
     confirm?: {
         title: string;
@@ -670,6 +670,13 @@ export declare interface FunctionCall {
     name: string;
 }
 
+export declare interface FunctionDefinition {
+    description: string;
+    name: string;
+    parameters: any;
+    strict: boolean;
+}
+
 export declare interface getAIModelParams {
     /** AI model ID */
     id: string;
@@ -746,6 +753,11 @@ export declare interface getServiceAccountsParams {
 }
 
 export declare interface getToolSetParams {
+    /** Toolset ID */
+    id: string;
+}
+
+export declare interface getToolSetToolsParams {
     /** Toolset ID */
     id: string;
 }
@@ -1161,6 +1173,12 @@ export declare interface ResetUserPasswordRequest {
 
 export declare interface ResetUserPasswordResponse {
     new_password: string;
+}
+
+export declare interface ResponseArrayAiapiTool {
+    code: string;
+    data: Tool[];
+    err: string;
 }
 
 export declare interface ResponseArrayAuthorizationapiOAuthProvider {
@@ -1598,6 +1616,11 @@ export declare interface TokenResponse {
     token: string;
 }
 
+export declare interface Tool {
+    function: FunctionDefinition;
+    type: string;
+}
+
 export declare interface ToolCall {
     error: string;
     function: FunctionCall;
@@ -1793,6 +1816,15 @@ export declare interface UpdateToolSetRequest {
     name: string;
     status?: ToolSetStatus;
     type: ToolSetType;
+}
+
+export declare interface updateToolSetStatusParams {
+    /** Toolset ID */
+    id: string;
+}
+
+export declare interface UpdateToolSetStatusRequest {
+    status: ToolSetStatus;
 }
 
 export declare interface updateUserParams {
