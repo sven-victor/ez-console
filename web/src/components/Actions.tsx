@@ -1,8 +1,6 @@
 import { Button, ButtonProps, Popconfirm, Tooltip } from 'antd';
 import { PermissionGuard } from './PermissionGuard';
 import { useState } from 'react';
-import { isAsyncFunction } from 'util/types';
-import { CheckCircleOutlined } from '@ant-design/icons';
 
 export interface Action extends ButtonProps {
   key: string;
