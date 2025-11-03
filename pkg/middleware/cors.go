@@ -1,8 +1,6 @@
 package middleware
 
 import (
-	"time"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,8 +16,6 @@ func CORSMiddleware() gin.HandlerFunc {
 			c.AbortWithStatus(204)
 			return
 		}
-		time.Sleep(1 * time.Second)
-
 		c.Next()
 	}
 }
