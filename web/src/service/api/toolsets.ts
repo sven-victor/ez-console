@@ -8,7 +8,7 @@ export async function listToolSets(
   params: API.listToolSetsParams,
   options?: { [key: string]: any }
 ) {
-  return request<API.PaginationResponseModelToolSet>("/api/system/toolsets", {
+  return request<API.PaginationResponseModelToolSet>("/api/toolsets", {
     method: "GET",
     params: {
       // current has a default value: 1
@@ -26,7 +26,7 @@ export async function createToolSet(
   body: API.CreateToolSetRequest,
   options?: { [key: string]: any }
 ) {
-  return request<API.ResponseModelToolSet>("/api/system/toolsets", {
+  return request<API.ResponseModelToolSet>("/api/toolsets", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,7 +43,7 @@ export async function getToolSet(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseModelToolSet>(`/api/system/toolsets/${param0}`, {
+  return request<API.ResponseModelToolSet>(`/api/toolsets/${param0}`, {
     method: "GET",
     params: { ...queryParams },
     ...(options || {}),
@@ -58,7 +58,7 @@ export async function updateToolSet(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseModelToolSet>(`/api/system/toolsets/${param0}`, {
+  return request<API.ResponseModelToolSet>(`/api/toolsets/${param0}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -76,7 +76,7 @@ export async function deleteToolSet(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseUtilMessageData>(`/api/system/toolsets/${param0}`, {
+  return request<API.ResponseUtilMessageData>(`/api/toolsets/${param0}`, {
     method: "DELETE",
     params: { ...queryParams },
     ...(options || {}),
@@ -91,7 +91,7 @@ export async function updateToolSetStatus(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseModelToolSet>(`/api/system/toolsets/${param0}/status`, {
+  return request<API.ResponseModelToolSet>(`/api/toolsets/${param0}/status`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -109,7 +109,7 @@ export async function testToolSet(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseUtilMessageData>(`/api/system/toolsets/${param0}/test`, {
+  return request<API.ResponseUtilMessageData>(`/api/toolsets/${param0}/test`, {
     method: "POST",
     params: { ...queryParams },
     ...(options || {}),
@@ -123,7 +123,7 @@ export async function getToolSetTools(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseArrayAiapiTool>(`/api/system/toolsets/${param0}/tools`, {
+  return request<API.ResponseArrayAiapiTool>(`/api/toolsets/${param0}/tools`, {
     method: "GET",
     params: { ...queryParams },
     ...(options || {}),
@@ -135,7 +135,7 @@ export async function getToolSetTypeDefinitions(options?: {
   [key: string]: any;
 }) {
   return request<API.ResponseArrayServiceToolSetTypeDefinition>(
-    "/api/system/toolsets/types",
+    "/api/toolsets/types",
     {
       method: "GET",
       ...(options || {}),

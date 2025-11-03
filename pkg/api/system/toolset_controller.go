@@ -71,7 +71,7 @@ type UpdateToolSetRequest struct {
 //	@Param			search		query		string	false	"Search keyword"
 //	@Success		200	{object}	util.PaginationResponse[model.ToolSet]
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets [get]
+//	@Router			/api/system/toolsets [get]
 func (c *ToolSetController) ListToolSets(ctx *gin.Context) {
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
@@ -98,7 +98,7 @@ func (c *ToolSetController) ListToolSets(ctx *gin.Context) {
 //	@Success		201	{object}	util.Response[model.ToolSet]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets [post]
+//	@Router			/api/system/toolsets [post]
 func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 	var req CreateToolSetRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -170,7 +170,7 @@ func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 //	@Success		200	{object}	util.Response[model.ToolSet]
 //	@Failure		404	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets/{id} [get]
+//	@Router			/api/system/toolsets/{id} [get]
 func (c *ToolSetController) GetToolSet(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -201,7 +201,7 @@ func (c *ToolSetController) GetToolSet(ctx *gin.Context) {
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		404	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets/{id} [put]
+//	@Router			/api/system/toolsets/{id} [put]
 func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -286,7 +286,7 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 //	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		404	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets/{id} [delete]
+//	@Router			/api/system/toolsets/{id} [delete]
 func (c *ToolSetController) DeleteToolSet(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -321,7 +321,7 @@ type UpdateToolSetStatusRequest struct {
 //	@Failure		400		{object}	util.ErrorResponse
 //	@Failure		404		{object}	util.ErrorResponse
 //	@Failure		500		{object}	util.ErrorResponse
-//	@Router			/api/toolsets/{id}/status [put]
+//	@Router			/api/system/toolsets/{id}/status [put]
 func (c *ToolSetController) UpdateToolSetStatus(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -372,7 +372,7 @@ func (c *ToolSetController) UpdateToolSetStatus(ctx *gin.Context) {
 //	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		404	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets/{id}/test [post]
+//	@Router			/api/system/toolsets/{id}/test [post]
 func (c *ToolSetController) TestToolSet(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -415,7 +415,7 @@ type FunctionDefinition struct {
 //	@Success		200	{object}	util.Response[[]Tool]
 //	@Failure		404	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets/{id}/tools [get]
+//	@Router			/api/system/toolsets/{id}/tools [get]
 func (c *ToolSetController) GetToolSetTools(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
@@ -458,7 +458,7 @@ func (c *ToolSetController) GetToolSetTools(ctx *gin.Context) {
 //	@Success		200	{object}	util.Response[[]service.ToolSetTypeDefinition]
 //	@Failure		404	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/toolsets/types [get]
+//	@Router			/api/system/toolsets/types [get]
 func (c *ToolSetController) GetToolSetTypeDefinitions(ctx *gin.Context) {
 	response := c.service.GetToolSetTypeDefinitions(ctx)
 	util.RespondWithSuccess(ctx, http.StatusOK, response)
