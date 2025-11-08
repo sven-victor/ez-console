@@ -43,7 +43,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
-  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const { hasPermission } = usePermission();
 
@@ -207,8 +206,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     <LanguageSwitch transformLangConfig={transformLangConfig} />,
   ]
 
-  const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => (
-    <Layout style={{ minHeight: '100vh' }}>
+  const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
+    const [collapsed, setCollapsed] = useState(false);
+    return <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme={menuStyle}>
         <div className="logo" style={{ margin: '8px', display: 'flex' }}>
           <div style={{ width: '100%', height: '100%', textAlign: 'center' }}>
@@ -247,7 +247,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
     </Layout>
-  )
+  }
 
   return (renderLayout ?? defaultRenderLayout)(siteIcon, renderMenuItems(routes), transformHeaderItems(headerItems), getBreadcrumbs(), element ?? <Outlet />)
 };
