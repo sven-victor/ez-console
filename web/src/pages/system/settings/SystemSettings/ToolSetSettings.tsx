@@ -69,7 +69,7 @@ const ToolSetSettings: React.FC = () => {
 
   // Fetch toolsets
   const { loading, data, refresh } = useRequest(
-    () => api.toolsets.listToolSets({ current: 1, page_size: 100, search: searchText }),
+    () => api.system.listToolSets({ current: 1, page_size: 100, search: searchText }),
     {
       refreshDeps: [searchText],
       onError: (error) => {
@@ -80,7 +80,7 @@ const ToolSetSettings: React.FC = () => {
   );
 
   const { loading: typeDefinitionsLoading, data: typeDefinitions } = useRequest(
-    () => api.toolsets.getToolSetTypeDefinitions(),
+    () => api.system.getToolSetTypeDefinitions(),
     {
       refreshDeps: [],
       onError: (error) => {
@@ -97,7 +97,7 @@ const ToolSetSettings: React.FC = () => {
 
   // Create toolset
   const { loading: creating, run: createToolSet } = useRequest(
-    (data: ToolSetFormData) => api.toolsets.createToolSet({
+    (data: ToolSetFormData) => api.system.createToolSet({
       ...data,
       type: data.type as API.ToolSetType
     }),
@@ -118,7 +118,7 @@ const ToolSetSettings: React.FC = () => {
 
   // Update toolset
   const { loading: updating, run: updateToolSet } = useRequest(
-    ({ id, data }: { id: string; data: ToolSetFormData }) => api.toolsets.updateToolSet({ id }, {
+    ({ id, data }: { id: string; data: ToolSetFormData }) => api.system.updateToolSet({ id }, {
       ...data,
       type: data.type as API.ToolSetType
     }),
@@ -140,7 +140,7 @@ const ToolSetSettings: React.FC = () => {
 
   // Delete toolset
   const { run: deleteToolSet } = useRequest(
-    (id: string) => api.toolsets.deleteToolSet({ id }),
+    (id: string) => api.system.deleteToolSet({ id }),
     {
       manual: true,
       onSuccess: () => {
@@ -156,7 +156,7 @@ const ToolSetSettings: React.FC = () => {
 
   // Test toolset
   const { runAsync: testToolSet } = useRequest(
-    (id: string) => api.toolsets.testToolSet({ id }),
+    (id: string) => api.system.testToolSet({ id }),
     {
       manual: true,
       onSuccess: () => {
@@ -171,7 +171,7 @@ const ToolSetSettings: React.FC = () => {
 
   // Get toolset tools
   const { loading: loadingTools, runAsync: fetchTools } = useRequest(
-    (id: string) => api.toolsets.getToolSetTools({ id }),
+    (id: string) => api.system.getToolSetTools({ id }),
     {
       manual: true,
       onSuccess: (response: any) => {
@@ -187,7 +187,7 @@ const ToolSetSettings: React.FC = () => {
 
   // Update toolset status
   const { runAsync: updateToolSetStatus } = useRequest(
-    ({ id, status }: { id: string; status: API.ToolSetStatus }) => api.toolsets.updateToolSetStatus({ id }, { status }),
+    ({ id, status }: { id: string; status: API.ToolSetStatus }) => api.system.updateToolSetStatus({ id }, { status }),
     {
       manual: true,
       onSuccess: () => {

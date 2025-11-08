@@ -126,9 +126,9 @@ func (s *AIChatService) DeleteChatSession(ctx context.Context, sessionID string)
 }
 
 // CreateChatCompletion creates a chat completion using the specified model
-func (s *AIChatService) CreateChatCompletion(ctx context.Context, modelID string, messages []openai.ChatCompletionMessage, tools []openai.Tool) (openai.ChatCompletionResponse, error) {
+func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []openai.ChatCompletionMessage, tools []openai.Tool) (openai.ChatCompletionResponse, error) {
 	// Get the AI model
-	aiModel, err := s.aiModelService.GetAIModel(ctx, modelID)
+	aiModel, err := s.aiModelService.GetAIModel(ctx, organizationID, modelID)
 	if err != nil {
 		return openai.ChatCompletionResponse{}, fmt.Errorf("failed to get AI model: %w", err)
 	}
@@ -155,9 +155,9 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, modelID string
 }
 
 // CreateChatCompletionStream creates a streaming chat completion
-func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, modelID string, messages []openai.ChatCompletionMessage, options ...ai.WithChatCompletionStreamOptions) (ai.ChatStream, error) {
+func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []openai.ChatCompletionMessage, options ...ai.WithChatCompletionStreamOptions) (ai.ChatStream, error) {
 	// Get the AI model
-	aiModel, err := s.aiModelService.GetAIModel(ctx, modelID)
+	aiModel, err := s.aiModelService.GetAIModel(ctx, organizationID, modelID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
 	}

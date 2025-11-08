@@ -74,6 +74,8 @@ declare global {
       model_id: string;
       /** Model name */
       name: string;
+      /** Organization ID */
+      organization_id: string;
       /** Provider (openai, etc.) */
       provider: AIModelProvider;
       /** Status */
@@ -204,9 +206,16 @@ declare global {
       title: string;
     }
   
+    interface CreateOrganizationRequest {
+      description?: string;
+      name: string;
+      status: string;
+    }
+  
     interface CreateRoleRequest {
       description: string;
       name: string;
+      organization_id: string;
       permissions: string[];
       policy_document: PolicyDocument;
     }
@@ -273,6 +282,11 @@ declare global {
     interface deleteChatSessionParams {
       /** Chat session ID */
       sessionId: string;
+    }
+  
+    interface deleteOrganizationParams {
+      /** Organization ID */
+      id: string;
     }
   
     interface deleteRoleParams {
@@ -390,6 +404,11 @@ declare global {
       provider: string;
     }
   
+    interface getOrganizationParams {
+      /** Organization ID */
+      id: string;
+    }
+  
     interface getRoleParams {
       /** Role ID */
       id: string;
@@ -446,6 +465,11 @@ declare global {
       current?: number;
       /** Number of items per page */
       page_size?: number;
+    }
+  
+    interface getUserOrganizationsParams {
+      /** User ID */
+      user_id: string;
     }
   
     interface getUserParams {
@@ -559,6 +583,15 @@ declare global {
       access?: string;
     }
   
+    interface listOrganizationsParams {
+      /** Current page */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+      /** Search */
+      search?: string;
+    }
+  
     interface listRolesParams {
       /** Current page */
       current?: number;
@@ -566,6 +599,8 @@ declare global {
       page_size?: number;
       /** Search */
       search?: string;
+      /** Filter by organization ID (empty for global roles) */
+      organization_id?: string;
     }
   
     interface listToolSetsParams {
@@ -667,6 +702,16 @@ declare global {
       wellknown_endpoint: string;
     }
   
+    interface Organization {
+      created_at: string;
+      description: string;
+      id: string;
+      name: string;
+      /** active, disabled */
+      status: string;
+      updated_at: string;
+    }
+  
     interface PaginationResponseModelAIChatSession {
       code: string;
       current: number;
@@ -695,6 +740,14 @@ declare global {
       code: string;
       current: number;
       data: File[];
+      page_size: number;
+      total: number;
+    }
+  
+    interface PaginationResponseModelOrganization {
+      code: string;
+      current: number;
+      data: Organization[];
       page_size: number;
       total: number;
     }
@@ -739,6 +792,8 @@ declare global {
       description: string;
       id: string;
       name: string;
+      /** OrgPermission indicates if this permission is organization-scoped */
+      org_permission: boolean;
       updated_at: string;
     }
   
@@ -765,12 +820,6 @@ declare global {
       new_password: string;
     }
   
-    interface ResponseArrayAiapiTool {
-      code: string;
-      data: Tool[];
-      err: string;
-    }
-  
     interface ResponseArrayAuthorizationapiOAuthProvider {
       code: string;
       data: OAuthProvider[];
@@ -780,6 +829,12 @@ declare global {
     interface ResponseArrayModelFile {
       code: string;
       data: File[];
+      err: string;
+    }
+  
+    interface ResponseArrayModelOrganization {
+      code: string;
+      data: Organization[];
       err: string;
     }
   
@@ -810,6 +865,12 @@ declare global {
     interface ResponseArrayServiceToolSetTypeDefinition {
       code: string;
       data: ToolSetTypeDefinition[];
+      err: string;
+    }
+  
+    interface ResponseArraySystemapiTool {
+      code: string;
+      data: Tool[];
       err: string;
     }
   
@@ -852,6 +913,12 @@ declare global {
     interface ResponseModelOAuthSettings {
       code: string;
       data: OAuthSettings;
+      err: string;
+    }
+  
+    interface ResponseModelOrganization {
+      code: string;
+      data: Organization;
       err: string;
     }
   
@@ -997,6 +1064,10 @@ declare global {
       description: string;
       id: string;
       name: string;
+      organization: Organization;
+      /** OrganizationID is the organization this role belongs to. If empty, the role is global.
+  Role names must be unique within the same organization (or among global roles if OrganizationID is nil) */
+      organization_id: string;
       permissions: Permission[];
       /** Permission configuration based on IAM-style policies, stored in JSON format */
       policy_document: PolicyDocument;
@@ -1080,6 +1151,7 @@ declare global {
   
     interface SiteConfig {
       disable_local_user_login: boolean;
+      enable_multi_org: boolean;
       home_page: string;
       logo: string;
       menu: MenuConfig[];
@@ -1149,6 +1221,7 @@ declare global {
   
     interface SystemSettings {
       disable_local_user_login: boolean;
+      enable_multi_org: boolean;
       home_page: string;
       logo: string;
       name: string;
@@ -1208,6 +1281,8 @@ declare global {
       id: string;
       /** Toolset name */
       name: string;
+      /** Organization ID */
+      organization_id: string;
       /** Status */
       status: ToolSetStatus;
       /** Toolset type (mcp, etc.) */
@@ -1329,6 +1404,17 @@ declare global {
       wellknown_endpoint: string;
     }
   
+    interface updateOrganizationParams {
+      /** Organization ID */
+      id: string;
+    }
+  
+    interface UpdateOrganizationRequest {
+      description?: string;
+      name: string;
+      status: string;
+    }
+  
     interface updateRoleParams {
       /** Role ID */
       id: string;
@@ -1337,6 +1423,7 @@ declare global {
     interface UpdateRoleRequest {
       description: string;
       name: string;
+      organization_id: string;
       permissions: string[];
       policy_document: PolicyDocument;
     }
@@ -1435,6 +1522,7 @@ declare global {
       mfa_enforced: boolean;
       oauth_id: string;
       oauth_provider: string;
+      organizations: Organization[];
       password_changed_at: string;
       phone: string;
       roles: Role[];

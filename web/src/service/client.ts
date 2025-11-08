@@ -36,6 +36,11 @@ client.interceptors.request.use(
     if (i18nextLng) {
       config.headers['Accept-Language'] = i18nextLng;
     }
+    // Add organization ID header if set
+    const orgID = localStorage.getItem('orgID');
+    if (orgID) {
+      config.headers['X-Scope-OrgID'] = orgID;
+    }
     return config;
   },
   (error) => {
@@ -183,12 +188,14 @@ export async function request<T extends { data: any; current?: number; total?: n
 ): Promise<Result<T> | ReadableStream<Uint8Array<ArrayBuffer>>> {
   const { requestType, signal, ...requestConfig } = config || {};
   if (requestType === 'sse') {
+    const orgID = localStorage.getItem('orgID');
     return fetchSSE(url, {
       headers: {
         'Accept': 'text/event-stream',
         'Content-Type': 'application/json',
         'Accept-Language': localStorage.getItem('i18nextLng') || 'en-US',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        ...(orgID ? { 'X-Scope-OrgID': orgID } : {}),
         ...normalizeHeaders(requestConfig.headers),
       },
       method: requestConfig.method,

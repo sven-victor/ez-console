@@ -1184,6 +1184,12 @@ const docTemplate = `{
                         "description": "Search",
                         "name": "search",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by organization ID (empty for global roles)",
+                        "name": "organization_id",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -3391,6 +3397,288 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/organizations": {
+            "get": {
+                "description": "Get a list of organizations",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Get a list of organizations",
+                "operationId": "listOrganizations",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Current page",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_Organization"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Create a new organization",
+                "operationId": "createOrganization",
+                "parameters": [
+                    {
+                        "description": "Organization data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.CreateOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_Organization"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/organizations/user/{user_id}": {
+            "get": {
+                "description": "Get all organizations a user belongs to",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Get user organizations",
+                "operationId": "getUserOrganizations",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_model_Organization"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/organizations/{id}": {
+            "get": {
+                "description": "Get an organization by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Get an organization by ID",
+                "operationId": "getOrganization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_Organization"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Update an organization",
+                "operationId": "updateOrganization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Organization data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.UpdateOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_Organization"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Delete an organization",
+                "operationId": "deleteOrganization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/security-settings": {
             "get": {
                 "description": "Get security settings",
@@ -3668,7 +3956,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/toolsets": {
+        "/api/system/toolsets": {
             "get": {
                 "description": "List toolsets with pagination and search",
                 "consumes": [
@@ -3739,7 +4027,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/aiapi.CreateToolSetRequest"
+                            "$ref": "#/definitions/systemapi.CreateToolSetRequest"
                         }
                     }
                 ],
@@ -3765,7 +4053,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/toolsets/types": {
+        "/api/system/toolsets/types": {
             "get": {
                 "description": "Get the type definitions for toolsets",
                 "produces": [
@@ -3798,7 +4086,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/toolsets/{id}": {
+        "/api/system/toolsets/{id}": {
             "get": {
                 "description": "Get a toolset by ID",
                 "consumes": [
@@ -3869,7 +4157,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/aiapi.UpdateToolSetRequest"
+                            "$ref": "#/definitions/systemapi.UpdateToolSetRequest"
                         }
                     }
                 ],
@@ -3944,7 +4232,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/toolsets/{id}/status": {
+        "/api/system/toolsets/{id}/status": {
             "put": {
                 "description": "Update a toolset's status",
                 "consumes": [
@@ -3972,7 +4260,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/aiapi.UpdateToolSetStatusRequest"
+                            "$ref": "#/definitions/systemapi.UpdateToolSetStatusRequest"
                         }
                     }
                 ],
@@ -4004,7 +4292,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/toolsets/{id}/test": {
+        "/api/system/toolsets/{id}/test": {
             "post": {
                 "description": "Test a toolset connection",
                 "consumes": [
@@ -4049,7 +4337,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/toolsets/{id}/tools": {
+        "/api/system/toolsets/{id}/tools": {
             "get": {
                 "description": "Get tools from a toolset",
                 "consumes": [
@@ -4076,7 +4364,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-array_aiapi_Tool"
+                            "$ref": "#/definitions/util.Response-array_systemapi_Tool"
                         }
                     },
                     "404": {
@@ -4256,48 +4544,6 @@ const docTemplate = `{
                 }
             }
         },
-        "aiapi.CreateToolSetRequest": {
-            "type": "object",
-            "required": [
-                "name",
-                "type"
-            ],
-            "properties": {
-                "config": {
-                    "type": "object"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/toolset.ToolSetType"
-                }
-            }
-        },
-        "aiapi.FunctionDefinition": {
-            "type": "object",
-            "required": [
-                "description",
-                "name",
-                "parameters",
-                "strict"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "parameters": {},
-                "strict": {
-                    "type": "boolean"
-                }
-            }
-        },
         "aiapi.SendMessageRequest": {
             "type": "object",
             "required": [
@@ -4305,21 +4551,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "content": {
-                    "type": "string"
-                }
-            }
-        },
-        "aiapi.Tool": {
-            "type": "object",
-            "required": [
-                "function",
-                "type"
-            ],
-            "properties": {
-                "function": {
-                    "$ref": "#/definitions/aiapi.FunctionDefinition"
-                },
-                "type": {
                     "type": "string"
                 }
             }
@@ -4357,41 +4588,6 @@ const docTemplate = `{
                 },
                 "provider": {
                     "$ref": "#/definitions/model.AIModelProvider"
-                }
-            }
-        },
-        "aiapi.UpdateToolSetRequest": {
-            "type": "object",
-            "required": [
-                "name",
-                "type"
-            ],
-            "properties": {
-                "config": {
-                    "type": "object"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/model.ToolSetStatus"
-                },
-                "type": {
-                    "$ref": "#/definitions/toolset.ToolSetType"
-                }
-            }
-        },
-        "aiapi.UpdateToolSetStatusRequest": {
-            "type": "object",
-            "required": [
-                "status"
-            ],
-            "properties": {
-                "status": {
-                    "$ref": "#/definitions/model.ToolSetStatus"
                 }
             }
         },
@@ -4457,6 +4653,7 @@ const docTemplate = `{
             "required": [
                 "description",
                 "name",
+                "organization_id",
                 "permissions",
                 "policy_document"
             ],
@@ -4465,6 +4662,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "organization_id": {
                     "type": "string"
                 },
                 "permissions": {
@@ -4677,6 +4877,7 @@ const docTemplate = `{
             "required": [
                 "description",
                 "name",
+                "organization_id",
                 "permissions",
                 "policy_document"
             ],
@@ -4685,6 +4886,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "organization_id": {
                     "type": "string"
                 },
                 "permissions": {
@@ -4977,6 +5181,7 @@ const docTemplate = `{
                 "is_default",
                 "model_id",
                 "name",
+                "organization_id",
                 "provider",
                 "status",
                 "updated_at",
@@ -5023,6 +5228,10 @@ const docTemplate = `{
                 },
                 "name": {
                     "description": "Model name",
+                    "type": "string"
+                },
+                "organization_id": {
+                    "description": "Organization ID",
                     "type": "string"
                 },
                 "provider": {
@@ -5405,6 +5614,38 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Organization": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "description",
+                "id",
+                "name",
+                "status",
+                "updated_at"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "active, disabled",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "model.PasswordComplexity": {
             "type": "string",
             "enum": [
@@ -5434,6 +5675,7 @@ const docTemplate = `{
                 "description",
                 "id",
                 "name",
+                "org_permission",
                 "updated_at"
             ],
             "properties": {
@@ -5451,6 +5693,10 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "org_permission": {
+                    "description": "OrgPermission indicates if this permission is organization-scoped",
+                    "type": "boolean"
                 },
                 "updated_at": {
                     "type": "string"
@@ -5500,6 +5746,8 @@ const docTemplate = `{
                 "description",
                 "id",
                 "name",
+                "organization",
+                "organization_id",
                 "permissions",
                 "policy_document",
                 "updated_at"
@@ -5515,6 +5763,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "organization": {
+                    "$ref": "#/definitions/model.Organization"
+                },
+                "organization_id": {
+                    "description": "OrganizationID is the organization this role belongs to. If empty, the role is global.\nRole names must be unique within the same organization (or among global roles if OrganizationID is nil)",
                     "type": "string"
                 },
                 "permissions": {
@@ -5841,6 +6096,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "disable_local_user_login",
+                "enable_multi_org",
                 "home_page",
                 "logo",
                 "name",
@@ -5848,6 +6104,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "disable_local_user_login": {
+                    "type": "boolean"
+                },
+                "enable_multi_org": {
                     "type": "boolean"
                 },
                 "home_page": {
@@ -5876,6 +6135,7 @@ const docTemplate = `{
                 "description",
                 "id",
                 "name",
+                "organization_id",
                 "status",
                 "type",
                 "updated_at",
@@ -5902,6 +6162,10 @@ const docTemplate = `{
                 },
                 "name": {
                     "description": "Toolset name",
+                    "type": "string"
+                },
+                "organization_id": {
+                    "description": "Organization ID",
                     "type": "string"
                 },
                 "status": {
@@ -5955,6 +6219,7 @@ const docTemplate = `{
                 "mfa_enforced",
                 "oauth_id",
                 "oauth_provider",
+                "organizations",
                 "password_changed_at",
                 "phone",
                 "roles",
@@ -5999,6 +6264,12 @@ const docTemplate = `{
                 },
                 "oauth_provider": {
                     "type": "string"
+                },
+                "organizations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Organization"
+                    }
                 },
                 "password_changed_at": {
                     "type": "string"
@@ -6316,6 +6587,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "disable_local_user_login",
+                "enable_multi_org",
                 "home_page",
                 "logo",
                 "menu",
@@ -6325,6 +6597,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "disable_local_user_login": {
+                    "type": "boolean"
+                },
+                "enable_multi_org": {
                     "type": "boolean"
                 },
                 "home_page": {
@@ -6494,6 +6769,66 @@ const docTemplate = `{
             ],
             "properties": {
                 "is_valid": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "systemapi.CreateOrganizationRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "status"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "systemapi.CreateToolSetRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/toolset.ToolSetType"
+                }
+            }
+        },
+        "systemapi.FunctionDefinition": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "parameters",
+                "strict"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {},
+                "strict": {
                     "type": "boolean"
                 }
             }
@@ -6676,6 +7011,21 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.Tool": {
+            "type": "object",
+            "required": [
+                "function",
+                "type"
+            ],
+            "properties": {
+                "function": {
+                    "$ref": "#/definitions/systemapi.FunctionDefinition"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "systemapi.UpdateLDAPSettingsRequest": {
             "type": "object",
             "required": [
@@ -6848,6 +7198,59 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.UpdateOrganizationRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "status"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "systemapi.UpdateToolSetRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/model.ToolSetStatus"
+                },
+                "type": {
+                    "$ref": "#/definitions/toolset.ToolSetType"
+                }
+            }
+        },
+        "systemapi.UpdateToolSetStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/model.ToolSetStatus"
+                }
+            }
+        },
         "time.Duration": {
             "type": "integer",
             "enum": [
@@ -6859,30 +7262,10 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                1000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -6893,30 +7276,10 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "Second"
             ]
         },
         "toolset.ToolSetConfigField": {
@@ -7152,6 +7515,36 @@ const docTemplate = `{
                 }
             }
         },
+        "util.PaginationResponse-model_Organization": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Organization"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "util.PaginationResponse-model_Role": {
             "type": "object",
             "required": [
@@ -7272,28 +7665,6 @@ const docTemplate = `{
                 }
             }
         },
-        "util.Response-array_aiapi_Tool": {
-            "type": "object",
-            "required": [
-                "code",
-                "data",
-                "err"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/aiapi.Tool"
-                    }
-                },
-                "err": {
-                    "type": "string"
-                }
-            }
-        },
         "util.Response-array_authorizationapi_OAuthProvider": {
             "type": "object",
             "required": [
@@ -7331,6 +7702,28 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.File"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_model_Organization": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Organization"
                     }
                 },
                 "err": {
@@ -7441,6 +7834,28 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/service.ToolSetTypeDefinition"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_systemapi_Tool": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/systemapi.Tool"
                     }
                 },
                 "err": {
@@ -7575,6 +7990,25 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/model.OAuthSettings"
+                },
+                "err": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_Organization": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.Organization"
                 },
                 "err": {
                     "type": "string"

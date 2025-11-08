@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Table,
   Card,
@@ -15,6 +15,7 @@ import {
   Typography,
   Modal,
   Tooltip,
+  Spin,
 } from 'antd';
 import {
   SearchOutlined,
@@ -28,6 +29,7 @@ import {
   UndoOutlined,
   ToolOutlined,
   UnlockOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';
@@ -38,6 +40,7 @@ import { useTranslation } from 'react-i18next';
 import Actions, { Action } from '@/components/Actions';
 import { Avatar } from '@/components/Avatar';
 import { useRequest } from 'ahooks';
+import { useSite } from '@/contexts/SiteContext';
 
 const { Option } = Select;
 
@@ -138,6 +141,8 @@ const UserList: React.FC = () => {
   const [users, setUsers] = useState<API.User[]>([]);
   const [total, setTotal] = useState(0);
 
+  const { enableMultiOrg } = useSite();
+
   const [fixUser, setFixUser] = useState<API.User | null>(null);
   // Query parameters
   const [queryParams, setQueryParams] = useState({
@@ -146,6 +151,29 @@ const UserList: React.FC = () => {
     keywords: undefined,
     status: undefined,
   });
+
+  const { data: organizations, loading: organizationsLoading } = useRequest(async () => {
+    return (await api.system.listOrganizations({ current: 1, page_size: 1000 })).data || [];
+  }, {
+    refreshDeps: [enableMultiOrg],
+    onError: (error) => {
+      message.error(t('organizations.loadError', { defaultValue: 'Failed to load organizations', error: error.message }));
+    },
+    cacheKey: 'fetchAllOrganizations',
+    cacheTime: 1000 * 60 * 10,
+  });
+
+
+  const renderOrganizationRole = useCallback((organization_id: string, role: API.Role): React.ReactNode => {
+    if (organizationsLoading) {
+      return <>{<Spin size="small" />}:{role.name}</>;
+    }
+    const organization = organizations?.find(org => org.id === organization_id);
+    if (organization) {
+      return `${organization.name}:${role.name}`;
+    }
+    return role.name;
+  }, [organizations, organizationsLoading]);
 
   // Load user list
   const { run: fetchUsers, loading } = useRequest(() => {
@@ -346,7 +374,7 @@ const UserList: React.FC = () => {
           {roles && roles.length > 0 ? (
             roles.map(role => (
               <Tag color="blue" key={role.id}>
-                {role.name}
+                {role.organization_id ? renderOrganizationRole(role.organization_id, role) : role.name}
               </Tag>
             ))
           ) : (
@@ -378,6 +406,7 @@ const UserList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
+      width: 150,
       render: (_: any, record: API.User) => {
         const actions: Action[] = [{
           key: 'view',

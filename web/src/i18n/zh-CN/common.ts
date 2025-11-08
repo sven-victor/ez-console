@@ -57,6 +57,7 @@ export default {
   next: '下一页',
   enter: '请输入',
   select: '请选择',
+  view: '查看',
   pagination: {
     total: '第 {{start}}-{{end}} 条，共 {{total}} 条',
   },

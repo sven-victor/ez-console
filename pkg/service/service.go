@@ -21,6 +21,7 @@ type Service struct {
 	*AIModelService
 	*ToolSetService
 	*AIChatService
+	*OrganizationService
 }
 
 type BaseService struct {
@@ -72,6 +73,7 @@ func NewService(ctx context.Context) *Service {
 		AIModelService:        aiModelService,
 		ToolSetService:        toolSetService,
 		AIChatService:         aiChatService,
+		OrganizationService:   NewOrganizationService(),
 	}
 	s.FileService = NewFileService(baseService)
 	return s

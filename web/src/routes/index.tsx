@@ -22,6 +22,7 @@ const RoleList = lazy(() => import('@/pages/authorization/role/RoleList'));
 
 // System management pages
 const SystemSettings = lazy(() => import('@/pages/system/settings/SystemSettings/index'));
+const OrganizationDetail = lazy(() => import('@/pages/system/settings/SystemSettings/OrganizationDetail'));
 const OAuthTestCallback = lazy(() => import('@/pages/system/settings/SystemSettings/OAuthTestCallback'));
 const AuditLogs = lazy(() => import('@/pages/system/audit/AuditLogs'));
 
@@ -179,10 +180,20 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
             {
               path: '/system/settings',
               icon: <SafetyOutlined />,
-              index: true,
               name: 'settings',
               permissions: ['system:settings:view', 'system:settings:update'],
-              element: withSuspense(SystemSettings, { transformItems: transformSettingTabs }),
+              children: [
+                {
+                  path: '/system/settings',
+                  index: true,
+                  element: withSuspense(SystemSettings, { transformItems: transformSettingTabs }),
+                },
+                {
+                  path: '/system/settings/organizations/:id',
+                  element: withSuspense(OrganizationDetail),
+                  permissions: ['system:organization:view'],
+                },
+              ],
             },
             // Audit logs
             {

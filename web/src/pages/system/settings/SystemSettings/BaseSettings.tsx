@@ -81,6 +81,13 @@ const BaseSettingsForm: React.FC = () => {
       >
         <Switch />
       </Form.Item>
+      <Form.Item
+        label={t('settings.base.enableMultiOrg', { defaultValue: 'Enable Multi-Organization' })}
+        name="enable_multi_org"
+        tooltip={t('settings.base.enableMultiOrgTooltip', { defaultValue: 'Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab.' })}
+      >
+        <Switch />
+      </Form.Item>
 
       {/* Submit Button */}
       <Form.Item>

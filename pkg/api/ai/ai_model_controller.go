@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -24,13 +25,13 @@ func NewAIModelController(service *service.Service) *AIModelController {
 func (c *AIModelController) RegisterRoutes(router *gin.RouterGroup) {
 	models := router.Group("/models")
 	{
-		models.GET("", c.ListAIModels)
-		models.POST("", c.CreateAIModel)
-		models.GET("/:id", c.GetAIModel)
-		models.PUT("/:id", c.UpdateAIModel)
-		models.DELETE("/:id", c.DeleteAIModel)
-		models.POST("/:id/test", c.TestAIModel)
-		models.POST("/:id/set-default", c.SetDefaultAIModel)
+		models.GET("", middleware.RequirePermission("ai:models:view"), c.ListAIModels)
+		models.POST("", middleware.RequirePermission("ai:models:create"), c.CreateAIModel)
+		models.GET("/:id", middleware.RequirePermission("ai:models:view"), c.GetAIModel)
+		models.PUT("/:id", middleware.RequirePermission("ai:models:update"), c.UpdateAIModel)
+		models.DELETE("/:id", middleware.RequirePermission("ai:models:delete"), c.DeleteAIModel)
+		models.POST("/:id/test", middleware.RequirePermission("ai:models:test"), c.TestAIModel)
+		models.POST("/:id/set-default", middleware.RequirePermission("ai:models:update"), c.SetDefaultAIModel)
 	}
 }
 
@@ -73,11 +74,17 @@ type UpdateAIModelRequest struct {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/models [get]
 func (c *AIModelController) ListAIModels(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
 
-	models, total, err := c.service.ListAIModels(ctx, current, pageSize, search)
+	models, total, err := c.service.ListAIModels(ctx, organizationID, current, pageSize, search)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -100,6 +107,12 @@ func (c *AIModelController) ListAIModels(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/models [post]
 func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	var req CreateAIModelRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
@@ -114,6 +127,7 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 	}
 
 	aiModel := model.NewAIModel(
+		organizationID,
 		req.Name,
 		req.Description,
 		req.Provider,
@@ -148,13 +162,19 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/models/{id} [get]
 func (c *AIModelController) GetAIModel(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "AI model ID is required"))
 		return
 	}
 
-	aiModel, err := c.service.GetAIModelForAPI(ctx, id)
+	aiModel, err := c.service.GetAIModelForAPI(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -179,6 +199,12 @@ func (c *AIModelController) GetAIModel(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/models/{id} [put]
 func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "AI model ID is required"))
@@ -210,7 +236,7 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 		UpdatedBy:   userID.(string),
 	}
 
-	updatedModel, err := c.service.UpdateAIModel(ctx, id, aiModel)
+	updatedModel, err := c.service.UpdateAIModel(ctx, organizationID, id, aiModel)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -233,13 +259,19 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/models/{id} [delete]
 func (c *AIModelController) DeleteAIModel(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "AI model ID is required"))
 		return
 	}
 
-	err := c.service.DeleteAIModel(ctx, id)
+	err := c.service.DeleteAIModel(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -262,13 +294,19 @@ func (c *AIModelController) DeleteAIModel(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/models/{id}/test [post]
 func (c *AIModelController) TestAIModel(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "AI model ID is required"))
 		return
 	}
 
-	err := c.service.TestAIModel(ctx, id)
+	err := c.service.TestAIModel(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -291,17 +329,58 @@ func (c *AIModelController) TestAIModel(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/models/{id}/set-default [post]
 func (c *AIModelController) SetDefaultAIModel(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "AI model ID is required"))
 		return
 	}
 
-	err := c.service.SetDefaultAIModel(ctx, id)
+	err := c.service.SetDefaultAIModel(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
 	util.RespondWithMessage(ctx, "AI model set as default successfully")
+}
+
+func init() {
+	middleware.RegisterPermission("AI Model Management", "Manage AI models", []model.Permission{
+		{
+			Code:          "ai:models:view",
+			Name:          "View AI models",
+			Description:   "View AI model list and details",
+			OrgPermission: true,
+		},
+		{
+			Code:          "ai:models:create",
+			Name:          "Create AI models",
+			Description:   "Create new AI models",
+			OrgPermission: true,
+		},
+		{
+			Code:          "ai:models:update",
+			Name:          "Update AI models",
+			Description:   "Update AI model information",
+			OrgPermission: true,
+		},
+		{
+			Code:          "ai:models:delete",
+			Name:          "Delete AI models",
+			Description:   "Delete AI models",
+			OrgPermission: true,
+		},
+		{
+			Code:          "ai:models:test",
+			Name:          "Test AI models",
+			Description:   "Test AI model connection",
+			OrgPermission: true,
+		},
+	})
 }

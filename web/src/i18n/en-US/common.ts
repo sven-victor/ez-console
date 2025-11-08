@@ -50,6 +50,7 @@ export default {
   next: 'Next',
   enter: 'Enter',
   select: 'Select',
+  view: 'View',
   pagination: {
     total: '{{start}}-{{end}} of {{total}} items',
   },

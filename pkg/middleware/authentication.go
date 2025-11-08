@@ -402,6 +402,43 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		if user.MFAEnforced && !user.MFAEnabled {
 			user.Roles = nil
 		}
+		{
+			// fix user organizations
+			if user.Organizations == nil {
+				var isGlobalRole bool
+				var orgIds []string
+				for _, role := range user.Roles {
+					if role.OrganizationID == nil || *role.OrganizationID == "" && len(role.Permissions) > 0 {
+						// is a global role with permissions
+						isGlobalRole = true
+						break
+					}
+					if role.OrganizationID != nil && *role.OrganizationID != "" {
+						orgIds = append(orgIds, *role.OrganizationID)
+					}
+				}
+				user.Organizations = []model.Organization{}
+				orgQuery := db.Session(c).Model(&model.Organization{}).Limit(100)
+				if isGlobalRole {
+					orgQuery.Where("1 = 1")
+				} else {
+					orgQuery.Where("resource_id IN (?)", orgIds)
+				}
+
+				if err := orgQuery.Find(&user.Organizations).Error; err != nil {
+					util.RespondWithError(c, util.NewErrorMessage("E4012", "System configuration error", err))
+					return
+				}
+			}
+			SetUserCache(userID, user, time.Minute*10)
+		}
+
+		// Extract organization ID from header if multi-org is enabled
+		orgID := c.GetHeader("X-Scope-OrgID")
+		if orgID != "" {
+			c.Set("organization_id", orgID)
+		}
+
 		// Store user information in context
 		c.Set("user", user)
 		c.Set("user_id", user.ResourceID)

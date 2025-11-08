@@ -20,6 +20,8 @@ const (
 	SettingSystemHomePage SettingKey = "system_home_page" // System Home Page
 
 	SettingSystemDisableLocalUserLogin SettingKey = "system_disable_local_user_login" // Whether to disable local login
+
+	SettingSystemEnableMultiOrg SettingKey = "system_enable_multi_org" // Whether to enable multi-organization feature
 )
 
 var SystemSettingKeys = []SettingKey{
@@ -28,6 +30,7 @@ var SystemSettingKeys = []SettingKey{
 	SettingSystemLogo,
 	SettingSystemHomePage,
 	SettingSystemDisableLocalUserLogin,
+	SettingSystemEnableMultiOrg,
 }
 
 var SettingKeys = []SettingKey{}
@@ -39,6 +42,7 @@ type SystemSettings struct {
 	HomePage string            `json:"home_page"`
 
 	DisableLocalUserLogin bool `json:"disable_local_user_login"`
+	EnableMultiOrg        bool `json:"enable_multi_org"`
 }
 
 func init() {

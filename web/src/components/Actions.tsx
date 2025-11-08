@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 export interface Action extends ButtonProps {
   key: string;
+  label?: string;
   permission?: string;
   icon?: React.ReactNode;
   tooltip?: string;
@@ -20,20 +21,20 @@ export interface Action extends ButtonProps {
 
 const renderButton = (action: Action) => {
   const [loading, setLoading] = useState(false);
-  const { permission, icon, tooltip, onClick, confirm, ...rest } = action;
+  const { permission, icon, tooltip, onClick, confirm, label, ...rest } = action;
   if (permission) {
     return <PermissionGuard permission={permission} key={action.key}>
-      {renderButton({ icon, tooltip, onClick, confirm, ...rest })}
+      {renderButton({ icon, tooltip, onClick, confirm, label, ...rest })}
     </PermissionGuard>
   }
   if (confirm) {
     return <Popconfirm title={confirm.title} onConfirm={confirm.onConfirm || onClick} okText={confirm.okText} cancelText={confirm.cancelText} key={action.key}>
-      {renderButton({ icon, tooltip, ...rest })}
+      {renderButton({ icon, tooltip, label, ...rest })}
     </Popconfirm>
   }
   if (tooltip) {
     return <Tooltip title={tooltip} key={action.key}>
-      {renderButton({ icon, onClick, ...rest })}
+      {renderButton({ icon, onClick, label, ...rest })}
     </Tooltip>
   }
 
@@ -48,7 +49,9 @@ const renderButton = (action: Action) => {
     }
   } : undefined;
 
-  return <Button type='text' size='small' loading={loading} icon={icon} onClick={handleClick} {...rest} key={action.key} />
+  return <Button type='text' size='small' loading={loading} icon={icon} onClick={handleClick} {...rest} key={action.key} >
+    {label && <span style={{ position: 'inherit', top: '-2px' }}>{label}</span>}
+  </Button>
 }
 
 export const Actions = ({ actions }: { actions: Action[] }) => {

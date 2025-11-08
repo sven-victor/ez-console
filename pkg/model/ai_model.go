@@ -50,17 +50,18 @@ func (c *AIModelConfig) Scan(value interface{}) error {
 // AIModel represents an AI model configuration
 type AIModel struct {
 	Base
-	Name        string          `gorm:"size:100;not null" json:"name" binding:"required"`     // Model name
-	Description string          `gorm:"size:500" json:"description"`                          // Model description
-	Provider    AIModelProvider `gorm:"size:50;not null" json:"provider" binding:"required"`  // Provider (openai, etc.)
-	ModelID     string          `gorm:"size:100;not null" json:"model_id" binding:"required"` // Model ID (e.g., gpt-4, gpt-3.5-turbo)
-	APIKey      string          `gorm:"size:500;not null" json:"api_key" binding:"required"`  // API key (encrypted)
-	BaseURL     string          `gorm:"size:500" json:"base_url"`                             // Base URL (optional, for custom endpoints)
-	Config      AIModelConfig   `gorm:"type:text" json:"config"`                              // Additional configuration
-	Status      AIModelStatus   `gorm:"size:20;not null;default:'enabled'" json:"status"`     // Status
-	IsDefault   bool            `gorm:"not null;default:false" json:"is_default"`             // Whether this is the default model
-	CreatedBy   string          `gorm:"size:36;not null" json:"created_by"`                   // Creator user ID
-	UpdatedBy   string          `gorm:"size:36" json:"updated_by"`                            // Last updater user ID
+	OrganizationID string          `gorm:"size:36;not null" json:"organization_id"`              // Organization ID
+	Name           string          `gorm:"size:100;not null" json:"name" binding:"required"`     // Model name
+	Description    string          `gorm:"size:500" json:"description"`                          // Model description
+	Provider       AIModelProvider `gorm:"size:50;not null" json:"provider" binding:"required"`  // Provider (openai, etc.)
+	ModelID        string          `gorm:"size:100;not null" json:"model_id" binding:"required"` // Model ID (e.g., gpt-4, gpt-3.5-turbo)
+	APIKey         string          `gorm:"size:500;not null" json:"api_key" binding:"required"`  // API key (encrypted)
+	BaseURL        string          `gorm:"size:500" json:"base_url"`                             // Base URL (optional, for custom endpoints)
+	Config         AIModelConfig   `gorm:"type:text" json:"config"`                              // Additional configuration
+	Status         AIModelStatus   `gorm:"size:20;not null;default:'enabled'" json:"status"`     // Status
+	IsDefault      bool            `gorm:"not null;default:false" json:"is_default"`             // Whether this is the default model
+	CreatedBy      string          `gorm:"size:36;not null" json:"created_by"`                   // Creator user ID
+	UpdatedBy      string          `gorm:"size:36" json:"updated_by"`                            // Last updater user ID
 }
 
 // TableName returns the table name for AIModel
@@ -69,17 +70,18 @@ func (AIModel) TableName() string {
 }
 
 // NewAIModel creates a new AI model
-func NewAIModel(name, description string, provider AIModelProvider, modelID, apiKey, baseURL string, config AIModelConfig, createdBy string) *AIModel {
+func NewAIModel(organizationID, name, description string, provider AIModelProvider, modelID, apiKey, baseURL string, config AIModelConfig, createdBy string) *AIModel {
 	return &AIModel{
-		Name:        name,
-		Description: description,
-		Provider:    provider,
-		ModelID:     modelID,
-		APIKey:      apiKey,
-		BaseURL:     baseURL,
-		Config:      config,
-		Status:      AIModelStatusEnabled,
-		IsDefault:   false,
-		CreatedBy:   createdBy,
+		OrganizationID: organizationID,
+		Name:           name,
+		Description:    description,
+		Provider:       provider,
+		ModelID:        modelID,
+		APIKey:         apiKey,
+		BaseURL:        baseURL,
+		Config:         config,
+		Status:         AIModelStatusEnabled,
+		IsDefault:      false,
+		CreatedBy:      createdBy,
 	}
 }

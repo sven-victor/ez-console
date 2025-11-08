@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Card,
   Descriptions,
@@ -24,6 +24,8 @@ import UserAuditLogs from '@/components/authorization/UserAuditLogs';
 import { Avatar } from '@/components/Avatar';
 import { ApiError } from '@/service/client';
 import usePermission from '@/hooks/usePermission';
+import { useSite } from '@/contexts/SiteContext';
+import { useRequest } from 'ahooks';
 
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -36,6 +38,30 @@ const UserDetail: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<API.User | null>(null);
   const { hasPermission } = usePermission();
+
+  const { enableMultiOrg } = useSite();
+
+  const { data: organizations, loading: organizationsLoading } = useRequest(async () => {
+    return (await api.system.listOrganizations({ current: 1, page_size: 1000 })).data || [];
+  }, {
+    refreshDeps: [enableMultiOrg],
+    onError: (error) => {
+      message.error(t('organizations.loadError', { defaultValue: 'Failed to load organizations', error: error.message }));
+    },
+    cacheKey: 'fetchAllOrganizations',
+    cacheTime: 1000 * 60 * 10,
+  });
+
+  const renderOrganizationRole = useCallback((organization_id: string, role: API.Role): React.ReactNode => {
+    if (organizationsLoading) {
+      return <>{<Spin size="small" />}:{role.name}</>;
+    }
+    const organization = organizations?.find(org => org.id === organization_id);
+    if (organization) {
+      return `${organization.name}:${role.name}`;
+    }
+    return role.name;
+  }, [organizations, organizationsLoading]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -135,7 +161,7 @@ const UserDetail: React.FC = () => {
               {user.roles && user.roles.length > 0 ? (
                 user.roles.map(role => (
                   <Tag color="blue" key={role.id}>
-                    {role.name}
+                    {enableMultiOrg ? renderOrganizationRole(role.organization_id, role) : role.name}
                   </Tag>
                 ))
               ) : (

@@ -167,19 +167,6 @@ export const chunk = <T>(array: T[], size: number): T[][] => {
   return chunks;
 };
 
-// Check permission
-export const hasPermission = (userPermissions: string[], requiredPermission: string): boolean => {
-  if (!requiredPermission || !userPermissions || userPermissions.length === 0) {
-    return false;
-  }
-
-  // Grant all permissions if the user has administrator privileges
-  if (userPermissions.includes('admin') || userPermissions.includes('*')) {
-    return true;
-  }
-
-  return userPermissions.includes(requiredPermission);
-};
 
 // Generate random ID
 export const generateId = (prefix: string = ''): string => {

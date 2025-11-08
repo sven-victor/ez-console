@@ -195,6 +195,11 @@ var defaultSettings = []DefaultSetting{
 		Value:   "false",
 		Comment: "Disable local user login (It will only take effect after configuring other authentication methods (such as OAuth2, LDAP)).",
 	},
+	{
+		Key:     model.SettingSystemEnableMultiOrg,
+		Value:   "false",
+		Comment: "Enable multi-organization feature",
+	},
 }
 
 func RegisterDefaultSettings(ctx context.Context, key model.SettingKey, value, comment string) error {
@@ -248,6 +253,7 @@ func (s *SettingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 	}
 
 	disableLocalUserLogin, _ := strconv.ParseBool(settings[string(model.SettingSystemDisableLocalUserLogin)])
+	enableMultiOrg, _ := strconv.ParseBool(settings[string(model.SettingSystemEnableMultiOrg)])
 	baseSettings := &model.SystemSettings{
 		Name:     settings[string(model.SettingSystemName)],
 		NameI18n: map[string]string{},
@@ -255,6 +261,7 @@ func (s *SettingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 		HomePage: settings[string(model.SettingSystemHomePage)],
 
 		DisableLocalUserLogin: disableLocalUserLogin,
+		EnableMultiOrg:        enableMultiOrg,
 	}
 	if err := json.Unmarshal([]byte(settings[string(model.SettingSystemNameI18n)]), &baseSettings.NameI18n); err != nil {
 		baseSettings.NameI18n = map[string]string{}
@@ -271,6 +278,7 @@ func (s *SettingService) UpdateSystemSettings(ctx context.Context, settings mode
 		string(model.SettingSystemHomePage): settings.HomePage,
 
 		string(model.SettingSystemDisableLocalUserLogin): strconv.FormatBool(settings.DisableLocalUserLogin),
+		string(model.SettingSystemEnableMultiOrg):        strconv.FormatBool(settings.EnableMultiOrg),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }

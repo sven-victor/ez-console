@@ -27,27 +27,28 @@ const (
 // User represents a user account in the system
 type User struct {
 	Base
-	Username          string       `gorm:"size:50;not null" json:"username"`
-	Email             string       `gorm:"size:100;not null" json:"email"`
-	FullName          string       `gorm:"size:100;not null" json:"full_name"`
-	Password          string       `gorm:"size:255;not null" json:"-"`
-	Salt              string       `gorm:"size:32;not null" json:"-"`
-	Phone             string       `gorm:"size:20" json:"phone,omitempty"`
-	Avatar            string       `gorm:"size:255" json:"avatar,omitempty"`
-	Status            string       `gorm:"size:20;not null;default:'active'" json:"status"`
-	LastLogin         time.Time    `json:"last_login,omitempty"`
-	PasswordChangedAt time.Time    `json:"password_changed_at,omitempty"`
-	LoginAttempts     int          `gorm:"default:0" json:"-"`
-	LockedUntil       time.Time    `json:"-"`
-	MFAEnabled        bool         `gorm:"default:false" json:"mfa_enabled"`
-	MFASecret         *safe.String `gorm:"size:255" json:"-"`
-	MFAType           string       `gorm:"size:255" json:"-"`
-	OAuthProvider     string       `gorm:"column:oauth_provider;size:50" json:"oauth_provider,omitempty"`
-	OAuthID           string       `gorm:"column:oauth_id;size:255" json:"oauth_id,omitempty"`
-	LDAPDN            string       `gorm:"column:ldap_dn;size:255" json:"ldap_dn,omitempty"`
-	Roles             []Role       `gorm:"many2many:user_roles;" json:"roles,omitempty"`
-	MFAEnforced       bool         `gorm:"default:false" json:"mfa_enforced"`
-	Source            UserSource   `gorm:"size:20;not null;default:'local'" json:"source,omitempty"`
+	Username          string         `gorm:"size:50;not null" json:"username"`
+	Email             string         `gorm:"size:100;not null" json:"email"`
+	FullName          string         `gorm:"size:100;not null" json:"full_name"`
+	Password          string         `gorm:"size:255;not null" json:"-"`
+	Salt              string         `gorm:"size:32;not null" json:"-"`
+	Phone             string         `gorm:"size:20" json:"phone,omitempty"`
+	Avatar            string         `gorm:"size:255" json:"avatar,omitempty"`
+	Status            string         `gorm:"size:20;not null;default:'active'" json:"status"`
+	LastLogin         time.Time      `json:"last_login,omitempty"`
+	PasswordChangedAt time.Time      `json:"password_changed_at,omitempty"`
+	LoginAttempts     int            `gorm:"default:0" json:"-"`
+	LockedUntil       time.Time      `json:"-"`
+	MFAEnabled        bool           `gorm:"default:false" json:"mfa_enabled"`
+	MFASecret         *safe.String   `gorm:"size:255" json:"-"`
+	MFAType           string         `gorm:"size:255" json:"-"`
+	OAuthProvider     string         `gorm:"column:oauth_provider;size:50" json:"oauth_provider,omitempty"`
+	OAuthID           string         `gorm:"column:oauth_id;size:255" json:"oauth_id,omitempty"`
+	LDAPDN            string         `gorm:"column:ldap_dn;size:255" json:"ldap_dn,omitempty"`
+	Roles             []Role         `gorm:"many2many:user_roles;" json:"roles,omitempty"`
+	MFAEnforced       bool           `gorm:"default:false" json:"mfa_enforced"`
+	Source            UserSource     `gorm:"size:20;not null;default:'local'" json:"source,omitempty"`
+	Organizations     []Organization `gorm:"many2many:user_organizations;" json:"organizations,omitempty"`
 
 	DisableChangePassword bool `gorm:"-" json:"disable_change_password"`
 }

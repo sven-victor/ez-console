@@ -29,9 +29,9 @@ func (s *ToolSetService) CreateToolSet(ctx context.Context, req *model.ToolSet) 
 }
 
 // GetToolSet gets an toolset by ID
-func (s *ToolSetService) GetToolSet(ctx context.Context, id string) (*model.ToolSet, error) {
+func (s *ToolSetService) GetToolSet(ctx context.Context, organizationID, id string) (*model.ToolSet, error) {
 	var toolset model.ToolSet
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&toolset).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
 	}
 
@@ -39,10 +39,10 @@ func (s *ToolSetService) GetToolSet(ctx context.Context, id string) (*model.Tool
 }
 
 // UpdateToolSet updates an toolset
-func (s *ToolSetService) UpdateToolSet(ctx context.Context, id string, req *model.ToolSet) (*model.ToolSet, error) {
+func (s *ToolSetService) UpdateToolSet(ctx context.Context, organizationID, id string, req *model.ToolSet) (*model.ToolSet, error) {
 	var existingToolSet model.ToolSet
 	conn := db.Session(ctx)
-	if err := conn.Where("resource_id = ?", id).First(&existingToolSet).Error; err != nil {
+	if err := conn.Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&existingToolSet).Error; err != nil {
 		return nil, fmt.Errorf("failed to find toolset: %w", err)
 	}
 
@@ -54,13 +54,13 @@ func (s *ToolSetService) UpdateToolSet(ctx context.Context, id string, req *mode
 }
 
 // UpdateToolSetStatus updates a toolset's status
-func (s *ToolSetService) UpdateToolSetStatus(ctx context.Context, id string, status model.ToolSetStatus) (*model.ToolSet, error) {
+func (s *ToolSetService) UpdateToolSetStatus(ctx context.Context, organizationID, id string, status model.ToolSetStatus) (*model.ToolSet, error) {
 	var toolset model.ToolSet
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&toolset).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
 		return nil, fmt.Errorf("failed to find toolset: %w", err)
 	}
 
-	if err := db.Session(ctx).Model(&model.ToolSet{}).Where("resource_id = ?", id).Update("status", status).Error; err != nil {
+	if err := db.Session(ctx).Model(&model.ToolSet{}).Where("organization_id = ? AND resource_id = ?", organizationID, id).Update("status", status).Error; err != nil {
 		return nil, fmt.Errorf("failed to update toolset status: %w", err)
 	}
 
@@ -69,9 +69,9 @@ func (s *ToolSetService) UpdateToolSetStatus(ctx context.Context, id string, sta
 }
 
 // DeleteToolSet deletes an toolset
-func (s *ToolSetService) DeleteToolSet(ctx context.Context, id string) error {
+func (s *ToolSetService) DeleteToolSet(ctx context.Context, organizationID, id string) error {
 	var toolset model.ToolSet
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&toolset).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
 		return fmt.Errorf("failed to find toolset: %w", err)
 	}
 
@@ -83,11 +83,11 @@ func (s *ToolSetService) DeleteToolSet(ctx context.Context, id string) error {
 }
 
 // ListToolSets lists toolsets with pagination
-func (s *ToolSetService) ListToolSets(ctx context.Context, current, pageSize int, search string) ([]model.ToolSet, int64, error) {
+func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string) ([]model.ToolSet, int64, error) {
 	var toolsets []model.ToolSet
 	var total int64
 
-	query := db.Session(ctx).Model(&model.ToolSet{})
+	query := db.Session(ctx).Model(&model.ToolSet{}).Where("organization_id = ?", organizationID)
 
 	// Apply search filter
 	if search != "" {
@@ -120,8 +120,8 @@ func (s *ToolSetService) GetEnabledToolSets(ctx context.Context) ([]model.ToolSe
 }
 
 // TestToolSet tests an toolset connection
-func (s *ToolSetService) TestToolSet(ctx context.Context, id string) error {
-	toolset, err := s.GetToolSet(ctx, id)
+func (s *ToolSetService) TestToolSet(ctx context.Context, organizationID, id string) error {
+	toolset, err := s.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		return fmt.Errorf("failed to get toolset: %w", err)
 	}
@@ -145,8 +145,8 @@ func (s *ToolSetService) TestToolSet(ctx context.Context, id string) error {
 }
 
 // GetToolSetInstance creates a toolset instance from database model
-func (s *ToolSetService) GetToolSetInstance(ctx context.Context, id string) (toolset.ToolSet, error) {
-	toolset, err := s.GetToolSet(ctx, id)
+func (s *ToolSetService) GetToolSetInstance(ctx context.Context, organizationID, id string) (toolset.ToolSet, error) {
+	toolset, err := s.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
 	}
@@ -211,8 +211,8 @@ func (s *ToolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSe
 }
 
 // GetToolSetTools gets tools from a toolset
-func (s *ToolSetService) GetToolSetTools(ctx context.Context, id string) ([]openai.Tool, error) {
-	toolsetInstance, err := s.GetToolSetInstance(ctx, id)
+func (s *ToolSetService) GetToolSetTools(ctx context.Context, organizationID, id string) ([]openai.Tool, error) {
+	toolsetInstance, err := s.GetToolSetInstance(ctx, organizationID, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get toolset instance: %w", err)
 	}

@@ -8,7 +8,9 @@ import SMTPSettingsForm from './SMTPSettingsForm';
 import BaseSettingsForm from './BaseSettings';
 import AIModelSettings from './AIModelSettings';
 import ToolSetSettings from './ToolSetSettings';
+import OrganizationSettings from './OrganizationSettings';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useSite } from '@/contexts/SiteContext';
 
 
 export interface SystemSettingsProps {
@@ -24,6 +26,10 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
   const hash = location.hash;
   const tab = hash.replace('#', '');
   const defaultActiveKey = tab || 'base';
+
+  const { enableMultiOrg } = useSite();
+
+  // Fetch system settings to check if multi-org is enabled
 
   const items = [
     {
@@ -61,6 +67,12 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
       label: t('settings.tabs.toolSets', { defaultValue: 'Tool Sets' }),
       children: <ToolSetSettings />,
     },
+    // Only show organization tab if multi-org is enabled
+    ...(enableMultiOrg ? [{
+      key: 'organizations',
+      label: t('settings.tabs.organizations', { defaultValue: 'Organizations' }),
+      children: <OrganizationSettings />,
+    }] : []),
   ];
 
   return (

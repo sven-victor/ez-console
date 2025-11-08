@@ -37,4 +37,7 @@ export default {
     setDefaultFailed: '设置默认AI模型失败',
     deleteConfirm: '确定要删除此AI模型吗？',
   },
+  chat: {
+    openAssistant: '打开智能助手',
+  },
 };

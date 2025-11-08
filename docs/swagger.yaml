@@ -113,51 +113,12 @@ definitions:
     - model_id
     - title
     type: object
-  aiapi.CreateToolSetRequest:
-    properties:
-      config:
-        type: object
-      description:
-        type: string
-      name:
-        type: string
-      type:
-        $ref: '#/definitions/toolset.ToolSetType'
-    required:
-    - name
-    - type
-    type: object
-  aiapi.FunctionDefinition:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-      parameters: {}
-      strict:
-        type: boolean
-    required:
-    - description
-    - name
-    - parameters
-    - strict
-    type: object
   aiapi.SendMessageRequest:
     properties:
       content:
         type: string
     required:
     - content
-    type: object
-  aiapi.Tool:
-    properties:
-      function:
-        $ref: '#/definitions/aiapi.FunctionDefinition'
-      type:
-        type: string
-    required:
-    - function
-    - type
     type: object
   aiapi.UpdateAIModelRequest:
     properties:
@@ -183,29 +144,6 @@ definitions:
     - model_id
     - name
     - provider
-    type: object
-  aiapi.UpdateToolSetRequest:
-    properties:
-      config:
-        type: object
-      description:
-        type: string
-      name:
-        type: string
-      status:
-        $ref: '#/definitions/model.ToolSetStatus'
-      type:
-        $ref: '#/definitions/toolset.ToolSetType'
-    required:
-    - name
-    - type
-    type: object
-  aiapi.UpdateToolSetStatusRequest:
-    properties:
-      status:
-        $ref: '#/definitions/model.ToolSetStatus'
-    required:
-    - status
     type: object
   authorizationapi.AssignPermissionsRequest:
     properties:
@@ -250,6 +188,8 @@ definitions:
         type: string
       name:
         type: string
+      organization_id:
+        type: string
       permissions:
         items:
           type: string
@@ -259,6 +199,7 @@ definitions:
     required:
     - description
     - name
+    - organization_id
     - permissions
     - policy_document
     type: object
@@ -401,6 +342,8 @@ definitions:
         type: string
       name:
         type: string
+      organization_id:
+        type: string
       permissions:
         items:
           type: string
@@ -410,6 +353,7 @@ definitions:
     required:
     - description
     - name
+    - organization_id
     - permissions
     - policy_document
     type: object
@@ -632,6 +576,9 @@ definitions:
       name:
         description: Model name
         type: string
+      organization_id:
+        description: Organization ID
+        type: string
       provider:
         allOf:
         - $ref: '#/definitions/model.AIModelProvider'
@@ -656,6 +603,7 @@ definitions:
     - is_default
     - model_id
     - name
+    - organization_id
     - provider
     - status
     - updated_at
@@ -922,6 +870,29 @@ definitions:
     - username_field
     - wellknown_endpoint
     type: object
+  model.Organization:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      status:
+        description: active, disabled
+        type: string
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - description
+    - id
+    - name
+    - status
+    - updated_at
+    type: object
   model.PasswordComplexity:
     enum:
     - low
@@ -953,6 +924,9 @@ definitions:
         type: string
       name:
         type: string
+      org_permission:
+        description: OrgPermission indicates if this permission is organization-scoped
+        type: boolean
       updated_at:
         type: string
     required:
@@ -961,6 +935,7 @@ definitions:
     - description
     - id
     - name
+    - org_permission
     - updated_at
     type: object
   model.PermissionGroup:
@@ -997,6 +972,13 @@ definitions:
         type: string
       name:
         type: string
+      organization:
+        $ref: '#/definitions/model.Organization'
+      organization_id:
+        description: |-
+          OrganizationID is the organization this role belongs to. If empty, the role is global.
+          Role names must be unique within the same organization (or among global roles if OrganizationID is nil)
+        type: string
       permissions:
         items:
           $ref: '#/definitions/model.Permission'
@@ -1013,6 +995,8 @@ definitions:
     - description
     - id
     - name
+    - organization
+    - organization_id
     - permissions
     - policy_document
     - updated_at
@@ -1240,6 +1224,8 @@ definitions:
     properties:
       disable_local_user_login:
         type: boolean
+      enable_multi_org:
+        type: boolean
       home_page:
         type: string
       logo:
@@ -1252,6 +1238,7 @@ definitions:
         type: object
     required:
     - disable_local_user_login
+    - enable_multi_org
     - home_page
     - logo
     - name
@@ -1275,6 +1262,9 @@ definitions:
       name:
         description: Toolset name
         type: string
+      organization_id:
+        description: Organization ID
+        type: string
       status:
         allOf:
         - $ref: '#/definitions/model.ToolSetStatus'
@@ -1295,6 +1285,7 @@ definitions:
     - description
     - id
     - name
+    - organization_id
     - status
     - type
     - updated_at
@@ -1334,6 +1325,10 @@ definitions:
         type: string
       oauth_provider:
         type: string
+      organizations:
+        items:
+          $ref: '#/definitions/model.Organization'
+        type: array
       password_changed_at:
         type: string
       phone:
@@ -1363,6 +1358,7 @@ definitions:
     - mfa_enforced
     - oauth_id
     - oauth_provider
+    - organizations
     - password_changed_at
     - phone
     - roles
@@ -1575,6 +1571,8 @@ definitions:
     properties:
       disable_local_user_login:
         type: boolean
+      enable_multi_org:
+        type: boolean
       home_page:
         type: string
       logo:
@@ -1595,6 +1593,7 @@ definitions:
         type: array
     required:
     - disable_local_user_login
+    - enable_multi_org
     - home_page
     - logo
     - menu
@@ -1698,6 +1697,47 @@ definitions:
         type: boolean
     required:
     - is_valid
+    type: object
+  systemapi.CreateOrganizationRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+    required:
+    - name
+    - status
+    type: object
+  systemapi.CreateToolSetRequest:
+    properties:
+      config:
+        type: object
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/toolset.ToolSetType'
+    required:
+    - name
+    - type
+    type: object
+  systemapi.FunctionDefinition:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      parameters: {}
+      strict:
+        type: boolean
+    required:
+    - description
+    - name
+    - parameters
+    - strict
     type: object
   systemapi.ImportLDAPUsersRequest:
     properties:
@@ -1828,6 +1868,16 @@ definitions:
     - message
     - success
     type: object
+  systemapi.Tool:
+    properties:
+      function:
+        $ref: '#/definitions/systemapi.FunctionDefinition'
+      type:
+        type: string
+    required:
+    - function
+    - type
+    type: object
   systemapi.UpdateLDAPSettingsRequest:
     properties:
       base_dn:
@@ -1956,6 +2006,41 @@ definitions:
     - username_field
     - wellknown_endpoint
     type: object
+  systemapi.UpdateOrganizationRequest:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        type: string
+    required:
+    - name
+    - status
+    type: object
+  systemapi.UpdateToolSetRequest:
+    properties:
+      config:
+        type: object
+      description:
+        type: string
+      name:
+        type: string
+      status:
+        $ref: '#/definitions/model.ToolSetStatus'
+      type:
+        $ref: '#/definitions/toolset.ToolSetType'
+    required:
+    - name
+    - type
+    type: object
+  systemapi.UpdateToolSetStatusRequest:
+    properties:
+      status:
+        $ref: '#/definitions/model.ToolSetStatus'
+    required:
+    - status
+    type: object
   time.Duration:
     enum:
     - -9223372036854775808
@@ -1966,30 +2051,10 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
-    - 60000000000
-    - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2000,30 +2065,10 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
   toolset.ToolSetConfigField:
     properties:
       default:
@@ -2189,6 +2234,27 @@ definitions:
     - page_size
     - total
     type: object
+  util.PaginationResponse-model_Organization:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.Organization'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    type: object
   util.PaginationResponse-model_Role:
     properties:
       code:
@@ -2273,21 +2339,6 @@ definitions:
     - page_size
     - total
     type: object
-  util.Response-array_aiapi_Tool:
-    properties:
-      code:
-        type: string
-      data:
-        items:
-          $ref: '#/definitions/aiapi.Tool'
-        type: array
-      err:
-        type: string
-    required:
-    - code
-    - data
-    - err
-    type: object
   util.Response-array_authorizationapi_OAuthProvider:
     properties:
       code:
@@ -2310,6 +2361,21 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.File'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-array_model_Organization:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.Organization'
         type: array
       err:
         type: string
@@ -2385,6 +2451,21 @@ definitions:
       data:
         items:
           $ref: '#/definitions/service.ToolSetTypeDefinition'
+        type: array
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-array_systemapi_Tool:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/systemapi.Tool'
         type: array
       err:
         type: string
@@ -2477,6 +2558,19 @@ definitions:
         type: string
       data:
         $ref: '#/definitions/model.OAuthSettings'
+      err:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    type: object
+  util.Response-model_Organization:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.Organization'
       err:
         type: string
     required:
@@ -3557,6 +3651,10 @@ paths:
       - description: Search
         in: query
         name: search
+        type: string
+      - description: Filter by organization ID (empty for global roles)
+        in: query
+        name: organization_id
         type: string
       produces:
       - application/json
@@ -5037,6 +5135,195 @@ paths:
       summary: Test OAuth callback
       tags:
       - System Settings/OAuth
+  /api/system/organizations:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of organizations
+      operationId: listOrganizations
+      parameters:
+      - default: 1
+        description: Current page
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_Organization'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get a list of organizations
+      tags:
+      - System Settings/Organization
+    post:
+      consumes:
+      - application/json
+      description: Create a new organization
+      operationId: createOrganization
+      parameters:
+      - description: Organization data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.CreateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Organization'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create a new organization
+      tags:
+      - System Settings/Organization
+  /api/system/organizations/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete an organization
+      operationId: deleteOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete an organization
+      tags:
+      - System Settings/Organization
+    get:
+      consumes:
+      - application/json
+      description: Get an organization by ID
+      operationId: getOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Organization'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get an organization by ID
+      tags:
+      - System Settings/Organization
+    put:
+      consumes:
+      - application/json
+      description: Update an organization
+      operationId: updateOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Organization data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.UpdateOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Organization'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update an organization
+      tags:
+      - System Settings/Organization
+  /api/system/organizations/user/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all organizations a user belongs to
+      operationId: getUserOrganizations
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_model_Organization'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get user organizations
+      tags:
+      - System Settings/Organization
   /api/system/security-settings:
     get:
       consumes:
@@ -5219,7 +5506,7 @@ paths:
       summary: Test SMTP connection
       tags:
       - System Settings/SMTP
-  /api/toolsets:
+  /api/system/toolsets:
     get:
       consumes:
       - application/json
@@ -5265,7 +5552,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/aiapi.CreateToolSetRequest'
+          $ref: '#/definitions/systemapi.CreateToolSetRequest'
       produces:
       - application/json
       responses:
@@ -5284,7 +5571,7 @@ paths:
       summary: Create toolset
       tags:
       - ToolSets
-  /api/toolsets/{id}:
+  /api/system/toolsets/{id}:
     delete:
       consumes:
       - application/json
@@ -5359,7 +5646,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/aiapi.UpdateToolSetRequest'
+          $ref: '#/definitions/systemapi.UpdateToolSetRequest'
       produces:
       - application/json
       responses:
@@ -5382,7 +5669,7 @@ paths:
       summary: Update toolset
       tags:
       - ToolSets
-  /api/toolsets/{id}/status:
+  /api/system/toolsets/{id}/status:
     put:
       consumes:
       - application/json
@@ -5399,7 +5686,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/aiapi.UpdateToolSetStatusRequest'
+          $ref: '#/definitions/systemapi.UpdateToolSetStatusRequest'
       produces:
       - application/json
       responses:
@@ -5422,7 +5709,7 @@ paths:
       summary: Update toolset status
       tags:
       - ToolSets
-  /api/toolsets/{id}/test:
+  /api/system/toolsets/{id}/test:
     post:
       consumes:
       - application/json
@@ -5452,7 +5739,7 @@ paths:
       summary: Test toolset
       tags:
       - ToolSets
-  /api/toolsets/{id}/tools:
+  /api/system/toolsets/{id}/tools:
     get:
       consumes:
       - application/json
@@ -5470,7 +5757,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-array_aiapi_Tool'
+            $ref: '#/definitions/util.Response-array_systemapi_Tool'
         "404":
           description: Not Found
           schema:
@@ -5482,7 +5769,7 @@ paths:
       summary: Get toolset tools
       tags:
       - ToolSets
-  /api/toolsets/types:
+  /api/system/toolsets/types:
     get:
       description: Get the type definitions for toolsets
       operationId: getToolSetTypeDefinitions

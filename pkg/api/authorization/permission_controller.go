@@ -23,7 +23,7 @@ func NewPermissionController(service *service.Service) *PermissionController {
 func (c *PermissionController) RegisterRoutes(router *gin.RouterGroup) {
 	permissions := router.Group("/permissions")
 	{
-		permissions.GET("", middleware.RequirePermission("authorization:permission:view"), c.ListPermissions)
+		permissions.GET("", c.ListPermissions)
 	}
 }
 
@@ -39,6 +39,18 @@ func (c *PermissionController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/permissions [get]
 func (c *PermissionController) ListPermissions(ctx *gin.Context) {
+	var hasPermission bool
+	roles := middleware.GetRolesFromContext(ctx)
+	for _, role := range roles {
+		if role.HasPermission("authorization:role:create") || role.HasPermission("authorization:role:update") {
+			hasPermission = true
+			break
+		}
+	}
+	if !hasPermission {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4031", "no permission to view permissions", nil))
+		return
+	}
 	permissions, err := c.service.ListPermissions(ctx)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "failed to get permissions", err))
@@ -76,11 +88,4 @@ loop:
 }
 
 func init() {
-	middleware.RegisterPermission("Permission Management", "Manage permissions", []model.Permission{
-		{
-			Code:        "authorization:permission:view",
-			Name:        "View permissions",
-			Description: "View permission list and details",
-		},
-	})
 }

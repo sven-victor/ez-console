@@ -17,7 +17,7 @@ export const usePermission = () => {
   // Check if the user is an administrator
   const isAdminUser = (): boolean => {
     if (!user || !user.roles) return false;
-    return user.roles.some(role => role.name === 'admin');
+    return user.roles.some(role => role.name === 'admin' && role.organization_id);
   };
 
   // Check for specific permission

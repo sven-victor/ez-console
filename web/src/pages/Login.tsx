@@ -10,6 +10,8 @@ import ProfilePassword from '@/components/profile/ProfilePassword';
 import { getURL, maskEmail } from '@/utils';
 import LanguageSwitch, { LanguageConfig } from '@/components/LanguageSwitch';
 import Loading from '@/components/Loading';
+import { useSite } from '@/contexts/SiteContext';
+import { clearCache } from 'ahooks';
 
 const { Title } = Typography;
 
@@ -34,9 +36,9 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<API.OAuthProvider[]>([]);
   const [submitButtonDisabledCountdown, setSubmitButtonDisabledCountdown] = useState(0);
+  const { siteConfig, loading: siteConfigLoading, fetchSiteConfig } = useSite();
 
   const [siteName, setSiteName] = useState<string>('Loading...');
-  const [siteConfig, setSiteConfig] = useState<API.SiteConfig | null>(null);
 
   const onLogin = async (values: { username: string, password: string } | { mfa_token: string, mfa_code: string } | { code: string, state: string, provider: string }) => {
     const handleLogin = async (values: { username: string, password: string } | { mfa_token: string, mfa_code: string } | { code: string, state: string, provider: string }) => {
@@ -51,6 +53,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
     try {
       setLoading(true);
       const res = await handleLogin(values);
+      clearCache()
       await new Promise(resolve => setTimeout(resolve, 100));
       if (res && res.mfa_enforced && !res.mfa_enabled && location.pathname !== '/profile') {
         navigate('/profile#mfa');
@@ -169,15 +172,12 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
 
 
   useEffect(() => {
-    const fetchSiteConfig = async () => {
-      const siteConfig = await api.system.getSiteConfig()
+    if (siteConfig) {
       setSiteName(siteConfig.name)
-      setSiteConfig(siteConfig)
       window.document.title = siteConfig.name
-      document.getElementById('site-icon')?.setAttribute('href', siteConfig.logo)
+      document.getElementById('site-icon')?.setAttribute('href', siteConfig.logo || '')
     }
-    fetchSiteConfig()
-  }, [])
+  }, [siteConfig])
 
   if ((code && state && provider) || !siteConfig) {
     return <Loading />

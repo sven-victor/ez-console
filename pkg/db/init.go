@@ -75,7 +75,7 @@ func SeedDB(ctx context.Context, permissions []*model.PermissionGroup) error {
 				return fmt.Errorf("Failed to get all permissions: %w", err)
 			}
 			var adminRole model.Role
-			if err := tx.Where(&model.Role{Name: "admin"}).First(&adminRole).Error; err != nil {
+			if err := tx.Where("name = 'admin' AND (organization_id IS NULL OR organization_id = '')").First(&adminRole).Error; err != nil {
 				return fmt.Errorf("Failed to get admin role: %w", err)
 			}
 			if err := tx.Model(&adminRole).Association("Permissions").Replace(allPermissions); err != nil {
@@ -121,10 +121,11 @@ func seedPermissions(ctx context.Context, tx *gorm.DB, permissions []*model.Perm
 			for _, permission := range permissionGroup.Permissions {
 				for _, originalPermission := range originalPermissions {
 					if permission.Code == originalPermission.Code {
-						if permission.Name != originalPermission.Name && permission.Description != originalPermission.Description {
+						if permission.Name != originalPermission.Name || permission.Description != originalPermission.Description || permission.OrgPermission != originalPermission.OrgPermission {
 							if err := tx.Model(&model.Permission{}).Where("id = ?", originalPermission.ID).Updates(map[string]interface{}{
-								"Description": permission.Description,
-								"Name":        permission.Name,
+								"Description":   permission.Description,
+								"Name":          permission.Name,
+								"OrgPermission": permission.OrgPermission,
 							}).Error; err != nil {
 								return err
 							}
@@ -219,7 +220,7 @@ func seedUsers(tx *gorm.DB) error {
 
 	// Associate roles
 	var adminRole model.Role
-	if err := tx.Where("name = ?", "admin").First(&adminRole).Error; err != nil {
+	if err := tx.Where("name = ? AND (organization_id IS NULL OR organization_id = '')", "admin").First(&adminRole).Error; err != nil {
 		return err
 	}
 	if err := tx.Model(&adminUser).Association("Roles").Replace(&adminRole); err != nil {

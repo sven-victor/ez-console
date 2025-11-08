@@ -44,9 +44,9 @@ func (s *AIModelService) CreateAIModel(ctx context.Context, req *model.AIModel) 
 }
 
 // GetAIModel gets an AI model by ID
-func (s *AIModelService) GetAIModel(ctx context.Context, id string) (*model.AIModel, error) {
+func (s *AIModelService) GetAIModel(ctx context.Context, organizationID, id string) (*model.AIModel, error) {
 	var aiModel model.AIModel
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&aiModel).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
 	}
 
@@ -63,9 +63,9 @@ func (s *AIModelService) GetAIModel(ctx context.Context, id string) (*model.AIMo
 }
 
 // GetAIModelForAPI gets an AI model by ID for API response (without API key)
-func (s *AIModelService) GetAIModelForAPI(ctx context.Context, id string) (*model.AIModel, error) {
+func (s *AIModelService) GetAIModelForAPI(ctx context.Context, organizationID, id string) (*model.AIModel, error) {
 	var aiModel model.AIModel
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&aiModel).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
 	}
 
@@ -75,9 +75,9 @@ func (s *AIModelService) GetAIModelForAPI(ctx context.Context, id string) (*mode
 }
 
 // UpdateAIModel updates an AI model
-func (s *AIModelService) UpdateAIModel(ctx context.Context, id string, req *model.AIModel) (*model.AIModel, error) {
+func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id string, req *model.AIModel) (*model.AIModel, error) {
 	var existingModel model.AIModel
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&existingModel).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&existingModel).Error; err != nil {
 		return nil, fmt.Errorf("failed to find AI model: %w", err)
 	}
 
@@ -100,7 +100,7 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, id string, req *mode
 		}
 	}
 
-	if err := db.Session(ctx).Model(&model.AIModel{}).Where("resource_id = ?", id).Select("config", "name", "description", "provider", "model_id", "api_key", "base_url").Updates(req).Error; err != nil {
+	if err := db.Session(ctx).Model(&model.AIModel{}).Where("organization_id = ? AND resource_id = ?", organizationID, id).Select("config", "name", "description", "provider", "model_id", "api_key", "base_url").Updates(req).Error; err != nil {
 		return nil, fmt.Errorf("failed to update AI model: %w", err)
 	}
 
@@ -110,13 +110,13 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, id string, req *mode
 }
 
 // DeleteAIModel deletes an AI model
-func (s *AIModelService) DeleteAIModel(ctx context.Context, id string) error {
+func (s *AIModelService) DeleteAIModel(ctx context.Context, organizationID, id string) error {
 	var aiModel model.AIModel
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&aiModel).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to find AI model: %w", err)
 	}
 
-	if err := db.Session(ctx).Delete(&aiModel).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).Delete(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to delete AI model: %w", err)
 	}
 
@@ -124,11 +124,11 @@ func (s *AIModelService) DeleteAIModel(ctx context.Context, id string) error {
 }
 
 // ListAIModels lists AI models with pagination
-func (s *AIModelService) ListAIModels(ctx context.Context, current, pageSize int, search string) ([]model.AIModel, int64, error) {
+func (s *AIModelService) ListAIModels(ctx context.Context, organizationID string, current, pageSize int, search string) ([]model.AIModel, int64, error) {
 	var models []model.AIModel
 	var total int64
 
-	query := db.Session(ctx).Model(&model.AIModel{})
+	query := db.Session(ctx).Model(&model.AIModel{}).Where("organization_id = ?", organizationID)
 
 	// Apply search filter
 	if search != "" {
@@ -184,21 +184,21 @@ func (s *AIModelService) GetDefaultAIModel(ctx context.Context, provider model.A
 }
 
 // SetDefaultAIModel sets an AI model as default
-func (s *AIModelService) SetDefaultAIModel(ctx context.Context, id string) error {
+func (s *AIModelService) SetDefaultAIModel(ctx context.Context, organizationID, id string) error {
 	var aiModel model.AIModel
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&aiModel).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to find AI model: %w", err)
 	}
 
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Unset other defaults for the same provider
-		if err := tx.Model(&model.AIModel{}).Where("provider = ? AND id != ?",
+		if err := tx.Model(&model.AIModel{}).Where("organization_id = ? AND provider = ? AND id != ?", organizationID,
 			aiModel.Provider, id).Update("is_default", false).Error; err != nil {
 			return fmt.Errorf("failed to unset other defaults: %w", err)
 		}
 
 		// Set this model as default
-		if err := tx.Model(&aiModel).Update("is_default", true).Error; err != nil {
+		if err := tx.Model(&model.AIModel{}).Where("organization_id = ? AND resource_id = ?", organizationID, id).Update("is_default", true).Error; err != nil {
 			return fmt.Errorf("failed to set as default: %w", err)
 		}
 
@@ -214,8 +214,8 @@ func (s *AIModelService) unsetDefaultModels(ctx context.Context, provider model.
 }
 
 // TestAIModel tests an AI model connection
-func (s *AIModelService) TestAIModel(ctx context.Context, id string) error {
-	aiModel, err := s.GetAIModel(ctx, id)
+func (s *AIModelService) TestAIModel(ctx context.Context, organizationID, id string) error {
+	aiModel, err := s.GetAIModel(ctx, organizationID, id)
 	if err != nil {
 		return fmt.Errorf("failed to get AI model: %w", err)
 	}

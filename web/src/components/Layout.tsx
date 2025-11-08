@@ -12,6 +12,7 @@ import { type IRoute } from '../routes';
 import LanguageSwitch, { type LanguageConfig } from './LanguageSwitch';
 import HeaderDropdown from './HeaderDropdown';
 import Avatar from './Avatar';
+import OrganizationSwitcher from './OrganizationSwitcher';
 import { useTranslation } from 'react-i18next';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
@@ -19,6 +20,7 @@ import api from '@/service/api';
 import _ from 'lodash';
 import { getURL } from '@/utils';
 import AIChatButton from './AIChatButton';
+import { useSite } from '@/contexts/SiteContext';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
@@ -47,12 +49,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const { siteConfig, loading: siteConfigLoading, fetchSiteConfig } = useSite();
 
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
   const [siteIcon, setSiteIcon] = useState<string | null>(null);
   const [siteName, setSiteName] = useState<string>("Loading...");
-
-  const [siteConfig, setSiteConfig] = useState<API.SiteConfig | null>(null);
 
   if (location.pathname !== '/profile') {
     if (user && user.mfa_enforced && !user.mfa_enabled) {
@@ -81,7 +82,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   ];
 
   useEffect(() => {
-    api.system.getSiteConfig().then((siteConfig) => {
+    if (siteConfig) {
       const navigation = siteConfig.navigation.filter(item => item.path !== siteConfig.home_page)
       const newNavigation = [...(siteConfig.home_page ? [{
         name: 'home',
@@ -93,10 +94,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         setNavigation([])
       }
       setSiteIcon(siteConfig.logo)
-      setSiteConfig(siteConfig)
       document.getElementById('site-icon')?.setAttribute('href', siteConfig.logo)
-    })
-  }, [])
+    }
+  }, [siteConfig])
 
   useEffect(() => {
     if (i18n.language) {
@@ -199,6 +199,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     }}>
       <SwapOutlined />
     </HeaderDropdown>,
+    ...(siteConfig?.enable_multi_org ? [<OrganizationSwitcher key="org-switcher" />] : []),
     <HeaderDropdown menu={{ items: userMenu }}>
       {user?.avatar ? <Avatar src={user.avatar} /> : <Avatar icon={<UserOutlined />} />}
       <span style={{ height: '1em', lineHeight: '1em', marginLeft: '5px' }}>{user?.full_name || user?.username}</span>

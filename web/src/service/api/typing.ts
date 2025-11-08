@@ -72,6 +72,8 @@ export interface AIModel {
   model_id: string;
   /** Model name */
   name: string;
+  /** Organization ID */
+  organization_id: string;
   /** Provider (openai, etc.) */
   provider: AIModelProvider;
   /** Status */
@@ -202,9 +204,16 @@ export interface CreateChatSessionRequest {
   title: string;
 }
 
+export interface CreateOrganizationRequest {
+  description?: string;
+  name: string;
+  status: string;
+}
+
 export interface CreateRoleRequest {
   description: string;
   name: string;
+  organization_id: string;
   permissions: string[];
   policy_document: PolicyDocument;
 }
@@ -271,6 +280,11 @@ export interface deleteAIModelParams {
 export interface deleteChatSessionParams {
   /** Chat session ID */
   sessionId: string;
+}
+
+export interface deleteOrganizationParams {
+  /** Organization ID */
+  id: string;
 }
 
 export interface deleteRoleParams {
@@ -388,6 +402,11 @@ export interface getLoginUrlParams {
   provider: string;
 }
 
+export interface getOrganizationParams {
+  /** Organization ID */
+  id: string;
+}
+
 export interface getRoleParams {
   /** Role ID */
   id: string;
@@ -444,6 +463,11 @@ export interface getUserLogsParams {
   current?: number;
   /** Number of items per page */
   page_size?: number;
+}
+
+export interface getUserOrganizationsParams {
+  /** User ID */
+  user_id: string;
 }
 
 export interface getUserParams {
@@ -557,6 +581,15 @@ export interface listFilesParams {
   access?: string;
 }
 
+export interface listOrganizationsParams {
+  /** Current page */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+  /** Search */
+  search?: string;
+}
+
 export interface listRolesParams {
   /** Current page */
   current?: number;
@@ -564,6 +597,8 @@ export interface listRolesParams {
   page_size?: number;
   /** Search */
   search?: string;
+  /** Filter by organization ID (empty for global roles) */
+  organization_id?: string;
 }
 
 export interface listToolSetsParams {
@@ -665,6 +700,16 @@ export interface OAuthSettings {
   wellknown_endpoint: string;
 }
 
+export interface Organization {
+  created_at: string;
+  description: string;
+  id: string;
+  name: string;
+  /** active, disabled */
+  status: string;
+  updated_at: string;
+}
+
 export interface PaginationResponseModelAIChatSession {
   code: string;
   current: number;
@@ -693,6 +738,14 @@ export interface PaginationResponseModelFile {
   code: string;
   current: number;
   data: File[];
+  page_size: number;
+  total: number;
+}
+
+export interface PaginationResponseModelOrganization {
+  code: string;
+  current: number;
+  data: Organization[];
   page_size: number;
   total: number;
 }
@@ -737,6 +790,8 @@ export interface Permission {
   description: string;
   id: string;
   name: string;
+  /** OrgPermission indicates if this permission is organization-scoped */
+  org_permission: boolean;
   updated_at: string;
 }
 
@@ -763,12 +818,6 @@ export interface ResetUserPasswordResponse {
   new_password: string;
 }
 
-export interface ResponseArrayAiapiTool {
-  code: string;
-  data: Tool[];
-  err: string;
-}
-
 export interface ResponseArrayAuthorizationapiOAuthProvider {
   code: string;
   data: OAuthProvider[];
@@ -778,6 +827,12 @@ export interface ResponseArrayAuthorizationapiOAuthProvider {
 export interface ResponseArrayModelFile {
   code: string;
   data: File[];
+  err: string;
+}
+
+export interface ResponseArrayModelOrganization {
+  code: string;
+  data: Organization[];
   err: string;
 }
 
@@ -808,6 +863,12 @@ export interface ResponseArrayServiceSessionInfo {
 export interface ResponseArrayServiceToolSetTypeDefinition {
   code: string;
   data: ToolSetTypeDefinition[];
+  err: string;
+}
+
+export interface ResponseArraySystemapiTool {
+  code: string;
+  data: Tool[];
   err: string;
 }
 
@@ -850,6 +911,12 @@ export interface ResponseModelLDAPTestResponse {
 export interface ResponseModelOAuthSettings {
   code: string;
   data: OAuthSettings;
+  err: string;
+}
+
+export interface ResponseModelOrganization {
+  code: string;
+  data: Organization;
   err: string;
 }
 
@@ -995,6 +1062,10 @@ export interface Role {
   description: string;
   id: string;
   name: string;
+  organization: Organization;
+  /** OrganizationID is the organization this role belongs to. If empty, the role is global.
+Role names must be unique within the same organization (or among global roles if OrganizationID is nil) */
+  organization_id: string;
   permissions: Permission[];
   /** Permission configuration based on IAM-style policies, stored in JSON format */
   policy_document: PolicyDocument;
@@ -1078,6 +1149,7 @@ export interface SetServiceAccountPolicyRequest {
 
 export interface SiteConfig {
   disable_local_user_login: boolean;
+  enable_multi_org: boolean;
   home_page: string;
   logo: string;
   menu: MenuConfig[];
@@ -1147,6 +1219,7 @@ export interface SystemInfo {
 
 export interface SystemSettings {
   disable_local_user_login: boolean;
+  enable_multi_org: boolean;
   home_page: string;
   logo: string;
   name: string;
@@ -1206,6 +1279,8 @@ export interface ToolSet {
   id: string;
   /** Toolset name */
   name: string;
+  /** Organization ID */
+  organization_id: string;
   /** Status */
   status: ToolSetStatus;
   /** Toolset type (mcp, etc.) */
@@ -1327,6 +1402,17 @@ export interface UpdateOAuthSettingsRequest {
   wellknown_endpoint: string;
 }
 
+export interface updateOrganizationParams {
+  /** Organization ID */
+  id: string;
+}
+
+export interface UpdateOrganizationRequest {
+  description?: string;
+  name: string;
+  status: string;
+}
+
 export interface updateRoleParams {
   /** Role ID */
   id: string;
@@ -1335,6 +1421,7 @@ export interface updateRoleParams {
 export interface UpdateRoleRequest {
   description: string;
   name: string;
+  organization_id: string;
   permissions: string[];
   policy_document: PolicyDocument;
 }
@@ -1433,6 +1520,7 @@ export interface User {
   mfa_enforced: boolean;
   oauth_id: string;
   oauth_provider: string;
+  organizations: Organization[];
   password_changed_at: string;
   phone: string;
   roles: Role[];

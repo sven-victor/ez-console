@@ -227,6 +227,12 @@ func (c *AIChatController) DeleteChatSession(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/chat/sessions/{sessionId} [post]
 func (c *AIChatController) StreamChat(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	logger := log.GetContextLogger(ctx)
 	sessionID := ctx.Param("sessionId")
 	if sessionID == "" {
@@ -334,7 +340,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	}
 
 	// Create streaming chat completion
-	stream, err := c.service.CreateChatCompletionStream(ctx, session.ModelID, openaiMessages, options...)
+	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, openaiMessages, options...)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to create chat completion stream", err)))
 		return

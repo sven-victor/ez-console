@@ -37,4 +37,7 @@ export default {
     setDefaultFailed: 'Failed to set default AI model',
     deleteConfirm: 'Are you sure you want to delete this AI model?',
   },
+  chat: {
+    openAssistant: 'Open AI Assistant',
+  },
 };

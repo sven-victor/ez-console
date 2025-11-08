@@ -76,8 +76,13 @@ func (c *ToolSetController) ListToolSets(ctx *gin.Context) {
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
-
-	toolsets, total, err := c.service.ListToolSets(ctx, current, pageSize, search)
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	toolsets, total, err := c.service.ListToolSets(ctx, organizationID, current, pageSize, search)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -103,6 +108,12 @@ func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 	var req CreateToolSetRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
 	// Get current user ID from context
@@ -137,7 +148,7 @@ func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 		}
 	}
 
-	toolSet := model.NewToolSet(req.Name, req.Description, req.Type, req.Config, userID.(string))
+	toolSet := model.NewToolSet(organizationID, req.Name, req.Description, req.Type, req.Config, userID.(string))
 
 	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
 		createdToolSet, err := c.service.CreateToolSet(ctx, toolSet)
@@ -172,13 +183,20 @@ func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/toolsets/{id} [get]
 func (c *ToolSetController) GetToolSet(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
 		return
 	}
 
-	toolset, err := c.service.GetToolSet(ctx, id)
+	toolset, err := c.service.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -203,6 +221,13 @@ func (c *ToolSetController) GetToolSet(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/toolsets/{id} [put]
 func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
@@ -257,7 +282,7 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 	}
 
 	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
-		updatedToolSet, err := c.service.UpdateToolSet(ctx, id, toolset)
+		updatedToolSet, err := c.service.UpdateToolSet(ctx, organizationID, id, toolset)
 		if err != nil {
 			return util.NewError("E5001", err)
 		}
@@ -293,8 +318,14 @@ func (c *ToolSetController) DeleteToolSet(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
 		return
 	}
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 
-	err := c.service.DeleteToolSet(ctx, id)
+	err := c.service.DeleteToolSet(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -323,6 +354,13 @@ type UpdateToolSetStatusRequest struct {
 //	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/system/toolsets/{id}/status [put]
 func (c *ToolSetController) UpdateToolSetStatus(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
@@ -335,14 +373,14 @@ func (c *ToolSetController) UpdateToolSetStatus(ctx *gin.Context) {
 		return
 	}
 
-	toolset, err := c.service.GetToolSet(ctx, id)
+	toolset, err := c.service.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
 	err = c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
-		updatedToolSet, err := c.service.UpdateToolSetStatus(ctx, id, req.Status)
+		updatedToolSet, err := c.service.UpdateToolSetStatus(ctx, organizationID, id, req.Status)
 		if err != nil {
 			return util.NewError("E5001", err)
 		}
@@ -374,13 +412,20 @@ func (c *ToolSetController) UpdateToolSetStatus(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/toolsets/{id}/test [post]
 func (c *ToolSetController) TestToolSet(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
 		return
 	}
 
-	err := c.service.TestToolSet(ctx, id)
+	err := c.service.TestToolSet(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -417,13 +462,20 @@ type FunctionDefinition struct {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/toolsets/{id}/tools [get]
 func (c *ToolSetController) GetToolSetTools(ctx *gin.Context) {
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
 		return
 	}
 
-	tools, err := c.service.GetToolSetTools(ctx, id)
+	tools, err := c.service.GetToolSetTools(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -467,29 +519,34 @@ func (c *ToolSetController) GetToolSetTypeDefinitions(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("Toolset Management", "Manage toolset creation, editing, deletion, and status updates", []model.Permission{
 		{
-			Code:        "system:toolsets:view",
-			Name:        "View toolsets",
-			Description: "View toolset list and details",
+			Code:          "system:toolsets:view",
+			Name:          "View toolsets",
+			Description:   "View toolset list and details",
+			OrgPermission: true,
 		},
 		{
-			Code:        "system:toolsets:create",
-			Name:        "Create toolsets",
-			Description: "Create new toolsets",
+			Code:          "system:toolsets:create",
+			Name:          "Create toolsets",
+			Description:   "Create new toolsets",
+			OrgPermission: true,
 		},
 		{
-			Code:        "system:toolsets:update",
-			Name:        "Update toolsets",
-			Description: "Update toolset information",
+			Code:          "system:toolsets:update",
+			Name:          "Update toolsets",
+			Description:   "Update toolset information",
+			OrgPermission: true,
 		},
 		{
-			Code:        "system:toolsets:delete",
-			Name:        "Delete toolsets",
-			Description: "Delete toolsets",
+			Code:          "system:toolsets:delete",
+			Name:          "Delete toolsets",
+			Description:   "Delete toolsets",
+			OrgPermission: true,
 		},
 		{
-			Code:        "system:toolsets:test",
-			Name:        "Test toolsets",
-			Description: "Test toolset connection",
+			Code:          "system:toolsets:test",
+			Name:          "Test toolsets",
+			Description:   "Test toolset connection",
+			OrgPermission: true,
 		},
 	})
 }

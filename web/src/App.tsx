@@ -22,6 +22,7 @@ import './index.css'
 import './i18n'
 import { getURL } from './utils';
 import { LanguageConfig } from './components/LanguageSwitch';
+import { SiteProvider } from './contexts/SiteContext';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -123,11 +124,13 @@ function App({
         locale={antdLocale}
       >
         <AuthProvider>
-          <Router basename={getURL()}>
-            <Routes>
-              {renderRoutes(routes)}
-            </Routes>
-          </Router>
+          <SiteProvider>
+            <Router basename={getURL()}>
+              <Routes>
+                {renderRoutes(routes)}
+              </Routes>
+            </Router>
+          </SiteProvider>
         </AuthProvider>
       </ConfigProvider>
     </QueryClientProvider>

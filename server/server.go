@@ -218,7 +218,7 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 
 	engine.ContextWithFallback = true
 	engine.Use(middleware.Log(serviceName))
-	engine.Use(gin.Recovery(), middleware.CORSMiddleware())
+	engine.Use(gin.Recovery(), middleware.CORSMiddleware(), middleware.DelayMiddleware())
 	// Default middleware is provided by gin.Default()
 	// No need for additional logger and recovery middleware
 	svc := service.NewService(ctx)

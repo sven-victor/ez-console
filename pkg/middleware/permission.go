@@ -15,10 +15,15 @@ func RegisterPermission(groupName string, description string, permissions []mode
 	for _, g := range permissionGroups {
 		if g.Name == groupName {
 			for _, permission := range permissions {
-				if GetPermission(permission.Code) != nil {
-					return fmt.Errorf("permission %s already exists", permission.Code)
+				existing := GetPermission(permission.Code)
+				if existing != nil {
+					// Update existing permission, preserve OrgPermission if already set
+					if !existing.OrgPermission {
+						existing.OrgPermission = permission.OrgPermission
+					}
+				} else {
+					g.Permissions = append(g.Permissions, permission)
 				}
-				g.Permissions = append(g.Permissions, permission)
 			}
 			return nil
 		}
@@ -80,11 +85,58 @@ func RequirePermission(code string) gin.HandlerFunc {
 		}
 		// If it is an administrator, allow directly
 		for _, role := range roles {
-			if role.Name == "admin" {
+			if role.Name == "admin" && (role.OrganizationID == nil || *role.OrganizationID == "") {
 				c.Next()
 				return
 			}
 		}
+		// Get permission definition
+		permission := GetPermission(code)
+		if permission == nil {
+			c.JSON(http.StatusForbidden, gin.H{
+				"code": "E4031",
+				"err":  "Permission not found",
+			})
+			c.Abort()
+			return
+		}
+
+		// If this is an organization-scoped permission, check organization context
+		orgID, _ := c.Get("organization_id")
+		if permission.OrgPermission {
+			if orgID == nil || orgID.(string) == "" {
+				c.JSON(http.StatusForbidden, gin.H{
+					"code": "E4031",
+					"err":  "Organization context required for this permission",
+				})
+				c.Abort()
+				return
+			}
+			orgIDStr := orgID.(string)
+
+			// For org permissions, check both global roles (can manage all orgs) and org-scoped roles for this organization
+			var validRoles []model.Role
+			for _, role := range roles {
+				// Global roles can manage all organizations' resources
+				if role.OrganizationID == nil {
+					validRoles = append(validRoles, role)
+				} else if *role.OrganizationID == orgIDStr {
+					// Org-scoped roles can only manage their own organization's resources
+					validRoles = append(validRoles, role)
+				}
+			}
+			roles = validRoles
+		} else {
+			// For non-org permissions, only check global roles
+			var globalRoles []model.Role
+			for _, role := range roles {
+				if role.OrganizationID == nil {
+					globalRoles = append(globalRoles, role)
+				}
+			}
+			roles = globalRoles
+		}
+
 		// Non-administrators need to check specific permissions
 		// First load complete role information, including permissions
 		// Create context information for conditional judgment of policy documents
@@ -93,6 +145,9 @@ func RequirePermission(code string) gin.HandlerFunc {
 			"http.uri":    c.Request.URL.RequestURI(),
 			"http.method": c.Request.Method,
 			"http.ip":     c.ClientIP(),
+		}
+		if orgID != nil {
+			context["org.id"] = orgID
 		}
 		for _, param := range c.Params {
 			context[param.Key] = param.Value

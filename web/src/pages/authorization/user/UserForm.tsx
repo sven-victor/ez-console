@@ -1,4 +1,4 @@
-import React, { } from 'react';
+import React, { useCallback } from 'react';
 import {
   Card,
   Form,
@@ -8,12 +8,14 @@ import {
   Space,
   message,
   Switch,
+  Spin,
 } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { AvatarUpload } from '@/components/Avatar';
+import { useSite } from '@/contexts/SiteContext';
 
 const { Option } = Select;
 
@@ -36,6 +38,31 @@ const UserForm: React.FC = () => {
   const { t: tCommon } = useTranslation("common");
   const [form] = Form.useForm();
   const isEditMode = !!id;
+
+  const { enableMultiOrg } = useSite();
+
+  const { data: organizations, loading: organizationsLoading } = useRequest(async () => {
+    return (await api.system.listOrganizations({ current: 1, page_size: 1000 })).data || [];
+  }, {
+    refreshDeps: [enableMultiOrg],
+    onError: (error) => {
+      message.error(t('organizations.loadError', { defaultValue: 'Failed to load organizations', error: error.message }));
+    },
+    cacheKey: 'fetchAllOrganizations',
+    cacheTime: 1000 * 60 * 10,
+  });
+
+
+  const renderOrganizationRole = useCallback((organization_id: string, role: API.Role): React.ReactNode => {
+    if (organizationsLoading) {
+      return <>{<Spin size="small" />}:{role.name}</>;
+    }
+    const organization = organizations?.find(org => org.id === organization_id);
+    if (organization) {
+      return `${organization.name}:${role.name}`;
+    }
+    return role.name;
+  }, [organizations, organizationsLoading]);
 
   // Get role list
   const { data: rolesData, loading: rolesLoading } = useRequest(async () => {
@@ -190,6 +217,7 @@ const UserForm: React.FC = () => {
             <Select placeholder={t('user.statusPlaceholder', { defaultValue: 'Select status' })}>
               <Option value="active">{t('user.statusActive', { defaultValue: 'Active' })}</Option>
               <Option value="disabled">{t('user.statusDisabled', { defaultValue: 'Disabled' })}</Option>
+              <Option value="password_expired">{t('user.statusEnum.password_expired', { defaultValue: 'Password Expired' })}</Option>
             </Select>
           </Form.Item>)}
         <Form.Item
@@ -206,7 +234,7 @@ const UserForm: React.FC = () => {
               label={t('user.password', { defaultValue: 'Password' })}
               rules={[{ validator: validatePassword }]}
             >
-              <Input.Password visibilityToggle={false} placeholder={t('user.passwordPlaceholder', { defaultValue: 'Enter password' })} />
+              <Input.Password visibilityToggle={false} autoComplete='new-password' placeholder={t('user.passwordPlaceholder', { defaultValue: 'Enter password' })} />
             </Form.Item>
             <Form.Item
               name="confirm_password"
@@ -226,7 +254,10 @@ const UserForm: React.FC = () => {
           <Select
             mode="multiple"
             placeholder={t('user.selectRoles', { defaultValue: 'Select roles' })}
-            options={rolesData}
+            options={rolesData?.map((role: API.Role & { label: string, value: string }) => ({
+              ...role,
+              label: enableMultiOrg ? renderOrganizationRole(role.organization_id, role) : role.name,
+            }))}
             optionFilterProp="label"
             loading={rolesLoading}
           />

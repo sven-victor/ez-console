@@ -43,20 +43,57 @@ func (c *RoleController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Tags			Authorization/Role
 //	@Accept			json
 //	@Produce		json
-//	@Param			current		query		int		false	"Current page"	default(1)
-//	@Param			page_size	query		int		false	"Page size"		default(10)
-//	@Param			search		query		string	false	"Search"
-//	@Success		200			{object}	util.PaginationResponse[model.Role]
-//	@Failure		500			{object}	util.ErrorResponse
+//	@Param			current			query		int		false	"Current page"	default(1)
+//	@Param			page_size		query		int		false	"Page size"		default(10)
+//	@Param			search			query		string	false	"Search"
+//	@Param			organization_id	query		string	false	"Filter by organization ID (empty for global roles)"
+//	@Success		200				{object}	util.PaginationResponse[model.Role]
+//	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/roles [get]
 func (c *RoleController) ListRoles(ctx *gin.Context) {
 	// Get pagination parameters
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
+	searchOrgID := ctx.Query("organization_id")
+	currentOrgID := ctx.GetString("organization_id")
+	var orgID *string
+
+	roles := middleware.GetRolesFromContext(ctx)
+	if roles == nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4031", "No roles found"))
+		return
+	}
+
+	var hasGlobalRolePermission bool
+
+	for _, role := range roles {
+		if role.OrganizationID == nil || *role.OrganizationID == "" {
+			if role.HasPermission("authorization:role:view") {
+				hasGlobalRolePermission = true
+				break
+			}
+		}
+	}
+	if hasGlobalRolePermission {
+		if searchOrgID != "" {
+			orgID = &searchOrgID
+		} else {
+			orgID = nil
+		}
+	} else if currentOrgID != "" {
+		if searchOrgID != "" && searchOrgID != currentOrgID {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Invalid organization ID"))
+			return
+		}
+		orgID = &currentOrgID
+	} else {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4031", "No global role permission found"))
+		return
+	}
 
 	// Call service to get role list
-	roles, total, err := c.service.ListRoles(ctx, current, pageSize, search)
+	roles, total, err := c.service.RoleService.ListRoles(ctx, current, pageSize, search, orgID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -86,7 +123,7 @@ func (c *RoleController) GetRole(ctx *gin.Context) {
 		return
 	}
 
-	role, err := c.service.GetRole(ctx, id)
+	role, err := c.service.RoleService.GetRole(ctx, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
@@ -98,6 +135,7 @@ func (c *RoleController) GetRole(ctx *gin.Context) {
 type CreateRoleRequest struct {
 	Name           string               `json:"name" binding:"required"`
 	Description    string               `json:"description"`
+	OrganizationID *string              `json:"organization_id,omitempty"`
 	PermissionIDs  []string             `json:"permissions"`
 	PolicyDocument model.PolicyDocument `json:"policy_document"`
 }
@@ -128,7 +166,28 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 		ctx,
 		"", // Resource ID will be generated upon creation
 		func(auditLog *model.AuditLog) error {
-			role, err := c.service.CreateRole(ctx, req.Name, req.Description, req.PermissionIDs, req.PolicyDocument)
+
+			if req.OrganizationID == nil || *req.OrganizationID == "" {
+				hasGlobalRolePermission := false
+				roles := middleware.GetRolesFromContext(ctx)
+				if roles == nil {
+					return util.NewErrorMessage("E4031", "No roles found")
+				}
+				for _, role := range roles {
+					if role.OrganizationID == nil || *role.OrganizationID == "" {
+						if role.HasPermission("authorization:role:create") {
+							hasGlobalRolePermission = true
+							break
+						}
+					}
+				}
+				if !hasGlobalRolePermission {
+					return util.NewErrorMessage("E4031", "No global role permission found")
+				}
+				req.OrganizationID = nil
+			}
+
+			role, err := c.service.RoleService.CreateRole(ctx, req.Name, req.Description, req.OrganizationID, req.PermissionIDs, req.PolicyDocument)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}
@@ -151,6 +210,7 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 type UpdateRoleRequest struct {
 	Name           string               `json:"name" binding:"required"`
 	Description    string               `json:"description"`
+	OrganizationID *string              `json:"organization_id,omitempty"`
 	PermissionIDs  []string             `json:"permissions"`
 	PolicyDocument model.PolicyDocument `json:"policy_document"`
 }
@@ -188,7 +248,26 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 		ctx,
 		id,
 		func(auditLog *model.AuditLog) error {
-			role, err := c.service.UpdateRole(ctx, id, req.Name, req.Description, req.PermissionIDs, req.PolicyDocument)
+			if req.OrganizationID == nil || *req.OrganizationID == "" {
+				hasGlobalRolePermission := false
+				roles := middleware.GetRolesFromContext(ctx)
+				if roles == nil {
+					return util.NewErrorMessage("E4031", "No roles found")
+				}
+				for _, role := range roles {
+					if role.OrganizationID == nil || *role.OrganizationID == "" {
+						if role.HasPermission("authorization:role:create") {
+							hasGlobalRolePermission = true
+							break
+						}
+					}
+				}
+				if !hasGlobalRolePermission {
+					return util.NewErrorMessage("E4031", "No global role permission found")
+				}
+				req.OrganizationID = nil
+			}
+			role, err := c.service.RoleService.UpdateRole(ctx, id, req.Name, req.Description, req.OrganizationID, req.PermissionIDs, req.PolicyDocument)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}
@@ -201,7 +280,7 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
 			auditLog.Details.Request = req
 			// Get role information before update for audit log
-			oldRole, err := c.service.GetRole(ctx, id)
+			oldRole, err := c.service.RoleService.GetRole(ctx, id)
 			if err != nil {
 				oldRole = &model.Role{Base: model.Base{ResourceID: id}}
 			}
@@ -239,7 +318,7 @@ func (c *RoleController) DeleteRole(ctx *gin.Context) {
 		ctx,
 		id,
 		func(auditLog *model.AuditLog) error {
-			err := c.service.DeleteRole(ctx, id)
+			err := c.service.RoleService.DeleteRole(ctx, id)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}
@@ -251,7 +330,7 @@ func (c *RoleController) DeleteRole(ctx *gin.Context) {
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
 			// Get role information for audit log
-			oldRole, err := c.service.GetRole(ctx, id)
+			oldRole, err := c.service.RoleService.GetRole(ctx, id)
 			if err != nil {
 				oldRole = &model.Role{Base: model.Base{ResourceID: id}}
 			}
@@ -301,7 +380,7 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 		ctx,
 		id,
 		func(auditLog *model.AuditLog) error {
-			err := c.service.AssignPermissions(ctx, id, req.PermissionIDs)
+			err := c.service.RoleService.AssignPermissions(ctx, id, req.PermissionIDs)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}
@@ -314,7 +393,7 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
 			auditLog.Details.Request = req
 			// Get role information before assigning permissions for audit log
-			oldRole, err := c.service.GetRole(ctx, id)
+			oldRole, err := c.service.RoleService.GetRole(ctx, id)
 			if err != nil {
 				oldRole = &model.Role{Base: model.Base{ResourceID: id}}
 			}
@@ -347,7 +426,7 @@ func (c *RoleController) GetRolePolicy(ctx *gin.Context) {
 		return
 	}
 
-	policyDocument, err := c.service.GetRolePolicy(ctx, id)
+	policyDocument, err := c.service.RoleService.GetRolePolicy(ctx, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5002", err))
 		return
@@ -390,7 +469,7 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 		id,
 		func(auditLog *model.AuditLog) error {
 			// Update policy document for the role
-			role, err := c.service.SetRolePolicy(ctx, id, req)
+			role, err := c.service.RoleService.SetRolePolicy(ctx, id, req)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}
@@ -403,7 +482,7 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
 			auditLog.Details.Request = req
 			// Get role information before setting policy for audit log
-			oldRole, err := c.service.GetRole(ctx, id)
+			oldRole, err := c.service.RoleService.GetRole(ctx, id)
 			if err != nil {
 				oldRole = &model.Role{Base: model.Base{ResourceID: id}}
 			}
@@ -419,24 +498,28 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("Role Management", "Manage role creation, editing, deletion, and permission assignment", []model.Permission{
 		{
-			Code:        "authorization:role:view",
-			Name:        "View roles",
-			Description: "View role list and details",
+			Code:          "authorization:role:view",
+			Name:          "View roles",
+			Description:   "View role list and details",
+			OrgPermission: true,
 		},
 		{
-			Code:        "authorization:role:create",
-			Name:        "Create roles",
-			Description: "Create new roles",
+			Code:          "authorization:role:create",
+			Name:          "Create roles",
+			Description:   "Create new roles",
+			OrgPermission: true,
 		},
 		{
-			Code:        "authorization:role:update",
-			Name:        "Update roles",
-			Description: "Update role information",
+			Code:          "authorization:role:update",
+			Name:          "Update roles",
+			Description:   "Update role information",
+			OrgPermission: true,
 		},
 		{
-			Code:        "authorization:role:delete",
-			Name:        "Delete roles",
-			Description: "Delete roles",
+			Code:          "authorization:role:delete",
+			Name:          "Delete roles",
+			Description:   "Delete roles",
+			OrgPermission: true,
 		},
 	})
 }
