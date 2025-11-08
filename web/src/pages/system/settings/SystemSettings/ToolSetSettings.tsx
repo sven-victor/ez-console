@@ -32,6 +32,7 @@ import { useRequest } from 'ahooks';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import Actions from '@/components/Actions';
+import { PermissionGuard } from '@/components/PermissionGuard';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -589,13 +590,15 @@ const ToolSetSettings: React.FC = () => {
               >
                 {tCommon('refresh', { defaultValue: 'Refresh' })}
               </Button>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleCreate}
-              >
-                {t('settings.toolsets.create', { defaultValue: 'Create Toolset' })}
-              </Button>
+              <PermissionGuard permission="system:toolsets:create">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleCreate}
+                >
+                  {t('settings.toolsets.create', { defaultValue: 'Create Toolset' })}
+                </Button>
+              </PermissionGuard>
             </Space>
           </Col>
         </Row>

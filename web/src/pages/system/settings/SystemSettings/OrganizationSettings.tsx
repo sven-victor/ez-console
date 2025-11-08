@@ -24,6 +24,7 @@ import type { ColumnsType } from 'antd/es/table';
 import * as systemApi from '@/service/api/system';
 import Actions from '@/components/Actions';
 import { Select } from 'antd';
+import { PermissionGuard } from '@/components/PermissionGuard';
 
 const { TextArea } = Input;
 
@@ -95,7 +96,7 @@ const OrganizationSettings: React.FC = () => {
   );
 
   // Delete organization
-  const { loading: deleting, run: deleteOrg } = useRequest(
+  const { run: deleteOrg } = useRequest(
     (id: string) => systemApi.deleteOrganization({ id }),
     {
       manual: true,
@@ -178,12 +179,14 @@ const OrganizationSettings: React.FC = () => {
               label: tCommon('view', { defaultValue: 'View' }),
               icon: <EyeOutlined />,
               onClick: async () => navigate(`/system/settings/organizations/${record.id}`),
+              permission: 'system:organization:view',
             },
             {
               key: 'edit',
               label: tCommon('edit', { defaultValue: 'Edit' }),
               icon: <EditOutlined />,
               onClick: async () => handleEdit(record),
+              permission: 'system:organization:update',
             },
             {
               key: 'delete',
@@ -191,6 +194,7 @@ const OrganizationSettings: React.FC = () => {
               icon: <DeleteOutlined />,
               danger: true,
               onClick: async () => handleDelete(record),
+              permission: 'system:organization:delete',
             },
           ]}
         />
@@ -206,9 +210,11 @@ const OrganizationSettings: React.FC = () => {
           <Button icon={<ReloadOutlined />} onClick={refresh}>
             {tCommon('refresh', { defaultValue: 'Refresh' })}
           </Button>
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-            {t('settings.organizations.create', { defaultValue: 'Create Organization' })}
-          </Button>
+          <PermissionGuard permission="system:organization:create">
+            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+              {t('settings.organizations.create', { defaultValue: 'Create Organization' })}
+            </Button>
+          </PermissionGuard>
         </Space>
       }
     >

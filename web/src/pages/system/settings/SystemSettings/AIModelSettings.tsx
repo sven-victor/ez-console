@@ -29,6 +29,8 @@ import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
+import { PermissionGuard } from '@/components/PermissionGuard';
+import Actions from '@/components/Actions';
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -64,7 +66,6 @@ const AIModelSettings: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModel | null>(null);
   const [searchText, setSearchText] = useState('');
-  const [testingModelId, setTestingModelId] = useState<string>('');
   // Fetch AI models
   const { loading, data, refresh } = useRequest(
     () => api.ai.listAiModels({ current: 1, page_size: 100, search: searchText }),
@@ -115,7 +116,7 @@ const AIModelSettings: React.FC = () => {
   );
 
   // Delete AI model
-  const { run: deleteModel } = useRequest(
+  const { runAsync: deleteModel } = useRequest(
     (id: string) => api.ai.deleteAiModel({ id }),
     {
       manual: true,
@@ -131,7 +132,7 @@ const AIModelSettings: React.FC = () => {
   );
 
   // Test AI model
-  const { loading: testing, run: testModel } = useRequest(
+  const { loading: testing, runAsync: testModel } = useRequest(
     (id: string) => api.ai.testAiModel({ id }),
     {
       manual: true,
@@ -146,7 +147,7 @@ const AIModelSettings: React.FC = () => {
   );
 
   // Set default AI model
-  const { run: setDefaultModel } = useRequest(
+  const { runAsync: setDefaultModel } = useRequest(
     (id: string) => api.ai.setDefaultAiModel({ id }),
     {
       manual: true,
@@ -184,18 +185,6 @@ const AIModelSettings: React.FC = () => {
     }
   };
 
-  const handleDelete = (id: string) => {
-    deleteModel(id);
-  };
-
-  const handleTest = (id: string) => {
-    setTestingModelId(id);
-    testModel(id);
-  };
-
-  const handleSetDefault = (id: string) => {
-    setDefaultModel(id);
-  };
 
   const columns: ColumnsType<AIModel> = [
     {
@@ -238,44 +227,83 @@ const AIModelSettings: React.FC = () => {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'actions',
       width: 200,
-      render: (_, record) => (
-        <Space>
-          <Tooltip title={t('models.test', { defaultValue: 'Test Connection' })}>
-            <Button
-              type="text"
-              icon={<CheckCircleOutlined />}
-              loading={testing && record.id === testingModelId}
-              onClick={() => handleTest(record.id)}
-            />
-          </Tooltip>
-          {!record.is_default && (
-            <Tooltip title={t('models.setDefault', { defaultValue: 'Set as Default' })}>
-              <Button
-                type="text"
-                icon={<StarOutlined />}
-                onClick={() => handleSetDefault(record.id)}
-              />
-            </Tooltip>
-          )}
-          <Tooltip title={tCommon('edit', { defaultValue: 'Edit' })}>
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title={t('models.deleteConfirm', { defaultValue: 'Are you sure you want to delete this AI model?' })}
-            onConfirm={() => handleDelete(record.id)}
-            okText={tCommon('yes', { defaultValue: 'Yes' })}
-            cancelText={tCommon('no', { defaultValue: 'No' })}
-          >
-            <Tooltip title={tCommon('delete', { defaultValue: 'Delete' })}>
-              <Button type="text" danger icon={<DeleteOutlined />} />
-            </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
+      render: (_, record) => {
+        // <Space>
+        //   <PermissionGuard permission="ai:models:test">
+        //     <Tooltip title={t('models.test', { defaultValue: 'Test Connection' })}>
+        //       <Button
+        //         type="text"
+        //         icon={<CheckCircleOutlined />}
+        //         loading={testing && record.id === testingModelId}
+        //         onClick={() => handleTest(record.id)}
+        //       />
+        //     </Tooltip>
+        //   </PermissionGuard>
+        //   {!record.is_default && (
+        //     <PermissionGuard permission="ai:models:setDefault">
+        //       <Tooltip title={t('models.setDefault', { defaultValue: 'Set as Default' })}>
+        //         <Button
+        //           type="text"
+        //           icon={<StarOutlined />}
+        //           onClick={() => handleSetDefault(record.id)}
+        //         />
+        //       </Tooltip>
+        //     </PermissionGuard>
+        //   )}
+        //   <PermissionGuard permission="ai:models:update">
+        //     <Tooltip title={tCommon('edit', { defaultValue: 'Edit' })}>
+        //       <Button
+        //         type="text"
+        //         icon={<EditOutlined />}
+        //         onClick={() => handleEdit(record)}
+        //       />
+        //     </Tooltip>
+        //   </PermissionGuard>
+        //   <PermissionGuard permission="ai:models:delete">
+        //     <Popconfirm
+        //       title={t('models.deleteConfirm', { defaultValue: 'Are you sure you want to delete this AI model?' })}
+        //       onConfirm={() => handleDelete(record.id)}
+        //       okText={tCommon('yes', { defaultValue: 'Yes' })}
+        //       cancelText={tCommon('no', { defaultValue: 'No' })}
+        //     >
+        //       <Tooltip title={tCommon('delete', { defaultValue: 'Delete' })}>
+        //         <Button type="text" danger icon={<DeleteOutlined />} />
+        //       </Tooltip>
+        //     </Popconfirm>
+        //   </PermissionGuard>
+        // </Space>
+        return <Actions actions={[
+          {
+            key: 'test',
+            permission: 'ai:models:test',
+            icon: <CheckCircleOutlined />,
+            tooltip: t('models.test', { defaultValue: 'Test Connection' }),
+            onClick: async () => testModel(record.id),
+          },
+          {
+            key: 'setDefault',
+            permission: 'ai:models:setDefault',
+            icon: <StarOutlined />,
+            tooltip: t('models.setDefault', { defaultValue: 'Set as Default' }),
+            onClick: async () => setDefaultModel(record.id),
+          },
+          {
+            key: 'update',
+            permission: 'ai:models:update',
+            icon: <EditOutlined />,
+            tooltip: tCommon('edit', { defaultValue: 'Edit' }),
+            onClick: async () => handleEdit(record),
+          },
+          {
+            key: 'delete',
+            permission: 'ai:models:delete',
+            icon: <DeleteOutlined />,
+            tooltip: tCommon('delete', { defaultValue: 'Delete' }),
+            onClick: async () => deleteModel(record.id),
+            danger: true,
+          },
+        ]} key="actions" />
+      },
     },
   ];
 
@@ -303,13 +331,15 @@ const AIModelSettings: React.FC = () => {
               >
                 {tCommon('refresh', { defaultValue: 'Refresh' })}
               </Button>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleCreate}
-              >
-                {t('models.create', { defaultValue: 'Create AI Model' })}
-              </Button>
+              <PermissionGuard permission="ai:models:create">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleCreate}
+                >
+                  {t('models.create', { defaultValue: 'Create AI Model' })}
+                </Button>
+              </PermissionGuard>
             </Space>
           </Col>
         </Row>
