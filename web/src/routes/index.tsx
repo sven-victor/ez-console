@@ -97,7 +97,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         {
           name: 'authorization',
           icon: <UserOutlined />,
-          permissions: ['authorization:user:view', 'authorization:user:create', 'authorization:user:update', 'authorization:user:delete', 'authorization:service_account:view', 'authorization:service_account:create', 'authorization:service_account:update', 'authorization:service_account:delete'],
+          permissions: ['authorization:user:view', 'authorization:user:create', 'authorization:user:update', 'authorization:user:delete', 'authorization:service_account:view', 'authorization:service_account:create', 'authorization:service_account:update', 'authorization:service_account:delete', 'authorization:role:view'],
           children: [
             // Role management
             {
@@ -174,25 +174,20 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         {
           name: 'system',
           icon: <SettingOutlined />,
-          permissions: ['system:settings:view', 'system:settings:update', 'system:audit:view'],
+          permissions: ['system:settings:view', 'system:settings:update', 'system:audit:view', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view'],
           children: [
             // System settings
             {
               path: '/system/settings',
               icon: <SafetyOutlined />,
               name: 'settings',
-              permissions: ['system:settings:view', 'system:settings:update'],
+              permissions: ['system:settings:view', 'system:settings:update', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view'],
               children: [
                 {
                   path: '/system/settings',
                   index: true,
                   element: withSuspense(SystemSettings, { transformItems: transformSettingTabs }),
-                },
-                {
-                  path: '/system/settings/organizations/:id',
-                  element: withSuspense(OrganizationDetail),
-                  permissions: ['system:organization:view'],
-                },
+                }
               ],
             },
             // Audit logs
