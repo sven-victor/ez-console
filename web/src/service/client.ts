@@ -36,10 +36,12 @@ client.interceptors.request.use(
     if (i18nextLng) {
       config.headers['Accept-Language'] = i18nextLng;
     }
-    // Add organization ID header if set
-    const orgID = localStorage.getItem('orgID');
-    if (orgID) {
-      config.headers['X-Scope-OrgID'] = orgID;
+    if (!config.headers['X-Scope-OrgID']) {
+      // Add organization ID header if set
+      const orgID = localStorage.getItem('orgID');
+      if (orgID) {
+        config.headers['X-Scope-OrgID'] = orgID;
+      }
     }
     return config;
   },
@@ -160,7 +162,7 @@ export async function fetchSSE(url: string, config?: SSEConfig): Promise<Readabl
 }
 
 
-interface RequestConfig extends AxiosRequestConfig {
+export interface RequestConfig extends AxiosRequestConfig {
   requestType?: 'form'
 }
 export interface SSERequestConfig extends Omit<RequestConfig, 'requestType' | 'signal'> {
@@ -179,6 +181,7 @@ function normalizeHeaders(headers?: AxiosRequestConfig['headers']): Record<strin
     Object.entries(headers).map(([k, v]) => [k, String(v)])
   );
 }
+
 
 export function request<T extends any>(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
 export function request<T extends { data: any; current?: number; total?: number; page_size?: number }>(url: string, config?: RequestConfig): Promise<Result<T>>;
