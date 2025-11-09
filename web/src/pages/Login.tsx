@@ -36,7 +36,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<API.OAuthProvider[]>([]);
   const [submitButtonDisabledCountdown, setSubmitButtonDisabledCountdown] = useState(0);
-  const { siteConfig, loading: siteConfigLoading, fetchSiteConfig } = useSite();
+  const { siteConfig } = useSite();
 
   const [siteName, setSiteName] = useState<string>('Loading...');
 

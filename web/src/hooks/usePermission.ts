@@ -13,22 +13,25 @@ import { AuthContext } from '../contexts/AuthContext';
  */
 export const usePermission = () => {
   const { user } = useContext(AuthContext);
+  const organizationId = localStorage.getItem('organization_id');
+
+  const roles = user?.roles?.filter(role => !role.organization_id || role.organization_id === organizationId)
 
   // Check if the user is an administrator
   const isAdminUser = (): boolean => {
-    if (!user || !user.roles) return false;
-    return user.roles.some(role => role.name === 'admin' && !role.organization_id);
+    if (!roles) return false;
+    return roles.some(role => role.name === 'admin' && !role.organization_id);
   };
 
   // Check for specific permission
   const hasPermission = (permission: string): boolean => {
-    if (!user || !user.roles) return false;
+    if (!roles) return false;
 
     // Check if the user has the admin role
     if (isAdminUser()) return true;
 
     // If not admin, check if the role has the permission
-    return user.roles.some(role => {
+    return roles.some(role => {
       if (!role.permissions) return false;
       return role.permissions.some(perm => perm.code === permission);
     });

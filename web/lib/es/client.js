@@ -1,34 +1,38 @@
-var u = Object.defineProperty;
-var l = (t, e, r) => e in t ? u(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
-var c = (t, e, r) => l(t, typeof e != "symbol" ? e + "" : e, r);
-import { g as d } from "./base.js";
-import p from "axios";
-const m = "/api", a = p.create({
+var l = Object.defineProperty;
+var p = (t, e, r) => e in t ? l(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
+var d = (t, e, r) => p(t, typeof e != "symbol" ? e + "" : e, r);
+import { g as u } from "./base.js";
+import g from "axios";
+const m = "/api", s = g.create({
   baseURL: m,
   timeout: 3e4,
   headers: {
     "Content-Type": "application/json"
   }
 });
-class i extends Error {
+class c extends Error {
   constructor(r, n) {
     super(n);
-    c(this, "code");
+    d(this, "code");
     this.code = r;
   }
 }
-a.interceptors.request.use(
+s.interceptors.request.use(
   (t) => {
     if (!t.withoutAuth) {
       const r = localStorage.getItem("token");
       r && (t.headers = t.headers || {}, t.headers.Authorization = `Bearer ${r}`);
     }
     const e = localStorage.getItem("i18nextLng");
-    return e && (t.headers["Accept-Language"] = e), t;
+    if (e && (t.headers["Accept-Language"] = e), !t.headers["X-Scope-OrgID"]) {
+      const r = localStorage.getItem("orgID");
+      r && (t.headers["X-Scope-OrgID"] = r);
+    }
+    return t;
   },
   (t) => Promise.reject(t)
 );
-a.interceptors.response.use(
+s.interceptors.response.use(
   (t) => {
     const e = t.data;
     return e && e.code !== void 0 ? e.code === "0" ? e.total !== void 0 && e.current !== void 0 && e.page_size !== void 0 ? {
@@ -39,14 +43,14 @@ a.interceptors.response.use(
     } : e.data : Promise.reject(e || "Unknown error") : t.data;
   },
   (t) => {
-    var n, o, s;
-    ((n = t.response) == null ? void 0 : n.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete a.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
+    var n, o, a;
+    ((n = t.response) == null ? void 0 : n.status) === 401 && window.location.pathname !== u("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = u("/login?redirect=" + encodeURIComponent(window.location.href)));
     const e = (o = t.response) == null ? void 0 : o.data;
-    let r = new i(((s = t.response) == null ? void 0 : s.status.toString()) || "500", t.message);
-    return console.log("errorResponse", e), e && (e.err ? r = new i(e.code, e.err) : e.error && (r = new i(e.code, e.error))), Promise.reject(r);
+    let r = new c(((a = t.response) == null ? void 0 : a.status.toString()) || "500", t.message);
+    return console.log("errorResponse", e), e && (e.err ? r = new c(e.code, e.err) : e.error && (r = new c(e.code, e.error))), Promise.reject(r);
   }
 );
-const y = async (t, e) => a.get(t, e), E = async (t, e, r) => a.post(t, e, r), b = async (t, e, r) => a.put(t, e, r), j = async (t, e) => a.delete(t, e);
+const I = async (t, e) => s.get(t, e), b = async (t, e, r) => s.post(t, e, r), E = async (t, e, r) => s.put(t, e, r), j = async (t, e) => s.delete(t, e);
 async function f(t, e) {
   const { signal: r, ...n } = e || {}, o = await fetch(t, {
     method: n.method || "GET",
@@ -55,18 +59,19 @@ async function f(t, e) {
     signal: r
   });
   if (console.log(o), !o.ok || !o.body) {
+    let a = o.statusText;
     if (o.body)
       try {
-        const s = await o.json();
-        throw new Error(`SSE connection failed: ${s.message}`);
+        const i = await o.json();
+        a = `SSE connection failed: ${i.message || i.err}`;
       } catch {
-        throw new Error(`SSE connection failed: ${o.statusText}`);
+        a = `SSE connection failed: ${o.statusText}`;
       }
-    throw new Error(`SSE connection failed: ${o.statusText}`);
+    throw new Error(a);
   }
   if (o.status !== 200) {
-    const s = await o.json();
-    throw new Error(`SSE connection failed: ${s.message}`);
+    const a = await o.json();
+    throw new Error(`SSE connection failed: ${a.message}`);
   }
   return o.body;
 }
@@ -78,18 +83,23 @@ function h(t) {
 }
 async function x(t, e) {
   const { requestType: r, signal: n, ...o } = e || {};
-  return r === "sse" ? f(t, {
-    headers: {
-      Accept: "text/event-stream",
-      "Content-Type": "application/json",
-      "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-      ...h(o.headers)
-    },
-    method: o.method,
-    body: JSON.stringify(o.data),
-    signal: n
-  }) : r === "form" ? a.request({
+  if (r === "sse") {
+    const a = localStorage.getItem("orgID");
+    return f(t, {
+      headers: {
+        Accept: "text/event-stream",
+        "Content-Type": "application/json",
+        "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+        ...a ? { "X-Scope-OrgID": a } : {},
+        ...h(o.headers)
+      },
+      method: o.method,
+      body: JSON.stringify(o.data),
+      signal: n
+    });
+  }
+  return r === "form" ? s.request({
     url: t,
     baseURL: "",
     ...o,
@@ -97,19 +107,19 @@ async function x(t, e) {
       ...e == null ? void 0 : e.headers,
       "Content-Type": "multipart/form-data"
     }
-  }) : a.request({
+  }) : s.request({
     url: t,
     baseURL: "",
     ...o
   });
 }
 export {
-  i as A,
+  c as A,
   j as a,
   m as b,
-  a as c,
-  E as d,
-  y as e,
-  b as f,
+  s as c,
+  b as d,
+  I as e,
+  E as f,
   x as r
 };

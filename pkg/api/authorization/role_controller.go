@@ -133,11 +133,29 @@ func (c *RoleController) GetRole(ctx *gin.Context) {
 }
 
 type CreateRoleRequest struct {
-	Name           string               `json:"name" binding:"required"`
-	Description    string               `json:"description"`
-	OrganizationID *string              `json:"organization_id,omitempty"`
-	PermissionIDs  []string             `json:"permissions"`
-	PolicyDocument model.PolicyDocument `json:"policy_document"`
+	Name              string                        `json:"name" binding:"required"`
+	Description       string                        `json:"description"`
+	OrganizationID    *string                       `json:"organization_id,omitempty"`
+	PermissionIDs     []string                      `json:"permissions"`
+	PolicyDocument    model.PolicyDocument          `json:"policy_document"`
+	AIToolPermissions []RoleAIToolPermissionRequest `json:"ai_tool_permissions"`
+}
+
+// RoleAIToolPermissionRequest represents AI tool permission assignments in role requests.
+type RoleAIToolPermissionRequest struct {
+	ToolSetID string   `json:"toolset_id" binding:"required"`
+	Tools     []string `json:"tools" binding:"required"`
+}
+
+func toRoleAIToolAssignments(requests []RoleAIToolPermissionRequest) []service.RoleAIToolAssignment {
+	assignments := make([]service.RoleAIToolAssignment, 0, len(requests))
+	for _, req := range requests {
+		assignments = append(assignments, service.RoleAIToolAssignment{
+			ToolSetID: req.ToolSetID,
+			Tools:     req.Tools,
+		})
+	}
+	return assignments
 }
 
 // CreateRole creates a new role
@@ -187,7 +205,8 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 				req.OrganizationID = nil
 			}
 
-			role, err := c.service.RoleService.CreateRole(ctx, req.Name, req.Description, req.OrganizationID, req.PermissionIDs, req.PolicyDocument)
+			aiAssignments := toRoleAIToolAssignments(req.AIToolPermissions)
+			role, err := c.service.RoleService.CreateRole(ctx, req.Name, req.Description, req.OrganizationID, req.PermissionIDs, req.PolicyDocument, aiAssignments)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}
@@ -208,11 +227,12 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 }
 
 type UpdateRoleRequest struct {
-	Name           string               `json:"name" binding:"required"`
-	Description    string               `json:"description"`
-	OrganizationID *string              `json:"organization_id,omitempty"`
-	PermissionIDs  []string             `json:"permissions"`
-	PolicyDocument model.PolicyDocument `json:"policy_document"`
+	Name              string                        `json:"name" binding:"required"`
+	Description       string                        `json:"description"`
+	OrganizationID    *string                       `json:"organization_id,omitempty"`
+	PermissionIDs     []string                      `json:"permissions"`
+	PolicyDocument    model.PolicyDocument          `json:"policy_document"`
+	AIToolPermissions []RoleAIToolPermissionRequest `json:"ai_tool_permissions"`
 }
 
 // UpdateRole updates a role
@@ -267,7 +287,8 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 				}
 				req.OrganizationID = nil
 			}
-			role, err := c.service.RoleService.UpdateRole(ctx, id, req.Name, req.Description, req.OrganizationID, req.PermissionIDs, req.PolicyDocument)
+			aiAssignments := toRoleAIToolAssignments(req.AIToolPermissions)
+			role, err := c.service.RoleService.UpdateRole(ctx, id, req.Name, req.Description, req.OrganizationID, req.PermissionIDs, req.PolicyDocument, aiAssignments)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}

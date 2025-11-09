@@ -1,7 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { message } from 'antd';
+import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import api from '@/service/api';
-import client from '@/service/client';
 import { useRequest } from 'ahooks';
 import { useAuth } from './AuthContext';
 

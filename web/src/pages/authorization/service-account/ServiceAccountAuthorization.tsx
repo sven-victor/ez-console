@@ -17,8 +17,8 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
   const { id: serviceAccountId } = serviceAccount || {};
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
-  const [availableRoles, setAvailableRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions'>[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions'>[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id'>[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id'>[]>([]);
 
   useEffect(() => {
     setSelectedRoles(serviceAccount?.roles || []);
@@ -28,7 +28,7 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
     return api.authorization.listRoles({ current: 1, page_size: 20, search: searchKeywords })
   }, {
     onSuccess: (data) => {
-      const roles: Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions'>[] = data.data;
+      const roles: Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id'>[] = data.data;
       selectedRoles.forEach(role => {
         const roleData = roles.find(r => r.id === role.id);
         if (!roleData) {
@@ -63,7 +63,11 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
 
   const handleRoleChange = (values: string[]) => {
     setSelectedRoles(values.map(value => {
-      return availableRoles.find(role => role.id === value) || { id: value, name: value, description: value }
+      return availableRoles.find(role => role.id === value) || {
+        id: value,
+        name: value,
+        description: value,
+      }
     }));
   };
 

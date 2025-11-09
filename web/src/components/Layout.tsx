@@ -16,7 +16,6 @@ import OrganizationSwitcher from './OrganizationSwitcher';
 import { useTranslation } from 'react-i18next';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
-import api from '@/service/api';
 import _ from 'lodash';
 import { getURL } from '@/utils';
 import AIChatButton from './AIChatButton';
@@ -48,7 +47,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const { siteConfig, loading: siteConfigLoading, fetchSiteConfig } = useSite();
+  const { siteConfig } = useSite();
 
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
   const [siteIcon, setSiteIcon] = useState<string | null>(null);

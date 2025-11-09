@@ -8,10 +8,12 @@ import (
 	"os"
 	"sync"
 
+	"github.com/go-kit/log/level"
 	"github.com/gofrs/uuid"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
+	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/safe"
 )
 
@@ -139,6 +141,7 @@ func (o *OpenAIChatStream) Close() error {
 }
 
 func (o *OpenAIChatStream) backgroundCallTool(ctx context.Context, toolCall *ToolCall) {
+	logger := log.GetContextLogger(ctx)
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -149,19 +152,21 @@ func (o *OpenAIChatStream) backgroundCallTool(ctx context.Context, toolCall *Too
 				o.onToolCallEnd(ctx, *toolCall)
 			}
 		}()
+		level.Debug(logger).Log("msg", "Calling tool", "tool", toolCall.Function.Name, "arguments", toolCall.Function.Arguments)
 		resp, err := o.toolSets.CallTool(ctx, toolCall.Function.Name, toolCall.Function.Arguments)
 		if err != nil {
+			level.Error(logger).Log("msg", "Failed to call tool", "error", err)
 			toolCall.Status = ToolCallStatusFailed
-			toolCall.Error = err.Error()
-			return
+			toolCall.Result = err.Error()
+		} else {
+			toolCall.Status = ToolCallStatusCompleted
+			toolCall.Result = resp
 		}
 		o.messages = append(o.messages, openai.ChatCompletionMessage{
 			Role:       string(model.AIChatMessageRoleTool),
-			Content:    resp,
+			Content:    toolCall.Result,
 			ToolCallID: toolCall.ID,
 		})
-		toolCall.Status = ToolCallStatusCompleted
-		toolCall.Result = resp
 	}()
 }
 func (o *OpenAIChatStream) CallTools(ctx context.Context) (isRunning bool) {

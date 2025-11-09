@@ -24,6 +24,7 @@ var migrateModels = []interface{}{
 	&model.TempData{},
 	&model.AIModel{},
 	&model.ToolSet{},
+	&model.RoleAIToolPermission{},
 	&model.AIChatSession{},
 	&model.AIChatMessage{},
 }

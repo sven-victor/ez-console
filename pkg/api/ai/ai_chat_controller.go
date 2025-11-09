@@ -2,6 +2,7 @@ package aiapi
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
+	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -32,10 +34,10 @@ func (c *AIChatController) RegisterRoutes(router *gin.RouterGroup) {
 	chat := router.Group("/chat")
 	{
 		chat.GET("/sessions", c.ListChatSessions)
-		chat.POST("/sessions", c.CreateChatSession)
+		chat.POST("/sessions", middleware.RequirePermission("ai:chat:create"), c.CreateChatSession)
 		chat.GET("/sessions/:sessionId", c.GetChatSession)
 		chat.DELETE("/sessions/:sessionId", c.DeleteChatSession)
-		chat.POST("/sessions/:sessionId", c.StreamChat)
+		chat.POST("/sessions/:sessionId", middleware.RequirePermission("ai:chat:create"), c.StreamChat)
 	}
 }
 
@@ -342,7 +344,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	// Create streaming chat completion
 	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, openaiMessages, options...)
 	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to create chat completion stream", err)))
+		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", fmt.Sprintf("Failed to create chat completion stream: %s", err))))
 		return
 	}
 	defer stream.Close()
@@ -361,5 +363,16 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}
 		ctx.SSEvent("message", event)
 		return true
+	})
+}
+
+func init() {
+	middleware.RegisterPermission("AI Chat", "AI Chat", []model.Permission{
+		{
+			Code:          "ai:chat:create",
+			Name:          "Create AI chat",
+			Description:   "Create a new AI chat",
+			OrgPermission: true,
+		},
 	})
 }

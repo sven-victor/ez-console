@@ -672,7 +672,11 @@ Secret Key: ${v.secret_access_key}`;
     },
     manual: !0
   }), k = (i) => {
-    g(i.map((h) => n.find((E) => E.id === h) || { id: h, name: h, description: h }));
+    g(i.map((h) => n.find((E) => E.id === h) || {
+      id: h,
+      name: h,
+      description: h
+    }));
   };
   return /* @__PURE__ */ e.jsx(
     U,

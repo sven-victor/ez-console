@@ -39,5 +39,12 @@ export default {
   },
   chat: {
     openAssistant: '打开智能助手',
+    newConversation: '新建对话',
+    defaultConversationTitle: '新建对话',
+    deleteConversationFailed: '删除对话失败。',
+    requestInProgress: '请求正在进行中，请等待完成。',
+    today: '今天',
+    renameConversation: '重命名',
+    inputPlaceholder: '请输入您的消息',
   },
 };

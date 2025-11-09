@@ -16,6 +16,7 @@ type UtilsToolSet struct{}
 func (t *UtilsToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
 	switch name {
 	case "now":
+		return "", fmt.Errorf("tool not implemented")
 		var params struct {
 			Format string `json:"format"`
 		}

@@ -260,23 +260,6 @@ export async function deleteOrganization(
   );
 }
 
-/** Get user organizations Get all organizations a user belongs to GET /api/system/organizations/user/${param0} */
-export async function getUserOrganizations(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.getUserOrganizationsParams,
-  options?: { [key: string]: any }
-) {
-  const { user_id: param0, ...queryParams } = params;
-  return request<API.ResponseArrayModelOrganization>(
-    `/api/system/organizations/user/${param0}`,
-    {
-      method: "GET",
-      params: { ...queryParams },
-      ...(options || {}),
-    }
-  );
-}
-
 /** List organization users List users in an organization with their roles GET /api/system/organizations/${param0}/users */
 export async function listOrganizationUsers(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -322,6 +305,23 @@ export async function addUserToOrganization(
   );
 }
 
+/** Remove user from organization Remove a user from an organization and remove their roles in that organization DELETE /api/system/organizations/${param0}/users/${param1} */
+export async function removeUserFromOrganization(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.removeUserFromOrganizationParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, user_id: param1, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/system/organizations/${param0}/users/${param1}`,
+    {
+      method: "DELETE",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
 /** Update user organization roles Update a user's roles in an organization PUT /api/system/organizations/${param0}/users/${param1}/roles */
 export async function updateUserOrganizationRoles(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
@@ -344,17 +344,17 @@ export async function updateUserOrganizationRoles(
   );
 }
 
-/** Remove user from organization Remove a user from an organization and remove their roles in that organization DELETE /api/system/organizations/${param0}/users/${param1} */
-export async function removeUserFromOrganization(
+/** Get user organizations Get all organizations a user belongs to GET /api/system/organizations/user/${param0} */
+export async function getUserOrganizations(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
-  params: API.removeUserFromOrganizationParams,
+  params: API.getUserOrganizationsParams,
   options?: { [key: string]: any }
 ) {
-  const { id: param0, user_id: param1, ...queryParams } = params;
-  return request<API.ResponseUtilMessageData>(
-    `/api/system/organizations/${param0}/users/${param1}`,
+  const { user_id: param0, ...queryParams } = params;
+  return request<API.ResponseArrayModelOrganization>(
+    `/api/system/organizations/user/${param0}`,
     {
-      method: "DELETE",
+      method: "GET",
       params: { ...queryParams },
       ...(options || {}),
     }
@@ -470,6 +470,7 @@ export async function listToolSets(
       current: "1",
       // page_size has a default value: 10
       page_size: "10",
+
       ...params,
     },
     ...(options || {}),

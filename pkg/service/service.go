@@ -59,7 +59,7 @@ func NewService(ctx context.Context) *Service {
 	s := &Service{
 		UserService:           userService,
 		PermissionService:     new(PermissionService),
-		RoleService:           new(RoleService),
+		RoleService:           NewRoleService(toolSetService),
 		SystemService:         NewSystemService(baseService),
 		OAuthService:          oauthService,
 		SessionService:        &SessionService{geoipService: geoipService},

@@ -17,6 +17,7 @@ export declare type AccessType = "public" | "private" | "owner";
 
 declare interface Action extends ButtonProps {
     key: string;
+    label?: string;
     permission?: string;
     icon?: React.ReactNode;
     tooltip?: string;
@@ -33,6 +34,16 @@ declare interface Action extends ButtonProps {
 export declare const Actions: ({ actions }: {
     actions: Action[];
 }) => JSX_2.Element[];
+
+export declare interface addUserToOrganizationParams {
+    /** Organization ID */
+    id: string;
+}
+
+export declare interface AddUserToOrganizationRequest {
+    role_ids: string[];
+    user_id: string;
+}
 
 /**
  * Admin guard component - only admin can view content
@@ -111,6 +122,8 @@ export declare interface AIModel {
     model_id: string;
     /** Model name */
     name: string;
+    /** Organization ID */
+    organization_id: string;
     /** Provider (openai, etc.) */
     provider: AIModelProvider;
     /** Status */
@@ -175,6 +188,36 @@ export declare const api: {
     testOauthCallback(options?: {
         [key: string]: any;
     }): Promise<API.TestOAuthCallbackResponse>;
+    listOrganizations(params: API.listOrganizationsParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseModelOrganization>;
+    createOrganization(body: API.CreateOrganizationRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.Organization>;
+    getOrganization(params: API.getOrganizationParams, options?: {
+        [key: string]: any;
+    }): Promise<API.Organization>;
+    updateOrganization(params: API.updateOrganizationParams, body: API.UpdateOrganizationRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.Organization>;
+    deleteOrganization(params: API.deleteOrganizationParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    listOrganizationUsers(params: API.listOrganizationUsersParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseServiceOrganizationUser>;
+    addUserToOrganization(params: API.addUserToOrganizationParams, body: API.AddUserToOrganizationRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    removeUserFromOrganization(params: API.removeUserFromOrganizationParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    updateUserOrganizationRoles(params: API.updateUserOrganizationRolesParams, body: API.UpdateUserOrganizationRolesRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    getUserOrganizations(params: API.getUserOrganizationsParams, options?: {
+        [key: string]: any;
+    }): Promise<API.Organization[]>;
     getSecuritySettings(options?: {
         [key: string]: any;
     }): Promise<API.SecuritySettings>;
@@ -196,6 +239,33 @@ export declare const api: {
     testSmtpConnection(body: API.SMTPTestRequest, options?: {
         [key: string]: any;
     }): Promise<API.SMTPTestResponse>;
+    listToolSets(params: API.listToolSetsParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseModelToolSet>;
+    createToolSet(body: API.CreateToolSetRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.ToolSet>;
+    getToolSet(params: API.getToolSetParams, options?: {
+        [key: string]: any;
+    }): Promise<API.ToolSet>;
+    updateToolSet(params: API.updateToolSetParams, body: API.UpdateToolSetRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.ToolSet>;
+    deleteToolSet(params: API.deleteToolSetParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    updateToolSetStatus(params: API.updateToolSetStatusParams, body: API.UpdateToolSetStatusRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.ToolSet>;
+    testToolSet(params: API.testToolSetParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    getToolSetTools(params: API.getToolSetToolsParams, options?: {
+        [key: string]: any;
+    }): Promise<API.Tool[]>;
+    getToolSetTypeDefinitions(options?: {
+        [key: string]: any;
+    }): Promise<API.ToolSetTypeDefinition[]>;
     handleCallback(params: API.handleCallbackParams, options?: {
         [key: string]: any;
     }): Promise<API.LoginResponse>;
@@ -510,9 +580,17 @@ export declare interface CreateChatSessionRequest {
     title: string;
 }
 
+export declare interface CreateOrganizationRequest {
+    description?: string;
+    name: string;
+    status: string;
+}
+
 export declare interface CreateRoleRequest {
+    ai_tool_permissions: RoleAIToolPermissionRequest[];
     description: string;
     name: string;
+    organization_id: string;
     permissions: string[];
     policy_document: PolicyDocument;
 }
@@ -579,6 +657,11 @@ export declare interface deleteAIModelParams {
 export declare interface deleteChatSessionParams {
     /** Chat session ID */
     sessionId: string;
+}
+
+export declare interface deleteOrganizationParams {
+    /** Organization ID */
+    id: string;
 }
 
 export declare interface deleteRoleParams {
@@ -713,6 +796,11 @@ export declare interface getLoginUrlParams {
     provider: string;
 }
 
+export declare interface getOrganizationParams {
+    /** Organization ID */
+    id: string;
+}
+
 export declare interface getRoleParams {
     /** Role ID */
     id: string;
@@ -769,6 +857,11 @@ export declare interface getUserLogsParams {
     current?: number;
     /** Number of items per page */
     page_size?: number;
+}
+
+export declare interface getUserOrganizationsParams {
+    /** User ID */
+    user_id: string;
 }
 
 export declare interface getUserParams {
@@ -935,6 +1028,26 @@ export declare interface listFilesParams {
     access?: string;
 }
 
+export declare interface listOrganizationsParams {
+    /** Current page */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+    /** Search */
+    search?: string;
+}
+
+export declare interface listOrganizationUsersParams {
+    /** Organization ID */
+    id: string;
+    /** Current page */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+    /** Search */
+    search?: string;
+}
+
 export declare interface listRolesParams {
     /** Current page */
     current?: number;
@@ -942,6 +1055,8 @@ export declare interface listRolesParams {
     page_size?: number;
     /** Search */
     search?: string;
+    /** Filter by organization ID (empty for global roles) */
+    organization_id?: string;
 }
 
 export declare interface listToolSetsParams {
@@ -951,6 +1066,8 @@ export declare interface listToolSetsParams {
     page_size?: number;
     /** Search keyword */
     search?: string;
+    /** Include tool definitions in response */
+    include_tools?: boolean;
 }
 
 export declare interface listUsersParams {
@@ -1041,6 +1158,40 @@ export declare interface OAuthSettings {
     wellknown_endpoint: string;
 }
 
+export declare interface Organization {
+    created_at: string;
+    description: string;
+    id: string;
+    name: string;
+    /** active, disabled */
+    status: string;
+    updated_at: string;
+}
+
+export declare interface OrganizationUser {
+    avatar: string;
+    created_at: string;
+    disable_change_password: boolean;
+    email: string;
+    full_name: string;
+    id: string;
+    last_login: string;
+    ldap_dn: string;
+    mfa_enabled: boolean;
+    mfa_enforced: boolean;
+    oauth_id: string;
+    oauth_provider: string;
+    organization_roles: Role[];
+    organizations: Organization[];
+    password_changed_at: string;
+    phone: string;
+    roles: Role[];
+    source: UserSource;
+    status: string;
+    updated_at: string;
+    username: string;
+}
+
 export declare interface PaginationResponseModelAIChatSession {
     code: string;
     current: number;
@@ -1069,6 +1220,14 @@ export declare interface PaginationResponseModelFile {
     code: string;
     current: number;
     data: File_2[];
+    page_size: number;
+    total: number;
+}
+
+export declare interface PaginationResponseModelOrganization {
+    code: string;
+    current: number;
+    data: Organization[];
     page_size: number;
     total: number;
 }
@@ -1105,6 +1264,14 @@ export declare interface PaginationResponseModelUser {
     total: number;
 }
 
+export declare interface PaginationResponseServiceOrganizationUser {
+    code: string;
+    current: number;
+    data: OrganizationUser[];
+    page_size: number;
+    total: number;
+}
+
 export declare type PasswordComplexity = "low" | "medium" | "high" | "very_high";
 
 export declare interface Permission {
@@ -1113,6 +1280,8 @@ export declare interface Permission {
     description: string;
     id: string;
     name: string;
+    /** OrgPermission indicates if this permission is organization-scoped */
+    org_permission: boolean;
     updated_at: string;
 }
 
@@ -1162,6 +1331,13 @@ export declare interface PrivateRouteProps {
     requiredPermissions?: string[];
 }
 
+export declare interface removeUserFromOrganizationParams {
+    /** Organization ID */
+    id: string;
+    /** User ID */
+    user_id: string;
+}
+
 export declare interface resetUserPasswordParams {
     /** User ID */
     id: string;
@@ -1175,12 +1351,6 @@ export declare interface ResetUserPasswordResponse {
     new_password: string;
 }
 
-export declare interface ResponseArrayAiapiTool {
-    code: string;
-    data: Tool[];
-    err: string;
-}
-
 export declare interface ResponseArrayAuthorizationapiOAuthProvider {
     code: string;
     data: OAuthProvider[];
@@ -1190,6 +1360,12 @@ export declare interface ResponseArrayAuthorizationapiOAuthProvider {
 export declare interface ResponseArrayModelFile {
     code: string;
     data: File_2[];
+    err: string;
+}
+
+export declare interface ResponseArrayModelOrganization {
+    code: string;
+    data: Organization[];
     err: string;
 }
 
@@ -1220,6 +1396,12 @@ export declare interface ResponseArrayServiceSessionInfo {
 export declare interface ResponseArrayServiceToolSetTypeDefinition {
     code: string;
     data: ToolSetTypeDefinition[];
+    err: string;
+}
+
+export declare interface ResponseArraySystemapiTool {
+    code: string;
+    data: Tool[];
     err: string;
 }
 
@@ -1262,6 +1444,12 @@ export declare interface ResponseModelLDAPTestResponse {
 export declare interface ResponseModelOAuthSettings {
     code: string;
     data: OAuthSettings;
+    err: string;
+}
+
+export declare interface ResponseModelOrganization {
+    code: string;
+    data: Organization;
     err: string;
 }
 
@@ -1403,14 +1591,36 @@ export declare interface restoreUserParams {
 }
 
 export declare interface Role {
+    /** AIToolPermissions stores the AI tool permissions assigned to the role. */
+    ai_tool_permissions: RoleAIToolPermission[];
     created_at: string;
     description: string;
     id: string;
     name: string;
+    organization: Organization;
+    /** OrganizationID is the organization this role belongs to. If empty, the role is global.
+     Role names must be unique within the same organization (or among global roles if OrganizationID is nil) */
+    organization_id: string;
     permissions: Permission[];
     /** Permission configuration based on IAM-style policies, stored in JSON format */
     policy_document: PolicyDocument;
     updated_at: string;
+}
+
+export declare interface RoleAIToolPermission {
+    created_at: string;
+    id: string;
+    organization_id: string;
+    role_id: string;
+    tool_name: string;
+    toolset: ToolSet;
+    toolset_id: string;
+    updated_at: string;
+}
+
+export declare interface RoleAIToolPermissionRequest {
+    tools: string[];
+    toolset_id: string;
 }
 
 export declare interface SecuritySettings {
@@ -1490,6 +1700,7 @@ export declare interface SetServiceAccountPolicyRequest {
 
 export declare interface SiteConfig {
     disable_local_user_login: boolean;
+    enable_multi_org: boolean;
     home_page: string;
     logo: string;
     menu: MenuConfig[];
@@ -1559,6 +1770,7 @@ export declare interface SystemInfo {
 
 export declare interface SystemSettings {
     disable_local_user_login: boolean;
+    enable_multi_org: boolean;
     home_page: string;
     logo: string;
     name: string;
@@ -1634,6 +1846,14 @@ export declare interface ToolCall {
 
 export declare type ToolCallStatus = "pending" | "running" | "completed" | "failed";
 
+export declare interface ToolDefinition {
+    description: string;
+    name: string;
+    parameters: any;
+    strict: boolean;
+    type: string;
+}
+
 export declare interface ToolSet {
     /** Additional configuration */
     config: Record<string, any>;
@@ -1645,8 +1865,12 @@ export declare interface ToolSet {
     id: string;
     /** Toolset name */
     name: string;
+    /** Organization ID */
+    organization_id: string;
     /** Status */
     status: ToolSetStatus;
+    /** Available tools (runtime only) */
+    tools: ToolDefinition[];
     /** Toolset type (mcp, etc.) */
     type: ToolSetType;
     updated_at: string;
@@ -1760,14 +1984,27 @@ export declare interface UpdateOAuthSettingsRequest {
     wellknown_endpoint: string;
 }
 
+export declare interface updateOrganizationParams {
+    /** Organization ID */
+    id: string;
+}
+
+export declare interface UpdateOrganizationRequest {
+    description?: string;
+    name: string;
+    status: string;
+}
+
 export declare interface updateRoleParams {
     /** Role ID */
     id: string;
 }
 
 export declare interface UpdateRoleRequest {
+    ai_tool_permissions: RoleAIToolPermissionRequest[];
     description: string;
     name: string;
+    organization_id: string;
     permissions: string[];
     policy_document: PolicyDocument;
 }
@@ -1827,6 +2064,17 @@ export declare interface UpdateToolSetStatusRequest {
     status: ToolSetStatus;
 }
 
+export declare interface updateUserOrganizationRolesParams {
+    /** Organization ID */
+    id: string;
+    /** User ID */
+    user_id: string;
+}
+
+export declare interface UpdateUserOrganizationRolesRequest {
+    role_ids: string[];
+}
+
 export declare interface updateUserParams {
     /** User ID */
     id: string;
@@ -1866,6 +2114,7 @@ export declare interface User {
     mfa_enforced: boolean;
     oauth_id: string;
     oauth_provider: string;
+    organizations: Organization[];
     password_changed_at: string;
     phone: string;
     roles: Role[];

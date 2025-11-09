@@ -83,7 +83,7 @@ func (s *ToolSetService) DeleteToolSet(ctx context.Context, organizationID, id s
 }
 
 // ListToolSets lists toolsets with pagination
-func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string) ([]model.ToolSet, int64, error) {
+func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, includeTools bool) ([]model.ToolSet, int64, error) {
 	var toolsets []model.ToolSet
 	var total int64
 
@@ -104,6 +104,19 @@ func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string
 	offset := (current - 1) * pageSize
 	if err := query.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&toolsets).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to list toolsets: %w", err)
+	}
+
+	if includeTools {
+		for i := range toolsets {
+			if toolsets[i].Status != model.ToolSetStatusEnabled {
+				continue
+			}
+			toolDefinitions, err := s.GetToolSetToolDefinitions(ctx, organizationID, toolsets[i].ResourceID)
+			if err != nil {
+				return nil, 0, fmt.Errorf("failed to list tools for toolset %s: %w", toolsets[i].ResourceID, err)
+			}
+			toolsets[i].Tools = toolDefinitions
+		}
 	}
 
 	return toolsets, total, nil
@@ -223,4 +236,40 @@ func (s *ToolSetService) GetToolSetTools(ctx context.Context, organizationID, id
 	}
 
 	return tools, nil
+}
+
+// GetToolSetToolDefinitions returns tool definitions retrieved from the toolset instance.
+func (s *ToolSetService) GetToolSetToolDefinitions(ctx context.Context, organizationID, id string) ([]model.ToolDefinition, error) {
+	tools, err := s.GetToolSetTools(ctx, organizationID, id)
+	if err != nil {
+		return nil, err
+	}
+	return convertOpenAITools(tools), nil
+}
+
+func convertOpenAITools(tools []openai.Tool) []model.ToolDefinition {
+	definitions := make([]model.ToolDefinition, 0, len(tools))
+	for _, tool := range tools {
+		definition := model.ToolDefinition{
+			Type: string(tool.Type),
+		}
+
+		if tool.Function != nil {
+			definition.Name = tool.Function.Name
+			definition.Description = tool.Function.Description
+			definition.Parameters = tool.Function.Parameters
+			definition.Strict = tool.Function.Strict
+			if definition.Type == "" {
+				definition.Type = "function"
+			}
+		}
+
+		if definition.Name == "" {
+			definition.Name = definition.Type
+		}
+
+		definitions = append(definitions, definition)
+	}
+
+	return definitions
 }

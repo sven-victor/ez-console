@@ -2,15 +2,15 @@ import { r as c } from "./client.js";
 import h from "i18next";
 import { initReactI18next as f } from "react-i18next";
 import v from "i18next-browser-languagedetector";
-const ae = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const r = t instanceof Date ? t : new Date(t), o = r.getFullYear(), n = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), d = String(r.getHours()).padStart(2, "0"), i = String(r.getMinutes()).padStart(2, "0"), s = String(r.getSeconds()).padStart(2, "0");
-  return e.replace("YYYY", String(o)).replace("MM", n).replace("DD", a).replace("HH", d).replace("mm", i).replace("ss", s);
+const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
+  const a = t instanceof Date ? t : new Date(t), o = a.getFullYear(), n = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), d = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), s = String(a.getSeconds()).padStart(2, "0");
+  return e.replace("YYYY", String(o)).replace("MM", n).replace("DD", r).replace("HH", d).replace("mm", i).replace("ss", s);
 }, se = (t, e) => {
   if (typeof t != "string")
     throw new Error("Color must be a string.");
-  const r = t.trim().toLowerCase();
-  if (r.startsWith("#")) {
-    let i = r.slice(1);
+  const a = t.trim().toLowerCase();
+  if (a.startsWith("#")) {
+    let i = a.slice(1);
     if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
     const s = parseInt(i.slice(0, 2), 16), l = parseInt(i.slice(2, 4), 16), u = parseInt(i.slice(4, 6), 16);
@@ -18,14 +18,14 @@ const ae = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
       throw new Error("Invalid characters in HEX color value.");
     return `rgba(${s}, ${l}, ${u}, ${e})`;
   }
-  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, n = r.match(o);
+  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, n = a.match(o);
   if (n) {
     const i = parseInt(n[1], 10), s = parseInt(n[2], 10), l = parseInt(n[3], 10);
     if (i < 0 || i > 255 || s < 0 || s > 255 || l < 0 || l > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
     return `rgba(${i}, ${s}, ${l}, ${e})`;
   }
-  const a = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, d = r.match(a);
+  const r = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, d = a.match(r);
   if (d) {
     const i = parseInt(d[1], 10), s = parseInt(d[2], 10), l = parseInt(d[3], 10);
     if (i < 0 || i > 255 || s < 0 || s > 255 || l < 0 || l > 255)
@@ -38,8 +38,8 @@ const ae = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
 }, oe = (t) => {
   if (!t)
     return "";
-  const [e, r] = t.split("@");
-  return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + r : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + r;
+  const [e, a] = t.split("@");
+  return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + a : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + a;
 }, ne = (t) => {
   const e = "/";
   return t ? e.endsWith("/") ? t.startsWith("/") ? e + t.substring(1) : e + t : t.startsWith("/") ? e + t : e + "/" + t : e;
@@ -53,27 +53,27 @@ async function b(t, e) {
     ...e || {}
   });
 }
-async function A(t, e, r) {
+async function A(t, e, a) {
   const o = new FormData();
   return e && o.append("file", e), Object.keys(t).forEach((n) => {
-    const a = t[n];
-    a != null && (typeof a == "object" && !(a instanceof File) ? a instanceof Array ? a.forEach((d) => o.append(n, d || "")) : o.append(n, JSON.stringify(a)) : o.append(n, a));
+    const r = t[n];
+    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((d) => o.append(n, d || "")) : o.append(n, JSON.stringify(r)) : o.append(n, r));
   }), c("/api/files", {
     method: "POST",
     data: o,
     requestType: "form",
-    ...r || {}
+    ...a || {}
   });
 }
 async function S(t, e) {
-  const { fileKey: r, ...o } = t;
-  return c(`/api/files/${r}`, {
+  const { fileKey: a, ...o } = t;
+  return c(`/api/files/${a}`, {
     method: "GET",
     params: { ...o },
     ...e || {}
   });
 }
-async function P(t) {
+async function y(t) {
   return c("/api/statistics", {
     method: "GET",
     ...t || {}
@@ -82,10 +82,10 @@ async function P(t) {
 const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: S,
-  getStatistics: P,
+  getStatistics: y,
   listFiles: b,
   uploadFile: A
-}, Symbol.toStringTag, { value: "Module" })), y = {
+}, Symbol.toStringTag, { value: "Module" })), P = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -351,6 +351,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Next",
   enter: "Enter",
   select: "Select",
+  view: "View",
   pagination: {
     total: "{{start}}-{{end}} of {{total}} items"
   },
@@ -586,8 +587,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     saveError: "Failed to {{action}} role",
     permissionRequired: "Please select at least one permission",
     invalidJsonFormat: "Invalid JSON format",
-    permissionOrPolicyRequired: "Please select at least one permission or policy",
-    policyDocument: "Policy Document"
+    organization: "Organization",
+    global: "Global",
+    filterByOrganization: "Filter by Organization",
+    selectOrganization: "Select Organization (empty for global)",
+    organizationHelp: "Select the organization this role belongs to",
+    permissionOrPolicyRequired: "Please select at least one permission or provide a policy document.",
+    policyDocument: "Policy Document",
+    roleType: "Role Type",
+    roleTypeRequired: "Please select role type",
+    roleTypeCannotChange: "Role type cannot be changed after creation",
+    globalRole: "Global Role",
+    organizationRole: "Organization Role",
+    organizationRequired: "Please select an organization",
+    noOrganizationsAvailable: "No organizations available. Please contact your administrator.",
+    aiPermissions: "AI Tool Permissions",
+    loadAiToolsetsError: "Failed to load AI toolsets.",
+    aiToolsetNoTools: "No tools available in this toolset.",
+    aiToolsetsEmpty: "No AI toolsets available for this organization.",
+    aiPermissionsGlobalInfo: "AI tool permissions are only available for organization roles."
   },
   permission: {
     title: {
@@ -620,7 +638,26 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.settings.update": "Update settings",
       "system.settings.view": "View settings",
       "system.view": "View system information",
-      "system.audit_log.view": "View audit logs"
+      "system.audit_log.view": "View audit logs",
+      AI_Model_Management: "AI Model Management",
+      AI_Chat: "AI Chat",
+      Toolset_Management: "Toolset Management",
+      Other: "Other",
+      "ai.models.create": "Create AI models",
+      "ai.models.delete": "Delete AI models",
+      "ai.models.test": "Test AI models",
+      "ai.models.update": "Update AI models",
+      "ai.models.view": "View AI models",
+      "ai.chat.create": "Create AI chat",
+      "system.organization.create": "Create organization",
+      "system.organization.delete": "Delete organization",
+      "system.organization.update": "Update organization",
+      "system.organization.view": "View organizations",
+      "system.toolsets.create": "Create toolsets",
+      "system.toolsets.delete": "Delete toolsets",
+      "system.toolsets.test": "Test toolsets",
+      "system.toolsets.update": "Update toolsets",
+      "system.toolsets.view": "View toolsets"
     }
   },
   auditLog: {
@@ -786,7 +823,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "SMTP Settings",
       base: "Base Settings",
       toolSets: "Tool Sets Settings",
-      aiModels: "AI Models Settings"
+      aiModels: "AI Models Settings",
+      organizations: "Organization Management"
     },
     days: "days",
     minutes: "minutes",
@@ -798,7 +836,56 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logo: "Logo",
       homePage: "Home Page",
       disableLocalUserLogin: "Disable Local User Login",
-      disableLocalUserLoginTooltip: "Disable local user login, It is only valid when other authentication methods are enabled."
+      disableLocalUserLoginTooltip: "Disable local user login, It is only valid when other authentication methods are enabled.",
+      enableMultiOrg: "Enable Multi-Organization",
+      enableMultiOrgTooltip: "Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab."
+    },
+    organizations: {
+      title: "Organization Management",
+      create: "Create Organization",
+      edit: "Edit Organization",
+      deleteConfirm: "Delete Organization",
+      deleteConfirmContent: "Are you sure you want to delete this organization? This action cannot be undone.",
+      fetchFailed: "Failed to fetch organizations",
+      createSuccess: "Organization created successfully",
+      createFailed: "Failed to create organization",
+      updateSuccess: "Organization updated successfully",
+      updateFailed: "Failed to update organization",
+      deleteSuccess: "Organization deleted successfully",
+      deleteFailed: "Failed to delete organization",
+      name: "Name",
+      nameRequired: "Please enter organization name",
+      description: "Description",
+      status: "Status",
+      active: "Active",
+      disabled: "Disabled",
+      searchPlaceholder: "Search organizations...",
+      detail: "Organization Detail",
+      users: {
+        title: "Organization Users",
+        add: "Add User",
+        addSuccess: "User added to organization successfully",
+        addFailed: "Failed to add user to organization",
+        updateRolesSuccess: "User roles updated successfully",
+        updateRolesFailed: "Failed to update user roles",
+        removeSuccess: "User removed from organization successfully",
+        removeFailed: "Failed to remove user from organization",
+        fetchFailed: "Failed to fetch organization users",
+        username: "Username",
+        email: "Email",
+        fullName: "Full Name",
+        status: "Status",
+        roles: "Roles",
+        editRoles: "Edit Roles",
+        remove: "Remove",
+        searchPlaceholder: "Search users...",
+        user: "User",
+        userRequired: "Please select a user",
+        selectUser: "Select a user",
+        selectRoles: "Select roles",
+        removeConfirm: "Remove User",
+        removeConfirmContent: "Are you sure you want to remove this user from this organization? This will also remove all their roles in this organization."
+      }
     },
     security: {
       mfa: {
@@ -1134,7 +1221,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, E = {
+}, z = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1172,8 +1259,18 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "Default AI model set successfully",
     setDefaultFailed: "Failed to set default AI model",
     deleteConfirm: "Are you sure you want to delete this AI model?"
+  },
+  chat: {
+    openAssistant: "Open AI Assistant",
+    newConversation: "New Conversation",
+    defaultConversationTitle: "New Conversation",
+    deleteConversationFailed: "Failed to delete conversation.",
+    requestInProgress: "Request is in progress, please wait for the request to complete.",
+    today: "Today",
+    renameConversation: "Rename",
+    inputPlaceholder: "Please input your message"
   }
-}, z = {
+}, E = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -2453,7 +2550,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   common: p,
   authorization: m,
   system: g
-}, U = {
+}, F = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2512,6 +2609,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "下一页",
   enter: "请输入",
   select: "请选择",
+  view: "查看",
   pagination: {
     total: "第 {{start}}-{{end}} 条，共 {{total}} 条"
   },
@@ -2525,7 +2623,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, F = {
+}, U = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2747,13 +2845,30 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     saveError: "{{action}}角色失败",
     permissionRequired: "请至少选择一个权限",
     insertTemplate: "插入模板",
+    organization: "组织",
+    global: "全局",
+    filterByOrganization: "按组织过滤",
+    selectOrganization: "选择组织（空为全局角色）",
+    organizationHelp: "选择此角色所属的组织",
+    permissionOrPolicyRequired: "请至少选择一个权限或提供策略文档。",
+    roleType: "角色类型",
+    roleTypeRequired: "请选择角色类型",
+    roleTypeCannotChange: "角色类型在创建后无法更改",
+    globalRole: "全局角色",
+    organizationRole: "组织角色",
+    organizationRequired: "请选择一个组织",
+    noOrganizationsAvailable: "没有可用的组织，请联系管理员。",
+    aiPermissions: "AI 工具权限",
+    loadAiToolsetsError: "加载 AI 工具集失败。",
+    aiToolsetNoTools: "该工具集中没有可用工具。",
+    aiToolsetsEmpty: "该组织暂无可用的 AI 工具集。",
+    aiPermissionsGlobalInfo: "AI 工具权限仅适用于组织角色。",
     allowAll: "允许所有",
     denyAll: "拒绝所有",
     allowWithAction: "允许特定操作",
     denyWithCondition: "拒绝特定条件",
     allowWithUri: "允许特定URI",
     invalidJsonFormat: "JSON格式错误",
-    permissionOrPolicyRequired: "请至少选择一个权限或策略",
     policyDocument: "策略文档"
   },
   permission: {
@@ -2806,7 +2921,26 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "authorization.service_account.role.assign": "分配服务账户角色",
       "authorization.service_account.policy.view": "查看服务账户策略",
       "authorization.service_account.policy.update": "更新服务账户策略",
-      "statistics.view": "查看统计信息"
+      "statistics.view": "查看统计信息",
+      AI_Model_Management: "AI模型管理",
+      AI_Chat: "AI 对话",
+      Toolset_Management: "工具集管理",
+      Other: "其他",
+      "ai.models.create": "创建AI模型",
+      "ai.models.delete": "删除AI模型",
+      "ai.models.test": "测试AI模型",
+      "ai.models.update": "更新AI模型",
+      "ai.models.view": "查看AI模型",
+      "ai.chat.create": "创建AI对话",
+      "system.organization.create": "创建组织",
+      "system.organization.delete": "删除组织",
+      "system.organization.update": "更新组织",
+      "system.organization.view": "查看组织",
+      "system.toolsets.create": "创建工具集",
+      "system.toolsets.delete": "删除工具集",
+      "system.toolsets.test": "测试工具集",
+      "system.toolsets.update": "更新工具集",
+      "system.toolsets.view": "查看工具集"
     }
   },
   auditLog: {
@@ -2975,7 +3109,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "SMTP设置",
       base: "基础设置",
       toolSets: "工具集设置",
-      aiModels: "AI模型设置"
+      aiModels: "AI模型设置",
+      organizations: "组织管理"
     },
     days: "天",
     minutes: "分钟",
@@ -2987,7 +3122,56 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logo: "图标",
       homePage: "首页",
       disableLocalUserLogin: "禁用本地用户登录",
-      disableLocalUserLoginTooltip: "禁用本地用户登录，仅在其他认证方法启用时有效"
+      disableLocalUserLoginTooltip: "禁用本地用户登录，仅在其他认证方法启用时有效",
+      enableMultiOrg: "启用多组织",
+      enableMultiOrgTooltip: "启用多组织功能。启用后，可在“组织管理”标签中管理组织。"
+    },
+    organizations: {
+      title: "组织管理",
+      create: "创建组织",
+      edit: "编辑组织",
+      deleteConfirm: "删除组织",
+      deleteConfirmContent: "确定要删除该组织吗？此操作不可撤销。",
+      fetchFailed: "获取组织列表失败",
+      createSuccess: "组织创建成功",
+      createFailed: "创建组织失败",
+      updateSuccess: "组织更新成功",
+      updateFailed: "更新组织失败",
+      deleteSuccess: "组织删除成功",
+      deleteFailed: "删除组织失败",
+      name: "名称",
+      nameRequired: "请输入组织名称",
+      description: "描述",
+      status: "状态",
+      active: "启用",
+      disabled: "禁用",
+      searchPlaceholder: "搜索组织...",
+      detail: "组织详情",
+      users: {
+        title: "组织用户",
+        add: "添加用户",
+        addSuccess: "用户已成功加入组织",
+        addFailed: "添加用户到组织失败",
+        updateRolesSuccess: "用户角色更新成功",
+        updateRolesFailed: "用户角色更新失败",
+        removeSuccess: "用户已从组织移除",
+        removeFailed: "从组织移除用户失败",
+        fetchFailed: "获取组织用户失败",
+        username: "用户名",
+        email: "邮箱",
+        fullName: "姓名",
+        status: "状态",
+        roles: "角色",
+        editRoles: "编辑角色",
+        remove: "移除",
+        searchPlaceholder: "搜索用户...",
+        user: "用户",
+        userRequired: "请选择用户",
+        selectUser: "请选择用户",
+        selectRoles: "请选择角色",
+        removeConfirm: "移除用户",
+        removeConfirmContent: "确定要将该用户从组织中移除吗？这也会移除其在该组织中的所有角色。"
+      }
     },
     security: {
       mfa: {
@@ -3363,6 +3547,16 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "默认AI模型设置成功",
     setDefaultFailed: "设置默认AI模型失败",
     deleteConfirm: "确定要删除此AI模型吗？"
+  },
+  chat: {
+    openAssistant: "打开智能助手",
+    newConversation: "新建对话",
+    defaultConversationTitle: "新建对话",
+    deleteConversationFailed: "删除对话失败。",
+    requestInProgress: "请求正在进行中，请等待完成。",
+    today: "今天",
+    renameConversation: "重命名",
+    inputPlaceholder: "请输入您的消息"
   }
 }, N = {
   loading: "Wird geladen...",
@@ -3429,7 +3623,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, B = {
+}, O = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -3859,7 +4053,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, V = {
+}, B = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -4220,7 +4414,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, O = {
+}, V = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -6989,9 +7183,9 @@ h.use(v).use(f).init({
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: y,
-      common: U,
-      authorization: F,
+      translation: P,
+      common: F,
+      authorization: U,
       system: I,
       ai: M
     },
@@ -7000,14 +7194,14 @@ h.use(v).use(f).init({
       common: w,
       authorization: R,
       system: D,
-      ai: E
+      ai: z
     },
     "de-DE": {
-      translation: z,
+      translation: E,
       common: N,
-      authorization: B,
-      system: V,
-      ai: O
+      authorization: O,
+      system: B,
+      ai: V
     },
     "es-ES": {
       translation: T,
@@ -7051,7 +7245,7 @@ const de = {
 export {
   de as P,
   le as b,
-  ae as f,
+  re as f,
   ne as g,
   oe as m,
   se as t

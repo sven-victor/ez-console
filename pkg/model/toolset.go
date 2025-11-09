@@ -61,11 +61,21 @@ type ToolSet struct {
 	Status         ToolSetStatus       `gorm:"size:20;not null;default:'enabled'" json:"status"` // Status
 	CreatedBy      string              `gorm:"size:36;not null" json:"created_by"`               // Creator user ID
 	UpdatedBy      string              `gorm:"size:36" json:"updated_by"`                        // Last updater user ID
+	Tools          []ToolDefinition    `gorm:"-" json:"tools,omitempty"`                         // Available tools (runtime only)
 }
 
 // TableName returns the table name for ToolSet
 func (ToolSet) TableName() string {
 	return "t_toolsets"
+}
+
+// ToolDefinition represents a tool definition exposed by a toolset.
+type ToolDefinition struct {
+	Name        string      `json:"name"`
+	Description string      `json:"description,omitempty"`
+	Parameters  interface{} `json:"parameters,omitempty"`
+	Strict      bool        `json:"strict,omitempty"`
+	Type        string      `json:"type,omitempty"`
 }
 
 // NewToolSet creates a new AI toolset

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -12,7 +13,180 @@ import (
 )
 
 // RoleService provides role-related services
-type RoleService struct{}
+type RoleService struct {
+	toolSetService *ToolSetService
+}
+
+// NewRoleService creates a role service instance.
+func NewRoleService(toolSetService *ToolSetService) *RoleService {
+	return &RoleService{
+		toolSetService: toolSetService,
+	}
+}
+
+// RoleAIToolAssignment represents AI tool assignments for a role.
+type RoleAIToolAssignment struct {
+	ToolSetID string
+	Tools     []string
+}
+
+func deduplicateStrings(values []string) []string {
+	seen := make(map[string]struct{}, len(values))
+	result := make([]string, 0, len(values))
+	for _, value := range values {
+		if value == "" {
+			continue
+		}
+		if _, exists := seen[value]; exists {
+			continue
+		}
+		seen[value] = struct{}{}
+		result = append(result, value)
+	}
+	return result
+}
+
+func (s *RoleService) validateAIToolAssignments(ctx context.Context, organizationID *string, assignments []RoleAIToolAssignment) error {
+	if len(assignments) == 0 {
+		return nil
+	}
+
+	if organizationID == nil || *organizationID == "" {
+		return util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("AI tool permissions can only be configured for organization roles"),
+		}
+	}
+
+	toolSetIDSet := make(map[string]struct{}, len(assignments))
+	toolSetIDs := make([]string, 0, len(assignments))
+
+	for _, assignment := range assignments {
+		if assignment.ToolSetID == "" {
+			return util.ErrorResponse{
+				HTTPCode: http.StatusBadRequest,
+				Code:     "E4001",
+				Err:      errors.New("toolset_id is required"),
+			}
+		}
+		cleanTools := deduplicateStrings(assignment.Tools)
+		if len(cleanTools) == 0 {
+			return util.ErrorResponse{
+				HTTPCode: http.StatusBadRequest,
+				Code:     "E4001",
+				Err:      errors.New("tools cannot be empty"),
+			}
+		}
+		if _, exists := toolSetIDSet[assignment.ToolSetID]; !exists {
+			toolSetIDs = append(toolSetIDs, assignment.ToolSetID)
+			toolSetIDSet[assignment.ToolSetID] = struct{}{}
+		}
+	}
+
+	var toolSets []model.ToolSet
+	if err := db.Session(ctx).Where("resource_id IN ?", toolSetIDs).Find(&toolSets).Error; err != nil {
+		return err
+	}
+
+	if len(toolSets) == 0 {
+		return util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("no matching toolsets found for AI permissions"),
+		}
+	}
+
+	toolSetMap := make(map[string]model.ToolSet, len(toolSets))
+	for _, toolSet := range toolSets {
+		if toolSet.OrganizationID != *organizationID {
+			return util.ErrorResponse{
+				HTTPCode: http.StatusBadRequest,
+				Code:     "E4001",
+				Err:      errors.New("toolset does not belong to the target organization"),
+			}
+		}
+		toolSetMap[toolSet.ResourceID] = toolSet
+	}
+
+	if len(toolSetMap) != len(toolSetIDSet) {
+		return util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("some toolsets were not found"),
+		}
+	}
+
+	if s.toolSetService != nil {
+		for _, assignment := range assignments {
+			toolDefinitions, err := s.toolSetService.GetToolSetToolDefinitions(ctx, *organizationID, assignment.ToolSetID)
+			if err != nil {
+				return util.NewError("E5001", err)
+			}
+			if len(toolDefinitions) == 0 {
+				return util.ErrorResponse{
+					HTTPCode: http.StatusBadRequest,
+					Code:     "E4001",
+					Err:      fmt.Errorf("toolset %s does not expose any tools", assignment.ToolSetID),
+				}
+			}
+			availableTools := make(map[string]struct{}, len(toolDefinitions))
+			for _, definition := range toolDefinitions {
+				availableTools[definition.Name] = struct{}{}
+			}
+			for _, toolName := range deduplicateStrings(assignment.Tools) {
+				if _, exists := availableTools[toolName]; !exists {
+					return util.ErrorResponse{
+						HTTPCode: http.StatusBadRequest,
+						Code:     "E4001",
+						Err:      fmt.Errorf("tool %s is not available in toolset %s", toolName, assignment.ToolSetID),
+					}
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func buildRoleAIToolPermissions(roleID string, organizationID string, assignments []RoleAIToolAssignment) []model.RoleAIToolPermission {
+	permissions := make([]model.RoleAIToolPermission, 0)
+	seen := make(map[string]struct{})
+	for _, assignment := range assignments {
+		cleanTools := deduplicateStrings(assignment.Tools)
+		for _, toolName := range cleanTools {
+			key := fmt.Sprintf("%s|%s", assignment.ToolSetID, toolName)
+			if _, exists := seen[key]; exists {
+				continue
+			}
+			seen[key] = struct{}{}
+			permissions = append(permissions, model.RoleAIToolPermission{
+				RoleID:         roleID,
+				ToolSetID:      assignment.ToolSetID,
+				ToolName:       toolName,
+				OrganizationID: organizationID,
+			})
+		}
+	}
+	return permissions
+}
+
+func (s *RoleService) replaceRoleAIToolPermissions(ctx context.Context, tx *gorm.DB, roleID string, organizationID *string, assignments []RoleAIToolAssignment) error {
+	if err := tx.WithContext(ctx).Where("role_id = ?", roleID).Unscoped().Delete(&model.RoleAIToolPermission{}).Error; err != nil {
+		return err
+	}
+
+	if organizationID == nil || *organizationID == "" || len(assignments) == 0 {
+		return nil
+	}
+
+	records := buildRoleAIToolPermissions(roleID, *organizationID, assignments)
+	if len(records) == 0 {
+		return nil
+	}
+
+	return tx.WithContext(ctx).Create(&records).Error
+}
 
 // validatePermissionAssignment validates that permissions are assigned correctly based on role type
 // Non-org permissions can only be assigned to global roles (OrganizationID == nil)
@@ -76,7 +250,11 @@ func (s *RoleService) ListRoles(ctx context.Context, current, pageSize int, sear
 
 	// Paginated query
 	offset := (current - 1) * pageSize
-	if err := query.Offset(offset).Limit(pageSize).Preload("Permissions").Preload("Organization").Find(&roles).Error; err != nil {
+	if err := query.Offset(offset).Limit(pageSize).
+		Preload("Permissions").
+		Preload("AIToolPermissions").
+		Preload("Organization").
+		Find(&roles).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -86,7 +264,12 @@ func (s *RoleService) ListRoles(ctx context.Context, current, pageSize int, sear
 // GetRole gets a role by ID
 func (s *RoleService) GetRole(ctx context.Context, id string) (*model.Role, error) {
 	var role model.Role
-	if err := db.Session(ctx).Where(&model.Role{Base: model.Base{ResourceID: id}}).Preload("Permissions").Preload("Organization").First(&role).Error; err != nil {
+	if err := db.Session(ctx).
+		Where(&model.Role{Base: model.Base{ResourceID: id}}).
+		Preload("Permissions").
+		Preload("AIToolPermissions").
+		Preload("Organization").
+		First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, util.ErrorResponse{
 				HTTPCode: http.StatusNotFound,
@@ -100,9 +283,17 @@ func (s *RoleService) GetRole(ctx context.Context, id string) (*model.Role, erro
 }
 
 // CreateRole creates a new role
-func (s *RoleService) CreateRole(ctx context.Context, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument) (*model.Role, error) {
+func (s *RoleService) CreateRole(ctx context.Context, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error) {
 	// Validate permission assignment based on role type
 	if err := s.validatePermissionAssignment(ctx, organizationID, permissionIDs); err != nil {
+		return nil, err
+	}
+
+	if organizationID != nil && *organizationID == "" {
+		organizationID = nil
+	}
+
+	if err := s.validateAIToolAssignments(ctx, organizationID, aiAssignments); err != nil {
 		return nil, err
 	}
 
@@ -185,6 +376,10 @@ func (s *RoleService) CreateRole(ctx context.Context, name, description string, 
 				return err
 			}
 		}
+
+		if err := s.replaceRoleAIToolPermissions(ctx, tx, role.ResourceID, organizationID, aiAssignments); err != nil {
+			return err
+		}
 		return nil
 	})
 	if err != nil {
@@ -195,7 +390,7 @@ func (s *RoleService) CreateRole(ctx context.Context, name, description string, 
 }
 
 // UpdateRole updates a role
-func (s *RoleService) UpdateRole(ctx context.Context, id, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument) (*model.Role, error) {
+func (s *RoleService) UpdateRole(ctx context.Context, id, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error) {
 	var role model.Role
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -216,6 +411,10 @@ func (s *RoleService) UpdateRole(ctx context.Context, id, name, description stri
 	}
 
 	// don't change organization id
+	if organizationID != nil && *organizationID == "" {
+		organizationID = nil
+	}
+
 	if role.OrganizationID != nil {
 		if organizationID == nil || *organizationID != *role.OrganizationID {
 			return nil, util.ErrorResponse{
@@ -235,6 +434,10 @@ func (s *RoleService) UpdateRole(ctx context.Context, id, name, description stri
 	}
 
 	if err := s.validatePermissionAssignment(ctx, organizationID, permissionIDs); err != nil {
+		return nil, err
+	}
+
+	if err := s.validateAIToolAssignments(ctx, role.OrganizationID, aiAssignments); err != nil {
 		return nil, err
 	}
 
@@ -311,6 +514,9 @@ func (s *RoleService) UpdateRole(ctx context.Context, id, name, description stri
 			if err := tx.Model(&role).Association("Permissions").Replace(permissions); err != nil {
 				return err
 			}
+		}
+		if err := s.replaceRoleAIToolPermissions(ctx, tx, role.ResourceID, role.OrganizationID, aiAssignments); err != nil {
+			return err
 		}
 		return nil
 	})

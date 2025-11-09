@@ -9,6 +9,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/toolset"
 	"gorm.io/gorm"
 )
 
@@ -161,9 +162,10 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	if err != nil {
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
 	}
-	toolSets, err := s.toolSetService.GetAllEnabledToolSetInstances(ctx)
+
+	toolSets, err := s.getAuthorizedToolSets(ctx, organizationID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get enabled toolset instances: %w", err)
+		return nil, err
 	}
 
 	// Create OpenAI client
@@ -182,13 +184,14 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 
 // GetAvailableTools gets all available tools from enabled toolsets
 func (s *AIChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, error) {
-	toolsetInstances, err := s.toolSetService.GetAllEnabledToolSetInstances(ctx)
+	organizationID := getOrganizationIDFromContext(ctx)
+	toolSets, err := s.getAuthorizedToolSets(ctx, organizationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get enabled toolset instances: %w", err)
 	}
 
 	var allTools []openai.Tool
-	for _, toolset := range toolsetInstances {
+	for _, toolset := range toolSets {
 		tools, err := toolset.ListTools(ctx)
 		if err != nil {
 			// Log error but continue with other toolsets
@@ -200,32 +203,143 @@ func (s *AIChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, e
 	return allTools, nil
 }
 
-// CallTool calls a tool function
-func (s *AIChatService) CallTool(ctx context.Context, toolName string, parameters string) (string, error) {
-	toolsetInstances, err := s.toolSetService.GetAllEnabledToolSetInstances(ctx)
-	if err != nil {
-		return "", fmt.Errorf("failed to get enabled toolset instances: %w", err)
+func (s *AIChatService) getAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+	allowedTools := getAllowedAIToolPermissions(ctx, organizationID)
+	if len(allowedTools) == 0 {
+		return nil, nil
 	}
 
-	// Find the toolset that has this tool
-	for _, toolset := range toolsetInstances {
-		tools, err := toolset.ListTools(ctx)
-		if err != nil {
+	var filtered toolset.ToolSets
+	for toolSetID, toolNames := range allowedTools {
+		if toolSetID == "*" {
+			orgToolSets, _, err := s.toolSetService.ListToolSets(ctx, organizationID, 1, 1000, "", false)
+			if err != nil {
+				return nil, fmt.Errorf("failed to list toolsets: %w", err)
+			}
+			for _, toolSet := range orgToolSets {
+				if toolSet.Status != model.ToolSetStatusEnabled {
+					continue
+				}
+				instance, err := s.toolSetService.createToolSetInstance(&toolSet)
+				if err != nil {
+					return nil, fmt.Errorf("failed to create toolset instance: %w", err)
+				}
+				filtered = append(filtered, newFilteredToolSet(instance, toolNames))
+			}
+		} else {
+			instance, err := s.toolSetService.GetToolSetInstance(ctx, organizationID, toolSetID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get toolset instance %s: %w", toolSetID, err)
+			}
+			filtered = append(filtered, newFilteredToolSet(instance, toolNames))
+		}
+	}
+	return filtered, nil
+}
+
+func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map[string]map[string]struct{} {
+	result := make(map[string]map[string]struct{})
+	if organizationID == "" {
+		return result
+	}
+
+	roles, ok := ctx.Value("roles").([]model.Role)
+	if !ok {
+		return result
+	}
+
+	for _, role := range roles {
+		if role.OrganizationID == nil || *role.OrganizationID == "" && role.Name == "admin" {
+			return map[string]map[string]struct{}{
+				"*": {
+					"*": {},
+				},
+			}
+		}
+		if role.OrganizationID != nil && *role.OrganizationID != "" && *role.OrganizationID != organizationID {
 			continue
 		}
+		for _, perm := range role.AIToolPermissions {
+			if perm.OrganizationID != organizationID {
+				continue
+			}
+			if _, exists := result[perm.ToolSetID]; !exists {
+				result[perm.ToolSetID] = make(map[string]struct{})
+			}
+			result[perm.ToolSetID][perm.ToolName] = struct{}{}
+		}
+	}
 
-		// Check if this toolset has the requested tool
-		for _, tool := range tools {
-			if tool.Function != nil && tool.Function.Name == toolName {
-				// Call the tool
-				result, err := toolset.Call(ctx, toolName, parameters)
-				if err != nil {
-					return "", fmt.Errorf("failed to call tool %s: %w", toolName, err)
-				}
-				return result, nil
+	return result
+}
+
+func getOrganizationIDFromContext(ctx context.Context) string {
+	orgID, _ := ctx.Value("organization_id").(string)
+	return orgID
+}
+
+type filteredToolSet struct {
+	base    toolset.ToolSet
+	allowed map[string]struct{}
+}
+
+func newFilteredToolSet(base toolset.ToolSet, allowed map[string]struct{}) toolset.ToolSet {
+	if len(allowed) == 0 {
+		return base
+	}
+	return &filteredToolSet{
+		base:    base,
+		allowed: allowed,
+	}
+}
+
+func (f *filteredToolSet) GetName() string {
+	return f.base.GetName()
+}
+
+func (f *filteredToolSet) GetDescription() string {
+	return f.base.GetDescription()
+}
+
+func (f *filteredToolSet) Validate() error {
+	return f.base.Validate()
+}
+
+func (f *filteredToolSet) Test(ctx context.Context) error {
+	return f.base.Test(ctx)
+}
+
+func (f *filteredToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
+	if len(f.allowed) > 0 {
+		if _, ok := f.allowed["*"]; !ok {
+			if _, ok := f.allowed[name]; !ok {
+				return "", fmt.Errorf("tool %s is not allowed", name)
 			}
 		}
 	}
+	return f.base.Call(ctx, name, parameters)
+}
 
-	return "", fmt.Errorf("tool %s not found", toolName)
+func (f *filteredToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
+	tools, err := f.base.ListTools(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(f.allowed) == 0 {
+		return tools, nil
+	}
+	filtered := make([]openai.Tool, 0, len(tools))
+	for _, tool := range tools {
+		if _, ok := f.allowed["*"]; ok {
+			filtered = append(filtered, tool)
+			continue
+		}
+		if tool.Function == nil {
+			continue
+		}
+		if _, ok := f.allowed[tool.Function.Name]; ok {
+			filtered = append(filtered, tool)
+		}
+	}
+	return filtered, nil
 }

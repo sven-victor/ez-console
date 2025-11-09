@@ -143,15 +143,16 @@ export async function fetchSSE(url: string, config?: SSEConfig): Promise<Readabl
 
   console.log(response)
   if (!response.ok || !response.body) {
+    let errorMessage = response.statusText
     if (response.body) {
       try {
         const data = await response.json() as API.ErrorResponse;
-        throw new Error(`SSE connection failed: ${data.message}`);
+        errorMessage = `SSE connection failed: ${data.message || data.err}`
       } catch (error) {
-        throw new Error(`SSE connection failed: ${response.statusText}`);
+        errorMessage = `SSE connection failed: ${response.statusText}`
       }
     }
-    throw new Error(`SSE connection failed: ${response.statusText}`);
+    throw new Error(errorMessage);
   }
 
   if (response.status !== 200) {

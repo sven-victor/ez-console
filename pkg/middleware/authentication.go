@@ -328,7 +328,11 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		if cachedUser, ok := GetUserCache(userID); ok {
 			user = cachedUser
 		} else {
-			if err := db.Session(c).Where("resource_id = ?", userID).Preload("Roles.Permissions").First(&user).Error; err != nil {
+			if err := db.Session(c).
+				Where("resource_id = ?", userID).
+				Preload("Roles.Permissions").
+				Preload("Roles.AIToolPermissions").
+				First(&user).Error; err != nil {
 				util.RespondWithError(c, util.ErrorResponse{
 					HTTPCode: http.StatusUnauthorized,
 					Code:     "E4012",

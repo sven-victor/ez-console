@@ -149,7 +149,8 @@ class ChatError extends Error {
 }
 
 const AIChat: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('ai');
+  const { t: tCommon } = useTranslation('common');
   const { styles } = useStyle();
   const abortController = useRef<AbortController | null>(null);
 
@@ -226,14 +227,13 @@ const AIChat: React.FC = () => {
     setConversations(response.data);
   });
 
-  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (message?: string) => {
-    console.log("new chat ", message)
-    return await api.ai.createChatSession({ title: "New Conversation", model_id: "" });
+  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string) => {
+    return await api.ai.createChatSession({ title: t('chat.defaultConversationTitle'), model_id: '' });
   }, {
     manual: true,
     onSuccess: (data, [message]) => {
       setConversations((prev) => {
-        return [...prev, { ...data, loading: false }];
+        return [{ ...data, loading: false }, ...prev];
       })
       setCurConversation(data.id);
       setMessages([]);
@@ -255,7 +255,7 @@ const AIChat: React.FC = () => {
   }, {
     manual: true,
     onError(_, params) {
-      message.error(t('ai.chat.deleteConversationFailed', { defaultValue: 'Failed to delete conversation.' }));
+      message.error(t('chat.deleteConversationFailed'));
       setConversations((prev) => {
         return prev.map((item) => {
           if (item.id === params[0]) {
@@ -301,11 +301,12 @@ const AIChat: React.FC = () => {
     agent,
     requestPlaceholder: () => {
       return {
-        content: 'Loading...',
+        content: tCommon('loading'),
         role: 'assistant' as API.AIChatMessageRole,
       };
     },
     requestFallback: (_, { error }): ChatMessage => {
+      console.log(error)
       if (error instanceof ChatError) {
         return {
           content: error.buffer.join(''),
@@ -355,7 +356,7 @@ const AIChat: React.FC = () => {
     if (!val) return;
 
     if (loading) {
-      message.error('Request is in progress, please wait for the request to complete.');
+      message.error(t('chat.requestInProgress'));
       return;
     }
     if (!curConversation) {
@@ -383,14 +384,14 @@ const AIChat: React.FC = () => {
         icon={<PlusOutlined />}
         loading={createNewConversationLoading}
       >
-        New Conversation
+        {t('chat.newConversation')}
       </Button>
       <Spin spinning={fetchConversationsLoading} wrapperClassName={styles.conversationsSpin}>
         <Conversations
           items={conversations.map((item) => ({
             key: item.id,
             label: item.title,
-            group: dayjs(item.start_time).isSame(dayjs(), 'day') ? 'Today' : dayjs(item.start_time).format('YYYY-MM-DD'),
+            group: dayjs(item.start_time).isSame(dayjs(), 'day') ? t('chat.today') : dayjs(item.start_time).format('YYYY-MM-DD'),
           }))}
           activeKey={curConversation}
           onActiveChange={async (val) => {
@@ -415,12 +416,12 @@ const AIChat: React.FC = () => {
           menu={(conversation) => ({
             items: [
               {
-                label: 'Rename',
+                label: t('chat.renameConversation'),
                 key: 'rename',
                 icon: <EditOutlined />,
               },
               {
-                label: 'Delete',
+                label: tCommon('delete'),
                 key: 'delete',
                 icon: <DeleteOutlined />,
                 danger: true,
@@ -443,6 +444,18 @@ const AIChat: React.FC = () => {
       </Spin>
     </div>
   );
+
+  const renderFooter = ({ message }: MessageInfo<ChatMessage>) => {
+    if (message.error) {
+      return (
+        <div>
+          <div dangerouslySetInnerHTML={{ __html: md.render(message.error) }} />
+        </div>
+      );
+    }
+    return undefined;
+  }
+
   const chatList = (
     <div className={styles.chatList}>
       <Spin spinning={fetchConversationLoading}>
@@ -455,6 +468,7 @@ const AIChat: React.FC = () => {
 
               );
             },
+            footer: renderFooter(i)
           }))}
           style={{ height: '100%', paddingInline: 'calc(calc(100% - 700px) /2)' }}
           roles={{
@@ -491,7 +505,7 @@ const AIChat: React.FC = () => {
             </Flex>
           );
         }}
-        placeholder="Please input your message"
+        placeholder={t('chat.inputPlaceholder')}
       />
     </>
   );

@@ -27,8 +27,6 @@ import * as systemApi from '@/service/api/system';
 import * as authorizationApi from '@/service/api/authorization';
 import Actions from '@/components/Actions';
 
-const { Option } = Select;
-
 interface OrganizationUser extends API.User {
   organization_roles?: API.Role[];
 }
@@ -133,7 +131,7 @@ const OrganizationDetail: React.FC = () => {
   );
 
   // Remove user from organization
-  const { loading: removingUser, run: removeUser } = useRequest(
+  const { run: removeUser } = useRequest(
     (userId: string) => systemApi.removeUserFromOrganization({ id: id!, user_id: userId }) as Promise<any>,
     {
       manual: true,
@@ -256,7 +254,7 @@ const OrganizationDetail: React.FC = () => {
           <Space>
             <Button
               icon={<ArrowLeftOutlined />}
-              onClick={() => navigate('/system/settings/organizations')}
+              onClick={() => navigate('/system/settings#organizations')}
             >
               {tCommon('back', { defaultValue: 'Back' })}
             </Button>

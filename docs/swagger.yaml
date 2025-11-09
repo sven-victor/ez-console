@@ -184,6 +184,10 @@ definitions:
     type: object
   authorizationapi.CreateRoleRequest:
     properties:
+      ai_tool_permissions:
+        items:
+          $ref: '#/definitions/authorizationapi.RoleAIToolPermissionRequest'
+        type: array
       description:
         type: string
       name:
@@ -197,6 +201,7 @@ definitions:
       policy_document:
         $ref: '#/definitions/model.PolicyDocument'
     required:
+    - ai_tool_permissions
     - description
     - name
     - organization_id
@@ -306,6 +311,18 @@ definitions:
     required:
     - new_password
     type: object
+  authorizationapi.RoleAIToolPermissionRequest:
+    properties:
+      tools:
+        items:
+          type: string
+        type: array
+      toolset_id:
+        type: string
+    required:
+    - tools
+    - toolset_id
+    type: object
   authorizationapi.SetServiceAccountPolicyRequest:
     properties:
       policy_document:
@@ -338,6 +355,10 @@ definitions:
     type: object
   authorizationapi.UpdateRoleRequest:
     properties:
+      ai_tool_permissions:
+        items:
+          $ref: '#/definitions/authorizationapi.RoleAIToolPermissionRequest'
+        type: array
       description:
         type: string
       name:
@@ -351,6 +372,7 @@ definitions:
       policy_document:
         $ref: '#/definitions/model.PolicyDocument'
     required:
+    - ai_tool_permissions
     - description
     - name
     - organization_id
@@ -964,6 +986,12 @@ definitions:
     type: object
   model.Role:
     properties:
+      ai_tool_permissions:
+        description: AIToolPermissions stores the AI tool permissions assigned to
+          the role.
+        items:
+          $ref: '#/definitions/model.RoleAIToolPermission'
+        type: array
       created_at:
         type: string
       description:
@@ -991,6 +1019,7 @@ definitions:
       updated_at:
         type: string
     required:
+    - ai_tool_permissions
     - created_at
     - description
     - id
@@ -999,6 +1028,34 @@ definitions:
     - organization_id
     - permissions
     - policy_document
+    - updated_at
+    type: object
+  model.RoleAIToolPermission:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      organization_id:
+        type: string
+      role_id:
+        type: string
+      tool_name:
+        type: string
+      toolset:
+        $ref: '#/definitions/model.ToolSet'
+      toolset_id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - id
+    - organization_id
+    - role_id
+    - tool_name
+    - toolset
+    - toolset_id
     - updated_at
     type: object
   model.SMTPSettings:
@@ -1244,6 +1301,24 @@ definitions:
     - name
     - name_i18n
     type: object
+  model.ToolDefinition:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      parameters: {}
+      strict:
+        type: boolean
+      type:
+        type: string
+    required:
+    - description
+    - name
+    - parameters
+    - strict
+    - type
+    type: object
   model.ToolSet:
     properties:
       config:
@@ -1269,6 +1344,11 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.ToolSetStatus'
         description: Status
+      tools:
+        description: Available tools (runtime only)
+        items:
+          $ref: '#/definitions/model.ToolDefinition'
+        type: array
       type:
         allOf:
         - $ref: '#/definitions/toolset.ToolSetType'
@@ -1287,6 +1367,7 @@ definitions:
     - name
     - organization_id
     - status
+    - tools
     - type
     - updated_at
     - updated_by
@@ -1542,6 +1623,79 @@ definitions:
     - state
     - url
     type: object
+  service.OrganizationUser:
+    properties:
+      avatar:
+        type: string
+      created_at:
+        type: string
+      disable_change_password:
+        type: boolean
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: string
+      last_login:
+        type: string
+      ldap_dn:
+        type: string
+      mfa_enabled:
+        type: boolean
+      mfa_enforced:
+        type: boolean
+      oauth_id:
+        type: string
+      oauth_provider:
+        type: string
+      organization_roles:
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      organizations:
+        items:
+          $ref: '#/definitions/model.Organization'
+        type: array
+      password_changed_at:
+        type: string
+      phone:
+        type: string
+      roles:
+        items:
+          $ref: '#/definitions/model.Role'
+        type: array
+      source:
+        $ref: '#/definitions/model.UserSource'
+      status:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    required:
+    - avatar
+    - created_at
+    - disable_change_password
+    - email
+    - full_name
+    - id
+    - last_login
+    - ldap_dn
+    - mfa_enabled
+    - mfa_enforced
+    - oauth_id
+    - oauth_provider
+    - organization_roles
+    - organizations
+    - password_changed_at
+    - phone
+    - roles
+    - source
+    - status
+    - updated_at
+    - username
+    type: object
   service.SessionInfo:
     properties:
       created_at:
@@ -1683,6 +1837,18 @@ definitions:
         type: string
       status:
         type: string
+    type: object
+  systemapi.AddUserToOrganizationRequest:
+    properties:
+      role_ids:
+        items:
+          type: string
+        type: array
+      user_id:
+        type: string
+    required:
+    - role_ids
+    - user_id
     type: object
   systemapi.CheckPasswordComplexityRequest:
     properties:
@@ -2041,6 +2207,15 @@ definitions:
     required:
     - status
     type: object
+  systemapi.UpdateUserOrganizationRolesRequest:
+    properties:
+      role_ids:
+        items:
+          type: string
+        type: array
+    required:
+    - role_ids
+    type: object
   time.Duration:
     enum:
     - -9223372036854775808
@@ -2051,10 +2226,22 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
+    - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2065,10 +2252,22 @@ definitions:
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
   toolset.ToolSetConfigField:
     properties:
       default:
@@ -2327,6 +2526,27 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.User'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    type: object
+  util.PaginationResponse-service_OrganizationUser:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/service.OrganizationUser'
         type: array
       page_size:
         type: integer
@@ -5294,6 +5514,162 @@ paths:
       summary: Update an organization
       tags:
       - System Settings/Organization
+  /api/system/organizations/{id}/users:
+    get:
+      consumes:
+      - application/json
+      description: List users in an organization with their roles
+      operationId: listOrganizationUsers
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Current page
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-service_OrganizationUser'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List organization users
+      tags:
+      - System Settings/Organization
+    post:
+      consumes:
+      - application/json
+      description: Add a user to an organization with specified roles
+      operationId: addUserToOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.AddUserToOrganizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Add user to organization
+      tags:
+      - System Settings/Organization
+  /api/system/organizations/{id}/users/{user_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a user from an organization and remove their roles in that
+        organization
+      operationId: removeUserFromOrganization
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Remove user from organization
+      tags:
+      - System Settings/Organization
+  /api/system/organizations/{id}/users/{user_id}/roles:
+    put:
+      consumes:
+      - application/json
+      description: Update a user's roles in an organization
+      operationId: updateUserOrganizationRoles
+      parameters:
+      - description: Organization ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Role data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.UpdateUserOrganizationRolesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update user organization roles
+      tags:
+      - System Settings/Organization
   /api/system/organizations/user/{user_id}:
     get:
       consumes:
@@ -5527,6 +5903,10 @@ paths:
         in: query
         name: search
         type: string
+      - description: Include tool definitions in response
+        in: query
+        name: include_tools
+        type: boolean
       produces:
       - application/json
       responses:

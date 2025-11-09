@@ -19,6 +19,7 @@ const UserForm = lazy(() => import('@/pages/authorization/user/UserForm'));
 
 // Role pages
 const RoleList = lazy(() => import('@/pages/authorization/role/RoleList'));
+const RoleForm = lazy(() => import('@/pages/authorization/role/RoleForm'));
 
 // System management pages
 const SystemSettings = lazy(() => import('@/pages/system/settings/SystemSettings/index'));
@@ -111,6 +112,18 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                   permissions: ['authorization:role:view'],
                   index: true,
                 },
+                {
+                  path: '/authorization/roles/create',
+                  element: withSuspense(RoleForm),
+                  permissions: ['authorization:role:create'],
+                  index: true,
+                },
+                {
+                  path: '/authorization/roles/:id/edit',
+                  element: withSuspense(RoleForm),
+                  permissions: ['authorization:role:update'],
+                  index: true,
+                },
               ]
             },
 
@@ -187,6 +200,12 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                   path: '/system/settings',
                   index: true,
                   element: withSuspense(SystemSettings, { transformItems: transformSettingTabs }),
+                },
+                {
+                  path: '/system/settings/organizations/:id',
+                  permissions: ['system:organization:view'],
+                  element: withSuspense(OrganizationDetail),
+                  index: true,
                 }
               ],
             },

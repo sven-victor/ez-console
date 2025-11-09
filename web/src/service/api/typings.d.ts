@@ -2,6 +2,16 @@ declare global {
   namespace API {
     type AccessType = "public" | "private" | "owner";
   
+    interface addUserToOrganizationParams {
+      /** Organization ID */
+      id: string;
+    }
+  
+    interface AddUserToOrganizationRequest {
+      role_ids: string[];
+      user_id: string;
+    }
+  
     interface AIChatMessage {
       /** Message content */
       content: string;
@@ -213,6 +223,7 @@ declare global {
     }
   
     interface CreateRoleRequest {
+      ai_tool_permissions: RoleAIToolPermissionRequest[];
       description: string;
       name: string;
       organization_id: string;
@@ -592,6 +603,17 @@ declare global {
       search?: string;
     }
   
+    interface listOrganizationUsersParams {
+      /** Organization ID */
+      id: string;
+      /** Current page */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+      /** Search */
+      search?: string;
+    }
+  
     interface listRolesParams {
       /** Current page */
       current?: number;
@@ -610,6 +632,8 @@ declare global {
       page_size?: number;
       /** Search keyword */
       search?: string;
+      /** Include tool definitions in response */
+      include_tools?: boolean;
     }
   
     interface listUsersParams {
@@ -712,6 +736,30 @@ declare global {
       updated_at: string;
     }
   
+    interface OrganizationUser {
+      avatar: string;
+      created_at: string;
+      disable_change_password: boolean;
+      email: string;
+      full_name: string;
+      id: string;
+      last_login: string;
+      ldap_dn: string;
+      mfa_enabled: boolean;
+      mfa_enforced: boolean;
+      oauth_id: string;
+      oauth_provider: string;
+      organization_roles: Role[];
+      organizations: Organization[];
+      password_changed_at: string;
+      phone: string;
+      roles: Role[];
+      source: UserSource;
+      status: string;
+      updated_at: string;
+      username: string;
+    }
+  
     interface PaginationResponseModelAIChatSession {
       code: string;
       current: number;
@@ -784,6 +832,14 @@ declare global {
       total: number;
     }
   
+    interface PaginationResponseServiceOrganizationUser {
+      code: string;
+      current: number;
+      data: OrganizationUser[];
+      page_size: number;
+      total: number;
+    }
+  
     type PasswordComplexity = "low" | "medium" | "high" | "very_high";
   
     interface Permission {
@@ -805,6 +861,13 @@ declare global {
   
     interface PolicyDocument {
       Statement: StatementEntry[];
+    }
+  
+    interface removeUserFromOrganizationParams {
+      /** Organization ID */
+      id: string;
+      /** User ID */
+      user_id: string;
     }
   
     interface resetUserPasswordParams {
@@ -1060,6 +1123,8 @@ declare global {
     }
   
     interface Role {
+      /** AIToolPermissions stores the AI tool permissions assigned to the role. */
+      ai_tool_permissions: RoleAIToolPermission[];
       created_at: string;
       description: string;
       id: string;
@@ -1072,6 +1137,22 @@ declare global {
       /** Permission configuration based on IAM-style policies, stored in JSON format */
       policy_document: PolicyDocument;
       updated_at: string;
+    }
+  
+    interface RoleAIToolPermission {
+      created_at: string;
+      id: string;
+      organization_id: string;
+      role_id: string;
+      tool_name: string;
+      toolset: ToolSet;
+      toolset_id: string;
+      updated_at: string;
+    }
+  
+    interface RoleAIToolPermissionRequest {
+      tools: string[];
+      toolset_id: string;
     }
   
     interface SecuritySettings {
@@ -1270,6 +1351,14 @@ declare global {
   
     type ToolCallStatus = "pending" | "running" | "completed" | "failed";
   
+    interface ToolDefinition {
+      description: string;
+      name: string;
+      parameters: any;
+      strict: boolean;
+      type: string;
+    }
+  
     interface ToolSet {
       /** Additional configuration */
       config: Record<string, any>;
@@ -1285,6 +1374,8 @@ declare global {
       organization_id: string;
       /** Status */
       status: ToolSetStatus;
+      /** Available tools (runtime only) */
+      tools: ToolDefinition[];
       /** Toolset type (mcp, etc.) */
       type: ToolSetType;
       updated_at: string;
@@ -1421,6 +1512,7 @@ declare global {
     }
   
     interface UpdateRoleRequest {
+      ai_tool_permissions: RoleAIToolPermissionRequest[];
       description: string;
       name: string;
       organization_id: string;
@@ -1481,6 +1573,17 @@ declare global {
   
     interface UpdateToolSetStatusRequest {
       status: ToolSetStatus;
+    }
+  
+    interface updateUserOrganizationRolesParams {
+      /** Organization ID */
+      id: string;
+      /** User ID */
+      user_id: string;
+    }
+  
+    interface UpdateUserOrganizationRolesRequest {
+      role_ids: string[];
     }
   
     interface updateUserParams {

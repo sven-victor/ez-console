@@ -319,7 +319,7 @@ async function k(a, t) {
     }
   );
 }
-async function L(a, t) {
+async function b(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}/access-keys`,
@@ -330,7 +330,7 @@ async function L(a, t) {
     }
   );
 }
-async function b(a, t, e) {
+async function L(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/service-accounts/${n}/access-keys`,
@@ -584,7 +584,7 @@ const ea = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   changePassword: f,
   createRole: E,
   createServiceAccount: G,
-  createServiceAccountAccessKey: b,
+  createServiceAccountAccessKey: L,
   createUser: H,
   deleteRole: U,
   deleteServiceAccount: k,
@@ -597,7 +597,7 @@ const ea = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getLdapUsers: u,
   getRole: $,
   getRolePolicy: j,
-  getServiceAccountAccessKeys: L,
+  getServiceAccountAccessKeys: b,
   getServiceAccountById: R,
   getServiceAccountPolicy: K,
   getServiceAccountRoles: I,
@@ -628,5 +628,7 @@ const ea = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verifyAndActivateMfa: d
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  ea as a
+  ea as a,
+  v as b,
+  F as l
 };

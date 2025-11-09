@@ -69,6 +69,7 @@ type UpdateToolSetRequest struct {
 //	@Param			current		query		int		false	"Current page number"	default(1)
 //	@Param			page_size	query		int		false	"Page size"				default(10)
 //	@Param			search		query		string	false	"Search keyword"
+//	@Param			include_tools	query		bool	false	"Include tool definitions in response"
 //	@Success		200	{object}	util.PaginationResponse[model.ToolSet]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/toolsets [get]
@@ -76,13 +77,20 @@ func (c *ToolSetController) ListToolSets(ctx *gin.Context) {
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
+	includeTools := false
+	if value := ctx.Query("include_tools"); value != "" {
+		switch value {
+		case "1", "true", "TRUE", "True":
+			includeTools = true
+		}
+	}
 	// Get organization ID from context
 	organizationID := ctx.GetString("organization_id")
 	if organizationID == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
-	toolsets, total, err := c.service.ListToolSets(ctx, organizationID, current, pageSize, search)
+	toolsets, total, err := c.service.ListToolSets(ctx, organizationID, current, pageSize, search, includeTools)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

@@ -236,6 +236,11 @@ export default {
     organizationRole: 'Organization Role',
     organizationRequired: 'Please select an organization',
     noOrganizationsAvailable: 'No organizations available. Please contact your administrator.',
+    aiPermissions: 'AI Tool Permissions',
+    loadAiToolsetsError: 'Failed to load AI toolsets.',
+    aiToolsetNoTools: 'No tools available in this toolset.',
+    aiToolsetsEmpty: 'No AI toolsets available for this organization.',
+    aiPermissionsGlobalInfo: 'AI tool permissions are only available for organization roles.',
   },
   permission: {
     title: {
@@ -270,6 +275,7 @@ export default {
       "system.view": "View system information",
       "system.audit_log.view": "View audit logs",
       "AI_Model_Management": "AI Model Management",
+      "AI_Chat": "AI Chat",
       "Toolset_Management": "Toolset Management",
       "Other": "Other",
       "ai.models.create": "Create AI models",
@@ -277,6 +283,7 @@ export default {
       "ai.models.test": "Test AI models",
       "ai.models.update": "Update AI models",
       "ai.models.view": "View AI models",
+      "ai.chat.create": "Create AI chat",
       "system.organization.create": "Create organization",
       "system.organization.delete": "Delete organization",
       "system.organization.update": "Update organization",

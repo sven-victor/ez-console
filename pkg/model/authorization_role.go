@@ -6,7 +6,9 @@ type Role struct {
 	Name        string       `gorm:"size:50;not null;index:idx_role_name_org" json:"name"`
 	Description string       `gorm:"size:200" json:"description"`
 	Permissions []Permission `gorm:"many2many:role_permissions;" json:"permissions"`
-	Users       []User       `gorm:"many2many:user_roles;" json:"-"`
+	// AIToolPermissions stores the AI tool permissions assigned to the role.
+	AIToolPermissions []RoleAIToolPermission `gorm:"foreignKey:RoleID;references:ResourceID;constraint:OnDelete:CASCADE;" json:"ai_tool_permissions,omitempty"`
+	Users             []User                 `gorm:"many2many:user_roles;" json:"-"`
 	// Permission configuration based on IAM-style policies, stored in JSON format
 	PolicyDocument PolicyDocument `gorm:"type:text;serializer:json" json:"policy_document,omitempty"`
 	// OrganizationID is the organization this role belongs to. If empty, the role is global.

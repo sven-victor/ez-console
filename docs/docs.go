@@ -3679,6 +3679,236 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/organizations/{id}/users": {
+            "get": {
+                "description": "List users in an organization with their roles",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "List organization users",
+                "operationId": "listOrganizationUsers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Current page",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-service_OrganizationUser"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a user to an organization with specified roles",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Add user to organization",
+                "operationId": "addUserToOrganization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.AddUserToOrganizationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/organizations/{id}/users/{user_id}": {
+            "delete": {
+                "description": "Remove a user from an organization and remove their roles in that organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Remove user from organization",
+                "operationId": "removeUserFromOrganization",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/organizations/{id}/users/{user_id}/roles": {
+            "put": {
+                "description": "Update a user's roles in an organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Organization"
+                ],
+                "summary": "Update user organization roles",
+                "operationId": "updateUserOrganizationRoles",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Role data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.UpdateUserOrganizationRolesRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/security-settings": {
             "get": {
                 "description": "Get security settings",
@@ -3989,6 +4219,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Search keyword",
                         "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include tool definitions in response",
+                        "name": "include_tools",
                         "in": "query"
                     }
                 ],
@@ -4651,6 +4887,7 @@ const docTemplate = `{
         "authorizationapi.CreateRoleRequest": {
             "type": "object",
             "required": [
+                "ai_tool_permissions",
                 "description",
                 "name",
                 "organization_id",
@@ -4658,6 +4895,12 @@ const docTemplate = `{
                 "policy_document"
             ],
             "properties": {
+                "ai_tool_permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/authorizationapi.RoleAIToolPermissionRequest"
+                    }
+                },
                 "description": {
                     "type": "string"
                 },
@@ -4827,6 +5070,24 @@ const docTemplate = `{
                 }
             }
         },
+        "authorizationapi.RoleAIToolPermissionRequest": {
+            "type": "object",
+            "required": [
+                "tools",
+                "toolset_id"
+            ],
+            "properties": {
+                "tools": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "toolset_id": {
+                    "type": "string"
+                }
+            }
+        },
         "authorizationapi.SetServiceAccountPolicyRequest": {
             "type": "object",
             "required": [
@@ -4875,6 +5136,7 @@ const docTemplate = `{
         "authorizationapi.UpdateRoleRequest": {
             "type": "object",
             "required": [
+                "ai_tool_permissions",
                 "description",
                 "name",
                 "organization_id",
@@ -4882,6 +5144,12 @@ const docTemplate = `{
                 "policy_document"
             ],
             "properties": {
+                "ai_tool_permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/authorizationapi.RoleAIToolPermissionRequest"
+                    }
+                },
                 "description": {
                     "type": "string"
                 },
@@ -5742,6 +6010,7 @@ const docTemplate = `{
         "model.Role": {
             "type": "object",
             "required": [
+                "ai_tool_permissions",
                 "created_at",
                 "description",
                 "id",
@@ -5753,6 +6022,13 @@ const docTemplate = `{
                 "updated_at"
             ],
             "properties": {
+                "ai_tool_permissions": {
+                    "description": "AIToolPermissions stores the AI tool permissions assigned to the role.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.RoleAIToolPermission"
+                    }
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -5785,6 +6061,45 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.PolicyDocument"
                         }
                     ]
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.RoleAIToolPermission": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "organization_id",
+                "role_id",
+                "tool_name",
+                "toolset",
+                "toolset_id",
+                "updated_at"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "string"
+                },
+                "role_id": {
+                    "type": "string"
+                },
+                "tool_name": {
+                    "type": "string"
+                },
+                "toolset": {
+                    "$ref": "#/definitions/model.ToolSet"
+                },
+                "toolset_id": {
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -6126,6 +6441,31 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ToolDefinition": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "parameters",
+                "strict",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {},
+                "strict": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "model.ToolSet": {
             "type": "object",
             "required": [
@@ -6137,6 +6477,7 @@ const docTemplate = `{
                 "name",
                 "organization_id",
                 "status",
+                "tools",
                 "type",
                 "updated_at",
                 "updated_by"
@@ -6175,6 +6516,13 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.ToolSetStatus"
                         }
                     ]
+                },
+                "tools": {
+                    "description": "Available tools (runtime only)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.ToolDefinition"
+                    }
                 },
                 "type": {
                     "description": "Toolset type (mcp, etc.)",
@@ -6548,6 +6896,106 @@ const docTemplate = `{
                 }
             }
         },
+        "service.OrganizationUser": {
+            "type": "object",
+            "required": [
+                "avatar",
+                "created_at",
+                "disable_change_password",
+                "email",
+                "full_name",
+                "id",
+                "last_login",
+                "ldap_dn",
+                "mfa_enabled",
+                "mfa_enforced",
+                "oauth_id",
+                "oauth_provider",
+                "organization_roles",
+                "organizations",
+                "password_changed_at",
+                "phone",
+                "roles",
+                "source",
+                "status",
+                "updated_at",
+                "username"
+            ],
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "disable_change_password": {
+                    "type": "boolean"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "ldap_dn": {
+                    "type": "string"
+                },
+                "mfa_enabled": {
+                    "type": "boolean"
+                },
+                "mfa_enforced": {
+                    "type": "boolean"
+                },
+                "oauth_id": {
+                    "type": "string"
+                },
+                "oauth_provider": {
+                    "type": "string"
+                },
+                "organization_roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Role"
+                    }
+                },
+                "organizations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Organization"
+                    }
+                },
+                "password_changed_at": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Role"
+                    }
+                },
+                "source": {
+                    "$ref": "#/definitions/model.UserSource"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "service.SessionInfo": {
             "type": "object",
             "required": [
@@ -6747,6 +7195,24 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "systemapi.AddUserToOrganizationRequest": {
+            "type": "object",
+            "required": [
+                "role_ids",
+                "user_id"
+            ],
+            "properties": {
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -7251,6 +7717,20 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.UpdateUserOrganizationRolesRequest": {
+            "type": "object",
+            "required": [
+                "role_ids"
+            ],
+            "properties": {
+                "role_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "time.Duration": {
             "type": "integer",
             "enum": [
@@ -7262,10 +7742,22 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
-                1000000000
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7276,10 +7768,22 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second"
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetConfigField": {
@@ -7655,6 +8159,36 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.User"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "util.PaginationResponse-service_OrganizationUser": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.OrganizationUser"
                     }
                 },
                 "page_size": {

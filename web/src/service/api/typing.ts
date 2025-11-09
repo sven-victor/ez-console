@@ -1,5 +1,15 @@
 export type AccessType = "public" | "private" | "owner";
 
+export interface addUserToOrganizationParams {
+  /** Organization ID */
+  id: string;
+}
+
+export interface AddUserToOrganizationRequest {
+  role_ids: string[];
+  user_id: string;
+}
+
 export interface AIChatMessage {
   /** Message content */
   content: string;
@@ -211,6 +221,7 @@ export interface CreateOrganizationRequest {
 }
 
 export interface CreateRoleRequest {
+  ai_tool_permissions: RoleAIToolPermissionRequest[];
   description: string;
   name: string;
   organization_id: string;
@@ -590,6 +601,17 @@ export interface listOrganizationsParams {
   search?: string;
 }
 
+export interface listOrganizationUsersParams {
+  /** Organization ID */
+  id: string;
+  /** Current page */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+  /** Search */
+  search?: string;
+}
+
 export interface listRolesParams {
   /** Current page */
   current?: number;
@@ -608,6 +630,8 @@ export interface listToolSetsParams {
   page_size?: number;
   /** Search keyword */
   search?: string;
+  /** Include tool definitions in response */
+  include_tools?: boolean;
 }
 
 export interface listUsersParams {
@@ -710,6 +734,30 @@ export interface Organization {
   updated_at: string;
 }
 
+export interface OrganizationUser {
+  avatar: string;
+  created_at: string;
+  disable_change_password: boolean;
+  email: string;
+  full_name: string;
+  id: string;
+  last_login: string;
+  ldap_dn: string;
+  mfa_enabled: boolean;
+  mfa_enforced: boolean;
+  oauth_id: string;
+  oauth_provider: string;
+  organization_roles: Role[];
+  organizations: Organization[];
+  password_changed_at: string;
+  phone: string;
+  roles: Role[];
+  source: UserSource;
+  status: string;
+  updated_at: string;
+  username: string;
+}
+
 export interface PaginationResponseModelAIChatSession {
   code: string;
   current: number;
@@ -782,6 +830,14 @@ export interface PaginationResponseModelUser {
   total: number;
 }
 
+export interface PaginationResponseServiceOrganizationUser {
+  code: string;
+  current: number;
+  data: OrganizationUser[];
+  page_size: number;
+  total: number;
+}
+
 export type PasswordComplexity = "low" | "medium" | "high" | "very_high";
 
 export interface Permission {
@@ -803,6 +859,13 @@ export interface PermissionGroup {
 
 export interface PolicyDocument {
   Statement: StatementEntry[];
+}
+
+export interface removeUserFromOrganizationParams {
+  /** Organization ID */
+  id: string;
+  /** User ID */
+  user_id: string;
 }
 
 export interface resetUserPasswordParams {
@@ -1058,6 +1121,8 @@ export interface restoreUserParams {
 }
 
 export interface Role {
+  /** AIToolPermissions stores the AI tool permissions assigned to the role. */
+  ai_tool_permissions: RoleAIToolPermission[];
   created_at: string;
   description: string;
   id: string;
@@ -1070,6 +1135,22 @@ Role names must be unique within the same organization (or among global roles if
   /** Permission configuration based on IAM-style policies, stored in JSON format */
   policy_document: PolicyDocument;
   updated_at: string;
+}
+
+export interface RoleAIToolPermission {
+  created_at: string;
+  id: string;
+  organization_id: string;
+  role_id: string;
+  tool_name: string;
+  toolset: ToolSet;
+  toolset_id: string;
+  updated_at: string;
+}
+
+export interface RoleAIToolPermissionRequest {
+  tools: string[];
+  toolset_id: string;
 }
 
 export interface SecuritySettings {
@@ -1268,6 +1349,14 @@ export interface ToolCall {
 
 export type ToolCallStatus = "pending" | "running" | "completed" | "failed";
 
+export interface ToolDefinition {
+  description: string;
+  name: string;
+  parameters: any;
+  strict: boolean;
+  type: string;
+}
+
 export interface ToolSet {
   /** Additional configuration */
   config: Record<string, any>;
@@ -1283,6 +1372,8 @@ export interface ToolSet {
   organization_id: string;
   /** Status */
   status: ToolSetStatus;
+  /** Available tools (runtime only) */
+  tools: ToolDefinition[];
   /** Toolset type (mcp, etc.) */
   type: ToolSetType;
   updated_at: string;
@@ -1419,6 +1510,7 @@ export interface updateRoleParams {
 }
 
 export interface UpdateRoleRequest {
+  ai_tool_permissions: RoleAIToolPermissionRequest[];
   description: string;
   name: string;
   organization_id: string;
@@ -1479,6 +1571,17 @@ export interface updateToolSetStatusParams {
 
 export interface UpdateToolSetStatusRequest {
   status: ToolSetStatus;
+}
+
+export interface updateUserOrganizationRolesParams {
+  /** Organization ID */
+  id: string;
+  /** User ID */
+  user_id: string;
+}
+
+export interface UpdateUserOrganizationRolesRequest {
+  role_ids: string[];
 }
 
 export interface updateUserParams {

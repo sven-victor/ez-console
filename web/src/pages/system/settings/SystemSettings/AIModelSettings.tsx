@@ -10,7 +10,6 @@ import {
   Select,
   Switch,
   message,
-  Popconfirm,
   Tag,
   Tooltip,
   Row,
@@ -132,7 +131,7 @@ const AIModelSettings: React.FC = () => {
   );
 
   // Test AI model
-  const { loading: testing, runAsync: testModel } = useRequest(
+  const { runAsync: testModel } = useRequest(
     (id: string) => api.ai.testAiModel({ id }),
     {
       manual: true,

@@ -39,5 +39,12 @@ export default {
   },
   chat: {
     openAssistant: 'Open AI Assistant',
+    newConversation: 'New Conversation',
+    defaultConversationTitle: 'New Conversation',
+    deleteConversationFailed: 'Failed to delete conversation.',
+    requestInProgress: 'Request is in progress, please wait for the request to complete.',
+    today: 'Today',
+    renameConversation: 'Rename',
+    inputPlaceholder: 'Please input your message',
   },
 };

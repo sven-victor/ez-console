@@ -29,7 +29,6 @@ import {
   UndoOutlined,
   ToolOutlined,
   UnlockOutlined,
-  TeamOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';

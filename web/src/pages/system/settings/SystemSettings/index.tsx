@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Tabs, TabsProps, type TabsProps as AntTabsProps } from 'antd';
+import { Card, Tabs, type TabsProps as AntTabsProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import OAuthSettingsForm from './OAuthSettingsForm';
 import SecuritySettingForm from './SecuritySettingForm';
