@@ -30,18 +30,19 @@ client.interceptors.request.use(
         config.headers = config.headers || {};
         // Set Authorization header
         config.headers.Authorization = `Bearer ${token}`;
+
+        if (!config.headers['X-Scope-OrgID']) {
+          // Add organization ID header if set
+          const orgID = localStorage.getItem('orgID');
+          if (orgID) {
+            config.headers['X-Scope-OrgID'] = orgID;
+          }
+        }
       }
     }
     const i18nextLng = localStorage.getItem('i18nextLng');
     if (i18nextLng) {
       config.headers['Accept-Language'] = i18nextLng;
-    }
-    if (!config.headers['X-Scope-OrgID']) {
-      // Add organization ID header if set
-      const orgID = localStorage.getItem('orgID');
-      if (orgID) {
-        config.headers['X-Scope-OrgID'] = orgID;
-      }
     }
     return config;
   },

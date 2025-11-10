@@ -47,7 +47,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const navigate = useNavigate();
   const { logout, user } = useAuth();
-  const { siteConfig } = useSite();
+  const { siteConfig, clearCurrentOrgId } = useSite();
 
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
   const [siteIcon, setSiteIcon] = useState<string | null>(null);
@@ -64,6 +64,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const handleLogout = () => {
     logout();
+    clearCurrentOrgId();
     window.location.href = getURL('/login?redirect=' + encodeURIComponent(window.location.href));
   };
 

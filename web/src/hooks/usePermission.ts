@@ -1,5 +1,6 @@
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
+import { useSite } from '@/contexts/SiteContext';
 
 /**
  * Permission Hook, used to check if the user has specific permissions
@@ -13,9 +14,9 @@ import { AuthContext } from '../contexts/AuthContext';
  */
 export const usePermission = () => {
   const { user } = useContext(AuthContext);
-  const organizationId = localStorage.getItem('organization_id');
+  const { currentOrgId } = useSite();
 
-  const roles = user?.roles?.filter(role => !role.organization_id || role.organization_id === organizationId)
+  const roles = user?.roles?.filter(role => !role.organization_id || role.organization_id === currentOrgId)
 
   // Check if the user is an administrator
   const isAdminUser = (): boolean => {

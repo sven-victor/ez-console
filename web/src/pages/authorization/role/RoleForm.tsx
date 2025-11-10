@@ -120,7 +120,7 @@ const RoleForm: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEditMode = Boolean(id);
-  const { siteConfig } = useSite();
+  const { enableMultiOrg, currentOrgId } = useSite();
   const { user } = useAuth();
 
   const organizations = user?.organizations || [];
@@ -144,7 +144,7 @@ const RoleForm: React.FC = () => {
   }, [aiToolSelections]);
 
   useEffect(() => {
-    setSelectedOrgId(localStorage.getItem('orgID') || undefined);
+    setSelectedOrgId(currentOrgId || undefined);
   }, []);
 
   const fetchPermissions = useCallback(async () => {
@@ -273,8 +273,7 @@ const RoleForm: React.FC = () => {
 
     const defaultOrgId =
       selectedOrgId || (organizations.length > 0 ? organizations[0].id : '');
-    const defaultRoleType =
-      siteConfig?.enable_multi_org && defaultOrgId ? 'organization' : 'global';
+    const defaultRoleType = enableMultiOrg && defaultOrgId ? 'organization' : 'global';
     setRoleType(defaultRoleType);
     form.setFieldsValue({
       role_type: defaultRoleType,
@@ -296,7 +295,7 @@ const RoleForm: React.FC = () => {
     isEditMode,
     organizations,
     selectedOrgId,
-    siteConfig?.enable_multi_org,
+    enableMultiOrg,
     loadRole,
   ]);
 
@@ -477,7 +476,7 @@ const RoleForm: React.FC = () => {
                   <Form.Item
                     label={t('role.roleType', { defaultValue: 'Role Type' })}
                     name="role_type"
-                    hidden={!siteConfig?.enable_multi_org}
+                    hidden={!enableMultiOrg}
                     rules={[
                       {
                         required: true,
@@ -529,7 +528,7 @@ const RoleForm: React.FC = () => {
 
                   {roleType === 'organization' && (
                     <Form.Item
-                      hidden={!siteConfig?.enable_multi_org}
+                      hidden={!enableMultiOrg}
                       label={t('role.organization', { defaultValue: 'Organization' })}
                       name="organization_id"
                       rules={[
