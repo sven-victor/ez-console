@@ -94,6 +94,14 @@ func SeedDB(ctx context.Context, permissions []*model.PermissionGroup) error {
 				return fmt.Errorf("Failed to initialize users: %w", err)
 			}
 		}
+		// sed organization
+		var organizationCount int64
+		tx.Model(&model.Organization{}).Count(&organizationCount)
+		if organizationCount == 0 {
+			if err := seedOrganizations(tx); err != nil {
+				return fmt.Errorf("Failed to initialize organizations: %w", err)
+			}
+		}
 
 		level.Info(logger).Log("msg", "Basic data initialization completed")
 		return nil
@@ -225,6 +233,21 @@ func seedUsers(tx *gorm.DB) error {
 		return err
 	}
 	if err := tx.Model(&adminUser).Association("Roles").Replace(&adminRole); err != nil {
+		return err
+	}
+	return nil
+}
+
+func seedOrganizations(tx *gorm.DB) error {
+	defaultOrganization := model.Organization{
+		Base: model.Base{
+			ResourceID: "00000000000000000000000000000000",
+		},
+		Name:        "Default",
+		Description: "Default organization",
+		Status:      model.OrganizationStatusActive,
+	}
+	if err := tx.Create(&defaultOrganization).Error; err != nil {
 		return err
 	}
 	return nil
