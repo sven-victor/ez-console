@@ -1,10 +1,10 @@
-import { useContext as A, createContext as v, useState as x, useEffect as z, useCallback as I } from "react";
-import { j as T } from "./vendor.js";
-import { a as g } from "./index.js";
-import { useRequest as b } from "ahooks";
-import { message as M } from "antd";
-import { c as P } from "./client.js";
-const w = v({
+import { useContext as C, createContext as O, useState as _, useEffect as z, useCallback as U } from "react";
+import { j as P } from "./vendor.js";
+import { message as F } from "antd";
+import { a as y } from "./index.js";
+import { c as v } from "./client.js";
+import { useRequest as T } from "ahooks";
+const S = O({
   user: null,
   token: null,
   loading: !1,
@@ -16,122 +16,147 @@ const w = v({
   },
   updateUser: () => {
   }
-}), j = () => A(w), y = (t, i = !0) => {
-  t ? (i && localStorage.setItem("token", t), P.defaults.headers.common.Authorization = `Bearer ${t}`) : (i && localStorage.removeItem("token"), delete P.defaults.headers.common.Authorization);
-}, $ = ({ children: t }) => {
-  const [i, o] = x(null), [f, s] = x(localStorage.getItem("token")), [S, C] = x(!0), { run: p } = b(async () => {
-    const r = localStorage.getItem("token");
-    return r ? (y(r, !1), g.authorization.getCurrentUser()) : null;
+}), M = () => C(S), I = (n, t = !0) => {
+  n ? (t && localStorage.setItem("token", n), v.defaults.headers.common.Authorization = `Bearer ${n}`) : (t && localStorage.removeItem("token"), delete v.defaults.headers.common.Authorization);
+}, q = ({ children: n }) => {
+  const [t, r] = _(null), [g, i] = _(localStorage.getItem("token")), [A, d] = _(!0), { run: u } = T(async () => {
+    const s = localStorage.getItem("token");
+    return s ? (I(s, !1), y.authorization.getCurrentUser()) : null;
   }, {
     manual: !0,
     onBefore: () => {
     },
-    onSuccess: (r) => {
-      o(r);
+    onSuccess: (s) => {
+      r(s);
     },
-    onError: (r) => {
-      console.error("Failed to get current user:", r), k();
+    onError: (s) => {
+      console.error("Failed to get current user:", s), f();
     },
     onFinally: () => {
-      C(!1);
+      d(!1);
     }
   });
   z(() => {
-    p();
+    u();
   }, []);
-  const n = async (r) => {
+  const o = async (s) => {
     try {
-      const e = await g.authorization.login(r), { token: l, user: a, needs_mfa: m, password_expired: c, mfa_token: d, mfa_type: h } = e;
+      const e = await y.authorization.login(s), { token: c, user: l, needs_mfa: h, password_expired: m, mfa_token: p, mfa_type: k } = e;
+      if (h)
+        throw { needsMFA: !0, mfaToken: p, mfaType: k, user: l };
       if (m)
-        throw { needsMFA: !0, mfaToken: d, mfaType: h, user: a };
-      if (c)
-        throw { password_expired: !0, user: a, token: l };
-      return y(l), s(l), o(a), a;
+        throw { password_expired: !0, user: l, token: c };
+      return I(c), i(c), r(l), l;
     } catch (e) {
-      throw e && e.needsMFA || e && e.password_expired || M.error("Login failed, please check your username and password"), e;
+      throw e && e.needsMFA || e && e.password_expired || F.error("Login failed, please check your username and password"), e;
     }
-  }, u = I(async (r) => {
+  }, a = U(async (s) => {
     try {
-      const e = await g.oauth.handleCallback(r);
-      let l = "", a = null;
+      const e = await y.oauth.handleCallback(s);
+      let c = "", l = null;
       if (e && typeof e == "object")
         if ("code" in e && e.code === "0" && "data" in e) {
-          const { token: m, user: c, needs_mfa: d, mfa_token: h, mfa_type: _ } = e.data;
-          if (d)
-            throw { needsMFA: !0, mfaToken: h, mfaType: _, user: c };
-          l = m, a = c;
+          const { token: h, user: m, needs_mfa: p, mfa_token: k, mfa_type: x } = e.data;
+          if (p)
+            throw { needsMFA: !0, mfaToken: k, mfaType: x, user: m };
+          c = h, l = m;
         } else {
-          const { token: m, user: c, needs_mfa: d, mfa_token: h, mfa_type: _ } = e;
-          if (d)
-            throw { needsMFA: !0, mfaToken: h, mfaType: _, user: c };
-          l = m, a = c;
+          const { token: h, user: m, needs_mfa: p, mfa_token: k, mfa_type: x } = e;
+          if (p)
+            throw { needsMFA: !0, mfaToken: k, mfaType: x, user: m };
+          c = h, l = m;
         }
-      return y(l), s(l), o(a), a;
+      return I(c), i(c), r(l), l;
     } catch (e) {
       throw e && e.needsMFA || e && e.passwordExpired, e;
     }
-  }, []), k = () => {
-    g.authorization.logout(), y(null), s(null), o(null);
-  }, F = (r) => {
-    o(r);
+  }, []), f = () => {
+    y.authorization.logout(), I(null), i(null), r(null);
+  }, w = (s) => {
+    r(s);
   };
-  return /* @__PURE__ */ T.jsx(
-    w.Provider,
+  return /* @__PURE__ */ P.jsx(
+    S.Provider,
     {
       value: {
-        user: i,
-        token: f,
-        loading: S,
-        login: n,
-        oauthLogin: u,
-        logout: k,
-        updateUser: F
+        user: t,
+        token: g,
+        loading: A,
+        login: o,
+        oauthLogin: a,
+        logout: f,
+        updateUser: w
       },
-      children: t
+      children: n
     }
   );
-}, q = () => {
-  const t = A(w);
-  if (t === void 0)
-    throw new Error("useAuth must be used within an AuthProvider");
-  return t;
 }, G = () => {
-  var p;
-  const { user: t } = A(w), i = localStorage.getItem("organization_id"), o = (p = t == null ? void 0 : t.roles) == null ? void 0 : p.filter((n) => !n.organization_id || n.organization_id === i), f = () => o ? o.some((n) => n.name === "admin" && !n.organization_id) : !1, s = (n) => o ? f() ? !0 : o.some((u) => u.permissions ? u.permissions.some((k) => k.code === n) : !1) : !1;
-  return {
-    hasPermission: s,
-    hasAllPermissions: (n) => n.every((u) => s(u)),
-    hasAnyPermission: (n) => n.some((u) => s(u)),
-    isAdmin: f(),
-    loading: !t
-  };
-}, U = v({
+  const n = C(S);
+  if (n === void 0)
+    throw new Error("useAuth must be used within an AuthProvider");
+  return n;
+}, b = O({
   siteConfig: null,
   enableMultiOrg: !1,
   loading: !1,
-  fetchSiteConfig: async () => null
-}), H = () => A(U), J = ({ children: t }) => {
-  const { user: i } = j(), { data: o = null, loading: f, runAsync: s } = b(async () => g.system.getSiteConfig(), { manual: !0 });
+  fetchSiteConfig: async () => null,
+  currentOrgId: null,
+  setCurrentOrgId: () => {
+  },
+  clearCurrentOrgId: () => {
+  }
+}), j = () => C(b), H = ({ children: n }) => {
+  const { user: t } = M(), { data: r = null, loading: g, runAsync: i } = T(async () => y.system.getSiteConfig(), { manual: !0 });
+  z(() => {
+    i();
+  }, [t]);
+  const [A, d] = _(null);
   return z(() => {
-    s();
-  }, [i]), /* @__PURE__ */ T.jsx(
-    U.Provider,
+    var o, a, f;
+    let u = localStorage.getItem("orgID");
+    if (u) {
+      const w = (o = t == null ? void 0 : t.organizations) == null ? void 0 : o.find((s) => s.id === u);
+      if (w) {
+        d(w.id);
+        return;
+      }
+    }
+    d(((f = (a = t == null ? void 0 : t.organizations) == null ? void 0 : a[0]) == null ? void 0 : f.id) ?? null);
+  }, [r, t == null ? void 0 : t.organizations]), /* @__PURE__ */ P.jsx(
+    b.Provider,
     {
       value: {
-        siteConfig: o,
-        loading: f,
-        enableMultiOrg: (o == null ? void 0 : o.enable_multi_org) ?? !1,
-        fetchSiteConfig: s
+        siteConfig: r,
+        loading: g,
+        enableMultiOrg: (r == null ? void 0 : r.enable_multi_org) ?? !1,
+        fetchSiteConfig: i,
+        currentOrgId: A,
+        setCurrentOrgId: (u) => {
+          d(u), localStorage.setItem("orgID", u);
+        },
+        clearCurrentOrgId: () => {
+          d(null), localStorage.removeItem("orgID");
+        }
       },
-      children: t
+      children: n
     }
   );
+}, J = () => {
+  var u;
+  const { user: n } = C(S), { currentOrgId: t } = j(), r = (u = n == null ? void 0 : n.roles) == null ? void 0 : u.filter((o) => !o.organization_id || o.organization_id === t), g = () => r ? r.some((o) => o.name === "admin" && !o.organization_id) : !1, i = (o) => r ? g() ? !0 : r.some((a) => a.permissions ? a.permissions.some((f) => f.code === o) : !1) : !1;
+  return {
+    hasPermission: i,
+    hasAllPermissions: (o) => o.every((a) => i(a)),
+    hasAnyPermission: (o) => o.some((a) => i(a)),
+    isAdmin: g(),
+    loading: !n
+  };
 };
 export {
-  $ as A,
-  J as S,
-  G as a,
-  H as b,
-  j as c,
-  q as u
+  q as A,
+  H as S,
+  J as a,
+  j as b,
+  M as c,
+  G as u
 };

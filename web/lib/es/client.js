@@ -11,8 +11,8 @@ const m = "/api", s = g.create({
   }
 });
 class c extends Error {
-  constructor(r, n) {
-    super(n);
+  constructor(r, a) {
+    super(a);
     d(this, "code");
     this.code = r;
   }
@@ -21,14 +21,13 @@ s.interceptors.request.use(
   (t) => {
     if (!t.withoutAuth) {
       const r = localStorage.getItem("token");
-      r && (t.headers = t.headers || {}, t.headers.Authorization = `Bearer ${r}`);
+      if (r && (t.headers = t.headers || {}, t.headers.Authorization = `Bearer ${r}`, !t.headers["X-Scope-OrgID"])) {
+        const a = localStorage.getItem("orgID");
+        a && (t.headers["X-Scope-OrgID"] = a);
+      }
     }
     const e = localStorage.getItem("i18nextLng");
-    if (e && (t.headers["Accept-Language"] = e), !t.headers["X-Scope-OrgID"]) {
-      const r = localStorage.getItem("orgID");
-      r && (t.headers["X-Scope-OrgID"] = r);
-    }
-    return t;
+    return e && (t.headers["Accept-Language"] = e), t;
   },
   (t) => Promise.reject(t)
 );
@@ -43,35 +42,35 @@ s.interceptors.response.use(
     } : e.data : Promise.reject(e || "Unknown error") : t.data;
   },
   (t) => {
-    var n, o, a;
-    ((n = t.response) == null ? void 0 : n.status) === 401 && window.location.pathname !== u("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = u("/login?redirect=" + encodeURIComponent(window.location.href)));
+    var a, o, n;
+    ((a = t.response) == null ? void 0 : a.status) === 401 && window.location.pathname !== u("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = u("/login?redirect=" + encodeURIComponent(window.location.href)));
     const e = (o = t.response) == null ? void 0 : o.data;
-    let r = new c(((a = t.response) == null ? void 0 : a.status.toString()) || "500", t.message);
+    let r = new c(((n = t.response) == null ? void 0 : n.status.toString()) || "500", t.message);
     return console.log("errorResponse", e), e && (e.err ? r = new c(e.code, e.err) : e.error && (r = new c(e.code, e.error))), Promise.reject(r);
   }
 );
 const I = async (t, e) => s.get(t, e), b = async (t, e, r) => s.post(t, e, r), E = async (t, e, r) => s.put(t, e, r), j = async (t, e) => s.delete(t, e);
 async function f(t, e) {
-  const { signal: r, ...n } = e || {}, o = await fetch(t, {
-    method: n.method || "GET",
-    headers: n.headers,
-    body: n.body,
+  const { signal: r, ...a } = e || {}, o = await fetch(t, {
+    method: a.method || "GET",
+    headers: a.headers,
+    body: a.body,
     signal: r
   });
   if (console.log(o), !o.ok || !o.body) {
-    let a = o.statusText;
+    let n = o.statusText;
     if (o.body)
       try {
         const i = await o.json();
-        a = `SSE connection failed: ${i.message || i.err}`;
+        n = `SSE connection failed: ${i.message || i.err}`;
       } catch {
-        a = `SSE connection failed: ${o.statusText}`;
+        n = `SSE connection failed: ${o.statusText}`;
       }
-    throw new Error(a);
+    throw new Error(n);
   }
   if (o.status !== 200) {
-    const a = await o.json();
-    throw new Error(`SSE connection failed: ${a.message}`);
+    const n = await o.json();
+    throw new Error(`SSE connection failed: ${n.message}`);
   }
   return o.body;
 }
@@ -82,21 +81,21 @@ function h(t) {
     );
 }
 async function x(t, e) {
-  const { requestType: r, signal: n, ...o } = e || {};
+  const { requestType: r, signal: a, ...o } = e || {};
   if (r === "sse") {
-    const a = localStorage.getItem("orgID");
+    const n = localStorage.getItem("orgID");
     return f(t, {
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
         "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
-        ...a ? { "X-Scope-OrgID": a } : {},
+        ...n ? { "X-Scope-OrgID": n } : {},
         ...h(o.headers)
       },
       method: o.method,
       body: JSON.stringify(o.data),
-      signal: n
+      signal: a
     });
   }
   return r === "form" ? s.request({
