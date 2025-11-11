@@ -101,10 +101,19 @@ type MenuConfig struct {
 	Hide bool   `json:"hide"`
 }
 
+type siteConfigAttrGetter func(ctx context.Context) any
+
+var siteConfigAttrs = map[string]siteConfigAttrGetter{}
+
+func RegisterSiteConigAttr(name string, getter siteConfigAttrGetter) {
+	siteConfigAttrs[name] = getter
+}
+
 type SiteConfig struct {
 	model.SystemSettings
-	Navigation []Navigation `json:"navigation,omitempty"`
-	Menu       []MenuConfig `json:"menu,omitempty"`
+	Navigation []Navigation   `json:"navigation,omitempty"`
+	Menu       []MenuConfig   `json:"menu,omitempty"`
+	Attrs      map[string]any `json:"attrs,omitempty"`
 }
 
 // GetNavigation gets navigation
@@ -120,10 +129,17 @@ func (s *SystemService) GetSite(ctx context.Context) (*SiteConfig, error) {
 		}, nil
 	}
 
+	attrs := map[string]any{}
+
+	for name, getter := range siteConfigAttrs {
+		attrs[name] = getter(ctx)
+	}
+
 	return &SiteConfig{
 		SystemSettings: *systemSettings,
 		Navigation:     navigation,
 		Menu:           menu,
+		Attrs:          attrs,
 	}, nil
 }
 

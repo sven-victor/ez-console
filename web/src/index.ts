@@ -22,11 +22,16 @@ export { default as Table, type TableRefProps, type TableActionRefProps, type Ta
 export { default as Forbidden } from '@/pages/Forbidden';
 export { default as NotFound } from '@/pages/NotFound';
 
+export { useSite } from '@/contexts/SiteContext'
+export { useAuth } from '@/hooks/useAuth'
+export { usePermission } from '@/hooks/usePermission'
+
 export { apiDelete, apiPost, apiGet, apiPut, ApiError } from '@/service/client';
 import * as authorizationapi from '@/service/api/authorization';
 import * as baseapi from '@/service/api/base';
 import * as oauthapi from '@/service/api/oauth';
 import * as systemapi from '@/service/api/system';
+import * as aiapi from '@/service/api/system';
 export type * from '@/service/api/typing';
 
 
@@ -35,6 +40,7 @@ const api = {
   ...baseapi,
   ...oauthapi,
   ...systemapi,
+  ...aiapi,
 }
 
 export {
