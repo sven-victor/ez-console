@@ -77,7 +77,6 @@ func (s *ServiceAccountService) UpdateServiceAccount(ctx *gin.Context, id string
 		Updates(map[string]interface{}{
 			"name":        serviceAccount.Name,
 			"description": serviceAccount.Description,
-			"status":      serviceAccount.Status,
 		}).Error
 }
 
