@@ -7034,6 +7034,7 @@ const docTemplate = `{
         "service.SiteConfig": {
             "type": "object",
             "required": [
+                "attrs",
                 "disable_local_user_login",
                 "enable_multi_org",
                 "home_page",
@@ -7044,6 +7045,10 @@ const docTemplate = `{
                 "navigation"
             ],
             "properties": {
+                "attrs": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
                 "disable_local_user_login": {
                     "type": "boolean"
                 },
@@ -7757,7 +7762,12 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000
+                3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7783,7 +7793,12 @@ const docTemplate = `{
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour"
+                "Hour",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute"
             ]
         },
         "toolset.ToolSetConfigField": {

@@ -1231,6 +1231,7 @@ declare global {
     }
   
     interface SiteConfig {
+      attrs: Record<string, any>;
       disable_local_user_login: boolean;
       enable_multi_org: boolean;
       home_page: string;

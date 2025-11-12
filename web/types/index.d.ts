@@ -519,6 +519,16 @@ export declare interface AuditLogDetail {
     request: any;
 }
 
+declare interface AuthContextType {
+    user: API.User | null;
+    token: string | null;
+    loading: boolean;
+    login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
+    oauthLogin: (data: API.handleCallbackParams) => Promise<API.User | void>;
+    logout: () => void;
+    updateUser: (user: API.User) => void;
+}
+
 export declare const Avatar: ({ src, ...props }: AvatarProps) => JSX_2.Element;
 
 export { AvatarProps }
@@ -1699,6 +1709,7 @@ export declare interface SetServiceAccountPolicyRequest {
 }
 
 export declare interface SiteConfig {
+    attrs: Record<string, any>;
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
     home_page: string;
@@ -1707,6 +1718,16 @@ export declare interface SiteConfig {
     name: string;
     name_i18n: Record<string, any>;
     navigation: Navigation[];
+}
+
+declare interface SiteContextType {
+    siteConfig: API.SiteConfig | null;
+    enableMultiOrg: boolean;
+    loading: boolean;
+    fetchSiteConfig: () => Promise<API.SiteConfig | null>;
+    currentOrgId: string | null;
+    setCurrentOrgId: (orgId: string) => void;
+    clearCurrentOrgId: () => void;
 }
 
 export declare interface SMTPSettings {
@@ -2101,6 +2122,26 @@ export declare interface UpdateUserStatusRequest {
     status: string;
 }
 
+export declare const useAuth: () => AuthContextType;
+
+/**
+ * Permission Hook, used to check if the user has specific permissions
+ *
+ * Usage example:
+ * const { hasPermission, hasAllPermissions, hasAnyPermission } = usePermission();
+ *
+ * if (hasPermission('authorization:user:create')) {
+ *   // User has permission to create users
+ * }
+ */
+export declare const usePermission: () => {
+    hasPermission: (permission: string) => boolean;
+    hasAllPermissions: (permissions: string[]) => boolean;
+    hasAnyPermission: (permissions: string[]) => boolean;
+    isAdmin: boolean;
+    loading: boolean;
+};
+
 export declare interface User {
     avatar: string;
     created_at: string;
@@ -2125,6 +2166,8 @@ export declare interface User {
 }
 
 export declare type UserSource = "local" | "ldap" | "oauth";
+
+export declare const useSite: () => SiteContextType;
 
 export { useTranslation }
 

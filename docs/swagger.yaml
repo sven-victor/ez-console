@@ -1723,6 +1723,9 @@ definitions:
     type: object
   service.SiteConfig:
     properties:
+      attrs:
+        additionalProperties: {}
+        type: object
       disable_local_user_login:
         type: boolean
       enable_multi_org:
@@ -1746,6 +1749,7 @@ definitions:
           $ref: '#/definitions/service.Navigation'
         type: array
     required:
+    - attrs
     - disable_local_user_login
     - enable_multi_org
     - home_page
@@ -2242,6 +2246,11 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2268,6 +2277,11 @@ definitions:
     - Second
     - Minute
     - Hour
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
   toolset.ToolSetConfigField:
     properties:
       default:
