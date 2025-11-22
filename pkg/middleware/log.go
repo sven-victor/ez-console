@@ -101,7 +101,21 @@ type KitLogAdapter struct {
 func (l *KitLogAdapter) Write(p []byte) (n int, err error) {
 	msg := string(p)
 	if strings.HasPrefix(msg, "[GIN-debug]") {
-		level.Debug(l.logger).Log("msg", strings.TrimSpace(strings.TrimPrefix(msg, "[GIN-debug]")))
+		msg = strings.TrimSpace(strings.TrimPrefix(msg, "[GIN-debug]"))
+		if strings.HasPrefix(msg, "[WARNING]") {
+			level.Warn(l.logger).Log("msg", strings.TrimSpace(strings.TrimPrefix(msg, "[WARNING]")))
+			return len(p), nil
+		} else if strings.HasPrefix(msg, "[ERROR]") {
+			level.Error(l.logger).Log("msg", strings.TrimSpace(strings.TrimPrefix(msg, "[ERROR]")))
+			return len(p), nil
+		} else if strings.HasPrefix(msg, "[FATAL]") {
+			level.Error(l.logger).Log("msg", strings.TrimSpace(strings.TrimPrefix(msg, "[FATAL]")))
+			return len(p), nil
+		} else if strings.HasPrefix(msg, "[INFO]") {
+			level.Info(l.logger).Log("msg", strings.TrimSpace(strings.TrimPrefix(msg, "[INFO]")))
+			return len(p), nil
+		}
+		level.Debug(l.logger).Log("msg", msg)
 	} else {
 		level.Info(l.logger).Log("msg", strings.TrimSpace(strings.TrimPrefix(msg, "[GIN]")))
 	}
@@ -109,5 +123,5 @@ func (l *KitLogAdapter) Write(p []byte) (n int, err error) {
 }
 
 func NewKitLogAdapter(logger kitlog.Logger) *KitLogAdapter {
-	return &KitLogAdapter{logger: logger}
+	return &KitLogAdapter{logger: log.WithCaller(6)(logger)}
 }
