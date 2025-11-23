@@ -5,7 +5,7 @@ import api from '@/service/api';
 import { AvatarUpload } from '../Avatar';
 
 interface ProfileBasicProps {
-  user: API.User | null;
+  user?: API.User | null;
   onSuccess: () => void;
 }
 

@@ -352,6 +352,7 @@ declare global {
       code: string;
       err: any;
       message: string;
+      trace_id: string;
     }
   
     type EventType = "content" | "tool_call" | "error";
@@ -766,6 +767,7 @@ declare global {
       data: AIChatSession[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelAIModel {
@@ -774,6 +776,7 @@ declare global {
       data: AIModel[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelAuditLog {
@@ -782,6 +785,7 @@ declare global {
       data: AuditLog[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelFile {
@@ -790,6 +794,7 @@ declare global {
       data: File[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelOrganization {
@@ -798,6 +803,7 @@ declare global {
       data: Organization[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelRole {
@@ -806,6 +812,7 @@ declare global {
       data: Role[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelServiceAccount {
@@ -814,6 +821,7 @@ declare global {
       data: ServiceAccount[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelToolSet {
@@ -822,6 +830,7 @@ declare global {
       data: ToolSet[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseModelUser {
@@ -830,6 +839,7 @@ declare global {
       data: User[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     interface PaginationResponseServiceOrganizationUser {
@@ -838,6 +848,7 @@ declare global {
       data: OrganizationUser[];
       page_size: number;
       total: number;
+      trace_id: string;
     }
   
     type PasswordComplexity = "low" | "medium" | "high" | "very_high";
@@ -887,234 +898,273 @@ declare global {
       code: string;
       data: OAuthProvider[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArrayModelFile {
       code: string;
       data: File[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArrayModelOrganization {
       code: string;
       data: Organization[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArrayModelPermissionGroup {
       code: string;
       data: PermissionGroup[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArrayModelServiceAccountAccessKey {
       code: string;
       data: ServiceAccountAccessKey[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArrayModelUser {
       code: string;
       data: User[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArrayServiceSessionInfo {
       code: string;
       data: SessionInfo[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArrayServiceToolSetTypeDefinition {
       code: string;
       data: ToolSetTypeDefinition[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseArraySystemapiTool {
       code: string;
       data: Tool[];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
       code: string;
       data: CreateServiceAccountAccessKeyResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseAuthorizationapiResetUserPasswordResponse {
       code: string;
       data: ResetUserPasswordResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseAuthorizationapiTokenResponse {
       code: string;
       data: TokenResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelAIChatSession {
       code: string;
       data: AIChatSession;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelAIModel {
       code: string;
       data: AIModel;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelLDAPTestResponse {
       code: string;
       data: LDAPTestResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelOAuthSettings {
       code: string;
       data: OAuthSettings;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelOrganization {
       code: string;
       data: Organization;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelPolicyDocument {
       code: string;
       data: PolicyDocument;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelRole {
       code: string;
       data: Role;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelSecuritySettings {
       code: string;
       data: SecuritySettings;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelServiceAccount {
       code: string;
       data: ServiceAccount;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelServiceAccountAccessKey {
       code: string;
       data: ServiceAccountAccessKey;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelSMTPSettings {
       code: string;
       data: SMTPSettings;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelSystemSettings {
       code: string;
       data: SystemSettings;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelToolSet {
       code: string;
       data: ToolSet;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseModelUser {
       code: string;
       data: User;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceCharts {
       code: string;
       data: Chart[][];
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceEnableMFAResponse {
       code: string;
       data: EnableMFAResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceHealthResult {
       code: string;
       data: HealthResult;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceLoginResponse {
       code: string;
       data: LoginResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceOAuthLoginURLResponse {
       code: string;
       data: OAuthLoginURLResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceSiteConfig {
       code: string;
       data: SiteConfig;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceSystemInfo {
       code: string;
       data: SystemInfo;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseServiceTestOAuthCallbackResponse {
       code: string;
       data: TestOAuthCallbackResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseString {
       code: string;
       data: string;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseSystemapiCheckPasswordComplexityResponse {
       code: string;
       data: CheckPasswordComplexityResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseSystemapiLDAPSettings {
       code: string;
       data: LDAPSettings;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseSystemapiSMTPTestResponse {
       code: string;
       data: SMTPTestResponse;
       err: string;
+      trace_id: string;
     }
   
     interface ResponseUtilMessageData {
       code: string;
       data: MessageData;
       err: string;
+      trace_id: string;
     }
   
     interface restoreUserParams {

@@ -7763,11 +7763,14 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
-                60000000000
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7794,11 +7797,14 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute"
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetConfigField": {
@@ -7891,7 +7897,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "err",
-                "message"
+                "message",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -7899,6 +7906,9 @@ const docTemplate = `{
                 },
                 "err": {},
                 "message": {
+                    "type": "string"
+                },
+                "trace_id": {
                     "type": "string"
                 }
             }
@@ -7921,7 +7931,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -7941,6 +7952,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -7951,7 +7965,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -7971,6 +7986,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -7981,7 +7999,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8001,6 +8020,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8011,7 +8033,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8031,6 +8054,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8041,7 +8067,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8061,6 +8088,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8071,7 +8101,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8091,6 +8122,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8101,7 +8135,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8121,6 +8156,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8131,7 +8169,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8151,6 +8190,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8161,7 +8203,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8181,6 +8224,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8191,7 +8237,8 @@ const docTemplate = `{
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8211,6 +8258,9 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8219,7 +8269,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8233,6 +8284,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8241,7 +8295,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8255,6 +8310,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8263,7 +8321,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8277,6 +8336,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8285,7 +8347,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8299,6 +8362,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8307,7 +8373,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8321,6 +8388,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8329,7 +8399,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8343,6 +8414,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8351,7 +8425,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8365,6 +8440,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8373,7 +8451,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8387,6 +8466,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8395,7 +8477,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8409,6 +8492,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8417,7 +8503,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8428,6 +8515,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8436,7 +8526,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8447,6 +8538,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8455,7 +8549,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8466,6 +8561,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8474,7 +8572,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8485,6 +8584,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8493,7 +8595,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8504,6 +8607,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8512,7 +8618,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8523,6 +8630,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8531,7 +8641,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8542,6 +8653,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8550,7 +8664,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8561,6 +8676,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8569,7 +8687,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8580,6 +8699,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8588,7 +8710,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8599,6 +8722,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8607,7 +8733,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8618,6 +8745,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8626,7 +8756,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8637,6 +8768,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8645,7 +8779,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8656,6 +8791,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8664,7 +8802,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8675,6 +8814,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8683,7 +8825,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8694,6 +8837,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8702,7 +8848,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8713,6 +8860,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8721,7 +8871,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8732,6 +8883,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8740,7 +8894,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8757,6 +8912,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8765,7 +8923,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8776,6 +8935,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8784,7 +8946,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8795,6 +8958,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8803,7 +8969,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8814,6 +8981,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8822,7 +8992,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8833,6 +9004,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8841,7 +9015,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8852,6 +9027,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8860,7 +9038,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8871,6 +9050,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8879,7 +9061,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8890,6 +9073,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8898,7 +9084,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8909,6 +9096,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8917,7 +9107,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8928,6 +9119,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8936,7 +9130,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8947,6 +9142,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8955,7 +9153,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8966,6 +9165,9 @@ const docTemplate = `{
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8974,7 +9176,8 @@ const docTemplate = `{
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8984,6 +9187,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/util.MessageData"
                 },
                 "err": {
+                    "type": "string"
+                },
+                "trace_id": {
                     "type": "string"
                 }
             }

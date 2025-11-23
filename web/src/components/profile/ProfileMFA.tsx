@@ -6,7 +6,7 @@ import { ClockCircleFilled, EyeInvisibleOutlined, EyeOutlined, MailOutlined } fr
 import { useRequest } from 'ahooks';
 
 interface ProfileMFAProps {
-  user: API.User | null;
+  user?: API.User | null;
   onSuccess: () => void;
 }
 

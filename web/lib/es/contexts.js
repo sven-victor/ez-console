@@ -1,11 +1,11 @@
-import { useContext as C, createContext as O, useState as _, useEffect as z, useCallback as U } from "react";
+import { useContext as C, createContext as O, useState as _, useEffect as x, useCallback as U } from "react";
 import { j as P } from "./vendor.js";
 import { message as F } from "antd";
 import { a as y } from "./index.js";
-import { c as v } from "./client.js";
+import { c as z } from "./client.js";
 import { useRequest as T } from "ahooks";
 const S = O({
-  user: null,
+  user: void 0,
   token: null,
   loading: !1,
   login: async () => {
@@ -17,9 +17,9 @@ const S = O({
   updateUser: () => {
   }
 }), M = () => C(S), I = (n, t = !0) => {
-  n ? (t && localStorage.setItem("token", n), v.defaults.headers.common.Authorization = `Bearer ${n}`) : (t && localStorage.removeItem("token"), delete v.defaults.headers.common.Authorization);
+  n ? (t && localStorage.setItem("token", n), z.defaults.headers.common.Authorization = `Bearer ${n}`) : (t && localStorage.removeItem("token"), delete z.defaults.headers.common.Authorization);
 }, q = ({ children: n }) => {
-  const [t, r] = _(null), [g, i] = _(localStorage.getItem("token")), [A, d] = _(!0), { run: u } = T(async () => {
+  const [t, r] = _(void 0), [g, i] = _(localStorage.getItem("token")), [A, d] = _(!0), { run: u } = T(async () => {
     const s = localStorage.getItem("token");
     return s ? (I(s, !1), y.authorization.getCurrentUser()) : null;
   }, {
@@ -36,7 +36,7 @@ const S = O({
       d(!1);
     }
   });
-  z(() => {
+  x(() => {
     u();
   }, []);
   const o = async (s) => {
@@ -56,14 +56,14 @@ const S = O({
       let c = "", l = null;
       if (e && typeof e == "object")
         if ("code" in e && e.code === "0" && "data" in e) {
-          const { token: h, user: m, needs_mfa: p, mfa_token: k, mfa_type: x } = e.data;
+          const { token: h, user: m, needs_mfa: p, mfa_token: k, mfa_type: v } = e.data;
           if (p)
-            throw { needsMFA: !0, mfaToken: k, mfaType: x, user: m };
+            throw { needsMFA: !0, mfaToken: k, mfaType: v, user: m };
           c = h, l = m;
         } else {
-          const { token: h, user: m, needs_mfa: p, mfa_token: k, mfa_type: x } = e;
+          const { token: h, user: m, needs_mfa: p, mfa_token: k, mfa_type: v } = e;
           if (p)
-            throw { needsMFA: !0, mfaToken: k, mfaType: x, user: m };
+            throw { needsMFA: !0, mfaToken: k, mfaType: v, user: m };
           c = h, l = m;
         }
       return I(c), i(c), r(l), l;
@@ -107,11 +107,11 @@ const S = O({
   }
 }), j = () => C(b), H = ({ children: n }) => {
   const { user: t } = M(), { data: r = null, loading: g, runAsync: i } = T(async () => y.system.getSiteConfig(), { manual: !0 });
-  z(() => {
-    i();
+  x(() => {
+    t !== void 0 && i();
   }, [t]);
   const [A, d] = _(null);
-  return z(() => {
+  return x(() => {
     var o, a, f;
     let u = localStorage.getItem("orgID");
     if (u) {

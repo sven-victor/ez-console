@@ -520,7 +520,7 @@ export declare interface AuditLogDetail {
 }
 
 declare interface AuthContextType {
-    user: API.User | null;
+    user: API.User | null | undefined;
     token: string | null;
     loading: boolean;
     login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
@@ -724,6 +724,7 @@ export declare interface ErrorResponse {
     code: string;
     err: any;
     message: string;
+    trace_id: string;
 }
 
 export declare type EventType = "content" | "tool_call" | "error";
@@ -1208,6 +1209,7 @@ export declare interface PaginationResponseModelAIChatSession {
     data: AIChatSession[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelAIModel {
@@ -1216,6 +1218,7 @@ export declare interface PaginationResponseModelAIModel {
     data: AIModel[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelAuditLog {
@@ -1224,6 +1227,7 @@ export declare interface PaginationResponseModelAuditLog {
     data: AuditLog[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelFile {
@@ -1232,6 +1236,7 @@ export declare interface PaginationResponseModelFile {
     data: File_2[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelOrganization {
@@ -1240,6 +1245,7 @@ export declare interface PaginationResponseModelOrganization {
     data: Organization[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelRole {
@@ -1248,6 +1254,7 @@ export declare interface PaginationResponseModelRole {
     data: Role[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelServiceAccount {
@@ -1256,6 +1263,7 @@ export declare interface PaginationResponseModelServiceAccount {
     data: ServiceAccount[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelToolSet {
@@ -1264,6 +1272,7 @@ export declare interface PaginationResponseModelToolSet {
     data: ToolSet[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseModelUser {
@@ -1272,6 +1281,7 @@ export declare interface PaginationResponseModelUser {
     data: User[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare interface PaginationResponseServiceOrganizationUser {
@@ -1280,6 +1290,7 @@ export declare interface PaginationResponseServiceOrganizationUser {
     data: OrganizationUser[];
     page_size: number;
     total: number;
+    trace_id: string;
 }
 
 export declare type PasswordComplexity = "low" | "medium" | "high" | "very_high";
@@ -1365,234 +1376,273 @@ export declare interface ResponseArrayAuthorizationapiOAuthProvider {
     code: string;
     data: OAuthProvider[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArrayModelFile {
     code: string;
     data: File_2[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArrayModelOrganization {
     code: string;
     data: Organization[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArrayModelPermissionGroup {
     code: string;
     data: PermissionGroup[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArrayModelServiceAccountAccessKey {
     code: string;
     data: ServiceAccountAccessKey[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArrayModelUser {
     code: string;
     data: User[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArrayServiceSessionInfo {
     code: string;
     data: SessionInfo[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArrayServiceToolSetTypeDefinition {
     code: string;
     data: ToolSetTypeDefinition[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseArraySystemapiTool {
     code: string;
     data: Tool[];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
     code: string;
     data: CreateServiceAccountAccessKeyResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseAuthorizationapiResetUserPasswordResponse {
     code: string;
     data: ResetUserPasswordResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseAuthorizationapiTokenResponse {
     code: string;
     data: TokenResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelAIChatSession {
     code: string;
     data: AIChatSession;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelAIModel {
     code: string;
     data: AIModel;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelLDAPTestResponse {
     code: string;
     data: LDAPTestResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelOAuthSettings {
     code: string;
     data: OAuthSettings;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelOrganization {
     code: string;
     data: Organization;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelPolicyDocument {
     code: string;
     data: PolicyDocument;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelRole {
     code: string;
     data: Role;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelSecuritySettings {
     code: string;
     data: SecuritySettings;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelServiceAccount {
     code: string;
     data: ServiceAccount;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelServiceAccountAccessKey {
     code: string;
     data: ServiceAccountAccessKey;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelSMTPSettings {
     code: string;
     data: SMTPSettings;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelSystemSettings {
     code: string;
     data: SystemSettings;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelToolSet {
     code: string;
     data: ToolSet;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseModelUser {
     code: string;
     data: User;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceCharts {
     code: string;
     data: Chart[][];
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceEnableMFAResponse {
     code: string;
     data: EnableMFAResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceHealthResult {
     code: string;
     data: HealthResult;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceLoginResponse {
     code: string;
     data: LoginResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceOAuthLoginURLResponse {
     code: string;
     data: OAuthLoginURLResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceSiteConfig {
     code: string;
     data: SiteConfig;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceSystemInfo {
     code: string;
     data: SystemInfo;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseServiceTestOAuthCallbackResponse {
     code: string;
     data: TestOAuthCallbackResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseString {
     code: string;
     data: string;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseSystemapiCheckPasswordComplexityResponse {
     code: string;
     data: CheckPasswordComplexityResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseSystemapiLDAPSettings {
     code: string;
     data: LDAPSettings;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseSystemapiSMTPTestResponse {
     code: string;
     data: SMTPTestResponse;
     err: string;
+    trace_id: string;
 }
 
 export declare interface ResponseUtilMessageData {
     code: string;
     data: MessageData;
     err: string;
+    trace_id: string;
 }
 
 export declare interface restoreUserParams {

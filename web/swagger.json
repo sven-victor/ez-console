@@ -7754,11 +7754,14 @@
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
-                60000000000
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7785,11 +7788,14 @@
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute"
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetConfigField": {
@@ -7882,7 +7888,8 @@
             "required": [
                 "code",
                 "err",
-                "message"
+                "message",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -7890,6 +7897,9 @@
                 },
                 "err": {},
                 "message": {
+                    "type": "string"
+                },
+                "trace_id": {
                     "type": "string"
                 }
             }
@@ -7912,7 +7922,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -7932,6 +7943,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -7942,7 +7956,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -7962,6 +7977,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -7972,7 +7990,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -7992,6 +8011,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8002,7 +8024,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8022,6 +8045,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8032,7 +8058,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8052,6 +8079,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8062,7 +8092,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8082,6 +8113,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8092,7 +8126,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8112,6 +8147,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8122,7 +8160,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8142,6 +8181,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8152,7 +8194,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8172,6 +8215,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8182,7 +8228,8 @@
                 "current",
                 "data",
                 "page_size",
-                "total"
+                "total",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8202,6 +8249,9 @@
                 },
                 "total": {
                     "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8210,7 +8260,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8224,6 +8275,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8232,7 +8286,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8246,6 +8301,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8254,7 +8312,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8268,6 +8327,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8276,7 +8338,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8290,6 +8353,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8298,7 +8364,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8312,6 +8379,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8320,7 +8390,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8334,6 +8405,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8342,7 +8416,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8356,6 +8431,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8364,7 +8442,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8378,6 +8457,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8386,7 +8468,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8400,6 +8483,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8408,7 +8494,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8419,6 +8506,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8427,7 +8517,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8438,6 +8529,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8446,7 +8540,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8457,6 +8552,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8465,7 +8563,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8476,6 +8575,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8484,7 +8586,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8495,6 +8598,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8503,7 +8609,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8514,6 +8621,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8522,7 +8632,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8533,6 +8644,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8541,7 +8655,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8552,6 +8667,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8560,7 +8678,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8571,6 +8690,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8579,7 +8701,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8590,6 +8713,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8598,7 +8724,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8609,6 +8736,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8617,7 +8747,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8628,6 +8759,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8636,7 +8770,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8647,6 +8782,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8655,7 +8793,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8666,6 +8805,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8674,7 +8816,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8685,6 +8828,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8693,7 +8839,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8704,6 +8851,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8712,7 +8862,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8723,6 +8874,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8731,7 +8885,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8748,6 +8903,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8756,7 +8914,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8767,6 +8926,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8775,7 +8937,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8786,6 +8949,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8794,7 +8960,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8805,6 +8972,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8813,7 +8983,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8824,6 +8995,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8832,7 +9006,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8843,6 +9018,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8851,7 +9029,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8862,6 +9041,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8870,7 +9052,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8881,6 +9064,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8889,7 +9075,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8900,6 +9087,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8908,7 +9098,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8919,6 +9110,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8927,7 +9121,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8938,6 +9133,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8946,7 +9144,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8957,6 +9156,9 @@
                 },
                 "err": {
                     "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
                 }
             }
         },
@@ -8965,7 +9167,8 @@
             "required": [
                 "code",
                 "data",
-                "err"
+                "err",
+                "trace_id"
             ],
             "properties": {
                 "code": {
@@ -8975,6 +9178,9 @@
                     "$ref": "#/definitions/util.MessageData"
                 },
                 "err": {
+                    "type": "string"
+                },
+                "trace_id": {
                     "type": "string"
                 }
             }
