@@ -253,10 +253,7 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 			}
 			auditLog.Details.NewData = *newUser
 
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": newUser,
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, newUser)
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
@@ -760,14 +757,11 @@ func (c *UserController) Login(ctx *gin.Context) {
 				}
 				// Special handling for MFA requirement
 				if loginResponseData != nil && loginResponseData.NeedsMFA {
-					ctx.JSON(http.StatusOK, gin.H{
-						"code": "0",
-						"data": gin.H{
-							"needs_mfa": loginResponseData.NeedsMFA,
-							"mfa_token": loginResponseData.MFAToken,
-							"mfa_type":  loginResponseData.MFAType,
-							"user":      loginResponseData.User,
-						},
+					util.RespondWithSuccess(ctx, http.StatusOK, gin.H{
+						"needs_mfa": loginResponseData.NeedsMFA,
+						"mfa_token": loginResponseData.MFAToken,
+						"mfa_type":  loginResponseData.MFAType,
+						"user":      loginResponseData.User,
 					})
 					return nil
 				}
@@ -781,10 +775,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 			}
 
 			// Return token and user info
-			ctx.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"data": loginResponseData,
-			})
+			util.RespondWithSuccess(ctx, http.StatusOK, loginResponseData)
 			return nil
 		},
 		service.WithAfterFilters(func(auditLog *model.AuditLog) {

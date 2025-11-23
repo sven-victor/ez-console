@@ -1,6 +1,12 @@
 package service
 
-import "context"
+import (
+	"context"
+
+	"github.com/sven-victor/ez-console/pkg/config"
+	"github.com/sven-victor/ez-utils/log"
+	"go.opentelemetry.io/otel"
+)
 
 type Service struct {
 	*UserService
@@ -32,7 +38,10 @@ type BaseService struct {
 }
 
 func NewService(ctx context.Context) *Service {
-
+	ctx, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(ctx, "Initialize Service")
+	defer span.End()
+	traceId := span.SpanContext().TraceID()
+	ctx, _ = log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
 	// Create settings service first, as user service depends on it
 	settingService := NewSettingService()
 	geoipService := NewGeoIPService(ctx)

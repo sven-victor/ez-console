@@ -1,9 +1,12 @@
 package middleware
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 
@@ -11,11 +14,12 @@ import (
 	kitlog "github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	"github.com/sven-victor/ez-console/pkg/logs"
+	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/safe"
 	w "github.com/sven-victor/ez-utils/wrapper"
 
-	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -51,21 +55,15 @@ func (h SafeHeader) String() string {
 
 func Log(serviceName string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		var logger kitlog.Logger
-
 		start := time.Now()
-		spanName := c.Request.RequestURI
-		var spanOptions []trace.SpanStartOption
-		if handlerName := c.HandlerName(); handlerName != "" {
-			spanName = handlerName
-		}
-		ctx, span := otel.GetTracerProvider().Tracer(serviceName).Start(c.Request.Context(), spanName, spanOptions...)
+		span := trace.SpanFromContext(c)
 		traceId := span.SpanContext().TraceID()
 		traceIdStr := traceId.String()
 		if !traceId.IsValid() {
 			traceIdStr = log.NewTraceId()
 		}
-		ctx, logger = log.NewContextLogger(ctx, log.WithTraceId(traceIdStr))
+		c.Writer.Header().Set("Trace-Id", traceIdStr)
+		ctx, logger := log.NewContextLogger(c.Request.Context(), log.WithTraceId(traceIdStr))
 		c.Request = c.Request.WithContext(ctx)
 
 		level.Info(logger).Log("msg", "HTTP request received.",
@@ -78,6 +76,19 @@ func Log(serviceName string) gin.HandlerFunc {
 		)
 
 		defer func() {
+			if r := recover(); r != nil {
+				span.SetStatus(codes.Error, fmt.Sprintf("%+v", r))
+				util.RespondWithErrorMessage(c, http.StatusInternalServerError, "E5000", "Server exception")
+				buf := bytes.NewBufferString(fmt.Sprintf("recover from panic situation: - %v\n", r))
+				for i := 2; ; i++ {
+					_, file, line, ok := runtime.Caller(i)
+					if !ok {
+						break
+					}
+					buf.WriteString(fmt.Sprintf("    %s:%d\n", file, line))
+				}
+				level.Error(logger).Log("msg", buf.String())
+			}
 			level.Info(logger).Log("msg", "HTTP response send.",
 				logs.TopicKey, "response",
 				log.WrapKeyName("httpURI"), c.Request.RequestURI,

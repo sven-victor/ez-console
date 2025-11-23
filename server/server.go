@@ -13,10 +13,12 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/sven-victor/ez-utils/clients/tracing"
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/log/flag"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.opentelemetry.io/otel"
 
 	"github.com/sven-victor/ez-console/pkg/api"
 	clientsldap "github.com/sven-victor/ez-console/pkg/clients/ldap"
@@ -27,6 +29,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 func initFlags(rootCmd *cobra.Command) {
@@ -151,6 +154,7 @@ func NewCommandServer(serviceName string, description string, options ...WithSer
 	rootCmd := &cobra.Command{
 		Use:   serviceName,
 		Short: description,
+
 		Run: func(cmd *cobra.Command, args []string) {
 			newServer(cmd.Context(), serviceName, serverOption.withEngine...)
 		},
@@ -178,50 +182,28 @@ func NewCommandServer(serviceName string, description string, options ...WithSer
 	return &CommandServer{Command: rootCmd}
 }
 
-func newServer(ctx context.Context, serviceName string, options ...withEngineOption) {
-
-	cfg := config.GetConfig()
-	{
-		ctx, logger := log.NewContextLogger(ctx)
-		// Initialize database
-		if err := db.InitDB(ctx, cfg); err != nil {
-			level.Error(logger).Log("msg", "Failed to initialize database", "err", err)
-			os.Exit(1)
-		}
-		defer db.CloseDB()
-
-		// Database migration and data initialization
-		if err := db.MigrateDB(ctx); err != nil {
-			level.Error(logger).Log("msg", "Failed to migrate database", "err", err)
-			os.Exit(1)
-		}
-		if err := db.SeedDB(ctx, middleware.GetPermissions()); err != nil {
-			level.Error(logger).Log("msg", "Failed to initialize data", "err", err)
-			os.Exit(1)
-		}
+func initDB(ctx context.Context, cfg *config.Config) {
+	db.InitDB(ctx, cfg)
+	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(ctx, "Initialize Database")
+	defer span.End()
+	traceId := span.SpanContext().TraceID()
+	ctx, logger := log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
+	// Database migration and data initialization
+	if err := db.MigrateDB(ctx); err != nil {
+		level.Error(logger).Log("msg", "Failed to migrate database", "err", err)
+		os.Exit(1)
 	}
-
-	// Set Gin mode
-	if cfg.Server.Mode == "debug" {
-		gin.SetMode(gin.DebugMode)
-	} else {
-		gin.SetMode(gin.ReleaseMode)
+	if err := db.SeedDB(ctx, middleware.GetPermissions()); err != nil {
+		level.Error(logger).Log("msg", "Failed to initialize data", "err", err)
+		os.Exit(1)
 	}
-	logger := log.GetContextLogger(ctx)
-	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath string, handlerName string, nuHandlers int) {
-		level.Debug(logger).Log("msg", "add gin route", log.KeyName("httpMethod"), httpMethod, log.KeyName("absolutePath"), absolutePath, log.KeyName("handlerName"), handlerName, log.KeyName("nuHandlers"), nuHandlers)
-	}
-	gin.DefaultWriter = middleware.NewKitLogAdapter(logger)
-	gin.DefaultErrorWriter = middleware.NewKitLogAdapter(logger)
-	// Create Gin engine
-	engine := gin.New()
+}
 
-	engine.ContextWithFallback = true
-	engine.Use(middleware.Log(serviceName))
-	engine.Use(gin.Recovery(), middleware.CORSMiddleware(), middleware.DelayMiddleware())
-	// Default middleware is provided by gin.Default()
-	// No need for additional logger and recovery middleware
-	svc := service.NewService(ctx)
+func initSettings(ctx context.Context, cfg *config.Config, svc *service.Service) {
+	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(ctx, "Initialize Settings")
+	defer span.End()
+	traceId := span.SpanContext().TraceID()
+	ctx, logger := log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
 
 	// Initialize default settings
 	if err := svc.InitDefaultSettings(ctx); err != nil {
@@ -247,6 +229,58 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	if err := svc.InitDefaultLDAPSettings(ctx); err != nil {
 		level.Error(logger).Log("msg", "Init default ldap settings failed", "error", err)
 	}
+}
+func newServer(ctx context.Context, serviceName string, options ...withEngineOption) {
+	cfg := config.GetConfig()
+	{
+		traceProvider, err := tracing.NewTraceProvider(ctx, &cfg.Tracing)
+		if err != nil {
+			level.Error(log.New()).Log("msg", "Failed to create trace provider", "err", err)
+			os.Exit(1)
+		}
+		defer func() {
+			timeoutCtx, closeCh := context.WithTimeout(context.Background(), time.Second*3)
+			defer closeCh()
+
+			ctx, logger := log.NewContextLogger(timeoutCtx)
+			if err := traceProvider.ForceFlush(ctx); err != nil {
+				level.Debug(logger).Log("msg", "failed to force flush trace", "err", err)
+			}
+			if err := traceProvider.Shutdown(ctx); err != nil {
+				level.Debug(logger).Log("msg", "failed to close trace", "err", err)
+			}
+		}()
+		otel.SetTracerProvider(traceProvider)
+	}
+	{
+		defer db.CloseDB()
+		initDB(ctx, cfg)
+	}
+
+	// Set Gin mode
+	if cfg.Server.Mode == "debug" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
+	logger := log.GetContextLogger(ctx)
+	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath string, handlerName string, nuHandlers int) {
+		level.Debug(logger).Log("msg", "add gin route", log.KeyName("httpMethod"), httpMethod, log.KeyName("absolutePath"), absolutePath, log.KeyName("handlerName"), handlerName, log.KeyName("nuHandlers"), nuHandlers)
+	}
+	gin.DefaultWriter = middleware.NewKitLogAdapter(logger)
+	gin.DefaultErrorWriter = middleware.NewKitLogAdapter(logger)
+	// Create Gin engine
+	engine := gin.New()
+
+	engine.ContextWithFallback = true
+	engine.Use(otelgin.Middleware(serviceName))
+	engine.Use(middleware.Log(serviceName))
+	engine.Use(gin.Recovery(), middleware.CORSMiddleware(), middleware.DelayMiddleware())
+	// Default middleware is provided by gin.Default()
+	// No need for additional logger and recovery middleware
+	svc := service.NewService(ctx)
+
+	initSettings(ctx, cfg, svc)
 
 	// Setup API routes
 	api.RegisterControllers(engine, svc)

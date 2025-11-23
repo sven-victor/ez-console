@@ -2,10 +2,10 @@ package middleware
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/util"
 )
 
 // Mapping of permission names to identifiers
@@ -67,20 +67,12 @@ func RequirePermission(code string) gin.HandlerFunc {
 		// Get permission information
 		roleInterface, exists := c.Get("roles")
 		if !exists {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code": "E4012",
-				"err":  "Unauthorized",
-			})
-			c.Abort()
+			util.RespondWithError(c, util.NewErrorMessage("E4012", "Unauthorized"))
 			return
 		}
 		roles, ok := roleInterface.([]model.Role)
 		if !ok {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"code": "E4012",
-				"err":  "Invalid role information",
-			})
-			c.Abort()
+			util.RespondWithError(c, util.NewErrorMessage("E4012", "Invalid role information"))
 			return
 		}
 		// If it is an administrator, allow directly
@@ -93,11 +85,7 @@ func RequirePermission(code string) gin.HandlerFunc {
 		// Get permission definition
 		permission := GetPermission(code)
 		if permission == nil {
-			c.JSON(http.StatusForbidden, gin.H{
-				"code": "E4031",
-				"err":  "Permission not found",
-			})
-			c.Abort()
+			util.RespondWithError(c, util.NewErrorMessage("E4031", "Permission not found"))
 			return
 		}
 
@@ -105,11 +93,7 @@ func RequirePermission(code string) gin.HandlerFunc {
 		orgID, _ := c.Get("organization_id")
 		if permission.OrgPermission {
 			if orgID == nil || orgID.(string) == "" {
-				c.JSON(http.StatusForbidden, gin.H{
-					"code": "E4031",
-					"err":  "Organization context required for this permission",
-				})
-				c.Abort()
+				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization context required for this permission"))
 				return
 			}
 			orgIDStr := orgID.(string)
@@ -160,10 +144,7 @@ func RequirePermission(code string) gin.HandlerFunc {
 					c.Next()
 					return
 				}
-				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-					"code": "E4031",
-					"err":  "No permission to perform this operation",
-				})
+				util.RespondWithError(c, util.NewErrorMessage("E4031", "No permission to perform this operation"))
 				return
 			}
 			if role.HasPermission(code) {
@@ -172,10 +153,6 @@ func RequirePermission(code string) gin.HandlerFunc {
 			}
 		}
 
-		c.JSON(http.StatusForbidden, gin.H{
-			"code": "E4031",
-			"err":  "No permission to perform this operation",
-		})
-		c.Abort()
+		util.RespondWithError(c, util.NewErrorMessage("E4031", "No permission to perform this operation"))
 	}
 }

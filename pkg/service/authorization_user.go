@@ -16,10 +16,12 @@ import (
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/safe"
 	w "github.com/sven-victor/ez-utils/wrapper"
+	"go.opentelemetry.io/otel"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
 	clientsldap "github.com/sven-victor/ez-console/pkg/clients/ldap"
+	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -37,30 +39,35 @@ type UserService struct {
 	userRoleChangeHooks []UserRoleChangeHook
 }
 
+func initUserIndex(ctx context.Context) {
+	ctx, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(ctx, "Initialize User Index")
+	defer span.End()
+	traceId := span.SpanContext().TraceID()
+	ctx, logger := log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
+	// create Username+deleteAt index
+	conn := db.Session(ctx)
+	if !conn.Migrator().HasIndex(&model.User{}, "idx_t_user_username_deleteat") {
+		level.Info(logger).Log("msg", "Creating index idx_t_user_username_deleteat")
+		conn.Exec("CREATE UNIQUE INDEX idx_t_user_username_deleteat ON t_user (username, deleted_at)")
+	}
+	if conn.Migrator().HasIndex(&model.User{}, "idx_t_user_username") {
+		level.Info(logger).Log("msg", "Dropping index idx_t_user_username")
+		conn.Exec("DROP INDEX idx_t_user_username")
+	}
+	// create email+deleteAt index
+	if !conn.Migrator().HasIndex(&model.User{}, "idx_t_user_email_deleteat") {
+		level.Info(logger).Log("msg", "Creating index idx_t_user_email_deleteat")
+		conn.Exec("CREATE INDEX idx_t_user_email_deleteat ON t_user (email, deleted_at)")
+	}
+	if conn.Migrator().HasIndex(&model.User{}, "idx_t_user_email") {
+		level.Info(logger).Log("msg", "Dropping index idx_t_user_email")
+		conn.Exec("DROP INDEX idx_t_user_email")
+	}
+}
+
 // NewUserService creates a user service
 func NewUserService(ctx context.Context, baseService *BaseService, ldapService *LDAPService) *UserService {
-	{
-		logger := log.GetContextLogger(ctx)
-		// create Username+deleteAt index
-		conn := db.Session(ctx)
-		if !conn.Migrator().HasIndex(&model.User{}, "idx_t_user_username_deleteat") {
-			level.Info(logger).Log("msg", "Creating index idx_t_user_username_deleteat")
-			conn.Exec("CREATE UNIQUE INDEX idx_t_user_username_deleteat ON t_user (username, deleted_at)")
-		}
-		if conn.Migrator().HasIndex(&model.User{}, "idx_t_user_username") {
-			level.Info(logger).Log("msg", "Dropping index idx_t_user_username")
-			conn.Exec("DROP INDEX idx_t_user_username")
-		}
-		// create email+deleteAt index
-		if !conn.Migrator().HasIndex(&model.User{}, "idx_t_user_email_deleteat") {
-			level.Info(logger).Log("msg", "Creating index idx_t_user_email_deleteat")
-			conn.Exec("CREATE INDEX idx_t_user_email_deleteat ON t_user (email, deleted_at)")
-		}
-		if conn.Migrator().HasIndex(&model.User{}, "idx_t_user_email") {
-			level.Info(logger).Log("msg", "Dropping index idx_t_user_email")
-			conn.Exec("DROP INDEX idx_t_user_email")
-		}
-	}
+	initUserIndex(ctx)
 	return &UserService{
 		baseService: baseService,
 		ldapService: ldapService,

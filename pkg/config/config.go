@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 	"github.com/sven-victor/ez-console/pkg/util/jwt"
+	"github.com/sven-victor/ez-utils/clients/tracing"
 
 	gorm "github.com/sven-victor/ez-utils/clients/gorm"
 	"github.com/sven-victor/ez-utils/safe"
@@ -33,11 +34,12 @@ func (c *CacheConfig) GetSize() int {
 
 // Config application configuration structure
 type Config struct {
-	Server   ServerConfig `yaml:"server" mapstructure:"server"`
-	Database *gorm.Client `yaml:"database" mapstructure:"database"`
-	JWT      jwt.Config   `yaml:"jwt" mapstructure:"jwt"`
-	OAuth    OAuthConfig  `yaml:"oauth" mapstructure:"oauth"`
-	Cache    CacheConfig  `yaml:"cache" mapstructure:"cache"`
+	Tracing  tracing.TraceOptions `yaml:"tracing" mapstructure:"tracing"`
+	Server   ServerConfig         `yaml:"server" mapstructure:"server"`
+	Database *gorm.Client         `yaml:"database" mapstructure:"database"`
+	JWT      jwt.Config           `yaml:"jwt" mapstructure:"jwt"`
+	OAuth    OAuthConfig          `yaml:"oauth" mapstructure:"oauth"`
+	Cache    CacheConfig          `yaml:"cache" mapstructure:"cache"`
 }
 
 // ServerConfig server configuration
@@ -128,7 +130,7 @@ func GetConfig() *Config {
 	return globalConfig
 }
 
-func setDefaultConfig() {
+func setDefaultConfig(appName string) {
 	viper.SetDefault("oauth.enabled", false)
 	viper.SetDefault("oauth.auto_create_user", false)
 	viper.SetDefault("oauth.providers", []ProviderConfig{
@@ -142,6 +144,7 @@ func setDefaultConfig() {
 			Enabled:     &[]bool{false}[0],
 		},
 	})
+	viper.SetDefault("tracing.service_name", appName)
 }
 
 func StringToBoolHookFunc() mapstructure.DecodeHookFunc {
@@ -311,7 +314,6 @@ func gormClientUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (a
 				if err := decoder.Decode(data); err != nil {
 					return nil, err
 				}
-				fmt.Println("gormClientUnmarshallerHookFunc", w.JSONStringer(o))
 				return gorm.NewMySQLClient(context.Background(), "default", o)
 			case "clickhouse":
 				var o gorm.ClickhouseOptions
@@ -339,7 +341,7 @@ func gormClientUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (a
 
 // LoadConfig loads the configuration
 func LoadConfig(appName, configPath string) (*Config, error) {
-	setDefaultConfig()
+	setDefaultConfig(appName)
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 
@@ -348,7 +350,7 @@ func LoadConfig(appName, configPath string) (*Config, error) {
 	} else {
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("./config")
-		viper.AddConfigPath("/etc/ez-console")
+		viper.AddConfigPath(fmt.Sprintf("/etc/%s", appName))
 	}
 
 	if err := viper.ReadInConfig(); err != nil {

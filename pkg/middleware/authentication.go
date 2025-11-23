@@ -11,6 +11,7 @@ import (
 
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/safe"
+	"go.opentelemetry.io/otel"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
@@ -112,7 +113,10 @@ func JWTAuthenticationFunc(c *gin.Context) {
 			return
 		}
 		if before == "Bearer" {
-			jwtMiddleware(c, after)
+			if err := jwtMiddleware(c, after); err != nil {
+				util.RespondWithError(c, err)
+				return
+			}
 			if !c.IsAborted() {
 				c.Next()
 			}
@@ -133,7 +137,10 @@ func JWTAuthenticationFunc(c *gin.Context) {
 
 func DefaultAuthenticationFunc(c *gin.Context) {
 	if username, password, ok := c.Request.BasicAuth(); ok {
-		serviceAuthenticationMiddleware(c, username, password)
+		if err := serviceAuthenticationMiddleware(c, username, password); err != nil {
+			util.RespondWithError(c, err)
+			return
+		}
 		if !c.IsAborted() {
 			c.Next()
 		}
@@ -161,63 +168,43 @@ type ServiceAccountAccessKeyWithStatus struct {
 	ServiceAccountStatus string `json:"service_account_status"`
 }
 
-func serviceAuthenticationMiddleware(c *gin.Context, accessKey, secretKey string) {
+func serviceAuthenticationMiddleware(c *gin.Context, accessKey, secretKey string) (err error) {
+	cfg := config.GetConfig()
+	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(c.Request.Context(), "Service Account Authentication")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+
 	var key ServiceAccountAccessKeyWithStatus
-	if err := db.Session(c).Model(&model.ServiceAccountAccessKey{}).Select("`t_service_account_access_key`.*", "`t_service_account`.`status` as `service_account_status`").
+	if err := db.Session(ctx).Model(&model.ServiceAccountAccessKey{}).Select("`t_service_account_access_key`.*", "`t_service_account`.`status` as `service_account_status`").
 		Joins("left join `t_service_account` on `t_service_account_access_key`.`service_account_id` = `t_service_account`.`resource_id`").
 		Where("`t_service_account_access_key`.`access_key_id` = ?", accessKey).
 		First(&key).Error; err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"code": "E4011",
-			"err":  "Invalid authentication token",
-		})
-		c.Abort()
-		return
+		return util.NewErrorMessage("E4011", "Invalid authentication token")
 	}
-	db.Session(c).Model(key.ServiceAccountAccessKey).Select("LastUsed").Update("LastUsed", time.Now())
+	db.Session(ctx).Model(key.ServiceAccountAccessKey).Select("LastUsed").Update("LastUsed", time.Now())
 	if key.IsExpired() {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": "E4011",
-			"err":  "Authentication token has expired",
-		})
-		return
+		return util.NewErrorMessage("E4011", "Authentication token has expired")
 	}
 	if key.SecretAccessKey != secretKey {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": "E4011",
-			"err":  "Invalid authentication token",
-		})
-		return
+		return util.NewErrorMessage("E4011", "Invalid authentication token")
 	}
 	if !key.IsActive() {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": "E4011",
-			"err":  "Authentication token is disabled",
-		})
-		return
+		return util.NewErrorMessage("E4011", "Authentication token is disabled")
 	}
 	if key.ServiceAccountStatus != model.ServiceAccountStatusActive {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": "E4011",
-			"err":  "Service account is disabled",
-		})
-		return
+		return util.NewErrorMessage("E4011", "Service account is disabled")
 	}
 
 	var serviceAccount model.ServiceAccount
-	if err := db.Session(c).Where("resource_id = ?", key.ServiceAccountID).Preload("Roles.Permissions").First(&serviceAccount).Error; err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": "E4011",
-			"err":  "Service account not found",
-		})
-		return
+	if err := db.Session(ctx).Where("resource_id = ?", key.ServiceAccountID).Preload("Roles.Permissions").First(&serviceAccount).Error; err != nil {
+		return util.NewErrorMessage("E4011", "Service account not found")
 	}
 	if serviceAccount.Status != "active" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-			"code": "E4011",
-			"err":  "Service account is disabled",
-		})
-		return
+		return util.NewErrorMessage("E4011", "Service account is disabled")
 	}
 	if len(serviceAccount.PolicyDocument.Statement) > 0 {
 		serviceAccount.Roles = append([]model.Role{{
@@ -230,11 +217,12 @@ func serviceAuthenticationMiddleware(c *gin.Context, accessKey, secretKey string
 		}}, serviceAccount.Roles...)
 	}
 	// Update the last access time of the service account
-	db.Session(c).Model(&serviceAccount).Select("LastAccess").Update("last_access", time.Now())
+	db.Session(ctx).Model(&serviceAccount).Select("LastAccess").Update("last_access", time.Now())
 
 	c.Set("service_account", &serviceAccount)
 	c.Set("service_account_id", serviceAccount.ResourceID)
 	c.Set("roles", serviceAccount.Roles)
+	return nil
 }
 
 func GetUserFromContext(c context.Context) *model.User {
@@ -257,27 +245,30 @@ func GetRolesFromContext(c context.Context) []model.Role {
 	return c.Value("roles").([]model.Role)
 }
 
-func jwtMiddleware(c *gin.Context, tokenString string) {
+func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 	cfg := config.GetConfig()
+	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(c.Request.Context(), "JWT Authentication")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
 	token, err := cfg.JWT.ParseWithClaims(tokenString, jwt.MapClaims{})
 	if err != nil {
-		util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
-		return
+		return util.NewErrorMessage("E4011", "Invalid token", err)
 	}
 
 	iat, err := token.Claims.GetIssuedAt()
 	if err != nil {
-		util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
-		return
+		return util.NewErrorMessage("E4011", "Invalid token", err)
 	}
 	sessionIdleTimeoutMinutes, err := settingService.GetIntSetting(c, model.SettingSessionIdleTimeoutMinutes, 0)
 	if err != nil {
-		util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
-		return
+		return util.NewErrorMessage("E4011", "Invalid token", err)
 	}
 	if sessionIdleTimeoutMinutes > 0 && time.Since(iat.Time) > time.Duration(sessionIdleTimeoutMinutes)*time.Minute {
-		util.RespondWithError(c, util.NewErrorMessage("E4011", "Session expired, please login again"))
-		return
+		return util.NewErrorMessage("E4011", "Session expired, please login again")
 	}
 
 	// Validate token
@@ -285,41 +276,36 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		// Check if token has expired
 		exp, err := claims.GetExpirationTime()
 		if err != nil {
-			util.RespondWithError(c, util.NewErrorMessage("E4011", "Invalid token", err))
-			return
+			return util.NewErrorMessage("E4011", "Invalid token", err)
 		}
 		if exp.Before(time.Now()) {
-			util.RespondWithError(c, util.NewErrorMessage("E4011", "Token expired"))
-			return
+			return util.NewErrorMessage("E4011", "Token expired")
 		}
 		// Get user information
 		userID, ok := claims["user_id"].(string)
 		if !ok {
-			util.RespondWithError(c, util.NewErrorMessage("E4012", "Invalid user ID"))
-			return
+			return util.NewErrorMessage("E4012", "Invalid user ID")
 		}
 
 		// Check session validity
 		var session model.Session
-		if err := db.Session(c).Where("token = ? AND is_valid = ?", safe.NewHash(sha256.New, []byte(tokenString)).HexString(64), true).First(&session).Error; err == nil {
+		if err := db.Session(ctx).Where("token = ? AND is_valid = ?", safe.NewHash(sha256.New, []byte(tokenString)).HexString(64), true).First(&session).Error; err == nil {
 			// Session exists, check if expired
 			if session.IsExpired() {
 				// Session has expired, mark as invalid
 				session.Invalidate()
-				db.Session(c).Select("IsValid").Save(&session)
-				util.RespondWithError(c, util.NewErrorMessage("E4011", "Session expired, please login again"))
-				return
+				db.Session(ctx).Select("IsValid").Save(&session)
+				return util.NewErrorMessage("E4011", "Session expired, please login again")
 			}
 
 			// Update last active time
 			session.UpdateLastActive()
-			db.Session(c).Select("LastActiveAt").Save(&session)
+			db.Session(ctx).Select("LastActiveAt").Save(&session)
 
 			// Store session information in context
 			c.Set("session", &session)
 		} else {
-			util.RespondWithError(c, util.NewErrorMessage("E4011", "Session expired, please login again", err))
-			return
+			return util.NewErrorMessage("E4011", "Session expired, please login again", err)
 		}
 
 		// Load user information from database
@@ -328,29 +314,22 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		if cachedUser, ok := GetUserCache(userID); ok {
 			user = cachedUser
 		} else {
-			if err := db.Session(c).
+			if err := db.Session(ctx).
 				Where("resource_id = ?", userID).
 				Preload("Roles.Permissions").
 				Preload("Roles.AIToolPermissions").
 				First(&user).Error; err != nil {
-				util.RespondWithError(c, util.ErrorResponse{
-					HTTPCode: http.StatusUnauthorized,
-					Code:     "E4012",
-					Err:      err,
-					Message:  "User not found",
-				})
-				return
+				return util.NewErrorMessage("E4012", "User not found", err)
 			}
 			SetUserCache(userID, user, time.Minute*10)
 		}
-		passwordExpiryDays, err := settingService.GetIntSetting(c, model.SettingPasswordExpiryDays, 0)
+		passwordExpiryDays, err := settingService.GetIntSetting(ctx, model.SettingPasswordExpiryDays, 0)
 		if err != nil {
-			util.RespondWithError(c, util.NewErrorMessage("E4012", "System configuration error", err))
-			return
+			return util.NewErrorMessage("E4012", "System configuration error", err)
 		}
 
 		if user.IsLDAPUser() {
-			allowChangePassword, _ := settingService.GetBoolSetting(c, model.SettingLDAPAllowManageUserPassword, false)
+			allowChangePassword, _ := settingService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
 			if !allowChangePassword {
 				passwordExpiryDays = 0
 			}
@@ -359,38 +338,21 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		if !user.IsLocked() && user.Status == model.UserStatusPasswordExpired || (passwordExpiryDays > 0 && user.IsPasswordExpired(passwordExpiryDays)) {
 			user.Roles = nil
 		} else if !user.IsActive() { // Check user status
-			util.RespondWithError(c, util.ErrorResponse{
-				HTTPCode: http.StatusUnauthorized,
-				Code:     "E4012",
-				Err:      errors.New("user is disabled"),
-				Message:  "User is disabled",
-			})
-			return
+			return util.NewErrorMessage("E4012", "User is disabled")
 		}
 		{
-			mfaEnforced, err := settingService.GetBoolSetting(c, model.SettingMFAEnforced, false)
+			mfaEnforced, err := settingService.GetBoolSetting(ctx, model.SettingMFAEnforced, false)
 			if err != nil && err != gorm.ErrRecordNotFound {
-				util.RespondWithError(c, util.ErrorResponse{
-					HTTPCode: http.StatusUnauthorized,
-					Code:     "E4012",
-					Err:      err,
-					Message:  "System configuration error",
-				})
-				return
+				return util.NewErrorMessage("E4012", "System configuration error", err)
 			}
 			if mfaEnforced || user.MFAEnforced {
 				issuer, _ := claims.GetIssuer()
 				switch issuer {
 				case string(JWTIssuerOAuth):
 					var oauthMFAEnabled string
-					err := db.Session(c).Model(&model.Setting{}).Select("value").Where("key = ?", model.SettingOAuthMFAEnabled).First(&oauthMFAEnabled).Error
+					err := db.Session(ctx).Model(&model.Setting{}).Select("value").Where("key = ?", model.SettingOAuthMFAEnabled).First(&oauthMFAEnabled).Error
 					if err != nil && err != gorm.ErrRecordNotFound {
-						util.RespondWithError(c, util.ErrorResponse{
-							HTTPCode: http.StatusUnauthorized,
-							Code:     "E4012",
-							Err:      err,
-							Message:  "System configuration error",
-						})
+						return util.NewErrorMessage("E4012", "System configuration error", err)
 					}
 					if oauthMFAEnabled == "true" {
 						user.MFAEnforced = true
@@ -422,7 +384,7 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 					}
 				}
 				user.Organizations = []model.Organization{}
-				orgQuery := db.Session(c).Model(&model.Organization{}).Limit(100)
+				orgQuery := db.Session(ctx).Model(&model.Organization{}).Limit(100)
 				if isGlobalRole {
 					orgQuery.Where("1 = 1")
 				} else {
@@ -430,8 +392,7 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 				}
 
 				if err := orgQuery.Find(&user.Organizations).Error; err != nil {
-					util.RespondWithError(c, util.NewErrorMessage("E4012", "System configuration error", err))
-					return
+					return util.NewErrorMessage("E4012", "System configuration error", err)
 				}
 			}
 			SetUserCache(userID, user, time.Minute*10)
@@ -449,12 +410,7 @@ func jwtMiddleware(c *gin.Context, tokenString string) {
 		c.Set("roles", user.Roles)
 		c.Set("session_id", session.ResourceID)
 	} else {
-		util.RespondWithError(c, util.ErrorResponse{
-			HTTPCode: http.StatusUnauthorized,
-			Code:     "E4011",
-			Err:      errors.New("invalid token"),
-			Message:  "Invalid token",
-		})
-		return
+		return util.NewErrorMessage("E4011", "Invalid token")
 	}
+	return nil
 }

@@ -19,6 +19,7 @@ type ErrorResponse struct {
 	Code     string `json:"code"`
 	Err      error  `json:"err"`
 	Message  string `json:"message,omitempty"`
+	TraceID  string `json:"trace_id,omitempty"`
 }
 
 // MarshalJSON implements json.Marshaler.
@@ -36,6 +37,12 @@ func (e ErrorResponse) MarshalJSON() ([]byte, error) {
 	if e.Message != "" {
 		buf.WriteString(`,"message":`)
 		if err := enc.Encode(e.Message); err != nil {
+			return nil, err
+		}
+	}
+	if e.TraceID != "" {
+		buf.WriteString(`,"trace_id":`)
+		if err := enc.Encode(e.TraceID); err != nil {
 			return nil, err
 		}
 	}
@@ -65,9 +72,10 @@ func (e ErrorResponse) String() string {
 }
 
 type Response[T any] struct {
-	Code string `json:"code"`
-	Data T      `json:"data,omitempty"`
-	Err  string `json:"err,omitempty"`
+	Code    string `json:"code"`
+	Data    T      `json:"data,omitempty"`
+	Err     string `json:"err,omitempty"`
+	TraceID string `json:"trace_id,omitempty"`
 }
 
 type PaginationResponse[T any] struct {
@@ -76,6 +84,7 @@ type PaginationResponse[T any] struct {
 	Total    int64  `json:"total"`
 	Current  int    `json:"current"`
 	PageSize int    `json:"page_size"`
+	TraceID  string `json:"trace_id,omitempty"`
 }
 
 // RespondWithErrorMessage returns an error response
@@ -84,6 +93,7 @@ func RespondWithErrorMessage(c *gin.Context, httpCode int, errorCode string, mes
 		Code:    errorCode,
 		Err:     errors.New(message),
 		Message: message,
+		TraceID: log.GetTraceId(c),
 	})
 }
 
@@ -98,12 +108,14 @@ func unwrapErrorResponse(err ErrorResponse) ErrorResponse {
 			Code:     err.Code,
 			Err:      err.Err,
 			Message:  err.Message,
+			TraceID:  err.TraceID,
 		}
 	}
 	return err
 }
 
 func RespondWithError(c *gin.Context, err error) {
+	traceID := log.GetTraceId(c)
 	logger := log.GetContextLogger(c)
 	var errorResponse ErrorResponse
 	if errors.As(err, &errorResponse) {
@@ -116,30 +128,34 @@ func RespondWithError(c *gin.Context, err error) {
 			errorResponse.Message = errorResponse.Err.Error()
 		}
 		c.AbortWithStatusJSON(errorResponse.HTTPCode, ErrorResponse{
-			Code: errorResponse.Code,
-			Err:  errors.New(errorResponse.Message),
+			Code:    errorResponse.Code,
+			Err:     errors.New(errorResponse.Message),
+			TraceID: traceID,
 		})
 		return
 	}
 	level.Error(logger).Log("msg", "RespondWithError", "error", err.Error())
 	c.AbortWithStatusJSON(http.StatusInternalServerError, ErrorResponse{
-		Code: "E5000",
-		Err:  err,
+		Code:    "E5000",
+		Err:     err,
+		TraceID: traceID,
 	})
 }
 
 // RespondWithSuccess returns a successful response
 func RespondWithSuccess[T any](c *gin.Context, httpCode int, data T) {
 	c.JSON(httpCode, Response[T]{
-		Code: "0",
-		Data: data,
+		Code:    "0",
+		TraceID: log.GetTraceId(c),
+		Data:    data,
 	})
 }
 
 func RespondWithMessage(c *gin.Context, message string) {
 	c.JSON(http.StatusOK, Response[MessageData]{
-		Code: "0",
-		Data: MessageData{Message: message},
+		Code:    "0",
+		TraceID: log.GetTraceId(c),
+		Data:    MessageData{Message: message},
 	})
 }
 
@@ -151,6 +167,7 @@ func RespondWithSuccessList[T any](c *gin.Context, httpCode int, data []T, total
 		Total:    total,
 		Current:  current,
 		PageSize: pageSize,
+		TraceID:  log.GetTraceId(c),
 	})
 }
 

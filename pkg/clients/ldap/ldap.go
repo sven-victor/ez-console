@@ -13,10 +13,13 @@ import (
 	kitlog "github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 	ldap "github.com/go-ldap/ldap/v3"
+	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-console/pkg/util/pool"
 	"github.com/sven-victor/ez-utils/log"
 	w "github.com/sven-victor/ez-utils/wrapper"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type Conn interface {
@@ -121,6 +124,15 @@ func (c *PoolConn) Add(addRequest *ldap.AddRequest) (err error) {
 	defer func() {
 		debug(c.ctx, "add LDAP entry", addRequest, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Add LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "add"))
+	span.SetAttributes(attribute.String("ldap.dn", addRequest.DN))
 	return c.conn.Add(addRequest)
 }
 
@@ -129,6 +141,15 @@ func (c *PoolConn) Bind(username string, password string) (err error) {
 	defer func() {
 		debug(c.ctx, "bind LDAP entry", username, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Bind LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "bind"))
+	span.SetAttributes(attribute.String("ldap.username", username))
 	return c.conn.Bind(username, password)
 }
 
@@ -137,6 +158,15 @@ func (c *PoolConn) Del(delRequest *ldap.DelRequest) (err error) {
 	defer func() {
 		debug(c.ctx, "del LDAP entry", delRequest, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Delete LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "delete"))
+	span.SetAttributes(attribute.String("ldap.dn", delRequest.DN))
 	return c.conn.Del(delRequest)
 }
 
@@ -145,6 +175,15 @@ func (c *PoolConn) Modify(modifyRequest *ldap.ModifyRequest) (err error) {
 	defer func() {
 		debug(c.ctx, "modify LDAP entry", modifyRequest, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Modify LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "modify"))
+	span.SetAttributes(attribute.String("ldap.dn", modifyRequest.DN))
 	return c.conn.Modify(modifyRequest)
 }
 
@@ -153,6 +192,16 @@ func (c *PoolConn) ModifyDN(modifyDNRequest *ldap.ModifyDNRequest) (err error) {
 	defer func() {
 		debug(c.ctx, "modify DN LDAP entry", modifyDNRequest, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Modify DN LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "modify DN"))
+	span.SetAttributes(attribute.String("ldap.dn", modifyDNRequest.DN))
+	span.SetAttributes(attribute.String("ldap.new_rdn", modifyDNRequest.NewRDN))
 	return c.conn.ModifyDN(modifyDNRequest)
 }
 
@@ -161,6 +210,15 @@ func (c *PoolConn) ModifyWithResult(request *ldap.ModifyRequest) (result *ldap.M
 	defer func() {
 		debug(c.ctx, "modify with result LDAP entry", request, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Modify With Result LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "modify with result"))
+	span.SetAttributes(attribute.String("ldap.dn", request.DN))
 	return c.conn.ModifyWithResult(request)
 }
 
@@ -169,6 +227,16 @@ func (c *PoolConn) NTLMUnauthenticatedBind(domain string, username string) (err 
 	defer func() {
 		debug(c.ctx, "NTLM unauthenticated bind LDAP entry", fmt.Sprintf("%s@%s", username, domain), err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "NTLM Unauthenticated Bind LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "NTLM unauthenticated bind"))
+	span.SetAttributes(attribute.String("ldap.domain", domain))
+	span.SetAttributes(attribute.String("ldap.username", username))
 	return c.conn.NTLMUnauthenticatedBind(domain, username)
 }
 
@@ -177,6 +245,15 @@ func (c *PoolConn) PasswordModify(passwordModifyRequest *ldap.PasswordModifyRequ
 	defer func() {
 		debug(c.ctx, "password modify LDAP entry", passwordModifyRequest, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Password Modify LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "password modify"))
+	span.SetAttributes(attribute.String("ldap.user_identity", passwordModifyRequest.UserIdentity))
 	return c.conn.PasswordModify(passwordModifyRequest)
 }
 
@@ -197,6 +274,21 @@ func (c *PoolConn) Search(searchRequest *ldap.SearchRequest) (result *ldap.Searc
 		}
 	}()
 
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Search LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "search"))
+	span.SetAttributes(attribute.String("ldap.dn", searchRequest.BaseDN))
+	span.SetAttributes(attribute.String("ldap.filter", searchRequest.Filter))
+	span.SetAttributes(attribute.Int("ldap.scope", searchRequest.Scope))
+	span.SetAttributes(attribute.Int("ldap.deref_aliases", searchRequest.DerefAliases))
+	span.SetAttributes(attribute.Int("ldap.size_limit", searchRequest.SizeLimit))
+	span.SetAttributes(attribute.Int("ldap.time_limit", searchRequest.TimeLimit))
+	span.SetAttributes(attribute.Bool("ldap.types_only", searchRequest.TypesOnly))
 	result, err = c.conn.Search(searchRequest)
 	if err != nil {
 		return nil, err
@@ -210,6 +302,22 @@ func (c *PoolConn) SearchWithPaging(searchRequest *ldap.SearchRequest, pagingSiz
 	defer func() {
 		debug(c.ctx, "search with paging LDAP entry", searchRequest, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Search With Paging LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "search with paging"))
+	span.SetAttributes(attribute.String("ldap.dn", searchRequest.BaseDN))
+	span.SetAttributes(attribute.String("ldap.filter", searchRequest.Filter))
+	span.SetAttributes(attribute.Int("ldap.scope", searchRequest.Scope))
+	span.SetAttributes(attribute.Int("ldap.deref_aliases", searchRequest.DerefAliases))
+	span.SetAttributes(attribute.Int("ldap.size_limit", searchRequest.SizeLimit))
+	span.SetAttributes(attribute.Int("ldap.time_limit", searchRequest.TimeLimit))
+	span.SetAttributes(attribute.Bool("ldap.types_only", searchRequest.TypesOnly))
+	span.SetAttributes(attribute.Int("ldap.paging_size", int(pagingSize)))
 	return c.conn.SearchWithPaging(searchRequest, pagingSize)
 }
 
@@ -220,6 +328,15 @@ func (c *PoolConn) SimpleBind(simpleBindRequest *ldap.SimpleBindRequest) (result
 		debugReq.Password = "<secret>"
 		debug(c.ctx, "simple bind LDAP entry", debugReq, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Simple Bind LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "simple bind"))
+	span.SetAttributes(attribute.String("ldap.username", simpleBindRequest.Username))
 	return c.conn.SimpleBind(simpleBindRequest)
 }
 
@@ -228,6 +345,15 @@ func (c *PoolConn) UnauthenticatedBind(username string) (err error) {
 	defer func() {
 		debug(c.ctx, "unauthenticated bind LDAP entry", username, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Unauthenticated Bind LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "unauthenticated bind"))
+	span.SetAttributes(attribute.String("ldap.username", username))
 	return c.conn.UnauthenticatedBind(username)
 }
 
@@ -236,6 +362,14 @@ func (c *PoolConn) Unbind() (err error) {
 	defer func() {
 		debug(c.ctx, "unbind LDAP entry", nil, err)
 	}()
+	_, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(c.ctx, "Unbind LDAP Entry")
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+		}
+		span.End()
+	}()
+	span.SetAttributes(attribute.String("ldap.operation", "unbind"))
 	return c.conn.Unbind()
 }
 
