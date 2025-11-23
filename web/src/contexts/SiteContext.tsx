@@ -41,7 +41,9 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
     return api.system.getSiteConfig();
   }, { manual: true });
   useEffect(() => {
-    fetchSiteConfig();
+    if (user !== undefined) {
+      fetchSiteConfig();
+    }
   }, [user]);
 
   const [currentOrgId, setCurrentOrgId] = useState<string | null>(null);

@@ -6,7 +6,7 @@ import { useRequest } from 'ahooks';
 
 // Auth context type
 export interface AuthContextType {
-  user: API.User | null;
+  user: API.User | null | undefined;
   token: string | null;
   loading: boolean;
   login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
@@ -17,7 +17,7 @@ export interface AuthContextType {
 
 // Create auth context
 export const AuthContext = createContext<AuthContextType>({
-  user: null,
+  user: undefined,
   token: null,
   loading: false,
   login: async () => { },
@@ -50,7 +50,7 @@ const setAuthToken = (token: string | null, writeToLocalStorage: boolean = true)
 
 // Auth provider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<API.User | null>(null);
+  const [user, setUser] = useState<API.User | null | undefined>(undefined);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
