@@ -496,7 +496,6 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 		if index < 0 {
 			return nil, util.NewErrorMessage("E4011", "Invalid username or password", errors.New("User not found"))
 		}
-
 	} else if len(existingUsers) == 0 {
 		// Create new user
 		if err := conn.Create(user).Error; err != nil {
@@ -506,7 +505,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 		// Configure role
 		if settings.DefaultRole != "" {
 			var role model.Role
-			if err := conn.Where("name = ?", settings.DefaultRole).First(&role).Error; err != nil {
+			if err := conn.Where("name = ?", settings.DefaultRole).Preload("Permissions").First(&role).Error; err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					role = model.Role{
 						Name:        settings.DefaultRole,
@@ -524,11 +523,22 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 				level.Error(logger).Log("msg", "Failed to append role", "err", err.Error())
 				return nil, err
 			}
+			user.Roles = []model.Role{role}
 		}
 		existingUser = *user
 	}
 	if len(existingUsers) == 1 {
 		existingUser = existingUsers[0]
+	}
+
+	if existingUser.ResourceID != "" {
+		defer func() {
+			var user model.User
+			if err := conn.Model(&model.User{}).Where("resource_id = ?", existingUser.ResourceID).First(&user).Error; err == nil {
+				user.Roles = existingUser.Roles
+				middleware.SetUserCache(user.ResourceID, user, time.Minute*10)
+			}
+		}()
 	}
 
 	userUpdateFields := []string{}
