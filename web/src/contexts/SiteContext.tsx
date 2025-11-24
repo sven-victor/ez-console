@@ -49,6 +49,14 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
   const [currentOrgId, setCurrentOrgId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (currentOrgId) {
+      localStorage.setItem('orgID', currentOrgId);
+    } else {
+      localStorage.removeItem('orgID');
+    }
+  }, [currentOrgId]);
+
+  useEffect(() => {
     let cacheOrgId = localStorage.getItem('orgID')
 
     if (cacheOrgId) {
@@ -72,11 +80,9 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
         currentOrgId,
         setCurrentOrgId: (orgId: string) => {
           setCurrentOrgId(orgId);
-          localStorage.setItem('orgID', orgId);
         },
         clearCurrentOrgId: () => {
           setCurrentOrgId(null);
-          localStorage.removeItem('orgID');
         },
       }}
     >
