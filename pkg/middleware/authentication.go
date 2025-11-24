@@ -189,7 +189,11 @@ func serviceAuthenticationMiddleware(c *gin.Context, accessKey, secretKey string
 	if key.IsExpired() {
 		return util.NewErrorMessage("E4011", "Authentication token has expired")
 	}
-	if key.SecretAccessKey != secretKey {
+	decryptedSecretAccessKey, err := util.DecryptString(key.SecretAccessKey)
+	if err != nil {
+		return util.NewErrorMessage("E4011", "Invalid authentication token", err)
+	}
+	if decryptedSecretAccessKey != secretKey {
 		return util.NewErrorMessage("E4011", "Invalid authentication token")
 	}
 	if !key.IsActive() {

@@ -21,11 +21,7 @@ func NewAIModelService() *AIModelService {
 // CreateAIModel creates a new AI model
 func (s *AIModelService) CreateAIModel(ctx context.Context, req *model.AIModel) (*model.AIModel, error) {
 	// Encrypt the API key
-	encryptedAPIKey, err := util.EncryptString(req.APIKey)
-	if err != nil {
-		return nil, fmt.Errorf("failed to encrypt API key: %w", err)
-	}
-	req.APIKey = encryptedAPIKey
+	req.APIKey = util.EncryptString(req.APIKey)
 
 	// If this is set as default, unset other defaults
 	if req.IsDefault {
@@ -48,15 +44,6 @@ func (s *AIModelService) GetAIModel(ctx context.Context, organizationID, id stri
 	var aiModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
-	}
-
-	// Decrypt the API key for internal use
-	if aiModel.APIKey != "" {
-		decryptedAPIKey, err := util.DecryptString(aiModel.APIKey)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt API key: %w", err)
-		}
-		aiModel.APIKey = decryptedAPIKey
 	}
 
 	return &aiModel, nil
@@ -83,11 +70,7 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 
 	// Encrypt the API key if provided
 	if req.APIKey != "" {
-		encryptedAPIKey, err := util.EncryptString(req.APIKey)
-		if err != nil {
-			return nil, fmt.Errorf("failed to encrypt API key: %w", err)
-		}
-		req.APIKey = encryptedAPIKey
+		req.APIKey = util.EncryptString(req.APIKey)
 	} else {
 		// Keep the existing API key if not provided
 		req.APIKey = existingModel.APIKey
@@ -169,15 +152,6 @@ func (s *AIModelService) GetDefaultAIModel(ctx context.Context, provider model.A
 		} else {
 			return nil, fmt.Errorf("failed to get default AI model: %w", err)
 		}
-	}
-
-	// Decrypt the API key for internal use
-	if aiModel.APIKey != "" {
-		decryptedAPIKey, err := util.DecryptString(aiModel.APIKey)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decrypt API key: %w", err)
-		}
-		aiModel.APIKey = decryptedAPIKey
 	}
 
 	return &aiModel, nil

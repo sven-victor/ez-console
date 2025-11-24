@@ -127,12 +127,14 @@ func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx *gin.Context, 
 	accessKeyID := fmt.Sprintf("ASK-%s", util.GenerateRandomString(20))
 	secretAccessKey := util.GenerateRandomString(40)
 
+	encryptedSecretAccessKey := util.EncryptString(secretAccessKey)
+
 	// Create access key record
 	accessKey := &model.ServiceAccountAccessKey{
 		Name:             name,
 		ServiceAccountID: serviceAccountID,
 		AccessKeyID:      accessKeyID,
-		SecretAccessKey:  secretAccessKey, // Store encrypted secret
+		SecretAccessKey:  encryptedSecretAccessKey, // Store encrypted secret
 		Status:           model.ServiceAccountAccessKeyStatusActive,
 		Description:      description,
 		ExpiresAt:        expiresAt,

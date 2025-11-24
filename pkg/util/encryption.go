@@ -7,13 +7,11 @@ import (
 )
 
 // EncryptString encrypts a string using the global encryption key
-func EncryptString(plaintext string) (string, error) {
+func EncryptString(plaintext string) string {
 	if plaintext == "" {
-		return "", nil
+		return ""
 	}
-
-	encryptedString := safe.NewEncryptedString(plaintext, os.Getenv(safe.SecretEnvName))
-	return encryptedString.String(), nil
+	return safe.NewEncryptedString(plaintext, os.Getenv(safe.SecretEnvName)).String()
 }
 
 // DecryptString decrypts a string using the global encryption key
@@ -23,5 +21,5 @@ func DecryptString(ciphertext string) (string, error) {
 	}
 
 	encryptedString := safe.NewEncryptedString(ciphertext, os.Getenv(safe.SecretEnvName))
-	return encryptedString.String(), nil
+	return encryptedString.UnsafeString()
 }
