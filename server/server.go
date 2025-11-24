@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/static"
@@ -19,6 +20,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/sven-victor/ez-console/pkg/api"
 	clientsldap "github.com/sven-victor/ez-console/pkg/clients/ldap"
@@ -230,10 +232,29 @@ func initSettings(ctx context.Context, cfg *config.Config, svc *service.Service)
 		level.Error(logger).Log("msg", "Init default ldap settings failed", "error", err)
 	}
 }
+
+// safeArgs return a safe args for trace
+func safeArgs() []string {
+	var args []string
+	for idx, arg := range os.Args {
+		if arg == "--global.encrypt-key" && idx < len(os.Args)-1 {
+			args = append(args, "*************")
+		} else if strings.HasPrefix(arg, "--global.encrypt-key=") {
+			args = append(args, "--global.encrypt-key=*************")
+		} else {
+			args = append(args, arg)
+		}
+	}
+	return args
+}
+
 func newServer(ctx context.Context, serviceName string, options ...withEngineOption) {
 	cfg := config.GetConfig()
 	{
-		traceProvider, err := tracing.NewTraceProvider(ctx, &cfg.Tracing)
+		traceProvider, err := tracing.NewTraceProvider(ctx, &cfg.Tracing, tracing.WithAttributes(attribute.KeyValue{
+			Key:   "process.command_args",
+			Value: attribute.StringSliceValue(safeArgs()),
+		}))
 		if err != nil {
 			level.Error(log.New()).Log("msg", "Failed to create trace provider", "err", err)
 			os.Exit(1)
