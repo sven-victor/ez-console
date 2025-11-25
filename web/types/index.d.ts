@@ -1965,7 +1965,7 @@ export declare interface ToolSetConfigFieldOptions {
     value: string;
 }
 
-export declare type ToolSetFieldType = "string" | "password" | "number" | "boolean" | "array" | "object";
+export declare type ToolSetFieldType = "text" | "string" | "password" | "number" | "boolean" | "array" | "object";
 
 export declare type ToolSetStatus = "enabled" | "disabled";
 

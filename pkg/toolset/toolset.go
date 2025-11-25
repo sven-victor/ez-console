@@ -15,6 +15,7 @@ type ToolSetConfigFieldOptions struct {
 type ToolSetFieldType string
 
 const (
+	FieldTypeText     ToolSetFieldType = "text"
 	FieldTypeString   ToolSetFieldType = "string"
 	FieldTypePassword ToolSetFieldType = "password"
 	FieldTypeNumber   ToolSetFieldType = "number"

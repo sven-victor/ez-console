@@ -330,6 +330,18 @@ const ToolSetSettings: React.FC = () => {
     // If options is empty
     if (!hasOptions) {
       switch (field.type) {
+        case 'text':
+          return (
+            <Form.Item
+              key={field.name}
+              name={['config', field.name]}
+              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
+              rules={rules}
+            >
+              <Input.TextArea placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })} />
+            </Form.Item>
+          );
+
         case 'string':
           return (
             <Form.Item

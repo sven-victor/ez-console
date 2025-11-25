@@ -1451,6 +1451,7 @@ declare global {
     }
   
     type ToolSetFieldType =
+      | "text"
       | "string"
       | "password"
       | "number"

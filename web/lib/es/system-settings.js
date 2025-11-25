@@ -1,8 +1,8 @@
 import { j as e } from "./vendor.js";
-import { Form as a, message as m, Spin as se, Switch as B, Select as O, Input as c, Divider as Ce, Alert as Le, Space as D, Button as k, InputNumber as Q, Modal as K, Skeleton as qe, Descriptions as Z, Steps as Me, Tag as G, Table as le, Radio as de, Tabs as Oe, Tooltip as $e, Card as J, Row as ue, Col as X, Checkbox as Ae, Result as Ne } from "antd";
+import { Form as a, message as m, Spin as se, Switch as B, Select as O, Input as c, Divider as Ce, Alert as Le, Space as D, Button as T, InputNumber as Q, Modal as K, Skeleton as qe, Descriptions as Z, Steps as Me, Tag as G, Table as le, Radio as de, Tabs as Oe, Tooltip as $e, Card as J, Row as ue, Col as X, Checkbox as Ae, Result as Ne } from "antd";
 import { useTranslation as M } from "react-i18next";
 import { useState as I, useEffect as ce, useMemo as De } from "react";
-import { useRequest as _ } from "ahooks";
+import { useRequest as S } from "ahooks";
 import { SaveOutlined as Fe, ReloadOutlined as ee, LoadingOutlined as Be, CheckCircleTwoTone as Ke, StarFilled as He, CheckCircleOutlined as Ue, StarOutlined as Ge, EditOutlined as me, DeleteOutlined as pe, PlusOutlined as ge, ThunderboltOutlined as Je, ToolOutlined as Ee, SettingOutlined as Ze, LockOutlined as We, EyeOutlined as Qe, ArrowLeftOutlined as Xe } from "@ant-design/icons";
 import { a as E } from "./index.js";
 import { g as ze } from "./base.js";
@@ -90,20 +90,20 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     scope: ""
   }
 }, Vt = ({ initialData: t, onRefresh: n }) => {
-  const { t: l } = M("system"), { t: v } = M("common"), [g] = a.useForm(), [h, S] = I((t == null ? void 0 : t.provider) || "custom"), [j, V] = I((t == null ? void 0 : t.provider) === "custom" || (t == null ? void 0 : t.provider) === "autoDiscover"), [o, i] = I((t == null ? void 0 : t.enabled) || !1), [p, U] = I((t == null ? void 0 : t.auto_create_user) || !1), { loading: f, data: z, refresh: y } = _(E.system.getOauthSettings, {
+  const { t: l } = M("system"), { t: v } = M("common"), [g] = a.useForm(), [h, _] = I((t == null ? void 0 : t.provider) || "custom"), [j, V] = I((t == null ? void 0 : t.provider) === "custom" || (t == null ? void 0 : t.provider) === "autoDiscover"), [o, i] = I((t == null ? void 0 : t.enabled) || !1), [p, U] = I((t == null ? void 0 : t.auto_create_user) || !1), { loading: f, data: z, refresh: y } = S(E.system.getOauthSettings, {
     manual: !!t,
     onSuccess: (b) => {
-      g.setFieldsValue(b), S(b.provider), V(b.provider === "custom" || b.provider === "autoDiscover"), i(b.enabled), U(b.auto_create_user);
+      g.setFieldsValue(b), _(b.provider), V(b.provider === "custom" || b.provider === "autoDiscover"), i(b.enabled), U(b.auto_create_user);
     },
     onError: (b) => {
       m.error(l("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get OAuth settings", b);
     }
   });
   ce(() => {
-    t && (g.setFieldsValue(t), S(t.provider), V(t.provider === "custom" || t.provider === "autoDiscover"), i(t.enabled), U(t.auto_create_user));
+    t && (g.setFieldsValue(t), _(t.provider), V(t.provider === "custom" || t.provider === "autoDiscover"), i(t.enabled), U(t.auto_create_user));
   }, [t, g]);
-  const T = (b) => {
-    S(b), V(b === "custom" || b === "autoDiscover");
+  const A = (b) => {
+    _(b), V(b === "custom" || b === "autoDiscover");
     const u = xt[b];
     u && g.setFieldsValue({
       auth_endpoint: u.endpoints.auth_endpoint,
@@ -124,7 +124,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     i(b);
   }, F = (b) => {
     U(b);
-  }, { loading: w, run: R } = _(E.system.updateOauthSettings, {
+  }, { loading: w, run: R } = S(E.system.updateOauthSettings, {
     manual: !0,
     onSuccess: () => {
       m.success(l("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), n ? n() : y();
@@ -136,7 +136,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     R(b);
   }, H = () => {
     n ? n() : y();
-  }, { loading: r, run: P } = _(async ({ redirect_uri: b, ...u }) => {
+  }, { loading: r, run: P } = S(async ({ redirect_uri: b, ...u }) => {
     let $;
     return b ? $ = new URL(b) : $ = new URL(window.location.origin), $.pathname = ze("/system/settings/oauth/test-callback"), $.searchParams.set("provider", h), E.system.testOauthConnection({ redirect_uri: $.toString(), ...u });
   }, {
@@ -178,7 +178,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                 message: l("settings.oauth.provider.required", { defaultValue: "Please select an OAuth provider." })
               }
             ],
-            children: /* @__PURE__ */ e.jsxs(O, { onChange: T, disabled: !o, children: [
+            children: /* @__PURE__ */ e.jsxs(O, { onChange: A, disabled: !o, children: [
               /* @__PURE__ */ e.jsx(O.Option, { value: "github", children: l("settings.oauth.provider.options.github", { defaultValue: "GitHub" }) }),
               /* @__PURE__ */ e.jsx(O.Option, { value: "google", children: l("settings.oauth.provider.options.google", { defaultValue: "Google" }) }),
               /* @__PURE__ */ e.jsx(O.Option, { value: "dingtalk", children: l("settings.oauth.provider.options.dingtalk", { defaultValue: "DingTalk" }) }),
@@ -446,7 +446,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         ),
         /* @__PURE__ */ e.jsx(a.Item, { children: /* @__PURE__ */ e.jsxs(D, { children: [
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
               type: "primary",
               htmlType: "submit",
@@ -456,7 +456,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             }
           ),
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
               loading: r,
               onClick: async () => {
@@ -467,7 +467,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             }
           ),
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
               onClick: H,
               icon: /* @__PURE__ */ e.jsx(ee, {}),
@@ -479,14 +479,14 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     }
   ) });
 }, yt = () => {
-  const { t } = M("system"), { t: n } = M("common"), [l] = a.useForm(), { loading: v, data: g, refresh: h } = _(E.system.getSecuritySettings, {
+  const { t } = M("system"), { t: n } = M("common"), [l] = a.useForm(), { loading: v, data: g, refresh: h } = S(E.system.getSecuritySettings, {
     onSuccess: (o) => {
       l.setFieldsValue(o);
     },
     onError: (o) => {
       m.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", o);
     }
-  }), { loading: S, run: j } = _(E.system.updateSecuritySettings, {
+  }), { loading: _, run: j } = S(E.system.updateSecuritySettings, {
     manual: !0,
     onSuccess: () => {
       m.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), h();
@@ -645,17 +645,17 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         ),
         /* @__PURE__ */ e.jsx(a.Item, { children: /* @__PURE__ */ e.jsxs(D, { children: [
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
               type: "primary",
               htmlType: "submit",
-              loading: S,
+              loading: _,
               icon: /* @__PURE__ */ e.jsx(Fe, {}),
               children: n("save", { defaultValue: "Save" })
             }
           ),
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
               onClick: () => h(),
               icon: /* @__PURE__ */ e.jsx(ee, {}),
@@ -667,21 +667,21 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     }
   ) });
 }, bt = ({ fetchItems: t, importItems: n, columns: l, ...v }) => {
-  const { t: g } = M("system"), [h, S] = I([]), [j, V] = I([]), { run: o, loading: i } = _(t, {
+  const { t: g } = M("system"), [h, _] = I([]), [j, V] = I([]), { run: o, loading: i } = S(t, {
     onError: (f) => {
       m.error(g("settings.ldap.importError", { error: `${f.message}` }));
     },
     onSuccess: (f) => {
-      S(f);
+      _(f);
     },
     manual: !0
-  }), { run: p, loading: U } = _(async () => {
+  }), { run: p, loading: U } = S(async () => {
     for (const f of j.filter((z) => {
-      const y = h.find((T) => T.ldap_dn === z);
+      const y = h.find((A) => A.ldap_dn === z);
       return !(!y || y.status === "imported");
     })) {
       const z = await n([f]);
-      S((y) => [...y].map((q) => {
+      _((y) => [...y].map((q) => {
         for (const F of z)
           if (q.ldap_dn === F.ldap_dn)
             return { ...F, status: "imported" };
@@ -692,7 +692,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     manual: !0
   });
   return ce(() => {
-    v.visible && (S([]), o(), V([]));
+    v.visible && (_([]), o(), V([]));
   }, [v.visible]), /* @__PURE__ */ e.jsx(
     K,
     {
@@ -718,9 +718,9 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           },
           columns: l.map(({ render: f, ...z }) => f ? {
             ...z,
-            render: (y, T, q) => {
-              const F = j.includes(T.ldap_dn) && U && T.status !== "imported";
-              return f(y, T, q, F);
+            render: (y, A, q) => {
+              const F = j.includes(A.ldap_dn) && U && A.status !== "imported";
+              return f(y, A, q, F);
             }
           } : z),
           dataSource: h,
@@ -731,9 +731,9 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     }
   );
 }, jt = () => {
-  var T, q, F;
-  const { t } = M("system"), [n] = a.useForm(), [l, v] = I(!1), [g, h] = I(null), [S, j] = I(!1), [V, o] = I(!1), [i] = a.useForm(), [p, U] = I(!1);
-  _(E.system.getLdapSettings, {
+  var A, q, F;
+  const { t } = M("system"), [n] = a.useForm(), [l, v] = I(!1), [g, h] = I(null), [_, j] = I(!1), [V, o] = I(!1), [i] = a.useForm(), [p, U] = I(!1);
+  S(E.system.getLdapSettings, {
     onSuccess: (w) => {
       n.setFieldsValue(w), U(w.enabled);
     },
@@ -742,7 +742,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     }
   }), ce(() => {
     h(null);
-  }, [S]);
+  }, [_]);
   const f = async (w) => {
     v(!0);
     try {
@@ -752,7 +752,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     } finally {
       v(!1);
     }
-  }, { run: z, loading: y } = _(async (w) => {
+  }, { run: z, loading: y } = S(async (w) => {
     const R = await n.validateFields();
     return await E.system.testLdapConnection({
       ...w,
@@ -926,9 +926,9 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             }
           ),
           /* @__PURE__ */ e.jsxs(a.Item, { children: [
-            /* @__PURE__ */ e.jsx(Y, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(k, { type: "primary", htmlType: "submit", loading: l, children: t("settings.ldap.save", { defaultValue: "Save Settings" }) }) }),
+            /* @__PURE__ */ e.jsx(Y, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(T, { type: "primary", htmlType: "submit", loading: l, children: t("settings.ldap.save", { defaultValue: "Save Settings" }) }) }),
             /* @__PURE__ */ e.jsx(Y, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(
-              k,
+              T,
               {
                 disabled: !p,
                 style: { marginLeft: 8 },
@@ -937,7 +937,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               }
             ) }),
             /* @__PURE__ */ e.jsx(Y, { permissions: ["authorization:user:create"], children: /* @__PURE__ */ e.jsx(
-              k,
+              T,
               {
                 disabled: !p,
                 style: { marginLeft: 8 },
@@ -955,7 +955,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       K,
       {
         title: t("settings.ldap.test.title", { defaultValue: "Test LDAP Connection" }),
-        open: S,
+        open: _,
         onCancel: () => j(!1),
         footer: null,
         children: [
@@ -985,9 +985,9 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                   }
                 ),
                 /* @__PURE__ */ e.jsxs(a.Item, { children: [
-                  /* @__PURE__ */ e.jsx(Y, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(k, { disabled: !p, type: "primary", htmlType: "submit", children: t("settings.ldap.test.test", { defaultValue: "Test" }) }) }),
+                  /* @__PURE__ */ e.jsx(Y, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(T, { disabled: !p, type: "primary", htmlType: "submit", children: t("settings.ldap.test.test", { defaultValue: "Test" }) }) }),
                   /* @__PURE__ */ e.jsx(
-                    k,
+                    T,
                     {
                       style: { marginLeft: 8 },
                       onClick: () => j(!1),
@@ -1008,7 +1008,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             Me,
             {
               direction: "vertical",
-              current: (T = g.message) == null ? void 0 : T.findIndex((w) => !w.success),
+              current: (A = g.message) == null ? void 0 : A.findIndex((w) => !w.success),
               status: (q = g.message) != null && q.find((w) => !w.success) ? "error" : "finish",
               items: (F = g.message) == null ? void 0 : F.map((w) => ({
                 status: w.success ? "finish" : "error",
@@ -1045,7 +1045,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     )
   ] });
 }, vt = () => {
-  const { t } = M("system"), { t: n } = M("common"), [l] = a.useForm(), [v, g] = I(null), [h, S] = I(!1), [j] = a.useForm(), [V, o] = I(!1), { loading: i } = _(E.system.getSmtpSettings, {
+  const { t } = M("system"), { t: n } = M("common"), [l] = a.useForm(), [v, g] = I(null), [h, _] = I(!1), [j] = a.useForm(), [V, o] = I(!1), { loading: i } = S(E.system.getSmtpSettings, {
     onSuccess: (y) => {
       l.setFieldsValue(y), o(y.enabled);
     },
@@ -1056,7 +1056,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   ce(() => {
     g(null);
   }, [h]);
-  const { run: p, loading: U } = _(({ port: y, ...T }) => E.system.updateSmtpSettings({ ...T, port: Number(y) }), {
+  const { run: p, loading: U } = S(({ port: y, ...A }) => E.system.updateSmtpSettings({ ...A, port: Number(y) }), {
     manual: !0,
     onSuccess: () => {
       m.success(t("settings.smtp.saveSuccess", { defaultValue: "SMTP settings saved successfully." }));
@@ -1064,12 +1064,12 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     onError: (y) => {
       m.error(t("settings.smtp.saveError", { defaultValue: "Failed to save SMTP settings: {{error}}", error: `${y.message}` }));
     }
-  }), { run: f, loading: z } = _(async (y) => {
-    const { port: T, ...q } = await l.validateFields();
+  }), { run: f, loading: z } = S(async (y) => {
+    const { port: A, ...q } = await l.validateFields();
     return await E.system.testSmtpConnection({
       ...y,
       ...q,
-      port: Number(T)
+      port: Number(A)
     });
   }, {
     onSuccess: (y) => {
@@ -1195,11 +1195,11 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             }
           ),
           /* @__PURE__ */ e.jsxs(a.Item, { children: [
-            /* @__PURE__ */ e.jsx(Y, { permission: "system:setting:update", children: /* @__PURE__ */ e.jsx(k, { type: "primary", htmlType: "submit", loading: U, style: { marginRight: 8 }, children: n("save", { defaultValue: "Save" }) }) }),
+            /* @__PURE__ */ e.jsx(Y, { permission: "system:setting:update", children: /* @__PURE__ */ e.jsx(T, { type: "primary", htmlType: "submit", loading: U, style: { marginRight: 8 }, children: n("save", { defaultValue: "Save" }) }) }),
             /* @__PURE__ */ e.jsx(
-              k,
+              T,
               {
-                onClick: () => S(!0),
+                onClick: () => _(!0),
                 disabled: !V || z,
                 loading: z,
                 children: t("settings.smtp.testConnection", { defaultValue: "Test Connection" })
@@ -1214,10 +1214,10 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       {
         title: t("settings.smtp.testConnectionTitle", { defaultValue: "Test SMTP Connection" }),
         open: h,
-        onCancel: () => S(!1),
+        onCancel: () => _(!1),
         footer: [
-          /* @__PURE__ */ e.jsx(k, { onClick: () => S(!1), children: n("cancel", { defaultValue: "Cancel" }) }, "back"),
-          /* @__PURE__ */ e.jsx(k, { type: "primary", loading: z, onClick: () => j.submit(), children: t("settings.smtp.sendTestEmail", { defaultValue: "Send Test Email" }) }, "submit")
+          /* @__PURE__ */ e.jsx(T, { onClick: () => _(!1), children: n("cancel", { defaultValue: "Cancel" }) }, "back"),
+          /* @__PURE__ */ e.jsx(T, { type: "primary", loading: z, onClick: () => j.submit(), children: t("settings.smtp.sendTestEmail", { defaultValue: "Send Test Email" }) }, "submit")
         ],
         children: /* @__PURE__ */ e.jsxs(
           a,
@@ -1245,18 +1245,18 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }
     )
   ] });
-}, St = () => {
-  const { t, i18n: n } = M("system"), { t: l } = M("common"), [v] = a.useForm(), { loading: g, data: h, refresh: S } = _(E.system.getSystemBaseSettings, {
+}, _t = () => {
+  const { t, i18n: n } = M("system"), { t: l } = M("common"), [v] = a.useForm(), { loading: g, data: h, refresh: _ } = S(E.system.getSystemBaseSettings, {
     onSuccess: (i) => {
       v.setFieldsValue(i);
     },
     onError: (i) => {
       m.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", i);
     }
-  }), { loading: j, run: V } = _(E.system.updateSystemBaseSettings, {
+  }), { loading: j, run: V } = S(E.system.updateSystemBaseSettings, {
     manual: !0,
     onSuccess: () => {
-      m.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), S();
+      m.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), _();
     },
     onError: (i) => {
       m.error(t("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update system settings", i);
@@ -1305,7 +1305,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         ),
         /* @__PURE__ */ e.jsx(a.Item, { children: /* @__PURE__ */ e.jsxs(D, { children: [
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
               type: "primary",
               htmlType: "submit",
@@ -1315,9 +1315,9 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             }
           ),
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
-              onClick: () => S(),
+              onClick: () => _(),
               icon: /* @__PURE__ */ e.jsx(ee, {}),
               children: l("refresh", { defaultValue: "Refresh" })
             }
@@ -1326,8 +1326,8 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       ]
     }
   ) });
-}, { TextArea: _t } = c, { Option: It } = O, wt = () => {
-  const { t } = M("ai"), { t: n } = M("common"), [l] = a.useForm(), [v, g] = I(!1), [h, S] = I(null), [j, V] = I(""), { loading: o, data: i, refresh: p } = _(
+}, { TextArea: St } = c, { Option: It } = O, wt = () => {
+  const { t } = M("ai"), { t: n } = M("common"), [l] = a.useForm(), [v, g] = I(!1), [h, _] = I(null), [j, V] = I(""), { loading: o, data: i, refresh: p } = S(
     () => E.ai.listAiModels({ current: 1, page_size: 100, search: j }),
     {
       refreshDeps: [j],
@@ -1335,7 +1335,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("models.fetchFailed", { defaultValue: "Failed to fetch AI models" })), console.error("Failed to fetch AI models:", r);
       }
     }
-  ), { loading: U, run: f } = _(
+  ), { loading: U, run: f } = S(
     (r) => E.ai.createAiModel(r),
     {
       manual: !0,
@@ -1346,18 +1346,18 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("models.createFailed", { defaultValue: "Failed to create AI model" })), console.error("Failed to create AI model:", r);
       }
     }
-  ), { loading: z, run: y } = _(
+  ), { loading: z, run: y } = S(
     ({ id: r, data: P }) => E.ai.updateAiModel({ id: r }, P),
     {
       manual: !0,
       onSuccess: () => {
-        m.success(t("models.updateSuccess", { defaultValue: "AI model updated successfully" })), g(!1), l.resetFields(), S(null), p();
+        m.success(t("models.updateSuccess", { defaultValue: "AI model updated successfully" })), g(!1), l.resetFields(), _(null), p();
       },
       onError: (r) => {
         m.error(t("models.updateFailed", { defaultValue: "Failed to update AI model" })), console.error("Failed to update AI model:", r);
       }
     }
-  ), { runAsync: T } = _(
+  ), { runAsync: A } = S(
     (r) => E.ai.deleteAiModel({ id: r }),
     {
       manual: !0,
@@ -1368,7 +1368,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("models.deleteFailed", { defaultValue: "Failed to delete AI model" })), console.error("Failed to delete AI model:", r);
       }
     }
-  ), { runAsync: q } = _(
+  ), { runAsync: q } = S(
     (r) => E.ai.testAiModel({ id: r }),
     {
       manual: !0,
@@ -1379,7 +1379,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("models.testFailed", { defaultValue: "AI model connection test failed" })), console.error("Failed to test AI model:", r);
       }
     }
-  ), { runAsync: F } = _(
+  ), { runAsync: F } = S(
     (r) => E.ai.setDefaultAiModel({ id: r }),
     {
       manual: !0,
@@ -1391,9 +1391,9 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }
     }
   ), w = () => {
-    S(null), l.resetFields(), g(!0);
+    _(null), l.resetFields(), g(!0);
   }, R = (r) => {
-    S(r), l.setFieldsValue({
+    _(r), l.setFieldsValue({
       ...r,
       api_key: ""
       // Don't populate API key for security
@@ -1458,7 +1458,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           permission: "ai:models:delete",
           icon: /* @__PURE__ */ e.jsx(pe, {}),
           tooltip: n("delete", { defaultValue: "Delete" }),
-          onClick: async () => T(P.id),
+          onClick: async () => A(P.id),
           danger: !0
         }
       ] }, "actions")
@@ -1478,7 +1478,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       ) }),
       /* @__PURE__ */ e.jsx(X, { children: /* @__PURE__ */ e.jsxs(D, { children: [
         /* @__PURE__ */ e.jsx(
-          k,
+          T,
           {
             type: "primary",
             icon: /* @__PURE__ */ e.jsx(ee, {}),
@@ -1488,7 +1488,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           }
         ),
         /* @__PURE__ */ e.jsx(Y, { permission: "ai:models:create", children: /* @__PURE__ */ e.jsx(
-          k,
+          T,
           {
             type: "primary",
             icon: /* @__PURE__ */ e.jsx(ge, {}),
@@ -1526,7 +1526,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         title: h ? t("models.edit", { defaultValue: "Edit AI Model" }) : t("models.create", { defaultValue: "Create AI Model" }),
         open: v,
         onCancel: () => {
-          g(!1), l.resetFields(), S(null);
+          g(!1), l.resetFields(), _(null);
         },
         footer: null,
         width: 600,
@@ -1552,7 +1552,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                   name: "description",
                   label: t("models.description", { defaultValue: "Description" }),
                   children: /* @__PURE__ */ e.jsx(
-                    _t,
+                    St,
                     {
                       rows: 3,
                       placeholder: t("models.descriptionPlaceholder", { defaultValue: "Enter model description" })
@@ -1616,7 +1616,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               ),
               /* @__PURE__ */ e.jsx(a.Item, { children: /* @__PURE__ */ e.jsxs(D, { children: [
                 /* @__PURE__ */ e.jsx(
-                  k,
+                  T,
                   {
                     type: "primary",
                     htmlType: "submit",
@@ -1625,10 +1625,10 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
-                  k,
+                  T,
                   {
                     onClick: () => {
-                      g(!1), l.resetFields(), S(null);
+                      g(!1), l.resetFields(), _(null);
                     },
                     children: n("cancel", { defaultValue: "Cancel" })
                   }
@@ -1642,7 +1642,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   ] });
 }, { TextArea: Re } = c, { Option: Ct } = O, Ft = () => {
   var d;
-  const { t } = M("system"), { t: n } = M("common"), [l] = a.useForm(), [v, g] = I(!1), [h, S] = I(null), [j, V] = I(""), [o, i] = I(!1), [p, U] = I(null), [f, z] = I(""), [y, T] = I(!1), [q, F] = I([]), { loading: w, data: R, refresh: L } = _(
+  const { t } = M("system"), { t: n } = M("common"), [l] = a.useForm(), [v, g] = I(!1), [h, _] = I(null), [j, V] = I(""), [o, i] = I(!1), [p, U] = I(null), [f, z] = I(""), [y, A] = I(!1), [q, F] = I([]), { loading: w, data: R, refresh: L } = S(
     () => E.system.listToolSets({ current: 1, page_size: 100, search: j }),
     {
       refreshDeps: [j],
@@ -1650,7 +1650,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("settings.toolsets.fetchFailed", { defaultValue: "Failed to fetch toolsets" })), console.error("Failed to fetch toolsets:", s);
       }
     }
-  ), { loading: H, data: r } = _(
+  ), { loading: H, data: r } = S(
     () => E.system.getToolSetTypeDefinitions(),
     {
       refreshDeps: [],
@@ -1658,7 +1658,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("settings.toolsets.fetchTypeDefinitionsFailed", { defaultValue: "Failed to fetch toolset type definitions" })), console.error("Failed to fetch toolset type definitions:", s);
       }
     }
-  ), P = De(() => r == null ? void 0 : r.find((s) => s.tool_set_type === f), [r, f]), { loading: W, run: b } = _(
+  ), P = De(() => r == null ? void 0 : r.find((s) => s.tool_set_type === f), [r, f]), { loading: W, run: b } = S(
     (s) => E.system.createToolSet({
       ...s,
       type: s.type
@@ -1672,7 +1672,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("settings.toolsets.createFailed", { defaultValue: "Failed to create toolset" })), console.error("Failed to create toolset:", s);
       }
     }
-  ), { loading: u, run: $ } = _(
+  ), { loading: u, run: $ } = S(
     ({ id: s, data: x }) => E.system.updateToolSet({ id: s }, {
       ...x,
       type: x.type
@@ -1680,13 +1680,13 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     {
       manual: !0,
       onSuccess: () => {
-        m.success(t("settings.toolsets.updateSuccess", { defaultValue: "toolset updated successfully" })), g(!1), l.resetFields(), S(null), L();
+        m.success(t("settings.toolsets.updateSuccess", { defaultValue: "toolset updated successfully" })), g(!1), l.resetFields(), _(null), L();
       },
       onError: (s) => {
         m.error(t("settings.toolsets.updateFailed", { defaultValue: "Failed to update toolset" })), console.error("Failed to update toolset:", s);
       }
     }
-  ), { run: fe } = _(
+  ), { run: fe } = S(
     (s) => E.system.deleteToolSet({ id: s }),
     {
       manual: !0,
@@ -1697,7 +1697,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("settings.toolsets.deleteFailed", { defaultValue: "Failed to delete toolset" })), console.error("Failed to delete toolset:", s);
       }
     }
-  ), { runAsync: xe } = _(
+  ), { runAsync: xe } = S(
     (s) => E.system.testToolSet({ id: s }),
     {
       manual: !0,
@@ -1708,18 +1708,18 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("settings.toolsets.testFailed", { defaultValue: "toolset connection test failed" })), console.error("Failed to test toolset:", s);
       }
     }
-  ), { loading: Ve, runAsync: ye } = _(
+  ), { loading: Ve, runAsync: ye } = S(
     (s) => E.system.getToolSetTools({ id: s }),
     {
       manual: !0,
       onSuccess: (s) => {
-        F(s || []), T(!0);
+        F(s || []), A(!0);
       },
       onError: (s) => {
         m.error(t("settings.toolsets.fetchToolsFailed", { defaultValue: "Failed to fetch tools" })), console.error("Failed to fetch tools:", s);
       }
     }
-  ), { runAsync: be } = _(
+  ), { runAsync: be } = S(
     ({ id: s, status: x }) => E.system.updateToolSetStatus({ id: s }, { status: x }),
     {
       manual: !0,
@@ -1731,15 +1731,15 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }
     }
   ), je = () => {
-    S(null), l.resetFields(), z(""), g(!0);
+    _(null), l.resetFields(), z(""), g(!0);
   }, ve = (s) => {
-    S(s), z(s.type);
+    _(s), z(s.type);
     const x = { ...s };
     if (x.config) {
-      const A = r == null ? void 0 : r.find((C) => C.tool_set_type === s.type);
-      if (A) {
+      const k = r == null ? void 0 : r.find((C) => C.tool_set_type === s.type);
+      if (k) {
         const C = {};
-        A.config_fields.forEach((N) => {
+        k.config_fields.forEach((N) => {
           var re, Te;
           N.type === "object" && ((re = x.config) != null && re[N.name]) ? C[N.name] = JSON.stringify(x.config[N.name], null, 2) : ((Te = x.config) == null ? void 0 : Te[N.name]) !== void 0 && (C[N.name] = x.config[N.name]);
         }), x.config = C;
@@ -1748,44 +1748,44 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     l.setFieldsValue(x), g(!0);
   };
   console.log(f, r);
-  const Se = (s) => {
+  const _e = (s) => {
     z(s);
-    const x = r == null ? void 0 : r.find((A) => A.tool_set_type === s);
+    const x = r == null ? void 0 : r.find((k) => k.tool_set_type === s);
     if (x) {
-      const A = {};
+      const k = {};
       x.config_fields.forEach((C) => {
         if (C.default)
           switch (C.type) {
             case "number":
-              A[C.name] = Number(C.default);
+              k[C.name] = Number(C.default);
               break;
             case "boolean":
-              A[C.name] = C.default === "true";
+              k[C.name] = C.default === "true";
               break;
             case "array":
-              A[C.name] = C.default.split(",");
+              k[C.name] = C.default.split(",");
               break;
             default:
-              A[C.name] = C.default;
+              k[C.name] = C.default;
           }
-      }), l.setFieldValue("config", A);
+      }), l.setFieldValue("config", k);
     } else
       l.setFieldValue("config", void 0);
-  }, _e = (s) => {
+  }, Se = (s) => {
     if (s.config && P) {
       const x = {};
-      P.config_fields.forEach((A) => {
+      P.config_fields.forEach((k) => {
         var N;
-        const C = (N = s.config) == null ? void 0 : N[A.name];
+        const C = (N = s.config) == null ? void 0 : N[k.name];
         if (C !== void 0)
-          if (A.type === "object")
+          if (k.type === "object")
             try {
-              x[A.name] = typeof C == "string" ? JSON.parse(C) : C;
+              x[k.name] = typeof C == "string" ? JSON.parse(C) : C;
             } catch {
-              x[A.name] = C;
+              x[k.name] = C;
             }
           else
-            x[A.name] = C;
+            x[k.name] = C;
       }), s.config = x;
     }
     h ? $({ id: h.id, data: s }) : b(s);
@@ -1800,7 +1800,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       console.log(/* @__PURE__ */ new Date(), "handleToggleStatus1");
     });
   }, oe = (s) => {
-    const x = s.options && s.options.length > 0, A = [
+    const x = s.options && s.options.length > 0, k = [
       {
         required: s.required,
         message: t("settings.toolsets.fieldRequired", {
@@ -1811,13 +1811,24 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     ];
     if (!x)
       switch (s.type) {
+        case "text":
+          return /* @__PURE__ */ e.jsx(
+            a.Item,
+            {
+              name: ["config", s.name],
+              label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
+              rules: k,
+              children: /* @__PURE__ */ e.jsx(c.TextArea, { placeholder: t(`settings.toolsets.${f}.${s.name}Placeholder`, { defaultValue: s.placeholder || `${t("common.enter", { defaultValue: "Enter" })} ${s.name}` }) })
+            },
+            s.name
+          );
         case "string":
           return /* @__PURE__ */ e.jsx(
             a.Item,
             {
               name: ["config", s.name],
               label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
-              rules: A,
+              rules: k,
               tooltip: s.description ? t(`settings.toolsets.${f}.${s.name}Tooltip`, { defaultValue: s.description }) : void 0,
               children: /* @__PURE__ */ e.jsx(c, { placeholder: t(`settings.toolsets.${f}.${s.name}Placeholder`, { defaultValue: s.placeholder || `${t("common.enter", { defaultValue: "Enter" })} ${s.name}` }) })
             },
@@ -1829,7 +1840,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             {
               name: ["config", s.name],
               label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
-              rules: A,
+              rules: k,
               tooltip: s.description ? t(`settings.toolsets.${f}.${s.name}Tooltip`, { defaultValue: s.description }) : void 0,
               children: /* @__PURE__ */ e.jsx(
                 Q,
@@ -1859,7 +1870,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             {
               name: ["config", s.name],
               label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
-              rules: A,
+              rules: k,
               tooltip: s.description ? t(`settings.toolsets.${f}.${s.name}Tooltip`, { defaultValue: s.description }) : void 0,
               children: /* @__PURE__ */ e.jsx(
                 O,
@@ -1880,7 +1891,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               name: ["config", s.name],
               label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
               rules: [
-                ...A,
+                ...k,
                 {
                   validator: (C, N) => {
                     if (!N) return Promise.resolve();
@@ -1909,7 +1920,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             {
               name: ["config", s.name],
               label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
-              rules: A,
+              rules: k,
               tooltip: s.description ? t(`settings.toolsets.${f}.${s.name}Tooltip`, { defaultValue: s.description }) : void 0,
               children: /* @__PURE__ */ e.jsx(c.Password, { placeholder: t(`settings.toolsets.${f}.${s.name}Placeholder`, { defaultValue: s.placeholder || `${t("common.enter", { defaultValue: "Enter" })} ${s.name}` }), autoComplete: "new-password" })
             },
@@ -1926,7 +1937,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           {
             name: ["config", s.name],
             label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
-            rules: A,
+            rules: k,
             tooltip: s.description ? t(`settings.toolsets.${f}.${s.name}Tooltip`, { defaultValue: s.description }) : void 0,
             children: /* @__PURE__ */ e.jsx(O, { allowClear: !0, placeholder: s.placeholder ? t(`settings.toolsets.${f}.${s.name}Placeholder`, { defaultValue: s.description }) : `${t("common.select", { defaultValue: "Select" })} ${s.name}`, children: s.options.map((C) => /* @__PURE__ */ e.jsx(Ct, { value: C.value, children: C.label }, C.value)) })
           },
@@ -1938,7 +1949,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           {
             name: ["config", s.name],
             label: t(`settings.toolsets.${f}.${s.name}`, { defaultValue: s.display_name || s.name }),
-            rules: A,
+            rules: k,
             tooltip: s.description ? t(`settings.toolsets.${f}.${s.name}Tooltip`, { defaultValue: s.description }) : void 0,
             children: /* @__PURE__ */ e.jsx(Ae.Group, { style: { width: "100%" }, children: /* @__PURE__ */ e.jsx(D, { direction: "vertical", children: s.options.map((C) => /* @__PURE__ */ e.jsx(Ae, { value: C.value, children: C.label }, C.value)) }) })
           },
@@ -2039,7 +2050,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       ) }),
       /* @__PURE__ */ e.jsx(X, { children: /* @__PURE__ */ e.jsxs(D, { children: [
         /* @__PURE__ */ e.jsx(
-          k,
+          T,
           {
             type: "primary",
             icon: /* @__PURE__ */ e.jsx(ee, {}),
@@ -2049,7 +2060,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           }
         ),
         /* @__PURE__ */ e.jsx(Y, { permission: "system:toolsets:create", children: /* @__PURE__ */ e.jsx(
-          k,
+          T,
           {
             type: "primary",
             icon: /* @__PURE__ */ e.jsx(ge, {}),
@@ -2087,7 +2098,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         title: h ? t("settings.toolsets.edit", { defaultValue: "Edit Toolset" }) : t("settings.toolsets.create", { defaultValue: "Create Toolset" }),
         open: v,
         onCancel: () => {
-          g(!1), l.resetFields(), S(null), z("");
+          g(!1), l.resetFields(), _(null), z("");
         },
         footer: null,
         width: 600,
@@ -2096,7 +2107,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           {
             form: l,
             layout: "vertical",
-            onFinish: _e,
+            onFinish: Se,
             children: [
               /* @__PURE__ */ e.jsx(
                 a.Item,
@@ -2132,7 +2143,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                     {
                       loading: H,
                       placeholder: t("settings.toolsets.typePlaceholder", { defaultValue: "Select type" }),
-                      onChange: Se,
+                      onChange: _e,
                       value: f,
                       options: r == null ? void 0 : r.map((s) => ({
                         label: s.name,
@@ -2145,7 +2156,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               (d = P == null ? void 0 : P.config_fields) == null ? void 0 : d.map((s) => oe(s)),
               /* @__PURE__ */ e.jsx(a.Item, { children: /* @__PURE__ */ e.jsxs(D, { children: [
                 /* @__PURE__ */ e.jsx(
-                  k,
+                  T,
                   {
                     type: "primary",
                     htmlType: "submit",
@@ -2154,10 +2165,10 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
-                  k,
+                  T,
                   {
                     onClick: () => {
-                      g(!1), l.resetFields(), S(null), z("");
+                      g(!1), l.resetFields(), _(null), z("");
                     },
                     children: n("cancel", { defaultValue: "Cancel" })
                   }
@@ -2175,7 +2186,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         open: o,
         onCancel: () => i(!1),
         footer: [
-          /* @__PURE__ */ e.jsx(k, { onClick: () => i(!1), children: n("close", { defaultValue: "Close" }) }, "close")
+          /* @__PURE__ */ e.jsx(T, { onClick: () => i(!1), children: n("close", { defaultValue: "Close" }) }, "close")
         ],
         width: 600,
         children: /* @__PURE__ */ e.jsx("pre", { style: { background: "#f5f5f5", padding: 16, borderRadius: 4, overflow: "auto" }, children: JSON.stringify(p, null, 2) })
@@ -2186,20 +2197,20 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       {
         title: t("settings.toolsets.tools", { defaultValue: "Tools" }),
         open: y,
-        onCancel: () => T(!1),
+        onCancel: () => A(!1),
         footer: [
-          /* @__PURE__ */ e.jsx(k, { onClick: () => T(!1), children: n("close", { defaultValue: "Close" }) }, "close")
+          /* @__PURE__ */ e.jsx(T, { onClick: () => A(!1), children: n("close", { defaultValue: "Close" }) }, "close")
         ],
         width: 800,
         children: /* @__PURE__ */ e.jsx("div", { style: { maxHeight: "600px", overflow: "auto" }, children: Ve ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40 }, children: /* @__PURE__ */ e.jsx(ee, { style: { fontSize: 24 }, spin: !0 }) }) : q.length === 0 ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40, color: "#999" }, children: t("settings.toolsets.noTools", { defaultValue: "No tools available" }) }) : q.map((s, x) => {
-          var A, C, N;
+          var k, C, N;
           return /* @__PURE__ */ e.jsx(
             J,
             {
               style: { marginBottom: 16 },
               title: /* @__PURE__ */ e.jsxs(D, { children: [
                 /* @__PURE__ */ e.jsx(Ee, {}),
-                /* @__PURE__ */ e.jsx("strong", { children: ((A = s.function) == null ? void 0 : A.name) || "Unknown" })
+                /* @__PURE__ */ e.jsx("strong", { children: ((k = s.function) == null ? void 0 : k.name) || "Unknown" })
               ] }),
               children: /* @__PURE__ */ e.jsxs(ue, { gutter: 16, children: [
                 /* @__PURE__ */ e.jsxs(X, { span: 24, children: [
@@ -2225,7 +2236,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     )
   ] });
 }, { TextArea: kt } = c, Tt = () => {
-  const t = ke(), { t: n } = M("system"), { t: l } = M("common"), [v] = a.useForm(), [g, h] = I(!1), [S, j] = I(null), [V, o] = I(""), [i, p] = I(1), [U, f] = I(10), { loading: z, data: y, refresh: T } = _(
+  const t = ke(), { t: n } = M("system"), { t: l } = M("common"), [v] = a.useForm(), [g, h] = I(!1), [_, j] = I(null), [V, o] = I(""), [i, p] = I(1), [U, f] = I(10), { loading: z, data: y, refresh: A } = S(
     () => at({ current: i, page_size: U, search: V }),
     {
       refreshDeps: [i, U, V],
@@ -2233,34 +2244,34 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(n("settings.organizations.fetchFailed", { defaultValue: "Failed to fetch organizations" })), console.error("Failed to fetch organizations:", u);
       }
     }
-  ), { loading: q, run: F } = _(
+  ), { loading: q, run: F } = S(
     (u) => nt(u),
     {
       manual: !0,
       onSuccess: () => {
-        m.success(n("settings.organizations.createSuccess", { defaultValue: "Organization created successfully" })), h(!1), v.resetFields(), j(null), T();
+        m.success(n("settings.organizations.createSuccess", { defaultValue: "Organization created successfully" })), h(!1), v.resetFields(), j(null), A();
       },
       onError: (u) => {
         m.error((u == null ? void 0 : u.err) || n("settings.organizations.createFailed", { defaultValue: "Failed to create organization" }));
       }
     }
-  ), { loading: w, run: R } = _(
+  ), { loading: w, run: R } = S(
     ({ id: u, ...$ }) => ot({ id: u }, $),
     {
       manual: !0,
       onSuccess: () => {
-        m.success(n("settings.organizations.updateSuccess", { defaultValue: "Organization updated successfully" })), h(!1), v.resetFields(), j(null), T();
+        m.success(n("settings.organizations.updateSuccess", { defaultValue: "Organization updated successfully" })), h(!1), v.resetFields(), j(null), A();
       },
       onError: (u) => {
         m.error((u == null ? void 0 : u.err) || n("settings.organizations.updateFailed", { defaultValue: "Failed to update organization" }));
       }
     }
-  ), { run: L } = _(
+  ), { run: L } = S(
     (u) => it({ id: u }),
     {
       manual: !0,
       onSuccess: () => {
-        m.success(n("settings.organizations.deleteSuccess", { defaultValue: "Organization deleted successfully" })), T();
+        m.success(n("settings.organizations.deleteSuccess", { defaultValue: "Organization deleted successfully" })), A();
       },
       onError: (u) => {
         m.error((u == null ? void 0 : u.err) || n("settings.organizations.deleteFailed", { defaultValue: "Failed to delete organization" }));
@@ -2284,7 +2295,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     });
   }, W = () => {
     v.validateFields().then((u) => {
-      S ? R({ id: S.id, ...u }) : F(u);
+      _ ? R({ id: _.id, ...u }) : F(u);
     });
   }, b = [
     {
@@ -2342,8 +2353,8 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     {
       title: n("settings.organizations.title", { defaultValue: "Organization Management" }),
       extra: /* @__PURE__ */ e.jsxs(D, { children: [
-        /* @__PURE__ */ e.jsx(k, { icon: /* @__PURE__ */ e.jsx(ee, {}), onClick: T, children: l("refresh", { defaultValue: "Refresh" }) }),
-        /* @__PURE__ */ e.jsx(Y, { permission: "system:organization:create", children: /* @__PURE__ */ e.jsx(k, { type: "primary", icon: /* @__PURE__ */ e.jsx(ge, {}), onClick: H, children: n("settings.organizations.create", { defaultValue: "Create Organization" }) }) })
+        /* @__PURE__ */ e.jsx(T, { icon: /* @__PURE__ */ e.jsx(ee, {}), onClick: A, children: l("refresh", { defaultValue: "Refresh" }) }),
+        /* @__PURE__ */ e.jsx(Y, { permission: "system:organization:create", children: /* @__PURE__ */ e.jsx(T, { type: "primary", icon: /* @__PURE__ */ e.jsx(ge, {}), onClick: H, children: n("settings.organizations.create", { defaultValue: "Create Organization" }) }) })
       ] }),
       children: [
         /* @__PURE__ */ e.jsxs(D, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
@@ -2381,7 +2392,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         /* @__PURE__ */ e.jsx(
           K,
           {
-            title: S ? n("settings.organizations.edit", { defaultValue: "Edit Organization" }) : n("settings.organizations.create", { defaultValue: "Create Organization" }),
+            title: _ ? n("settings.organizations.edit", { defaultValue: "Edit Organization" }) : n("settings.organizations.create", { defaultValue: "Create Organization" }),
             open: g,
             onOk: W,
             onCancel: () => {
@@ -2428,11 +2439,11 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
 }, At = ({
   transformItems: t = (n) => n
 }) => {
-  const { t: n } = M("system"), l = ke(), v = tt(), S = v.hash.replace("#", "") || "base", { enableMultiOrg: j } = pt(), { hasPermission: V } = gt(), o = [
+  const { t: n } = M("system"), l = ke(), v = tt(), _ = v.hash.replace("#", "") || "base", { enableMultiOrg: j } = pt(), { hasPermission: V } = gt(), o = [
     {
       key: "base",
       label: n("settings.tabs.base", { defaultValue: "Base Settings" }),
-      children: /* @__PURE__ */ e.jsx(St, {}),
+      children: /* @__PURE__ */ e.jsx(_t, {}),
       hidden: !V("system:settings:update")
     },
     {
@@ -2482,7 +2493,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   return console.log(o, V("system:settings:update")), /* @__PURE__ */ e.jsx(J, { title: n("settings.title", { defaultValue: "System Settings" }), children: /* @__PURE__ */ e.jsx(
     Oe,
     {
-      defaultActiveKey: S,
+      defaultActiveKey: _,
       onChange: (i) => {
         l(`${v.pathname}#${i}`);
       },
@@ -2494,7 +2505,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   default: At
 }, Symbol.toStringTag, { value: "Module" })), Et = () => {
   var ne, oe, ie;
-  const t = ke(), { id: n } = st(), { t: l } = M("system"), { t: v } = M("common"), [g] = a.useForm(), [h] = a.useForm(), [S, j] = I(!1), [V, o] = I(!1), [i, p] = I(null), [U, f] = I(""), [z, y] = I(1), [T, q] = I(10), { data: F, loading: w, refresh: R } = _(
+  const t = ke(), { id: n } = st(), { t: l } = M("system"), { t: v } = M("common"), [g] = a.useForm(), [h] = a.useForm(), [_, j] = I(!1), [V, o] = I(!1), [i, p] = I(null), [U, f] = I(""), [z, y] = I(1), [A, q] = I(10), { data: F, loading: w, refresh: R } = S(
     () => rt({ id: n }),
     {
       ready: !!n,
@@ -2502,26 +2513,26 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(l("settings.organizations.fetchFailed", { defaultValue: "Failed to fetch organization" })), console.error("Failed to fetch organization:", d);
       }
     }
-  ), { data: L, loading: H, refresh: r } = _(
-    () => dt({ id: n, current: z, page_size: T, search: U }),
+  ), { data: L, loading: H, refresh: r } = S(
+    () => dt({ id: n, current: z, page_size: A, search: U }),
     {
       ready: !!n,
-      refreshDeps: [n, z, T, U],
+      refreshDeps: [n, z, A, U],
       onError: (d) => {
         m.error(l("settings.organizations.users.fetchFailed", { defaultValue: "Failed to fetch organization users" })), console.error("Failed to fetch organization users:", d);
       }
     }
-  ), { data: P, loading: W } = _(
+  ), { data: P, loading: W } = S(
     () => ht({ current: 1, page_size: 1e3 }),
     {
-      ready: S
+      ready: _
     }
-  ), { data: b, loading: u } = _(
+  ), { data: b, loading: u } = S(
     () => ft({ organization_id: n, current: 1, page_size: 1e3 }),
     {
       ready: !!n
     }
-  ), { loading: $, run: fe } = _(
+  ), { loading: $, run: fe } = S(
     (d) => ut({ id: n }, d),
     {
       manual: !0,
@@ -2532,7 +2543,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error((d == null ? void 0 : d.err) || l("settings.organizations.users.addFailed", { defaultValue: "Failed to add user to organization" }));
       }
     }
-  ), { loading: xe, run: Ve } = _(
+  ), { loading: xe, run: Ve } = S(
     (d) => ct({ id: n, user_id: i == null ? void 0 : i.id }, d),
     {
       manual: !0,
@@ -2543,7 +2554,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error((d == null ? void 0 : d.err) || l("settings.organizations.users.updateRolesFailed", { defaultValue: "Failed to update user roles" }));
       }
     }
-  ), { run: ye } = _(
+  ), { run: ye } = S(
     (d) => mt({ id: n, user_id: d }),
     {
       manual: !0,
@@ -2569,11 +2580,11 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }),
       onOk: () => ye(d.id)
     });
-  }, Se = () => {
+  }, _e = () => {
     g.validateFields().then((d) => {
       fe(d);
     });
-  }, _e = () => {
+  }, Se = () => {
     h.validateFields().then((d) => {
       Ve(d);
     });
@@ -2607,7 +2618,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       key: "roles",
       render: (d, s) => {
         var x;
-        return /* @__PURE__ */ e.jsx(D, { wrap: !0, children: ((x = s.organization_roles) == null ? void 0 : x.map((A) => /* @__PURE__ */ e.jsx(G, { children: A.name }, A.id))) || /* @__PURE__ */ e.jsx(G, { children: "No roles" }) });
+        return /* @__PURE__ */ e.jsx(D, { wrap: !0, children: ((x = s.organization_roles) == null ? void 0 : x.map((k) => /* @__PURE__ */ e.jsx(G, { children: k.name }, k.id))) || /* @__PURE__ */ e.jsx(G, { children: "No roles" }) });
       }
     },
     {
@@ -2641,7 +2652,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       {
         title: /* @__PURE__ */ e.jsxs(D, { children: [
           /* @__PURE__ */ e.jsx(
-            k,
+            T,
             {
               icon: /* @__PURE__ */ e.jsx(Xe, {}),
               onClick: () => t("/system/settings#organizations"),
@@ -2654,7 +2665,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             F == null ? void 0 : F.name
           ] })
         ] }),
-        extra: /* @__PURE__ */ e.jsx(k, { icon: /* @__PURE__ */ e.jsx(ee, {}), onClick: () => {
+        extra: /* @__PURE__ */ e.jsx(T, { icon: /* @__PURE__ */ e.jsx(ee, {}), onClick: () => {
           R(), r();
         }, children: v("refresh", { defaultValue: "Refresh" }) }),
         loading: w,
@@ -2669,7 +2680,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       J,
       {
         title: l("settings.organizations.users.title", { defaultValue: "Organization Users" }),
-        extra: /* @__PURE__ */ e.jsx(k, { type: "primary", icon: /* @__PURE__ */ e.jsx(ge, {}), onClick: be, children: l("settings.organizations.users.add", { defaultValue: "Add User" }) }),
+        extra: /* @__PURE__ */ e.jsx(T, { type: "primary", icon: /* @__PURE__ */ e.jsx(ge, {}), onClick: be, children: l("settings.organizations.users.add", { defaultValue: "Add User" }) }),
         style: { marginTop: 16 },
         children: /* @__PURE__ */ e.jsxs(D, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
           /* @__PURE__ */ e.jsx(
@@ -2692,7 +2703,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               rowKey: "id",
               pagination: {
                 current: z,
-                pageSize: T,
+                pageSize: A,
                 total: (L == null ? void 0 : L.total) || 0,
                 showSizeChanger: !0,
                 showTotal: (d) => v("pagination.total", { defaultValue: `Total ${d} items` }),
@@ -2709,8 +2720,8 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       K,
       {
         title: l("settings.organizations.users.add", { defaultValue: "Add User" }),
-        open: S,
-        onOk: Se,
+        open: _,
+        onOk: _e,
         onCancel: () => {
           j(!1), g.resetFields();
         },
@@ -2765,7 +2776,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       {
         title: l("settings.organizations.users.editRoles", { defaultValue: "Edit Roles" }),
         open: V,
-        onOk: _e,
+        onOk: Se,
         onCancel: () => {
           o(!1), h.resetFields(), p(null);
         },
@@ -2812,8 +2823,8 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   __proto__: null,
   default: Et
 }, Symbol.toStringTag, { value: "Module" })), zt = () => {
-  const { t } = M("system"), [n] = lt(), l = n.get("provider"), v = n.get("code"), g = n.get("state"), [h, S] = I(null), [j, V] = I(null), [o, i] = I(null);
-  return _(async () => {
+  const { t } = M("system"), [n] = lt(), l = n.get("provider"), v = n.get("code"), g = n.get("state"), [h, _] = I(null), [j, V] = I(null), [o, i] = I(null);
+  return S(async () => {
     if (!v || !g || !l)
       throw new Error(t("settings.oauth.testConnection.missingRequiredParameters", { defaultValue: "Missing required parameters" }));
     const p = await E.system.testOauthCallback({ code: v, state: g, provider: l });
@@ -2821,7 +2832,7 @@ const te = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       throw new Error(t("settings.oauth.testConnection.responseUserInfoIsNull", { defaultValue: "response user_info is null" }));
     if (!p.user)
       throw new Error(t("settings.oauth.testConnection.responseUserIsNull", { defaultValue: "response user is null" }));
-    S(p.user), V(p.user_info);
+    _(p.user), V(p.user_info);
   }, {
     onSuccess: () => {
       i({

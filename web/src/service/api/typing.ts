@@ -1449,6 +1449,7 @@ export interface ToolSetConfigFieldOptions {
 }
 
 export type ToolSetFieldType =
+  | "text"
   | "string"
   | "password"
   | "number"
