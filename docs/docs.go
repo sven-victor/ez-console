@@ -7747,8 +7747,11 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
                 1,
                 1000,
                 1000000,
@@ -7765,8 +7768,11 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -7775,9 +7781,91 @@ const docTemplate = `{
                 "Hour"
             ]
         },
+        "toolset.DataSource": {
+            "type": "object",
+            "required": [
+                "cache",
+                "cache_ttl",
+                "depends_on",
+                "filter",
+                "label_key",
+                "method",
+                "params",
+                "type",
+                "url",
+                "value_key"
+            ],
+            "properties": {
+                "cache": {
+                    "description": "Cache control",
+                    "type": "boolean"
+                },
+                "cache_ttl": {
+                    "description": "Cache TTL in seconds (0 = no expiration)",
+                    "type": "integer"
+                },
+                "depends_on": {
+                    "description": "DependsOn specifies field dependencies (field names that this field depends on)\nWhen dependent fields change, this field's options should be reloaded",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "filter": {
+                    "description": "Filter conditions (flexible filtering for different source types)\nFor toolsets: {\"type\": \"webhook\"} to filter by toolset type\nFor internal: {\"status\": \"active\"} to filter by status, etc.",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "label_key": {
+                    "description": "Response mapping fields (for API and other sources)",
+                    "type": "string"
+                },
+                "method": {
+                    "description": "HTTP method (GET, POST, etc.)",
+                    "type": "string"
+                },
+                "params": {
+                    "description": "Parameters for API requests (query params or request body)",
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "type": {
+                    "description": "Type specifies the data source type",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/toolset.DataSourceType"
+                        }
+                    ]
+                },
+                "url": {
+                    "description": "API-specific fields (when Type = \"api\")",
+                    "type": "string"
+                },
+                "value_key": {
+                    "description": "JSON key for option value",
+                    "type": "string"
+                }
+            }
+        },
+        "toolset.DataSourceType": {
+            "type": "string",
+            "enum": [
+                "static",
+                "api",
+                "toolsets",
+                "internal"
+            ],
+            "x-enum-varnames": [
+                "DataSourceTypeStatic",
+                "DataSourceTypeAPI",
+                "DataSourceTypeToolsets",
+                "DataSourceTypeInternal"
+            ]
+        },
         "toolset.ToolSetConfigField": {
             "type": "object",
             "required": [
+                "data_source",
                 "default",
                 "description",
                 "display_name",
@@ -7788,6 +7876,14 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
+                "data_source": {
+                    "description": "Dynamic data source configuration",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/toolset.DataSource"
+                        }
+                    ]
+                },
                 "default": {
                     "type": "string"
                 },
@@ -7801,6 +7897,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "options": {
+                    "description": "Static options (used when DataSource is nil or type=static)",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/toolset.ToolSetConfigFieldOptions"
@@ -7841,8 +7938,12 @@ const docTemplate = `{
                 "number",
                 "boolean",
                 "array",
-                "object"
+                "object",
+                "select"
             ],
+            "x-enum-comments": {
+                "FieldTypeSelect": "select dropdown"
+            },
             "x-enum-varnames": [
                 "FieldTypeText",
                 "FieldTypeString",
@@ -7850,7 +7951,8 @@ const docTemplate = `{
                 "FieldTypeNumber",
                 "FieldTypeBoolean",
                 "FieldTypeArray",
-                "FieldTypeObject"
+                "FieldTypeObject",
+                "FieldTypeSelect"
             ]
         },
         "toolset.ToolSetType": {

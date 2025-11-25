@@ -5,7 +5,7 @@ import { c as A, i as l, f as x, A as c, d as g, D as L, H as P, e as b, a as h,
 import { default as S } from "./es/forbidden.js";
 import { default as C } from "./es/not_found.js";
 import { u as F, a as H, b as N } from "./es/contexts.js";
-import { A as B, a as R, e as Z, d as j, f as k } from "./es/client.js";
+import { A as B, d as R, a as Z, e as j, f as k } from "./es/client.js";
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";

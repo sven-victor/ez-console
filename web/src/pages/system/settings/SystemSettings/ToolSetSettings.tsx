@@ -12,9 +12,6 @@ import {
   Tag,
   Row,
   Col,
-  InputNumber,
-  Switch,
-  Checkbox,
 } from 'antd';
 import {
   PlusOutlined,
@@ -33,9 +30,9 @@ import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import Actions from '@/components/Actions';
 import { PermissionGuard } from '@/components/PermissionGuard';
+import DynamicConfigField from '@/components/DynamicConfigField';
 
 const { TextArea } = Input;
-const { Option } = Select;
 
 interface ToolSet {
   id: string;
@@ -67,6 +64,7 @@ const ToolSetSettings: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('');
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
 
   // Fetch toolsets
   const { loading, data, refresh } = useRequest(
@@ -312,187 +310,21 @@ const ToolSetSettings: React.FC = () => {
     });
   };
 
-  // Render dynamic config fields based on type definition
-  const renderConfigField = (field: API.ToolSetConfigField) => {
-    const hasOptions = field.options && field.options.length > 0;
+  // Get dependent field values for a specific field
+  const getDependentValues = (field: API.ToolSetConfigField): Record<string, any> => {
+    if (!field.data_source?.depends_on || field.data_source.depends_on.length === 0) {
+      return {};
+    }
 
-    // Build rules
-    const rules = [
-      {
-        required: field.required,
-        message: t('settings.toolsets.fieldRequired', {
-          defaultValue: `Please enter ${field.name}`,
-          field: field.name,
-        }),
-      },
-    ];
-
-    // If options is empty
-    if (!hasOptions) {
-      switch (field.type) {
-        case 'text':
-          return (
-            <Form.Item
-              key={field.name}
-              name={['config', field.name]}
-              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-              rules={rules}
-            >
-              <Input.TextArea placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })} />
-            </Form.Item>
-          );
-
-        case 'string':
-          return (
-            <Form.Item
-              key={field.name}
-              name={['config', field.name]}
-              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-              rules={rules}
-              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
-            >
-              <Input placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })} />
-            </Form.Item>
-          );
-
-        case 'number':
-          return (
-            <Form.Item
-              key={field.name}
-              name={['config', field.name]}
-              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-              rules={rules}
-              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
-            >
-              <InputNumber
-                style={{ width: '100%' }}
-                placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })}
-              />
-            </Form.Item>
-          );
-
-        case 'boolean':
-          return (
-            <Form.Item
-              key={field.name}
-              name={['config', field.name]}
-              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-              valuePropName="checked"
-              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
-            >
-              <Switch />
-            </Form.Item>
-          );
-
-        case 'array':
-          return (
-            <Form.Item
-              key={field.name}
-              name={['config', field.name]}
-              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-              rules={rules}
-              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
-            >
-              <Select
-                mode="tags"
-                style={{ width: '100%' }}
-                placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })}
-                tokenSeparators={[',']}
-              />
-            </Form.Item>
-          );
-
-        case 'object':
-          return (
-            <Form.Item
-              key={field.name}
-              name={['config', field.name]}
-              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-              rules={[
-                ...rules,
-                {
-                  validator: (_, value) => {
-                    if (!value) return Promise.resolve();
-                    try {
-                      JSON.parse(value);
-                      return Promise.resolve();
-                    } catch (e) {
-                      return Promise.reject(new Error(t('settings.toolsets.invalidJSON', { defaultValue: 'Invalid JSON format' })));
-                    }
-                  },
-                },
-              ]}
-              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltips`, { defaultValue: field.description }) : undefined}
-            >
-              <TextArea
-                rows={4}
-                placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name} (JSON format)`) })}
-              />
-            </Form.Item>
-          );
-        case 'password':
-          return (
-            <Form.Item
-              key={field.name}
-              name={['config', field.name]}
-              label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-              rules={rules}
-              tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
-            >
-              <Input.Password placeholder={t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: (field.placeholder || `${t('common.enter', { defaultValue: 'Enter' })} ${field.name}`) })} autoComplete='new-password' />
-            </Form.Item>
-          );
-        default:
-          return null;
+    const dependentValues: Record<string, any> = {};
+    field.data_source.depends_on.forEach((fieldName) => {
+      const value = formValues.config?.[fieldName];
+      if (value !== undefined) {
+        dependentValues[fieldName] = value;
       }
-    }
+    });
 
-    // If options is not empty
-    switch (field.type) {
-      case 'string':
-      case 'number':
-        return (
-          <Form.Item
-            key={field.name}
-            name={['config', field.name]}
-            label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-            rules={rules}
-            tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
-          >
-            <Select allowClear placeholder={field.placeholder ? t(`settings.toolsets.${selectedType}.${field.name}Placeholder`, { defaultValue: field.description }) : (`${t('common.select', { defaultValue: 'Select' })} ${field.name}`)}>
-              {field.options.map((option) => (
-                <Option key={option.value} value={option.value}>
-                  {option.label}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        );
-
-      case 'array':
-        return (
-          <Form.Item
-            key={field.name}
-            name={['config', field.name]}
-            label={t(`settings.toolsets.${selectedType}.${field.name}`, { defaultValue: field.display_name || field.name })}
-            rules={rules}
-            tooltip={field.description ? t(`settings.toolsets.${selectedType}.${field.name}Tooltip`, { defaultValue: field.description }) : undefined}
-          >
-            <Checkbox.Group style={{ width: '100%' }}>
-              <Space direction="vertical">
-                {field.options.map((option) => (
-                  <Checkbox key={option.value} value={option.value}>
-                    {option.label}
-                  </Checkbox>
-                ))}
-              </Space>
-            </Checkbox.Group>
-          </Form.Item>
-        );
-
-      default:
-        return null;
-    }
+    return dependentValues;
   };
   console.log(data)
   const columns: ColumnsType<ToolSet> = [
@@ -657,6 +489,7 @@ const ToolSetSettings: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
+          onValuesChange={(_, allValues) => setFormValues(allValues)}
         >
           <Form.Item
             name="name"
@@ -694,7 +527,15 @@ const ToolSetSettings: React.FC = () => {
           </Form.Item>
 
           {/* Dynamic config fields based on selected type */}
-          {currentTypeDefinition?.config_fields?.map((field) => renderConfigField(field))}
+          {currentTypeDefinition?.config_fields?.map((field) => (
+            <DynamicConfigField
+              key={field.name}
+              field={field}
+              selectedType={selectedType}
+              dependentValues={getDependentValues(field)}
+              formInstance={form}
+            />
+          ))}
 
           <Form.Item>
             <Space>

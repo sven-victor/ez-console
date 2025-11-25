@@ -285,6 +285,34 @@ declare global {
       label: string;
     }
   
+    interface DataSource {
+      /** Cache control */
+      cache: boolean;
+      /** Cache TTL in seconds (0 = no expiration) */
+      cache_ttl: number;
+      /** DependsOn specifies field dependencies (field names that this field depends on)
+  When dependent fields change, this field's options should be reloaded */
+      depends_on: string[];
+      /** Filter conditions (flexible filtering for different source types)
+  For toolsets: {"type": "webhook"} to filter by toolset type
+  For internal: {"status": "active"} to filter by status, etc. */
+      filter: Record<string, any>;
+      /** Response mapping fields (for API and other sources) */
+      label_key: string;
+      /** HTTP method (GET, POST, etc.) */
+      method: string;
+      /** Parameters for API requests (query params or request body) */
+      params: Record<string, any>;
+      /** Type specifies the data source type */
+      type: DataSourceType;
+      /** API-specific fields (when Type = "api") */
+      url: string;
+      /** JSON key for option value */
+      value_key: string;
+    }
+  
+    type DataSourceType = "static" | "api" | "toolsets" | "internal";
+  
     interface deleteAIModelParams {
       /** AI model ID */
       id: string;
@@ -1435,10 +1463,13 @@ declare global {
     }
   
     interface ToolSetConfigField {
+      /** Dynamic data source configuration */
+      data_source: DataSource;
       default: string;
       description: string;
       display_name: string;
       name: string;
+      /** Static options (used when DataSource is nil or type=static) */
       options: ToolSetConfigFieldOptions[];
       placeholder: string;
       required: boolean;
@@ -1457,7 +1488,8 @@ declare global {
       | "number"
       | "boolean"
       | "array"
-      | "object";
+      | "object"
+      | "select";
   
     type ToolSetStatus = "enabled" | "disabled";
   

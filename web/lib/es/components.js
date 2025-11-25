@@ -1,37 +1,37 @@
-var Ie = Object.defineProperty;
-var ke = (t, s, n) => s in t ? Ie(t, s, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[s] = n;
-var ie = (t, s, n) => ke(t, typeof s != "symbol" ? s + "" : s, n);
-import { j as e, I as Fe, u as Ae, X as Le, a as _e, C as ze, F as Te, M as Pe, S as De } from "./vendor.js";
-import { Navigate as oe } from "react-router-dom";
-import { u as me, a as se, b as Re } from "./contexts.js";
-import { g as Me, f as Be } from "./base.js";
-import { Spin as q, Dropdown as Ee, Avatar as Ve, Upload as Ne, Modal as G, Popover as $e, List as Oe, Divider as he, Skeleton as qe, Tooltip as pe, FloatButton as He, Popconfirm as te, Button as I, Space as M, Input as z, Table as ae, Form as j, message as S, Card as U, Result as le, Segmented as Ue, Steps as Ke, Alert as ce, QRCode as Ge, Typography as We, Tag as K, Empty as Xe, Row as de, Col as $, Select as ne, DatePicker as Ye, Flex as Je } from "antd";
+var _e = Object.defineProperty;
+var Le = (t, s, n) => s in t ? _e(t, s, { enumerable: !0, configurable: !0, writable: !0, value: n }) : t[s] = n;
+var oe = (t, s, n) => Le(t, typeof s != "symbol" ? s + "" : s, n);
+import { j as e, I as Ae, u as Pe, X as Te, a as ze, C as De, F as Re, M as Me, S as $e } from "./vendor.js";
+import { Navigate as le } from "react-router-dom";
+import { u as ge, a as ae, b as Oe, c as Ve } from "./contexts.js";
+import { g as Be, f as Ne } from "./base.js";
+import { Spin as H, Dropdown as Ee, Avatar as qe, Upload as He, Modal as J, Popover as Ue, List as Ke, Divider as xe, Skeleton as Ge, Tooltip as fe, FloatButton as Je, Popconfirm as se, Button as k, Space as D, Input as _, Table as re, Form as j, message as C, Card as K, Result as ce, Segmented as We, Steps as Xe, Alert as de, QRCode as Ye, Typography as Qe, Tag as G, Empty as Ze, Row as ue, Col as E, Select as $, DatePicker as et, Checkbox as me, Switch as tt, InputNumber as nt, Flex as st } from "antd";
 import { useTranslation as F } from "react-i18next";
 import { createStyles as W } from "antd-style";
-import * as Qe from "@ant-design/icons";
-import { UploadOutlined as Ze, CheckOutlined as et, TeamOutlined as tt, RobotOutlined as nt, PlusOutlined as ge, ClockCircleFilled as st, MailOutlined as at, EyeOutlined as fe, EyeInvisibleOutlined as rt, LaptopOutlined as it, EnvironmentOutlined as ot, GlobalOutlined as lt, ClockCircleOutlined as ct, SearchOutlined as dt, ReloadOutlined as ut, EditOutlined as mt, DeleteOutlined as ht } from "@ant-design/icons";
-import pt from "classnames";
-import gt, { useState as x, useEffect as O, lazy as ft, createElement as xt, Suspense as yt, forwardRef as jt, useImperativeHandle as vt, useRef as bt } from "react";
-import { a as C, w as wt } from "./index.js";
-import { useRequest as D } from "ahooks";
-import { b as J, A as St } from "./client.js";
-import Ct from "antd-img-crop";
-import { isString as It } from "lodash";
-import Q from "dayjs";
-const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
+import * as at from "@ant-design/icons";
+import { UploadOutlined as rt, CheckOutlined as it, TeamOutlined as ot, RobotOutlined as lt, PlusOutlined as ye, ClockCircleFilled as ct, MailOutlined as dt, EyeOutlined as je, EyeInvisibleOutlined as ut, LaptopOutlined as mt, EnvironmentOutlined as ht, GlobalOutlined as pt, ClockCircleOutlined as gt, SearchOutlined as xt, ReloadOutlined as ft, EditOutlined as yt, DeleteOutlined as jt } from "@ant-design/icons";
+import vt from "classnames";
+import bt, { useState as v, useEffect as q, lazy as wt, createElement as St, Suspense as Ct, forwardRef as It, useImperativeHandle as kt, useMemo as Ft, useRef as _t } from "react";
+import { a as I, w as Lt } from "./index.js";
+import { useRequest as R } from "ahooks";
+import { b as Q, A as At } from "./client.js";
+import Pt from "antd-img-crop";
+import { isString as Tt } from "lodash";
+import Z from "dayjs";
+const zt = () => /* @__PURE__ */ e.jsx("div", { style: {
   display: "flex",
   justifyContent: "center",
   alignItems: "center",
   height: "100vh",
   width: "100%"
-}, children: /* @__PURE__ */ e.jsx(q, { size: "large" }) }), dn = ({
+}, children: /* @__PURE__ */ e.jsx(H, { size: "large" }) }), fn = ({
   element: t,
   requiredPermission: s,
   requiredPermissions: n
 }) => {
-  const { user: a, loading: i } = me(), { hasPermission: r, hasAllPermissions: m } = se();
-  return i ? /* @__PURE__ */ e.jsx(kt, {}) : a ? s && !r(s) ? /* @__PURE__ */ e.jsx(oe, { to: "/forbidden", replace: !0 }) : n && !m(n) ? /* @__PURE__ */ e.jsx(oe, { to: "/forbidden", replace: !0 }) : t : (window.location.href = Me("/login?redirect=" + encodeURIComponent(window.location.href)), null);
-}, Ft = W(({ token: t, css: s }) => ({
+  const { user: a, loading: i } = ge(), { hasPermission: r, hasAllPermissions: p } = ae();
+  return i ? /* @__PURE__ */ e.jsx(zt, {}) : a ? s && !r(s) ? /* @__PURE__ */ e.jsx(le, { to: "/forbidden", replace: !0 }) : n && !p(n) ? /* @__PURE__ */ e.jsx(le, { to: "/forbidden", replace: !0 }) : t : (window.location.href = Be("/login?redirect=" + encodeURIComponent(window.location.href)), null);
+}, Dt = W(({ token: t, css: s }) => ({
   container: s`
       ${s`
         @media screen and (max-width: ${t.screenXS}px) {
@@ -59,7 +59,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       color: t.colorPrimaryTextHover
     }
   }
-})), xe = ({
+})), ve = ({
   overlayClassName: t,
   overlay: s,
   hidden: n,
@@ -68,17 +68,17 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
 }) => {
   if (n)
     return /* @__PURE__ */ e.jsx(e.Fragment, {});
-  const { styles: r } = Ft();
+  const { styles: r } = Dt();
   return /* @__PURE__ */ e.jsx(
     Ee,
     {
       dropdownRender: s,
-      overlayClassName: pt(r.container, t),
+      overlayClassName: vt(r.container, t),
       ...i,
       children: /* @__PURE__ */ e.jsx("span", { className: r.iconStyle, children: a })
     }
   );
-}, At = () => /* @__PURE__ */ e.jsxs(
+}, Rt = () => /* @__PURE__ */ e.jsxs(
   "svg",
   {
     viewBox: "0 0 24 24",
@@ -98,14 +98,14 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       )
     ]
   }
-), Lt = W(() => ({
+), Mt = W(() => ({
   menuItemStyle: {
     minWidth: "160px"
   },
   menuItemIconStyle: {
     marginRight: "8px"
   }
-})), _t = [
+})), $t = [
   { lang: "en-US", label: "English", icon: "🇺🇸" },
   { lang: "sv-SE", label: "Svenska", icon: "🇸🇪" },
   { lang: "ar-AE", label: "العربية", icon: "🇦🇪" },
@@ -113,17 +113,17 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
   { lang: "es-ES", label: "Español", icon: "🇪🇸" },
   { lang: "fr-FR", label: "Français", icon: "🇫🇷" },
   { lang: "zh-CN", label: "中文", icon: "🇨🇳" }
-], un = ({
+], yn = ({
   transformLangConfig: t = (s) => s
 }) => {
-  const { i18n: s } = F(), { styles: n } = Lt(), a = (r) => {
+  const { i18n: s } = F(), { styles: n } = Mt(), a = (r) => {
     s.changeLanguage(r);
   }, i = {
     selectedKeys: [s.language],
     onClick: (r) => {
       a(r.key);
     },
-    items: t(_t).map((r) => ({
+    items: t($t).map((r) => ({
       key: r.lang,
       className: n.menuItemStyle,
       label: /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
@@ -133,34 +133,34 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
     }))
   };
   return /* @__PURE__ */ e.jsx(
-    xe,
+    ve,
     {
       menu: i,
-      children: /* @__PURE__ */ e.jsx(At, {})
+      children: /* @__PURE__ */ e.jsx(Rt, {})
     }
   );
-}, zt = W(({ css: t }) => ({
+}, Ot = W(({ css: t }) => ({
   avatarItem: t`
     :hover {
       background: rgba(0, 0, 0, 0.12);
     }
     padding: 5px;
   `
-})), ye = (t) => It(t) && t.match(/^[-_a-zA-Z0-9]+$/) ? J.endsWith("/") ? J + `files/${t}` : J + `/files/${t}` : t, Tt = ({ src: t, ...s }) => /* @__PURE__ */ e.jsx(Ve, { src: ye(t), ...s }), Pt = ({ onChange: t, shape: s = "square" }) => {
-  const [n, a] = x([]), { styles: i } = zt(), [r, m] = x(!1), [o, d] = x(!0), [u, v] = x(0), { run: h, loading: g } = D(() => C.base.listFiles({ current: u + 1, page_size: 40, file_type: "avatar", access: "public", search: "" }), {
+})), be = (t) => Tt(t) && t.match(/^[-_a-zA-Z0-9]+$/) ? Q.endsWith("/") ? Q + `files/${t}` : Q + `/files/${t}` : t, Vt = ({ src: t, ...s }) => /* @__PURE__ */ e.jsx(qe, { src: be(t), ...s }), Bt = ({ onChange: t, shape: s = "square" }) => {
+  const [n, a] = v([]), { styles: i } = Ot(), [r, p] = v(!1), [o, m] = v(!0), [l, f] = v(0), { run: u, loading: h } = R(() => I.base.listFiles({ current: l + 1, page_size: 40, file_type: "avatar", access: "public", search: "" }), {
     manual: !0,
-    onSuccess: ({ data: c }) => {
-      a([...n, ...c]), d(c.length === 40), v(u + 1);
+    onSuccess: ({ data: d }) => {
+      a([...n, ...d]), m(d.length === 40), f(l + 1);
     }
-  }), k = () => {
-    d(!0), v(0), a([]);
+  }), g = () => {
+    m(!0), f(0), a([]);
   };
   return /* @__PURE__ */ e.jsx(
-    $e,
+    Ue,
     {
       style: { zIndex: 1e3 },
-      onOpenChange: (c) => {
-        m(c), c ? h() : k();
+      onOpenChange: (d) => {
+        p(d), d ? u() : g();
       },
       open: r,
       content: /* @__PURE__ */ e.jsx("div", { style: { width: 360, height: 200 }, children: /* @__PURE__ */ e.jsx(
@@ -172,31 +172,31 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
             overflow: "auto"
           },
           children: /* @__PURE__ */ e.jsx(
-            Fe,
+            Ae,
             {
               dataLength: n.length,
               next: () => {
-                h();
+                u();
               },
               hasMore: o,
-              loader: /* @__PURE__ */ e.jsx(qe, { avatar: !0, paragraph: { rows: 1 }, active: !0 }),
-              endMessage: /* @__PURE__ */ e.jsx(he, { plain: !0, children: "End" }),
+              loader: /* @__PURE__ */ e.jsx(Ge, { avatar: !0, paragraph: { rows: 1 }, active: !0 }),
+              endMessage: /* @__PURE__ */ e.jsx(xe, { plain: !0, children: "End" }),
               scrollableTarget: "iconsScrollableDiv",
               children: /* @__PURE__ */ e.jsx(
-                Oe,
+                Ke,
                 {
                   grid: { gutter: 16, column: 8 },
                   dataSource: n,
                   style: { margin: "0 8px" },
-                  loading: g,
-                  renderItem: ({ id: c }) => /* @__PURE__ */ e.jsx(
+                  loading: h,
+                  renderItem: ({ id: d }) => /* @__PURE__ */ e.jsx(
                     "div",
                     {
                       className: i.avatarItem,
-                      onClick: (b) => {
-                        b.stopPropagation(), t == null || t(c), m(!1), k();
+                      onClick: (w) => {
+                        w.stopPropagation(), t == null || t(d), p(!1), g();
                       },
-                      children: /* @__PURE__ */ e.jsx(Tt, { shape: s, src: c })
+                      children: /* @__PURE__ */ e.jsx(Vt, { shape: s, src: d })
                     }
                   )
                 }
@@ -208,7 +208,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       placement: "bottom",
       trigger: "hover",
       children: /* @__PURE__ */ e.jsx(
-        Ze,
+        rt,
         {
           shape: s,
           style: { width: 112, height: 112, placeContent: "center" }
@@ -216,104 +216,104 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       )
     }
   );
-}, Dt = ({ value: t, onChange: s, shape: n, ...a }) => {
-  const [i, r] = x(void 0), [m, o] = x(!1), [d, u] = x(void 0), v = async (h) => {
-    o(!0), u(h.url ?? h.preview);
+}, Nt = ({ value: t, onChange: s, shape: n, ...a }) => {
+  const [i, r] = v(void 0), [p, o] = v(!1), [m, l] = v(void 0), f = async (u) => {
+    o(!0), l(u.url ?? u.preview);
   };
-  return O(() => {
+  return q(() => {
     r(t ? {
       uid: t,
       name: t,
-      url: ye(t)
+      url: be(t)
     } : void 0);
   }, [t]), /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
     /* @__PURE__ */ e.jsx(
-      Ct,
+      Pt,
       {
-        beforeCrop: async (h) => {
-          if (h.type === "image/svg+xml") {
-            const g = await C.base.uploadFile({ type: "avatar" }, h);
-            return g.length > 0 && (s == null || s(g[0].id)), !1;
+        beforeCrop: async (u) => {
+          if (u.type === "image/svg+xml") {
+            const h = await I.base.uploadFile({ type: "avatar" }, u);
+            return h.length > 0 && (s == null || s(h[0].id)), !1;
           }
           return !0;
         },
         children: /* @__PURE__ */ e.jsx(
-          Ne,
+          He,
           {
-            customRequest: async (h) => {
-              var k, c;
-              const g = await C.base.uploadFile({ type: "avatar", access: "public" }, h.file);
-              g.length > 0 ? ((k = h.onSuccess) == null || k.call(h, g[0].id), s == null || s(g[0].id)) : (c = h.onError) == null || c.call(h, new Error("Upload file failed"));
+            customRequest: async (u) => {
+              var g, d;
+              const h = await I.base.uploadFile({ type: "avatar", access: "public" }, u.file);
+              h.length > 0 ? ((g = u.onSuccess) == null || g.call(u, h[0].id), s == null || s(h[0].id)) : (d = u.onError) == null || d.call(u, new Error("Upload file failed"));
             },
             listType: "picture-card",
-            onPreview: v,
+            onPreview: f,
             maxCount: 1,
-            onChange: ({ file: h }) => {
-              switch (h.status) {
+            onChange: ({ file: u }) => {
+              switch (u.status) {
                 case "removed":
                   s == null || s(void 0);
                   break;
                 case "done":
                   break;
                 default:
-                  r(h);
+                  r(u);
                   break;
               }
             },
             fileList: i ? [i] : [],
             ...a,
-            children: i ? void 0 : /* @__PURE__ */ e.jsx(Pt, { shape: n, onChange: s })
+            children: i ? void 0 : /* @__PURE__ */ e.jsx(Bt, { shape: n, onChange: s })
           }
         )
       }
     ),
-    /* @__PURE__ */ e.jsx(G, { open: m, footer: null, onCancel: () => o(!1), children: /* @__PURE__ */ e.jsx("img", { style: { width: "100%" }, src: d }) })
+    /* @__PURE__ */ e.jsx(J, { open: p, footer: null, onCancel: () => o(!1), children: /* @__PURE__ */ e.jsx("img", { style: { width: "100%" }, src: m }) })
   ] });
-}, mn = () => {
-  const { t } = F("common"), { user: s } = me(), { currentOrgId: n, setCurrentOrgId: a } = Re(), i = (s == null ? void 0 : s.organizations) || [], r = (u) => {
-    a(u), window.location.reload();
+}, jn = () => {
+  const { t } = F("common"), { user: s } = ge(), { currentOrgId: n, setCurrentOrgId: a } = Oe(), i = (s == null ? void 0 : s.organizations) || [], r = (l) => {
+    a(l), window.location.reload();
   };
   if (i.length === 0)
     return null;
-  const m = i.find((u) => u.id === n), o = m ? m.name : t("organization.global", { defaultValue: "Global" }), d = [
-    ...i.map((u) => ({
-      key: u.id,
+  const p = i.find((l) => l.id === n), o = p ? p.name : t("organization.global", { defaultValue: "Global" }), m = [
+    ...i.map((l) => ({
+      key: l.id,
       label: /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
-        /* @__PURE__ */ e.jsx("span", { children: u.name }),
-        n === u.id && /* @__PURE__ */ e.jsx(et, {})
+        /* @__PURE__ */ e.jsx("span", { children: l.name }),
+        n === l.id && /* @__PURE__ */ e.jsx(it, {})
       ] }),
-      onClick: () => r(u.id)
+      onClick: () => r(l.id)
     }))
   ];
   return /* @__PURE__ */ e.jsxs(
-    xe,
+    ve,
     {
       menu: {
-        items: d,
+        items: m,
         selectedKeys: n ? [n] : [""]
       },
       children: [
-        /* @__PURE__ */ e.jsx(tt, { style: { marginRight: 4 } }),
+        /* @__PURE__ */ e.jsx(ot, { style: { marginRight: 4 } }),
         /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em", marginLeft: "5px" }, children: o })
       ]
     }
   );
-}, Rt = ft(() => Promise.resolve().then(() => Ut)), hn = () => {
-  const { t } = F("ai"), [s, n] = x(!1), a = () => {
+}, Et = wt(() => Promise.resolve().then(() => Qt)), vn = () => {
+  const { t } = F("ai"), [s, n] = v(!1), a = () => {
     n(!0);
   }, i = () => {
     n(!1);
   };
   return console.log(s), /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
     /* @__PURE__ */ e.jsx(
-      pe,
+      fe,
       {
         title: t("chat.openAssistant", { defaultValue: "Open AI Assistant" }),
         placement: "left",
         children: /* @__PURE__ */ e.jsx(
-          He,
+          Je,
           {
-            icon: /* @__PURE__ */ e.jsx(nt, {}),
+            icon: /* @__PURE__ */ e.jsx(lt, {}),
             type: "primary",
             onClick: a,
             style: {
@@ -325,107 +325,107 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       }
     ),
     /* @__PURE__ */ e.jsx(
-      G,
+      J,
       {
         width: 1200,
         open: s,
         onCancel: i,
         footer: null,
-        children: wt(Rt)
+        children: Lt(Et)
       }
     )
   ] });
-}, Mt = ({
+}, qt = ({
   permission: t,
   permissions: s = [],
   checkAll: n = !1,
   fallback: a = null,
   children: i
 }) => {
-  const { hasPermission: r, hasAnyPermission: m, hasAllPermissions: o, isAdmin: d, loading: u } = se();
-  return u ? null : d ? /* @__PURE__ */ e.jsx(e.Fragment, { children: i }) : t ? r(t) ? /* @__PURE__ */ e.jsx(e.Fragment, { children: i }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: a }) : s.length > 0 ? (n ? o(s) : m(s)) ? /* @__PURE__ */ e.jsx(e.Fragment, { children: i }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: a }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: i });
-}, pn = ({
+  const { hasPermission: r, hasAnyPermission: p, hasAllPermissions: o, isAdmin: m, loading: l } = ae();
+  return l ? null : m ? /* @__PURE__ */ e.jsx(e.Fragment, { children: i }) : t ? r(t) ? /* @__PURE__ */ e.jsx(e.Fragment, { children: i }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: a }) : s.length > 0 ? (n ? o(s) : p(s)) ? /* @__PURE__ */ e.jsx(e.Fragment, { children: i }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: a }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: i });
+}, bn = ({
   fallback: t = null,
   children: s
 }) => {
-  const { isAdmin: n, loading: a } = se();
+  const { isAdmin: n, loading: a } = ae();
   return a ? null : n ? /* @__PURE__ */ e.jsx(e.Fragment, { children: s }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: t });
-}, H = (t) => {
-  const [s, n] = x(!1), { permission: a, icon: i, tooltip: r, onClick: m, confirm: o, label: d, ...u } = t;
-  return a ? /* @__PURE__ */ e.jsx(Mt, { permission: a, children: H({ icon: i, tooltip: r, onClick: m, confirm: o, label: d, ...u }) }, t.key) : o ? /* @__PURE__ */ e.jsx(te, { title: o.title, onConfirm: o.onConfirm || m, okText: o.okText, cancelText: o.cancelText, children: H({ icon: i, tooltip: r, label: d, ...u }) }, t.key) : r ? /* @__PURE__ */ e.jsx(pe, { title: r, children: H({ icon: i, onClick: m, label: d, ...u }) }, t.key) : /* @__PURE__ */ xt(I, { type: "text", size: "small", loading: s, icon: i, onClick: m ? async () => {
+}, U = (t) => {
+  const [s, n] = v(!1), { permission: a, icon: i, tooltip: r, onClick: p, confirm: o, label: m, ...l } = t;
+  return a ? /* @__PURE__ */ e.jsx(qt, { permission: a, children: U({ icon: i, tooltip: r, onClick: p, confirm: o, label: m, ...l }) }, t.key) : o ? /* @__PURE__ */ e.jsx(se, { title: o.title, onConfirm: o.onConfirm || p, okText: o.okText, cancelText: o.cancelText, children: U({ icon: i, tooltip: r, label: m, ...l }) }, t.key) : r ? /* @__PURE__ */ e.jsx(fe, { title: r, children: U({ icon: i, onClick: p, label: m, ...l }) }, t.key) : /* @__PURE__ */ St(k, { type: "text", size: "small", loading: s, icon: i, onClick: p ? async () => {
     console.log(/* @__PURE__ */ new Date(), "handleClick"), n(!0);
     try {
-      await m();
+      await p();
     } finally {
       n(!1), console.log(/* @__PURE__ */ new Date(), "handleClick1");
     }
-  } : void 0, ...u, key: t.key }, d && /* @__PURE__ */ e.jsx("span", { style: { position: "inherit", top: "-2px" }, children: d }));
-}, gn = ({ actions: t }) => t.filter((s) => !s.hidden).map((s) => H(s)), Bt = Qe, Et = (t) => Bt[t], fn = ({ iconName: t }) => {
+  } : void 0, ...l, key: t.key }, m && /* @__PURE__ */ e.jsx("span", { style: { position: "inherit", top: "-2px" }, children: m }));
+}, wn = ({ actions: t }) => t.filter((s) => !s.hidden).map((s) => U(s)), Ht = at, Ut = (t) => Ht[t], Sn = ({ iconName: t }) => {
   if (!t)
     return null;
-  const s = Et(t);
-  return s ? /* @__PURE__ */ e.jsx(yt, { fallback: null, children: /* @__PURE__ */ e.jsx(s, {}) }) : null;
-}, xn = ({ onChange: t }) => {
-  const [s, n] = x(""), [a, i] = x("");
-  return /* @__PURE__ */ e.jsxs(M.Compact, { children: [
-    /* @__PURE__ */ e.jsx(z, { style: { width: "calc(100% - 80px)" }, value: s, onChange: (r) => n(r.target.value) }),
-    /* @__PURE__ */ e.jsx(z, { style: { width: "40px" }, readOnly: !0, value: "=", tabIndex: -1 }),
-    /* @__PURE__ */ e.jsx(z, { style: { width: "calc(100% - 80px)" }, value: a, onChange: (r) => i(r.target.value) }),
-    /* @__PURE__ */ e.jsx(I, { type: "primary", icon: /* @__PURE__ */ e.jsx(ge, {}), onClick: () => {
+  const s = Ut(t);
+  return s ? /* @__PURE__ */ e.jsx(Ct, { fallback: null, children: /* @__PURE__ */ e.jsx(s, {}) }) : null;
+}, Cn = ({ onChange: t }) => {
+  const [s, n] = v(""), [a, i] = v("");
+  return /* @__PURE__ */ e.jsxs(D.Compact, { children: [
+    /* @__PURE__ */ e.jsx(_, { style: { width: "calc(100% - 80px)" }, value: s, onChange: (r) => n(r.target.value) }),
+    /* @__PURE__ */ e.jsx(_, { style: { width: "40px" }, readOnly: !0, value: "=", tabIndex: -1 }),
+    /* @__PURE__ */ e.jsx(_, { style: { width: "calc(100% - 80px)" }, value: a, onChange: (r) => i(r.target.value) }),
+    /* @__PURE__ */ e.jsx(k, { type: "primary", icon: /* @__PURE__ */ e.jsx(ye, {}), onClick: () => {
       t(s, a);
     } })
   ] });
-}, Vt = ({ request: t, tableRef: s, ...n }, a) => {
-  const [i, r] = x({
+}, Kt = ({ request: t, tableRef: s, ...n }, a) => {
+  const [i, r] = v({
     current: 1,
     pageSize: 10
-  }), [m, o] = x(0), { data: d, loading: u, refresh: v } = D(async () => {
-    const h = await t({
+  }), [p, o] = v(0), { data: m, loading: l, refresh: f } = R(async () => {
+    const u = await t({
       current: i.current,
       page_size: i.pageSize
     });
-    return o(h.total), h.data;
+    return o(u.total), u.data;
   }, {
     refreshDeps: [i]
   });
-  return vt(a, () => ({
+  return kt(a, () => ({
     reload: () => {
-      v();
+      f();
     }
   })), /* @__PURE__ */ e.jsx(
-    ae,
+    re,
     {
       rowKey: "id",
-      loading: u,
-      dataSource: d ?? [],
+      loading: l,
+      dataSource: m ?? [],
       pagination: {
         ...i,
-        total: m,
-        onChange: (h, g) => {
-          r({ current: h, pageSize: g });
+        total: p,
+        onChange: (u, h) => {
+          r({ current: u, pageSize: h });
         }
       },
       ...n,
       ref: s
     }
   );
-}, yn = ({ actionRef: t, ...s }) => {
-  const [n, a] = x();
-  return O(() => {
-    a(jt(Vt));
+}, In = ({ actionRef: t, ...s }) => {
+  const [n, a] = v();
+  return q(() => {
+    a(It(Kt));
   }, []), n ? /* @__PURE__ */ e.jsx(n, { ...s, ref: t }) : null;
-}, jn = ({ onSuccess: t, token: s }) => {
-  const { t: n } = F("authorization"), { t: a } = F("common"), [i] = j.useForm(), { run: r, loading: m } = D(async (o) => C.authorization.changePassword(o, s ? { headers: { Authorization: `Bearer ${s}` } } : {}), {
+}, kn = ({ onSuccess: t, token: s }) => {
+  const { t: n } = F("authorization"), { t: a } = F("common"), [i] = j.useForm(), { run: r, loading: p } = R(async (o) => I.authorization.changePassword(o, s ? { headers: { Authorization: `Bearer ${s}` } } : {}), {
     manual: !0,
     onSuccess: () => {
-      S.success(n("user.passwordChanged")), i.resetFields(), t == null || t();
+      C.success(n("user.passwordChanged")), i.resetFields(), t == null || t();
     },
     onError: (o) => {
-      if (o instanceof St) {
-        const d = o.code ?? "normal";
-        S.error(n(`user.passwordChangeFailed.${d}`, { error: o.message, defaultValue: "Password change failed: {{error}}" }));
+      if (o instanceof At) {
+        const m = o.code ?? "normal";
+        C.error(n(`user.passwordChangeFailed.${m}`, { error: o.message, defaultValue: "Password change failed: {{error}}" }));
       } else
-        S.error(n("user.passwordChangeFailed.normal", { error: o.message, defaultValue: "Password change failed: {{error}}" }));
+        C.error(n("user.passwordChangeFailed.normal", { error: o.message, defaultValue: "Password change failed: {{error}}" }));
       console.error("Failed to change password:", o);
     }
   });
@@ -443,7 +443,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
             name: "old_password",
             label: n("user.oldPassword"),
             rules: [{ required: !0, message: n("validation.oldPasswordRequired") }],
-            children: /* @__PURE__ */ e.jsx(z.Password, {})
+            children: /* @__PURE__ */ e.jsx(_.Password, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -455,7 +455,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
               { required: !0, message: n("validation.newPasswordRequired") },
               { min: 8, message: n("validation.passwordMinLength") }
             ],
-            children: /* @__PURE__ */ e.jsx(z.Password, {})
+            children: /* @__PURE__ */ e.jsx(_.Password, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -466,21 +466,21 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
             rules: [
               { required: !0, message: n("validation.confirmPasswordRequired") },
               ({ getFieldValue: o }) => ({
-                validator(d, u) {
-                  return !u || o("new_password") === u ? Promise.resolve() : Promise.reject(new Error(n("validation.passwordMismatch")));
+                validator(m, l) {
+                  return !l || o("new_password") === l ? Promise.resolve() : Promise.reject(new Error(n("validation.passwordMismatch")));
                 }
               })
             ],
-            children: /* @__PURE__ */ e.jsx(z.Password, {})
+            children: /* @__PURE__ */ e.jsx(_.Password, {})
           }
         ),
-        /* @__PURE__ */ e.jsx(j.Item, { children: /* @__PURE__ */ e.jsx(I, { type: "primary", htmlType: "submit", loading: m, children: a("save") }) })
+        /* @__PURE__ */ e.jsx(j.Item, { children: /* @__PURE__ */ e.jsx(k, { type: "primary", htmlType: "submit", loading: p, children: a("save") }) })
       ]
     }
   );
-}, vn = ({ user: t, onSuccess: s }) => {
-  const { t: n } = F("authorization"), { t: a } = F("common"), [i] = j.useForm(), [r, m] = x(!1);
-  gt.useEffect(() => {
+}, Fn = ({ user: t, onSuccess: s }) => {
+  const { t: n } = F("authorization"), { t: a } = F("common"), [i] = j.useForm(), [r, p] = v(!1);
+  bt.useEffect(() => {
     t && i.setFieldsValue({
       username: t.username,
       email: t.email,
@@ -489,13 +489,13 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       avatar: t.avatar
     });
   }, [t, i]);
-  const o = async (d) => {
+  const o = async (m) => {
     try {
-      m(!0), await C.authorization.updateCurrentUser(d), S.success(a("updateSuccess")), s();
-    } catch (u) {
-      S.error(a("updateFailed")), console.error("Failed to update user information:", u);
+      p(!0), await I.authorization.updateCurrentUser(m), C.success(a("updateSuccess")), s();
+    } catch (l) {
+      C.error(a("updateFailed")), console.error("Failed to update user information:", l);
     } finally {
-      m(!1);
+      p(!1);
     }
   };
   return /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", flexDirection: "column", alignItems: "center" }, children: [
@@ -504,7 +504,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       (t == null ? void 0 : t.roles) && t.roles.length > 0 && /* @__PURE__ */ e.jsxs("div", { children: [
         n("user.roles"),
         ": ",
-        t.roles.map((d) => d.name).join(", ")
+        t.roles.map((m) => m.name).join(", ")
       ] })
     ] }),
     /* @__PURE__ */ e.jsxs(
@@ -520,7 +520,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
             {
               style: { marginBottom: 24, textAlign: "center", justifyItems: "center" },
               name: "avatar",
-              children: /* @__PURE__ */ e.jsx(Dt, {})
+              children: /* @__PURE__ */ e.jsx(Nt, {})
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -528,7 +528,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
             {
               name: "username",
               label: n("user.username"),
-              children: /* @__PURE__ */ e.jsx(z, { disabled: !0 })
+              children: /* @__PURE__ */ e.jsx(_, { disabled: !0 })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -540,7 +540,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
                 { required: !0, message: n("validation.emailRequired") },
                 { type: "email", message: n("validation.emailInvalid") }
               ],
-              children: /* @__PURE__ */ e.jsx(z, {})
+              children: /* @__PURE__ */ e.jsx(_, {})
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -549,7 +549,7 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
               name: "full_name",
               label: n("user.fullName"),
               rules: [{ required: !0, message: n("validation.fullNameRequired") }],
-              children: /* @__PURE__ */ e.jsx(z, {})
+              children: /* @__PURE__ */ e.jsx(_, {})
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -557,17 +557,17 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
             {
               name: "phone",
               label: n("user.phone"),
-              children: /* @__PURE__ */ e.jsx(z, {})
+              children: /* @__PURE__ */ e.jsx(_, {})
             }
           ),
-          /* @__PURE__ */ e.jsx(j.Item, { children: /* @__PURE__ */ e.jsx(I, { type: "primary", htmlType: "submit", loading: r, children: a("save") }) })
+          /* @__PURE__ */ e.jsx(j.Item, { children: /* @__PURE__ */ e.jsx(k, { type: "primary", htmlType: "submit", loading: r, children: a("save") }) })
         ]
       }
     )
   ] });
-}, bn = ({ user: t, onSuccess: s }) => {
-  const { t: n } = F("authorization"), { t: a } = F("common"), [i, r] = x(0), [m, o] = x(!1), [d, u] = x(!0), [v, h] = x(""), [g, k] = x("totp"), { run: c, data: b = { secret: "", qr_code: "", token: void 0 } } = D(
-    () => C.authorization.enableMfa(g),
+}, _n = ({ user: t, onSuccess: s }) => {
+  const { t: n } = F("authorization"), { t: a } = F("common"), [i, r] = v(0), [p, o] = v(!1), [m, l] = v(!0), [f, u] = v(""), [h, g] = v("totp"), { run: d, data: w = { secret: "", qr_code: "", token: void 0 } } = R(
+    () => I.authorization.enableMfa(h),
     {
       manual: !0,
       onSuccess: () => {
@@ -580,49 +580,49 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
         o(!1);
       }
     }
-  ), E = async () => {
-    if (!v) {
-      S.warning(n("mfa.enterVerificationCode"));
+  ), V = async () => {
+    if (!f) {
+      C.warning(n("mfa.enterVerificationCode"));
       return;
     }
-    const A = {
-      code: v,
-      mfa_type: g
+    const L = {
+      code: f,
+      mfa_type: h
     };
-    "token" in b && (A.token = b.token);
+    "token" in w && (L.token = w.token);
     try {
-      o(!0), await C.authorization.verifyAndActivateMfa(A), S.success(n("mfa.enableSuccess")), r(2), s();
-    } catch (_) {
-      S.error(n("mfa.verificationFailed")), console.error("Failed to verify MFA:", _);
+      o(!0), await I.authorization.verifyAndActivateMfa(L), C.success(n("mfa.enableSuccess")), r(2), s();
+    } catch (P) {
+      C.error(n("mfa.verificationFailed")), console.error("Failed to verify MFA:", P);
     } finally {
       o(!1);
     }
-  }, f = async () => {
+  }, y = async () => {
     try {
-      o(!0), await C.authorization.disableMfa(), S.success(n("mfa.disableSuccess")), s();
-    } catch (A) {
-      S.error(a("operationFailed")), console.error("Failed to disable MFA:", A);
+      o(!0), await I.authorization.disableMfa(), C.success(n("mfa.disableSuccess")), s();
+    } catch (L) {
+      C.error(a("operationFailed")), console.error("Failed to disable MFA:", L);
     } finally {
       o(!1);
     }
-  }, L = () => {
+  }, A = () => {
     if (!t) return null;
     if (t.mfa_enabled)
       return /* @__PURE__ */ e.jsx(
-        le,
+        ce,
         {
           status: "success",
           title: n("mfa.enabled"),
           subTitle: n("mfa.enabledDescription"),
           extra: /* @__PURE__ */ e.jsx(
-            I,
+            k,
             {
               danger: !0,
               onClick: () => {
-                G.confirm({
+                J.confirm({
                   title: n("mfa.confirmDisable"),
                   content: n("mfa.disableWarning"),
-                  onOk: f,
+                  onOk: y,
                   okButtonProps: { danger: !0 }
                 });
               },
@@ -631,17 +631,17 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
           )
         }
       );
-    const A = () => {
-      var _;
+    const L = () => {
+      var P;
       switch (i) {
         case 0:
           return /* @__PURE__ */ e.jsxs("div", { style: { textAlign: "center", marginTop: 20 }, children: [
             /* @__PURE__ */ e.jsx(
-              ce,
+              de,
               {
                 message: /* @__PURE__ */ e.jsxs("div", { children: [
                   /* @__PURE__ */ e.jsx("p", { children: n("mfa.setupInfo") }),
-                  /* @__PURE__ */ e.jsx("p", { children: n(g === "totp" ? "mfa.totpDescription" : "mfa.emailDescription") })
+                  /* @__PURE__ */ e.jsx("p", { children: n(h === "totp" ? "mfa.totpDescription" : "mfa.emailDescription") })
                 ] }),
                 type: "info",
                 showIcon: !0,
@@ -649,11 +649,11 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
               }
             ),
             /* @__PURE__ */ e.jsx(
-              I,
+              k,
               {
                 type: "primary",
-                onClick: c,
-                loading: m,
+                onClick: d,
+                loading: p,
                 children: n("mfa.startSetup")
               }
             )
@@ -661,51 +661,51 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
         case 1:
           return /* @__PURE__ */ e.jsxs("div", { style: { textAlign: "center", marginTop: 20 }, children: [
             /* @__PURE__ */ e.jsx(
-              ce,
+              de,
               {
                 message: n("mfa.scanQrCode"),
                 type: "info",
                 showIcon: !0,
-                style: { marginBottom: 20, display: g === "totp" ? "block" : "none" }
+                style: { marginBottom: 20, display: h === "totp" ? "block" : "none" }
               }
             ),
-            /* @__PURE__ */ e.jsx("div", { style: { display: g === "totp" ? "flex" : "none", justifyContent: "center", marginBottom: 24 }, children: /* @__PURE__ */ e.jsx(Ge, { value: b.qr_code ?? "", size: 200 }) }),
-            /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16, display: g === "email" ? "block" : "none" }, children: /* @__PURE__ */ e.jsxs("p", { children: [
+            /* @__PURE__ */ e.jsx("div", { style: { display: h === "totp" ? "flex" : "none", justifyContent: "center", marginBottom: 24 }, children: /* @__PURE__ */ e.jsx(Ye, { value: w.qr_code ?? "", size: 200 }) }),
+            /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16, display: h === "email" ? "block" : "none" }, children: /* @__PURE__ */ e.jsxs("p", { children: [
               n("user.email"),
               ": ",
               /* @__PURE__ */ e.jsx("strong", { children: t == null ? void 0 : t.email })
             ] }) }),
-            /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16, display: g === "totp" ? "block" : "none" }, children: /* @__PURE__ */ e.jsxs("p", { children: [
+            /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16, display: h === "totp" ? "block" : "none" }, children: /* @__PURE__ */ e.jsxs("p", { children: [
               n("mfa.secretKey"),
               ": ",
-              /* @__PURE__ */ e.jsx("strong", { children: d ? "*".repeat(((_ = b.secret) == null ? void 0 : _.length) ?? 0) : b.secret }),
+              /* @__PURE__ */ e.jsx("strong", { children: m ? "*".repeat(((P = w.secret) == null ? void 0 : P.length) ?? 0) : w.secret }),
               /* @__PURE__ */ e.jsx(
-                I,
+                k,
                 {
                   type: "link",
-                  onClick: () => u(!d),
-                  icon: d ? /* @__PURE__ */ e.jsx(fe, {}) : /* @__PURE__ */ e.jsx(rt, {})
+                  onClick: () => l(!m),
+                  icon: m ? /* @__PURE__ */ e.jsx(je, {}) : /* @__PURE__ */ e.jsx(ut, {})
                 }
               )
             ] }) }),
             /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 24 }, children: /* @__PURE__ */ e.jsx(
-              z,
+              _,
               {
                 placeholder: n("mfa.enterCode"),
                 style: { width: 200 },
                 maxLength: 6,
-                value: v,
-                onChange: (T) => h(T.target.value)
+                value: f,
+                onChange: (T) => u(T.target.value)
               }
             ) }),
-            /* @__PURE__ */ e.jsxs(M, { children: [
-              /* @__PURE__ */ e.jsx(I, { onClick: () => r(0), children: a("previous") }),
+            /* @__PURE__ */ e.jsxs(D, { children: [
+              /* @__PURE__ */ e.jsx(k, { onClick: () => r(0), children: a("previous") }),
               /* @__PURE__ */ e.jsx(
-                I,
+                k,
                 {
                   type: "primary",
-                  onClick: E,
-                  loading: m,
+                  onClick: V,
+                  loading: p,
                   children: a("verify")
                 }
               )
@@ -713,12 +713,12 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
           ] });
         case 2:
           return /* @__PURE__ */ e.jsx(
-            le,
+            ce,
             {
               status: "success",
               title: n("mfa.setupSuccess"),
               subTitle: n("mfa.setupSuccessDescription"),
-              extra: /* @__PURE__ */ e.jsx(I, { type: "primary", onClick: () => r(0), children: a("done") })
+              extra: /* @__PURE__ */ e.jsx(k, { type: "primary", onClick: () => r(0), children: a("done") })
             }
           );
         default:
@@ -728,81 +728,81 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
     return /* @__PURE__ */ e.jsxs("div", { children: [
       /* @__PURE__ */ e.jsxs("div", { style: { display: i === 2 ? "none" : "unset" }, children: [
         /* @__PURE__ */ e.jsx(
-          Ue,
+          We,
           {
             defaultValue: "totp",
-            onChange: (_) => {
-              k(_), r(0);
+            onChange: (P) => {
+              g(P), r(0);
             },
-            value: g,
+            value: h,
             options: [
-              { value: "totp", icon: /* @__PURE__ */ e.jsx(st, {}), label: n("mfa.totp", { defaultValue: "TOTP" }) },
-              { value: "email", icon: /* @__PURE__ */ e.jsx(at, {}), label: n("mfa.email", { defaultValue: "E-Mail" }) }
+              { value: "totp", icon: /* @__PURE__ */ e.jsx(ct, {}), label: n("mfa.totp", { defaultValue: "TOTP" }) },
+              { value: "email", icon: /* @__PURE__ */ e.jsx(dt, {}), label: n("mfa.email", { defaultValue: "E-Mail" }) }
             ]
           }
         ),
-        /* @__PURE__ */ e.jsx(he, {})
+        /* @__PURE__ */ e.jsx(xe, {})
       ] }),
       /* @__PURE__ */ e.jsx(
-        Ke,
+        Xe,
         {
           current: i,
           items: [
-            { title: n(g === "totp" ? "mfa.totpStep1" : "mfa.emailStep1"), description: n(g === "totp" ? "mfa.totpStep1Description" : "mfa.emailStep1Description") },
-            { title: n(g === "totp" ? "mfa.totpStep2" : "mfa.emailStep2"), description: n(g === "totp" ? "mfa.totpStep2Description" : "mfa.emailStep2Description") },
-            { title: n(g === "totp" ? "mfa.totpStep3" : "mfa.emailStep3"), description: n(g === "totp" ? "mfa.totpStep3Description" : "mfa.emailStep3Description") }
+            { title: n(h === "totp" ? "mfa.totpStep1" : "mfa.emailStep1"), description: n(h === "totp" ? "mfa.totpStep1Description" : "mfa.emailStep1Description") },
+            { title: n(h === "totp" ? "mfa.totpStep2" : "mfa.emailStep2"), description: n(h === "totp" ? "mfa.totpStep2Description" : "mfa.emailStep2Description") },
+            { title: n(h === "totp" ? "mfa.totpStep3" : "mfa.emailStep3"), description: n(h === "totp" ? "mfa.totpStep3Description" : "mfa.emailStep3Description") }
           ],
           style: { marginBottom: 30 }
         }
       ),
-      A()
+      L()
     ] });
   };
-  return /* @__PURE__ */ e.jsx(U, { title: n("mfa.title"), children: L() });
-}, { Text: Z } = We, wn = () => {
-  const { t } = F("authorization"), { t: s } = F("common"), [n, a] = x([]), [i, r] = x(!1), [m, o] = x(null), [d, u] = x(!1), v = async () => {
+  return /* @__PURE__ */ e.jsx(K, { title: n("mfa.title"), children: A() });
+}, { Text: ee } = Qe, Ln = () => {
+  const { t } = F("authorization"), { t: s } = F("common"), [n, a] = v([]), [i, r] = v(!1), [p, o] = v(null), [m, l] = v(!1), f = async () => {
     try {
       r(!0);
-      const c = await C.authorization.getUserSessions({});
-      a(c);
-    } catch (c) {
-      S.error(t("session.getSessionsFailed", { error: c, defaultValue: "Failed to get session list: {{error}}" }));
+      const d = await I.authorization.getUserSessions({});
+      a(d);
+    } catch (d) {
+      C.error(t("session.getSessionsFailed", { error: d, defaultValue: "Failed to get session list: {{error}}" }));
     } finally {
       r(!1);
     }
   };
-  O(() => {
-    v();
+  q(() => {
+    f();
   }, []);
-  const h = async (c) => {
+  const u = async (d) => {
     try {
-      o(c), await C.authorization.terminateSession({ id: c }), a(n.filter((b) => b.id !== c)), S.success(t("session.terminateSuccess", { defaultValue: "Session terminated successfully" }));
-    } catch (b) {
-      S.error(t("session.terminateFailed", { error: b, defaultValue: "Failed to terminate session: {{error}}" }));
+      o(d), await I.authorization.terminateSession({ id: d }), a(n.filter((w) => w.id !== d)), C.success(t("session.terminateSuccess", { defaultValue: "Session terminated successfully" }));
+    } catch (w) {
+      C.error(t("session.terminateFailed", { error: w, defaultValue: "Failed to terminate session: {{error}}" }));
     } finally {
       o(null);
     }
-  }, g = async () => {
+  }, h = async () => {
     try {
-      u(!0), await C.authorization.terminateOtherSessions(), a(n.filter((c) => c.is_current)), S.success(t("session.terminateAllSuccess", { defaultValue: "All other sessions terminated successfully" }));
-    } catch (c) {
-      S.error(t("session.terminateAllFailed", { error: c, defaultValue: "Failed to terminate all other sessions: {{error}}" }));
+      l(!0), await I.authorization.terminateOtherSessions(), a(n.filter((d) => d.is_current)), C.success(t("session.terminateAllSuccess", { defaultValue: "All other sessions terminated successfully" }));
+    } catch (d) {
+      C.error(t("session.terminateAllFailed", { error: d, defaultValue: "Failed to terminate all other sessions: {{error}}" }));
     } finally {
-      u(!1);
+      l(!1);
     }
-  }, k = [
+  }, g = [
     {
       title: t("session.device"),
       dataIndex: "user_agent",
       key: "device",
-      render: (c, b) => /* @__PURE__ */ e.jsxs(M, { direction: "vertical", size: 0, children: [
-        /* @__PURE__ */ e.jsxs(M, { children: [
-          /* @__PURE__ */ e.jsx(it, {}),
-          /* @__PURE__ */ e.jsx(Z, { strong: !0, children: c })
+      render: (d, w) => /* @__PURE__ */ e.jsxs(D, { direction: "vertical", size: 0, children: [
+        /* @__PURE__ */ e.jsxs(D, { children: [
+          /* @__PURE__ */ e.jsx(mt, {}),
+          /* @__PURE__ */ e.jsx(ee, { strong: !0, children: d })
         ] }),
-        /* @__PURE__ */ e.jsxs(M, { children: [
-          /* @__PURE__ */ e.jsx(ot, {}),
-          /* @__PURE__ */ e.jsx(Z, { type: "secondary", children: b.location })
+        /* @__PURE__ */ e.jsxs(D, { children: [
+          /* @__PURE__ */ e.jsx(ht, {}),
+          /* @__PURE__ */ e.jsx(ee, { type: "secondary", children: w.location })
         ] })
       ] })
     },
@@ -810,41 +810,41 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       title: t("session.ipAddress"),
       dataIndex: "ip_address",
       key: "ip_address",
-      render: (c) => /* @__PURE__ */ e.jsxs(M, { children: [
-        /* @__PURE__ */ e.jsx(lt, {}),
-        /* @__PURE__ */ e.jsx("span", { children: c })
+      render: (d) => /* @__PURE__ */ e.jsxs(D, { children: [
+        /* @__PURE__ */ e.jsx(pt, {}),
+        /* @__PURE__ */ e.jsx("span", { children: d })
       ] })
     },
     {
       title: t("session.lastActive"),
       dataIndex: "last_active_at",
       key: "last_active",
-      render: (c) => /* @__PURE__ */ e.jsxs(M, { children: [
-        /* @__PURE__ */ e.jsx(ct, {}),
-        /* @__PURE__ */ e.jsx("span", { children: new Date(c).toLocaleString() })
+      render: (d) => /* @__PURE__ */ e.jsxs(D, { children: [
+        /* @__PURE__ */ e.jsx(gt, {}),
+        /* @__PURE__ */ e.jsx("span", { children: new Date(d).toLocaleString() })
       ] })
     },
     {
       title: t("session.status"),
       key: "status",
-      render: (c) => c.is_current ? /* @__PURE__ */ e.jsx(K, { color: "green", children: t("session.current") }) : /* @__PURE__ */ e.jsx(K, { color: "blue", children: t("session.active") })
+      render: (d) => d.is_current ? /* @__PURE__ */ e.jsx(G, { color: "green", children: t("session.current") }) : /* @__PURE__ */ e.jsx(G, { color: "blue", children: t("session.active") })
     },
     {
       title: s("actions"),
       key: "action",
-      render: (c) => c.is_current ? /* @__PURE__ */ e.jsx(Z, { type: "secondary", children: t("session.currentSession") }) : /* @__PURE__ */ e.jsx(
-        te,
+      render: (d) => d.is_current ? /* @__PURE__ */ e.jsx(ee, { type: "secondary", children: t("session.currentSession") }) : /* @__PURE__ */ e.jsx(
+        se,
         {
           title: t("session.confirmTerminate"),
-          onConfirm: () => h(c.id),
+          onConfirm: () => u(d.id),
           okText: s("confirm"),
           cancelText: s("cancel"),
           children: /* @__PURE__ */ e.jsx(
-            I,
+            k,
             {
               type: "link",
               danger: !0,
-              loading: m === c.id,
+              loading: p === d.id,
               children: t("session.terminate")
             }
           )
@@ -853,30 +853,30 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
     }
   ];
   return /* @__PURE__ */ e.jsx(
-    U,
+    K,
     {
       title: t("session.title"),
       extra: n.length > 1 && /* @__PURE__ */ e.jsx(
-        te,
+        se,
         {
           title: t("session.confirmTerminateAll"),
-          onConfirm: g,
+          onConfirm: h,
           okText: s("confirm"),
           cancelText: s("cancel"),
           children: /* @__PURE__ */ e.jsx(
-            I,
+            k,
             {
               danger: !0,
-              loading: d,
+              loading: m,
               children: t("session.terminateOthers")
             }
           )
         }
       ),
-      children: n.length === 0 ? /* @__PURE__ */ e.jsx(Xe, { description: t("session.noSessions") }) : /* @__PURE__ */ e.jsx(
-        ae,
+      children: n.length === 0 ? /* @__PURE__ */ e.jsx(Ze, { description: t("session.noSessions") }) : /* @__PURE__ */ e.jsx(
+        re,
         {
-          columns: k,
+          columns: g,
           dataSource: n,
           rowKey: "id",
           loading: i,
@@ -885,60 +885,60 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       )
     }
   );
-}, { RangePicker: Nt } = Ye, { Option: B } = ne, $t = (t) => t || "N/A", Ot = (t, s) => t === "success" ? /* @__PURE__ */ e.jsx(K, { color: "success", children: s("statuses.success") }) : /* @__PURE__ */ e.jsx(K, { color: "error", children: s("statuses.failed") }), Sn = ({
+}, { RangePicker: Gt } = et, { Option: O } = $, Jt = (t) => t || "N/A", Wt = (t, s) => t === "success" ? /* @__PURE__ */ e.jsx(G, { color: "success", children: s("statuses.success") }) : /* @__PURE__ */ e.jsx(G, { color: "error", children: s("statuses.failed") }), An = ({
   userId: t,
-  request: s = (a) => t ? C.authorization.getUserLogs({ id: t, ...a }) : C.authorization.getCurrentUserLogs(a),
+  request: s = (a) => t ? I.authorization.getUserLogs({ id: t, ...a }) : I.authorization.getCurrentUserLogs(a),
   columnsFilter: n = (a) => a
 }) => {
-  const { t: a } = F("authorization"), { t: i } = F("common"), [r, m] = x({
+  const { t: a } = F("authorization"), { t: i } = F("common"), [r, p] = v({
     current: 1,
     pageSize: 10,
     total: 0
-  }), [o, d] = x({}), [u] = j.useForm(), { loading: v, run: h, data: { data: g } = {} } = D(async (f = o, L = 1, A = 10) => s({
-    ...f,
-    current: L ?? 1,
-    page_size: A ?? 10
+  }), [o, m] = v({}), [l] = j.useForm(), { loading: f, run: u, data: { data: h } = {} } = R(async (y = o, A = 1, L = 10) => s({
+    ...y,
+    current: A ?? 1,
+    page_size: L ?? 10
   }), {
-    onError(f) {
-      S.error(a("auditLog.fetchFailed", { error: f }));
+    onError(y) {
+      C.error(a("auditLog.fetchFailed", { error: y }));
     },
-    onSuccess({ total: f }) {
-      m({
+    onSuccess({ total: y }) {
+      p({
         ...r,
-        total: f
+        total: y
       });
     }
   });
-  O(() => {
-    h(o, 1, r.pageSize);
+  q(() => {
+    u(o, 1, r.pageSize);
   }, []);
-  const k = (f) => {
-    m({
+  const g = (y) => {
+    p({
       ...r,
-      current: f.current,
-      pageSize: f.pageSize
-    }), h({}, f.current, f.pageSize);
-  }, c = (f) => {
-    var L, A, _, T;
-    h({
-      ...f,
-      start_time: (A = (L = f.dateRange) == null ? void 0 : L[0]) == null ? void 0 : A.toISOString(),
-      end_time: (T = (_ = f.dateRange) == null ? void 0 : _[1]) == null ? void 0 : T.toISOString()
+      current: y.current,
+      pageSize: y.pageSize
+    }), u({}, y.current, y.pageSize);
+  }, d = (y) => {
+    var A, L, P, T;
+    u({
+      ...y,
+      start_time: (L = (A = y.dateRange) == null ? void 0 : A[0]) == null ? void 0 : L.toISOString(),
+      end_time: (T = (P = y.dateRange) == null ? void 0 : P[1]) == null ? void 0 : T.toISOString()
     }, 1, r.pageSize);
-  }, b = () => {
-    u.resetFields(), d({}), m({ ...r, current: 1 }), h({}, 1, r.pageSize);
-  }, E = [
+  }, w = () => {
+    l.resetFields(), m({}), p({ ...r, current: 1 }), u({}, 1, r.pageSize);
+  }, V = [
     {
       title: a("auditLog.timestamp"),
       dataIndex: "timestamp",
       key: "timestamp",
-      render: (f) => Be(f)
+      render: (y) => Ne(y)
     },
     {
       title: a("auditLog.action"),
       dataIndex: "action",
       key: "action",
-      render: (f, L) => f ? a(`action.${f.replace(":", ".")}`, { defaultValue: L.action_name }) : L.action_name ?? L.action
+      render: (y, A) => y ? a(`action.${y.replace(":", ".")}`, { defaultValue: A.action_name }) : A.action_name ?? A.action
     },
     {
       title: a("auditLog.user_agent"),
@@ -949,86 +949,285 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       title: a("auditLog.ip"),
       dataIndex: "ip",
       key: "ip",
-      render: (f) => $t(f)
+      render: (y) => Jt(y)
     },
     {
       title: a("auditLog.status"),
       dataIndex: "status",
       key: "status",
-      render: (f) => Ot(f, a)
+      render: (y) => Wt(y, a)
     },
     {
       title: a("auditLog.details"),
       dataIndex: "details",
       key: "details",
-      render: (f) => /* @__PURE__ */ e.jsx(I, { type: "link", icon: /* @__PURE__ */ e.jsx(fe, {}), onClick: () => {
-        G.info({
+      render: (y) => /* @__PURE__ */ e.jsx(k, { type: "link", icon: /* @__PURE__ */ e.jsx(je, {}), onClick: () => {
+        J.info({
           title: a("auditLog.details"),
-          content: JSON.stringify(f)
+          content: JSON.stringify(y)
         });
       } })
     }
   ];
   return /* @__PURE__ */ e.jsxs("div", { children: [
-    /* @__PURE__ */ e.jsx(U, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(
+    /* @__PURE__ */ e.jsx(K, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(
       j,
       {
-        form: u,
+        form: l,
         layout: "horizontal",
-        onFinish: c,
+        onFinish: d,
         initialValues: o,
         children: [
-          /* @__PURE__ */ e.jsxs(de, { gutter: 24, children: [
-            /* @__PURE__ */ e.jsx($, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "search", label: a("auditLog.search"), children: /* @__PURE__ */ e.jsx(z, { placeholder: a("auditLog.searchPlaceholder") }) }) }),
-            /* @__PURE__ */ e.jsx($, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "action", label: a("auditLog.action"), children: /* @__PURE__ */ e.jsxs(ne, { allowClear: !0, placeholder: a("auditLog.selectAction"), children: [
-              /* @__PURE__ */ e.jsx(B, { value: "login", children: a("actions.login") }),
-              /* @__PURE__ */ e.jsx(B, { value: "logout", children: a("actions.logout") }),
-              /* @__PURE__ */ e.jsx(B, { value: "password_reset", children: a("actions.passwordReset") }),
-              /* @__PURE__ */ e.jsx(B, { value: "mfa_change", children: a("actions.mfaChange") })
+          /* @__PURE__ */ e.jsxs(ue, { gutter: 24, children: [
+            /* @__PURE__ */ e.jsx(E, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "search", label: a("auditLog.search"), children: /* @__PURE__ */ e.jsx(_, { placeholder: a("auditLog.searchPlaceholder") }) }) }),
+            /* @__PURE__ */ e.jsx(E, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "action", label: a("auditLog.action"), children: /* @__PURE__ */ e.jsxs($, { allowClear: !0, placeholder: a("auditLog.selectAction"), children: [
+              /* @__PURE__ */ e.jsx(O, { value: "login", children: a("actions.login") }),
+              /* @__PURE__ */ e.jsx(O, { value: "logout", children: a("actions.logout") }),
+              /* @__PURE__ */ e.jsx(O, { value: "password_reset", children: a("actions.passwordReset") }),
+              /* @__PURE__ */ e.jsx(O, { value: "mfa_change", children: a("actions.mfaChange") })
             ] }) }) }),
-            /* @__PURE__ */ e.jsx($, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "status", label: a("auditLog.status"), children: /* @__PURE__ */ e.jsxs(ne, { allowClear: !0, placeholder: a("auditLog.selectStatus"), children: [
-              /* @__PURE__ */ e.jsx(B, { value: "success", children: a("statuses.success") }),
-              /* @__PURE__ */ e.jsx(B, { value: "failed", children: a("statuses.failed") })
+            /* @__PURE__ */ e.jsx(E, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "status", label: a("auditLog.status"), children: /* @__PURE__ */ e.jsxs($, { allowClear: !0, placeholder: a("auditLog.selectStatus"), children: [
+              /* @__PURE__ */ e.jsx(O, { value: "success", children: a("statuses.success") }),
+              /* @__PURE__ */ e.jsx(O, { value: "failed", children: a("statuses.failed") })
             ] }) }) }),
-            /* @__PURE__ */ e.jsx($, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "dateRange", label: a("auditLog.dateRange"), children: /* @__PURE__ */ e.jsx(Nt, { style: { width: "100%" } }) }) })
+            /* @__PURE__ */ e.jsx(E, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "dateRange", label: a("auditLog.dateRange"), children: /* @__PURE__ */ e.jsx(Gt, { style: { width: "100%" } }) }) })
           ] }),
-          /* @__PURE__ */ e.jsx(de, { children: /* @__PURE__ */ e.jsx($, { span: 24, style: { textAlign: "right" }, children: /* @__PURE__ */ e.jsxs(M, { children: [
-            /* @__PURE__ */ e.jsx(I, { onClick: b, children: i("reset") }),
-            /* @__PURE__ */ e.jsx(I, { type: "primary", htmlType: "submit", icon: /* @__PURE__ */ e.jsx(dt, {}), children: i("search") })
+          /* @__PURE__ */ e.jsx(ue, { children: /* @__PURE__ */ e.jsx(E, { span: 24, style: { textAlign: "right" }, children: /* @__PURE__ */ e.jsxs(D, { children: [
+            /* @__PURE__ */ e.jsx(k, { onClick: w, children: i("reset") }),
+            /* @__PURE__ */ e.jsx(k, { type: "primary", htmlType: "submit", icon: /* @__PURE__ */ e.jsx(xt, {}), children: i("search") })
           ] }) }) })
         ]
       }
     ) }),
-    /* @__PURE__ */ e.jsxs(U, { children: [
+    /* @__PURE__ */ e.jsxs(K, { children: [
       /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsx(
-        I,
+        k,
         {
           type: "primary",
-          icon: /* @__PURE__ */ e.jsx(ut, {}),
-          onClick: b,
+          icon: /* @__PURE__ */ e.jsx(ft, {}),
+          onClick: w,
           style: { marginRight: 8 },
           children: i("refresh")
         }
       ) }),
       /* @__PURE__ */ e.jsx(
-        ae,
+        re,
         {
           rowKey: "id",
-          columns: n(E),
-          dataSource: g,
+          columns: n(V),
+          dataSource: h,
           pagination: {
             ...r,
             showSizeChanger: !0,
-            showTotal: (f) => i("totalItems", { total: f })
+            showTotal: (y) => i("totalItems", { total: y })
           },
-          loading: v,
-          onChange: k,
+          loading: f,
+          onChange: g,
           scroll: { x: "max-content" }
         }
       )
     ] })
   ] });
-}, ue = Pe({ html: !0, breaks: !0 }), qt = W(({ token: t, css: s }) => ({
+}, { TextArea: he } = _, { Option: te } = $, Pn = ({
+  field: t,
+  selectedType: s,
+  dependentValues: n
+}) => {
+  const { t: a } = F("system"), { t: i } = F("common"), { options: r, loading: p } = Ve(
+    t.data_source,
+    t.options,
+    n
+  ), o = Ft(() => t.data_source && t.data_source.type !== "static" ? r : t.options || [], [t.data_source, t.options, r]), m = o && o.length > 0, l = [
+    {
+      required: t.required,
+      message: a("settings.toolsets.fieldRequired", {
+        defaultValue: `Please enter ${t.name}`,
+        field: t.name
+      })
+    }
+  ], f = () => a(`settings.toolsets.${s}.${t.name}`, {
+    defaultValue: t.display_name || t.name
+  }), u = () => a(`settings.toolsets.${s}.${t.name}Placeholder`, {
+    defaultValue: t.placeholder || `${i("enter", { defaultValue: "Enter" })} ${t.name}`
+  }), h = () => {
+    if (t.description)
+      return a(`settings.toolsets.${s}.${t.name}Tooltip`, {
+        defaultValue: t.description
+      });
+  };
+  if (t.type === "select" || t.data_source)
+    return /* @__PURE__ */ e.jsx(
+      j.Item,
+      {
+        name: ["config", t.name],
+        label: f(),
+        rules: l,
+        tooltip: h(),
+        children: /* @__PURE__ */ e.jsx(
+          $,
+          {
+            loading: p,
+            allowClear: !0,
+            placeholder: u(),
+            showSearch: !0,
+            filterOption: (g, d) => {
+              var w;
+              return (w = d == null ? void 0 : d.children) == null ? void 0 : w.toLowerCase().includes(g.toLowerCase());
+            },
+            children: o.map((g) => /* @__PURE__ */ e.jsx(te, { value: g.value, children: g.label }, g.value))
+          }
+        )
+      },
+      t.name
+    );
+  switch (t.type) {
+    case "text":
+      return /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          children: /* @__PURE__ */ e.jsx(he, { placeholder: u(), rows: 4 })
+        },
+        t.name
+      );
+    case "string":
+      return m ? /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx($, { allowClear: !0, placeholder: u(), children: o.map((g) => /* @__PURE__ */ e.jsx(te, { value: g.value, children: g.label }, g.value)) })
+        },
+        t.name
+      ) : /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx(_, { placeholder: u() })
+        },
+        t.name
+      );
+    case "password":
+      return /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx(_.Password, { placeholder: u(), autoComplete: "new-password" })
+        },
+        t.name
+      );
+    case "number":
+      return m ? /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx($, { allowClear: !0, placeholder: u(), children: o.map((g) => /* @__PURE__ */ e.jsx(te, { value: g.value, children: g.label }, g.value)) })
+        },
+        t.name
+      ) : /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx(nt, { style: { width: "100%" }, placeholder: u() })
+        },
+        t.name
+      );
+    case "boolean":
+      return /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          valuePropName: "checked",
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx(tt, {})
+        },
+        t.name
+      );
+    case "array":
+      return m ? /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx(me.Group, { style: { width: "100%" }, children: /* @__PURE__ */ e.jsx(D, { direction: "vertical", children: o.map((g) => /* @__PURE__ */ e.jsx(me, { value: g.value, children: g.label }, g.value)) }) })
+        },
+        t.name
+      ) : /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: l,
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx(
+            $,
+            {
+              mode: "tags",
+              style: { width: "100%" },
+              placeholder: u(),
+              tokenSeparators: [","]
+            }
+          )
+        },
+        t.name
+      );
+    case "object":
+      return /* @__PURE__ */ e.jsx(
+        j.Item,
+        {
+          name: ["config", t.name],
+          label: f(),
+          rules: [
+            ...l,
+            {
+              validator: (g, d) => {
+                if (!d) return Promise.resolve();
+                try {
+                  return JSON.parse(d), Promise.resolve();
+                } catch {
+                  return Promise.reject(
+                    new Error(
+                      a("settings.toolsets.invalidJSON", { defaultValue: "Invalid JSON format" })
+                    )
+                  );
+                }
+              }
+            }
+          ],
+          tooltip: h(),
+          children: /* @__PURE__ */ e.jsx(
+            he,
+            {
+              rows: 4,
+              placeholder: u()
+            }
+          )
+        },
+        t.name
+      );
+    default:
+      return null;
+  }
+}, pe = Me({ html: !0, breaks: !0 }), Xt = W(({ token: t, css: s }) => ({
   layout: s`
       width: 100%;
       min-width: 500px;
@@ -1137,264 +1336,265 @@ const kt = () => /* @__PURE__ */ e.jsx("div", { style: {
       color: ${t.colorText};
     `
 }));
-class ee extends Error {
+class ne extends Error {
   constructor(n, a) {
     super(n);
-    ie(this, "buffer");
+    oe(this, "buffer");
     this.buffer = a;
   }
 }
-const Ht = () => {
-  const { t } = F("ai"), { t: s } = F("common"), { styles: n } = qt(), a = bt(null), [i, r] = x({}), [m, o] = x([]), [d, u] = x(), [v, h] = x(""), [g] = Ae({
-    request: async ({ message: l, sessionId: p }, { onSuccess: y, onUpdate: w, onError: V, onStream: N }) => {
-      if (!p)
+const Yt = () => {
+  const { t } = F("ai"), { t: s } = F("common"), { styles: n } = Xt(), a = _t(null), [i, r] = v({}), [p, o] = v([]), [m, l] = v(), [f, u] = v(""), [h] = Pe({
+    request: async ({ message: c, sessionId: x }, { onSuccess: b, onUpdate: S, onError: B, onStream: N }) => {
+      if (!x)
         return;
-      const X = new AbortController(), R = {
+      const X = new AbortController(), M = {
         buffer: [],
         messageID: ""
       };
       try {
         N == null || N(X);
-        const Y = await C.ai.streamChat({ sessionId: p }, {
-          content: l.content
+        const Y = await I.ai.streamChat({ sessionId: x }, {
+          content: c.content
         }, {
           signal: X.signal,
           requestType: "sse"
         });
-        for await (const Ce of Le({
+        for await (const Fe of Te({
           readableStream: Y
         })) {
-          const P = JSON.parse(Ce.data);
-          if (P.event_type, P.event_type === "error") {
-            V(new ee(P.content, R.buffer));
+          const z = JSON.parse(Fe.data);
+          if (z.event_type, z.event_type === "error") {
+            B(new ne(z.content, M.buffer));
             return;
           }
-          P.event_type === "content" && (R.messageID === "" && (R.messageID = P.message_id), R.messageID !== P.message_id && (R.messageID = P.message_id), R.buffer.push(P.content), w(P.content));
+          z.event_type === "content" && (M.messageID === "" && (M.messageID = z.message_id), M.messageID !== z.message_id && (M.messageID = z.message_id), M.buffer.push(z.content), S(z.content));
         }
-        y(R.buffer);
+        b(M.buffer);
       } catch (Y) {
-        V(new ee(`${Y}`, R.buffer)), X.abort();
+        B(new ne(`${Y}`, M.buffer)), X.abort();
       }
     }
-  }), k = g.isRequesting(), { loading: c } = D(async () => {
-    const l = await C.ai.listChatSessions({ current: 1, page_size: 20 });
-    o(l.data);
-  }), { run: b, loading: E } = D(async (l) => await C.ai.createChatSession({ title: t("chat.defaultConversationTitle"), model_id: "" }), {
+  }), g = h.isRequesting(), { loading: d } = R(async () => {
+    const c = await I.ai.listChatSessions({ current: 1, page_size: 20 });
+    o(c.data);
+  }), { run: w, loading: V } = R(async (c) => await I.ai.createChatSession({ title: t("chat.defaultConversationTitle"), model_id: "" }), {
     manual: !0,
-    onSuccess: (l, [p]) => {
-      o((y) => [{ ...l, loading: !1 }, ...y]), u(l.id), re([]), p && _({
+    onSuccess: (c, [x]) => {
+      o((b) => [{ ...c, loading: !1 }, ...b]), l(c.id), ie([]), x && P({
         stream: !0,
         message: {
           role: "user",
-          content: p
+          content: x
         },
-        sessionId: l.id
+        sessionId: c.id
       });
     }
-  }), { run: f } = D(async (l) => await C.ai.deleteChatSession({ sessionId: l }), {
+  }), { run: y } = R(async (c) => await I.ai.deleteChatSession({ sessionId: c }), {
     manual: !0,
-    onError(l, p) {
-      S.error(t("chat.deleteConversationFailed")), o((y) => y.map((w) => w.id === p[0] ? { ...w, loading: !1 } : w));
+    onError(c, x) {
+      C.error(t("chat.deleteConversationFailed")), o((b) => b.map((S) => S.id === x[0] ? { ...S, loading: !1 } : S));
     },
-    onSuccess(l, p) {
-      var V;
-      const y = m.filter((N) => N.id !== p[0]), w = (V = y == null ? void 0 : y[0]) == null ? void 0 : V.id;
-      o(y), p[0] === d && u(w);
+    onSuccess(c, x) {
+      var B;
+      const b = p.filter((N) => N.id !== x[0]), S = (B = b == null ? void 0 : b[0]) == null ? void 0 : B.id;
+      o(b), x[0] === m && l(S);
     }
-  }), { run: L, loading: A } = D(async (l) => await C.ai.getChatSession({ sessionId: l }), {
+  }), { run: A, loading: L } = R(async (c) => await I.ai.getChatSession({ sessionId: c }), {
     manual: !0,
-    onSuccess: (l, [p]) => {
-      r((y) => ({
-        ...y,
-        [p]: l.messages.filter((w) => w.role !== "tool").map((w) => ({
-          id: w.id,
+    onSuccess: (c, [x]) => {
+      r((b) => ({
+        ...b,
+        [x]: c.messages.filter((S) => S.role !== "tool").map((S) => ({
+          id: S.id,
           message: {
-            content: w.content,
-            role: w.role
+            content: S.content,
+            role: S.role
           },
           status: "loading"
         }))
       }));
     }
-  }), { onRequest: _, messages: T, setMessages: re } = _e({
-    agent: g,
+  }), { onRequest: P, messages: T, setMessages: ie } = ze({
+    agent: h,
     requestPlaceholder: () => ({
       content: s("loading"),
       role: "assistant"
     }),
-    requestFallback: (l, { error: p }) => (console.log(p), p instanceof ee ? {
-      content: p.buffer.join(""),
+    requestFallback: (c, { error: x }) => (console.log(x), x instanceof ne ? {
+      content: x.buffer.join(""),
       role: "assistant",
       // TODO: show error in message list
-      error: p.message
+      error: x.message
     } : {
-      content: `${p}`,
+      content: `${x}`,
       role: "assistant"
     }),
-    resolveAbortController: (l) => {
-      a.current = l;
+    resolveAbortController: (c) => {
+      a.current = c;
     },
-    transformMessage: (l) => {
-      const { originMessage: p, chunk: y } = l || {};
-      return y ? {
+    transformMessage: (c) => {
+      const { originMessage: x, chunk: b } = c || {};
+      return b ? {
         role: "assistant",
-        content: ((p == null ? void 0 : p.content) || "") + y
+        content: ((x == null ? void 0 : x.content) || "") + b
       } : {
         role: "assistant",
-        content: (p == null ? void 0 : p.content) || ""
+        content: (x == null ? void 0 : x.content) || ""
       };
     }
   });
-  O(() => {
-    if (!d) return;
-    const l = i[d];
-    l ? re(l) : L(d);
-  }, [i, d]);
-  const je = (l) => {
-    if (l) {
-      if (k) {
-        S.error(t("chat.requestInProgress"));
+  q(() => {
+    if (!m) return;
+    const c = i[m];
+    c ? ie(c) : A(m);
+  }, [i, m]);
+  const we = (c) => {
+    if (c) {
+      if (g) {
+        C.error(t("chat.requestInProgress"));
         return;
       }
-      if (!d) {
-        b(l);
+      if (!m) {
+        w(c);
         return;
       }
-      _({
+      P({
         stream: !0,
         message: {
           role: "user",
-          content: l
+          content: c
         },
-        sessionId: d
+        sessionId: m
       });
     }
-  }, ve = /* @__PURE__ */ e.jsxs("div", { className: n.sider, children: [
+  }, Se = /* @__PURE__ */ e.jsxs("div", { className: n.sider, children: [
     /* @__PURE__ */ e.jsx(
-      I,
+      k,
       {
         onClick: () => {
-          b();
+          w();
         },
         type: "link",
         className: n.addBtn,
-        icon: /* @__PURE__ */ e.jsx(ge, {}),
-        loading: E,
+        icon: /* @__PURE__ */ e.jsx(ye, {}),
+        loading: V,
         children: t("chat.newConversation")
       }
     ),
-    /* @__PURE__ */ e.jsx(q, { spinning: c, wrapperClassName: n.conversationsSpin, children: /* @__PURE__ */ e.jsx(
-      ze,
+    /* @__PURE__ */ e.jsx(H, { spinning: d, wrapperClassName: n.conversationsSpin, children: /* @__PURE__ */ e.jsx(
+      De,
       {
-        items: m.map((l) => ({
-          key: l.id,
-          label: l.title,
-          group: Q(l.start_time).isSame(Q(), "day") ? t("chat.today") : Q(l.start_time).format("YYYY-MM-DD")
+        items: p.map((c) => ({
+          key: c.id,
+          label: c.title,
+          group: Z(c.start_time).isSame(Z(), "day") ? t("chat.today") : Z(c.start_time).format("YYYY-MM-DD")
         })),
-        activeKey: d,
-        onActiveChange: async (l) => {
-          var p;
-          l && ((p = a.current) == null || p.abort(), u((y) => (y && r((w) => ({
-            ...w,
-            [y]: T
-          })), l)));
+        activeKey: m,
+        onActiveChange: async (c) => {
+          var x;
+          c && ((x = a.current) == null || x.abort(), l((b) => (b && r((S) => ({
+            ...S,
+            [b]: T
+          })), c)));
         },
         className: n.conversations,
         groupable: !0,
         styles: { item: { padding: "0 8px" } },
-        menu: (l) => ({
+        menu: (c) => ({
           items: [
             {
               label: t("chat.renameConversation"),
               key: "rename",
-              icon: /* @__PURE__ */ e.jsx(mt, {})
+              icon: /* @__PURE__ */ e.jsx(yt, {})
             },
             {
               label: s("delete"),
               key: "delete",
-              icon: /* @__PURE__ */ e.jsx(ht, {}),
+              icon: /* @__PURE__ */ e.jsx(jt, {}),
               danger: !0,
               onClick: () => {
-                o((p) => p.map((y) => y.id === l.key ? { ...y, loading: !0 } : y)), f(l.key);
+                o((x) => x.map((b) => b.id === c.key ? { ...b, loading: !0 } : b)), y(c.key);
               }
             }
           ]
         })
       }
     ) })
-  ] }), be = ({ message: l }) => {
-    if (l.error)
-      return /* @__PURE__ */ e.jsx("div", { children: /* @__PURE__ */ e.jsx("div", { dangerouslySetInnerHTML: { __html: ue.render(l.error) } }) });
-  }, we = /* @__PURE__ */ e.jsx("div", { className: n.chatList, children: /* @__PURE__ */ e.jsx(q, { spinning: A, children: /* @__PURE__ */ e.jsx(
-    Te.List,
+  ] }), Ce = ({ message: c }) => {
+    if (c.error)
+      return /* @__PURE__ */ e.jsx("div", { children: /* @__PURE__ */ e.jsx("div", { dangerouslySetInnerHTML: { __html: pe.render(c.error) } }) });
+  }, Ie = /* @__PURE__ */ e.jsx("div", { className: n.chatList, children: /* @__PURE__ */ e.jsx(H, { spinning: L, children: /* @__PURE__ */ e.jsx(
+    Re.List,
     {
-      items: T == null ? void 0 : T.map((l) => ({
-        ...l.message,
-        messageRender: (p) => /* @__PURE__ */ e.jsx("div", { dangerouslySetInnerHTML: { __html: ue.render(p) } }),
-        footer: be(l)
+      items: T == null ? void 0 : T.map((c) => ({
+        ...c.message,
+        messageRender: (x) => /* @__PURE__ */ e.jsx("div", { dangerouslySetInnerHTML: { __html: pe.render(x) } }),
+        footer: Ce(c)
       })),
       style: { height: "100%", paddingInline: "calc(calc(100% - 700px) /2)" },
       roles: {
         assistant: {
           placement: "start",
-          loadingRender: () => /* @__PURE__ */ e.jsx(q, { size: "small" })
+          loadingRender: () => /* @__PURE__ */ e.jsx(H, { size: "small" })
         },
         user: { placement: "end" }
       }
     }
-  ) }) }), Se = /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(
-    De,
+  ) }) }), ke = /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(
+    $e,
     {
-      value: v,
+      value: f,
       onSubmit: () => {
-        je(v.trim()), h("");
+        we(f.trim()), u("");
       },
-      onChange: h,
+      onChange: u,
       onCancel: () => {
-        var l;
-        (l = a.current) == null || l.abort();
+        var c;
+        (c = a.current) == null || c.abort();
       },
-      loading: k,
+      loading: g,
       className: n.sender,
       allowSpeech: !0,
-      actions: (l, p) => {
-        const { SendButton: y, LoadingButton: w } = p.components;
-        return /* @__PURE__ */ e.jsx(Je, { gap: 4, children: k ? /* @__PURE__ */ e.jsx(w, { type: "default" }) : /* @__PURE__ */ e.jsx(y, { type: "primary" }) });
+      actions: (c, x) => {
+        const { SendButton: b, LoadingButton: S } = x.components;
+        return /* @__PURE__ */ e.jsx(st, { gap: 4, children: g ? /* @__PURE__ */ e.jsx(S, { type: "default" }) : /* @__PURE__ */ e.jsx(b, { type: "primary" }) });
       },
       placeholder: t("chat.inputPlaceholder")
     }
   ) });
   return /* @__PURE__ */ e.jsxs("div", { className: n.layout, children: [
-    ve,
+    Se,
     /* @__PURE__ */ e.jsxs("div", { className: n.chat, children: [
-      we,
-      Se
+      Ie,
+      ke
     ] })
   ] });
-}, Ut = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Qt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Ht
+  default: Yt
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  Tt as A,
-  fn as D,
-  xe as H,
-  kt as L,
-  mn as O,
-  dn as P,
-  yn as T,
-  Sn as U,
-  un as a,
-  hn as b,
-  gn as c,
-  Dt as d,
-  xn as e,
-  _t as f,
-  Et as g,
-  Mt as h,
-  pn as i,
-  jn as j,
-  vn as k,
-  bn as l,
-  wn as m
+  Vt as A,
+  Sn as D,
+  ve as H,
+  zt as L,
+  jn as O,
+  fn as P,
+  In as T,
+  An as U,
+  yn as a,
+  vn as b,
+  wn as c,
+  Nt as d,
+  Cn as e,
+  $t as f,
+  Ut as g,
+  qt as h,
+  bn as i,
+  kn as j,
+  Fn as k,
+  _n as l,
+  Ln as m,
+  Pn as n
 };

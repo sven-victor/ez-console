@@ -659,6 +659,34 @@ export declare interface Dataset {
     label: string;
 }
 
+export declare interface DataSource {
+    /** Cache control */
+    cache: boolean;
+    /** Cache TTL in seconds (0 = no expiration) */
+    cache_ttl: number;
+    /** DependsOn specifies field dependencies (field names that this field depends on)
+     When dependent fields change, this field's options should be reloaded */
+    depends_on: string[];
+    /** Filter conditions (flexible filtering for different source types)
+     For toolsets: {"type": "webhook"} to filter by toolset type
+     For internal: {"status": "active"} to filter by status, etc. */
+    filter: Record<string, any>;
+    /** Response mapping fields (for API and other sources) */
+    label_key: string;
+    /** HTTP method (GET, POST, etc.) */
+    method: string;
+    /** Parameters for API requests (query params or request body) */
+    params: Record<string, any>;
+    /** Type specifies the data source type */
+    type: DataSourceType;
+    /** API-specific fields (when Type = "api") */
+    url: string;
+    /** JSON key for option value */
+    value_key: string;
+}
+
+export declare type DataSourceType = "static" | "api" | "toolsets" | "internal";
+
 export declare interface deleteAIModelParams {
     /** AI model ID */
     id: string;
@@ -1950,10 +1978,13 @@ export declare interface ToolSet {
 }
 
 export declare interface ToolSetConfigField {
+    /** Dynamic data source configuration */
+    data_source: DataSource;
     default: string;
     description: string;
     display_name: string;
     name: string;
+    /** Static options (used when DataSource is nil or type=static) */
     options: ToolSetConfigFieldOptions[];
     placeholder: string;
     required: boolean;
@@ -1965,7 +1996,7 @@ export declare interface ToolSetConfigFieldOptions {
     value: string;
 }
 
-export declare type ToolSetFieldType = "text" | "string" | "password" | "number" | "boolean" | "array" | "object";
+export declare type ToolSetFieldType = "text" | "string" | "password" | "number" | "boolean" | "array" | "object" | "select";
 
 export declare type ToolSetStatus = "enabled" | "disabled";
 
