@@ -533,7 +533,7 @@ const ToolSetSettings: React.FC = () => {
               field={field}
               selectedType={selectedType}
               dependentValues={getDependentValues(field)}
-              formInstance={form}
+              formValues={formValues}
             />
           ))}
 

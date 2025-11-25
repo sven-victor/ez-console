@@ -3,8 +3,8 @@ import h from "i18next";
 import { initReactI18next as f } from "react-i18next";
 import v from "i18next-browser-languagedetector";
 const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const a = t instanceof Date ? t : new Date(t), o = a.getFullYear(), n = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), d = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), s = String(a.getSeconds()).padStart(2, "0");
-  return e.replace("YYYY", String(o)).replace("MM", n).replace("DD", r).replace("HH", d).replace("mm", i).replace("ss", s);
+  const a = t instanceof Date ? t : new Date(t), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), l = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), n = String(a.getSeconds()).padStart(2, "0");
+  return e.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", l).replace("mm", i).replace("ss", n);
 }, se = (t, e) => {
   if (typeof t != "string")
     throw new Error("Color must be a string.");
@@ -13,24 +13,24 @@ const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
     let i = a.slice(1);
     if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const s = parseInt(i.slice(0, 2), 16), l = parseInt(i.slice(2, 4), 16), u = parseInt(i.slice(4, 6), 16);
-    if (isNaN(s) || isNaN(l) || isNaN(u))
+    const n = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), u = parseInt(i.slice(4, 6), 16);
+    if (isNaN(n) || isNaN(d) || isNaN(u))
       throw new Error("Invalid characters in HEX color value.");
-    return `rgba(${s}, ${l}, ${u}, ${e})`;
+    return `rgba(${n}, ${d}, ${u}, ${e})`;
   }
-  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, n = a.match(o);
-  if (n) {
-    const i = parseInt(n[1], 10), s = parseInt(n[2], 10), l = parseInt(n[3], 10);
-    if (i < 0 || i > 255 || s < 0 || s > 255 || l < 0 || l > 255)
+  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, s = a.match(o);
+  if (s) {
+    const i = parseInt(s[1], 10), n = parseInt(s[2], 10), d = parseInt(s[3], 10);
+    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${i}, ${s}, ${l}, ${e})`;
+    return `rgba(${i}, ${n}, ${d}, ${e})`;
   }
-  const r = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, d = a.match(r);
-  if (d) {
-    const i = parseInt(d[1], 10), s = parseInt(d[2], 10), l = parseInt(d[3], 10);
-    if (i < 0 || i > 255 || s < 0 || s > 255 || l < 0 || l > 255)
+  const r = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = a.match(r);
+  if (l) {
+    const i = parseInt(l[1], 10), n = parseInt(l[2], 10), d = parseInt(l[3], 10);
+    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${i}, ${s}, ${l}, ${e})`;
+    return `rgba(${i}, ${n}, ${d}, ${e})`;
   }
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
@@ -55,9 +55,9 @@ async function b(t, e) {
 }
 async function A(t, e, a) {
   const o = new FormData();
-  return e && o.append("file", e), Object.keys(t).forEach((n) => {
-    const r = t[n];
-    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((d) => o.append(n, d || "")) : o.append(n, JSON.stringify(r)) : o.append(n, r));
+  return e && o.append("file", e), Object.keys(t).forEach((s) => {
+    const r = t[s];
+    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((l) => o.append(s, l || "")) : o.append(s, JSON.stringify(r)) : o.append(s, r));
   }), c("/api/files", {
     method: "POST",
     data: o,
@@ -7241,10 +7241,32 @@ h.use(v).use(f).init({
 const de = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
+}, ce = (t, e) => {
+  var l;
+  if (!t)
+    return !0;
+  const { field: a, operator: o, value: s } = t, r = ((l = e.config) == null ? void 0 : l[a]) ?? e[a];
+  if (r == null)
+    return !1;
+  switch (o) {
+    case "eq":
+      return r === s;
+    case "ne":
+      return r !== s;
+    case "in":
+      return Array.isArray(s) ? s.includes(r) : (console.warn('VisibleCondition: "in" operator requires an array value'), !1);
+    case "not_in":
+      return Array.isArray(s) ? !s.includes(r) : (console.warn('VisibleCondition: "not_in" operator requires an array value'), !1);
+    case "contains":
+      return typeof r != "string" ? !1 : typeof s != "string" ? (console.warn('VisibleCondition: "contains" operator requires a string value'), !1) : r.includes(s);
+    default:
+      return console.warn(`Unknown visibility operator: ${o}`), !0;
+  }
 };
 export {
   de as P,
   le as b,
+  ce as c,
   re as f,
   ne as g,
   oe as m,

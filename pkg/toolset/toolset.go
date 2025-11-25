@@ -70,6 +70,32 @@ type DataSource struct {
 	DependsOn []string `json:"depends_on,omitempty"`
 }
 
+// VisibleConditionOperator defines operators for visibility conditions
+type VisibleConditionOperator string
+
+const (
+	// OperatorEq checks if field value equals the specified value
+	OperatorEq VisibleConditionOperator = "eq"
+	// OperatorNe checks if field value does not equal the specified value
+	OperatorNe VisibleConditionOperator = "ne"
+	// OperatorIn checks if field value is in the specified array
+	OperatorIn VisibleConditionOperator = "in"
+	// OperatorNotIn checks if field value is not in the specified array
+	OperatorNotIn VisibleConditionOperator = "not_in"
+	// OperatorContains checks if field value contains the specified substring (for string fields)
+	OperatorContains VisibleConditionOperator = "contains"
+)
+
+// VisibleCondition defines when a field should be visible
+type VisibleCondition struct {
+	// Field is the name of the field to check
+	Field string `json:"field"`
+	// Operator is the comparison operator (eq, ne, in, not_in, contains)
+	Operator VisibleConditionOperator `json:"operator"`
+	// Value is the value to compare against (can be a single value or array for in/not_in)
+	Value interface{} `json:"value"`
+}
+
 type ToolSetConfigField struct {
 	Name        string                      `json:"name"`
 	DisplayName string                      `json:"display_name"`
@@ -77,8 +103,9 @@ type ToolSetConfigField struct {
 	Type        ToolSetFieldType            `json:"type"`
 	Required    bool                        `json:"required"`
 	Default     string                      `json:"default"`
-	Options     []ToolSetConfigFieldOptions `json:"options,omitempty"`     // Static options (used when DataSource is nil or type=static)
-	DataSource  *DataSource                 `json:"data_source,omitempty"` // Dynamic data source configuration
+	Options     []ToolSetConfigFieldOptions `json:"options,omitempty"`      // Static options (used when DataSource is nil or type=static)
+	DataSource  *DataSource                 `json:"data_source,omitempty"`  // Dynamic data source configuration
+	VisibleWhen *VisibleCondition           `json:"visible_when,omitempty"` // Condition for field visibility
 	Placeholder string                      `json:"placeholder"`
 }
 

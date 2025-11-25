@@ -1989,6 +1989,8 @@ export declare interface ToolSetConfigField {
     placeholder: string;
     required: boolean;
     type: ToolSetFieldType;
+    /** Condition for field visibility */
+    visible_when: VisibleCondition;
 }
 
 export declare interface ToolSetConfigFieldOptions {
@@ -2257,6 +2259,17 @@ export declare interface VerifyAndActivateMFARequest {
     mfa_type: string;
     token?: string;
 }
+
+export declare interface VisibleCondition {
+    /** Field is the name of the field to check */
+    field: string;
+    /** Operator is the comparison operator (eq, ne, in, not_in, contains) */
+    operator: VisibleConditionOperator;
+    /** Value is the value to compare against (can be a single value or array for in/not_in) */
+    value: any;
+}
+
+export declare type VisibleConditionOperator = "eq" | "ne" | "in" | "not_in" | "contains";
 
 export declare function withSuspense<T extends default_2.ComponentType<any>>(Component: default_2.LazyExoticComponent<T>, props?: default_2.ComponentProps<T>): JSX_2.Element;
 

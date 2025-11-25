@@ -1474,6 +1474,8 @@ declare global {
       placeholder: string;
       required: boolean;
       type: ToolSetFieldType;
+      /** Condition for field visibility */
+      visible_when: VisibleCondition;
     }
   
     interface ToolSetConfigFieldOptions {
@@ -1726,6 +1728,17 @@ declare global {
       mfa_type: string;
       token?: string;
     }
+  
+    interface VisibleCondition {
+      /** Field is the name of the field to check */
+      field: string;
+      /** Operator is the comparison operator (eq, ne, in, not_in, contains) */
+      operator: VisibleConditionOperator;
+      /** Value is the value to compare against (can be a single value or array for in/not_in) */
+      value: any;
+    }
+  
+    type VisibleConditionOperator = "eq" | "ne" | "in" | "not_in" | "contains";
   }
   
 }

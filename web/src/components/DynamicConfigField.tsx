@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Form, Input, InputNumber, Select, Switch, Checkbox, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useDynamicDataSource } from '@/hooks/useDynamicDataSource';
+import { checkVisibilityCondition } from '@/utils/visibilityCondition';
 import type { ToolSetConfigField } from '@/service/api/typing';
 
 const { TextArea } = Input;
@@ -11,7 +12,7 @@ interface DynamicConfigFieldProps {
   field: ToolSetConfigField;
   selectedType: string;
   dependentValues?: Record<string, any>;
-  formInstance?: any;
+  formValues?: Record<string, any>;
 }
 
 /**
@@ -21,9 +22,15 @@ const DynamicConfigField: React.FC<DynamicConfigFieldProps> = ({
   field,
   selectedType,
   dependentValues,
+  formValues = {},
 }) => {
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
+
+  // Check if field should be visible based on condition
+  const isVisible = useMemo(() => {
+    return checkVisibilityCondition(field.visible_when, formValues);
+  }, [field.visible_when, formValues]);
 
   // Load options from data source if configured
   const { options: dynamicOptions, loading: loadingOptions } = useDynamicDataSource(
@@ -43,6 +50,11 @@ const DynamicConfigField: React.FC<DynamicConfigFieldProps> = ({
   }, [field.data_source, field.options, dynamicOptions]);
 
   const hasOptions = effectiveOptions && effectiveOptions.length > 0;
+
+  // If field is not visible, don't render anything
+  if (!isVisible) {
+    return null;
+  }
 
   // Build validation rules
   const rules = [
@@ -74,6 +86,11 @@ const DynamicConfigField: React.FC<DynamicConfigFieldProps> = ({
       defaultValue: field.description,
     });
   };
+
+  // If field is not visible, don't render anything
+  if (!isVisible) {
+    return null;
+  }
 
   // If field type is select or has data_source, render as select
   if (field.type === 'select' || field.data_source) {

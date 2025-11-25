@@ -7747,19 +7747,44 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000
+                3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -7771,14 +7796,7 @@ const docTemplate = `{
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second",
-                "Minute",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "Second"
             ]
         },
         "toolset.DataSource": {
@@ -7873,7 +7891,8 @@ const docTemplate = `{
                 "options",
                 "placeholder",
                 "required",
-                "type"
+                "type",
+                "visible_when"
             ],
             "properties": {
                 "data_source": {
@@ -7911,6 +7930,14 @@ const docTemplate = `{
                 },
                 "type": {
                     "$ref": "#/definitions/toolset.ToolSetFieldType"
+                },
+                "visible_when": {
+                    "description": "Condition for field visibility",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/toolset.VisibleCondition"
+                        }
+                    ]
                 }
             }
         },
@@ -7962,6 +7989,48 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "ToolSetTypeUtils"
+            ]
+        },
+        "toolset.VisibleCondition": {
+            "type": "object",
+            "required": [
+                "field",
+                "operator",
+                "value"
+            ],
+            "properties": {
+                "field": {
+                    "description": "Field is the name of the field to check",
+                    "type": "string"
+                },
+                "operator": {
+                    "description": "Operator is the comparison operator (eq, ne, in, not_in, contains)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/toolset.VisibleConditionOperator"
+                        }
+                    ]
+                },
+                "value": {
+                    "description": "Value is the value to compare against (can be a single value or array for in/not_in)"
+                }
+            }
+        },
+        "toolset.VisibleConditionOperator": {
+            "type": "string",
+            "enum": [
+                "eq",
+                "ne",
+                "in",
+                "not_in",
+                "contains"
+            ],
+            "x-enum-varnames": [
+                "OperatorEq",
+                "OperatorNe",
+                "OperatorIn",
+                "OperatorNotIn",
+                "OperatorContains"
             ]
         },
         "util.ErrorResponse": {

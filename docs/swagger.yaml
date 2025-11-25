@@ -2230,19 +2230,44 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -2255,13 +2280,6 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
   toolset.DataSource:
     properties:
       cache:
@@ -2353,6 +2371,10 @@ definitions:
         type: boolean
       type:
         $ref: '#/definitions/toolset.ToolSetFieldType'
+      visible_when:
+        allOf:
+        - $ref: '#/definitions/toolset.VisibleCondition'
+        description: Condition for field visibility
     required:
     - data_source
     - default
@@ -2363,6 +2385,7 @@ definitions:
     - placeholder
     - required
     - type
+    - visible_when
     type: object
   toolset.ToolSetConfigFieldOptions:
     properties:
@@ -2402,6 +2425,37 @@ definitions:
     type: string
     x-enum-varnames:
     - ToolSetTypeUtils
+  toolset.VisibleCondition:
+    properties:
+      field:
+        description: Field is the name of the field to check
+        type: string
+      operator:
+        allOf:
+        - $ref: '#/definitions/toolset.VisibleConditionOperator'
+        description: Operator is the comparison operator (eq, ne, in, not_in, contains)
+      value:
+        description: Value is the value to compare against (can be a single value
+          or array for in/not_in)
+    required:
+    - field
+    - operator
+    - value
+    type: object
+  toolset.VisibleConditionOperator:
+    enum:
+    - eq
+    - ne
+    - in
+    - not_in
+    - contains
+    type: string
+    x-enum-varnames:
+    - OperatorEq
+    - OperatorNe
+    - OperatorIn
+    - OperatorNotIn
+    - OperatorContains
   util.ErrorResponse:
     properties:
       code:
