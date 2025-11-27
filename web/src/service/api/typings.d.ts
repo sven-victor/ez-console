@@ -200,6 +200,27 @@ declare global {
   
     type Condition = true;
   
+    interface ConfigField {
+      /** Dynamic data source configuration */
+      data_source: DataSource;
+      default: string;
+      description: string;
+      display_name: string;
+      name: string;
+      /** Static options (used when DataSource is nil or type=static) */
+      options: ConfigFieldOptions[];
+      placeholder: string;
+      required: boolean;
+      type: FieldType;
+      /** Condition for field visibility */
+      visible_when: VisibleCondition;
+    }
+  
+    interface ConfigFieldOptions {
+      label: string;
+      value: string;
+    }
+  
     interface CreateAIModelRequest {
       api_key: string;
       base_url?: string;
@@ -384,6 +405,16 @@ declare global {
     }
   
     type EventType = "content" | "tool_call" | "error";
+  
+    type FieldType =
+      | "text"
+      | "string"
+      | "password"
+      | "number"
+      | "boolean"
+      | "array"
+      | "object"
+      | "select";
   
     interface File {
       access: AccessType;
@@ -1462,43 +1493,12 @@ declare global {
       updated_by: string;
     }
   
-    interface ToolSetConfigField {
-      /** Dynamic data source configuration */
-      data_source: DataSource;
-      default: string;
-      description: string;
-      display_name: string;
-      name: string;
-      /** Static options (used when DataSource is nil or type=static) */
-      options: ToolSetConfigFieldOptions[];
-      placeholder: string;
-      required: boolean;
-      type: ToolSetFieldType;
-      /** Condition for field visibility */
-      visible_when: VisibleCondition;
-    }
-  
-    interface ToolSetConfigFieldOptions {
-      label: string;
-      value: string;
-    }
-  
-    type ToolSetFieldType =
-      | "text"
-      | "string"
-      | "password"
-      | "number"
-      | "boolean"
-      | "array"
-      | "object"
-      | "select";
-  
     type ToolSetStatus = "enabled" | "disabled";
   
     type ToolSetType = "utils";
   
     interface ToolSetTypeDefinition {
-      config_fields: ToolSetConfigField[];
+      config_fields: ConfigField[];
       description: string;
       name: string;
       tool_set_type: ToolSetType;

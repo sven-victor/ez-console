@@ -1805,7 +1805,7 @@ definitions:
     properties:
       config_fields:
         items:
-          $ref: '#/definitions/toolset.ToolSetConfigField'
+          $ref: '#/definitions/util.ConfigField'
         type: array
       description:
         type: string
@@ -2230,26 +2230,12 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2260,27 +2246,70 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-  toolset.DataSource:
+  toolset.ToolSetType:
+    enum:
+    - utils
+    type: string
+    x-enum-varnames:
+    - ToolSetTypeUtils
+  util.ConfigField:
+    properties:
+      data_source:
+        allOf:
+        - $ref: '#/definitions/util.DataSource'
+        description: Dynamic data source configuration
+      default:
+        type: string
+      description:
+        type: string
+      display_name:
+        type: string
+      name:
+        type: string
+      options:
+        description: Static options (used when DataSource is nil or type=static)
+        items:
+          $ref: '#/definitions/util.ConfigFieldOptions'
+        type: array
+      placeholder:
+        type: string
+      required:
+        type: boolean
+      type:
+        $ref: '#/definitions/util.FieldType'
+      visible_when:
+        allOf:
+        - $ref: '#/definitions/util.VisibleCondition'
+        description: Condition for field visibility
+    required:
+    - data_source
+    - default
+    - description
+    - display_name
+    - name
+    - options
+    - placeholder
+    - required
+    - type
+    - visible_when
+    type: object
+  util.ConfigFieldOptions:
+    properties:
+      label:
+        type: string
+      value:
+        type: string
+    required:
+    - label
+    - value
+    type: object
+  util.DataSource:
     properties:
       cache:
         description: Cache control
@@ -2314,7 +2343,7 @@ definitions:
         type: object
       type:
         allOf:
-        - $ref: '#/definitions/toolset.DataSourceType'
+        - $ref: '#/definitions/util.DataSourceType'
         description: Type specifies the data source type
       url:
         description: API-specific fields (when Type = "api")
@@ -2334,7 +2363,7 @@ definitions:
     - url
     - value_key
     type: object
-  toolset.DataSourceType:
+  util.DataSourceType:
     enum:
     - static
     - api
@@ -2346,58 +2375,22 @@ definitions:
     - DataSourceTypeAPI
     - DataSourceTypeToolsets
     - DataSourceTypeInternal
-  toolset.ToolSetConfigField:
+  util.ErrorResponse:
     properties:
-      data_source:
-        allOf:
-        - $ref: '#/definitions/toolset.DataSource'
-        description: Dynamic data source configuration
-      default:
+      code:
         type: string
-      description:
+      err: {}
+      message:
         type: string
-      display_name:
-        type: string
-      name:
-        type: string
-      options:
-        description: Static options (used when DataSource is nil or type=static)
-        items:
-          $ref: '#/definitions/toolset.ToolSetConfigFieldOptions'
-        type: array
-      placeholder:
-        type: string
-      required:
-        type: boolean
-      type:
-        $ref: '#/definitions/toolset.ToolSetFieldType'
-      visible_when:
-        allOf:
-        - $ref: '#/definitions/toolset.VisibleCondition'
-        description: Condition for field visibility
-    required:
-    - data_source
-    - default
-    - description
-    - display_name
-    - name
-    - options
-    - placeholder
-    - required
-    - type
-    - visible_when
-    type: object
-  toolset.ToolSetConfigFieldOptions:
-    properties:
-      label:
-        type: string
-      value:
+      trace_id:
         type: string
     required:
-    - label
-    - value
+    - code
+    - err
+    - message
+    - trace_id
     type: object
-  toolset.ToolSetFieldType:
+  util.FieldType:
     enum:
     - text
     - string
@@ -2419,58 +2412,6 @@ definitions:
     - FieldTypeArray
     - FieldTypeObject
     - FieldTypeSelect
-  toolset.ToolSetType:
-    enum:
-    - utils
-    type: string
-    x-enum-varnames:
-    - ToolSetTypeUtils
-  toolset.VisibleCondition:
-    properties:
-      field:
-        description: Field is the name of the field to check
-        type: string
-      operator:
-        allOf:
-        - $ref: '#/definitions/toolset.VisibleConditionOperator'
-        description: Operator is the comparison operator (eq, ne, in, not_in, contains)
-      value:
-        description: Value is the value to compare against (can be a single value
-          or array for in/not_in)
-    required:
-    - field
-    - operator
-    - value
-    type: object
-  toolset.VisibleConditionOperator:
-    enum:
-    - eq
-    - ne
-    - in
-    - not_in
-    - contains
-    type: string
-    x-enum-varnames:
-    - OperatorEq
-    - OperatorNe
-    - OperatorIn
-    - OperatorNotIn
-    - OperatorContains
-  util.ErrorResponse:
-    properties:
-      code:
-        type: string
-      err: {}
-      message:
-        type: string
-      trace_id:
-        type: string
-    required:
-    - code
-    - err
-    - message
-    - trace_id
-    type: object
   util.MessageData:
     properties:
       message:
@@ -3364,6 +3305,37 @@ definitions:
     - err
     - trace_id
     type: object
+  util.VisibleCondition:
+    properties:
+      field:
+        description: Field is the name of the field to check
+        type: string
+      operator:
+        allOf:
+        - $ref: '#/definitions/util.VisibleConditionOperator'
+        description: Operator is the comparison operator (eq, ne, in, not_in, contains)
+      value:
+        description: Value is the value to compare against (can be a single value
+          or array for in/not_in)
+    required:
+    - field
+    - operator
+    - value
+    type: object
+  util.VisibleConditionOperator:
+    enum:
+    - eq
+    - ne
+    - in
+    - not_in
+    - contains
+    type: string
+    x-enum-varnames:
+    - OperatorEq
+    - OperatorNe
+    - OperatorIn
+    - OperatorNotIn
+    - OperatorContains
 info:
   contact: {}
   title: EZ Console API

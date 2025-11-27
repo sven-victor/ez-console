@@ -7146,7 +7146,7 @@
                 "config_fields": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/toolset.ToolSetConfigField"
+                        "$ref": "#/definitions/util.ConfigField"
                     }
                 },
                 "description": {
@@ -7738,26 +7738,12 @@
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7768,29 +7754,100 @@
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second"
+                "Hour"
             ]
         },
-        "toolset.DataSource": {
+        "toolset.ToolSetType": {
+            "type": "string",
+            "enum": [
+                "utils"
+            ],
+            "x-enum-varnames": [
+                "ToolSetTypeUtils"
+            ]
+        },
+        "util.ConfigField": {
+            "type": "object",
+            "required": [
+                "data_source",
+                "default",
+                "description",
+                "display_name",
+                "name",
+                "options",
+                "placeholder",
+                "required",
+                "type",
+                "visible_when"
+            ],
+            "properties": {
+                "data_source": {
+                    "description": "Dynamic data source configuration",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/util.DataSource"
+                        }
+                    ]
+                },
+                "default": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "display_name": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "options": {
+                    "description": "Static options (used when DataSource is nil or type=static)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/util.ConfigFieldOptions"
+                    }
+                },
+                "placeholder": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "$ref": "#/definitions/util.FieldType"
+                },
+                "visible_when": {
+                    "description": "Condition for field visibility",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/util.VisibleCondition"
+                        }
+                    ]
+                }
+            }
+        },
+        "util.ConfigFieldOptions": {
+            "type": "object",
+            "required": [
+                "label",
+                "value"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.DataSource": {
             "type": "object",
             "required": [
                 "cache",
@@ -7842,7 +7899,7 @@
                     "description": "Type specifies the data source type",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/toolset.DataSourceType"
+                            "$ref": "#/definitions/util.DataSourceType"
                         }
                     ]
                 },
@@ -7856,7 +7913,7 @@
                 }
             }
         },
-        "toolset.DataSourceType": {
+        "util.DataSourceType": {
             "type": "string",
             "enum": [
                 "static",
@@ -7871,83 +7928,28 @@
                 "DataSourceTypeInternal"
             ]
         },
-        "toolset.ToolSetConfigField": {
+        "util.ErrorResponse": {
             "type": "object",
             "required": [
-                "data_source",
-                "default",
-                "description",
-                "display_name",
-                "name",
-                "options",
-                "placeholder",
-                "required",
-                "type",
-                "visible_when"
+                "code",
+                "err",
+                "message",
+                "trace_id"
             ],
             "properties": {
-                "data_source": {
-                    "description": "Dynamic data source configuration",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/toolset.DataSource"
-                        }
-                    ]
-                },
-                "default": {
+                "code": {
                     "type": "string"
                 },
-                "description": {
+                "err": {},
+                "message": {
                     "type": "string"
                 },
-                "display_name": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "options": {
-                    "description": "Static options (used when DataSource is nil or type=static)",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/toolset.ToolSetConfigFieldOptions"
-                    }
-                },
-                "placeholder": {
-                    "type": "string"
-                },
-                "required": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "$ref": "#/definitions/toolset.ToolSetFieldType"
-                },
-                "visible_when": {
-                    "description": "Condition for field visibility",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/toolset.VisibleCondition"
-                        }
-                    ]
-                }
-            }
-        },
-        "toolset.ToolSetConfigFieldOptions": {
-            "type": "object",
-            "required": [
-                "label",
-                "value"
-            ],
-            "properties": {
-                "label": {
-                    "type": "string"
-                },
-                "value": {
+                "trace_id": {
                     "type": "string"
                 }
             }
         },
-        "toolset.ToolSetFieldType": {
+        "util.FieldType": {
             "type": "string",
             "enum": [
                 "text",
@@ -7972,78 +7974,6 @@
                 "FieldTypeObject",
                 "FieldTypeSelect"
             ]
-        },
-        "toolset.ToolSetType": {
-            "type": "string",
-            "enum": [
-                "utils"
-            ],
-            "x-enum-varnames": [
-                "ToolSetTypeUtils"
-            ]
-        },
-        "toolset.VisibleCondition": {
-            "type": "object",
-            "required": [
-                "field",
-                "operator",
-                "value"
-            ],
-            "properties": {
-                "field": {
-                    "description": "Field is the name of the field to check",
-                    "type": "string"
-                },
-                "operator": {
-                    "description": "Operator is the comparison operator (eq, ne, in, not_in, contains)",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/toolset.VisibleConditionOperator"
-                        }
-                    ]
-                },
-                "value": {
-                    "description": "Value is the value to compare against (can be a single value or array for in/not_in)"
-                }
-            }
-        },
-        "toolset.VisibleConditionOperator": {
-            "type": "string",
-            "enum": [
-                "eq",
-                "ne",
-                "in",
-                "not_in",
-                "contains"
-            ],
-            "x-enum-varnames": [
-                "OperatorEq",
-                "OperatorNe",
-                "OperatorIn",
-                "OperatorNotIn",
-                "OperatorContains"
-            ]
-        },
-        "util.ErrorResponse": {
-            "type": "object",
-            "required": [
-                "code",
-                "err",
-                "message",
-                "trace_id"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "err": {},
-                "message": {
-                    "type": "string"
-                },
-                "trace_id": {
-                    "type": "string"
-                }
-            }
         },
         "util.MessageData": {
             "type": "object",
@@ -9325,6 +9255,48 @@
                     "type": "string"
                 }
             }
+        },
+        "util.VisibleCondition": {
+            "type": "object",
+            "required": [
+                "field",
+                "operator",
+                "value"
+            ],
+            "properties": {
+                "field": {
+                    "description": "Field is the name of the field to check",
+                    "type": "string"
+                },
+                "operator": {
+                    "description": "Operator is the comparison operator (eq, ne, in, not_in, contains)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/util.VisibleConditionOperator"
+                        }
+                    ]
+                },
+                "value": {
+                    "description": "Value is the value to compare against (can be a single value or array for in/not_in)"
+                }
+            }
+        },
+        "util.VisibleConditionOperator": {
+            "type": "string",
+            "enum": [
+                "eq",
+                "ne",
+                "in",
+                "not_in",
+                "contains"
+            ],
+            "x-enum-varnames": [
+                "OperatorEq",
+                "OperatorNe",
+                "OperatorIn",
+                "OperatorNotIn",
+                "OperatorContains"
+            ]
         }
     }
 }

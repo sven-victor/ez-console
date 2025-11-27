@@ -9,6 +9,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
+	"github.com/sven-victor/ez-console/pkg/util"
 )
 
 // ToolSetService handles toolset management
@@ -203,10 +204,10 @@ func (s *ToolSetService) GetAllEnabledToolSetInstances(ctx context.Context) (too
 }
 
 type ToolSetTypeDefinition struct {
-	ToolSetType  toolset.ToolSetType          `json:"tool_set_type"`
-	ConfigFields []toolset.ToolSetConfigField `json:"config_fields"`
-	Description  string                       `json:"description"`
-	Name         string                       `json:"name"`
+	ToolSetType  toolset.ToolSetType `json:"tool_set_type"`
+	ConfigFields []util.ConfigField  `json:"config_fields"`
+	Description  string              `json:"description"`
+	Name         string              `json:"name"`
 }
 
 func (s *ToolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSetTypeDefinition {

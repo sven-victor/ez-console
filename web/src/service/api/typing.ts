@@ -198,6 +198,27 @@ export interface CheckPasswordComplexityResponse {
 
 export type Condition = true;
 
+export interface ConfigField {
+  /** Dynamic data source configuration */
+  data_source: DataSource;
+  default: string;
+  description: string;
+  display_name: string;
+  name: string;
+  /** Static options (used when DataSource is nil or type=static) */
+  options: ConfigFieldOptions[];
+  placeholder: string;
+  required: boolean;
+  type: FieldType;
+  /** Condition for field visibility */
+  visible_when: VisibleCondition;
+}
+
+export interface ConfigFieldOptions {
+  label: string;
+  value: string;
+}
+
 export interface CreateAIModelRequest {
   api_key: string;
   base_url?: string;
@@ -382,6 +403,16 @@ export interface ErrorResponse {
 }
 
 export type EventType = "content" | "tool_call" | "error";
+
+export type FieldType =
+  | "text"
+  | "string"
+  | "password"
+  | "number"
+  | "boolean"
+  | "array"
+  | "object"
+  | "select";
 
 export interface File {
   access: AccessType;
@@ -1460,43 +1491,12 @@ export interface ToolSet {
   updated_by: string;
 }
 
-export interface ToolSetConfigField {
-  /** Dynamic data source configuration */
-  data_source: DataSource;
-  default: string;
-  description: string;
-  display_name: string;
-  name: string;
-  /** Static options (used when DataSource is nil or type=static) */
-  options: ToolSetConfigFieldOptions[];
-  placeholder: string;
-  required: boolean;
-  type: ToolSetFieldType;
-  /** Condition for field visibility */
-  visible_when: VisibleCondition;
-}
-
-export interface ToolSetConfigFieldOptions {
-  label: string;
-  value: string;
-}
-
-export type ToolSetFieldType =
-  | "text"
-  | "string"
-  | "password"
-  | "number"
-  | "boolean"
-  | "array"
-  | "object"
-  | "select";
-
 export type ToolSetStatus = "enabled" | "disabled";
 
 export type ToolSetType = "utils";
 
 export interface ToolSetTypeDefinition {
-  config_fields: ToolSetConfigField[];
+  config_fields: ConfigField[];
   description: string;
   name: string;
   tool_set_type: ToolSetType;

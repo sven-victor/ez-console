@@ -141,7 +141,7 @@ func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
 			return
 		}
-		if configField.Type == toolset.FieldTypePassword {
+		if configField.Type == util.FieldTypePassword {
 			value, ok := req.Config[configField.Name]
 			if !ok || value == nil {
 				continue
@@ -265,7 +265,7 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
 			return
 		}
-		if configField.Type == toolset.FieldTypePassword {
+		if configField.Type == util.FieldTypePassword {
 			value, ok := req.Config[configField.Name]
 			if !ok || value == nil {
 				continue
