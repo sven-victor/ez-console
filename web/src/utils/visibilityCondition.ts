@@ -16,7 +16,7 @@ export const checkVisibilityCondition = (
   }
 
   const { field, operator, value } = condition;
-  
+
   // Get the field value from form (support nested config fields)
   const fieldValue = formValues.config?.[field] ?? formValues[field];
 
