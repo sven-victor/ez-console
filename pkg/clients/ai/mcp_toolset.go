@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/toolset"
+	"github.com/sven-victor/ez-console/pkg/util"
 )
 
 // MCPToolSet implements the ToolSet interface for MCP protocol
@@ -256,39 +257,39 @@ func (m *MCPToolSet) makeHTTPRequest(ctx context.Context, request MCPRequest) (*
 	return &response, nil
 }
 
-var mcpConfigFields = []toolset.ToolSetConfigField{
+var mcpConfigFields = []util.ConfigField{
 	{
 		Name:        "endpoint",
 		DisplayName: "Endpoint",
 		Description: "The endpoint of the MCP server",
-		Type:        toolset.FieldTypeString,
+		Type:        util.FieldTypeString,
 		Required:    true,
 	}, {
 		Name:        "username",
 		DisplayName: "Username",
 		Description: "The username for the MCP server",
-		Type:        toolset.FieldTypeString,
+		Type:        util.FieldTypeString,
 		Required:    false,
 	}, {
 		Name:        "password",
 		DisplayName: "Password",
 		Description: "The password for the MCP server",
-		Type:        toolset.FieldTypePassword,
+		Type:        util.FieldTypePassword,
 		Required:    false,
 	}, {
 		Name:        "token",
 		DisplayName: "Bearer Token",
 		Description: "The bearer token for the MCP server",
-		Type:        toolset.FieldTypePassword,
+		Type:        util.FieldTypePassword,
 		Required:    false,
 	}, {
 		Name:        "protocol",
 		DisplayName: "Protocol",
 		Description: "The protocol of the MCP server",
-		Type:        toolset.FieldTypeString,
+		Type:        util.FieldTypeString,
 		Required:    true,
 		Default:     "http",
-		Options: []toolset.ToolSetConfigFieldOptions{
+		Options: []util.ConfigFieldOptions{
 			{
 				Label: "HTTP",
 				Value: "http",
@@ -320,7 +321,7 @@ func (f *MCPToolSetFactory) GetName() string {
 	return "MCP"
 }
 
-func (f *MCPToolSetFactory) GetConfigFields() []toolset.ToolSetConfigField {
+func (f *MCPToolSetFactory) GetConfigFields() []util.ConfigField {
 	return mcpConfigFields
 }
 

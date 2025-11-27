@@ -8,6 +8,7 @@ import (
 
 	openai "github.com/sashabaranov/go-openai"
 	"github.com/sashabaranov/go-openai/jsonschema"
+	"github.com/sven-victor/ez-console/pkg/util"
 )
 
 type UtilsToolSet struct{}
@@ -111,15 +112,15 @@ func (f *UtilsToolSetFactory) GetName() string {
 	return (&UtilsToolSet{}).GetName()
 }
 
-func (f *UtilsToolSetFactory) GetConfigFields() []ToolSetConfigField {
-	return []ToolSetConfigField{{
+func (f *UtilsToolSetFactory) GetConfigFields() []util.ConfigField {
+	return []util.ConfigField{{
 		Name:        "toolset",
 		DisplayName: "Toolset",
 		Description: "Toolset",
-		Type:        FieldTypeSelect,
+		Type:        util.FieldTypeSelect,
 		Required:    true,
-		DataSource: &DataSource{
-			Type:     DataSourceTypeToolsets,
+		DataSource: &util.DataSource{
+			Type:     util.DataSourceTypeToolsets,
 			LabelKey: "name",
 			ValueKey: "id",
 		},
