@@ -10,7 +10,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
-	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -262,38 +261,22 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		return
 	}
 
-	// Convert to OpenAI format
-	var openaiMessages []openai.ChatCompletionMessage
-	for _, msg := range messages {
-		openaiMsg := openai.ChatCompletionMessage{
-			Role:    string(msg.Role),
-			Content: msg.Content,
-		}
-		switch msg.Role {
-		case openai.ChatMessageRoleTool:
-		}
-		// Add tool calls if present
-		if len(msg.ToolCalls) > 0 {
-			for _, toolCall := range msg.ToolCalls {
-				openaiMsg.ToolCalls = append(openaiMsg.ToolCalls, openai.ToolCall{
-					Index: toolCall.Index,
-					ID:    toolCall.ID,
-					Type:  openai.ToolType(toolCall.Type),
-					Function: openai.FunctionCall{
-						Name:      toolCall.Function.Name,
-						Arguments: toolCall.Function.Arguments,
-					},
-				})
-			}
-		}
+	// Convert from model.AIChatMessage to ai.ChatMessage
+	chatMessages := ai.ChatMessagesFromModel(messages)
 
-		// Add tool call ID if present
-		if msg.ToolCallID != "" {
-			openaiMsg.ToolCallID = msg.ToolCallID
-		}
+	// Add the new user message
+	chatMessages = append(chatMessages, ai.ChatMessage{
+		Role:    model.AIChatMessageRoleUser,
+		Content: req.Content,
+	})
 
-		openaiMessages = append(openaiMessages, openaiMsg)
+	// Save the user message to database
+	_, err = c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleUser, req.Content, nil, "")
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to add chat message", err)))
+		return
 	}
+
 	options := []ai.WithChatCompletionStreamOptions{
 		ai.WithChatCompletionStreamOnMessageEnd(func(ctx context.Context, messageID string, content string) {
 			_, err := c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleAssistant, content, nil, "")
@@ -330,19 +313,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}),
 	}
 
-	openaiMessages = append(openaiMessages, openai.ChatCompletionMessage{
-		Role:    string(model.AIChatMessageRoleUser),
-		Content: req.Content,
-	})
-
-	_, err = c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleUser, req.Content, nil, "")
-	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to add chat message", err)))
-		return
-	}
-
 	// Create streaming chat completion
-	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, openaiMessages, options...)
+	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, chatMessages, options...)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", fmt.Sprintf("Failed to create chat completion stream: %s", err))))
 		return

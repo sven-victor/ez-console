@@ -66,12 +66,8 @@ declare global {
     }
   
     interface AIModel {
-      /** API key (encrypted) */
-      api_key: string;
-      /** Base URL (optional, for custom endpoints) */
-      base_url: string;
-      /** Additional configuration */
-      config: AIModelConfig;
+      /** Additional configuration`          // Configuration (includes api_key, model_id, base_url, etc.) */
+      config: Record<string, any>;
       created_at: string;
       /** Creator user ID */
       created_by: string;
@@ -80,8 +76,6 @@ declare global {
       id: string;
       /** Whether this is the default model */
       is_default: boolean;
-      /** Model ID (e.g., gpt-4, gpt-3.5-turbo) */
-      model_id: string;
       /** Model name */
       name: string;
       /** Organization ID */
@@ -95,8 +89,6 @@ declare global {
       updated_by: string;
     }
   
-    type AIModelConfig = true;
-  
     type AIModelProvider = "openai";
   
     type AIModelStatus = "enabled" | "disabled";
@@ -106,6 +98,13 @@ declare global {
       id: string;
       index: number;
       type: string;
+    }
+  
+    interface AITypeDefinition {
+      config_fields: ConfigField[];
+      description: string;
+      name: string;
+      provider: AIModelProvider;
     }
   
     interface assignPermissionsParams {
@@ -222,12 +221,9 @@ declare global {
     }
   
     interface CreateAIModelRequest {
-      api_key: string;
-      base_url?: string;
-      config?: Record<string, any>;
+      config: Record<string, any>;
       description?: string;
       is_default?: boolean;
-      model_id: string;
       name: string;
       provider: AIModelProvider;
     }
@@ -995,6 +991,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArrayServiceAITypeDefinition {
+      code: string;
+      data: AITypeDefinition[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayServiceSessionInfo {
       code: string;
       data: SessionInfo[];
@@ -1517,13 +1520,9 @@ declare global {
     }
   
     interface UpdateAIModelRequest {
-      /** Optional for updates */
-      api_key: string;
-      base_url?: string;
       config?: Record<string, any>;
       description?: string;
       is_default?: boolean;
-      model_id: string;
       name: string;
       provider: AIModelProvider;
     }

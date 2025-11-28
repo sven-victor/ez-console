@@ -311,7 +311,7 @@ const ToolSetSettings: React.FC = () => {
   };
 
   // Get dependent field values for a specific field
-  const getDependentValues = (field: API.ToolSetConfigField): Record<string, any> => {
+  const getDependentValues = (field: API.ConfigField): Record<string, any> => {
     if (!field.data_source?.depends_on || field.data_source.depends_on.length === 0) {
       return {};
     }

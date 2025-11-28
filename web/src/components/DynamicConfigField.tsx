@@ -3,13 +3,13 @@ import { Form, Input, InputNumber, Select, Switch, Checkbox, Space } from 'antd'
 import { useTranslation } from 'react-i18next';
 import { useDynamicDataSource } from '@/hooks/useDynamicDataSource';
 import { checkVisibilityCondition } from '@/utils/visibilityCondition';
-import type { ToolSetConfigField } from '@/service/api/typing';
+import type { ConfigField } from '@/service/api/typing';
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 interface DynamicConfigFieldProps {
-  field: ToolSetConfigField;
+  field: ConfigField;
   selectedType: string;
   dependentValues?: Record<string, any>;
   formValues?: Record<string, any>;

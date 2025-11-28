@@ -64,12 +64,8 @@ export interface AIFunctionCall {
 }
 
 export interface AIModel {
-  /** API key (encrypted) */
-  api_key: string;
-  /** Base URL (optional, for custom endpoints) */
-  base_url: string;
-  /** Additional configuration */
-  config: AIModelConfig;
+  /** Additional configuration`          // Configuration (includes api_key, model_id, base_url, etc.) */
+  config: Record<string, any>;
   created_at: string;
   /** Creator user ID */
   created_by: string;
@@ -78,8 +74,6 @@ export interface AIModel {
   id: string;
   /** Whether this is the default model */
   is_default: boolean;
-  /** Model ID (e.g., gpt-4, gpt-3.5-turbo) */
-  model_id: string;
   /** Model name */
   name: string;
   /** Organization ID */
@@ -93,8 +87,6 @@ export interface AIModel {
   updated_by: string;
 }
 
-export type AIModelConfig = true;
-
 export type AIModelProvider = "openai";
 
 export type AIModelStatus = "enabled" | "disabled";
@@ -104,6 +96,13 @@ export interface AIToolCall {
   id: string;
   index: number;
   type: string;
+}
+
+export interface AITypeDefinition {
+  config_fields: ConfigField[];
+  description: string;
+  name: string;
+  provider: AIModelProvider;
 }
 
 export interface assignPermissionsParams {
@@ -220,12 +219,9 @@ export interface ConfigFieldOptions {
 }
 
 export interface CreateAIModelRequest {
-  api_key: string;
-  base_url?: string;
-  config?: Record<string, any>;
+  config: Record<string, any>;
   description?: string;
   is_default?: boolean;
-  model_id: string;
   name: string;
   provider: AIModelProvider;
 }
@@ -993,6 +989,13 @@ export interface ResponseArrayModelUser {
   trace_id: string;
 }
 
+export interface ResponseArrayServiceAITypeDefinition {
+  code: string;
+  data: AITypeDefinition[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayServiceSessionInfo {
   code: string;
   data: SessionInfo[];
@@ -1515,13 +1518,9 @@ export interface updateAIModelParams {
 }
 
 export interface UpdateAIModelRequest {
-  /** Optional for updates */
-  api_key: string;
-  base_url?: string;
   config?: Record<string, any>;
   description?: string;
   is_default?: boolean;
-  model_id: string;
   name: string;
   provider: AIModelProvider;
 }

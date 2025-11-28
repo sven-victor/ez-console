@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -20,8 +21,12 @@ func NewAIModelService() *AIModelService {
 
 // CreateAIModel creates a new AI model
 func (s *AIModelService) CreateAIModel(ctx context.Context, req *model.AIModel) (*model.AIModel, error) {
-	// Encrypt the API key
-	req.APIKey = util.EncryptString(req.APIKey)
+	// Encrypt the API key in Config
+	if req.Config != nil {
+		if apiKey, ok := req.Config["api_key"].(string); ok && apiKey != "" {
+			req.Config["api_key"] = util.EncryptString(apiKey)
+		}
+	}
 
 	// If this is set as default, unset other defaults
 	if req.IsDefault {
@@ -34,8 +39,6 @@ func (s *AIModelService) CreateAIModel(ctx context.Context, req *model.AIModel) 
 		return nil, fmt.Errorf("failed to create AI model: %w", err)
 	}
 
-	// Don't return the encrypted API key
-	req.APIKey = ""
 	return req, nil
 }
 
@@ -57,7 +60,9 @@ func (s *AIModelService) GetAIModelForAPI(ctx context.Context, organizationID, i
 	}
 
 	// Don't return the API key
-	aiModel.APIKey = ""
+	if aiModel.Config != nil {
+		aiModel.Config["api_key"] = ""
+	}
 	return &aiModel, nil
 }
 
@@ -68,14 +73,6 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 		return nil, fmt.Errorf("failed to find AI model: %w", err)
 	}
 
-	// Encrypt the API key if provided
-	if req.APIKey != "" {
-		req.APIKey = util.EncryptString(req.APIKey)
-	} else {
-		// Keep the existing API key if not provided
-		req.APIKey = existingModel.APIKey
-	}
-
 	// If this is set as default, unset other defaults
 	if req.IsDefault && !existingModel.IsDefault {
 		if err := s.unsetDefaultModels(ctx, req.Provider); err != nil {
@@ -83,12 +80,10 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 		}
 	}
 
-	if err := db.Session(ctx).Model(&model.AIModel{}).Where("organization_id = ? AND resource_id = ?", organizationID, id).Select("config", "name", "description", "provider", "model_id", "api_key", "base_url").Updates(req).Error; err != nil {
+	if err := db.Session(ctx).Model(&model.AIModel{}).Where("organization_id = ? AND resource_id = ?", organizationID, id).Select("config", "name", "description", "provider", "is_default", "updated_by").Updates(req).Error; err != nil {
 		return nil, fmt.Errorf("failed to update AI model: %w", err)
 	}
 
-	// Don't return the encrypted API key
-	req.APIKey = ""
 	return req, nil
 }
 
@@ -114,9 +109,11 @@ func (s *AIModelService) ListAIModels(ctx context.Context, organizationID string
 	query := db.Session(ctx).Model(&model.AIModel{}).Where("organization_id = ?", organizationID)
 
 	// Apply search filter
+	// Note: Config field search is complex in SQL, so we only search name and description
+	// Config.model_id search would require JSON functions which vary by database
 	if search != "" {
-		query = query.Where("name LIKE ? OR description LIKE ? OR model_id LIKE ?",
-			"%"+search+"%", "%"+search+"%", "%"+search+"%")
+		query = query.Where("name LIKE ? OR description LIKE ?",
+			"%"+search+"%", "%"+search+"%")
 	}
 
 	// Get total count
@@ -128,11 +125,6 @@ func (s *AIModelService) ListAIModels(ctx context.Context, organizationID string
 	offset := (current - 1) * pageSize
 	if err := query.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&models).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to list AI models: %w", err)
-	}
-
-	// Don't return API keys
-	for i := range models {
-		models[i].APIKey = ""
 	}
 
 	return models, total, nil
@@ -208,13 +200,43 @@ func (s *AIModelService) TestAIModel(ctx context.Context, organizationID, id str
 func (s *AIModelService) testOpenAIModel(ctx context.Context, aiModel *model.AIModel) error {
 	// This would be implemented to test the actual OpenAI connection
 	// For now, just validate the configuration
-	if aiModel.APIKey == "" {
-		return fmt.Errorf("API key is required")
+	if aiModel.Config == nil {
+		return fmt.Errorf("config is required")
 	}
-	if aiModel.ModelID == "" {
-		return fmt.Errorf("model ID is required")
+
+	apiKey, ok := aiModel.Config["api_key"].(string)
+	if !ok || apiKey == "" {
+		return fmt.Errorf("API key is required in config")
+	}
+
+	modelID, ok := aiModel.Config["model_id"].(string)
+	if !ok || modelID == "" {
+		return fmt.Errorf("model ID is required in config")
 	}
 
 	// TODO: Make a test API call to OpenAI
 	return nil
+}
+
+// AITypeDefinition represents the type definition for an AI provider
+type AITypeDefinition struct {
+	Provider     model.AIModelProvider `json:"provider"`
+	ConfigFields []util.ConfigField    `json:"config_fields"`
+	Description  string                `json:"description"`
+	Name         string                `json:"name"`
+}
+
+// GetAITypeDefinitions returns all registered AI provider type definitions
+func (s *AIModelService) GetAITypeDefinitions(ctx context.Context) []AITypeDefinition {
+	factories := ai.GetRegisteredFactories()
+	definitions := []AITypeDefinition{}
+	for provider, factory := range factories {
+		definitions = append(definitions, AITypeDefinition{
+			Provider:     provider,
+			Description:  factory.GetDescription(),
+			Name:         factory.GetName(),
+			ConfigFields: factory.GetConfigFields(),
+		})
+	}
+	return definitions
 }

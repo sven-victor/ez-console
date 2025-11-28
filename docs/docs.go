@@ -343,6 +343,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/ai/models/types": {
+            "get": {
+                "description": "Get the type definitions for AI providers",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Get AI type definitions",
+                "operationId": "getAITypeDefinitions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_service_AITypeDefinition"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/ai/models/{id}": {
             "get": {
                 "description": "Get an AI model by ID",
@@ -4733,18 +4760,11 @@ const docTemplate = `{
         "aiapi.CreateAIModelRequest": {
             "type": "object",
             "required": [
-                "api_key",
-                "model_id",
+                "config",
                 "name",
                 "provider"
             ],
             "properties": {
-                "api_key": {
-                    "type": "string"
-                },
-                "base_url": {
-                    "type": "string"
-                },
                 "config": {
                     "type": "object"
                 },
@@ -4753,9 +4773,6 @@ const docTemplate = `{
                 },
                 "is_default": {
                     "type": "boolean"
-                },
-                "model_id": {
-                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -4794,19 +4811,10 @@ const docTemplate = `{
         "aiapi.UpdateAIModelRequest": {
             "type": "object",
             "required": [
-                "api_key",
-                "model_id",
                 "name",
                 "provider"
             ],
             "properties": {
-                "api_key": {
-                    "description": "Optional for updates",
-                    "type": "string"
-                },
-                "base_url": {
-                    "type": "string"
-                },
                 "config": {
                     "type": "object"
                 },
@@ -4815,9 +4823,6 @@ const docTemplate = `{
                 },
                 "is_default": {
                     "type": "boolean"
-                },
-                "model_id": {
-                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -5439,15 +5444,12 @@ const docTemplate = `{
         "model.AIModel": {
             "type": "object",
             "required": [
-                "api_key",
-                "base_url",
                 "config",
                 "created_at",
                 "created_by",
                 "description",
                 "id",
                 "is_default",
-                "model_id",
                 "name",
                 "organization_id",
                 "provider",
@@ -5456,21 +5458,9 @@ const docTemplate = `{
                 "updated_by"
             ],
             "properties": {
-                "api_key": {
-                    "description": "API key (encrypted)",
-                    "type": "string"
-                },
-                "base_url": {
-                    "description": "Base URL (optional, for custom endpoints)",
-                    "type": "string"
-                },
                 "config": {
-                    "description": "Additional configuration",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/model.AIModelConfig"
-                        }
-                    ]
+                    "description": "Additional configuration` + "`" + `          // Configuration (includes api_key, model_id, base_url, etc.)",
+                    "type": "object"
                 },
                 "created_at": {
                     "type": "string"
@@ -5489,10 +5479,6 @@ const docTemplate = `{
                 "is_default": {
                     "description": "Whether this is the default model",
                     "type": "boolean"
-                },
-                "model_id": {
-                    "description": "Model ID (e.g., gpt-4, gpt-3.5-turbo)",
-                    "type": "string"
                 },
                 "name": {
                     "description": "Model name",
@@ -5526,10 +5512,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "model.AIModelConfig": {
-            "type": "object",
-            "additionalProperties": true
         },
         "model.AIModelProvider": {
             "type": "string",
@@ -6667,6 +6649,32 @@ const docTemplate = `{
                 "ToolTypeFunction"
             ]
         },
+        "service.AITypeDefinition": {
+            "type": "object",
+            "required": [
+                "config_fields",
+                "description",
+                "name",
+                "provider"
+            ],
+            "properties": {
+                "config_fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/util.ConfigField"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provider": {
+                    "$ref": "#/definitions/model.AIModelProvider"
+                }
+            }
+        },
         "service.Chart": {
             "type": "object",
             "required": [
@@ -7747,6 +7755,14 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
                 1,
                 1000,
                 1000000,
@@ -7755,6 +7771,14 @@ const docTemplate = `{
                 3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -8481,6 +8505,32 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.User"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_service_AITypeDefinition": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.AITypeDefinition"
                     }
                 },
                 "err": {

@@ -185,6 +185,17 @@ export async function testAiModel(
   });
 }
 
+/** Get AI type definitions Get the type definitions for AI providers GET /api/ai/models/types */
+export async function getAiTypeDefinitions(options?: { [key: string]: any }) {
+  return request<API.ResponseArrayServiceAITypeDefinition>(
+    "/api/ai/models/types",
+    {
+      method: "GET",
+      ...(options || {}),
+    }
+  );
+}
+
 import { type SSERequestConfig } from '@/service/client'
 /** Stream chat Stream chat responses using Server-Sent Events POST /api/ai/chat/sessions/${param0} */
 export async function streamChat(

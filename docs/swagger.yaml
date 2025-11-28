@@ -81,25 +81,18 @@ definitions:
     - ToolCallStatusFailed
   aiapi.CreateAIModelRequest:
     properties:
-      api_key:
-        type: string
-      base_url:
-        type: string
       config:
         type: object
       description:
         type: string
       is_default:
         type: boolean
-      model_id:
-        type: string
       name:
         type: string
       provider:
         $ref: '#/definitions/model.AIModelProvider'
     required:
-    - api_key
-    - model_id
+    - config
     - name
     - provider
     type: object
@@ -122,26 +115,17 @@ definitions:
     type: object
   aiapi.UpdateAIModelRequest:
     properties:
-      api_key:
-        description: Optional for updates
-        type: string
-      base_url:
-        type: string
       config:
         type: object
       description:
         type: string
       is_default:
         type: boolean
-      model_id:
-        type: string
       name:
         type: string
       provider:
         $ref: '#/definitions/model.AIModelProvider'
     required:
-    - api_key
-    - model_id
     - name
     - provider
     type: object
@@ -569,16 +553,10 @@ definitions:
     type: object
   model.AIModel:
     properties:
-      api_key:
-        description: API key (encrypted)
-        type: string
-      base_url:
-        description: Base URL (optional, for custom endpoints)
-        type: string
       config:
-        allOf:
-        - $ref: '#/definitions/model.AIModelConfig'
-        description: Additional configuration
+        description: Additional configuration`          // Configuration (includes
+          api_key, model_id, base_url, etc.)
+        type: object
       created_at:
         type: string
       created_by:
@@ -592,9 +570,6 @@ definitions:
       is_default:
         description: Whether this is the default model
         type: boolean
-      model_id:
-        description: Model ID (e.g., gpt-4, gpt-3.5-turbo)
-        type: string
       name:
         description: Model name
         type: string
@@ -615,24 +590,18 @@ definitions:
         description: Last updater user ID
         type: string
     required:
-    - api_key
-    - base_url
     - config
     - created_at
     - created_by
     - description
     - id
     - is_default
-    - model_id
     - name
     - organization_id
     - provider
     - status
     - updated_at
     - updated_by
-    type: object
-  model.AIModelConfig:
-    additionalProperties: true
     type: object
   model.AIModelProvider:
     enum:
@@ -1464,6 +1433,24 @@ definitions:
     type: string
     x-enum-varnames:
     - ToolTypeFunction
+  service.AITypeDefinition:
+    properties:
+      config_fields:
+        items:
+          $ref: '#/definitions/util.ConfigField'
+        type: array
+      description:
+        type: string
+      name:
+        type: string
+      provider:
+        $ref: '#/definitions/model.AIModelProvider'
+    required:
+    - config_fields
+    - description
+    - name
+    - provider
+    type: object
   service.Chart:
     properties:
       color:
@@ -2230,6 +2217,14 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     - 1
     - 1000
     - 1000000
@@ -2238,6 +2233,14 @@ definitions:
     - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -2756,6 +2759,24 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.User'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-array_service_AITypeDefinition:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/service.AITypeDefinition'
         type: array
       err:
         type: string
@@ -3717,6 +3738,24 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Test AI model
+      tags:
+      - AI/Models
+  /api/ai/models/types:
+    get:
+      description: Get the type definitions for AI providers
+      operationId: getAITypeDefinitions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_service_AITypeDefinition'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get AI type definitions
       tags:
       - AI/Models
   /api/authorization/auth/login:

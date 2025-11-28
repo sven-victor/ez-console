@@ -1,14 +1,18 @@
 package aiapi
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-utils/safe"
 )
 
 // AIModelController handles AI model management
@@ -32,6 +36,7 @@ func (c *AIModelController) RegisterRoutes(router *gin.RouterGroup) {
 		models.DELETE("/:id", middleware.RequirePermission("ai:models:delete"), c.DeleteAIModel)
 		models.POST("/:id/test", middleware.RequirePermission("ai:models:test"), c.TestAIModel)
 		models.POST("/:id/set-default", middleware.RequirePermission("ai:models:update"), c.SetDefaultAIModel)
+		models.GET("/types", middleware.RequirePermission("ai:models:view"), c.GetAITypeDefinitions)
 	}
 }
 
@@ -40,10 +45,7 @@ type CreateAIModelRequest struct {
 	Name        string                `json:"name" binding:"required"`
 	Description string                `json:"description" validate:"optional"`
 	Provider    model.AIModelProvider `json:"provider" binding:"required"`
-	ModelID     string                `json:"model_id" binding:"required"`
-	APIKey      string                `json:"api_key" binding:"required"`
-	BaseURL     string                `json:"base_url,omitempty" validate:"optional"`
-	Config      model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
+	Config      model.AIModelConfig   `json:"config" binding:"required" swaggertype:"object"`
 	IsDefault   bool                  `json:"is_default" validate:"optional"`
 }
 
@@ -52,9 +54,6 @@ type UpdateAIModelRequest struct {
 	Name        string                `json:"name" binding:"required"`
 	Description string                `json:"description" validate:"optional"`
 	Provider    model.AIModelProvider `json:"provider" binding:"required"`
-	ModelID     string                `json:"model_id" binding:"required"`
-	APIKey      string                `json:"api_key"` // Optional for updates
-	BaseURL     string                `json:"base_url" validate:"optional"`
 	Config      model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
 	IsDefault   bool                  `json:"is_default" validate:"optional"`
 }
@@ -88,6 +87,30 @@ func (c *AIModelController) ListAIModels(ctx *gin.Context) {
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
+	}
+
+	for i := range models {
+		factory, exists := ai.GetFactory(models[i].Provider)
+		if !exists {
+			if models[i].Config != nil {
+				apiKey, ok := models[i].Config["api_key"].(string)
+				if ok {
+					models[i].Config["api_key"] = safe.NewEncryptedString(apiKey, os.Getenv(safe.SecretEnvName)).String()
+				}
+			}
+			continue
+		}
+		configFields := factory.GetConfigFields()
+		for _, configField := range configFields {
+			if configField.Type == util.FieldTypePassword {
+				if models[i].Config != nil {
+					val := models[i].Config[configField.Name].(string)
+					if val != "" {
+						models[i].Config[configField.Name] = safe.NewEncryptedString(val, os.Getenv(safe.SecretEnvName)).String()
+					}
+				}
+			}
+		}
 	}
 
 	util.RespondWithSuccessList(ctx, http.StatusOK, models, total, current, pageSize)
@@ -126,14 +149,37 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 		return
 	}
 
+	factory, exists := ai.GetFactory(req.Provider)
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported toolset type: %s", req.Provider)))
+		return
+	}
+	configFields := factory.GetConfigFields()
+	for _, configField := range configFields {
+		if configField.Required && req.Config[configField.Name] == "" {
+			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
+			return
+		}
+		if configField.Type == util.FieldTypePassword {
+			value, ok := req.Config[configField.Name]
+			if !ok || value == nil {
+				continue
+			}
+			switch v := value.(type) {
+			case string:
+				req.Config[configField.Name] = safe.NewEncryptedString(v, os.Getenv(safe.SecretEnvName)).String()
+			default:
+				util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is not a string", configField.Name)))
+				return
+			}
+		}
+	}
+
 	aiModel := model.NewAIModel(
 		organizationID,
 		req.Name,
 		req.Description,
 		req.Provider,
-		req.ModelID,
-		req.APIKey,
-		req.BaseURL,
 		req.Config,
 		userID.(string),
 	)
@@ -224,13 +270,36 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 		return
 	}
 
+	factory, exists := ai.GetFactory(req.Provider)
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported toolset type: %s", req.Provider)))
+		return
+	}
+	configFields := factory.GetConfigFields()
+	for _, configField := range configFields {
+		if configField.Required && req.Config[configField.Name] == "" {
+			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
+			return
+		}
+		if configField.Type == util.FieldTypePassword {
+			value, ok := req.Config[configField.Name]
+			if !ok || value == nil {
+				continue
+			}
+			switch v := value.(type) {
+			case string:
+				req.Config[configField.Name] = safe.NewEncryptedString(v, os.Getenv(safe.SecretEnvName)).String()
+			default:
+				util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is not a string", configField.Name)))
+				return
+			}
+		}
+	}
+
 	aiModel := &model.AIModel{
 		Name:        req.Name,
 		Description: req.Description,
 		Provider:    req.Provider,
-		ModelID:     req.ModelID,
-		APIKey:      req.APIKey,
-		BaseURL:     req.BaseURL,
 		Config:      req.Config,
 		IsDefault:   req.IsDefault,
 		UpdatedBy:   userID.(string),
@@ -348,6 +417,21 @@ func (c *AIModelController) SetDefaultAIModel(ctx *gin.Context) {
 	}
 
 	util.RespondWithMessage(ctx, "AI model set as default successfully")
+}
+
+// GetAITypeDefinitions gets the type definitions for AI providers
+//
+//	@Summary		Get AI type definitions
+//	@Description	Get the type definitions for AI providers
+//	@ID             getAITypeDefinitions
+//	@Tags			AI/Models
+//	@Produce		json
+//	@Success		200	{object}	util.Response[[]service.AITypeDefinition]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/ai/models/types [get]
+func (c *AIModelController) GetAITypeDefinitions(ctx *gin.Context) {
+	definitions := c.service.GetAITypeDefinitions(ctx)
+	util.RespondWithSuccess(ctx, http.StatusOK, definitions)
 }
 
 func init() {

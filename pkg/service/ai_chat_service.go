@@ -127,36 +127,53 @@ func (s *AIChatService) DeleteChatSession(ctx context.Context, sessionID string)
 }
 
 // CreateChatCompletion creates a chat completion using the specified model
-func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []openai.ChatCompletionMessage, tools []openai.Tool) (openai.ChatCompletionResponse, error) {
+// It automatically gets authorized toolSets for the organization
+func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage) ([]ai.ChatMessage, error) {
+	// Get authorized toolSets for the organization
+	toolSets, err := s.getAuthorizedToolSets(ctx, organizationID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get authorized toolSets: %w", err)
+	}
+
+	// Call CreateChatCompletionWithToolSets with the obtained toolSets
+	return s.CreateChatCompletionWithToolSets(ctx, organizationID, modelID, messages, toolSets)
+}
+
+// CreateChatCompletionWithToolSets creates a chat completion using the specified model with toolSets
+func (s *AIChatService) CreateChatCompletionWithToolSets(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, toolSets toolset.ToolSets) ([]ai.ChatMessage, error) {
 	// Get the AI model
 	aiModel, err := s.aiModelService.GetAIModel(ctx, organizationID, modelID)
 	if err != nil {
-		return openai.ChatCompletionResponse{}, fmt.Errorf("failed to get AI model: %w", err)
+		return nil, fmt.Errorf("failed to get AI model: %w", err)
 	}
 
-	// Create OpenAI client
-	client, err := ai.NewOpenAIClient(aiModel)
+	// Get factory for the provider
+	factory, ok := ai.GetFactory(aiModel.Provider)
+	if !ok {
+		return nil, fmt.Errorf("unsupported AI provider: %s", aiModel.Provider)
+	}
+
+	// Create AI client using factory with Config from AIModel
+	config := aiModel.Config
+	if config == nil {
+		config = make(map[string]interface{})
+	}
+	client, err := factory.CreateClient(config)
 	if err != nil {
-		return openai.ChatCompletionResponse{}, fmt.Errorf("failed to create OpenAI client: %w", err)
+		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
-	// Create chat completion request
-	request := openai.ChatCompletionRequest{
-		Messages: messages,
-		Tools:    tools,
-	}
-
-	// Call OpenAI API
-	response, err := client.CreateChatCompletion(ctx, request)
+	// Call CreateChat
+	responseMessages, err := client.CreateChat(ctx, messages, ai.WithChatCompletionToolSets(toolSets))
 	if err != nil {
-		return openai.ChatCompletionResponse{}, fmt.Errorf("failed to create chat completion: %w", err)
+		return nil, fmt.Errorf("failed to create chat completion: %w", err)
 	}
 
-	return response, nil
+	return responseMessages, nil
 }
 
 // CreateChatCompletionStream creates a streaming chat completion
-func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []openai.ChatCompletionMessage, options ...ai.WithChatCompletionStreamOptions) (ai.ChatStream, error) {
+func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatCompletionStreamOptions) (ai.ChatStream, error) {
 	// Get the AI model
 	aiModel, err := s.aiModelService.GetAIModel(ctx, organizationID, modelID)
 	if err != nil {
@@ -168,13 +185,25 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, err
 	}
 
-	// Create OpenAI client
-	client, err := ai.NewOpenAIClient(aiModel)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create OpenAI client: %w", err)
+	// Get factory for the provider
+	factory, ok := ai.GetFactory(aiModel.Provider)
+	if !ok {
+		return nil, fmt.Errorf("unsupported AI provider: %s", aiModel.Provider)
 	}
 
-	stream, err := ai.NewChatStream(ctx, client, messages, toolSets, options...)
+	// Create AI client using factory with Config from AIModel
+	config := aiModel.Config
+	if config == nil {
+		config = make(map[string]interface{})
+	}
+	client, err := factory.CreateClient(config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create AI client: %w", err)
+	}
+
+	// Call CreateChatStream
+	allOptions := append([]ai.WithChatCompletionStreamOptions{ai.WithChatCompletionStreamToolSets(toolSets)}, options...)
+	stream, err := client.CreateChatStream(ctx, messages, allOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
 	}

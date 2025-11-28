@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Card,
   Table,
@@ -30,17 +30,16 @@ import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
+import DynamicConfigField from '@/components/DynamicConfigField';
 
 const { TextArea } = Input;
-const { Option } = Select;
 
 interface AIModel {
   id: string;
   name: string;
   description: string;
   provider: API.AIModelProvider;
-  model_id: string;
-  base_url?: string;
+  config: Record<string, any>;
   status: 'enabled' | 'disabled';
   is_default: boolean;
   created_at: string;
@@ -51,9 +50,6 @@ interface AIModelFormData {
   name: string;
   description?: string;
   provider: API.AIModelProvider;
-  model_id: string;
-  api_key: string;
-  base_url?: string;
   config?: Record<string, any>;
   is_default?: boolean;
 }
@@ -65,6 +61,25 @@ const AIModelSettings: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModel | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  // Fetch AI type definitions
+  const { loading: typeDefinitionsLoading, data: typeDefinitions } = useRequest(
+    () => api.ai.getAiTypeDefinitions(),
+    {
+      refreshDeps: [],
+      onError: (error) => {
+        message.error(t('models.fetchTypeDefinitionsFailed', { defaultValue: 'Failed to fetch AI type definitions' }));
+        console.error('Failed to fetch AI type definitions:', error);
+      },
+    }
+  );
+
+  // Get current selected provider definition
+  const currentProviderDefinition = useMemo(() => {
+    return typeDefinitions?.find((td) => td.provider === selectedProvider);
+  }, [typeDefinitions, selectedProvider]);
+
   // Fetch AI models
   const { loading, data, refresh } = useRequest(
     () => api.ai.listAiModels({ current: 1, page_size: 100, search: searchText }),
@@ -79,7 +94,7 @@ const AIModelSettings: React.FC = () => {
 
   // Create AI model
   const { loading: creating, run: createModel } = useRequest(
-    (data: AIModelFormData) => api.ai.createAiModel(data),
+    ({ config, ...data }: AIModelFormData) => api.ai.createAiModel({ config: config ?? {}, ...data }),
     {
       manual: true,
       onSuccess: () => {
@@ -163,25 +178,83 @@ const AIModelSettings: React.FC = () => {
 
   const handleCreate = () => {
     setEditingModel(null);
+    setSelectedProvider('');
+    setFormValues({});
     form.resetFields();
     setIsModalVisible(true);
   };
 
   const handleEdit = (record: AIModel) => {
     setEditingModel(record);
-    form.setFieldsValue({
-      ...record,
-      api_key: '', // Don't populate API key for security
-    });
+    setSelectedProvider(record.provider);
+    const config = record.config || {};
+    const formData: Record<string, any> = {
+      name: record.name,
+      description: record.description,
+      provider: record.provider,
+      is_default: record.is_default,
+      config: config, // Spread config fields to form
+    };
+    // Don't populate password fields for security
+    if (currentProviderDefinition?.config_fields) {
+      currentProviderDefinition.config_fields.forEach((field) => {
+        if (field.type === 'password') {
+          formData[field.name] = '';
+        }
+      });
+    }
+    setFormValues(formData);
+    form.setFieldsValue(formData);
     setIsModalVisible(true);
   };
 
-  const handleSubmit = (values: AIModelFormData) => {
-    if (editingModel) {
-      updateModel({ id: editingModel.id, data: values });
-    } else {
-      createModel(values);
+  const handleProviderChange = (provider: string) => {
+    setSelectedProvider(provider);
+    // Reset config fields when provider changes
+    const currentValues = form.getFieldsValue();
+    if (currentProviderDefinition?.config_fields) {
+      currentProviderDefinition.config_fields.forEach((field) => {
+        form.setFieldValue(field.name, undefined);
+      });
     }
+  };
+
+  const handleSubmit = (values: AIModelFormData) => {
+    // Extract config fields from form values
+    const config: Record<string, any> = {};
+    if (currentProviderDefinition?.config_fields) {
+      currentProviderDefinition.config_fields.forEach((field) => {
+        const value = values.config?.[field.name];
+        if (value !== undefined && value !== null && value !== '') {
+          config[field.name] = value;
+        }
+      });
+    }
+
+    const submitData: AIModelFormData = {
+      name: values.name,
+      description: values.description,
+      provider: values.provider,
+      config,
+      is_default: values.is_default,
+    };
+
+    if (editingModel) {
+      updateModel({ id: editingModel.id, data: submitData });
+    } else {
+      createModel(submitData);
+    }
+  };
+
+  const getDependentValues = (field: API.ConfigField) => {
+    if (!field.data_source?.depends_on) {
+      return {};
+    }
+    const dependentValues: Record<string, any> = {};
+    field.data_source.depends_on.forEach((dep) => {
+      dependentValues[dep] = formValues[dep];
+    });
+    return dependentValues;
   };
 
 
@@ -208,11 +281,6 @@ const AIModelSettings: React.FC = () => {
       render: (text) => <Tag color="blue">{text.toUpperCase()}</Tag>,
     },
     {
-      title: t('models.modelId', { defaultValue: 'Model ID' }),
-      dataIndex: 'model_id',
-      key: 'model_id',
-    },
-    {
       title: t('models.status', { defaultValue: 'Status' }),
       dataIndex: 'status',
       key: 'status',
@@ -227,50 +295,6 @@ const AIModelSettings: React.FC = () => {
       key: 'actions',
       width: 200,
       render: (_, record) => {
-        // <Space>
-        //   <PermissionGuard permission="ai:models:test">
-        //     <Tooltip title={t('models.test', { defaultValue: 'Test Connection' })}>
-        //       <Button
-        //         type="text"
-        //         icon={<CheckCircleOutlined />}
-        //         loading={testing && record.id === testingModelId}
-        //         onClick={() => handleTest(record.id)}
-        //       />
-        //     </Tooltip>
-        //   </PermissionGuard>
-        //   {!record.is_default && (
-        //     <PermissionGuard permission="ai:models:setDefault">
-        //       <Tooltip title={t('models.setDefault', { defaultValue: 'Set as Default' })}>
-        //         <Button
-        //           type="text"
-        //           icon={<StarOutlined />}
-        //           onClick={() => handleSetDefault(record.id)}
-        //         />
-        //       </Tooltip>
-        //     </PermissionGuard>
-        //   )}
-        //   <PermissionGuard permission="ai:models:update">
-        //     <Tooltip title={tCommon('edit', { defaultValue: 'Edit' })}>
-        //       <Button
-        //         type="text"
-        //         icon={<EditOutlined />}
-        //         onClick={() => handleEdit(record)}
-        //       />
-        //     </Tooltip>
-        //   </PermissionGuard>
-        //   <PermissionGuard permission="ai:models:delete">
-        //     <Popconfirm
-        //       title={t('models.deleteConfirm', { defaultValue: 'Are you sure you want to delete this AI model?' })}
-        //       onConfirm={() => handleDelete(record.id)}
-        //       okText={tCommon('yes', { defaultValue: 'Yes' })}
-        //       cancelText={tCommon('no', { defaultValue: 'No' })}
-        //     >
-        //       <Tooltip title={tCommon('delete', { defaultValue: 'Delete' })}>
-        //         <Button type="text" danger icon={<DeleteOutlined />} />
-        //       </Tooltip>
-        //     </Popconfirm>
-        //   </PermissionGuard>
-        // </Space>
         return <Actions actions={[
           {
             key: 'test',
@@ -346,7 +370,7 @@ const AIModelSettings: React.FC = () => {
 
       {/* AI Models Table */}
       <Card>
-        <Table
+        <Table<AIModel>
           columns={columns}
           dataSource={data?.data || []}
           loading={loading}
@@ -384,6 +408,7 @@ const AIModelSettings: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
+          onValuesChange={(_, allValues) => setFormValues(allValues)}
         >
           <Form.Item
             name="name"
@@ -403,45 +428,33 @@ const AIModelSettings: React.FC = () => {
             />
           </Form.Item>
 
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="provider"
-                label={t('models.provider', { defaultValue: 'Provider' })}
-                rules={[{ required: true, message: t('models.providerRequired', { defaultValue: 'Please select provider' }) }]}
-              >
-                <Select placeholder={t('models.providerPlaceholder', { defaultValue: 'Select provider' })}>
-                  <Option value="openai">OpenAI</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="model_id"
-                label={t('models.modelId', { defaultValue: 'Model ID' })}
-                rules={[{ required: true, message: t('models.modelIdRequired', { defaultValue: 'Please enter model ID' }) }]}
-              >
-                <Input placeholder="gpt-4, gpt-3.5-turbo, etc." />
-              </Form.Item>
-            </Col>
-          </Row>
-
           <Form.Item
-            name="api_key"
-            label={t('models.apiKey', { defaultValue: 'API Key' })}
-            rules={editingModel ? [] : [{ required: true, message: t('models.apiKeyRequired', { defaultValue: 'Please enter API key' }) }]}
+            name="provider"
+            label={t('models.provider', { defaultValue: 'Provider' })}
+            rules={[{ required: true, message: t('models.providerRequired', { defaultValue: 'Please select provider' }) }]}
           >
-            <Input.Password
-              placeholder={editingModel ? t('models.apiKeyPlaceholderEdit', { defaultValue: 'Leave empty to keep current API key' }) : t('models.apiKeyPlaceholder', { defaultValue: 'Enter API key' })}
+            <Select
+              loading={typeDefinitionsLoading}
+              placeholder={t('models.providerPlaceholder', { defaultValue: 'Select provider' })}
+              onChange={handleProviderChange}
+              value={selectedProvider}
+              options={typeDefinitions?.map((typeDefinition) => ({
+                label: typeDefinition.name,
+                value: typeDefinition.provider,
+              }))}
             />
           </Form.Item>
 
-          <Form.Item
-            name="base_url"
-            label={t('models.baseUrl', { defaultValue: 'Base URL' })}
-          >
-            <Input placeholder={t('models.baseUrlPlaceholder', { defaultValue: 'Optional: Custom API endpoint' })} />
-          </Form.Item>
+          {/* Dynamic config fields based on selected provider */}
+          {currentProviderDefinition?.config_fields?.map((field) => (
+            <DynamicConfigField
+              key={field.name}
+              field={field}
+              selectedType={selectedProvider}
+              dependentValues={getDependentValues(field)}
+              formValues={formValues}
+            />
+          ))}
 
           <Form.Item
             name="is_default"
@@ -464,6 +477,8 @@ const AIModelSettings: React.FC = () => {
                   setIsModalVisible(false);
                   form.resetFields();
                   setEditingModel(null);
+                  setSelectedProvider('');
+                  setFormValues({});
                 }}
               >
                 {tCommon('cancel', { defaultValue: 'Cancel' })}
