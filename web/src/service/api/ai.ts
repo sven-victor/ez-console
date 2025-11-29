@@ -73,6 +73,28 @@ export async function deleteChatSession(
   );
 }
 
+/** Generate or update chat session title Generate a title for a chat session based on conversation content, or update with provided title PUT /api/ai/chat/sessions/${param0}/title */
+export async function generateChatSessionTitle(
+  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
+  params: API.generateChatSessionTitleParams,
+  body: API.GenerateChatSessionTitleRequest,
+  options?: { [key: string]: any }
+) {
+  const { sessionId: param0, ...queryParams } = params;
+  return request<API.ResponseModelAIChatSession>(
+    `/api/ai/chat/sessions/${param0}/title`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** List AI models List AI models with pagination and search GET /api/ai/models */
 export async function listAiModels(
   // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)

@@ -46,5 +46,9 @@ export default {
     today: '今天',
     renameConversation: '重命名',
     inputPlaceholder: '请输入您的消息',
+    regenerateTitle: '重新生成标题',
+    generatingTitle: '正在生成标题...',
+    titleGenerated: '标题生成成功',
+    titleGenerationFailed: '生成标题失败',
   },
 };

@@ -3,6 +3,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import {
   Bubble,
@@ -148,6 +149,10 @@ class ChatError extends Error {
   }
 }
 
+interface Conversation extends API.AIChatSession {
+  loading?: boolean;
+}
+
 const AIChat: React.FC = () => {
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
@@ -157,7 +162,7 @@ const AIChat: React.FC = () => {
   // ==================== State ====================
   const [messageHistory, setMessageHistory] = useState<Record<string, MessageInfo<ChatMessage>[]>>({});
 
-  const [conversations, setConversations] = useState<API.AIChatSession[]>([]);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [curConversation, setCurConversation] = useState<string>();
 
   const [inputValue, setInputValue] = useState('');
@@ -181,6 +186,10 @@ const AIChat: React.FC = () => {
         buffer: [],
         messageID: '',
       }
+      // Check if this is the first conversation (before adding new messages)
+      const currentMessages = messageHistory[sessionId] || [];
+      const isFirstConversation = currentMessages.length === 0;
+
       try {
         onStream?.(controller);
         const response = await api.ai.streamChat({ sessionId: sessionId }, {
@@ -214,6 +223,19 @@ const AIChat: React.FC = () => {
           }
         }
         onSuccess(msgBuffer.buffer);
+
+        // If this is the first conversation, refresh the conversation title after a delay
+        // (backend auto-generates the title, so we just need to refresh the list)
+        if (isFirstConversation) {
+          setTimeout(async () => {
+            try {
+              const response = await api.ai.listChatSessions({ current: 1, page_size: 20 });
+              setConversations(response.data);
+            } catch (error) {
+              // Silently fail - title will be updated on next manual refresh
+            }
+          }, 2000); // Wait 2 seconds for backend to generate title
+        }
       } catch (error) {
         onError(new ChatError(`${error}`, msgBuffer.buffer))
         controller.abort();
@@ -272,6 +294,33 @@ const AIChat: React.FC = () => {
       if (params[0] === curConversation) {
         setCurConversation(newKey)
       }
+    }
+  });
+
+  const { run: regenerateTitle } = useRequest(async (sessionId: string) => {
+    return api.ai.generateChatSessionTitle({ sessionId }, { title: '' });
+  }, {
+    manual: true,
+    onSuccess: ({ title }, [sessionId]) => {
+      setConversations((prev) => {
+        return prev.map((item) => {
+          if (item.id === sessionId) {
+            return { ...item, title: title, loading: false };
+          }
+          return item;
+        })
+      })
+    },
+    onError: () => {
+      message.error(t('chat.titleGenerationFailed'));
+      setConversations((prev) => {
+        return prev.map((item) => {
+          if (item.id === curConversation) {
+            return { ...item, loading: false };
+          }
+          return item;
+        })
+      })
     }
   });
 
@@ -392,6 +441,7 @@ const AIChat: React.FC = () => {
             key: item.id,
             label: item.title,
             group: dayjs(item.start_time).isSame(dayjs(), 'day') ? t('chat.today') : dayjs(item.start_time).format('YYYY-MM-DD'),
+            icon: item.loading ? <Spin size="small" /> : undefined,
           }))}
           activeKey={curConversation}
           onActiveChange={async (val) => {
@@ -419,6 +469,22 @@ const AIChat: React.FC = () => {
                 label: t('chat.renameConversation'),
                 key: 'rename',
                 icon: <EditOutlined />,
+              },
+              {
+                label: t('chat.regenerateTitle'),
+                key: 'regenerateTitle',
+                icon: <ReloadOutlined />,
+                onClick: () => {
+                  setConversations((prev) => {
+                    return prev.map((item) => {
+                      if (item.id === conversation.key) {
+                        return { ...item, loading: true };
+                      }
+                      return item;
+                    })
+                  })
+                  regenerateTitle(conversation.key)
+                },
               },
               {
                 label: tCommon('delete'),

@@ -435,6 +435,16 @@ export interface FunctionDefinition {
   strict: boolean;
 }
 
+export interface generateChatSessionTitleParams {
+  /** Chat session ID */
+  sessionId: string;
+}
+
+export interface GenerateChatSessionTitleRequest {
+  /** Optional: if provided, use this title; otherwise generate automatically */
+  title: string;
+}
+
 export interface getAIModelParams {
   /** AI model ID */
   id: string;

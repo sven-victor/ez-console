@@ -46,5 +46,9 @@ export default {
     today: 'Today',
     renameConversation: 'Rename',
     inputPlaceholder: 'Please input your message',
+    regenerateTitle: 'Regenerate Title',
+    generatingTitle: 'Generating title...',
+    titleGenerated: 'Title generated successfully',
+    titleGenerationFailed: 'Failed to generate title',
   },
 };

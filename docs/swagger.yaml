@@ -103,6 +103,14 @@ definitions:
     - model_id
     - title
     type: object
+  aiapi.GenerateChatSessionTitleRequest:
+    properties:
+      title:
+        description: 'Optional: if provided, use this title; otherwise generate automatically'
+        type: string
+    required:
+    - title
+    type: object
   aiapi.SendMessageRequest:
     properties:
       content:
@@ -2214,8 +2222,11 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
     - 1
     - 1000
     - 1000000
@@ -2232,8 +2243,11 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -3500,6 +3514,42 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Stream chat
+      tags:
+      - AI/Chat
+  /api/ai/chat/sessions/{sessionId}/title:
+    put:
+      consumes:
+      - application/json
+      description: Generate a title for a chat session based on conversation content,
+        or update with provided title
+      operationId: generateChatSessionTitle
+      parameters:
+      - description: Chat session ID
+        in: path
+        name: sessionId
+        required: true
+        type: string
+      - description: Title data (optional)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/aiapi.GenerateChatSessionTitleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_AIChatSession'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Generate or update chat session title
       tags:
       - AI/Chat
   /api/ai/models:

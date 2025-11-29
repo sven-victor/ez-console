@@ -437,6 +437,16 @@ declare global {
       strict: boolean;
     }
   
+    interface generateChatSessionTitleParams {
+      /** Chat session ID */
+      sessionId: string;
+    }
+  
+    interface GenerateChatSessionTitleRequest {
+      /** Optional: if provided, use this title; otherwise generate automatically */
+      title: string;
+    }
+  
     interface getAIModelParams {
       /** AI model ID */
       id: string;

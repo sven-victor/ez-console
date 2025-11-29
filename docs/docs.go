@@ -246,6 +246,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/ai/chat/sessions/{sessionId}/title": {
+            "put": {
+                "description": "Generate a title for a chat session based on conversation content, or update with provided title",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Chat"
+                ],
+                "summary": "Generate or update chat session title",
+                "operationId": "generateChatSessionTitle",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Chat session ID",
+                        "name": "sessionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Title data (optional)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.GenerateChatSessionTitleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_AIChatSession"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/ai/models": {
             "get": {
                 "description": "List AI models with pagination and search",
@@ -4793,6 +4846,18 @@ const docTemplate = `{
                 }
             }
         },
+        "aiapi.GenerateChatSessionTitleRequest": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "title": {
+                    "description": "Optional: if provided, use this title; otherwise generate automatically",
+                    "type": "string"
+                }
+            }
+        },
         "aiapi.SendMessageRequest": {
             "type": "object",
             "required": [
@@ -7751,8 +7816,11 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
                 1,
                 1000,
                 1000000,
@@ -7769,8 +7837,11 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

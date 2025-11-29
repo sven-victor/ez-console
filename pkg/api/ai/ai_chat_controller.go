@@ -37,6 +37,7 @@ func (c *AIChatController) RegisterRoutes(router *gin.RouterGroup) {
 		chat.GET("/sessions/:sessionId", c.GetChatSession)
 		chat.DELETE("/sessions/:sessionId", c.DeleteChatSession)
 		chat.POST("/sessions/:sessionId", middleware.RequirePermission("ai:chat:create"), c.StreamChat)
+		chat.PUT("/sessions/:sessionId/title", c.GenerateChatSessionTitle)
 	}
 }
 
@@ -49,6 +50,11 @@ type CreateChatSessionRequest struct {
 // SendMessageRequest represents the request to send a message
 type SendMessageRequest struct {
 	Content string `json:"content" binding:"required"`
+}
+
+// GenerateChatSessionTitleRequest represents the request to generate or update a chat session title
+type GenerateChatSessionTitleRequest struct {
+	Title string `json:"title"` // Optional: if provided, use this title; otherwise generate automatically
 }
 
 // ChatStreamEvent represents a server-sent event for chat streaming
@@ -277,12 +283,54 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		return
 	}
 
+	// Track initial message count (excluding tool messages)
+	initialMessageCount := 0
+	for _, msg := range messages {
+		if msg.Role != model.AIChatMessageRoleTool {
+			initialMessageCount++
+		}
+	}
+
+	// Capture context values for background goroutine
+	userID, _ := ctx.Get("user_id")
+	roles, _ := ctx.Get("roles")
+
 	options := []ai.WithChatCompletionStreamOptions{
 		ai.WithChatCompletionStreamOnMessageEnd(func(ctx context.Context, messageID string, content string) {
 			_, err := c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleAssistant, content, nil, "")
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
 				return
+			}
+			// Check if this is the first conversation (exactly 2 messages: 1 user + 1 assistant)
+			// After adding the assistant message, we should have: initialMessageCount (0) + 1 user + 1 assistant = 2
+			if initialMessageCount == 0 {
+				// Auto-generate title in background (don't block)
+				go func() {
+					// Create a new context for background operation
+					bgCtx := context.Background()
+					// Copy organization_id
+					bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
+					// Copy user_id
+					if userID != nil {
+						bgCtx = context.WithValue(bgCtx, "user_id", userID)
+					}
+					// Copy roles
+					if roles != nil {
+						bgCtx = context.WithValue(bgCtx, "roles", roles)
+					}
+
+					title, err := c.service.GenerateChatSessionTitle(bgCtx, sessionID, organizationID, session.ModelID)
+					if err != nil {
+						level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
+						return
+					}
+					if err := c.service.UpdateChatSessionTitle(bgCtx, sessionID, title); err != nil {
+						level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
+						return
+					}
+					level.Info(logger).Log("msg", "Auto-generated chat session title", "sessionId", sessionID, "title", title)
+				}()
 			}
 		}),
 		ai.WithChatCompletionStreamOnToolCallsStart(func(ctx context.Context, toolCalls []ai.ToolCall) {
@@ -336,6 +384,77 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		ctx.SSEvent("message", event)
 		return true
 	})
+}
+
+// GenerateChatSessionTitle generates or updates a chat session title
+//
+//	@Summary		Generate or update chat session title
+//	@Description	Generate a title for a chat session based on conversation content, or update with provided title
+//	@ID             generateChatSessionTitle
+//	@Tags			AI/Chat
+//	@Accept			json
+//	@Produce		json
+//	@Param			sessionId	path		string							true	"Chat session ID"
+//	@Param			request		body		GenerateChatSessionTitleRequest	false	"Title data (optional)"
+//	@Success		200	{object}	util.Response[model.AIChatSession]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/ai/chat/sessions/{sessionId}/title [put]
+func (c *AIChatController) GenerateChatSessionTitle(ctx *gin.Context) {
+	sessionID := ctx.Param("sessionId")
+	if sessionID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Session ID is required"))
+		return
+	}
+
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
+	// Get chat session
+	session, err := c.service.GetChatSession(ctx, sessionID)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	var req GenerateChatSessionTitleRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		// If no body provided, treat as empty request (will generate title)
+		req = GenerateChatSessionTitleRequest{}
+	}
+
+	var title string
+	if req.Title != "" {
+		// Use provided title
+		title = req.Title
+	} else {
+		// Generate title automatically
+		generatedTitle, err := c.service.GenerateChatSessionTitle(ctx, sessionID, organizationID, session.ModelID)
+		if err != nil {
+			util.RespondWithError(ctx, util.NewError("E5001", err))
+			return
+		}
+		title = generatedTitle
+	}
+
+	// Update session title
+	if err := c.service.UpdateChatSessionTitle(ctx, sessionID, title); err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	// Get updated session
+	updatedSession, err := c.service.GetChatSession(ctx, sessionID)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	util.RespondWithSuccess(ctx, http.StatusOK, updatedSession)
 }
 
 func init() {

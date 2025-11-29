@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-kit/log/level"
@@ -126,6 +127,90 @@ func (s *AIChatService) DeleteChatSession(ctx context.Context, sessionID string)
 
 		return nil
 	})
+}
+
+// UpdateChatSessionTitle updates the title of a chat session
+func (s *AIChatService) UpdateChatSessionTitle(ctx context.Context, sessionID, title string) error {
+	if err := db.Session(ctx).Model(&model.AIChatSession{}).Where("resource_id = ?", sessionID).Update("title", title).Error; err != nil {
+		return fmt.Errorf("failed to update chat session title: %w", err)
+	}
+	return nil
+}
+
+// GenerateChatSessionTitle generates a title for a chat session based on conversation content
+func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, sessionID, organizationID, modelID string) (string, error) {
+	// Get chat messages
+	messages, err := s.GetChatMessages(ctx, sessionID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get chat messages: %w", err)
+	}
+
+	// Filter out tool messages and get only user and assistant messages
+	var conversationMessages []model.AIChatMessage
+	for _, msg := range messages {
+		if msg.Role == model.AIChatMessageRoleUser || msg.Role == model.AIChatMessageRoleAssistant {
+			conversationMessages = append(conversationMessages, msg)
+		}
+	}
+
+	// If no messages, return default title
+	if len(conversationMessages) == 0 {
+		return "New Conversation", nil
+	}
+
+	// Build prompt for title generation
+	// Use first user message and first assistant response for title generation
+	var titlePromptMessages []ai.ChatMessage
+	titlePromptMessages = append(titlePromptMessages, ai.ChatMessage{
+		Role:    model.AIChatMessageRoleSystem,
+		Content: "Generate a concise title (maximum 50 characters) for this conversation based on the user's first message and the assistant's response. The title should summarize the main topic or question. Return only the title, no additional text.",
+	})
+
+	// Add first user and assistant messages
+	if len(conversationMessages) >= 1 {
+		titlePromptMessages = append(titlePromptMessages, ai.ChatMessage{
+			Role:    conversationMessages[0].Role,
+			Content: conversationMessages[0].Content,
+		})
+	}
+	if len(conversationMessages) >= 2 {
+		titlePromptMessages = append(titlePromptMessages, ai.ChatMessage{
+			Role:    conversationMessages[1].Role,
+			Content: conversationMessages[1].Content,
+		})
+	}
+
+	// Generate title using AI
+	responseMessages, err := s.CreateChatCompletion(ctx, organizationID, modelID, titlePromptMessages)
+	if err != nil {
+		return "", fmt.Errorf("failed to generate title: %w", err)
+	}
+
+	if len(responseMessages) == 0 || responseMessages[0].Content == "" {
+		return "New Conversation", nil
+	}
+
+	// Extract and clean the title
+	title := responseMessages[0].Content
+	// Remove quotes if present
+	if len(title) > 0 && (title[0] == '"' || title[0] == '\'') {
+		title = title[1:]
+	}
+	if len(title) > 0 && (title[len(title)-1] == '"' || title[len(title)-1] == '\'') {
+		title = title[:len(title)-1]
+	}
+	// Trim whitespace
+	title = strings.TrimSpace(title)
+	// Limit to 50 characters
+	if len(title) > 50 {
+		title = title[:50]
+	}
+	// If empty after cleaning, use default
+	if title == "" {
+		title = "New Conversation"
+	}
+
+	return title, nil
 }
 
 // CreateChatCompletion creates a chat completion using the specified model
