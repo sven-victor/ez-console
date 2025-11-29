@@ -1,5 +1,5 @@
 import { r as n } from "./client.js";
-async function r(a, e) {
+async function i(a, e) {
   return n(
     "/api/ai/chat/sessions",
     {
@@ -15,7 +15,7 @@ async function r(a, e) {
     }
   );
 }
-async function i(a, e) {
+async function r(a, e) {
   return n("/api/ai/chat/sessions", {
     method: "POST",
     headers: {
@@ -25,7 +25,7 @@ async function i(a, e) {
     ...e || {}
   });
 }
-async function m(a, e) {
+async function p(a, e) {
   const { sessionId: s, ...t } = a;
   return n(
     `/api/ai/chat/sessions/${s}`,
@@ -36,7 +36,7 @@ async function m(a, e) {
     }
   );
 }
-async function p(a, e) {
+async function m(a, e) {
   const { sessionId: s, ...t } = a;
   return n(
     `/api/ai/chat/sessions/${s}`,
@@ -90,7 +90,7 @@ async function l(a, e, s) {
     ...s || {}
   });
 }
-async function h(a, e) {
+async function y(a, e) {
   const { id: s, ...t } = a;
   return n(`/api/ai/models/${s}`, {
     method: "DELETE",
@@ -98,7 +98,7 @@ async function h(a, e) {
     ...e || {}
   });
 }
-async function y(a, e) {
+async function h(a, e) {
   const { id: s, ...t } = a;
   return n(
     `/api/ai/models/${s}/set-default`,
@@ -117,7 +117,16 @@ async function f(a, e) {
     ...e || {}
   });
 }
-async function T(a, e, s) {
+async function T(a) {
+  return n(
+    "/api/ai/models/types",
+    {
+      method: "GET",
+      ...a || {}
+    }
+  );
+}
+async function P(a, e, s) {
   const { sessionId: t, ...o } = a;
   return n(`/api/ai/chat/sessions/${t}`, {
     method: "POST",
@@ -132,15 +141,16 @@ async function T(a, e, s) {
 const S = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   createAiModel: d,
-  createChatSession: i,
-  deleteAiModel: h,
-  deleteChatSession: p,
+  createChatSession: r,
+  deleteAiModel: y,
+  deleteChatSession: m,
   getAiModel: u,
-  getChatSession: m,
+  getAiTypeDefinitions: T,
+  getChatSession: p,
   listAiModels: c,
-  listChatSessions: r,
-  setDefaultAiModel: y,
-  streamChat: T,
+  listChatSessions: i,
+  setDefaultAiModel: h,
+  streamChat: P,
   testAiModel: f,
   updateAiModel: l
 }, Symbol.toStringTag, { value: "Module" }));

@@ -104,12 +104,8 @@ export declare interface AIFunctionCall {
 }
 
 export declare interface AIModel {
-    /** API key (encrypted) */
-    api_key: string;
-    /** Base URL (optional, for custom endpoints) */
-    base_url: string;
-    /** Additional configuration */
-    config: AIModelConfig;
+    /** Additional configuration`          // Configuration (includes api_key, model_id, base_url, etc.) */
+    config: Record<string, any>;
     created_at: string;
     /** Creator user ID */
     created_by: string;
@@ -118,8 +114,6 @@ export declare interface AIModel {
     id: string;
     /** Whether this is the default model */
     is_default: boolean;
-    /** Model ID (e.g., gpt-4, gpt-3.5-turbo) */
-    model_id: string;
     /** Model name */
     name: string;
     /** Organization ID */
@@ -133,8 +127,6 @@ export declare interface AIModel {
     updated_by: string;
 }
 
-export declare type AIModelConfig = true;
-
 export declare type AIModelProvider = "openai";
 
 export declare type AIModelStatus = "enabled" | "disabled";
@@ -144,6 +136,13 @@ export declare interface AIToolCall {
     id: string;
     index: number;
     type: string;
+}
+
+export declare interface AITypeDefinition {
+    config_fields: ConfigField[];
+    description: string;
+    name: string;
+    provider: AIModelProvider;
 }
 
 export declare const AllLangUIConfig: LanguageConfig[];
@@ -574,13 +573,31 @@ export declare interface CheckPasswordComplexityResponse {
 
 export declare type Condition = true;
 
+export declare interface ConfigField {
+    /** Dynamic data source configuration */
+    data_source: DataSource;
+    default: string;
+    description: string;
+    display_name: string;
+    name: string;
+    /** Static options (used when DataSource is nil or type=static) */
+    options: ConfigFieldOptions[];
+    placeholder: string;
+    required: boolean;
+    type: FieldType;
+    /** Condition for field visibility */
+    visible_when: VisibleCondition;
+}
+
+export declare interface ConfigFieldOptions {
+    label: string;
+    value: string;
+}
+
 export declare interface CreateAIModelRequest {
-    api_key: string;
-    base_url?: string;
-    config?: Record<string, any>;
+    config: Record<string, any>;
     description?: string;
     is_default?: boolean;
-    model_id: string;
     name: string;
     provider: AIModelProvider;
 }
@@ -770,6 +787,8 @@ export declare interface EZAppProps {
     transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
     renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
 }
+
+export declare type FieldType = "text" | "string" | "password" | "number" | "boolean" | "array" | "object" | "select";
 
 declare interface File_2 {
     access: AccessType;
@@ -1442,6 +1461,13 @@ export declare interface ResponseArrayModelUser {
     trace_id: string;
 }
 
+export declare interface ResponseArrayServiceAITypeDefinition {
+    code: string;
+    data: AITypeDefinition[];
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayServiceSessionInfo {
     code: string;
     data: SessionInfo[];
@@ -1933,7 +1959,6 @@ export declare interface Tool {
 }
 
 export declare interface ToolCall {
-    error: string;
     function: FunctionCall;
     id: string;
     /** Index is not nil only in chat completion chunk object */
@@ -1977,35 +2002,12 @@ export declare interface ToolSet {
     updated_by: string;
 }
 
-export declare interface ToolSetConfigField {
-    /** Dynamic data source configuration */
-    data_source: DataSource;
-    default: string;
-    description: string;
-    display_name: string;
-    name: string;
-    /** Static options (used when DataSource is nil or type=static) */
-    options: ToolSetConfigFieldOptions[];
-    placeholder: string;
-    required: boolean;
-    type: ToolSetFieldType;
-    /** Condition for field visibility */
-    visible_when: VisibleCondition;
-}
-
-export declare interface ToolSetConfigFieldOptions {
-    label: string;
-    value: string;
-}
-
-export declare type ToolSetFieldType = "text" | "string" | "password" | "number" | "boolean" | "array" | "object" | "select";
-
 export declare type ToolSetStatus = "enabled" | "disabled";
 
 export declare type ToolSetType = "utils";
 
 export declare interface ToolSetTypeDefinition {
-    config_fields: ToolSetConfigField[];
+    config_fields: ConfigField[];
     description: string;
     name: string;
     tool_set_type: ToolSetType;
@@ -2024,13 +2026,9 @@ export declare interface updateAIModelParams {
 }
 
 export declare interface UpdateAIModelRequest {
-    /** Optional for updates */
-    api_key: string;
-    base_url?: string;
     config?: Record<string, any>;
     description?: string;
     is_default?: boolean;
-    model_id: string;
     name: string;
     provider: AIModelProvider;
 }

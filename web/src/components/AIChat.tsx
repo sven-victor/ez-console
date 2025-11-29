@@ -384,7 +384,7 @@ const AIChat: React.FC = () => {
         icon={<PlusOutlined />}
         loading={createNewConversationLoading}
       >
-        {t('chat.newConversation')}
+        {t('chat.newConversation', { defaultValue: 'New Conversation' })}
       </Button>
       <Spin spinning={fetchConversationsLoading} wrapperClassName={styles.conversationsSpin}>
         <Conversations

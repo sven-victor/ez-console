@@ -211,7 +211,6 @@ const AIModelSettings: React.FC = () => {
   const handleProviderChange = (provider: string) => {
     setSelectedProvider(provider);
     // Reset config fields when provider changes
-    const currentValues = form.getFieldsValue();
     if (currentProviderDefinition?.config_fields) {
       currentProviderDefinition.config_fields.forEach((field) => {
         form.setFieldValue(field.name, undefined);

@@ -43,8 +43,6 @@ definitions:
     type: object
   ai.ToolCall:
     properties:
-      error:
-        type: string
       function:
         $ref: '#/definitions/ai.FunctionCall'
       id:
@@ -59,7 +57,6 @@ definitions:
       type:
         $ref: '#/definitions/openai.ToolType'
     required:
-    - error
     - function
     - id
     - index
@@ -2225,12 +2222,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2243,12 +2234,6 @@ definitions:
     - Hour
     - minDuration
     - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond

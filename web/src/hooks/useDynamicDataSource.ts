@@ -1,10 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { apiGet } from '@/service/client';
-import type { DataSource, ToolSetConfigFieldOptions } from '@/service/api/typing';
+import type { DataSource, ConfigFieldOptions } from '@/service/api/typing';
 import api from '@/service/api';
 
 interface DynamicDataSourceResult {
-  options: ToolSetConfigFieldOptions[];
+  options: ConfigFieldOptions[];
   loading: boolean;
   error: Error | null;
   refresh: () => void;
@@ -46,10 +46,10 @@ const setCachedData = (key: string, data: any): void => {
  */
 export const useDynamicDataSource = (
   dataSource?: DataSource,
-  staticOptions?: ToolSetConfigFieldOptions[],
+  staticOptions?: ConfigFieldOptions[],
   dependentValues?: Record<string, any>
 ): DynamicDataSourceResult => {
-  const [options, setOptions] = useState<ToolSetConfigFieldOptions[]>(staticOptions || []);
+  const [options, setOptions] = useState<ConfigFieldOptions[]>(staticOptions || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -94,7 +94,7 @@ export const useDynamicDataSource = (
           }
         }
 
-        let loadedOptions: ToolSetConfigFieldOptions[] = [];
+        let loadedOptions: ConfigFieldOptions[] = [];
 
         switch (dataSource!.type) {
           case 'api': {

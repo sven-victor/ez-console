@@ -4709,7 +4709,6 @@ const docTemplate = `{
         "ai.ToolCall": {
             "type": "object",
             "required": [
-                "error",
                 "function",
                 "id",
                 "index",
@@ -4718,9 +4717,6 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
-                "error": {
-                    "type": "string"
-                },
                 "function": {
                     "$ref": "#/definitions/ai.FunctionCall"
                 },
@@ -7762,12 +7758,6 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
@@ -7781,12 +7771,6 @@ const docTemplate = `{
                 "Hour",
                 "minDuration",
                 "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

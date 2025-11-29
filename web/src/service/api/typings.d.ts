@@ -1452,7 +1452,6 @@ declare global {
     }
   
     interface ToolCall {
-      error: string;
       function: FunctionCall;
       id: string;
       /** Index is not nil only in chat completion chunk object */
