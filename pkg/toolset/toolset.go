@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-kit/log/level"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-utils/log"
 )
 
 type ToolSetType string
@@ -69,9 +71,11 @@ func (t ToolSets) GetTools(ctx context.Context) ([]openai.Tool, error) {
 }
 
 func (t ToolSets) CallTool(ctx context.Context, name string, parameters string) (string, error) {
+	logger := log.GetContextLogger(ctx)
 	for idx, toolSet := range t {
 		if strings.HasPrefix(name, fmt.Sprintf("toolset%d_", idx)) {
 			name = strings.TrimPrefix(name, fmt.Sprintf("toolset%d_", idx))
+			level.Debug(logger).Log("msg", "Calling tool", "tool", name, "parameters", parameters)
 			return toolSet.Call(ctx, name, parameters)
 		}
 	}

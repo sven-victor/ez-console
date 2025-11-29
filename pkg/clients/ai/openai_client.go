@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/go-kit/log/level"
 	"github.com/gofrs/uuid"
@@ -174,8 +175,6 @@ func (c *OpenAIClient) CreateChat(ctx context.Context, messages []ChatMessage, o
 		}
 
 		for _, toolCall := range assistantMessage.ToolCalls {
-			level.Debug(logger).Log("msg", "Calling tool", "tool", toolCall.Function.Name, "arguments", toolCall.Function.Arguments, "iteration", iteration+1)
-
 			// Call the tool
 			toolResult, err := opts.ToolSets.CallTool(ctx, toolCall.Function.Name, toolCall.Function.Arguments)
 			if err != nil {
@@ -200,21 +199,24 @@ func (c *OpenAIClient) CreateChat(ctx context.Context, messages []ChatMessage, o
 }
 
 type OpenAIChatStream struct {
-	client            *OpenAIClient
-	messages          []openai.ChatCompletionMessage
-	toolSets          toolset.ToolSets
-	tools             []openai.Tool
-	toolCalls         []ToolCall
-	toolCallMutex     sync.Mutex
-	currentChatStream *openai.ChatCompletionStream
-	messageID         string
-	messageBuffer     bytes.Buffer
-	summaryPrompt     string
-	onMessageEnd      func(ctx context.Context, messageID string, content string)
-	onToolCallEnd     func(ctx context.Context, toolCall ToolCall)
-	onToolCallsStart  func(ctx context.Context, toolCall []ToolCall)
-	maxIterations     int
-	currentIteration  int
+	client                  *OpenAIClient
+	messages                []openai.ChatCompletionMessage
+	toolSets                toolset.ToolSets
+	tools                   []openai.Tool
+	toolCalls               []ToolCall
+	toolCallMutex           sync.Mutex
+	toolCallRunning         bool
+	currentChatStream       *openai.ChatCompletionStream
+	messageID               string
+	messageBuffer           bytes.Buffer
+	summaryPrompt           string
+	onMessageEnd            func(ctx context.Context, messageID string, content string)
+	onToolCallEnd           func(ctx context.Context, toolCall ToolCall)
+	onToolCallsStart        func(ctx context.Context, toolCall []ToolCall)
+	maxIterations           int
+	currentIteration        int
+	maxTokens               int
+	enableAutoSummarization bool
 }
 
 func (o *OpenAIChatStream) callToolsRunning() bool {
@@ -265,33 +267,161 @@ func (o *OpenAIChatStream) Close() error {
 	return nil
 }
 
+// calculateTokens estimates the token count for messages
+// Uses a simple approximation: 1 token ≈ 4 characters
+func (o *OpenAIChatStream) calculateTokens(messages []openai.ChatCompletionMessage) int {
+	totalChars := 0
+	for _, msg := range messages {
+		// Count content
+		totalChars += len(msg.Content)
+		// Count role
+		totalChars += len(msg.Role)
+		// Count tool calls
+		for _, tc := range msg.ToolCalls {
+			totalChars += len(tc.ID)
+			totalChars += len(string(tc.Type))
+			totalChars += len(tc.Function.Name)
+			totalChars += len(tc.Function.Arguments)
+		}
+		// Count tool call ID
+		totalChars += len(msg.ToolCallID)
+	}
+	// Approximate: 1 token ≈ 4 characters
+	return (totalChars + 3) / 4
+}
+
+// summarizeMessages creates a summary of old messages while preserving the first system message
+func (o *OpenAIChatStream) summarizeMessages(ctx context.Context) error {
+	logger := log.GetContextLogger(ctx)
+
+	if len(o.messages) <= 1 {
+		return nil // Nothing to summarize
+	}
+
+	// Find the first system message
+	var systemMessage *openai.ChatCompletionMessage
+	var messagesToSummarize []openai.ChatCompletionMessage
+	firstSystemFound := false
+
+	for i, msg := range o.messages {
+		if !firstSystemFound && msg.Role == string(model.AIChatMessageRoleSystem) {
+			systemMessage = &o.messages[i]
+			firstSystemFound = true
+		} else {
+			messagesToSummarize = append(messagesToSummarize, msg)
+		}
+	}
+
+	if len(messagesToSummarize) == 0 {
+		return nil // Nothing to summarize
+	}
+
+	// Create summary prompt
+	summaryPrompt := "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive."
+
+	// Build summary request messages
+	summaryMessages := []openai.ChatCompletionMessage{
+		{
+			Role:    string(model.AIChatMessageRoleSystem),
+			Content: summaryPrompt,
+		},
+	}
+
+	// Add messages to summarize
+	summaryMessages = append(summaryMessages, messagesToSummarize...)
+
+	// Call non-streaming API for summarization
+	request := openai.ChatCompletionRequest{
+		Model:    o.client.modelID,
+		Messages: summaryMessages,
+		Stream:   false,
+	}
+
+	level.Debug(logger).Log("msg", "Summarizing messages", "count", len(messagesToSummarize))
+	response, err := o.client.client.CreateChatCompletion(ctx, request)
+	if err != nil {
+		return fmt.Errorf("failed to create summary: %w", err)
+	}
+
+	if len(response.Choices) == 0 {
+		return fmt.Errorf("no choices in summary response")
+	}
+
+	summaryContent := response.Choices[0].Message.Content
+
+	// Rebuild messages: system message (if exists) + summary
+	o.messages = make([]openai.ChatCompletionMessage, 0, 2)
+	if systemMessage != nil {
+		o.messages = append(o.messages, *systemMessage)
+	}
+	o.messages = append(o.messages, openai.ChatCompletionMessage{
+		Role:    string(model.AIChatMessageRoleUser),
+		Content: fmt.Sprintf("[Previous conversation summary]: %s", summaryContent),
+	})
+
+	level.Debug(logger).Log("msg", "Messages summarized", "original_count", len(messagesToSummarize)+1, "new_count", len(o.messages))
+	return nil
+}
+
 func (o *OpenAIChatStream) backgroundCallTool(ctx context.Context, toolCall *ToolCall) {
 	logger := log.GetContextLogger(ctx)
 	go func() {
+		toolStatus := toolCall.Status
 		defer func() {
 			if r := recover(); r != nil {
-				toolCall.Error = fmt.Sprintf("panic: %v", r)
+				toolCall.Result = fmt.Sprintf("panic: %v", r)
 				toolCall.Status = ToolCallStatusFailed
 			}
+
+			if toolCall.Result == "" {
+				switch toolStatus {
+				case ToolCallStatusRunning, ToolCallStatusPending:
+					toolCall.Result = "tool call timed out"
+					toolStatus = ToolCallStatusFailed
+				case ToolCallStatusFailed:
+					toolCall.Result = "tool call failed"
+				case ToolCallStatusCompleted:
+					toolCall.Result = "tool call completed"
+				}
+			}
+
+			o.messages = append(o.messages, openai.ChatCompletionMessage{
+				Role:       string(model.AIChatMessageRoleTool),
+				Content:    toolCall.Result,
+				ToolCallID: toolCall.ID,
+			})
+			toolCall.Status = toolStatus
 			if o.onToolCallEnd != nil {
 				o.onToolCallEnd(ctx, *toolCall)
 			}
 		}()
-		level.Debug(logger).Log("msg", "Calling tool", "tool", toolCall.Function.Name, "arguments", toolCall.Function.Arguments)
+
+		// Check if context is already cancelled before starting
+		select {
+		case <-ctx.Done():
+			toolStatus = ToolCallStatusFailed
+			toolCall.Result = fmt.Sprintf("context cancelled: %v", ctx.Err())
+			return
+		default:
+		}
+
 		resp, err := o.toolSets.CallTool(ctx, toolCall.Function.Name, toolCall.Function.Arguments)
+
+		// Check if context was cancelled during tool execution
+		if ctx.Err() != nil {
+			toolStatus = ToolCallStatusFailed
+			toolCall.Result = fmt.Sprintf("context cancelled: %v", ctx.Err())
+			return
+		}
+
 		if err != nil {
 			level.Error(logger).Log("msg", "Failed to call tool", "error", err)
-			toolCall.Status = ToolCallStatusFailed
+			toolStatus = ToolCallStatusFailed
 			toolCall.Result = err.Error()
 		} else {
-			toolCall.Status = ToolCallStatusCompleted
+			toolStatus = ToolCallStatusCompleted
 			toolCall.Result = resp
 		}
-		o.messages = append(o.messages, openai.ChatCompletionMessage{
-			Role:       string(model.AIChatMessageRoleTool),
-			Content:    toolCall.Result,
-			ToolCallID: toolCall.ID,
-		})
 	}()
 }
 func (o *OpenAIChatStream) CallTools(ctx context.Context) (isRunning bool) {
@@ -299,12 +429,26 @@ func (o *OpenAIChatStream) CallTools(ctx context.Context) (isRunning bool) {
 		return true
 	}
 	defer o.toolCallMutex.Unlock()
+	if o.toolCallRunning {
+		for {
+			select {
+			case <-ctx.Done():
+				return false
+			case <-time.After(100 * time.Millisecond):
+				if !o.callToolsRunning() {
+					o.toolCallRunning = false
+					return false
+				}
+			}
+		}
+	}
+	o.toolCallRunning = true
+	if o.onToolCallsStart != nil {
+		o.onToolCallsStart(ctx, o.toolCalls)
+	}
 	for idx := range o.toolCalls {
 		if o.toolCalls[idx].Status == ToolCallStatusPending {
 			o.toolCalls[idx].Status = ToolCallStatusRunning
-			if o.onToolCallsStart != nil {
-				o.onToolCallsStart(ctx, []ToolCall{o.toolCalls[idx]})
-			}
 			o.backgroundCallTool(ctx, &o.toolCalls[idx])
 		}
 	}
@@ -374,10 +518,6 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 				}
 			}
 			if choice.Delta.Content != "" {
-				o.messages = append(o.messages, openai.ChatCompletionMessage{
-					Role:    string(model.AIChatMessageRoleAssistant),
-					Content: choice.Delta.Content,
-				})
 				o.messageBuffer.WriteString(choice.Delta.Content)
 				return &ChatStreamEvent{
 					MessageID: o.messageID,
@@ -420,6 +560,31 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 				o.currentIteration++
 			}
 		}
+
+		// Check token limit and summarize if needed
+		if o.maxTokens > 0 {
+			currentTokens := o.calculateTokens(o.messages)
+			tokenThreshold := int(float64(o.maxTokens) * 0.9) // 90% threshold
+
+			if currentTokens >= o.maxTokens {
+				// Token limit exceeded
+				if !o.enableAutoSummarization {
+					return nil, fmt.Errorf("token limit exceeded (%d/%d), auto summarization is disabled", currentTokens, o.maxTokens)
+				}
+				// Try to summarize even at 100%
+				if err := o.summarizeMessages(ctx); err != nil {
+					return nil, fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, o.maxTokens, err)
+				}
+			} else if currentTokens >= tokenThreshold && o.enableAutoSummarization {
+				// At 90% threshold, summarize proactively
+				if err := o.summarizeMessages(ctx); err != nil {
+					// Log error but continue (don't fail the request)
+					logger := log.GetContextLogger(ctx)
+					level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
+				}
+			}
+		}
+
 		var err error
 		// Create chat completion request
 		request := openai.ChatCompletionRequest{
@@ -443,11 +608,13 @@ type ChatCompletionOptions struct {
 }
 
 type ChatCompletionStreamOptions struct {
-	OnMessageEnd     func(ctx context.Context, messageID string, content string)
-	OnToolCallEnd    func(ctx context.Context, toolCall ToolCall)
-	OnToolCallsStart func(ctx context.Context, toolCalls []ToolCall)
-	ToolSets         toolset.ToolSets
-	MaxIterations    int
+	OnMessageEnd            func(ctx context.Context, messageID string, content string)
+	OnToolCallEnd           func(ctx context.Context, toolCall ToolCall)
+	OnToolCallsStart        func(ctx context.Context, toolCalls []ToolCall)
+	ToolSets                toolset.ToolSets
+	MaxIterations           int
+	MaxTokens               int
+	EnableAutoSummarization bool
 }
 
 func (o *ChatCompletionStreamOptions) Apply(stream *OpenAIChatStream) {
@@ -460,6 +627,8 @@ func (o *ChatCompletionStreamOptions) Apply(stream *OpenAIChatStream) {
 	if o.OnToolCallsStart != nil {
 		stream.onToolCallsStart = o.OnToolCallsStart
 	}
+	stream.maxTokens = o.MaxTokens
+	stream.enableAutoSummarization = o.EnableAutoSummarization
 }
 
 type WithChatCompletionOptions func(options *ChatCompletionOptions)
@@ -505,6 +674,18 @@ func WithChatCompletionStreamToolSets(toolSets toolset.ToolSets) WithChatComplet
 func WithChatCompletionStreamMaxIterations(maxIterations int) WithChatCompletionStreamOptions {
 	return func(options *ChatCompletionStreamOptions) {
 		options.MaxIterations = maxIterations
+	}
+}
+
+func WithChatCompletionStreamMaxTokens(maxTokens int) WithChatCompletionStreamOptions {
+	return func(options *ChatCompletionStreamOptions) {
+		options.MaxTokens = maxTokens
+	}
+}
+
+func WithChatCompletionStreamAutoSummarization(enabled bool) WithChatCompletionStreamOptions {
+	return func(options *ChatCompletionStreamOptions) {
+		options.EnableAutoSummarization = enabled
 	}
 }
 

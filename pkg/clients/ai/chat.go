@@ -30,7 +30,6 @@ type ToolCall struct {
 	Type      openai.ToolType `json:"type"`
 	Function  FunctionCall    `json:"function"`
 	Status    ToolCallStatus  `json:"status,omitempty"`
-	Error     string          `json:"error,omitempty"`
 	Result    string          `json:"-"`
 	StartTime time.Time       `json:"start_time,omitempty"`
 }

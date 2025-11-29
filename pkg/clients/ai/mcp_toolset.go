@@ -225,7 +225,11 @@ func (m *MCPToolSet) makeHTTPRequest(ctx context.Context, request MCPRequest) (*
 		req.SetBasicAuth(m.username, m.password)
 	}
 	if m.config["headers"] != nil {
-		for key, value := range m.config["headers"].(map[string]interface{}) {
+		headers, ok := m.config["headers"].(map[string]interface{})
+		if !ok {
+			return nil, fmt.Errorf("invalid headers type in config, expected map[string]interface{}")
+		}
+		for key, value := range headers {
 			switch value.(type) {
 			case string:
 				req.Header.Set(key, value.(string))

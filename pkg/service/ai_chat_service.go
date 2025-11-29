@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-kit/log/level"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
+	"github.com/sven-victor/ez-utils/log"
 	"gorm.io/gorm"
 )
 
@@ -201,8 +203,22 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
+	// Get max_tokens from model config if available
+	var maxTokens int
+	if aiModel.Config != nil {
+		if mt, ok := aiModel.Config["max_tokens"].(float64); ok {
+			maxTokens = int(mt)
+		} else if mt, ok := aiModel.Config["max_tokens"].(int); ok {
+			maxTokens = mt
+		}
+	}
+
 	// Call CreateChatStream
-	allOptions := append([]ai.WithChatCompletionStreamOptions{ai.WithChatCompletionStreamToolSets(toolSets)}, options...)
+	allOptions := []ai.WithChatCompletionStreamOptions{ai.WithChatCompletionStreamToolSets(toolSets)}
+	if maxTokens > 0 {
+		allOptions = append(allOptions, ai.WithChatCompletionStreamMaxTokens(maxTokens))
+	}
+	allOptions = append(allOptions, options...)
 	stream, err := client.CreateChatStream(ctx, messages, allOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
@@ -213,6 +229,7 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 
 // GetAvailableTools gets all available tools from enabled toolsets
 func (s *AIChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, error) {
+	logger := log.GetContextLogger(ctx)
 	organizationID := getOrganizationIDFromContext(ctx)
 	toolSets, err := s.getAuthorizedToolSets(ctx, organizationID)
 	if err != nil {
@@ -224,6 +241,7 @@ func (s *AIChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, e
 		tools, err := toolset.ListTools(ctx)
 		if err != nil {
 			// Log error but continue with other toolsets
+			level.Error(logger).Log("msg", "Failed to list tools from toolset", "toolset", toolset.GetName(), "error", err)
 			continue
 		}
 		allTools = append(allTools, tools...)
