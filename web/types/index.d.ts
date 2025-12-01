@@ -818,6 +818,16 @@ export declare interface FunctionDefinition {
     strict: boolean;
 }
 
+export declare interface generateChatSessionTitleParams {
+    /** Chat session ID */
+    sessionId: string;
+}
+
+export declare interface GenerateChatSessionTitleRequest {
+    /** Optional: if provided, use this title; otherwise generate automatically */
+    title: string;
+}
+
 export declare interface getAIModelParams {
     /** AI model ID */
     id: string;

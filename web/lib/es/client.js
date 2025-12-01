@@ -1,6 +1,6 @@
-var l = Object.defineProperty;
-var p = (t, e, r) => e in t ? l(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
-var d = (t, e, r) => p(t, typeof e != "symbol" ? e + "" : e, r);
+var p = Object.defineProperty;
+var l = (t, e, r) => e in t ? p(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
+var d = (t, e, r) => l(t, typeof e != "symbol" ? e + "" : e, r);
 import { g as u } from "./base.js";
 import g from "axios";
 const m = "/api", s = g.create({
@@ -57,7 +57,7 @@ async function f(t, e) {
     body: a.body,
     signal: r
   });
-  if (console.log(o), !o.ok || !o.body) {
+  if (!o.ok || !o.body) {
     let n = o.statusText;
     if (o.body)
       try {

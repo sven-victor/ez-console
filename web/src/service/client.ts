@@ -142,7 +142,6 @@ export async function fetchSSE(url: string, config?: SSEConfig): Promise<Readabl
     signal: signal,
   });
 
-  console.log(response)
   if (!response.ok || !response.body) {
     let errorMessage = response.statusText
     if (response.body) {

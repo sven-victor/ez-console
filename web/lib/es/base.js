@@ -1268,7 +1268,11 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     requestInProgress: "Request is in progress, please wait for the request to complete.",
     today: "Today",
     renameConversation: "Rename",
-    inputPlaceholder: "Please input your message"
+    inputPlaceholder: "Please input your message",
+    regenerateTitle: "Regenerate Title",
+    generatingTitle: "Generating title...",
+    titleGenerated: "Title generated successfully",
+    titleGenerationFailed: "Failed to generate title"
   }
 }, E = {
   login: {
@@ -3556,7 +3560,11 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     requestInProgress: "请求正在进行中，请等待完成。",
     today: "今天",
     renameConversation: "重命名",
-    inputPlaceholder: "请输入您的消息"
+    inputPlaceholder: "请输入您的消息",
+    regenerateTitle: "重新生成标题",
+    generatingTitle: "正在生成标题...",
+    titleGenerated: "标题生成成功",
+    titleGenerationFailed: "生成标题失败"
   }
 }, N = {
   loading: "Wird geladen...",

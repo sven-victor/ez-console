@@ -1,7 +1,10 @@
 import api from '@/service/api';
 import {
+  BlockOutlined,
+  BorderRightOutlined,
+  CloseOutlined,
   DeleteOutlined,
-  EditOutlined,
+  HistoryOutlined,
   PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
@@ -9,26 +12,32 @@ import {
   Bubble,
   Conversations,
   Sender,
-  XStream,
-  useXAgent,
-  useXChat,
+  XProvider,
 } from '@ant-design/x';
-import { MessageInfo } from '@ant-design/x/es/use-x-chat';
-import { useRequest } from 'ahooks';
-import { Button, Flex, Spin, message } from 'antd';
-import { createStyles } from 'antd-style';
-import React, { useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import markdownit from 'markdown-it';
-import dayjs from 'dayjs';
+import { AbstractChatProvider, TransformMessage, useXChat, XRequest, XRequestOptions } from '@ant-design/x-sdk';
+import { useXConversations, type MessageInfo } from '@ant-design/x-sdk';
+import { XMarkdown } from '@ant-design/x-markdown';
 
-const md = markdownit({ html: true, breaks: true });
+import { useRequest } from 'ahooks';
+import { Button, Dropdown, Radio, Space, Spin, message } from 'antd';
+import { createStyles } from 'antd-style';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import { theme } from 'antd';
+import { useAI } from '@/contexts/AIContext';
 
 const useStyle = createStyles(({ token, css }) => {
   return {
-    layout: css`
+    siderLayout: css`
       width: 100%;
-      min-width: 500px;
+      height: calc(100vh - 100px);
+      display: flex;
+      background: ${token.colorBgContainer};
+      font-family: AlibabaPuHuiTi, ${token.fontFamily}, sans-serif;
+    `,
+    classicLayout: css`
+      width: 100%;
       height: 70vh;
       display: flex;
       background: ${token.colorBgContainer};
@@ -108,6 +117,12 @@ const useStyle = createStyles(({ token, css }) => {
     chatList: css`
       flex: 1;
       overflow: auto;
+      .ant-spin-nested-loading{
+        height: 100%;
+        .ant-spin-container{
+          height: 100%;
+        }
+      }
     `,
     loadingMessage: css`
       background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
@@ -120,7 +135,7 @@ const useStyle = createStyles(({ token, css }) => {
     `,
     sender: css`
       width: 100%;
-      max-width: 700px;
+      max-width: min(90%, 700px);
       margin: 0 auto;
     `,
     speechButton: css`
@@ -136,10 +151,18 @@ const useStyle = createStyles(({ token, css }) => {
   };
 });
 
-type ChatMessage = Pick<API.ChatStreamEvent, 'content' | 'role'> & {
+interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'> {
   error?: string;
 }
 
+interface ChatStreamInput {
+  content: string;
+  sessionId: string;
+}
+
+interface ChatStreamOutput {
+  data: string;
+};
 
 class ChatError extends Error {
   buffer: string[];
@@ -149,213 +172,138 @@ class ChatError extends Error {
   }
 }
 
-interface Conversation extends API.AIChatSession {
-  loading?: boolean;
+
+class AIProvider<
+  ChatMessage extends ChatStreamMessage = ChatStreamMessage,
+  Input extends ChatStreamInput = ChatStreamInput,
+  Output extends ChatStreamOutput = ChatStreamOutput,
+> extends AbstractChatProvider<ChatMessage, Input, Output> {
+  transformParams(requestParams: Partial<Input>, options: XRequestOptions<Input, Output>): Input {
+    if (typeof requestParams !== 'object') {
+      throw new Error('requestParams must be an object');
+    }
+    return {
+      ...(options?.params || {}),
+      ...(requestParams || {}),
+    } as Input;
+  }
+  transformLocalMessage({ content }: Partial<Input>): ChatMessage {
+    return {
+      content: content,
+      role: 'user',
+    } as ChatMessage;
+  }
+  transformMessage(info: TransformMessage<ChatMessage, Output>): ChatMessage {
+    const { originMessage, chunk } = info || {};
+    if (!chunk) {
+      return {
+        content: originMessage?.content || '',
+        role: 'assistant',
+      } as ChatMessage;
+    }
+    const chunkJson = JSON.parse(chunk.data) as API.ChatStreamEvent;
+    console.log(chunkJson)
+    const content = originMessage?.content || '';
+    return {
+      content: `${content || ''}${chunkJson.content || ''}`,
+      role: 'assistant',
+    } as ChatMessage;
+  }
 }
 
+const providerCaches = new Map<string, AIProvider>();
+
+const providerFactory = (conversationKey: string) => {
+  console.log(conversationKey)
+  if (!providerCaches.get(conversationKey)) {
+    providerCaches.set(
+      conversationKey,
+      new AIProvider({
+        request: XRequest<ChatStreamInput, ChatStreamOutput>(
+          `/api/ai/chat/sessions/${conversationKey}`,
+          {
+            manual: true,
+            middlewares:
+            {
+              onRequest: async (baseURL, options) => {
+                const orgID = localStorage.getItem('orgID');
+                const { sessionId } = options.params as any;
+                const headers = {
+                  ...options.headers,
+                  'Accept-Language': localStorage.getItem('i18nextLng') || 'en-US',
+                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                  ...(orgID ? { 'X-Scope-OrgID': orgID } : {}),
+                };
+
+                return [sessionId ? `/api/ai/chat/sessions/${sessionId}` : baseURL, { ...options, headers }];
+              },
+            }
+            ,
+          },
+        ),
+      }),
+    );
+  }
+  return providerCaches.get(conversationKey);
+};
+
+export const useMarkdownTheme = () => {
+  const token = theme.useToken();
+
+  const isLightMode = React.useMemo(() => {
+    return token?.theme?.id === 0;
+  }, [token]);
+
+  const className = React.useMemo(() => {
+    return isLightMode ? 'x-markdown-light' : 'x-markdown-dark';
+  }, [isLightMode]);
+
+  return [className];
+};
+
+const ChatContext = React.createContext<{
+  onReload?: ReturnType<typeof useXChat>['onReload'];
+  setMessage?: ReturnType<typeof useXChat<ChatStreamMessage, ChatStreamMessage, ChatStreamInput, ChatStreamOutput>>['setMessage'];
+}>({});
+
 const AIChat: React.FC = () => {
+  const { layout, setVisible, setLayout } = useAI()
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
   const { styles } = useStyle();
-  const abortController = useRef<AbortController | null>(null);
+  const {
+    conversations,
+    activeConversationKey,
+    setActiveConversationKey,
+    addConversation,
+    setConversations,
+    getConversation,
+    setConversation,
+    removeConversation,
+    getMessages,
+  } = useXConversations({});
 
-  // ==================== State ====================
-  const [messageHistory, setMessageHistory] = useState<Record<string, MessageInfo<ChatMessage>[]>>({});
-
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [curConversation, setCurConversation] = useState<string>();
+  const [className] = useMarkdownTheme();
+  const [messageApi, contextHolder] = message.useMessage();
 
   const [inputValue, setInputValue] = useState('');
 
-
-  /**
-   * 🔔 Please replace the BASE_URL, PATH, MODEL, API_KEY with your own values.
-   */
-
-  // ==================== Runtime ====================
-  const [agent] = useXAgent<ChatMessage, { message: ChatMessage, sessionId: string }, string>({
-    request: async ({ message, sessionId }, { onSuccess, onUpdate, onError, onStream }) => {
-      if (!sessionId) {
-        return
-      };
-      const controller = new AbortController();
-      const msgBuffer: {
-        buffer: string[]
-        messageID: string
-      } = {
-        buffer: [],
-        messageID: '',
-      }
-      // Check if this is the first conversation (before adding new messages)
-      const currentMessages = messageHistory[sessionId] || [];
-      const isFirstConversation = currentMessages.length === 0;
-
-      try {
-        onStream?.(controller);
-        const response = await api.ai.streamChat({ sessionId: sessionId }, {
-          content: message.content,
-        }, {
-          signal: controller.signal,
-          requestType: 'sse'
-        });
-
-        for await (const chunk of XStream({
-          readableStream: response,
-        })) {
-          const chunkData = JSON.parse(chunk.data) as API.ChatStreamEvent
-          if (chunkData.event_type === 'tool_call') {
-            // TODO: handle tool call
-          }
-          if (chunkData.event_type === 'error') {
-            onError(new ChatError(chunkData.content, msgBuffer.buffer))
-            return
-          }
-          if (chunkData.event_type === 'content') {
-            if (msgBuffer.messageID === '') {
-              msgBuffer.messageID = chunkData.message_id;
-            }
-            if (msgBuffer.messageID !== chunkData.message_id) {
-              // msgBuffer.buffer = [];
-              msgBuffer.messageID = chunkData.message_id;
-            }
-            msgBuffer.buffer.push(chunkData.content);
-            onUpdate(chunkData.content);
-          }
-        }
-        onSuccess(msgBuffer.buffer);
-
-        // If this is the first conversation, refresh the conversation title after a delay
-        // (backend auto-generates the title, so we just need to refresh the list)
-        if (isFirstConversation) {
-          setTimeout(async () => {
-            try {
-              const response = await api.ai.listChatSessions({ current: 1, page_size: 20 });
-              setConversations(response.data);
-            } catch (error) {
-              // Silently fail - title will be updated on next manual refresh
-            }
-          }, 2000); // Wait 2 seconds for backend to generate title
-        }
-      } catch (error) {
-        onError(new ChatError(`${error}`, msgBuffer.buffer))
-        controller.abort();
-      }
-    }
-  });
-  const loading = agent.isRequesting();
-
-  const { loading: fetchConversationsLoading } = useRequest(async () => {
-    const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
-    setConversations(response.data);
-  });
-
-  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string) => {
-    return await api.ai.createChatSession({ title: t('chat.defaultConversationTitle'), model_id: '' });
-  }, {
-    manual: true,
-    onSuccess: (data, [message]) => {
-      setConversations((prev) => {
-        return [{ ...data, loading: false }, ...prev];
-      })
-      setCurConversation(data.id);
-      setMessages([]);
-      if (message) {
-        onRequest({
-          stream: true,
-          message: {
-            role: 'user' as API.AIChatMessageRole,
-            content: message,
-          },
-          sessionId: data.id,
-        });
-      }
-    },
-  });
-
-  const { run: deleteConversation } = useRequest(async (sessionId: string) => {
-    return await api.ai.deleteChatSession({ sessionId });
-  }, {
-    manual: true,
-    onError(_, params) {
-      message.error(t('chat.deleteConversationFailed'));
-      setConversations((prev) => {
-        return prev.map((item) => {
-          if (item.id === params[0]) {
-            return { ...item, loading: false };
-          }
-          return item;
-        })
-      })
-    },
-    onSuccess(_, params) {
-      const newList = conversations.filter((item) => item.id !== params[0]);
-      const newKey = newList?.[0]?.id;
-      setConversations(newList);
-      if (params[0] === curConversation) {
-        setCurConversation(newKey)
-      }
-    }
-  });
-
-  const { run: regenerateTitle } = useRequest(async (sessionId: string) => {
-    return api.ai.generateChatSessionTitle({ sessionId }, { title: '' });
-  }, {
-    manual: true,
-    onSuccess: ({ title }, [sessionId]) => {
-      setConversations((prev) => {
-        return prev.map((item) => {
-          if (item.id === sessionId) {
-            return { ...item, title: title, loading: false };
-          }
-          return item;
-        })
-      })
-    },
-    onError: () => {
-      message.error(t('chat.titleGenerationFailed'));
-      setConversations((prev) => {
-        return prev.map((item) => {
-          if (item.id === curConversation) {
-            return { ...item, loading: false };
-          }
-          return item;
-        })
-      })
-    }
-  });
-
-  const { run: fetchConversation, loading: fetchConversationLoading } = useRequest(async (sessionId: string) => {
-    return await api.ai.getChatSession({ sessionId });
-  }, {
-    manual: true,
-    onSuccess: (data, [sessionId]) => {
-      setMessageHistory((prev) => {
-        return {
-          ...prev,
-          [sessionId]: data.messages.filter((item) => item.role !== 'tool').map((item) => ({
-            id: item.id,
-            message: {
-              content: item.content,
-              role: item.role,
-            },
-            status: 'loading',
-          })),
-        }
-      })
-    }
-  });
+  // Message buffer to be sent
+  const [messageBuffer, setMessageBuffer] = useState<{ message: string, sessionId: string }>();
 
 
-  const { onRequest, messages, setMessages, } = useXChat({
-    agent,
+  const { onRequest, messages, isRequesting, abort, onReload, setMessages, setMessage } = useXChat<ChatStreamMessage, ChatStreamMessage, ChatStreamInput, ChatStreamOutput>({
+    provider: providerFactory(activeConversationKey), // every conversation has its own provider
+    conversationKey: activeConversationKey,
+    defaultMessages: [],
     requestPlaceholder: () => {
       return {
         content: tCommon('loading'),
-        role: 'assistant' as API.AIChatMessageRole,
+        role: 'assistant',
       };
     },
-    requestFallback: (_, { error }): ChatMessage => {
-      console.log(error)
+    requestFallback: (_, { messageInfo, error }) => {
+      console.log(messageInfo, error)
       if (error instanceof ChatError) {
         return {
           content: error.buffer.join(''),
@@ -370,57 +318,132 @@ const AIChat: React.FC = () => {
         role: 'assistant' as API.AIChatMessageRole,
       }
     },
-    resolveAbortController: (controller) => {
-      abortController.current = controller;
-    },
-    transformMessage: (info) => {
-      const { originMessage, chunk } = info || {};
-      if (!chunk) {
-        return {
-          role: 'assistant' as API.AIChatMessageRole,
-          content: originMessage?.content || '',
-        };
-      }
+  });
+  const onSubmit = (val: string) => {
+    if (!val) return;
 
-      const content = originMessage?.content || '';
-      return {
-        role: 'assistant' as API.AIChatMessageRole,
-        content: content + chunk,
-      };
+    if (!activeConversationKey) {
+      createNewConversation(val);
+      return;
+    }
+    onRequest({
+      content: val,
+    });
+  };
+
+  const convertConversation = (conversation: API.AIChatSession) => {
+    return {
+      key: conversation.id,
+      label: conversation.title,
+      group: dayjs(conversation.start_time).isSame(dayjs(), 'day') ? t('chat.today') : dayjs(conversation.start_time).format('YYYY-MM-DD'),
+    }
+  }
+
+  const { loading: fetchConversationsLoading } = useRequest(async () => {
+    const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
+    setConversations(response.data.map(convertConversation));
+    if (response.data.length > 0) {
+      setActiveConversationKey(response.data[0].id);
+    }
+  }, {
+    onError: () => {
+      message.error(t('chat.fetchConversationsFailed', { defaultValue: 'Failed to fetch conversations' }));
     },
   });
 
 
-  useEffect(() => {
-    if (!curConversation) return;
-    const messages = messageHistory[curConversation];
-    if (messages) {
-      setMessages(messages);
-    } else {
-      fetchConversation(curConversation);
+  const { run: fetchConversation, loading: fetchConversationLoading } = useRequest(async (sessionId: string) => {
+    return await api.ai.getChatSession({ sessionId });
+  }, {
+    manual: true,
+    onError: () => {
+      message.error(t('chat.fetchConversationFailed', { defaultValue: 'Failed to fetch conversation' }));
+    },
+    onSuccess: (data) => {
+      if (messages && messages.length > 0 && (messages[messages.length - 1].status === 'loading' || messages.length > data.messages.length)) {
+        return
+      }
+      setMessages(data.messages.filter((item) => item.role !== 'tool').map((item) => ({
+        id: item.id,
+        message: {
+          content: item.content,
+          role: item.role,
+        },
+        status: 'success',
+      })));
     }
-  }, [messageHistory, curConversation]);
-  // ==================== Event ====================
-  const onSubmit = (val: string) => {
-    if (!val) return;
+  });
+  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string) => {
+    return await api.ai.createChatSession({ title: t('chat.defaultConversationTitle'), model_id: '' });
+  }, {
+    manual: true,
+    onError: () => {
+      message.error(t('chat.createConversationFailed', { defaultValue: 'Failed to create conversation' }));
+    },
+    onSuccess: (data, [message]) => {
+      addConversation(convertConversation(data), 'prepend');
+      if (message) {
+        setMessageBuffer({ message, sessionId: data.id });
+      }
+      setActiveConversationKey(data.id);
+    },
+  });
 
-    if (loading) {
-      message.error(t('chat.requestInProgress'));
-      return;
+  const { run: deleteConversation } = useRequest(async (sessionId: string) => {
+    return await api.ai.deleteChatSession({ sessionId });
+  }, {
+    manual: true,
+    onError(_, [sessionId]) {
+      messageApi.error(t('chat.deleteConversationFailed', { defaultValue: 'Failed to delete conversation' }));
+      const conversation = getConversation(sessionId);
+      if (!conversation) return;
+      setConversation(sessionId, { ...conversation, loading: false });
+    },
+    onSuccess(_, [sessionId]) {
+      removeConversation(sessionId);
     }
-    if (!curConversation) {
-      createNewConversation(val)
-      return
+  });
+
+
+  const { run: regenerateTitle } = useRequest(async (sessionId: string) => {
+    return api.ai.generateChatSessionTitle({ sessionId }, { title: '' });
+  }, {
+    manual: true,
+    onSuccess: ({ title }, [sessionId]) => {
+      const conversation = getConversation(sessionId);
+      if (!conversation) return;
+      setConversation(sessionId, { ...conversation, title: title, loading: false });
+    },
+    onError: (err, [sessionId]) => {
+      messageApi.error(t('chat.titleGenerationFailed', { defaultValue: 'Failed to generate title' }));
+      console.log(err)
+      const conversation = getConversation(sessionId);
+      if (!conversation) return;
+      setConversation(sessionId, { ...conversation, loading: false });
     }
-    onRequest({
-      stream: true,
-      message: {
-        role: 'user' as API.AIChatMessageRole,
-        content: val,
-      },
-      sessionId: curConversation,
-    });
-  };
+  });
+
+  useEffect(() => {
+    console.log(activeConversationKey, messageBuffer)
+    if (activeConversationKey && messageBuffer?.sessionId === activeConversationKey) {
+      onRequest({
+        content: messageBuffer.message,
+      });
+
+      setMessageBuffer(undefined);
+    }
+  }, [activeConversationKey, messageBuffer])
+
+  useEffect(() => {
+    if (activeConversationKey) {
+      const storagedMessages = getMessages(activeConversationKey);
+      if (storagedMessages && storagedMessages.length > 0) {
+        return
+      }
+      fetchConversation(activeConversationKey);
+    }
+  }, [activeConversationKey])
+
 
 
   // ==================== Nodes ====================
@@ -437,27 +460,12 @@ const AIChat: React.FC = () => {
       </Button>
       <Spin spinning={fetchConversationsLoading} wrapperClassName={styles.conversationsSpin}>
         <Conversations
-          items={conversations.map((item) => ({
-            key: item.id,
-            label: item.title,
-            group: dayjs(item.start_time).isSame(dayjs(), 'day') ? t('chat.today') : dayjs(item.start_time).format('YYYY-MM-DD'),
-            icon: item.loading ? <Spin size="small" /> : undefined,
-          }))}
-          activeKey={curConversation}
+          items={conversations}
+          activeKey={activeConversationKey}
           onActiveChange={async (val) => {
             if (!val) return;
-            abortController.current?.abort();
-            setCurConversation((ori) => {
-              if (ori) {
-                setMessageHistory((prev) => {
-                  return {
-                    ...prev,
-                    [ori]: messages,
-                  }
-                })
-              }
-              return val
-            });
+            setActiveConversationKey(val);
+
           }}
 
           className={styles.conversations}
@@ -466,23 +474,11 @@ const AIChat: React.FC = () => {
           menu={(conversation) => ({
             items: [
               {
-                label: t('chat.renameConversation'),
-                key: 'rename',
-                icon: <EditOutlined />,
-              },
-              {
                 label: t('chat.regenerateTitle'),
                 key: 'regenerateTitle',
                 icon: <ReloadOutlined />,
                 onClick: () => {
-                  setConversations((prev) => {
-                    return prev.map((item) => {
-                      if (item.id === conversation.key) {
-                        return { ...item, loading: true };
-                      }
-                      return item;
-                    })
-                  })
+                  setConversation(conversation.key, { ...conversation, loading: true });
                   regenerateTitle(conversation.key)
                 },
               },
@@ -492,14 +488,7 @@ const AIChat: React.FC = () => {
                 icon: <DeleteOutlined />,
                 danger: true,
                 onClick: () => {
-                  setConversations((prev) => {
-                    return prev.map((item) => {
-                      if (item.id === conversation.key) {
-                        return { ...item, loading: true };
-                      }
-                      return item;
-                    })
-                  })
+                  setConversation(conversation.key, { ...conversation, loading: true });
                   deleteConversation(conversation.key)
 
                 },
@@ -511,32 +500,40 @@ const AIChat: React.FC = () => {
     </div>
   );
 
-  const renderFooter = ({ message }: MessageInfo<ChatMessage>) => {
+  const renderFooter = ({ message }: MessageInfo<ChatStreamMessage>) => {
     if (message.error) {
       return (
         <div>
-          <div dangerouslySetInnerHTML={{ __html: md.render(message.error) }} />
+          <XMarkdown content={message.error} />
         </div>
       );
     }
     return undefined;
   }
-
+  console.log(messages)
   const chatList = (
     <div className={styles.chatList}>
       <Spin spinning={fetchConversationLoading}>
         <Bubble.List
           items={messages?.map((i) => ({
             ...i.message,
+            key: i.id,
             messageRender: (content: string) => {
               return (
-                <div dangerouslySetInnerHTML={{ __html: md.render(content) }} />
-
+                <XMarkdown
+                  paragraphTag="div"
+                  content={content}
+                  className={className}
+                />
               );
             },
             footer: renderFooter(i)
           }))}
-          style={{ height: '100%', paddingInline: 'calc(calc(100% - 700px) /2)' }}
+          style={{
+            height: '100%',
+            paddingInline: layout === 'classic' ? 'calc(calc(100% - 700px) /2)' : '20px'
+          }}
+          // @ts-ignore
           roles={{
             assistant: {
               placement: 'start',
@@ -552,25 +549,14 @@ const AIChat: React.FC = () => {
     <>
       <Sender
         value={inputValue}
-        onSubmit={() => {
+        onSubmit={async () => {
           onSubmit(inputValue.trim());
           setInputValue('');
         }}
         onChange={setInputValue}
-        onCancel={() => {
-          abortController.current?.abort();
-        }}
-        loading={loading}
+        onCancel={() => { abort() }}
+        loading={isRequesting}
         className={styles.sender}
-        allowSpeech
-        actions={(_, info) => {
-          const { SendButton, LoadingButton } = info.components;
-          return (
-            <Flex gap={4}>
-              {loading ? <LoadingButton type="default" /> : <SendButton type="primary" />}
-            </Flex>
-          );
-        }}
         placeholder={t('chat.inputPlaceholder')}
       />
     </>
@@ -578,14 +564,64 @@ const AIChat: React.FC = () => {
 
   // ==================== Render =================
   return (
-    <div className={styles.layout}>
-      {chatSider}
+    <XProvider>
+      <ChatContext.Provider value={{ onReload, setMessage }}>
+        {contextHolder}
+        <div style={{ height: '50px', width: '100%', position: 'relative' }}>
+          <Radio.Group
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}
+            options={[{
+              label: <BlockOutlined />,
+              value: 'classic',
+            }, {
+              label: <BorderRightOutlined />,
+              value: 'sidebar',
+            }, {
+              label: <BorderRightOutlined />,
+              value: 'float-sidebar',
+            }
+            ]}
+            optionType='button'
+            onChange={(e) => setLayout(e.target.value)}
+            value={layout}
+          />
 
-      <div className={styles.chat}>
-        {chatList}
-        {chatSender}
-      </div>
-    </div>
+          <Space style={{ float: 'right', marginTop: 10 }} >
+            <Dropdown
+              menu={{
+                items: conversations.map((conversation) => ({
+                  label: conversation.label,
+                  key: conversation.key,
+                })),
+                onClick: ({ key }) => {
+                  setActiveConversationKey(key);
+                }
+              }}
+              placement="bottomRight"
+            >
+              <Button icon={<HistoryOutlined />} style={{ display: layout === 'classic' ? 'none' : 'block' }} />
+            </Dropdown>
+            <Button type='text' onClick={() => setVisible(false)}>
+              <CloseOutlined />
+            </Button>
+          </Space>
+        </div>
+        <div className={layout === 'classic' ? styles.classicLayout : styles.siderLayout} style={{
+          minWidth: layout === 'classic' ? '500px' : '400px'
+        }}>
+          {layout === 'classic' ? chatSider : null}
+          <div className={styles.chat}>
+            {chatList}
+            {chatSender}
+          </div>
+        </div>
+      </ChatContext.Provider>
+    </XProvider>
   );
 };
 

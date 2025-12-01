@@ -23,6 +23,7 @@ import './i18n'
 import { getURL } from './utils';
 import { LanguageConfig } from './components/LanguageSwitch';
 import { SiteProvider } from './contexts/SiteContext';
+import { AIProvider } from './contexts/AIContext';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -125,11 +126,13 @@ function App({
       >
         <AuthProvider>
           <SiteProvider>
-            <Router basename={getURL()}>
-              <Routes>
-                {renderRoutes(routes)}
-              </Routes>
-            </Router>
+            <AIProvider>
+              <Router basename={getURL()}>
+                <Routes>
+                  {renderRoutes(routes)}
+                </Routes>
+              </Router>
+            </AIProvider>
           </SiteProvider>
         </AuthProvider>
       </ConfigProvider>

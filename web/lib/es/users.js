@@ -1,9 +1,9 @@
 import { j as e } from "./vendor.js";
 import { useState as A, useCallback as Q, useEffect as ee } from "react";
-import { Form as j, message as i, Spin as q, Tag as v, Tooltip as me, Badge as w, Card as M, Row as J, Col as I, Input as T, Select as D, Space as B, Button as _, Table as fe, Modal as N, Typography as ae, Tabs as se, Descriptions as E, Switch as he } from "antd";
-import { UserOutlined as te, EyeOutlined as pe, EditOutlined as re, UnlockOutlined as xe, KeyOutlined as ge, ToolOutlined as je, UndoOutlined as Ve, DeleteOutlined as we, SearchOutlined as H, ReloadOutlined as X, UserAddOutlined as ye, ArrowLeftOutlined as be } from "@ant-design/icons";
+import { Form as g, message as i, Spin as q, Tag as v, Tooltip as me, Badge as w, Card as M, Row as J, Col as I, Input as T, Select as D, Space as B, Button as _, Table as fe, Modal as N, Typography as ae, Tabs as se, Descriptions as E, Switch as he } from "antd";
+import { UserOutlined as te, EyeOutlined as pe, EditOutlined as re, UnlockOutlined as xe, KeyOutlined as je, ToolOutlined as ge, UndoOutlined as Ve, DeleteOutlined as we, SearchOutlined as H, ReloadOutlined as X, UserAddOutlined as ye, ArrowLeftOutlined as be } from "@ant-design/icons";
 import { useNavigate as W, Link as _e, useParams as le } from "react-router-dom";
-import { A as ue, c as Ue, h as ze, U as Ee, d as ke } from "./components.js";
+import { A as ue, e as Ue, j as ze, U as Ee, f as ke } from "./components.js";
 import { a as V } from "./index.js";
 import { P as R, f as $ } from "./base.js";
 import { useTranslation as F } from "react-i18next";
@@ -19,7 +19,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
       i.error(f("user.updateUserError", { defaultValue: "Failed to update user", error: c.message }));
     },
     manual: !0
-  }), { data: x, loading: g } = U(async () => h === "bind" ? V.authorization.getLdapUsers({ skip_existing: !0 }).then((c) => {
+  }), { data: x, loading: j } = U(async () => h === "bind" ? V.authorization.getLdapUsers({ skip_existing: !0 }).then((c) => {
     const b = [], p = [];
     for (const m of c)
       m.username === (u == null ? void 0 : u.username) || m.email === (u == null ? void 0 : u.email) || m.full_name === (u == null ? void 0 : u.full_name) ? b.push({ recommend: !0, ...m }) : p.push({ recommend: !1, ...m });
@@ -58,7 +58,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
         /* @__PURE__ */ e.jsx(
           D,
           {
-            loading: g,
+            loading: j,
             style: { display: h === "bind" ? "block" : "none" },
             onSelect: (c) => y(c),
             options: x == null ? void 0 : x.map((c) => ({ label: /* @__PURE__ */ e.jsxs("div", { children: [
@@ -77,7 +77,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
     }
   );
 }, Se = () => {
-  const u = W(), { t: s } = F("authorization"), { t: a } = F("common"), [f] = j.useForm(), [h, d] = A([]), [n, y] = A(0), { enableMultiOrg: k } = Z(), [P, x] = A(null), [g, c] = A({
+  const u = W(), { t: s } = F("authorization"), { t: a } = F("common"), [f] = g.useForm(), [h, d] = A([]), [n, y] = A(0), { enableMultiOrg: k } = Z(), [P, x] = A(null), [j, c] = A({
     current: R.DEFAULT_CURRENT,
     page_size: R.DEFAULT_PAGE_SIZE,
     keywords: void 0,
@@ -100,12 +100,12 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
     return C ? `${C.name}:${t.name}` : t.name;
   }, [b, p]), { run: z, loading: l } = U(() => {
     const r = {
-      status: g.status,
-      keywords: g.keywords
+      status: j.status,
+      keywords: j.keywords
     };
     return V.authorization.listUsers({
-      current: g.current,
-      page_size: g.page_size,
+      current: j.current,
+      page_size: j.page_size,
       ...r
     });
   }, {
@@ -115,10 +115,10 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
     onError: (r) => {
       i.error(s("user.loadError", { defaultValue: "Failed to load users", error: r.message }));
     },
-    refreshDeps: [g]
+    refreshDeps: [j]
   }), o = (r) => {
     c({
-      ...g,
+      ...j,
       current: R.DEFAULT_CURRENT,
       // Reset to the first page
       keywords: r.keywords,
@@ -295,7 +295,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
         }, {
           key: "resetPassword",
           permission: "authorization:user:resetPassword",
-          icon: /* @__PURE__ */ e.jsx(ge, {}),
+          icon: /* @__PURE__ */ e.jsx(je, {}),
           disabled: t.disable_change_password,
           tooltip: t.disable_change_password ? s("user.resetPasswordDisabled", { defaultValue: "The current system prohibits modifying the password of this user." }) : s("user.resetPassword", { defaultValue: "Reset Password" }),
           hidden: !((t.source === "local" || t.source === "ldap" && t.ldap_dn) && t.status !== "deleted"),
@@ -303,7 +303,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
         }, {
           key: "fixUser",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(je, {}),
+          icon: /* @__PURE__ */ e.jsx(ge, {}),
           tooltip: s("user.fixUser", { defaultValue: "Fix User" }),
           hidden: !(t.source === "ldap" && !t.ldap_dn && t.status !== "deleted"),
           onClick: async () => x(t)
@@ -336,14 +336,14 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
   ];
   return /* @__PURE__ */ e.jsxs("div", { children: [
     /* @__PURE__ */ e.jsx(M, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsx(
-      j,
+      g,
       {
         form: f,
         layout: "inline",
         onFinish: o,
         style: { marginBottom: 16 },
         children: /* @__PURE__ */ e.jsxs(J, { gutter: 16, style: { width: "100%" }, children: [
-          /* @__PURE__ */ e.jsx(I, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "keywords", children: /* @__PURE__ */ e.jsx(
+          /* @__PURE__ */ e.jsx(I, { span: 6, children: /* @__PURE__ */ e.jsx(g.Item, { name: "keywords", children: /* @__PURE__ */ e.jsx(
             T,
             {
               prefix: /* @__PURE__ */ e.jsx(H, {}),
@@ -351,7 +351,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
               allowClear: !0
             }
           ) }) }),
-          /* @__PURE__ */ e.jsx(I, { span: 6, children: /* @__PURE__ */ e.jsx(j.Item, { name: "status", children: /* @__PURE__ */ e.jsxs(
+          /* @__PURE__ */ e.jsx(I, { span: 6, children: /* @__PURE__ */ e.jsx(g.Item, { name: "status", children: /* @__PURE__ */ e.jsxs(
             D,
             {
               placeholder: s("user.status", { defaultValue: "Status" }),
@@ -410,8 +410,8 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
           rowKey: "id",
           loading: l,
           pagination: {
-            current: g.current,
-            pageSize: g.page_size,
+            current: j.current,
+            pageSize: j.page_size,
             total: n,
             showSizeChanger: !0,
             showQuickJumper: !0,
@@ -429,7 +429,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
   __proto__: null,
   default: Se
 }, Symbol.toStringTag, { value: "Module" })), { Title: Ae } = ae, { TabPane: Y } = se, Fe = () => {
-  const { id: u } = le(), s = W(), { t: a } = F("authorization"), { t: f } = F("common"), [h, d] = A(!1), [n, y] = A(null), { hasPermission: k } = Pe(), { enableMultiOrg: P } = Z(), { data: x, loading: g } = U(async () => (await V.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
+  const { id: u } = le(), s = W(), { t: a } = F("authorization"), { t: f } = F("common"), [h, d] = A(!1), [n, y] = A(null), { hasPermission: k } = Pe(), { enableMultiOrg: P } = Z(), { data: x, loading: j } = U(async () => (await V.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
     refreshDeps: [P],
     onError: (p) => {
       i.error(a("organizations.loadError", { defaultValue: "Failed to load organizations", error: p.message }));
@@ -437,7 +437,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
     cacheKey: "fetchAllOrganizations",
     cacheTime: 1e3 * 60 * 10
   }), c = Q((p, m) => {
-    if (g)
+    if (j)
       return /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
         /* @__PURE__ */ e.jsx(q, { size: "small" }),
         ":",
@@ -445,7 +445,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
       ] });
     const z = x == null ? void 0 : x.find((l) => l.id === p);
     return z ? `${z.name}:${m.name}` : m.name;
-  }, [x, g]);
+  }, [x, j]);
   if (ee(() => {
     (async () => {
       if (u) {
@@ -525,7 +525,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
   __proto__: null,
   default: Fe
 }, Symbol.toStringTag, { value: "Module" })), { Option: G } = D, Le = () => {
-  const { id: u = "" } = le(), s = W(), { t: a } = F("authorization"), { t: f } = F("common"), [h] = j.useForm(), d = !!u, { enableMultiOrg: n } = Z(), { data: y, loading: k } = U(async () => (await V.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
+  const { id: u = "" } = le(), s = W(), { t: a } = F("authorization"), { t: f } = F("common"), [h] = g.useForm(), d = !!u, { enableMultiOrg: n } = Z(), { data: y, loading: k } = U(async () => (await V.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
     refreshDeps: [n],
     onError: (l) => {
       i.error(a("organizations.loadError", { defaultValue: "Failed to load organizations", error: l.message }));
@@ -541,7 +541,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
       ] });
     const L = y == null ? void 0 : y.find((K) => K.id === l);
     return L ? `${L.name}:${o.name}` : o.name;
-  }, [y, k]), { data: x, loading: g } = U(async () => (await V.authorization.listRoles({})).data.map((o) => ({
+  }, [y, k]), { data: x, loading: j } = U(async () => (await V.authorization.listRoles({})).data.map((o) => ({
     ...o,
     label: o.name,
     value: o.id
@@ -591,9 +591,9 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
     M,
     {
       title: d ? a("user.editTitle", { defaultValue: "Edit User" }) : a("user.createTitle", { defaultValue: "Create User" }),
-      loading: c || g,
+      loading: c || j,
       children: /* @__PURE__ */ e.jsxs(
-        j,
+        g,
         {
           form: h,
           layout: "horizontal",
@@ -614,7 +614,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
           },
           children: [
             /* @__PURE__ */ e.jsx(
-              j.Item,
+              g.Item,
               {
                 name: "avatar",
                 label: a("user.avatar", { defaultValue: "Avatar" }),
@@ -622,7 +622,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
               }
             ),
             /* @__PURE__ */ e.jsx(
-              j.Item,
+              g.Item,
               {
                 name: "username",
                 label: a("user.username", { defaultValue: "Username" }),
@@ -633,7 +633,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
               }
             ),
             /* @__PURE__ */ e.jsx(
-              j.Item,
+              g.Item,
               {
                 name: "email",
                 label: a("user.email", { defaultValue: "Email" }),
@@ -645,7 +645,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
               }
             ),
             /* @__PURE__ */ e.jsx(
-              j.Item,
+              g.Item,
               {
                 name: "full_name",
                 label: a("user.fullName", { defaultValue: "Full Name" }),
@@ -654,7 +654,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
               }
             ),
             d && /* @__PURE__ */ e.jsx(
-              j.Item,
+              g.Item,
               {
                 name: "status",
                 label: a("user.status", { defaultValue: "Status" }),
@@ -667,7 +667,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
               }
             ),
             /* @__PURE__ */ e.jsx(
-              j.Item,
+              g.Item,
               {
                 name: "mfa_enforced",
                 label: a("user.mfaEnforced", { defaultValue: "MFA Enforced" }),
@@ -676,7 +676,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
             ),
             !d && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
               /* @__PURE__ */ e.jsx(
-                j.Item,
+                g.Item,
                 {
                   name: "password",
                   label: a("user.password", { defaultValue: "Password" }),
@@ -685,7 +685,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
                 }
               ),
               /* @__PURE__ */ e.jsx(
-                j.Item,
+                g.Item,
                 {
                   name: "confirm_password",
                   label: a("user.confirmPassword", { defaultValue: "Confirm Password" }),
@@ -696,7 +696,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
               )
             ] }),
             /* @__PURE__ */ e.jsx(
-              j.Item,
+              g.Item,
               {
                 name: "role_ids",
                 label: a("user.roles", { defaultValue: "Roles" }),
@@ -710,12 +710,12 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
                       label: n ? P(l.organization_id, l) : l.name
                     })),
                     optionFilterProp: "label",
-                    loading: g
+                    loading: j
                   }
                 )
               }
             ),
-            /* @__PURE__ */ e.jsx(j.Item, { wrapperCol: { offset: 9 }, children: /* @__PURE__ */ e.jsxs(B, { children: [
+            /* @__PURE__ */ e.jsx(g.Item, { wrapperCol: { offset: 9 }, children: /* @__PURE__ */ e.jsxs(B, { children: [
               /* @__PURE__ */ e.jsx(
                 _,
                 {

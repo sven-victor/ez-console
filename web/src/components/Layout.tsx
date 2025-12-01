@@ -18,8 +18,9 @@ import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
 import _ from 'lodash';
 import { getURL } from '@/utils';
-import AIChatButton from './AIChatButton';
+import { AIChatModal, AIChatButton, AIChatSider } from './AIChatLayout';
 import { useSite } from '@/contexts/SiteContext';
+import { useAI } from '@/contexts/AIContext';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
@@ -40,6 +41,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   transformHeaderItems = (items) => items,
   renderLayout,
 }) => {
+  const { layout, visible: chatVisible } = useAI()
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const location = useLocation();
@@ -208,7 +210,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
     const [collapsed, setCollapsed] = useState(false);
-    return <Layout style={{ minHeight: '100vh' }}>
+
+    return <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'row' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme={menuStyle}>
         <div className="logo" style={{ margin: '8px', display: 'flex' }}>
           <div style={{ width: '100%', height: '100%', textAlign: 'center' }}>
@@ -219,7 +222,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           {menuItems}
         </Menu>
       </Sider>
-      <Layout className="site-layout">
+      <Layout className="site-layout main-layout" style={{ flex: 1, minWidth: 0 }}>
         <Header className="site-layout-background" style={{ padding: 0, display: 'flex', justifyContent: 'space-between' }}>
           <Button
             type="text"
@@ -231,7 +234,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             {headerItems}
           </div>
         </Header>
-        <Content style={{ margin: '0 16px' }}>
+        <Content style={{ margin: '0 16px', height: 'calc(100vh - 170px)', overflow: 'auto' }}>
           <Breadcrumb style={{ margin: '16px 0' }} itemRender={(route) => {
             const path = route.href || route.path
             if (path) {
@@ -239,13 +242,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             }
             return <span>{route.title}</span>
           }} items={breadcrumbs} />
-          <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
+          <div className="site-layout-background" style={{ padding: 24, minHeight: 'calc(100vh - 190px)' }}>
             {content}
           </div>
           <AIChatButton />
+          {layout === 'classic' && <AIChatModal />}
         </Content>
         <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
+      {(layout === 'sidebar' || layout === 'float-sidebar') && chatVisible && (<AIChatSider />)}
     </Layout>
   }
 

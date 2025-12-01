@@ -1,31 +1,31 @@
-import { a as re } from "./ai.js";
+import { a as ce } from "./ai.js";
 import { a as J } from "./authorization.js";
 import { b as X, g as Z } from "./base.js";
-import { a as B } from "./system.js";
+import { a as F } from "./system.js";
 import { o as ee } from "./oauth.js";
-import { j as e, d as le, b as ce, c as he, e as me, f as de, g as D, h as ue } from "./vendor.js";
-import { QueryClient as pe, QueryClientProvider as xe } from "react-query";
-import { useLocation as fe, useNavigate as ge, Link as $, Outlet as je, matchRoutes as ve, BrowserRouter as ye, Routes as ze, Route as K } from "react-router-dom";
-import { Layout as M, Menu as k, Spin as we, Button as be, Breadcrumb as _e, ConfigProvider as Se } from "antd";
+import { j as e, d as he, e as me, f as de, g as ue, h as pe, i as M, k as xe } from "./vendor.js";
+import { QueryClient as fe, QueryClientProvider as ge } from "react-query";
+import { useLocation as je, useNavigate as ve, Link as k, Outlet as ye, matchRoutes as ze, BrowserRouter as we, Routes as be, Route as K } from "react-router-dom";
+import { Layout as B, Menu as $, Spin as _e, Button as Se, Breadcrumb as Ae, ConfigProvider as Le } from "antd";
 import { useTranslation as U } from "react-i18next";
-import { lazy as c, Suspense as Ae, useState as S, useEffect as C } from "react";
-import { L as Le, H as T, O as Oe, A as q, a as Re, b as $e, P as ke } from "./components.js";
-import { DashboardOutlined as Ce, SolutionOutlined as Ne, UserOutlined as N, SafetyOutlined as Fe, FileSearchOutlined as Ie, SettingOutlined as Pe, SwapOutlined as Be, MenuUnfoldOutlined as De, MenuFoldOutlined as Me } from "@ant-design/icons";
-import { a as Ue, u as Ee, b as He, A as Ve, S as Ke } from "./contexts.js";
-import Te from "lodash";
+import { lazy as c, Suspense as Oe, useState as A, useEffect as C } from "react";
+import { L as Re, H as T, O as ke, A as q, a as $e, b as Ce, c as Ie, d as Ne, P as Pe } from "./components.js";
+import { DashboardOutlined as De, SolutionOutlined as Fe, UserOutlined as I, SafetyOutlined as Me, FileSearchOutlined as Be, SettingOutlined as Ue, SwapOutlined as Ee, MenuUnfoldOutlined as He, MenuFoldOutlined as Ve } from "@ant-design/icons";
+import { c as Ke, a as Te, u as qe, b as Qe, A as We, S as Ye, e as Ge } from "./contexts.js";
+import Je from "lodash";
 import "./forbidden.js";
 import "./not_found.js";
 import "./client.js";
 import "i18next";
-const qe = c(() => import("./dashboard.js")), Qe = c(() => import("./login.js")), We = c(() => import("./profile.js")), Q = c(() => import("./not_found.js")), Ye = c(() => import("./forbidden.js")), Ge = c(() => import("./users.js").then((n) => n.U)), Je = c(() => import("./users.js").then((n) => n.a)), W = c(() => import("./users.js").then((n) => n.b)), Xe = c(() => import("./roles.js").then((n) => n.R)), Y = c(() => import("./roles.js").then((n) => n.a)), Ze = c(() => import("./system-settings.js").then((n) => n.i)), et = c(() => import("./system-settings.js").then((n) => n.O)), tt = c(() => import("./system-settings.js").then((n) => n.a)), it = c(() => import("./audit.js")), nt = c(() => import("./service-accounts.js").then((n) => n.S)), at = c(() => import("./service-accounts.js").then((n) => n.a));
-function o(n, u) {
-  return /* @__PURE__ */ e.jsx(Ae, { fallback: /* @__PURE__ */ e.jsx(Le, {}), children: /* @__PURE__ */ e.jsx(n, { ...u }) });
+const Xe = c(() => import("./dashboard.js")), Ze = c(() => import("./login.js")), et = c(() => import("./profile.js")), Q = c(() => import("./not_found.js")), tt = c(() => import("./forbidden.js")), it = c(() => import("./users.js").then((a) => a.U)), nt = c(() => import("./users.js").then((a) => a.a)), W = c(() => import("./users.js").then((a) => a.b)), at = c(() => import("./roles.js").then((a) => a.R)), Y = c(() => import("./roles.js").then((a) => a.a)), st = c(() => import("./system-settings.js").then((a) => a.i)), ot = c(() => import("./system-settings.js").then((a) => a.O)), rt = c(() => import("./system-settings.js").then((a) => a.a)), lt = c(() => import("./audit.js")), ct = c(() => import("./service-accounts.js").then((a) => a.S)), ht = c(() => import("./service-accounts.js").then((a) => a.a));
+function o(a, m) {
+  return /* @__PURE__ */ e.jsx(Oe, { fallback: /* @__PURE__ */ e.jsx(Re, {}), children: /* @__PURE__ */ e.jsx(a, { ...m }) });
 }
-const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoutes: g = [], extraPublicRoutes: j = [] }) => {
-  const y = [
+const mt = ({ transformSettingTabs: a, transformLangConfig: m, extraPrivateRoutes: f = [], extraPublicRoutes: g = [] }) => {
+  const j = [
     {
       path: "/login",
-      element: o(Qe, { transformLangConfig: u }),
+      element: o(Ze, { transformLangConfig: m }),
       index: !0
     },
     {
@@ -35,47 +35,47 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
     },
     {
       path: "/403",
-      element: o(Ye),
+      element: o(tt),
       index: !0
     },
     {
       path: "/system/settings/oauth/test-callback",
-      element: o(tt),
+      element: o(rt),
       index: !0
     },
-    ...j
-  ], z = [
+    ...g
+  ], v = [
     {
       path: "/",
       is_private: !0,
       children: [
         {
           path: "/",
-          element: o(qe),
+          element: o(Xe),
           name: "dashboard",
-          icon: /* @__PURE__ */ e.jsx(Ce, {}),
+          icon: /* @__PURE__ */ e.jsx(De, {}),
           index: !0
         },
         {
           path: "/profile",
-          element: o(We),
+          element: o(et),
           name: void 0,
           index: !0
         },
         {
           name: "authorization",
-          icon: /* @__PURE__ */ e.jsx(N, {}),
+          icon: /* @__PURE__ */ e.jsx(I, {}),
           permissions: ["authorization:user:view", "authorization:user:create", "authorization:user:update", "authorization:user:delete", "authorization:service_account:view", "authorization:service_account:create", "authorization:service_account:update", "authorization:service_account:delete", "authorization:role:view"],
           children: [
             // Role management
             {
               path: "/authorization/roles",
               name: "roles",
-              icon: /* @__PURE__ */ e.jsx(Ne, {}),
+              icon: /* @__PURE__ */ e.jsx(Fe, {}),
               permissions: ["authorization:role:view", "authorization:role:create", "authorization:role:update", "authorization:role:delete"],
               children: [
                 {
-                  element: o(Xe),
+                  element: o(at),
                   permissions: ["authorization:role:view"],
                   index: !0
                 },
@@ -97,11 +97,11 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
             {
               path: "/authorization/users",
               name: "users",
-              icon: /* @__PURE__ */ e.jsx(N, {}),
+              icon: /* @__PURE__ */ e.jsx(I, {}),
               permissions: ["authorization:user:view", "authorization:user:list", "authorization:user:create", "authorization:user:update", "authorization:user:delete"],
               children: [
                 {
-                  element: o(Ge),
+                  element: o(it),
                   permissions: ["authorization:user:list"],
                   index: !0
                 },
@@ -113,7 +113,7 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
                 },
                 {
                   path: "/authorization/users/:id",
-                  element: o(Je),
+                  element: o(nt),
                   permissions: ["authorization:user:view"],
                   index: !0
                 },
@@ -129,17 +129,17 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
             {
               path: "/authorization/service-accounts",
               name: "serviceAccounts",
-              icon: /* @__PURE__ */ e.jsx(N, {}),
+              icon: /* @__PURE__ */ e.jsx(I, {}),
               permissions: ["authorization:service_account:view"],
               children: [
                 {
-                  element: o(nt),
+                  element: o(ct),
                   permissions: ["authorization:service_account:view"],
                   index: !0
                 },
                 {
                   path: "/authorization/service-accounts/:id",
-                  element: o(at),
+                  element: o(ht),
                   permissions: ["authorization:service_account:view"],
                   index: !0
                 }
@@ -147,29 +147,29 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
             }
           ]
         },
-        ...g,
+        ...f,
         // System management menu
         {
           name: "system",
-          icon: /* @__PURE__ */ e.jsx(Pe, {}),
+          icon: /* @__PURE__ */ e.jsx(Ue, {}),
           permissions: ["system:settings:view", "system:settings:update", "system:audit:view", "system:organization:view", "ai:models:view", "ai:toolsets:view"],
           children: [
             // System settings
             {
               path: "/system/settings",
-              icon: /* @__PURE__ */ e.jsx(Fe, {}),
+              icon: /* @__PURE__ */ e.jsx(Me, {}),
               name: "settings",
               permissions: ["system:settings:view", "system:settings:update", "system:organization:view", "ai:models:view", "ai:toolsets:view"],
               children: [
                 {
                   path: "/system/settings",
                   index: !0,
-                  element: o(Ze, { transformItems: n })
+                  element: o(st, { transformItems: a })
                 },
                 {
                   path: "/system/settings/organizations/:id",
                   permissions: ["system:organization:view"],
-                  element: o(et),
+                  element: o(ot),
                   index: !0
                 }
               ]
@@ -177,11 +177,11 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
             // Audit logs
             {
               path: "/system/audit",
-              icon: /* @__PURE__ */ e.jsx(Ie, {}),
+              icon: /* @__PURE__ */ e.jsx(Be, {}),
               name: "audit",
               permissions: ["system:audit:view"],
               index: !0,
-              element: o(it)
+              element: o(lt)
             }
           ]
         },
@@ -194,140 +194,142 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
       ]
     }
   ];
-  return [...y, ...z];
-}, Nt = {
-  ai: re,
+  return [...j, ...v];
+}, Bt = {
+  ai: ce,
   authorization: J,
   base: X,
-  system: B,
+  system: F,
   oauth: ee
-}, { Header: ot, Content: rt, Footer: lt, Sider: ct } = M, { SubMenu: ht } = k, mt = ({
-  element: n,
-  routes: u,
-  transformLangConfig: g,
-  menuStyle: j = "dark",
-  transformHeaderItems: y = (p) => p,
-  renderLayout: z
+}, { Header: dt, Content: ut, Footer: pt, Sider: xt } = B, { SubMenu: ft } = $, gt = ({
+  element: a,
+  routes: m,
+  transformLangConfig: f,
+  menuStyle: g = "dark",
+  transformHeaderItems: j = (p) => p,
+  renderLayout: v
 }) => {
-  const { t: p, i18n: w } = U(), { t: h } = U("common"), v = fe(), { hasPermission: F } = Ue(), b = ge(), { logout: A, user: r } = Ee(), { siteConfig: s, clearCurrentOrgId: m } = He(), [a, _] = S([]), [L, O] = S(null), [I, te] = S("Loading...");
-  v.pathname !== "/profile" && (r && r.mfa_enforced && !r.mfa_enabled ? b("/profile#mfa") : r && r.status === "password_expired" && b("/profile#password"));
-  const ie = () => {
-    A(), m(), window.location.href = Z("/login?redirect=" + encodeURIComponent(window.location.href));
-  }, ne = [
+  const { layout: p, visible: N } = Ke(), { t: l, i18n: y } = U(), { t: z } = U("common"), x = je(), { hasPermission: L } = Te(), w = ve(), { logout: b, user: s } = qe(), { siteConfig: i, clearCurrentOrgId: O } = Qe(), [_, S] = A([]), [te, ie] = A(null), [P, ne] = A("Loading...");
+  x.pathname !== "/profile" && (s && s.mfa_enforced && !s.mfa_enabled ? w("/profile#mfa") : s && s.status === "password_expired" && w("/profile#password"));
+  const ae = () => {
+    b(), O(), window.location.href = Z("/login?redirect=" + encodeURIComponent(window.location.href));
+  }, se = [
     {
       key: "profile",
-      label: /* @__PURE__ */ e.jsx($, { to: "/profile", children: h("profile") })
+      label: /* @__PURE__ */ e.jsx(k, { to: "/profile", children: z("profile") })
     },
     {
       key: "logout",
-      label: h("logout"),
-      onClick: ie
+      label: z("logout"),
+      onClick: ae
     }
   ];
   C(() => {
-    var i;
-    if (s) {
-      const l = s.navigation.filter((t) => t.path !== s.home_page), x = [...s.home_page ? [{
-        name: "home",
-        path: s.home_page
-      }] : [], ...l];
-      x.length > 1 ? _(x) : _([]), O(s.logo), (i = document.getElementById("site-icon")) == null || i.setAttribute("href", s.logo);
-    }
-  }, [s]), C(() => {
-    w.language && te((s == null ? void 0 : s.name_i18n[w.language]) || (s == null ? void 0 : s.name) || "");
-  }, [s, w.language]);
-  const P = () => {
-    const i = ve(u, v.pathname), l = [];
+    var n;
     if (i) {
-      for (const [x, t] of i.entries())
+      const r = i.navigation.filter((t) => t.path !== i.home_page), d = [...i.home_page ? [{
+        name: "home",
+        path: i.home_page
+      }] : [], ...r];
+      d.length > 1 ? S(d) : S([]), ie(i.logo), (n = document.getElementById("site-icon")) == null || n.setAttribute("href", i.logo);
+    }
+  }, [i]), C(() => {
+    y.language && ne((i == null ? void 0 : i.name_i18n[y.language]) || (i == null ? void 0 : i.name) || "");
+  }, [i, y.language]);
+  const D = () => {
+    const n = ze(m, x.pathname), r = [];
+    if (n) {
+      for (const [d, t] of n.entries())
         if (t.route.path === "/" && !t.route.name)
-          l.push({
+          r.push({
             href: t.route.path,
-            title: h("home"),
+            title: z("home"),
             key: "home"
           });
         else if (t.route.name) {
-          const d = i.slice(0, x + 1).map((f) => f.route.name).filter(Boolean).join(".");
-          l.push({
+          const h = n.slice(0, d + 1).map((u) => u.route.name).filter(Boolean).join(".");
+          r.push({
             path: t.route.path,
-            title: t.route.name ? p(`breadcrumbs.${d}`) : void 0,
+            title: t.route.name ? l(`breadcrumbs.${h}`) : void 0,
             key: t.route.path
           });
         }
     }
-    return l;
-  }, ae = (i) => i.some((l) => F(l)), se = Te.flatMapDeep(u, (i) => i.children).map((i) => i == null ? void 0 : i.name).filter((i) => i !== void 0), E = (i, l = []) => {
-    const x = (t) => t && t.replace(/_/g, " ").split(" ").map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(" ");
-    return i.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
-      if (t.permissions && !ae(t.permissions))
+    return r;
+  }, oe = (n) => n.some((r) => L(r)), re = Je.flatMapDeep(m, (n) => n.children).map((n) => n == null ? void 0 : n.name).filter((n) => n !== void 0), E = (n, r = []) => {
+    const d = (t) => t && t.replace(/_/g, " ").split(" ").map((h) => h.charAt(0).toUpperCase() + h.slice(1)).join(" ");
+    return n.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
+      if (t.permissions && !oe(t.permissions))
         return null;
-      const d = x(t.name);
+      const h = d(t.name);
       if (!t.name)
         return null;
       if ("children" in t && t.children) {
-        const f = E(t.children, [...l, t.name]);
-        return f.length == 0 && t.path ? /* @__PURE__ */ e.jsx(k.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx($, { to: t.path, children: p(`menu.${[...l, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : /* @__PURE__ */ e.jsx(ht, { icon: t.icon, title: p(`menu.${[...l, t.name, t.name].join(".")}`, { defaultValue: d }), children: f }, t.path ?? t.name);
+        const u = E(t.children, [...r, t.name]);
+        return u.length == 0 && t.path ? /* @__PURE__ */ e.jsx($.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: l(`menu.${[...r, t.name].join(".")}`, { defaultValue: h }) }) }, t.path) : /* @__PURE__ */ e.jsx(ft, { icon: t.icon, title: l(`menu.${[...r, t.name, t.name].join(".")}`, { defaultValue: h }), children: u }, t.path ?? t.name);
       }
-      return t.name && t.path ? /* @__PURE__ */ e.jsx(k.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx($, { to: t.path, children: p(`menu.${[...l, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : null;
+      return t.name && t.path ? /* @__PURE__ */ e.jsx($.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: l(`menu.${[...r, t.name].join(".")}`, { defaultValue: h }) }) }, t.path) : null;
     }).filter(Boolean);
   };
   C(() => {
-    const i = P().filter((l) => l.path !== "/").map((l) => l.title).join(" - ");
-    i ? document.title = `${I} | ${i}` : document.title = I;
-  }, [P, v.pathname]);
-  const oe = [
-    /* @__PURE__ */ e.jsx(T, { hidden: a.length <= 1, menu: {
-      items: a.map((i) => ({
-        key: i.path,
+    const n = D().filter((r) => r.path !== "/").map((r) => r.title).join(" - ");
+    n ? document.title = `${P} | ${n}` : document.title = P;
+  }, [D, x.pathname]);
+  const le = [
+    /* @__PURE__ */ e.jsx(T, { hidden: _.length <= 1, menu: {
+      items: _.map((n) => ({
+        key: n.path,
         style: { paddingRight: "20px" },
-        label: /* @__PURE__ */ e.jsx("a", { href: i.path, children: p(`menu.${i.name}`, { defaultValue: i.name }) })
+        label: /* @__PURE__ */ e.jsx("a", { href: n.path, children: l(`menu.${n.name}`, { defaultValue: n.name }) })
       }))
-    }, children: /* @__PURE__ */ e.jsx(Be, {}) }),
-    ...s != null && s.enable_multi_org ? [/* @__PURE__ */ e.jsx(Oe, {}, "org-switcher")] : [],
-    /* @__PURE__ */ e.jsxs(T, { menu: { items: ne }, children: [
-      r != null && r.avatar ? /* @__PURE__ */ e.jsx(q, { src: r.avatar }) : /* @__PURE__ */ e.jsx(q, { icon: /* @__PURE__ */ e.jsx(N, {}) }),
-      /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em", marginLeft: "5px" }, children: (r == null ? void 0 : r.full_name) || (r == null ? void 0 : r.username) })
+    }, children: /* @__PURE__ */ e.jsx(Ee, {}) }),
+    ...i != null && i.enable_multi_org ? [/* @__PURE__ */ e.jsx(ke, {}, "org-switcher")] : [],
+    /* @__PURE__ */ e.jsxs(T, { menu: { items: se }, children: [
+      s != null && s.avatar ? /* @__PURE__ */ e.jsx(q, { src: s.avatar }) : /* @__PURE__ */ e.jsx(q, { icon: /* @__PURE__ */ e.jsx(I, {}) }),
+      /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em", marginLeft: "5px" }, children: (s == null ? void 0 : s.full_name) || (s == null ? void 0 : s.username) })
     ] }),
-    /* @__PURE__ */ e.jsx(Re, { transformLangConfig: g })
+    /* @__PURE__ */ e.jsx($e, { transformLangConfig: f })
   ];
-  return (z ?? ((i, l, x, t, d) => {
-    const [f, H] = S(!1);
-    return /* @__PURE__ */ e.jsxs(M, { style: { minHeight: "100vh" }, children: [
-      /* @__PURE__ */ e.jsxs(ct, { collapsible: !0, collapsed: f, onCollapse: H, theme: j, children: [
-        /* @__PURE__ */ e.jsx("div", { className: "logo", style: { margin: "8px", display: "flex" }, children: /* @__PURE__ */ e.jsx("div", { style: { width: "100%", height: "100%", textAlign: "center" }, children: i ? /* @__PURE__ */ e.jsx("img", { src: i, alt: "logo", style: { height: "32px", width: "32px" } }) : /* @__PURE__ */ e.jsx(we, { size: "large", tip: "Loading..." }) }) }),
-        /* @__PURE__ */ e.jsx(k, { theme: j, defaultOpenKeys: se, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [v.pathname], children: l })
+  return (v ?? ((n, r, d, t, h) => {
+    const [u, H] = A(!1);
+    return /* @__PURE__ */ e.jsxs(B, { style: { minHeight: "100vh", display: "flex", flexDirection: "row" }, children: [
+      /* @__PURE__ */ e.jsxs(xt, { collapsible: !0, collapsed: u, onCollapse: H, theme: g, children: [
+        /* @__PURE__ */ e.jsx("div", { className: "logo", style: { margin: "8px", display: "flex" }, children: /* @__PURE__ */ e.jsx("div", { style: { width: "100%", height: "100%", textAlign: "center" }, children: n ? /* @__PURE__ */ e.jsx("img", { src: n, alt: "logo", style: { height: "32px", width: "32px" } }) : /* @__PURE__ */ e.jsx(_e, { size: "large", tip: "Loading..." }) }) }),
+        /* @__PURE__ */ e.jsx($, { theme: g, defaultOpenKeys: re, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [x.pathname], children: r })
       ] }),
-      /* @__PURE__ */ e.jsxs(M, { className: "site-layout", children: [
-        /* @__PURE__ */ e.jsxs(ot, { className: "site-layout-background", style: { padding: 0, display: "flex", justifyContent: "space-between" }, children: [
+      /* @__PURE__ */ e.jsxs(B, { className: "site-layout main-layout", style: { flex: 1, minWidth: 0 }, children: [
+        /* @__PURE__ */ e.jsxs(dt, { className: "site-layout-background", style: { padding: 0, display: "flex", justifyContent: "space-between" }, children: [
           /* @__PURE__ */ e.jsx(
-            be,
+            Se,
             {
               type: "text",
-              icon: f ? /* @__PURE__ */ e.jsx(De, {}) : /* @__PURE__ */ e.jsx(Me, {}),
-              onClick: () => H(!f),
+              icon: u ? /* @__PURE__ */ e.jsx(He, {}) : /* @__PURE__ */ e.jsx(Ve, {}),
+              onClick: () => H(!u),
               style: { fontSize: "16px", width: 64, height: 64 }
             }
           ),
-          /* @__PURE__ */ e.jsx("div", { style: { marginRight: "20px" }, children: x })
+          /* @__PURE__ */ e.jsx("div", { style: { marginRight: "20px" }, children: d })
         ] }),
-        /* @__PURE__ */ e.jsxs(rt, { style: { margin: "0 16px" }, children: [
-          /* @__PURE__ */ e.jsx(_e, { style: { margin: "16px 0" }, itemRender: (R) => {
+        /* @__PURE__ */ e.jsxs(ut, { style: { margin: "0 16px", height: "calc(100vh - 170px)", overflow: "auto" }, children: [
+          /* @__PURE__ */ e.jsx(Ae, { style: { margin: "16px 0" }, itemRender: (R) => {
             const V = R.href || R.path;
-            return V ? /* @__PURE__ */ e.jsx($, { to: V, children: R.title }) : /* @__PURE__ */ e.jsx("span", { children: R.title });
+            return V ? /* @__PURE__ */ e.jsx(k, { to: V, children: R.title }) : /* @__PURE__ */ e.jsx("span", { children: R.title });
           }, items: t }),
-          /* @__PURE__ */ e.jsx("div", { className: "site-layout-background", style: { padding: 24, minHeight: 360 }, children: d }),
-          /* @__PURE__ */ e.jsx($e, {})
+          /* @__PURE__ */ e.jsx("div", { className: "site-layout-background", style: { padding: 24, minHeight: "calc(100vh - 190px)" }, children: h }),
+          /* @__PURE__ */ e.jsx(Ce, {}),
+          p === "classic" && /* @__PURE__ */ e.jsx(Ie, {})
         ] }),
-        /* @__PURE__ */ e.jsxs(lt, { style: { textAlign: "center" }, children: [
+        /* @__PURE__ */ e.jsxs(pt, { style: { textAlign: "center" }, children: [
           " ©",
           (/* @__PURE__ */ new Date()).getFullYear(),
           " ",
-          I
+          P
         ] })
-      ] })
+      ] }),
+      (p === "sidebar" || p === "float-sidebar") && N && /* @__PURE__ */ e.jsx(Ne, {})
     ] });
-  }))(L, E(u), y(oe), P(), n ?? /* @__PURE__ */ e.jsx(je, {}));
-}, dt = new pe({
+  }))(te, E(m), j(le), D(), a ?? /* @__PURE__ */ e.jsx(ye, {}));
+}, jt = new fe({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: !1,
@@ -335,72 +337,72 @@ const st = ({ transformSettingTabs: n, transformLangConfig: u, extraPrivateRoute
     }
   }
 }), G = {
-  "zh-CN": ue,
-  "en-US": D,
-  "de-DE": de,
-  "es-ES": me,
-  "fr-FR": he,
-  "ar-AE": ce,
-  "sv-SE": le
+  "zh-CN": xe,
+  "en-US": M,
+  "de-DE": pe,
+  "es-ES": ue,
+  "fr-FR": de,
+  "ar-AE": me,
+  "sv-SE": he
 };
-function Ft({
-  transformRouter: n = (h) => h,
-  transformSettingTabs: u = (h) => h,
-  transformLangConfig: g = (h) => h,
-  extraPrivateRoutes: j = [],
-  extraPublicRoutes: y = [],
-  menuStyle: z = "dark",
-  transformHeaderItems: p = (h) => h,
-  renderLayout: w
+function Ut({
+  transformRouter: a = (l) => l,
+  transformSettingTabs: m = (l) => l,
+  transformLangConfig: f = (l) => l,
+  extraPrivateRoutes: g = [],
+  extraPublicRoutes: j = [],
+  menuStyle: v = "dark",
+  transformHeaderItems: p = (l) => l,
+  renderLayout: N
 }) {
-  const { i18n: h } = U(), [v, F] = S(G[h.language] || D);
+  const { i18n: l } = U(), [y, z] = A(G[l.language] || M);
   C(() => {
-    F(G[h.language] || D);
-  }, [h.language]);
-  const b = (s) => s.map((m) => m.children === void 0 ? m : {
-    ...m,
-    children: b(m.children)
-  }), A = n(b(st({
-    transformSettingTabs: u,
-    transformLangConfig: g,
-    extraPrivateRoutes: j,
-    extraPublicRoutes: y
-  }))), r = (s, m) => s.flatMap((a) => a.is_private ? [a] : "children" in a && a.children ? a.children : [a]).map((a, _) => {
-    const L = a.is_private ? /* @__PURE__ */ e.jsx(ke, { element: /* @__PURE__ */ e.jsx(
-      mt,
+    z(G[l.language] || M);
+  }, [l.language]);
+  const x = (b) => b.map((s) => s.children === void 0 ? s : {
+    ...s,
+    children: x(s.children)
+  }), L = a(x(mt({
+    transformSettingTabs: m,
+    transformLangConfig: f,
+    extraPrivateRoutes: g,
+    extraPublicRoutes: j
+  }))), w = (b, s) => b.flatMap((i) => i.is_private ? [i] : "children" in i && i.children ? i.children : [i]).map((i, O) => {
+    const _ = i.is_private ? /* @__PURE__ */ e.jsx(Pe, { element: /* @__PURE__ */ e.jsx(
+      gt,
       {
-        routes: A,
-        element: a.element,
-        transformLangConfig: g,
-        menuStyle: z,
+        routes: L,
+        element: i.element,
+        transformLangConfig: f,
+        menuStyle: v,
         transformHeaderItems: p,
-        renderLayout: w
+        renderLayout: N
       }
-    ) }) : a.element;
-    if ("children" in a && a.children && a.children.length > 0)
-      return /* @__PURE__ */ e.jsx(K, { path: a.path, element: L, children: r(a.children, a) }, a.path ?? a.name ?? _);
-    const { path: O } = a;
-    return /* @__PURE__ */ e.jsx(K, { path: O, index: a.index, element: L }, O ?? a.name ?? `${(m == null ? void 0 : m.path) ?? ""}.${_}`);
+    ) }) : i.element;
+    if ("children" in i && i.children && i.children.length > 0)
+      return /* @__PURE__ */ e.jsx(K, { path: i.path, element: _, children: w(i.children, i) }, i.path ?? i.name ?? O);
+    const { path: S } = i;
+    return /* @__PURE__ */ e.jsx(K, { path: S, index: i.index, element: _ }, S ?? i.name ?? `${(s == null ? void 0 : s.path) ?? ""}.${O}`);
   }).filter(Boolean);
-  return /* @__PURE__ */ e.jsx(xe, { client: dt, children: /* @__PURE__ */ e.jsx(
-    Se,
+  return /* @__PURE__ */ e.jsx(ge, { client: jt, children: /* @__PURE__ */ e.jsx(
+    Le,
     {
-      locale: v,
-      children: /* @__PURE__ */ e.jsx(Ve, { children: /* @__PURE__ */ e.jsx(Ke, { children: /* @__PURE__ */ e.jsx(ye, { basename: Z(), children: /* @__PURE__ */ e.jsx(ze, { children: r(A) }) }) }) })
+      locale: y,
+      children: /* @__PURE__ */ e.jsx(We, { children: /* @__PURE__ */ e.jsx(Ye, { children: /* @__PURE__ */ e.jsx(Ge, { children: /* @__PURE__ */ e.jsx(we, { basename: Z(), children: /* @__PURE__ */ e.jsx(be, { children: w(L) }) }) }) }) })
     }
   ) });
 }
-const It = {
+const Et = {
   ...J,
   ...X,
   ...ee,
-  ...B,
-  ...B
+  ...F,
+  ...F
 };
 export {
-  Ft as A,
-  Nt as a,
-  It as b,
-  mt as c,
+  Ut as A,
+  Bt as a,
+  Et as b,
+  gt as c,
   o as w
 };
