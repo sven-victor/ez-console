@@ -340,8 +340,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	// Capture context values for background goroutine
 	roles, _ := ctx.Get("roles")
 
-	options := []ai.WithChatCompletionStreamOptions{
-		ai.WithChatCompletionStreamOnMessageEnd(func(ctx context.Context, messageID string, content string) {
+	options := []ai.WithChatCompletionOptions{
+		ai.WithChatCompletionOnMessageEnd(func(ctx context.Context, messageID string, content string) {
 			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, content, nil, "")
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
@@ -378,7 +378,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				}()
 			}
 		}),
-		ai.WithChatCompletionStreamOnToolCallsStart(func(ctx context.Context, toolCalls []ai.ToolCall) {
+		ai.WithChatCompletionOnToolCallsStart(func(ctx context.Context, toolCalls []ai.ToolCall) {
 			var aiToolCalls model.AIToolCalls
 			for _, toolCall := range toolCalls {
 				aiToolCalls = append(aiToolCalls, model.AIToolCall{
@@ -397,7 +397,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				return
 			}
 		}),
-		ai.WithChatCompletionStreamOnToolCallEnd(func(ctx context.Context, toolCall ai.ToolCall) {
+		ai.WithChatCompletionOnToolCallEnd(func(ctx context.Context, toolCall ai.ToolCall) {
 			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleTool, toolCall.Result, nil, toolCall.ID)
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)

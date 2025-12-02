@@ -98,7 +98,7 @@ func (c *OpenAIClient) CreateChatCompletionStream(ctx context.Context, request o
 }
 
 // CreateChatStream implements AIClient interface
-func (c *OpenAIClient) CreateChatStream(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionStreamOptions) (ChatStream, error) {
+func (c *OpenAIClient) CreateChatStream(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionOptions) (ChatStream, error) {
 	// Convert ChatMessage to openai.ChatCompletionMessage
 	openaiMessages := make([]openai.ChatCompletionMessage, 0, len(messages))
 	for _, msg := range messages {
@@ -128,13 +128,22 @@ func (c *OpenAIClient) CreateChat(ctx context.Context, messages []ChatMessage, o
 
 	// Convert toolsets to openai.Tool format
 	var openaiTools []openai.Tool
-	if opts.ToolSets != nil {
+	var toolSets toolset.ToolSets
+	if opts.ToolSetsFactory != nil {
 		var err error
-		openaiTools, err = opts.ToolSets.GetTools(ctx)
+		toolSets, err = opts.ToolSetsFactory(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get tool sets: %w", err)
+		}
+		openaiTools, err = toolSets.GetTools(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get tools: %w", err)
 		}
 	}
+
+	// Collect all assistant messages for the final result
+	var resultMessages []ChatMessage
+	reachedMaxIterations := false
 
 	// Main loop for handling tool calls
 	for iteration := 0; iteration < opts.MaxIterations; iteration++ {
@@ -161,22 +170,23 @@ func (c *OpenAIClient) CreateChat(ctx context.Context, messages []ChatMessage, o
 
 		// Check if there are tool calls
 		if len(assistantMessage.ToolCalls) == 0 {
-			// No tool calls, return the final message
-			result := ChatMessageFromOpenAI(assistantMessage)
-			return []ChatMessage{result}, nil
+			// No tool calls, add the final message and break
+			resultMessages = append(resultMessages, ChatMessageFromOpenAI(assistantMessage))
+			break
 		}
 
-		// Add assistant message with tool calls to messages
+		// Add assistant message with tool calls to messages and results
 		openaiMessages = append(openaiMessages, assistantMessage)
+		resultMessages = append(resultMessages, ChatMessageFromOpenAI(assistantMessage))
 
 		// Execute tool calls serially
-		if opts.ToolSets == nil {
+		if len(toolSets) == 0 {
 			return nil, fmt.Errorf("tool calls are required but no toolSets provided")
 		}
 
 		for _, toolCall := range assistantMessage.ToolCalls {
 			// Call the tool
-			toolResult, err := opts.ToolSets.CallTool(ctx, toolCall.Function.Name, toolCall.Function.Arguments)
+			toolResult, err := toolSets.CallTool(ctx, toolCall.Function.Name, toolCall.Function.Arguments)
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to call tool", "error", err, "tool", toolCall.Function.Name)
 				// Use error message as tool result
@@ -184,18 +194,61 @@ func (c *OpenAIClient) CreateChat(ctx context.Context, messages []ChatMessage, o
 			}
 
 			// Add tool result to messages
-			openaiMessages = append(openaiMessages, openai.ChatCompletionMessage{
+			toolResultMessage := openai.ChatCompletionMessage{
 				Role:       string(model.AIChatMessageRoleTool),
 				Content:    toolResult,
 				ToolCallID: toolCall.ID,
-			})
+			}
+			openaiMessages = append(openaiMessages, toolResultMessage)
+			resultMessages = append(resultMessages, ChatMessageFromOpenAI(toolResultMessage))
+		}
+
+		// Check if we reached the last iteration
+		if iteration == opts.MaxIterations-1 {
+			reachedMaxIterations = true
 		}
 
 		// Continue to next iteration
 	}
 
-	// Reached max iterations without completion
-	return nil, fmt.Errorf("reached maximum iterations (%d) without completion", opts.MaxIterations)
+	// Check if we need to make a final prompt call
+	if opts.FinalPrompt != "" {
+		// Append the final prompt as a user message
+		finalPromptMessage := openai.ChatCompletionMessage{
+			Role:    string(model.AIChatMessageRoleUser),
+			Content: opts.FinalPrompt,
+		}
+		openaiMessages = append(openaiMessages, finalPromptMessage)
+		resultMessages = append(resultMessages, ChatMessageFromOpenAI(finalPromptMessage))
+
+		// Make one more API call without tools
+		request := openai.ChatCompletionRequest{
+			Model:    c.modelID,
+			Messages: openaiMessages,
+			Tools:    nil, // No tools for the final prompt
+		}
+
+		response, err := c.client.CreateChatCompletion(ctx, request)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create final prompt completion: %w", err)
+		}
+
+		// Check response
+		if len(response.Choices) == 0 {
+			return nil, fmt.Errorf("no choices in final prompt response")
+		}
+
+		choice := response.Choices[0]
+		finalAssistantMessage := choice.Message
+		resultMessages = append(resultMessages, ChatMessageFromOpenAI(finalAssistantMessage))
+	}
+
+	// If we reached max iterations without completion and no final prompt, return error
+	if reachedMaxIterations && opts.FinalPrompt == "" {
+		return nil, fmt.Errorf("reached maximum iterations (%d) without completion", opts.MaxIterations)
+	}
+
+	return resultMessages, nil
 }
 
 type OpenAIChatStream struct {
@@ -602,22 +655,7 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 	return o.Recv(ctx)
 }
 
-type ChatCompletionOptions struct {
-	MaxIterations int
-	ToolSets      toolset.ToolSets
-}
-
-type ChatCompletionStreamOptions struct {
-	OnMessageEnd            func(ctx context.Context, messageID string, content string)
-	OnToolCallEnd           func(ctx context.Context, toolCall ToolCall)
-	OnToolCallsStart        func(ctx context.Context, toolCalls []ToolCall)
-	ToolSets                toolset.ToolSets
-	MaxIterations           int
-	MaxTokens               int
-	EnableAutoSummarization bool
-}
-
-func (o *ChatCompletionStreamOptions) Apply(stream *OpenAIChatStream) {
+func applyChatCompletionOptions(stream *OpenAIChatStream, o ChatCompletionOptions) {
 	if o.OnMessageEnd != nil {
 		stream.onMessageEnd = o.OnMessageEnd
 	}
@@ -631,67 +669,9 @@ func (o *ChatCompletionStreamOptions) Apply(stream *OpenAIChatStream) {
 	stream.enableAutoSummarization = o.EnableAutoSummarization
 }
 
-type WithChatCompletionOptions func(options *ChatCompletionOptions)
-
-func WithChatCompletionMaxIterations(maxIterations int) WithChatCompletionOptions {
-	return func(options *ChatCompletionOptions) {
-		options.MaxIterations = maxIterations
-	}
-}
-
-func WithChatCompletionToolSets(toolSets toolset.ToolSets) WithChatCompletionOptions {
-	return func(options *ChatCompletionOptions) {
-		options.ToolSets = toolSets
-	}
-}
-
-type WithChatCompletionStreamOptions func(options *ChatCompletionStreamOptions)
-
-func WithChatCompletionStreamOnMessageEnd(onMessageEnd func(ctx context.Context, messageID string, content string)) WithChatCompletionStreamOptions {
-	return func(options *ChatCompletionStreamOptions) {
-		options.OnMessageEnd = onMessageEnd
-	}
-}
-
-func WithChatCompletionStreamOnToolCallEnd(onToolCallEnd func(ctx context.Context, toolCall ToolCall)) WithChatCompletionStreamOptions {
-	return func(options *ChatCompletionStreamOptions) {
-		options.OnToolCallEnd = onToolCallEnd
-	}
-}
-
-func WithChatCompletionStreamOnToolCallsStart(onToolCallsStart func(ctx context.Context, toolCalls []ToolCall)) WithChatCompletionStreamOptions {
-	return func(options *ChatCompletionStreamOptions) {
-		options.OnToolCallsStart = onToolCallsStart
-	}
-}
-
-func WithChatCompletionStreamToolSets(toolSets toolset.ToolSets) WithChatCompletionStreamOptions {
-	return func(options *ChatCompletionStreamOptions) {
-		options.ToolSets = toolSets
-	}
-}
-
-func WithChatCompletionStreamMaxIterations(maxIterations int) WithChatCompletionStreamOptions {
-	return func(options *ChatCompletionStreamOptions) {
-		options.MaxIterations = maxIterations
-	}
-}
-
-func WithChatCompletionStreamMaxTokens(maxTokens int) WithChatCompletionStreamOptions {
-	return func(options *ChatCompletionStreamOptions) {
-		options.MaxTokens = maxTokens
-	}
-}
-
-func WithChatCompletionStreamAutoSummarization(enabled bool) WithChatCompletionStreamOptions {
-	return func(options *ChatCompletionStreamOptions) {
-		options.EnableAutoSummarization = enabled
-	}
-}
-
-func NewChatStream(ctx context.Context, client *OpenAIClient, messages []openai.ChatCompletionMessage, options ...WithChatCompletionStreamOptions) (ChatStream, error) {
+func NewChatStream(ctx context.Context, client *OpenAIClient, messages []openai.ChatCompletionMessage, options ...WithChatCompletionOptions) (ChatStream, error) {
 	// Apply options with defaults
-	opts := ChatCompletionStreamOptions{
+	opts := ChatCompletionOptions{
 		MaxIterations: 10,
 	}
 	for _, option := range options {
@@ -702,12 +682,15 @@ func NewChatStream(ctx context.Context, client *OpenAIClient, messages []openai.
 	var tools []openai.Tool
 	var toolSets toolset.ToolSets
 	var err error
-	if opts.ToolSets != nil {
-		tools, err = opts.ToolSets.GetTools(ctx)
+	if opts.ToolSetsFactory != nil {
+		toolSets, err = opts.ToolSetsFactory(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get tool sets: %w", err)
+		}
+		tools, err = toolSets.GetTools(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get tools: %w", err)
 		}
-		toolSets = opts.ToolSets
 	}
 
 	stream := &OpenAIChatStream{
@@ -719,7 +702,7 @@ func NewChatStream(ctx context.Context, client *OpenAIClient, messages []openai.
 		maxIterations:    opts.MaxIterations,
 		currentIteration: 1,
 	}
-	opts.Apply(stream)
+	applyChatCompletionOptions(stream, opts)
 	// Create chat completion request
 	request := openai.ChatCompletionRequest{
 		Model:    client.modelID,

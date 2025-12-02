@@ -20,7 +20,7 @@ type ChatMessage struct {
 // AIClient is the interface that all AI client implementations must satisfy
 type AIClient interface {
 	// CreateChatStream creates a streaming chat completion
-	CreateChatStream(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionStreamOptions) (ChatStream, error)
+	CreateChatStream(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionOptions) (ChatStream, error)
 	// CreateChat creates a non-streaming chat completion
 	CreateChat(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionOptions) ([]ChatMessage, error)
 }
