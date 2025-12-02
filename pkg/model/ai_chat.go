@@ -96,12 +96,13 @@ func (t *AIToolCalls) Scan(value interface{}) error {
 // AIChatSession represents a chat session
 type AIChatSession struct {
 	Base
-	Title     string          `gorm:"size:200;not null" json:"title"`        // Session title
-	UserID    string          `gorm:"size:36;not null;index" json:"user_id"` // User ID
-	ModelID   string          `gorm:"size:36;not null" json:"model_id"`      // AI model ID used
-	StartTime time.Time       `gorm:"not null" json:"start_time"`            // Session start time
-	EndTime   *time.Time      `json:"end_time"`                              // Session end time
-	Messages  []AIChatMessage `gorm:"-" json:"messages"`                     // Messages
+	OrganizationID string          `gorm:"size:36;not null" json:"organization_id"` // Organization ID
+	Title          string          `gorm:"size:200;not null" json:"title"`          // Session title
+	UserID         string          `gorm:"size:36;not null;index" json:"user_id"`   // User ID
+	ModelID        string          `gorm:"size:36;not null" json:"model_id"`        // AI model ID used
+	StartTime      time.Time       `gorm:"not null" json:"start_time"`              // Session start time
+	EndTime        *time.Time      `json:"end_time"`                                // Session end time
+	Messages       []AIChatMessage `gorm:"-" json:"messages"`                       // Messages
 }
 
 // TableName returns the table name for AIChatSession
@@ -112,15 +113,17 @@ func (AIChatSession) TableName() string {
 // AIChatMessage represents a chat message
 type AIChatMessage struct {
 	Base
-	SessionID   string                `gorm:"size:36;not null;index" json:"session_id"`           // Session ID
-	Role        AIChatMessageRole     `gorm:"size:20;not null" json:"role"`                       // Message role
-	Content     string                `gorm:"type:text" json:"content"`                           // Message content
-	ToolCalls   AIToolCalls           `gorm:"type:text" json:"tool_calls,omitempty"`              // Tool calls (for assistant messages)
-	ToolCallID  string                `gorm:"size:100" json:"tool_call_id,omitempty"`             // Tool call ID (for tool messages)
-	Status      AIChatMessageStatus   `gorm:"size:20;not null;default:'completed'" json:"status"` // Message status
-	Metadata    AIChatMessageMetadata `gorm:"type:text" json:"metadata,omitempty"`                // Additional metadata
-	TokensUsed  int                   `gorm:"default:0" json:"tokens_used"`                       // Tokens used for this message
-	MessageTime time.Time             `gorm:"not null" json:"message_time"`                       // Message timestamp
+	OrganizationID string                `gorm:"size:36;not null" json:"organization_id"`            // Organization ID
+	SessionID      string                `gorm:"size:36;not null;index" json:"session_id"`           // Session ID
+	UserID         string                `gorm:"size:36;not null;index" json:"user_id"`              // User ID
+	Role           AIChatMessageRole     `gorm:"size:20;not null" json:"role"`                       // Message role
+	Content        string                `gorm:"type:text" json:"content"`                           // Message content
+	ToolCalls      AIToolCalls           `gorm:"type:text" json:"tool_calls,omitempty"`              // Tool calls (for assistant messages)
+	ToolCallID     string                `gorm:"size:100" json:"tool_call_id,omitempty"`             // Tool call ID (for tool messages)
+	Status         AIChatMessageStatus   `gorm:"size:20;not null;default:'completed'" json:"status"` // Message status
+	Metadata       AIChatMessageMetadata `gorm:"type:text" json:"metadata,omitempty"`                // Additional metadata
+	TokensUsed     int                   `gorm:"default:0" json:"tokens_used"`                       // Tokens used for this message
+	MessageTime    time.Time             `gorm:"not null" json:"message_time"`                       // Message timestamp
 }
 
 // TableName returns the table name for AIChatMessage
@@ -129,24 +132,27 @@ func (AIChatMessage) TableName() string {
 }
 
 // NewAIChatSession creates a new chat session
-func NewAIChatSession(title, userID, modelID string) *AIChatSession {
+func NewAIChatSession(organizationID, userID, title, modelID string) *AIChatSession {
 	return &AIChatSession{
-		Title:     title,
-		UserID:    userID,
-		ModelID:   modelID,
-		StartTime: time.Now(),
+		OrganizationID: organizationID,
+		Title:          title,
+		UserID:         userID,
+		ModelID:        modelID,
+		StartTime:      time.Now(),
 	}
 }
 
 // NewAIChatMessage creates a new chat message
-func NewAIChatMessage(sessionID string, role AIChatMessageRole, content string, toolCalls AIToolCalls, toolCallID string) *AIChatMessage {
+func NewAIChatMessage(organizationID, userID, sessionID string, role AIChatMessageRole, content string, toolCalls AIToolCalls, toolCallID string) *AIChatMessage {
 	return &AIChatMessage{
-		SessionID:   sessionID,
-		Role:        role,
-		Content:     content,
-		Status:      AIChatMessageStatusCompleted,
-		MessageTime: time.Now(),
-		ToolCalls:   toolCalls,
-		ToolCallID:  toolCallID,
+		OrganizationID: organizationID,
+		UserID:         userID,
+		SessionID:      sessionID,
+		Role:           role,
+		Content:        content,
+		Status:         AIChatMessageStatusCompleted,
+		MessageTime:    time.Now(),
+		ToolCalls:      toolCalls,
+		ToolCallID:     toolCallID,
 	}
 }

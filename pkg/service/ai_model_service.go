@@ -27,16 +27,22 @@ func (s *AIModelService) CreateAIModel(ctx context.Context, req *model.AIModel) 
 			req.Config["api_key"] = util.EncryptString(apiKey)
 		}
 	}
-
-	// If this is set as default, unset other defaults
-	if req.IsDefault {
-		if err := s.unsetDefaultModels(ctx, req.Provider); err != nil {
-			return nil, fmt.Errorf("failed to unset default models: %w", err)
+	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		if req.IsDefault {
+			if req.Status != model.AIModelStatusEnabled {
+				return fmt.Errorf("default AI model must be enabled")
+			}
+			if err := tx.Model(&model.AIModel{}).Where("organization_id = ?", req.OrganizationID).Update("is_default", false).Error; err != nil {
+				return fmt.Errorf("failed to unset other defaults: %w", err)
+			}
 		}
-	}
-
-	if err := db.Session(ctx).Create(req).Error; err != nil {
-		return nil, fmt.Errorf("failed to create AI model: %w", err)
+		if err := tx.Create(req).Error; err != nil {
+			return fmt.Errorf("failed to create AI model: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return req, nil
@@ -73,15 +79,28 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 		return nil, fmt.Errorf("failed to find AI model: %w", err)
 	}
 
-	// If this is set as default, unset other defaults
-	if req.IsDefault && !existingModel.IsDefault {
-		if err := s.unsetDefaultModels(ctx, req.Provider); err != nil {
-			return nil, fmt.Errorf("failed to unset default models: %w", err)
+	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		if req.IsDefault {
+			if req.Status != model.AIModelStatusEnabled {
+				return fmt.Errorf("default AI model must be enabled")
+			}
+			if err := tx.Model(&model.AIModel{}).
+				Where("organization_id = ? AND resource_id != ?", organizationID, id).
+				Update("is_default", false).Error; err != nil {
+				return fmt.Errorf("failed to unset other defaults: %w", err)
+			}
 		}
-	}
 
-	if err := db.Session(ctx).Model(&model.AIModel{}).Where("organization_id = ? AND resource_id = ?", organizationID, id).Select("config", "name", "description", "provider", "is_default", "updated_by").Updates(req).Error; err != nil {
-		return nil, fmt.Errorf("failed to update AI model: %w", err)
+		if err := tx.Model(&model.AIModel{}).
+			Where("organization_id = ? AND resource_id = ?", organizationID, id).
+			Select("config", "name", "description", "provider", "is_default", "updated_by").
+			Updates(req).Error; err != nil {
+			return fmt.Errorf("failed to update AI model: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	return req, nil
@@ -92,6 +111,9 @@ func (s *AIModelService) DeleteAIModel(ctx context.Context, organizationID, id s
 	var aiModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to find AI model: %w", err)
+	}
+	if aiModel.IsDefault {
+		return fmt.Errorf("default AI model cannot be deleted")
 	}
 
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).Delete(&aiModel).Error; err != nil {
@@ -131,19 +153,11 @@ func (s *AIModelService) ListAIModels(ctx context.Context, organizationID string
 }
 
 // GetDefaultAIModel gets the default AI model for a provider
-func (s *AIModelService) GetDefaultAIModel(ctx context.Context, provider model.AIModelProvider) (*model.AIModel, error) {
+func (s *AIModelService) GetDefaultAIModel(ctx context.Context, organizationID string) (*model.AIModel, error) {
 	var aiModel model.AIModel
-	if err := db.Session(ctx).Where("provider = ? AND is_default = ? AND status = ?",
-		provider, true, model.AIModelStatusEnabled).First(&aiModel).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// If no default model, get the first enabled model
-			if err := db.Session(ctx).Where("provider = ? AND status = ?",
-				provider, model.AIModelStatusEnabled).First(&aiModel).Error; err != nil {
-				return nil, fmt.Errorf("no enabled AI model found for provider %s: %w", provider, err)
-			}
-		} else {
-			return nil, fmt.Errorf("failed to get default AI model: %w", err)
-		}
+	if err := db.Session(ctx).Where("organization_id = ? AND is_default = ? AND status = ?",
+		organizationID, true, model.AIModelStatusEnabled).First(&aiModel).Error; err != nil {
+		return nil, fmt.Errorf("failed to get default AI model: %w", err)
 	}
 
 	return &aiModel, nil
@@ -155,11 +169,13 @@ func (s *AIModelService) SetDefaultAIModel(ctx context.Context, organizationID, 
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to find AI model: %w", err)
 	}
+	if aiModel.Status != model.AIModelStatusEnabled {
+		return fmt.Errorf("default AI model must be enabled")
+	}
 
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Unset other defaults for the same provider
-		if err := tx.Model(&model.AIModel{}).Where("organization_id = ? AND provider = ? AND id != ?", organizationID,
-			aiModel.Provider, id).Update("is_default", false).Error; err != nil {
+		if err := tx.Model(&model.AIModel{}).Where("organization_id = ? AND resource_id != ?", organizationID, id).Update("is_default", false).Error; err != nil {
 			return fmt.Errorf("failed to unset other defaults: %w", err)
 		}
 

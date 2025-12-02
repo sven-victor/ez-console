@@ -98,8 +98,14 @@ func (c *AIChatController) ListChatSessions(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
 		return
 	}
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 
-	sessions, total, err := c.service.GetUserChatSessions(ctx, userID.(string), current, pageSize)
+	sessions, total, err := c.service.GetUserChatSessions(ctx, organizationID, userID.(string), current, pageSize)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -135,10 +141,17 @@ func (c *AIChatController) CreateChatSession(ctx *gin.Context) {
 		return
 	}
 
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
 	// Use default model if not specified
 	modelID := req.ModelID
 	if modelID == "" {
-		defaultModel, err := c.service.GetDefaultAIModel(ctx, model.AIModelProviderOpenAI)
+		defaultModel, err := c.service.GetDefaultAIModel(ctx, organizationID)
 		if err != nil {
 			util.RespondWithError(ctx, util.NewError("E5001", err))
 			return
@@ -146,7 +159,7 @@ func (c *AIChatController) CreateChatSession(ctx *gin.Context) {
 		modelID = defaultModel.ResourceID
 	}
 
-	session, err := c.service.CreateChatSession(ctx, req.Title, userID.(string), modelID)
+	session, err := c.service.CreateChatSession(ctx, organizationID, userID.(string), req.Title, modelID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -174,13 +187,26 @@ func (c *AIChatController) GetChatSession(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Session ID is required"))
 		return
 	}
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 
-	session, err := c.service.GetChatSession(ctx, sessionID)
+	// Get current user ID from context
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
+		return
+	}
+
+	session, err := c.service.GetChatSession(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
-	messages, err := c.service.GetChatMessages(ctx, sessionID)
+	messages, err := c.service.GetChatMessages(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -210,7 +236,20 @@ func (c *AIChatController) DeleteChatSession(ctx *gin.Context) {
 		return
 	}
 
-	err := c.service.DeleteChatSession(ctx, sessionID)
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
+	// Get current user ID from context
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
+		return
+	}
+	err := c.service.DeleteChatSession(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -253,15 +292,22 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		return
 	}
 
+	// Get current user ID from context
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
+		return
+	}
+
 	// Get chat session
-	session, err := c.service.GetChatSession(ctx, sessionID)
+	session, err := c.service.GetChatSession(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat session", err)))
 		return
 	}
 
 	// Get chat messages
-	messages, err := c.service.GetChatMessages(ctx, sessionID)
+	messages, err := c.service.GetChatMessages(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat messages", err)))
 		return
@@ -277,7 +323,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	})
 
 	// Save the user message to database
-	_, err = c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleUser, req.Content, nil, "")
+	_, err = c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleUser, req.Content, nil, "")
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to add chat message", err)))
 		return
@@ -292,12 +338,11 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	}
 
 	// Capture context values for background goroutine
-	userID, _ := ctx.Get("user_id")
 	roles, _ := ctx.Get("roles")
 
 	options := []ai.WithChatCompletionStreamOptions{
 		ai.WithChatCompletionStreamOnMessageEnd(func(ctx context.Context, messageID string, content string) {
-			_, err := c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleAssistant, content, nil, "")
+			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, content, nil, "")
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
 				return
@@ -320,12 +365,12 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 						bgCtx = context.WithValue(bgCtx, "roles", roles)
 					}
 
-					title, err := c.service.GenerateChatSessionTitle(bgCtx, sessionID, organizationID, session.ModelID)
+					title, err := c.service.GenerateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, session.ModelID)
 					if err != nil {
 						level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
 						return
 					}
-					if err := c.service.UpdateChatSessionTitle(bgCtx, sessionID, title); err != nil {
+					if err := c.service.UpdateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, title); err != nil {
 						level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
 						return
 					}
@@ -346,14 +391,14 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 					},
 				})
 			}
-			_, err := c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleAssistant, "", aiToolCalls, "")
+			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, "", aiToolCalls, "")
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
 				return
 			}
 		}),
 		ai.WithChatCompletionStreamOnToolCallEnd(func(ctx context.Context, toolCall ai.ToolCall) {
-			_, err := c.service.AddChatMessage(ctx, sessionID, model.AIChatMessageRoleTool, toolCall.Result, nil, toolCall.ID)
+			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleTool, toolCall.Result, nil, toolCall.ID)
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
 				return
@@ -413,9 +458,15 @@ func (c *AIChatController) GenerateChatSessionTitle(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
+	// Get current user ID from context
+	userID, exists := ctx.Get("user_id")
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
+		return
+	}
 
 	// Get chat session
-	session, err := c.service.GetChatSession(ctx, sessionID)
+	session, err := c.service.GetChatSession(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -433,7 +484,7 @@ func (c *AIChatController) GenerateChatSessionTitle(ctx *gin.Context) {
 		title = req.Title
 	} else {
 		// Generate title automatically
-		generatedTitle, err := c.service.GenerateChatSessionTitle(ctx, sessionID, organizationID, session.ModelID)
+		generatedTitle, err := c.service.GenerateChatSessionTitle(ctx, organizationID, userID.(string), sessionID, session.ModelID)
 		if err != nil {
 			util.RespondWithError(ctx, util.NewError("E5001", err))
 			return
@@ -442,13 +493,13 @@ func (c *AIChatController) GenerateChatSessionTitle(ctx *gin.Context) {
 	}
 
 	// Update session title
-	if err := c.service.UpdateChatSessionTitle(ctx, sessionID, title); err != nil {
+	if err := c.service.UpdateChatSessionTitle(ctx, organizationID, userID.(string), sessionID, title); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 
 	// Get updated session
-	updatedSession, err := c.service.GetChatSession(ctx, sessionID)
+	updatedSession, err := c.service.GetChatSession(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
