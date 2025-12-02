@@ -124,9 +124,9 @@ func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string
 }
 
 // GetEnabledToolSets gets all enabled toolsets
-func (s *ToolSetService) GetEnabledToolSets(ctx context.Context) ([]model.ToolSet, error) {
+func (s *ToolSetService) GetEnabledToolSets(ctx context.Context, organizationID string) ([]model.ToolSet, error) {
 	var toolsets []model.ToolSet
-	if err := db.Session(ctx).Where("status = ?", model.ToolSetStatusEnabled).Find(&toolsets).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND status = ?", organizationID, model.ToolSetStatusEnabled).Find(&toolsets).Error; err != nil {
 		return nil, fmt.Errorf("failed to get enabled toolsets: %w", err)
 	}
 
@@ -184,8 +184,8 @@ func (s *ToolSetService) createToolSetInstance(toolSet *model.ToolSet) (toolset.
 }
 
 // GetAllEnabledToolSetInstances gets all enabled toolset instances
-func (s *ToolSetService) GetAllEnabledToolSetInstances(ctx context.Context) (toolset.ToolSets, error) {
-	toolsets, err := s.GetEnabledToolSets(ctx)
+func (s *ToolSetService) GetAllEnabledToolSetInstances(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+	toolsets, err := s.GetEnabledToolSets(ctx, organizationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get enabled toolsets: %w", err)
 	}
