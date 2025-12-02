@@ -104,53 +104,6 @@ export const AIChatSider: React.FC = () => {
   )
 }
 
-export const AIChatFloatSider: React.FC = () => {
-  const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
-    const saved = localStorage.getItem('ai-sidebar-width');
-    return saved ? parseInt(saved, 10) : 400;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('ai-sidebar-width', sidebarWidth.toString());
-  }, [sidebarWidth]);
-
-  const handleSidebarResize = (newWidth: number) => {
-    setSidebarWidth(newWidth);
-  };
-  return (
-    <>
-      <ResizeDivider
-        onResize={handleSidebarResize}
-        minWidth={300}
-        maxWidth={window.innerWidth * 0.5}
-      />
-      <div
-        style={{
-          width: `${sidebarWidth}px`,
-          display: 'flex',
-          height: '100vh',
-          overflow: 'hidden',
-          flexShrink: 0,
-        }}
-        className="ai-sidebar-layout"
-      >
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#ffffff',
-            overflow: 'hidden',
-          }}
-        >
-          <div>
-
-            {withSuspense(AIChatDialog)}
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
 
 export const AIChatButton: React.FC = () => {
   const { setVisible, visible } = useAI()

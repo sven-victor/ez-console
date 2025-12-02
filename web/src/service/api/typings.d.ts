@@ -21,6 +21,8 @@ declare global {
       message_time: string;
       /** Additional metadata */
       metadata: AIChatMessageMetadata;
+      /** Organization ID */
+      organization_id: string;
       /** Message role */
       role: AIChatMessageRole;
       /** Session ID */
@@ -34,6 +36,8 @@ declare global {
       /** Tool calls (for assistant messages) */
       tool_calls: AIToolCall[];
       updated_at: string;
+      /** User ID */
+      user_id: string;
     }
   
     type AIChatMessageMetadata = true;
@@ -51,6 +55,8 @@ declare global {
       messages: AIChatMessage[];
       /** AI model ID used */
       model_id: string;
+      /** Organization ID */
+      organization_id: string;
       /** Session start time */
       start_time: string;
       /** Session title */
@@ -229,6 +235,7 @@ declare global {
     }
   
     interface CreateChatSessionRequest {
+      messages: SimpleChatMessage[];
       model_id: string;
       title: string;
     }
@@ -1350,6 +1357,11 @@ declare global {
   
     interface SetServiceAccountPolicyRequest {
       policy_document: PolicyDocument;
+    }
+  
+    interface SimpleChatMessage {
+      content: string;
+      role: AIChatMessageRole;
     }
   
     interface SiteConfig {

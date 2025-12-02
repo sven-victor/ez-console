@@ -41,6 +41,16 @@ definitions:
     - arguments
     - name
     type: object
+  ai.SimpleChatMessage:
+    properties:
+      content:
+        type: string
+      role:
+        $ref: '#/definitions/model.AIChatMessageRole'
+    required:
+    - content
+    - role
+    type: object
   ai.ToolCall:
     properties:
       function:
@@ -95,11 +105,16 @@ definitions:
     type: object
   aiapi.CreateChatSessionRequest:
     properties:
+      messages:
+        items:
+          $ref: '#/definitions/ai.SimpleChatMessage'
+        type: array
       model_id:
         type: string
       title:
         type: string
     required:
+    - messages
     - model_id
     - title
     type: object
@@ -442,6 +457,9 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.AIChatMessageMetadata'
         description: Additional metadata
+      organization_id:
+        description: Organization ID
+        type: string
       role:
         allOf:
         - $ref: '#/definitions/model.AIChatMessageRole'
@@ -466,12 +484,16 @@ definitions:
         type: array
       updated_at:
         type: string
+      user_id:
+        description: User ID
+        type: string
     required:
     - content
     - created_at
     - id
     - message_time
     - metadata
+    - organization_id
     - role
     - session_id
     - status
@@ -479,6 +501,7 @@ definitions:
     - tool_call_id
     - tool_calls
     - updated_at
+    - user_id
     type: object
   model.AIChatMessageMetadata:
     additionalProperties: true
@@ -524,6 +547,9 @@ definitions:
       model_id:
         description: AI model ID used
         type: string
+      organization_id:
+        description: Organization ID
+        type: string
       start_time:
         description: Session start time
         type: string
@@ -541,6 +567,7 @@ definitions:
     - id
     - messages
     - model_id
+    - organization_id
     - start_time
     - title
     - updated_at
@@ -2222,18 +2249,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2244,18 +2259,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
   toolset.ToolSetType:
     enum:
     - utils

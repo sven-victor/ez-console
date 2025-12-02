@@ -50,6 +50,10 @@ export declare interface AddUserToOrganizationRequest {
  */
 export declare const AdminGuard: default_2.FC<Omit<PermissionGuardProps, 'permission' | 'permissions' | 'checkAll'>>;
 
+export declare const AIChat: default_2.FC;
+
+export declare const AIChatButton: default_2.FC;
+
 export declare interface AIChatMessage {
     /** Message content */
     content: string;
@@ -59,6 +63,8 @@ export declare interface AIChatMessage {
     message_time: string;
     /** Additional metadata */
     metadata: AIChatMessageMetadata;
+    /** Organization ID */
+    organization_id: string;
     /** Message role */
     role: AIChatMessageRole;
     /** Session ID */
@@ -72,6 +78,8 @@ export declare interface AIChatMessage {
     /** Tool calls (for assistant messages) */
     tool_calls: AIToolCall[];
     updated_at: string;
+    /** User ID */
+    user_id: string;
 }
 
 export declare type AIChatMessageMetadata = true;
@@ -79,6 +87,8 @@ export declare type AIChatMessageMetadata = true;
 export declare type AIChatMessageRole = "user" | "assistant" | "system" | "tool";
 
 export declare type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
+
+export declare const AIChatModal: default_2.FC;
 
 export declare interface AIChatSession {
     created_at: string;
@@ -89,6 +99,8 @@ export declare interface AIChatSession {
     messages: AIChatMessage[];
     /** AI model ID used */
     model_id: string;
+    /** Organization ID */
+    organization_id: string;
     /** Session start time */
     start_time: string;
     /** Session title */
@@ -96,6 +108,17 @@ export declare interface AIChatSession {
     updated_at: string;
     /** User ID */
     user_id: string;
+}
+
+export declare const AIChatSider: default_2.FC;
+
+declare interface AIContextType {
+    layout: 'classic' | 'sidebar' | 'float-sidebar';
+    setLayout: (layout: 'classic' | 'sidebar' | 'float-sidebar') => void;
+    visible: boolean;
+    setVisible: (visible: boolean) => void;
+    callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
+    onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
 }
 
 export declare interface AIFunctionCall {
@@ -603,6 +626,7 @@ export declare interface CreateAIModelRequest {
 }
 
 export declare interface CreateChatSessionRequest {
+    messages: SimpleChatMessage[];
     model_id: string;
     title: string;
 }
@@ -1822,6 +1846,11 @@ export declare interface SetServiceAccountPolicyRequest {
     policy_document: PolicyDocument;
 }
 
+export declare interface SimpleChatMessage {
+    content: string;
+    role: AIChatMessageRole;
+}
+
 export declare interface SiteConfig {
     attrs: Record<string, any>;
     disable_local_user_login: boolean;
@@ -2212,6 +2241,8 @@ export declare interface updateUserStatusParams {
 export declare interface UpdateUserStatusRequest {
     status: string;
 }
+
+export declare const useAI: () => AIContextType;
 
 export declare const useAuth: () => AuthContextType;
 

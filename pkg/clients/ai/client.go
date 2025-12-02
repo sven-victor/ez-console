@@ -9,6 +9,11 @@ import (
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
+type SimpleChatMessage struct {
+	Role    model.AIChatMessageRole `json:"role"`
+	Content string                  `json:"content,omitempty"`
+}
+
 // ChatMessage represents a chat message in a unified format
 type ChatMessage struct {
 	Role       model.AIChatMessageRole `json:"role"`

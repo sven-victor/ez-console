@@ -43,8 +43,9 @@ func (c *AIChatController) RegisterRoutes(router *gin.RouterGroup) {
 
 // CreateChatSessionRequest represents the request to create a chat session
 type CreateChatSessionRequest struct {
-	Title   string `json:"title" binding:"required"`
-	ModelID string `json:"model_id"`
+	Title    string                 `json:"title" binding:"required"`
+	Messages []ai.SimpleChatMessage `json:"messages"`
+	ModelID  string                 `json:"model_id"`
 }
 
 // SendMessageRequest represents the request to send a message
@@ -159,7 +160,7 @@ func (c *AIChatController) CreateChatSession(ctx *gin.Context) {
 		modelID = defaultModel.ResourceID
 	}
 
-	session, err := c.service.CreateChatSession(ctx, organizationID, userID.(string), req.Title, modelID)
+	session, err := c.service.CreateChatSession(ctx, organizationID, userID.(string), req.Title, modelID, req.Messages)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

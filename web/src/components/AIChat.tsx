@@ -267,7 +267,7 @@ const ChatContext = React.createContext<{
 }>({});
 
 const AIChat: React.FC = () => {
-  const { layout, setVisible, setLayout } = useAI()
+  const { layout, setVisible, setLayout, onCallAI } = useAI()
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
   const { styles } = useStyle();
@@ -373,8 +373,12 @@ const AIChat: React.FC = () => {
       })));
     }
   });
-  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string) => {
-    return await api.ai.createChatSession({ title: t('chat.defaultConversationTitle'), model_id: '' });
+  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string, messages?: API.SimpleChatMessage[]) => {
+    return await api.ai.createChatSession({
+      title: t('chat.defaultConversationTitle'),
+      model_id: '',
+      messages: messages || [],
+    });
   }, {
     manual: true,
     onError: () => {
@@ -403,7 +407,6 @@ const AIChat: React.FC = () => {
       removeConversation(sessionId);
     }
   });
-
 
   const { run: regenerateTitle } = useRequest(async (sessionId: string) => {
     return api.ai.generateChatSessionTitle({ sessionId }, { title: '' });
@@ -445,6 +448,11 @@ const AIChat: React.FC = () => {
   }, [activeConversationKey])
 
 
+  useEffect(() => {
+    onCallAI((message, messages) => {
+      createNewConversation(message, messages);
+    });
+  }, [createNewConversation])
 
   // ==================== Nodes ====================
   const chatSider = (

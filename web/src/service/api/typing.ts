@@ -19,6 +19,8 @@ export interface AIChatMessage {
   message_time: string;
   /** Additional metadata */
   metadata: AIChatMessageMetadata;
+  /** Organization ID */
+  organization_id: string;
   /** Message role */
   role: AIChatMessageRole;
   /** Session ID */
@@ -32,6 +34,8 @@ export interface AIChatMessage {
   /** Tool calls (for assistant messages) */
   tool_calls: AIToolCall[];
   updated_at: string;
+  /** User ID */
+  user_id: string;
 }
 
 export type AIChatMessageMetadata = true;
@@ -49,6 +53,8 @@ export interface AIChatSession {
   messages: AIChatMessage[];
   /** AI model ID used */
   model_id: string;
+  /** Organization ID */
+  organization_id: string;
   /** Session start time */
   start_time: string;
   /** Session title */
@@ -227,6 +233,7 @@ export interface CreateAIModelRequest {
 }
 
 export interface CreateChatSessionRequest {
+  messages: SimpleChatMessage[];
   model_id: string;
   title: string;
 }
@@ -1348,6 +1355,11 @@ export interface setServiceAccountPolicyParams {
 
 export interface SetServiceAccountPolicyRequest {
   policy_document: PolicyDocument;
+}
+
+export interface SimpleChatMessage {
+  content: string;
+  role: AIChatMessageRole;
 }
 
 export interface SiteConfig {

@@ -7,7 +7,7 @@ import { u as fe, b as ge } from "./contexts.js";
 import { useTranslation as he } from "react-i18next";
 import { a as U } from "./index.js";
 import { A as q } from "./client.js";
-import { L as pe, a as xe, l as we } from "./components.js";
+import { L as pe, a as xe, m as we } from "./components.js";
 import { m as je, g as ye } from "./base.js";
 import { clearCache as _e } from "ahooks";
 const { Title: be } = te, Be = ({ transformLangConfig: C }) => {

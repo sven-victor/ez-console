@@ -6,6 +6,8 @@ export interface AIContextType {
   setLayout: (layout: 'classic' | 'sidebar' | 'float-sidebar') => void;
   visible: boolean;
   setVisible: (visible: boolean) => void;
+  callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
+  onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
 }
 
 // Create site context
@@ -14,6 +16,8 @@ export const AIContext = createContext<AIContextType>({
   setLayout: () => { },
   visible: false,
   setVisible: () => { },
+  callAI: () => { },
+  onCallAI: (_: (message: string, messages?: API.SimpleChatMessage[]) => void) => { },
 });
 
 export const useAI = () => useContext(AIContext);
@@ -28,6 +32,13 @@ interface AIProviderProps {
 export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
   const [layout, setLayout] = useState<'classic' | 'sidebar' | 'float-sidebar'>('sidebar');
   const [visible, setVisible] = useState(false);
+  const [onCallAI, setOnCallAI] = useState<((message: string, messages?: API.SimpleChatMessage[]) => void) | null>(null);
+  const callAI = (message: string, messages?: API.SimpleChatMessage[]) => {
+    if (onCallAI) {
+      onCallAI(message, messages);
+    }
+  };
+
   return (
     <AIContext.Provider
       value={{
@@ -38,6 +49,10 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
         visible,
         setVisible: (visible: boolean) => {
           setVisible(visible);
+        },
+        callAI,
+        onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => {
+          setOnCallAI(callback);
         },
       }}
     >

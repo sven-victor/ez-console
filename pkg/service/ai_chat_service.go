@@ -31,10 +31,30 @@ func NewAIChatService(aiModelService *AIModelService, toolSetService *ToolSetSer
 }
 
 // CreateChatSession creates a new chat session
-func (s *AIChatService) CreateChatSession(ctx context.Context, organizationID, userID, title, modelID string) (*model.AIChatSession, error) {
+func (s *AIChatService) CreateChatSession(ctx context.Context, organizationID, userID, title, modelID string, messages []ai.SimpleChatMessage) (*model.AIChatSession, error) {
 	session := model.NewAIChatSession(organizationID, userID, title, modelID)
 
-	if err := db.Session(ctx).Create(session).Error; err != nil {
+	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := db.Session(ctx).Create(session).Error; err != nil {
+			return fmt.Errorf("failed to create chat session: %w", err)
+		}
+		for _, message := range messages {
+			if err := db.Session(ctx).Create(&model.AIChatMessage{
+				OrganizationID: organizationID,
+				UserID:         userID,
+				SessionID:      session.ResourceID,
+				Role:           message.Role,
+				Content:        message.Content,
+				Status:         model.AIChatMessageStatusCompleted,
+				MessageTime:    time.Now(),
+			}).Error; err != nil {
+				return fmt.Errorf("failed to create chat message: %w", err)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
 		return nil, fmt.Errorf("failed to create chat session: %w", err)
 	}
 

@@ -18,6 +18,9 @@ export { default as AppLayout, type AppLayoutProps } from '@/components/Layout';
 export { PermissionGuard, type PermissionGuardProps, AdminGuard } from '@/components/PermissionGuard';
 export { default as PrivateRoute, type PrivateRouteProps } from '@/components/PrivateRoute';
 export { default as Table, type TableRefProps, type TableActionRefProps, type TableProps } from '@/components/Table';
+export { default as AIChat } from '@/components/AIChat';
+export { AIChatModal, AIChatButton, AIChatSider } from '@/components/AIChatLayout';
+
 
 export { default as Forbidden } from '@/pages/Forbidden';
 export { default as NotFound } from '@/pages/NotFound';
@@ -25,6 +28,7 @@ export { default as NotFound } from '@/pages/NotFound';
 export { useSite } from '@/contexts/SiteContext'
 export { useAuth } from '@/hooks/useAuth'
 export { usePermission } from '@/hooks/usePermission'
+export { useAI } from '@/contexts/AIContext'
 
 export { apiDelete, apiPost, apiGet, apiPut, ApiError } from '@/service/client';
 import * as authorizationapi from '@/service/api/authorization';

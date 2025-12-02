@@ -1,44 +1,49 @@
-import { c as i, A as p, b as n, w as m } from "./es/index.js";
-import { useTranslation as d } from "react-i18next";
+import { c as i, A as p, b as n, w as u } from "./es/index.js";
+import { useTranslation as m } from "react-i18next";
 import "./es/base.js";
-import { e as A, k as l, i as x, A as g, f as c, D as L, H as P, h as b, a as h, L as w, j as D, P as v, T as y, g as G } from "./es/components.js";
-import { default as S } from "./es/forbidden.js";
-import { default as C } from "./es/not_found.js";
-import { u as F, a as H, b as N } from "./es/contexts.js";
-import { A as j, d as k, a as B, e as R, f as Z } from "./es/client.js";
+import { l as f, b as l, c, d as h, e as x, k as I, i as g, A as b, f as C, D as L, H as P, h as w, a as D, L as S, j as v, P as y, T as G, g as T } from "./es/components.js";
+import { default as E } from "./es/forbidden.js";
+import { default as H } from "./es/not_found.js";
+import { c as U, u as j, a as k, b as M } from "./es/contexts.js";
+import { A as Z, d as q, a as z, e as J, f as K } from "./es/client.js";
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";
-import { default as z } from "i18next";
+import { default as Q } from "i18next";
 export {
-  A as Actions,
-  l as AdminGuard,
-  x as AllLangUIConfig,
-  j as ApiError,
+  f as AIChat,
+  l as AIChatButton,
+  c as AIChatModal,
+  h as AIChatSider,
+  x as Actions,
+  I as AdminGuard,
+  g as AllLangUIConfig,
+  Z as ApiError,
   i as AppLayout,
-  g as Avatar,
-  c as AvatarUpload,
+  b as Avatar,
+  C as AvatarUpload,
   L as DynamicIcon,
   p as EZApp,
-  S as Forbidden,
+  E as Forbidden,
   P as HeaderDropdown,
-  b as LabelCreater,
-  h as LanguageSwitch,
-  w as Loading,
-  C as NotFound,
-  D as PermissionGuard,
-  v as PrivateRoute,
-  y as Table,
+  w as LabelCreater,
+  D as LanguageSwitch,
+  S as Loading,
+  H as NotFound,
+  v as PermissionGuard,
+  y as PrivateRoute,
+  G as Table,
   n as api,
-  k as apiDelete,
-  B as apiGet,
-  R as apiPost,
-  Z as apiPut,
-  G as getIconByName,
-  z as i18n,
-  F as useAuth,
-  H as usePermission,
-  N as useSite,
-  d as useTranslation,
-  m as withSuspense
+  q as apiDelete,
+  z as apiGet,
+  J as apiPost,
+  K as apiPut,
+  T as getIconByName,
+  Q as i18n,
+  U as useAI,
+  j as useAuth,
+  k as usePermission,
+  M as useSite,
+  m as useTranslation,
+  u as withSuspense
 };

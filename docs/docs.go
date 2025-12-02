@@ -4759,6 +4759,21 @@ const docTemplate = `{
                 }
             }
         },
+        "ai.SimpleChatMessage": {
+            "type": "object",
+            "required": [
+                "content",
+                "role"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/model.AIChatMessageRole"
+                }
+            }
+        },
         "ai.ToolCall": {
             "type": "object",
             "required": [
@@ -4834,10 +4849,17 @@ const docTemplate = `{
         "aiapi.CreateChatSessionRequest": {
             "type": "object",
             "required": [
+                "messages",
                 "model_id",
                 "title"
             ],
             "properties": {
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ai.SimpleChatMessage"
+                    }
+                },
                 "model_id": {
                     "type": "string"
                 },
@@ -5330,13 +5352,15 @@ const docTemplate = `{
                 "id",
                 "message_time",
                 "metadata",
+                "organization_id",
                 "role",
                 "session_id",
                 "status",
                 "tokens_used",
                 "tool_call_id",
                 "tool_calls",
-                "updated_at"
+                "updated_at",
+                "user_id"
             ],
             "properties": {
                 "content": {
@@ -5360,6 +5384,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.AIChatMessageMetadata"
                         }
                     ]
+                },
+                "organization_id": {
+                    "description": "Organization ID",
+                    "type": "string"
                 },
                 "role": {
                     "description": "Message role",
@@ -5397,6 +5425,10 @@ const docTemplate = `{
                     }
                 },
                 "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "description": "User ID",
                     "type": "string"
                 }
             }
@@ -5443,6 +5475,7 @@ const docTemplate = `{
                 "id",
                 "messages",
                 "model_id",
+                "organization_id",
                 "start_time",
                 "title",
                 "updated_at",
@@ -5468,6 +5501,10 @@ const docTemplate = `{
                 },
                 "model_id": {
                     "description": "AI model ID used",
+                    "type": "string"
+                },
+                "organization_id": {
+                    "description": "Organization ID",
                     "type": "string"
                 },
                 "start_time": {
@@ -7815,19 +7852,7 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7837,19 +7862,7 @@ const docTemplate = `{
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second"
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {
