@@ -86,6 +86,14 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 			}
 			if err := tx.Model(&model.AIModel{}).
 				Where("organization_id = ? AND resource_id != ?", organizationID, id).
+				Select(
+					"name",
+					"description",
+					"provider",
+					"config",
+					"is_default",
+					"updated_by",
+				).
 				Update("is_default", false).Error; err != nil {
 				return fmt.Errorf("failed to unset other defaults: %w", err)
 			}
