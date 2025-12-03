@@ -37,7 +37,10 @@ const useStyle = createStyles(({ token, css }) => {
 });
 
 export const AIChatModal: React.FC = () => {
-  const { visible: chatVisible, setVisible: setChatVisible } = useAI()
+  const { visible: chatVisible, setVisible: setChatVisible, setLoaded } = useAI()
+  useEffect(() => {
+    setLoaded(true);
+  }, [setLoaded]);
   return (
     <Modal
       width={1200}
@@ -55,11 +58,15 @@ export const AIChatModal: React.FC = () => {
 
 export const AIChatSider: React.FC = () => {
   const { styles } = useStyle();
-  const { layout } = useAI()
+  const { layout, visible } = useAI()
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     const saved = localStorage.getItem('ai-sidebar-width');
     return saved ? parseInt(saved, 10) : 400;
   });
+  const { setLoaded } = useAI()
+  useEffect(() => {
+    setLoaded(true);
+  }, [setLoaded]);
 
   useEffect(() => {
     localStorage.setItem('ai-sidebar-width', sidebarWidth.toString());
@@ -74,7 +81,7 @@ export const AIChatSider: React.FC = () => {
 
         style={{
           width: `${sidebarWidth}px`,
-          display: 'flex',
+          display: visible ? 'flex' : 'none',
           overflow: 'hidden',
           flexShrink: 0,
         }}

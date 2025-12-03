@@ -41,7 +41,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   transformHeaderItems = (items) => items,
   renderLayout,
 }) => {
-  const { layout, visible: chatVisible } = useAI()
+  const { layout, visible: chatVisible, loaded: chatLoaded } = useAI()
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const location = useLocation();
@@ -154,7 +154,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       const title = toTitle(route.name)
       if (!route.name) {
         return null;
-
       }
       if ('children' in route && route.children) {
         const children: React.ReactNode[] = renderMenuItems(route.children, [...parent, route.name])
@@ -246,11 +245,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             {content}
           </div>
           <AIChatButton />
-          {layout === 'classic' && <AIChatModal />}
+          {layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
         </Content>
         <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
-      {(layout === 'sidebar' || layout === 'float-sidebar') && chatVisible && (<AIChatSider />)}
+      {(layout === 'sidebar' || layout === 'float-sidebar') && (chatVisible || chatLoaded) && (<AIChatSider />)}
     </Layout>
   }
 

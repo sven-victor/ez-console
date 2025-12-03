@@ -339,18 +339,6 @@ const AIChat: React.FC = () => {
     }
   }
 
-  const { loading: fetchConversationsLoading } = useRequest(async () => {
-    const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
-    setConversations(response.data.map(convertConversation));
-    if (response.data.length > 0) {
-      setActiveConversationKey(response.data[0].id);
-    }
-  }, {
-    onError: () => {
-      message.error(t('chat.fetchConversationsFailed', { defaultValue: 'Failed to fetch conversations' }));
-    },
-  });
-
 
   const { run: fetchConversation, loading: fetchConversationLoading } = useRequest(async (sessionId: string) => {
     return await api.ai.getChatSession({ sessionId });
@@ -393,6 +381,20 @@ const AIChat: React.FC = () => {
     },
   });
 
+  const { loading: fetchConversationsLoading, runAsync: fetchConversations } = useRequest(async () => {
+    const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
+    setConversations(response.data.map(convertConversation));
+    if (response.data.length > 0 && !activeConversationKey) {
+      setActiveConversationKey(response.data[0].id);
+    }
+  }, {
+    onError: () => {
+      message.error(t('chat.fetchConversationsFailed', { defaultValue: 'Failed to fetch conversations' }));
+    },
+    ready: !createNewConversationLoading,
+    manual: layout !== 'classic',
+  });
+
   const { run: deleteConversation } = useRequest(async (sessionId: string) => {
     return await api.ai.deleteChatSession({ sessionId });
   }, {
@@ -427,7 +429,6 @@ const AIChat: React.FC = () => {
   });
 
   useEffect(() => {
-    console.log(activeConversationKey, messageBuffer)
     if (activeConversationKey && messageBuffer?.sessionId === activeConversationKey) {
       onRequest({
         content: messageBuffer.message,
@@ -449,10 +450,12 @@ const AIChat: React.FC = () => {
 
 
   useEffect(() => {
-    onCallAI((message, messages) => {
-      createNewConversation(message, messages);
-    });
-  }, [createNewConversation])
+    if (onCallAI && createNewConversation) {
+      onCallAI((message, messages) => {
+        createNewConversation(message, messages);
+      });
+    }
+  }, [createNewConversation, onCallAI])
 
   // ==================== Nodes ====================
   const chatSider = (
@@ -521,7 +524,7 @@ const AIChat: React.FC = () => {
   console.log(messages)
   const chatList = (
     <div className={styles.chatList}>
-      <Spin spinning={fetchConversationLoading}>
+      <Spin spinning={fetchConversationLoading || createNewConversationLoading}>
         <Bubble.List
           items={messages?.map((i) => ({
             ...i.message,
@@ -610,9 +613,14 @@ const AIChat: React.FC = () => {
                   setActiveConversationKey(key);
                 }
               }}
+              onOpenChange={(open) => {
+                if (open && !fetchConversationsLoading) {
+                  fetchConversations();
+                }
+              }}
               placement="bottomRight"
             >
-              <Button icon={<HistoryOutlined />} style={{ display: layout === 'classic' ? 'none' : 'block' }} />
+              <Button icon={fetchConversationsLoading ? <Spin size="small" /> : <HistoryOutlined />} style={{ display: layout === 'classic' ? 'none' : 'block' }} />
             </Dropdown>
             <Button type='text' onClick={() => setVisible(false)}>
               <CloseOutlined />

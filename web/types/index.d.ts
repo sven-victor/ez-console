@@ -119,6 +119,8 @@ declare interface AIContextType {
     setVisible: (visible: boolean) => void;
     callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
     onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
+    loaded: boolean;
+    setLoaded: (loaded: boolean) => void;
 }
 
 export declare interface AIFunctionCall {
