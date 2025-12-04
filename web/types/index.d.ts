@@ -1,4 +1,5 @@
 import { AvatarProps } from 'antd';
+import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
 import { ButtonProps } from 'antd';
 import { ComponentType } from 'react';
@@ -121,6 +122,11 @@ declare interface AIContextType {
     onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
     loaded: boolean;
     setLoaded: (loaded: boolean) => void;
+    fetchConversations: () => Promise<API.AIChatSession[]>;
+    fetchConversationsLoading: boolean;
+    conversations: API.AIChatSession[] | undefined;
+    activeConversationKey: string | undefined;
+    setActiveConversationKey: (key: string) => void;
 }
 
 export declare interface AIFunctionCall {
@@ -596,6 +602,8 @@ export declare interface CheckPasswordComplexityResponse {
     is_valid: boolean;
 }
 
+export declare const client: AxiosInstance;
+
 export declare type Condition = true;
 
 export declare interface ConfigField {
@@ -813,6 +821,8 @@ export declare interface EZAppProps {
     transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
     renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
 }
+
+export declare function fetchSSE(url: string, config?: SSEConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
 
 export declare type FieldType = "text" | "string" | "password" | "number" | "boolean" | "array" | "object" | "select";
 
@@ -1142,6 +1152,13 @@ export declare interface listOrganizationUsersParams {
     search?: string;
 }
 
+declare type ListResult = {
+    data: any;
+    current: number;
+    total: number;
+    page_size: number;
+};
+
 export declare interface listRolesParams {
     /** Current page */
     current?: number;
@@ -1158,6 +1175,8 @@ export declare interface listToolSetsParams {
     current?: number;
     /** Page size */
     page_size?: number;
+    /** Toolset type */
+    type?: string;
     /** Search keyword */
     search?: string;
     /** Include tool definitions in response */
@@ -1440,6 +1459,19 @@ export declare interface removeUserFromOrganizationParams {
     id: string;
     /** User ID */
     user_id: string;
+}
+
+export declare function request<T extends any>(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
+
+export declare function request<T extends {
+    data: any;
+    current?: number;
+    total?: number;
+    page_size?: number;
+}>(url: string, config?: RequestConfig): Promise<Result<T>>;
+
+declare interface RequestConfig extends AxiosRequestConfig {
+    requestType?: 'form';
 }
 
 export declare interface resetUserPasswordParams {
@@ -1740,6 +1772,10 @@ export declare interface restoreUserParams {
     id: string;
 }
 
+declare type Result<T extends {
+    data: any;
+}> = T extends ListResult ? T : T["data"];
+
 export declare interface Role {
     /** AIToolPermissions stores the AI tool permissions assigned to the role. */
     ai_tool_permissions: RoleAIToolPermission[];
@@ -1909,6 +1945,15 @@ export declare interface SMTPTestRequest {
 export declare interface SMTPTestResponse {
     message: string;
     success: boolean;
+}
+
+declare interface SSEConfig extends RequestInit {
+    signal?: AbortSignal;
+}
+
+declare interface SSERequestConfig extends Omit<RequestConfig, 'requestType' | 'signal'> {
+    requestType: 'sse';
+    signal?: AbortSignal;
 }
 
 export declare interface StatementEntry {
