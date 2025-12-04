@@ -123,6 +123,12 @@ const useStyle = createStyles(({ token, css }) => {
           height: 100%;
         }
       }
+      .ant-bubble > .ant-bubble-content{
+        max-width: 90%;
+      }
+      .ant-bubble[role=user] > .ant-bubble-content{
+        background-color: rgb(22 119 255 / 15%);
+      }
     `,
     loadingMessage: css`
       background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
@@ -550,7 +556,18 @@ const AIChat: React.FC = () => {
               placement: 'start',
               loadingRender: () => <Spin size="small" />,
             },
-            user: { placement: 'end' },
+            user: {
+              placement: 'end',
+            },
+          }}
+          role={{
+            assistant: {
+              placement: 'start',
+              loadingRender: () => <Spin size="small" />,
+            },
+            user: {
+              placement: 'end',
+            },
           }}
         />
       </Spin>
@@ -603,6 +620,12 @@ const AIChat: React.FC = () => {
           />
 
           <Space style={{ float: 'right', marginTop: 10 }} >
+            <Button
+              type='primary'
+              onClick={() => { createNewConversation() }}
+              loading={createNewConversationLoading}
+              icon={<PlusOutlined />}
+            />
             <Dropdown
               menu={{
                 items: conversations.map((conversation) => ({
@@ -637,7 +660,7 @@ const AIChat: React.FC = () => {
           </div>
         </div>
       </ChatContext.Provider>
-    </XProvider>
+    </XProvider >
   );
 };
 
