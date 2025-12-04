@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Card,
   Table,
@@ -65,12 +65,13 @@ const ToolSetSettings: React.FC = () => {
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
   const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [toolSetType, setToolSetType] = useState<string>();
 
   // Fetch toolsets
   const { loading, data, refresh } = useRequest(
-    () => api.system.listToolSets({ current: 1, page_size: 100, search: searchText }),
+    () => api.system.listToolSets({ current: 1, page_size: 100, search: searchText, type: toolSetType }),
     {
-      refreshDeps: [searchText],
+      refreshDeps: [searchText, toolSetType],
       onError: (error) => {
         message.error(t('settings.toolsets.fetchFailed', { defaultValue: 'Failed to fetch toolsets' }));
         console.error('Failed to fetch toolsets:', error);
@@ -416,13 +417,33 @@ const ToolSetSettings: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row justify="space-between" align="middle">
           <Col>
-            <Input.Search
-              placeholder={t('settings.toolsets.searchPlaceholder', { defaultValue: 'Search toolsets...' })}
-              style={{ width: 300 }}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-            />
+            <Space>
+              <Input.Search
+                placeholder={t('settings.toolsets.searchPlaceholder', { defaultValue: 'Search toolsets...' })}
+                style={{ width: 300 }}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+              />
+              <Select
+                placeholder={t('settings.toolsets.typePlaceholder', { defaultValue: 'Select type' })}
+                value={toolSetType}
+                onChange={(value) => setToolSetType(value)}
+                options={typeDefinitions?.map((typeDefinition) => ({
+                  label: typeDefinition.name,
+                  value: typeDefinition.tool_set_type,
+                }))}
+                style={{ minWidth: 110 }}
+                allowClear
+              >
+                <Select.Option value="">All</Select.Option>
+                {typeDefinitions?.map((typeDefinition) => (
+                  <Select.Option key={typeDefinition.tool_set_type} value={typeDefinition.tool_set_type}>
+                    {typeDefinition.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Space>
           </Col>
           <Col>
             <Space>

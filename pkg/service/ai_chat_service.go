@@ -371,7 +371,7 @@ func (s *AIChatService) getAuthorizedToolSets(ctx context.Context, organizationI
 	var filtered toolset.ToolSets
 	for toolSetID, toolNames := range allowedTools {
 		if toolSetID == "*" {
-			orgToolSets, _, err := s.toolSetService.ListToolSets(ctx, organizationID, 1, 1000, "", false)
+			orgToolSets, _, err := s.toolSetService.ListToolSets(ctx, organizationID, 1, 1000, "", "", false)
 			if err != nil {
 				return nil, fmt.Errorf("failed to list toolsets: %w", err)
 			}

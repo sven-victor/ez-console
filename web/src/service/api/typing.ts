@@ -701,6 +701,8 @@ export interface listToolSetsParams {
   current?: number;
   /** Page size */
   page_size?: number;
+  /** Toolset type */
+  type?: string;
   /** Search keyword */
   search?: string;
   /** Include tool definitions in response */

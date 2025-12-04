@@ -84,7 +84,7 @@ func (s *ToolSetService) DeleteToolSet(ctx context.Context, organizationID, id s
 }
 
 // ListToolSets lists toolsets with pagination
-func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, includeTools bool) ([]model.ToolSet, int64, error) {
+func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool) ([]model.ToolSet, int64, error) {
 	var toolsets []model.ToolSet
 	var total int64
 
@@ -94,6 +94,10 @@ func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string
 	if search != "" {
 		query = query.Where("name LIKE ? OR description LIKE ? OR endpoint LIKE ?",
 			"%"+search+"%", "%"+search+"%", "%"+search+"%")
+	}
+
+	if toolSetType != "" {
+		query = query.Where("type = ?", toolSetType)
 	}
 
 	// Get total count
