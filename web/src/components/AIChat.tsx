@@ -273,10 +273,29 @@ const ChatContext = React.createContext<{
 }>({});
 
 const AIChat: React.FC = () => {
-  const { layout, setVisible, setLayout, onCallAI } = useAI()
+  const {
+    layout,
+    setVisible,
+    setLayout,
+    onCallAI,
+    activeConversationKey: defaultActiveConversationKey,
+    setActiveConversationKey: setDefaultActiveConversationKey,
+    conversations: rawConversations,
+    fetchConversationsLoading,
+  } = useAI()
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
   const { styles } = useStyle();
+
+
+  const convertConversation = (conversation: API.AIChatSession) => {
+    return {
+      key: conversation.id,
+      label: conversation.title,
+      group: dayjs(conversation.start_time).isSame(dayjs(), 'day') ? t('chat.today') : dayjs(conversation.start_time).format('YYYY-MM-DD'),
+    }
+  }
+
   const {
     conversations,
     activeConversationKey,
@@ -287,7 +306,10 @@ const AIChat: React.FC = () => {
     setConversation,
     removeConversation,
     getMessages,
-  } = useXConversations({});
+  } = useXConversations({
+    defaultActiveConversationKey: defaultActiveConversationKey,
+    defaultConversations: rawConversations?.map((conversation) => convertConversation(conversation)) || [],
+  });
 
   const [className] = useMarkdownTheme();
   const [messageApi, contextHolder] = message.useMessage();
@@ -337,15 +359,6 @@ const AIChat: React.FC = () => {
     });
   };
 
-  const convertConversation = (conversation: API.AIChatSession) => {
-    return {
-      key: conversation.id,
-      label: conversation.title,
-      group: dayjs(conversation.start_time).isSame(dayjs(), 'day') ? t('chat.today') : dayjs(conversation.start_time).format('YYYY-MM-DD'),
-    }
-  }
-
-
   const { run: fetchConversation, loading: fetchConversationLoading } = useRequest(async (sessionId: string) => {
     return await api.ai.getChatSession({ sessionId });
   }, {
@@ -384,22 +397,24 @@ const AIChat: React.FC = () => {
         setMessageBuffer({ message, sessionId: data.id });
       }
       setActiveConversationKey(data.id);
+      setDefaultActiveConversationKey(data.id);
     },
   });
 
-  const { loading: fetchConversationsLoading, runAsync: fetchConversations } = useRequest(async () => {
-    const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
-    setConversations(response.data.map(convertConversation));
-    if (response.data.length > 0 && !activeConversationKey) {
-      setActiveConversationKey(response.data[0].id);
-    }
-  }, {
-    onError: () => {
-      message.error(t('chat.fetchConversationsFailed', { defaultValue: 'Failed to fetch conversations' }));
-    },
-    ready: !createNewConversationLoading,
-    manual: layout !== 'classic',
-  });
+  useEffect(() => {
+    setConversations(rawConversations?.map((conversation) => convertConversation(conversation)) || []);
+  }, [rawConversations])
+
+  // const { loading: fetchConversationsLoading, runAsync: fetchConversations } = useRequest(async () => {
+  //   const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
+  //   setConversations(response.data.map(convertConversation));
+  // }, {
+  //   onError: () => {
+  //     message.error(t('chat.fetchConversationsFailed', { defaultValue: 'Failed to fetch conversations' }));
+  //   },
+  //   ready: !createNewConversationLoading,
+  //   manual: false,
+  // });
 
   const { run: deleteConversation } = useRequest(async (sessionId: string) => {
     return await api.ai.deleteChatSession({ sessionId });
@@ -458,6 +473,7 @@ const AIChat: React.FC = () => {
   useEffect(() => {
     if (onCallAI && createNewConversation) {
       onCallAI((message, messages) => {
+        console.log("createNewConversation from context", message, messages)
         createNewConversation(message, messages);
       });
     }
@@ -482,7 +498,7 @@ const AIChat: React.FC = () => {
           onActiveChange={async (val) => {
             if (!val) return;
             setActiveConversationKey(val);
-
+            setDefaultActiveConversationKey(val);
           }}
 
           className={styles.conversations}
@@ -578,6 +594,7 @@ const AIChat: React.FC = () => {
       <Sender
         value={inputValue}
         onSubmit={async () => {
+          console.log("onSubmit", inputValue.trim())
           onSubmit(inputValue.trim());
           setInputValue('');
         }}
@@ -625,6 +642,7 @@ const AIChat: React.FC = () => {
               onClick={() => { createNewConversation() }}
               loading={createNewConversationLoading}
               icon={<PlusOutlined />}
+              style={{ display: layout === 'classic' ? 'none' : 'block' }}
             />
             <Dropdown
               menu={{
@@ -634,11 +652,7 @@ const AIChat: React.FC = () => {
                 })),
                 onClick: ({ key }) => {
                   setActiveConversationKey(key);
-                }
-              }}
-              onOpenChange={(open) => {
-                if (open && !fetchConversationsLoading) {
-                  fetchConversations();
+                  setDefaultActiveConversationKey(key);
                 }
               }}
               placement="bottomRight"

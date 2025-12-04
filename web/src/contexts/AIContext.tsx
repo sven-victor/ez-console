@@ -1,4 +1,8 @@
+import api from '@/service/api';
+import { useRequest } from 'ahooks';
+import { message } from 'antd';
 import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 // AI context type
 export interface AIContextType {
@@ -10,6 +14,11 @@ export interface AIContextType {
   onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
   loaded: boolean;
   setLoaded: (loaded: boolean) => void;
+  fetchConversations: () => Promise<API.AIChatSession[]>;
+  fetchConversationsLoading: boolean;
+  conversations: API.AIChatSession[] | undefined;
+  activeConversationKey: string | undefined;
+  setActiveConversationKey: (key: string) => void;
 }
 
 // Create site context
@@ -22,6 +31,11 @@ export const AIContext = createContext<AIContextType>({
   onCallAI: (_: (message: string, messages?: API.SimpleChatMessage[]) => void) => { },
   loaded: false,
   setLoaded: () => { },
+  fetchConversations: () => Promise.resolve([]),
+  fetchConversationsLoading: false,
+  conversations: undefined,
+  activeConversationKey: undefined,
+  setActiveConversationKey: () => { },
 });
 
 export const useAI = () => useContext(AIContext);
@@ -34,11 +48,21 @@ interface AIProviderProps {
 
 // AI provider component
 export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
+  const { t } = useTranslation('ai');
   const [layout, setLayout] = useState<'classic' | 'sidebar' | 'float-sidebar'>('sidebar');
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [activeConversationKey, setActiveConversationKey] = useState<string | undefined>(undefined);
   const [cacheMessages, setCacheMessages] = useState<[string, API.SimpleChatMessage[] | undefined]>();
   const [onCallAI, setOnCallAI] = useState<((message: string, messages?: API.SimpleChatMessage[]) => void) | null>(null);
+
+  useEffect(() => {
+    const activeConversationKey = localStorage.getItem('activeConversationKey');
+    if (activeConversationKey) {
+      setActiveConversationKey(activeConversationKey);
+    }
+  }, []);
+
   const callAI = useCallback((message: string, messages?: API.SimpleChatMessage[]) => {
     setVisible(true);
     if (onCallAI) {
@@ -54,6 +78,16 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
       setCacheMessages(undefined);
     }
   }, [onCallAI, cacheMessages]);
+
+  const { loading: fetchConversationsLoading, runAsync: fetchConversations, data: conversations } = useRequest(async () => {
+    const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
+    return response.data;
+  }, {
+    ready: visible,
+    onError: (error) => {
+      message.error(t('chat.fetchConversationsFailed', { defaultValue: 'Failed to fetch conversations: {{errmsg}}', errmsg: error.message ?? error }));
+    },
+  });
 
   return (
     <AIContext.Provider
@@ -73,6 +107,14 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
         loaded,
         setLoaded: (loaded: boolean) => {
           setLoaded(loaded);
+        },
+        fetchConversations,
+        fetchConversationsLoading,
+        conversations,
+        activeConversationKey,
+        setActiveConversationKey: (key: string) => {
+          setActiveConversationKey(key);
+          localStorage.setItem('activeConversationKey', key);
         },
       }}
     >
