@@ -3,7 +3,7 @@ import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 export const baseURL = '/api';
 
-const client = axios.create({
+export const client = axios.create({
   baseURL,
   timeout: 30000,
   headers: {

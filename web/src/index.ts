@@ -30,7 +30,7 @@ export { useAuth } from '@/hooks/useAuth'
 export { usePermission } from '@/hooks/usePermission'
 export { useAI } from '@/contexts/AIContext'
 
-export { apiDelete, apiPost, apiGet, apiPut, ApiError } from '@/service/client';
+export { apiDelete, apiPost, apiGet, apiPut, ApiError, client, request, fetchSSE } from '@/service/client';
 import * as authorizationapi from '@/service/api/authorization';
 import * as baseapi from '@/service/api/base';
 import * as oauthapi from '@/service/api/oauth';
