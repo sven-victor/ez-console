@@ -1123,6 +1123,9 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
 			}
 		}
+		defer func() {
+			middleware.DeleteUserCache(user.ResourceID)
+		}()
 		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
 	})
 	return nil
@@ -1203,6 +1206,9 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
 			}
 		}
+		defer func() {
+			middleware.DeleteUserCache(user.ResourceID)
+		}()
 		return s.RunUserChangeHooks(ctx, tx, &oldUser, &user)
 	})
 	if err != nil {

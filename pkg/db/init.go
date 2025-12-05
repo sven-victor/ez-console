@@ -58,6 +58,15 @@ func SeedDB(ctx context.Context, permissions []*model.PermissionGroup) error {
 
 	// Use transactions to ensure data consistency
 	return Session(ctx).Transaction(func(tx *gorm.DB) error {
+		// sed organization
+		var organizationCount int64
+		tx.Model(&model.Organization{}).Count(&organizationCount)
+		if organizationCount == 0 {
+			if err := seedOrganizations(tx); err != nil {
+				return fmt.Errorf("Failed to initialize organizations: %w", err)
+			}
+		}
+
 		// Check if initialization is needed
 		if err := seedPermissions(ctx, tx, permissions); err != nil {
 			return err
@@ -94,15 +103,6 @@ func SeedDB(ctx context.Context, permissions []*model.PermissionGroup) error {
 				return fmt.Errorf("Failed to initialize users: %w", err)
 			}
 		}
-		// sed organization
-		var organizationCount int64
-		tx.Model(&model.Organization{}).Count(&organizationCount)
-		if organizationCount == 0 {
-			if err := seedOrganizations(tx); err != nil {
-				return fmt.Errorf("Failed to initialize organizations: %w", err)
-			}
-		}
-
 		level.Info(logger).Log("msg", "Basic data initialization completed")
 		return nil
 	})
