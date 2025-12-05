@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -24,6 +25,16 @@ var (
 func NewAIModelService() *AIModelService {
 	aiServiceOnce.Do(func() {
 		aiModelService = &AIModelService{}
+		RegisterSiteConigAttr("ai_enabled", func(ctx context.Context) any {
+			organizationID := ctx.(*gin.Context).GetString("organization_id")
+			if organizationID == "" {
+				return false
+			}
+			if aiModel, _ := aiModelService.GetDefaultAIModel(ctx, organizationID); aiModel == nil {
+				return false
+			}
+			return true
+		})
 	})
 	return aiModelService
 }
