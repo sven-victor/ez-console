@@ -10,8 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "ahooks": "^3.9.6",
     "antd": "^5.14.1",
-    "ez-console": "github:sven-victor/ez-console.git#v1.6.1&path:web",
+    "ez-console": "github:sven-victor/ez-console.git#v1.7.2&path:web",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

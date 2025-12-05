@@ -21,16 +21,12 @@ export default function App() {
       }}>
       <EZApp
         basePath='/'
-        onRouteRender={(routes) => {
-          console.log(routes);
-          return [...routes, {
-            path: '/testPage',
-            element: withSuspense(TestPage),
-            name: 'testPage',
-            index: true,
-            is_private: true,
-          }]
-        }}
+        extraPrivateRoutes={[{
+          path: '/testPage',
+          element: withSuspense(TestPage),
+          name: 'testPage',
+          index: true,
+        }]}
       />
     </ConfigProvider>
   )
