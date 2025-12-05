@@ -49,8 +49,6 @@ dist/server:
 clean:clean-web-lib
 	rm -rf dist/server
 	rm -rf server/static
-	rm -rf web/lib
-	rm -rf web/types
 
 .PHONY: build
 build:server/static dist/server web/lib
