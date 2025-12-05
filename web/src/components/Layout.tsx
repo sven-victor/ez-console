@@ -244,12 +244,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           <div className="site-layout-background" style={{ padding: 24, minHeight: 'calc(100vh - 190px)' }}>
             {content}
           </div>
-          <AIChatButton />
-          {layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
+          {siteConfig?.attrs.ai_enabled && <AIChatButton />}
+          {siteConfig?.attrs.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
         </Content>
         <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
-      {(layout === 'sidebar' || layout === 'float-sidebar') && (chatVisible || chatLoaded) && (<AIChatSider />)}
+      {(siteConfig?.attrs.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider />)}
     </Layout>
   }
 

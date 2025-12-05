@@ -46,7 +46,7 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
     }
   }, [user]);
 
-  const [currentOrgId, setCurrentOrgId] = useState<string | null>(null);
+  const [currentOrgId, setCurrentOrgId] = useState<string | null>(localStorage.getItem('orgID'));
 
   useEffect(() => {
     if (currentOrgId) {
@@ -57,17 +57,23 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
   }, [currentOrgId]);
 
   useEffect(() => {
-    let cacheOrgId = localStorage.getItem('orgID')
+    if (user) {
+      let cacheOrgId = localStorage.getItem('orgID')
+      console.log(user, cacheOrgId)
 
-    if (cacheOrgId) {
-      const organization = user?.organizations?.find(org => org.id === cacheOrgId);
-      if (organization) {
-        setCurrentOrgId(organization.id);
+      if (cacheOrgId) {
+        const organization = user?.organizations?.find(org => org.id === cacheOrgId);
+        if (organization) {
+          console.log("set2 ", user?.organizations?.[0]?.id ?? null)
+          setCurrentOrgId(organization.id);
 
-        return
+          return
+        }
       }
+      console.log("set ", user?.organizations?.[0]?.id ?? null)
+      setCurrentOrgId(user?.organizations?.[0]?.id ?? null);
     }
-    setCurrentOrgId(user?.organizations?.[0]?.id ?? null);
+
   }, [siteConfig, user?.organizations]);
 
   return (
