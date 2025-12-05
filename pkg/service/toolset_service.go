@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -15,9 +16,17 @@ import (
 // ToolSetService handles toolset management
 type ToolSetService struct{}
 
+var (
+	toolSetServiceOnce sync.Once
+	toolSetService     *ToolSetService
+)
+
 // NewToolSetService creates a new toolset service
 func NewToolSetService() *ToolSetService {
-	return &ToolSetService{}
+	toolSetServiceOnce.Do(func() {
+		toolSetService = &ToolSetService{}
+	})
+	return toolSetService
 }
 
 // CreateToolSet creates a new toolset

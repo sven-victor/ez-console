@@ -23,10 +23,10 @@ type AIChatService struct {
 }
 
 // NewAIChatService creates a new AI chat service
-func NewAIChatService(aiModelService *AIModelService, toolSetService *ToolSetService) *AIChatService {
+func NewAIChatService() *AIChatService {
 	return &AIChatService{
-		aiModelService: aiModelService,
-		toolSetService: toolSetService,
+		aiModelService: NewAIModelService(),
+		toolSetService: NewToolSetService(),
 	}
 }
 

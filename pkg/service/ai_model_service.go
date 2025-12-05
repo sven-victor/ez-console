@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -14,9 +15,17 @@ import (
 // AIModelService handles AI model management
 type AIModelService struct{}
 
+var (
+	aiServiceOnce  sync.Once
+	aiModelService *AIModelService
+)
+
 // NewAIModelService creates a new AI model service
 func NewAIModelService() *AIModelService {
-	return &AIModelService{}
+	aiServiceOnce.Do(func() {
+		aiModelService = &AIModelService{}
+	})
+	return aiModelService
 }
 
 // CreateAIModel creates a new AI model

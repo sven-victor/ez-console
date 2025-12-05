@@ -63,7 +63,7 @@ func NewService(ctx context.Context) *Service {
 	// Create AI services
 	aiModelService := NewAIModelService()
 	toolSetService := NewToolSetService()
-	aiChatService := NewAIChatService(aiModelService, toolSetService)
+	aiChatService := NewAIChatService()
 
 	s := &Service{
 		UserService:           userService,
