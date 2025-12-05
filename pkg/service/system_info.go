@@ -111,7 +111,6 @@ func RegisterSiteConigAttr(name string, getter siteConfigAttrGetter) {
 
 type SiteConfig struct {
 	model.SystemSettings
-	EnableAI   bool           `json:"enable_ai"`
 	Navigation []Navigation   `json:"navigation,omitempty"`
 	Menu       []MenuConfig   `json:"menu,omitempty"`
 	Attrs      map[string]any `json:"attrs,omitempty"`

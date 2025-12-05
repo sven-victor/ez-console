@@ -640,8 +640,13 @@ const Qt = () => /* @__PURE__ */ e.jsx("div", { style: {
       .ant-bubble > .ant-bubble-content{
         max-width: 90%;
       }
-      .ant-bubble[role=user] > .ant-bubble-content{
-        background-color: rgb(22 119 255 / 15%);
+      .ant-bubble-end{
+        .ant-bubble-content{
+          background-color: rgb(22 119 255 / 15%);
+        }
+      }
+      .ant-bubble-list-autoscroll{
+        flex-direction: column-reverse;
       }
     `,
   loadingMessage: s`
@@ -964,79 +969,81 @@ const te = /* @__PURE__ */ new Map(), fn = (t) => (console.log(t), te.get(t) || 
       placeholder: h("chat.inputPlaceholder")
     }
   ) });
-  return /* @__PURE__ */ e.jsx(st, { children: /* @__PURE__ */ e.jsxs(yn.Provider, { value: { onReload: $e, setMessage: Ee }, children: [
+  return /* @__PURE__ */ e.jsxs(st, { children: [
     Me,
-    /* @__PURE__ */ e.jsxs("div", { style: { height: "50px", width: "100%", position: "relative" }, children: [
-      /* @__PURE__ */ e.jsx(
-        yt.Group,
-        {
-          style: {
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)"
-          },
-          options: [
-            {
-              label: /* @__PURE__ */ e.jsx(_t, {}),
-              value: "classic"
-            },
-            {
-              label: /* @__PURE__ */ e.jsx(je, {}),
-              value: "sidebar"
-            },
-            {
-              label: /* @__PURE__ */ e.jsx(je, {}),
-              value: "float-sidebar"
-            }
-          ],
-          optionType: "button",
-          onChange: (o) => n(o.target.value),
-          value: t
-        }
-      ),
-      /* @__PURE__ */ e.jsxs(_, { style: { float: "right", marginTop: 10 }, children: [
+    /* @__PURE__ */ e.jsxs(yn.Provider, { value: { onReload: $e, setMessage: Ee }, children: [
+      /* @__PURE__ */ e.jsxs("div", { style: { height: "50px", width: "100%", position: "relative" }, children: [
         /* @__PURE__ */ e.jsx(
-          w,
+          yt.Group,
           {
-            type: "primary",
-            onClick: () => {
-              V();
+            style: {
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)"
             },
-            loading: Y,
-            icon: /* @__PURE__ */ e.jsx(re, {}),
-            style: { display: t === "classic" ? "none" : "block" }
-          }
-        ),
-        /* @__PURE__ */ e.jsx(
-          Se,
-          {
-            menu: {
-              items: p.map((o) => ({
-                label: o.label,
-                key: o.key
-              })),
-              onClick: ({ key: o }) => {
-                c(o), r(o);
+            options: [
+              {
+                label: /* @__PURE__ */ e.jsx(_t, {}),
+                value: "classic"
+              },
+              {
+                label: /* @__PURE__ */ e.jsx(je, {}),
+                value: "sidebar"
+              },
+              {
+                label: /* @__PURE__ */ e.jsx(je, {}),
+                value: "float-sidebar"
               }
-            },
-            placement: "bottomRight",
-            children: /* @__PURE__ */ e.jsx(w, { icon: l ? /* @__PURE__ */ e.jsx(N, { size: "small" }) : /* @__PURE__ */ e.jsx(Mt, {}), style: { display: t === "classic" ? "none" : "block" } })
+            ],
+            optionType: "button",
+            onChange: (o) => n(o.target.value),
+            value: t
           }
         ),
-        /* @__PURE__ */ e.jsx(w, { type: "text", onClick: () => s(!1), children: /* @__PURE__ */ e.jsx(Rt, {}) })
-      ] })
-    ] }),
-    /* @__PURE__ */ e.jsxs("div", { className: t === "classic" ? f.classicLayout : f.siderLayout, style: {
-      minWidth: t === "classic" ? "500px" : "400px"
-    }, children: [
-      t === "classic" ? Ue : null,
-      /* @__PURE__ */ e.jsxs("div", { className: f.chat, children: [
-        Ke,
-        Xe
+        /* @__PURE__ */ e.jsxs(_, { style: { float: "right", marginTop: 10 }, children: [
+          /* @__PURE__ */ e.jsx(
+            w,
+            {
+              type: "primary",
+              onClick: () => {
+                V();
+              },
+              loading: Y,
+              icon: /* @__PURE__ */ e.jsx(re, {}),
+              style: { display: t === "classic" ? "none" : "block" }
+            }
+          ),
+          /* @__PURE__ */ e.jsx(
+            Se,
+            {
+              menu: {
+                items: p.map((o) => ({
+                  label: o.label,
+                  key: o.key
+                })),
+                onClick: ({ key: o }) => {
+                  c(o), r(o);
+                }
+              },
+              placement: "bottomRight",
+              children: /* @__PURE__ */ e.jsx(w, { icon: l ? /* @__PURE__ */ e.jsx(N, { size: "small" }) : /* @__PURE__ */ e.jsx(Mt, {}), style: { display: t === "classic" ? "none" : "block" } })
+            }
+          ),
+          /* @__PURE__ */ e.jsx(w, { type: "text", onClick: () => s(!1), children: /* @__PURE__ */ e.jsx(Rt, {}) })
+        ] })
+      ] }),
+      /* @__PURE__ */ e.jsxs("div", { className: t === "classic" ? f.classicLayout : f.siderLayout, style: {
+        minWidth: t === "classic" ? "500px" : "400px"
+      }, children: [
+        t === "classic" ? Ue : null,
+        /* @__PURE__ */ e.jsxs("div", { className: f.chat, children: [
+          Ke,
+          Xe
+        ] })
       ] })
     ] })
-  ] }) });
+  ] });
 }, bn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: jn,
