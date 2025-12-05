@@ -15,14 +15,14 @@ importers:
         specifier: ^2.6.43
         version: 2.8.6(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(rc-field-form@2.7.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@ant-design/x':
-        specifier: ^2.0.0
-        version: 2.0.0(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.0.1
+        version: 2.0.1(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@ant-design/x-markdown':
-        specifier: ^2.0.0
-        version: 2.0.0(@types/react@18.3.20)(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.0.1
+        version: 2.0.1(@types/react@18.3.20)(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@ant-design/x-sdk':
-        specifier: ^2.0.0
-        version: 2.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.0.1
+        version: 2.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ahooks:
         specifier: ^3.8.4
         version: 3.8.4(react@18.3.1)
@@ -281,23 +281,23 @@ packages:
     peerDependencies:
       react: '>=16.9.0'
 
-  '@ant-design/x-markdown@2.0.0':
-    resolution: {integrity: sha512-ERlua9VG5mO0RWeVgymo1kfzuTMRhWHOHJ+Cl++OzHhYVg8mKrP8L6Bo+Z5s8ZI2vViBfzUtEwRfr3d8ww82Zw==}
+  '@ant-design/x-markdown@2.0.1':
+    resolution: {integrity: sha512-2Tj9rNBkgZ0ygBKAk9CpET+u6vYVuBexc4VOvI5P3Ur9CIeIYbx1HAcPxysQqEOm2RrLFUXxg1ps7N9fcjI0Kg==}
     peerDependencies:
-      antd: ^6.0.0
+      antd: ^6.0.1
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ant-design/x-sdk@2.0.0':
-    resolution: {integrity: sha512-K1kBrrqfduXQyqpRORBvbqjKIa6etXzrX0KIhcVhEPNdObd+TkVkW9HVBphNoZa7wHRG9hxh0R+0Z/8x8G/AUA==}
+  '@ant-design/x-sdk@2.0.1':
+    resolution: {integrity: sha512-umFh7C3o46uKOp2bpkRwf8y41RL0voAat4sGOoFq0t56NK2p62wZ6VxHP4ZvnJn2+d467bcPD8z4K2Xcm9qniw==}
     peerDependencies:
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
-  '@ant-design/x@2.0.0':
-    resolution: {integrity: sha512-fyOnuxeAV1D22vOj6qtw3xBeb9GM/IDVgtl0pBcnPcmKaCdjeFHhhunWMBxtHrx1zRdM76rhGAokhY5lTMYG5w==}
+  '@ant-design/x@2.0.1':
+    resolution: {integrity: sha512-s2I43bn6QnWYJAAwtIqa2RJr6WXjlPXLdqwTKtAFNLcyFZY4LwB7iVmmgwhqltYu0aP2MeTeFpdPCbMbUMJroA==}
     peerDependencies:
-      antd: ^6.0.0
+      antd: ^6.0.1
       react: '>=18.0.0'
       react-dom: '>=18.0.0'
 
@@ -3768,13 +3768,13 @@ snapshots:
       resize-observer-polyfill: 1.5.1
       throttle-debounce: 5.0.2
 
-  '@ant-design/x-markdown@2.0.0(@types/react@18.3.20)(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@ant-design/x-markdown@2.0.1(@types/react@18.3.20)(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@ant-design/cssinjs': 2.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@ant-design/cssinjs-utils': 2.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@ant-design/fast-color': 3.0.0
       '@ant-design/icons': 6.1.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@ant-design/x': 2.0.0(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@ant-design/x': 2.0.1(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       antd: 5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       classnames: 2.5.1
       dompurify: 3.3.0
@@ -3789,12 +3789,12 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@ant-design/x-sdk@2.0.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@ant-design/x-sdk@2.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@ant-design/x@2.0.0(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@ant-design/x@2.0.1(antd@5.24.5(moment@2.30.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@ant-design/colors': 8.0.0
       '@ant-design/cssinjs': 2.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

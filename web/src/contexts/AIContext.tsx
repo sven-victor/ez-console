@@ -21,7 +21,7 @@ export interface AIContextType {
   setActiveConversationKey: (key: string) => void;
 }
 
-// Create site context
+// Create AI context
 export const AIContext = createContext<AIContextType>({
   layout: 'sidebar',
   setLayout: () => { },

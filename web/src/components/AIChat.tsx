@@ -126,8 +126,13 @@ const useStyle = createStyles(({ token, css }) => {
       .ant-bubble > .ant-bubble-content{
         max-width: 90%;
       }
-      .ant-bubble[role=user] > .ant-bubble-content{
-        background-color: rgb(22 119 255 / 15%);
+      .ant-bubble-end{
+        .ant-bubble-content{
+          background-color: rgb(22 119 255 / 15%);
+        }
+      }
+      .ant-bubble-list-autoscroll{
+        flex-direction: column-reverse;
       }
     `,
     loadingMessage: css`
@@ -610,8 +615,8 @@ const AIChat: React.FC = () => {
   // ==================== Render =================
   return (
     <XProvider>
+      {contextHolder}
       <ChatContext.Provider value={{ onReload, setMessage }}>
-        {contextHolder}
         <div style={{ height: '50px', width: '100%', position: 'relative' }}>
           <Radio.Group
             style={{
