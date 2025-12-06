@@ -26,6 +26,7 @@ import {
 } from '@ant-design/icons';
 import {
   Bubble,
+  BubbleListProps,
   Conversations,
   Sender,
   XProvider,
@@ -229,7 +230,6 @@ class AIProvider<
       } as ChatMessage;
     }
     const chunkJson = JSON.parse(chunk.data) as API.ChatStreamEvent;
-    console.log(chunkJson)
     const content = originMessage?.content || '';
     return {
       content: `${content || ''}${chunkJson.content || ''}`,
@@ -564,25 +564,25 @@ const AIChat: React.FC = () => {
     }
     return undefined;
   }
-  console.log(messages)
+  const bubbleMessages: BubbleListProps['items'] = messages?.map((i) => ({
+    ...i.message,
+    key: i.id,
+    contentRender: (content: string) => {
+      return (
+        <XMarkdown
+          paragraphTag="div"
+          content={content}
+          className={className}
+        />
+      );
+    },
+    footer: renderFooter(i)
+  }))
   const chatList = (
     <div className={styles.chatList}>
       <Spin spinning={fetchConversationLoading || createNewConversationLoading}>
         <Bubble.List
-          items={messages?.map((i) => ({
-            ...i.message,
-            key: i.id,
-            messageRender: (content: string) => {
-              return (
-                <XMarkdown
-                  paragraphTag="div"
-                  content={content}
-                  className={className}
-                />
-              );
-            },
-            footer: renderFooter(i)
-          }))}
+          items={bubbleMessages}
           style={{
             height: '100%',
             paddingInline: layout === 'classic' ? 'calc(calc(100% - 700px) /2)' : '20px'

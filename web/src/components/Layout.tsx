@@ -206,21 +206,26 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   }, [getBreadcrumbs, location.pathname])
 
   const headerItems: React.ReactNode[] = [
-    <HeaderDropdown hidden={navigation.length <= 1} menu={{
-      items: navigation.map(item => ({
-        key: item.path,
-        style: { paddingRight: '20px' },
-        label: <a href={item.path}>{t(`menu.${item.name}`, { defaultValue: item.name })}</a>,
-      })),
-    }}>
+    <HeaderDropdown
+      key="navigation-dropdown"
+      hidden={navigation.length <= 1} menu={{
+        items: navigation.map(item => ({
+          key: item.path,
+          style: { paddingRight: '20px' },
+          label: <a href={item.path}>{t(`menu.${item.name}`, { defaultValue: item.name })}</a>,
+        })),
+      }}>
       <SwapOutlined />
     </HeaderDropdown>,
     ...(siteConfig?.enable_multi_org ? [<OrganizationSwitcher key="org-switcher" />] : []),
-    <HeaderDropdown menu={{ items: userMenu }}>
+    <HeaderDropdown
+      key="user-dropdown"
+      menu={{ items: userMenu }}
+    >
       {user?.avatar ? <Avatar src={user.avatar} /> : <Avatar icon={<UserOutlined />} />}
       <span style={{ height: '1em', lineHeight: '1em', marginLeft: '5px' }}>{user?.full_name || user?.username}</span>
     </HeaderDropdown>,
-    <LanguageSwitch transformLangConfig={transformLangConfig} />,
+    <LanguageSwitch key="language-switch" transformLangConfig={transformLangConfig} />,
   ]
 
   const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
