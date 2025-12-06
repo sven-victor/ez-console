@@ -241,7 +241,6 @@ class AIProvider<
 const providerCaches = new Map<string, AIProvider>();
 
 const providerFactory = (conversationKey: string) => {
-  console.log(conversationKey)
   if (!providerCaches.get(conversationKey)) {
     providerCaches.set(
       conversationKey,
@@ -352,7 +351,6 @@ const AIChat: React.FC = () => {
       };
     },
     requestFallback: (_, { messageInfo, error }) => {
-      console.log(messageInfo, error)
       if (error instanceof ChatError) {
         return {
           content: error.buffer.join(''),
@@ -462,8 +460,7 @@ const AIChat: React.FC = () => {
       setConversation(sessionId, { ...conversation, title: title, loading: false });
     },
     onError: (err, [sessionId]) => {
-      messageApi.error(t('chat.titleGenerationFailed', { defaultValue: 'Failed to generate title' }));
-      console.log(err)
+      messageApi.error(t('chat.titleGenerationFailed', { defaultValue: 'Failed to generate title: {{error}}', error: err.message || err }));
       const conversation = getConversation(sessionId);
       if (!conversation) return;
       setConversation(sessionId, { ...conversation, loading: false });
@@ -494,7 +491,6 @@ const AIChat: React.FC = () => {
   useEffect(() => {
     if (onCallAI && createNewConversation) {
       onCallAI((message, messages) => {
-        console.log("createNewConversation from context", message, messages)
         createNewConversation(message, messages);
       });
     }
@@ -615,7 +611,6 @@ const AIChat: React.FC = () => {
       <Sender
         value={inputValue}
         onSubmit={async () => {
-          console.log("onSubmit", inputValue.trim())
           onSubmit(inputValue.trim());
           setInputValue('');
         }}
