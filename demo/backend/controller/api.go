@@ -5,9 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/demo/backend/service"
-	"github.com/sven-victor/ez-console/pkg/api"
-	consoleService "github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-console/server"
 )
 
 type TestController struct {
@@ -32,7 +31,7 @@ func (c *TestController) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 func init() {
-	api.AddControllers(func(svc *consoleService.Service) api.Controller {
+	server.RegisterControllers(func(svc server.Service) server.Controller {
 		return NewTestController()
 	})
 }
