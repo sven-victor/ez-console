@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sven-victor/ez-console/examples/backend/service"
+	"github.com/sven-victor/ez-console/demo/backend/service"
 	"github.com/sven-victor/ez-console/pkg/api"
 	consoleService "github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"

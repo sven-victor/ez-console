@@ -1,4 +1,4 @@
-module github.com/sven-victor/ez-console/examples/backend
+module github.com/sven-victor/ez-console/demo/backend
 
 go 1.24.4
 
