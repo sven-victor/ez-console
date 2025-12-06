@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Button, Card, message, Typography, Alert, Divider, Space, Avatar } from 'antd';
+import { Form, Input, Button, Card, message, Typography, Alert, Divider, Space, Avatar, Result } from 'antd';
 import { LockOutlined, UserOutlined, GithubOutlined, KeyOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -52,7 +52,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<API.OAuthProvider[]>([]);
   const [submitButtonDisabledCountdown, setSubmitButtonDisabledCountdown] = useState(0);
-  const { siteConfig } = useSite();
+  const { siteConfig, loading: siteConfigLoading, error: fetchSiteConfigError } = useSite();
 
   const [siteName, setSiteName] = useState<string>('Loading...');
 
@@ -133,7 +133,12 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
   }
 
   const fetchProviders = async () => {
-    setProviders(await api.oauth.getProviders() || []);
+    try {
+      setProviders(await api.oauth.getProviders() || []);
+    } catch (error) {
+      message.error(t('login.fetchOAuthProvidersError', { defaultValue: 'Failed to fetch OAuth providers: {{error}}', error: (error as any).message || (error as any).toString() }));
+      setProviders([])
+    }
   }
 
   // Handle OAuth callback
@@ -195,7 +200,15 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
     }
   }, [siteConfig])
 
-  if ((code && state && provider) || !siteConfig) {
+  if (!siteConfig) {
+    return <Result
+      status="500"
+      title="500"
+      subTitle={t('login.fetchSiteConfigError', { defaultValue: 'Failed to fetch site config: {{error}}', error: fetchSiteConfigError?.message || fetchSiteConfigError })}
+    />
+  }
+
+  if (code && state && provider) {
     return <Loading />
   }
 

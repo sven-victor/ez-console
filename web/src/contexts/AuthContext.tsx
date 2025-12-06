@@ -29,6 +29,7 @@ export interface AuthContextType {
   oauthLogin: (data: API.handleCallbackParams) => Promise<API.User | void>;
   logout: () => void;
   updateUser: (user: API.User) => void;
+  error?: Error;
 }
 
 // Create auth context
@@ -40,6 +41,7 @@ export const AuthContext = createContext<AuthContextType>({
   oauthLogin: async () => { },
   logout: () => { },
   updateUser: () => { },
+  error: undefined,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -70,7 +72,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
-  const { run: fetchCurrentUser } = useRequest(async () => {
+  const { run: fetchCurrentUser, error } = useRequest(async () => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       setAuthToken(storedToken, false);
@@ -80,9 +82,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }, {
     manual: true,
     onBefore: () => {
+      setUser(undefined)
     },
     onSuccess: (data) => { setUser(data) },
     onError: (error) => {
+      console.log([error])
       console.error('Failed to get current user:', error);
       logout();
     },
@@ -160,6 +164,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       return userData;
     } catch (error) {
+      setUser(undefined);
       // If it's an MFA required error, rethrow
       if (error && (error as any).needsMFA) {
         throw error;
@@ -192,6 +197,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         oauthLogin,
         logout,
         updateUser,
+        error,
       }}
     >
       {children}

@@ -20,6 +20,8 @@ import { useAuth } from '../hooks/useAuth';
 import { usePermission } from '../hooks/usePermission';
 import { getURL } from '@/utils';
 import Loading from './Loading';
+import { Result } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 export interface PrivateRouteProps {
   element: React.ReactElement;
@@ -41,7 +43,8 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
   requiredPermission,
   requiredPermissions,
 }) => {
-  const { user, loading } = useAuth();
+  const { t } = useTranslation();
+  const { user, loading, error: fetchCurrentUserError } = useAuth();
   const { hasPermission, hasAllPermissions } = usePermission();
 
   // when loading, display loading state
@@ -49,6 +52,14 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
     return <Loading />
   }
 
+
+  if (fetchCurrentUserError) {
+    return <Result
+      status="500"
+      title="500"
+      subTitle={t('login.fetchCurrentUserError', { defaultValue: 'Failed to fetch current user: {{error}}', error: fetchCurrentUserError?.message || fetchCurrentUserError })}
+    />
+  }
   // if not logged in, redirect to login page
   if (!user) {
     window.location.href = getURL('/login?redirect=' + encodeURIComponent(window.location.href));
@@ -73,7 +84,8 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
  * Admin route - only admin can access
  */
 export const AdminRoute: React.FC<{ element: React.ReactElement }> = ({ element }) => {
-  const { user, loading } = useAuth();
+  const { t } = useTranslation();
+  const { user, loading, error: fetchCurrentUserError } = useAuth();
   const permissionHook = usePermission();
 
   // when loading, display loading state
@@ -81,9 +93,16 @@ export const AdminRoute: React.FC<{ element: React.ReactElement }> = ({ element 
     return <Loading />;
   }
 
+  if (fetchCurrentUserError) {
+    return <Result
+      status="500"
+      title="500"
+      subTitle={t('login.fetchCurrentUserError', { defaultValue: 'Failed to fetch current user: {{error}}', error: fetchCurrentUserError?.message || fetchCurrentUserError })}
+    />
+  }
   // if not logged in, redirect to login page
   if (!user) {
-    window.location.href = '/login?redirect=' + encodeURIComponent(window.location.href);
+    window.location.href = getURL('/login?redirect=' + encodeURIComponent(window.location.href));
     return null;
   }
 

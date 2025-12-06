@@ -18,6 +18,8 @@ import React, { createContext, useContext, useEffect, ReactNode, useState } from
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
 import { useAuth } from './AuthContext';
+import { message } from 'antd';
+import { useTranslation } from 'react-i18next';
 
 // Site context type
 export interface SiteContextType {
@@ -28,6 +30,7 @@ export interface SiteContextType {
   currentOrgId: string | null;
   setCurrentOrgId: (orgId: string) => void;
   clearCurrentOrgId: () => void;
+  error?: Error;
 }
 
 // Create site context
@@ -39,6 +42,7 @@ export const SiteContext = createContext<SiteContextType>({
   currentOrgId: null,
   setCurrentOrgId: () => { },
   clearCurrentOrgId: () => { },
+  error: undefined,
 });
 
 export const useSite = () => useContext(SiteContext);
@@ -51,11 +55,13 @@ interface SiteProviderProps {
 
 // Site provider component
 export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
-
   const { user } = useAuth();
-  const { data: siteConfig = null, loading, runAsync: fetchSiteConfig } = useRequest(async () => {
+
+  const { data: siteConfig = null, loading, runAsync: fetchSiteConfig, error } = useRequest(async () => {
     return api.system.getSiteConfig();
-  }, { manual: true });
+  }, {
+    manual: true,
+  });
   useEffect(() => {
     if (user !== undefined) {
       fetchSiteConfig();
@@ -75,18 +81,15 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
   useEffect(() => {
     if (user) {
       let cacheOrgId = localStorage.getItem('orgID')
-      console.log(user, cacheOrgId)
 
       if (cacheOrgId) {
         const organization = user?.organizations?.find(org => org.id === cacheOrgId);
         if (organization) {
-          console.log("set2 ", user?.organizations?.[0]?.id ?? null)
           setCurrentOrgId(organization.id);
 
           return
         }
       }
-      console.log("set ", user?.organizations?.[0]?.id ?? null)
       setCurrentOrgId(user?.organizations?.[0]?.id ?? null);
     }
 
@@ -106,6 +109,7 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
         clearCurrentOrgId: () => {
           setCurrentOrgId(null);
         },
+        error,
       }}
     >
       {children}
