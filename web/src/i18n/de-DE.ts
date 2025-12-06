@@ -29,6 +29,8 @@ export default {
     passwordRequired: 'Bitte geben Sie Ihr Passwort ein!',
     or: 'Oder',
     continueWith: 'Weiter mit {{provider}}',
+    fetchOAuthProvidersError: 'OAuth-Anbieter konnten nicht abgerufen werden',
+    fetchSiteConfigError: 'Site-Konfiguration konnte nicht abgerufen werden: {{error}}',
     mfaTips: {
       email: 'Sie haben die E-Mail-basierte MFA aktiviert. Bitte geben Sie das entsprechende Einmalpasswort ein.',
       totp: 'Sie haben die MFA per E-Mail aktiviert. Bitte geben Sie das Einmalpasswort ein, das Sie erhalten haben.',

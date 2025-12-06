@@ -29,6 +29,8 @@ export default {
     passwordRequired: 'Please input your password!',
     or: 'Or',
     continueWith: 'Continue with {{provider}}',
+    fetchOAuthProvidersError: 'Failed to fetch OAuth providers',
+    fetchSiteConfigError: 'Failed to fetch site config: {{error}}',
     mfaTips: {
       email: 'You have enabled email-based MFA, please enter the corresponding one-time password.',
       totp: 'You have enabled MFA based on email. Please enter the one-time password you received.',

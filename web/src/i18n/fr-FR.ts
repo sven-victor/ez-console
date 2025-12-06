@@ -29,6 +29,8 @@ export default {
     passwordRequired: 'Veuillez saisir votre mot de passe !',
     or: 'Ou',
     continueWith: 'Continuer avec {{provider}}',
+    fetchOAuthProvidersError: 'Échec de la récupération des fournisseurs OAuth',
+    fetchSiteConfigError: 'Échec de la récupération de la configuration du site : {{error}}',
     mfaTips: {
       email: 'Vous avez activé l\'AMF par e-mail, veuillez saisir le mot de passe à usage unique correspondant.',
       totp: 'Vous avez activé l\'AMF par e-mail. Veuillez saisir le mot de passe à usage unique que vous avez reçu.',

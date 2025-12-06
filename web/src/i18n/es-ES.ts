@@ -29,6 +29,8 @@ export default {
     passwordRequired: '¡Por favor, introduce tu contraseña!',
     or: 'O',
     continueWith: 'Continuar con {{provider}}',
+    fetchOAuthProvidersError: 'Error al obtener los proveedores de OAuth',
+    fetchSiteConfigError: 'Error al obtener la configuración del sitio: {{error}}',
     mfaTips: {
       email: 'Has habilitado la MFA por correo electrónico. Introduce la contraseña de un solo uso correspondiente.',
       totp: 'Has habilitado la MFA por correo electrónico. Introduce la contraseña de un solo uso que has recibido.',

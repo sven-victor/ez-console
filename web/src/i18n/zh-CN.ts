@@ -29,6 +29,8 @@ export default {
     passwordRequired: '请输入密码!',
     or: '或',
     continueWith: '继续使用{{provider}}登录',
+    fetchOAuthProvidersError: '获取OAuth提供商失败',
+    fetchSiteConfigError: '获取站点配置失败: {{error}}',
     mfaTips: {
       email: '您已启用基于邮箱的MFA，请输入您收到的一次性密码。',
       totp: '您已启用基于TOTP的MFA，请输入对应的一次性密码。',
