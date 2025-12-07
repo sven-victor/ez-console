@@ -18,8 +18,6 @@ import React, { createContext, useContext, useEffect, ReactNode, useState } from
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
 import { useAuth } from './AuthContext';
-import { message } from 'antd';
-import { useTranslation } from 'react-i18next';
 
 // Site context type
 export interface SiteContextType {

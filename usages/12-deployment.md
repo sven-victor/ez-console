@@ -487,3 +487,4 @@ tar -czf uploads_backup_$DATE.tar.gz /opt/myapp/uploads
 - Explore [Advanced Topics](./13-advanced-topics.md)
 - Check [Troubleshooting](./14-troubleshooting.md)
 
+

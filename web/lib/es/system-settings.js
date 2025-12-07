@@ -2404,7 +2404,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       onChange: (d) => {
         s(`${_.pathname}#${d}`);
       },
-      items: t(o.filter((d) => !d.hidden))
+      items: t(o.filter((d) => !d.hidden), a)
     }
   ) });
 }, Qt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({

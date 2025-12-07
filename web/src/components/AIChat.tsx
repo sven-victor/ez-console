@@ -350,7 +350,7 @@ const AIChat: React.FC = () => {
         role: 'assistant',
       };
     },
-    requestFallback: (_, { messageInfo, error }) => {
+    requestFallback: (_, { error }) => {
       if (error instanceof ChatError) {
         return {
           content: error.buffer.join(''),

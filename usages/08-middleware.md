@@ -264,3 +264,4 @@ func TimeoutMiddleware(timeout time.Duration) gin.HandlerFunc {
 - Explore [Backend Development](./03-backend-development.md)
 - Review [Authentication & Authorization](./07-auth-system.md)
 
+

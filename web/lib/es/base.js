@@ -1,7 +1,7 @@
 import { r as c } from "./client.js";
-import h from "i18next";
-import { initReactI18next as f } from "react-i18next";
-import v from "i18next-browser-languagedetector";
+import m from "i18next";
+import { initReactI18next as p } from "react-i18next";
+import g from "i18next-browser-languagedetector";
 const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = t instanceof Date ? t : new Date(t), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), l = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), n = String(a.getSeconds()).padStart(2, "0");
   return e.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", l).replace("mm", i).replace("ss", n);
@@ -44,7 +44,7 @@ const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
   const e = "/";
   return t ? e.endsWith("/") ? t.startsWith("/") ? e + t.substring(1) : e + t : t.startsWith("/") ? e + t : e + "/" + t : e;
 };
-async function b(t, e) {
+async function h(t, e) {
   return c("/api/files", {
     method: "GET",
     params: {
@@ -53,7 +53,7 @@ async function b(t, e) {
     ...e || {}
   });
 }
-async function A(t, e, a) {
+async function f(t, e, a) {
   const o = new FormData();
   return e && o.append("file", e), Object.keys(t).forEach((s) => {
     const r = t[s];
@@ -65,7 +65,7 @@ async function A(t, e, a) {
     ...a || {}
   });
 }
-async function S(t, e) {
+async function v(t, e) {
   const { fileKey: a, ...o } = t;
   return c(`/api/files/${a}`, {
     method: "GET",
@@ -73,7 +73,7 @@ async function S(t, e) {
     ...e || {}
   });
 }
-async function y(t) {
+async function b(t) {
   return c("/api/statistics", {
     method: "GET",
     ...t || {}
@@ -81,11 +81,11 @@ async function y(t) {
 }
 const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: S,
-  getStatistics: y,
-  listFiles: b,
-  uploadFile: A
-}, Symbol.toStringTag, { value: "Module" })), P = {
+  downloadFile: v,
+  getStatistics: b,
+  listFiles: h,
+  uploadFile: f
+}, Symbol.toStringTag, { value: "Module" })), A = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -100,6 +100,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     passwordRequired: "请输入密码!",
     or: "或",
     continueWith: "继续使用{{provider}}登录",
+    fetchOAuthProvidersError: "获取OAuth提供商失败",
+    fetchSiteConfigError: "获取站点配置失败: {{error}}",
     mfaTips: {
       email: "您已启用基于邮箱的MFA，请输入您收到的一次性密码。",
       totp: "您已启用基于TOTP的MFA，请输入对应的一次性密码。"
@@ -194,7 +196,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, k = {
+}, S = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -209,6 +211,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     passwordRequired: "Please input your password!",
     or: "Or",
     continueWith: "Continue with {{provider}}",
+    fetchOAuthProvidersError: "Failed to fetch OAuth providers",
+    fetchSiteConfigError: "Failed to fetch site config: {{error}}",
     mfaTips: {
       email: "You have enabled email-based MFA, please enter the corresponding one-time password.",
       totp: "You have enabled MFA based on email. Please enter the one-time password you received."
@@ -299,7 +303,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, w = {
+}, y = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -365,7 +369,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, R = {
+}, P = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -812,7 +816,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, D = {
+}, k = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1221,7 +1225,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, z = {
+}, w = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1274,7 +1278,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerated: "Title generated successfully",
     titleGenerationFailed: "Failed to generate title"
   }
-}, E = {
+}, R = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1289,6 +1293,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     passwordRequired: "Bitte geben Sie Ihr Passwort ein!",
     or: "Oder",
     continueWith: "Weiter mit {{provider}}",
+    fetchOAuthProvidersError: "OAuth-Anbieter konnten nicht abgerufen werden",
+    fetchSiteConfigError: "Site-Konfiguration konnte nicht abgerufen werden: {{error}}",
     mfaTips: {
       email: "Sie haben die E-Mail-basierte MFA aktiviert. Bitte geben Sie das entsprechende Einmalpasswort ein.",
       totp: "Sie haben die MFA per E-Mail aktiviert. Bitte geben Sie das Einmalpasswort ein, das Sie erhalten haben."
@@ -1379,7 +1385,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, T = {
+}, D = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -1394,6 +1400,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     passwordRequired: "¡Por favor, introduce tu contraseña!",
     or: "O",
     continueWith: "Continuar con {{provider}}",
+    fetchOAuthProvidersError: "Error al obtener los proveedores de OAuth",
+    fetchSiteConfigError: "Error al obtener la configuración del sitio: {{error}}",
     mfaTips: {
       email: "Has habilitado la MFA por correo electrónico. Introduce la contraseña de un solo uso correspondiente.",
       totp: "Has habilitado la MFA por correo electrónico. Introduce la contraseña de un solo uso que has recibido."
@@ -1484,7 +1492,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, L = {
+}, E = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -1499,6 +1507,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     passwordRequired: "Veuillez saisir votre mot de passe !",
     or: "Ou",
     continueWith: "Continuer avec {{provider}}",
+    fetchOAuthProvidersError: "Échec de la récupération des fournisseurs OAuth",
+    fetchSiteConfigError: "Échec de la récupération de la configuration du site : {{error}}",
     mfaTips: {
       email: "Vous avez activé l'AMF par e-mail, veuillez saisir le mot de passe à usage unique correspondant.",
       totp: "Vous avez activé l'AMF par e-mail. Veuillez saisir le mot de passe à usage unique que vous avez reçu."
@@ -1589,7 +1599,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, C = {
+}, z = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -1604,6 +1614,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     passwordRequired: "الرجاء إدخال كلمة المرور الخاصة بك!",
     or: "أو",
     continueWith: "متابعة باستخدام {{provider}}",
+    fetchOAuthProvidersError: "فشل جلب موفري OAuth",
+    fetchSiteConfigError: "فشل جلب تكوين الموقع: {{error}}",
     mfaTips: {
       email: "لقد قمت بتمكين المصادقة متعددة العوامل المستندة إلى البريد الإلكتروني ، يرجى إدخال كلمة المرور لمرة واحدة المقابلة.",
       totp: "لقد قمت بتمكين المصادقة متعددة العوامل المستندة إلى البريد الإلكتروني. يرجى إدخال كلمة المرور لمرة واحدة التي تلقيتها."
@@ -1694,867 +1706,114 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, m = {
-  user: {
-    management: "Användarhantering",
-    create: "Skapa användare",
-    edit: "Redigera användare",
-    delete: "Ta bort användare",
+}, T = {
+  login: {
+    subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
-    email: "E-post",
+    password: "Lösenord",
+    login: "Logga in",
+    remember: "Kom ihåg mig",
+    forgotPassword: "Glömt lösenord?",
+    noAccount: "Inget konto? Registrera dig nu",
+    error: "Inloggning misslyckades: {{error}}",
+    oauthError: "OAuth-inloggning misslyckades: {{error}}",
+    usernameRequired: "Vänligen ange ditt användarnamn!",
+    passwordRequired: "Vänligen ange ditt lösenord!",
+    or: "Eller",
+    continueWith: "Fortsätt med {{provider}}",
+    fetchOAuthProvidersError: "Det gick inte att hämta OAuth-leverantörer",
+    fetchSiteConfigError: "Det gick inte att hämta webbplatskonfiguration: {{error}}",
+    mfaTips: {
+      email: "Du har aktiverat e-postbaserad MFA. Vänligen ange motsvarande engångslösenord.",
+      totp: "Du har aktiverat MFA baserad på e-post. Vänligen ange engångslösenordet du fick."
+    }
+  },
+  register: {
+    subtitle: "Skapa ett nytt konto",
+    username: "Användarnamn",
     fullName: "Fullständigt namn",
-    mfaEnforced: "Tvinga MFA",
-    phone: "Telefon",
-    status: "Status",
-    role: "Roll",
-    lastLogin: "Senaste inloggning",
-    roles: "Roller",
-    mfa: "Tvåfaktorsautentisering",
-    viewDetail: "Visa detaljer",
-    resetPassword: "Återställ lösenord",
-    resetPasswordComingSoon: "Funktionen för återställning av lösenord kommer snart",
-    deleteConfirm: "Är du säker på att du vill ta bort den här användaren?",
-    loadError: "Det gick inte att ladda användarlistan",
-    deleteSuccess: "Användaren har tagits bort",
-    deleteError: "Det gick inte att ta bort användaren",
-    statusActive: "Aktiv",
-    statusDisabled: "Inaktiverad",
-    statusEnum: {
-      active: "Aktiv",
-      disabled: "Inaktiverad",
-      locked: "Låst",
-      password_expired: "Lösenordet har gått ut",
-      deleted: "Borttagen"
-    },
-    noRole: "Ingen roll",
-    mfaEnabled: "Aktiverad",
-    mfaDisabled: "Inaktiverad",
-    neverLogin: "Aldrig inloggad",
-    basicInfo: "Grundläggande information",
-    operationLogs: "Driftloggar",
-    auditLogs: "Granskningsloggar",
-    notFound: "Användaren hittades inte eller har tagits bort",
-    backToList: "Tillbaka till användarlistan",
-    detailLoadError: "Det gick inte att ladda användaruppgifterna",
-    noLogs: "Inga driftloggar tillgängliga",
-    createdAt: "Skapad den",
-    updatedAt: "Uppdaterad den",
-    emailRequired: "Vänligen ange e-post",
-    emailInvalid: "Vänligen ange en giltig e-postadress",
-    fullNameRequired: "Vänligen ange fullständigt namn",
-    statusRequired: "Vänligen välj status",
-    rolesRequired: "Vänligen välj minst en roll",
-    selectRoles: "Vänligen välj roller",
-    updateSuccess: "Användarinformationen har uppdaterats",
-    updateError: "Det gick inte att uppdatera användaren",
-    createTitle: "Skapa användare",
-    editTitle: "Redigera användare",
+    email: "E-post",
     password: "Lösenord",
     confirmPassword: "Bekräfta lösenord",
-    usernamePlaceholder: "Vänligen ange användarnamn",
-    emailPlaceholder: "Vänligen ange e-post",
-    fullNamePlaceholder: "Vänligen ange fullständigt namn",
-    statusPlaceholder: "Vänligen välj status",
-    passwordPlaceholder: "Vänligen ange lösenord",
-    confirmPasswordPlaceholder: "Vänligen bekräfta lösenord",
-    usernameRequired: "Vänligen ange användarnamn",
-    passwordRequired: "Vänligen ange lösenord",
-    passwordTooShort: "Lösenordet måste vara minst 8 tecken långt",
-    confirmPasswordRequired: "Vänligen bekräfta ditt lösenord",
-    passwordMismatch: "De två lösenorden matchar inte",
-    createSuccess: "Användaren har skapats",
-    createError: "Det gick inte att skapa användaren",
-    resetPasswordTitle: "Återställ lösenord",
-    resetPasswordConfirm: "Bekräfta återställning av lösenord",
-    resetPasswordSuccess: "Lösenordet har återställts",
-    resetPasswordSuccessSendByEmail: "Det nya lösenordet har skickats till användarens e-post: {{email}}",
-    resetPasswordSuccessContent: "Nytt lösenord: {{password}}",
-    resetPasswordError: "Återställning av lösenord misslyckades",
-    source: "Källa",
-    sourceLdap: "LDAP",
-    sourceOauth2: "OAuth2.0",
-    sourceLocal: "Lokal",
-    keywords: "Sök efter användarnamn, fullständigt namn eller e-post",
-    statusDeleted: "Borttagen",
-    oldPassword: "Nuvarande lösenord",
-    newPassword: "Nytt lösenord",
-    passwordChanged: "Lösenordet har ändrats",
-    passwordChangeFailed: {
-      normal: "Lösenordsändring misslyckades: {{error}}",
-      E40031: "Det nya lösenordet är detsamma som det nuvarande lösenordet",
-      E4041: "Användaren hittades inte",
-      E40032: "Gammalt lösenord är felaktigt",
-      E40033: "Ditt konto stöder inte lösenordsändring",
-      E40034: "Det gick inte att kontrollera lösenordskomplexiteten",
-      E40035: "Lösenordet uppfyller inte komplexitetskraven"
+    submit: "Registrera",
+    haveAccount: "Har du redan ett konto? Logga in",
+    success: "Registreringen lyckades, vänligen logga in",
+    error: "Registreringen misslyckades, vänligen försök igen senare",
+    passwordNotMatch: "De två lösenorden matchar inte",
+    usernameRequired: "Vänligen ange ditt användarnamn!",
+    usernameMinLength: "Användarnamnet måste vara minst 3 tecken",
+    fullNameRequired: "Vänligen ange ditt fullständiga namn!",
+    emailRequired: "Vänligen ange din e-post!",
+    emailInvalid: "Ogiltigt e-postformat!",
+    passwordRequired: "Vänligen ange ditt lösenord!",
+    passwordMinLength: "Lösenordet måste vara minst 6 tecken",
+    confirmPasswordRequired: "Vänligen bekräfta ditt lösenord!"
+  },
+  dashboard: {
+    title: "Instrumentpanel",
+    welcome: "Välkommen tillbaka, {{name}}"
+  },
+  system: {
+    settings: "Systeminställningar",
+    password: {
+      minLength: "Minsta lösenordslängd",
+      complexity: "Lösenordskomplexitet",
+      expiration: "Lösenordets giltighetstid"
     },
-    avatar: "Avatar",
-    fixUser: "Reparera användare",
-    fixUserBindLDAPUser: "Binda LDAP-användare",
-    fixUserConvertToLocal: "Konvertera till lokal användare",
-    fixUserTitle: "Reparera användare",
-    restore: "Återställ",
-    restoreConfirm: "Är du säker på att du vill återställa användaren {{username}}?",
-    unlock: "Lås upp",
-    unlockConfirm: "Är du säker på att du vill låsa upp användaren {{username}}?",
-    unlockTitle: "Lås upp användare",
-    unlockSuccess: "Användaren har låsts upp",
-    unlockError: "Det gick inte att låsa upp användaren: {{error}}",
-    ldapUserNotBound: "LDAP-användaren är inte bunden till en lokal användare, vänligen binda."
-  },
-  profile: {
-    title: "Profilcenter",
-    basic: "Grundläggande information",
-    password: "Ändra lösenord",
-    mfa: "Tvåfaktorsautentisering",
-    sessions: "Sessionshantering",
-    auditLogs: "Granskningsloggar"
-  },
-  mfa: {
-    title: "Tvåfaktorsautentisering",
-    enabled: "Tvåfaktorsautentisering är aktiverad",
-    enabledDescription: "Ditt konto är skyddat av tvåfaktorsautentisering",
-    disable: "Inaktivera tvåfaktorsautentisering",
-    startSetup: "Starta installationen",
-    totpStep1: "Starta",
-    totpStep1Description: "Förbered för att ställa in tvåfaktorsautentisering",
-    totpStep2: "Skanna",
-    totpStep2Description: "Skanna QR-koden med en autentiseringsapp",
-    totpStep3: "Slutför",
-    totpStep3Description: "Installationen av tvåfaktorsautentisering är klar",
-    emailStep1: "Starta",
-    emailStep1Description: "Förbered för att ställa in tvåfaktorsautentisering",
-    emailStep2: "Ta emot e-post",
-    emailStep2Description: "Kontrollera din e-post för verifieringskoden",
-    emailStep3: "Slutför",
-    emailStep3Description: "Installationen av tvåfaktorsautentisering är klar",
-    setupInfo: "Tvåfaktorsautentisering lägger till ett extra säkerhetslager till ditt konto",
-    scanQrCode: "Använd Google Authenticator eller en annan autentiseringsapp för att skanna QR-koden",
-    secretKey: "Hemlig nyckel",
-    enterCode: "Ange 6-siffrig verifieringskod",
-    enterVerificationCode: "Vänligen ange verifieringskod",
-    enableSuccess: "Tvåfaktorsautentisering har aktiverats",
-    disableSuccess: "Tvåfaktorsautentisering har inaktiverats",
-    verificationFailed: "Ogiltig verifieringskod",
-    setupSuccess: "Installationen lyckades",
-    setupSuccessDescription: "Tvåfaktorsautentisering har ställts in. Ditt konto är nu säkrare.",
-    confirmDisable: "Bekräfta inaktivering av tvåfaktorsautentisering",
-    disableWarning: "Efter att ha inaktiverat tvåfaktorsautentisering kommer din kontosäkerhet att minska. Är du säker på att du vill inaktivera den?",
-    totp: "TOTP",
-    email: "E-post",
-    totpTitle: "TOTP (Tidsbaserat engångslösenord)",
-    totpDescription: "MFA/TOTP är en autentiseringsmetod baserad på tidsstämplar, som genererar en 6-siffrig verifieringskod via Google Authenticator eller andra identitetsverifieringsverktyg för varje inloggning.",
-    emailTitle: "E-post (E-postbaserat engångslösenord)",
-    emailDescription: "MFA/E-post är en autentiseringsmetod baserad på e-post, som skickar en 6-siffrig verifieringskod till din e-post för varje inloggning."
-  },
-  session: {
-    title: "Sessionshantering",
-    device: "Enhet",
-    ipAddress: "IP-adress",
-    lastActive: "Senast aktiv",
-    status: "Status",
-    current: "Nuvarande",
-    active: "Aktiv",
-    terminate: "Logga ut",
-    terminateOthers: "Logga ut andra sessioner",
-    confirmTerminate: "Är du säker på att du vill avsluta den här sessionen?",
-    confirmTerminateAll: "Är du säker på att du vill avsluta alla andra sessioner?",
-    terminateSuccess: "Sessionen avslutades",
-    terminateFailed: "Det gick inte att avsluta sessionen",
-    terminateAllSuccess: "Alla andra sessioner avslutades",
-    terminateAllFailed: "Det gick inte att avsluta andra sessioner",
-    currentSession: "Nuvarande session",
-    noSessions: "Inga sessionsposter"
-  },
-  validation: {
-    emailRequired: "Vänligen ange din e-post",
-    emailInvalid: "Ogiltigt e-postformat",
-    fullNameRequired: "Vänligen ange ditt fullständiga namn",
-    oldPasswordRequired: "Vänligen ange ditt nuvarande lösenord",
-    newPasswordRequired: "Vänligen ange ett nytt lösenord",
-    confirmPasswordRequired: "Vänligen bekräfta ditt nya lösenord",
-    passwordMinLength: "Lösenordet måste vara minst 8 tecken långt",
-    passwordMismatch: "De två lösenorden matchar inte"
-  },
-  role: {
-    management: "Rollhantering",
-    create: "Skapa roll",
-    edit: "Redigera roll",
-    delete: "Ta bort roll",
-    name: "Rollnamn",
-    description: "Beskrivning",
-    permissions: "Behörigheter",
-    permissionCount: "Antal behörigheter",
-    viewDetail: "Visa detaljer",
-    deleteConfirm: "Är du säker på att du vill ta bort den här rollen?",
-    loadError: "Det gick inte att ladda rollistan",
-    deleteSuccess: "Rollen har tagits bort",
-    deleteError: "Det gick inte att ta bort rollen: {{error}}",
-    updateSuccess: "Rollen har uppdaterats",
-    updateError: "Det gick inte att uppdatera rollen",
-    createSuccess: "Rollen har skapats",
-    createError: "Det gick inte att skapa rollen",
-    nameRequired: "Vänligen ange rollnamn",
-    descriptionRequired: "Vänligen ange beskrivning",
-    permissionsRequired: "Vänligen välj minst en behörighet",
-    selectPermissions: "Vänligen välj behörigheter",
-    basicInfo: "Grundläggande information",
-    permissionDetails: "Behörighetsdetaljer",
-    notFound: "Rollen hittades inte eller har tagits bort",
-    backToList: "Tillbaka till rollistan",
-    detailLoadError: "Det gick inte att ladda rolldetaljer",
-    createdAt: "Skapad den",
-    updatedAt: "Uppdaterad den",
-    users: "Användare",
-    noUsers: "Inga användare med den här rollen",
-    searchPlaceholder: "Rollnamn/beskrivning",
-    namePlaceholder: "Vänligen ange rollnamn",
-    descriptionPlaceholder: "Vänligen ange rollbeskrivning",
-    createTitle: "Skapa roll",
-    editTitle: "Redigera roll",
-    saveSuccess: "Rollen {{action}}ades",
-    saveError: "Det gick inte att {{action}} rollen",
-    permissionRequired: "Vänligen välj minst en behörighet",
-    invalidJsonFormat: "Ogiltigt JSON-format",
-    permissionOrPolicyRequired: "Vänligen välj minst en behörighet eller policy",
-    policyDocument: "Policydokument"
-  },
-  permission: {
-    title: {
-      Audit_Log: "Granskningslogg",
-      Permission_Management: "Behörighetshantering",
-      Role_Management: "Rollhantering",
-      Security_Settings: "Säkerhetsinställningar",
-      Service_Management: "Tjänstehantering",
-      System_Management: "Systemhantering",
-      System_Settings: "Systeminställningar",
-      User_Management: "Användarhantering",
-      File_Management: "Filhantering",
-      Statistics: "Statistik",
-      Service_Account_Management: "Tjänstekontohantering",
-      "audit_log.view": "Visa granskningsloggar",
-      "authorization.permission.create": "Skapa behörigheter",
-      "authorization.permission.delete": "Ta bort behörigheter",
-      "authorization.permission.update": "Uppdatera behörigheter",
-      "authorization.permission.view": "Visa behörigheter",
-      "authorization.role.create": "Skapa roller",
-      "authorization.role.delete": "Ta bort roller",
-      "authorization.role.update": "Uppdatera roller",
-      "authorization.role.view": "Visa roller",
-      "authorization.user.create": "Skapa användare",
-      "authorization.user.delete": "Ta bort användare",
-      "authorization.user.update": "Uppdatera användare",
-      "authorization.user.view": "Visa användare",
-      "authorization.user.list": "Visa användarelista",
-      "authorization.user.view_audit_logs": "Visa användargranskningsloggar",
-      "authorization.user.assign-roles": "Tilldela roller till användare",
-      "system.security.update": "Uppdatera säkerhetsinställningar",
-      "system.security.view": "Visa säkerhetsinställningar",
-      "system.settings.update": "Uppdatera inställningar",
-      "system.settings.view": "Visa inställningar",
-      "system.view": "Visa systeminformation",
-      "system.audit_log.view": "Visa granskningsloggar",
-      "file.list": "Visa filer",
-      "authorization.service_account.list": "Visa tjänstekonton",
-      "authorization.service_account.create": "Skapa tjänstekonton",
-      "authorization.service_account.delete": "Ta bort tjänstekonton",
-      "authorization.service_account.update": "Uppdatera tjänstekonton",
-      "authorization.service_account.view": "Visa tjänstekonton",
-      "authorization.service_account.access_key.list": "Visa tjänstekonton åtkomstnycklar",
-      "authorization.service_account.access_key.create": "Skapa tjänstekonton åtkomstnycklar",
-      "authorization.service_account.access_key.delete": "Ta bort tjänstekonton åtkomstnycklar",
-      "authorization.service_account.access_key.update": "Uppdatera tjänstekonton åtkomstnycklar",
-      "authorization.service_account.access_key.view": "Visa tjänstekonton åtkomstnycklar",
-      "authorization.service_account.role.list": "Visa tjänstekonton roller",
-      "authorization.service_account.role.assign": "Tilldela roller till tjänstekonton",
-      "authorization.service_account.policy.view": "Visa tjänstekonton policy",
-      "authorization.service_account.policy.update": "Uppdatera tjänstekonton policy",
-      "statistics.view": "Visa statistik"
-    }
-  },
-  auditLog: {
-    title: "Granskningsloggar",
-    timestamp: "Tid",
-    action: "Åtgärd",
-    resource: "Resurs",
-    resourceId: "Resurs-ID",
-    ip: "IP-adress",
-    userAgent: "User Agent",
-    status: "Status",
-    details: "Detaljer",
-    search: "Sök",
-    searchPlaceholder: "Nyckelordssökning",
-    dateRange: "Datumintervall",
-    selectAction: "Välj åtgärdstyp",
-    selectStatus: "Välj status",
-    noUserSelected: "Ingen användare vald",
-    noLogs: "Inga loggposter",
-    username: "Användarnamn",
-    user_agent: "User Agent"
-  },
-  actions: {
-    login: "Logga in",
-    logout: "Logga ut",
-    passwordReset: "Återställning av lösenord",
-    mfaChange: "Ändring av MFA-inställning",
-    create: "Skapa",
-    update: "Uppdatera",
-    delete: "Ta bort"
-  },
-  statuses: {
-    success: "Lyckades",
-    failed: "Misslyckades"
-  },
-  serviceAccount: {
-    name: "Tjänstekonto",
-    description: "Beskrivning av tjänstekonto",
-    createdAt: "Skapad den",
-    updatedAt: "Uppdaterad den",
-    create: "Skapa tjänstekonto",
-    edit: "Redigera tjänstekonto",
-    delete: "Ta bort tjänstekonto",
-    viewDetail: "Visa detaljer för tjänstekonto",
-    deleteConfirm: "Är du säker på att du vill ta bort det här tjänstekontot?",
-    loadError: "Det gick inte att ladda listan över tjänstekonton",
-    deleteSuccess: "Tjänstekontot har tagits bort",
-    deleteError: "Det gick inte att ta bort tjänstekontot",
-    createSuccess: "Tjänstekontot har skapats",
-    createError: "Det gick inte att skapa tjänstekontot",
-    updateSuccess: "Tjänstekontot har uppdaterats",
-    updateError: "Det gick inte att uppdatera tjänstekontot",
-    detailLoadError: "Det gick inte att ladda detaljer för tjänstekontot",
-    notFound: "Tjänstekontot hittades inte eller har tagits bort",
-    backToList: "Tillbaka till listan över tjänstekonton",
-    basicInfo: "Grundläggande information",
-    details: "Detaljer för tjänstekonto",
-    nameRequired: "Vänligen ange namn på tjänstekonto",
-    descriptionRequired: "Vänligen ange beskrivning av tjänstekonto",
-    list: "Lista över tjänstekonton",
-    namePlaceholder: "Vänligen ange namn på tjänstekonto",
-    descriptionPlaceholder: "Vänligen ange beskrivning av tjänstekonto",
-    saveError: "Det gick inte att spara tjänstekontot",
-    searchPlaceholder: "Namn/beskrivning av tjänstekonto",
-    status: "Status",
-    active: "Aktiv",
-    disabled: "Inaktiverad",
-    hasPolicy: "Har policy",
-    noPolicy: "Ingen policy",
-    neverAccessed: "Aldrig åtkommen",
-    statusActive: "Aktiv",
-    statusDisabled: "Inaktiverad",
-    statusUpdating: "Uppdaterar",
-    statusCreating: "Skapar",
-    lastAccess: "Senaste åtkomst",
-    noDescription: "Ingen beskrivning",
-    authorization: "Auktoriseringshantering",
-    roles: "Roller",
-    availableRoles: "Tillgängliga roller",
-    assignRoles: "Tilldela roller",
-    noRoles: "Inga tilldelade roller",
-    rolesRequired: "Vänligen välj minst en roll",
-    selectRoles: "Vänligen välj roller",
-    loadRolesError: "Det gick inte att ladda rollistan",
-    assignRolesSuccess: "Rollen har tilldelats",
-    assignRolesError: "Det gick inte att tilldela roller",
-    policy: "Policyhantering",
-    policyStatements: "Policyuttalanden",
-    addStatement: "Lägg till policyuttalande",
-    editStatement: "Redigera policyuttalande",
-    deleteStatement: "Ta bort policyuttalande",
-    effect: "Effekt",
-    allow: "Tillåt",
-    deny: "Neka",
-    actions: "Åtgärder",
-    resources: "Resurser",
-    conditions: "Villkor",
-    addCondition: "Lägg till villkor",
-    removeCondition: "Ta bort villkor",
-    savePolicy: "Spara policy",
-    savePolicySuccess: "Policyn har sparats",
-    savePolicyError: "Det gick inte att spara policyn",
-    deleteStatementConfirm: "Är du säker på att du vill ta bort det här policyuttalandet?",
-    actionsRequired: "Vänligen välj minst en åtgärd",
-    resourcesRequired: "Vänligen ange minst en resurs",
-    wildcard: "Alla",
-    insertTemplate: "Infoga mall",
-    allowAll: "Tillåt alla",
-    denyAll: "Neka alla",
-    allowWithAction: "Tillåt med åtgärd",
-    denyWithCondition: "Neka med villkor",
-    allowWithUri: "Tillåt med URI",
-    policyUpdateSuccess: "Policyn har uppdaterats",
-    policyUpdateError: "Det gick inte att uppdatera policyn",
-    policyDocument: "Policydokument",
-    policyInvalidJson: "Felaktigt format för policydokument",
-    accessKeys: "Åtkomstnycklar",
-    createAccessKey: "Skapa åtkomstnyckel",
-    accessKey: "Åtkomstnyckel",
-    secretKey: "Hemlig nyckel",
-    keyDescription: "Beskrivning",
-    keyName: "Nyckelnamn",
-    keyStatus: "Status",
-    keyExpires: "Går ut den",
-    keyLastUsed: "Senast använd",
-    keyActive: "Aktiv",
-    keyDisabled: "Inaktiverad",
-    keyNeverUsed: "Aldrig använd",
-    createKeySuccess: "Nyckeln har skapats",
-    createKeyError: "Det gick inte att skapa nyckeln",
-    updateKeySuccess: "Nyckeln har uppdaterats",
-    updateKeyError: "Det gick inte att uppdatera nyckeln",
-    deleteKeySuccess: "Nyckeln har tagits bort",
-    deleteKeyError: "Det gick inte att ta bort nyckeln",
-    deleteKeyConfirm: "Är du säker på att du vill ta bort den här nyckeln?",
-    keyNameRequired: "Vänligen ange nyckelnamn",
-    keyNamePlaceholder: "Vänligen ange nyckelnamn",
-    keyDescriptionRequired: "Vänligen ange nyckelbeskrivning",
-    keyDescriptionPlaceholder: "Vänligen ange nyckelbeskrivning",
-    copyKeySuccess: "Nyckeln har kopierats till urklipp",
-    secretNoticeTitle: "Förvara den hemliga nyckeln säkert",
-    secretNoticeMessage: "Detta är det enda tillfället att visa den hemliga nyckeln, kopiera och spara den omedelbart.",
-    updateKey: "Uppdatera nyckel",
-    loadKeysError: "Det gick inte att ladda nyckellistan",
-    neverExpires: "Går aldrig ut",
-    selectExpireDate: "Välj utgångsdatum",
-    copyToClipboard: "Kopiera till urklipp",
-    tabs: {
-      basic: "Grundläggande information",
-      roles: "Rollhantering",
-      accessKeys: "Hantering av åtkomstnycklar",
-      policy: "Policyhantering"
-    }
-  }
-}, p = {
-  loading: "Laddar...",
-  success: "Operationen lyckades",
-  error: "Operationen misslyckades",
-  confirm: "Bekräfta",
-  cancel: "Avbryt",
-  save: "Spara",
-  edit: "Redigera",
-  delete: "Ta bort",
-  search: "Sök",
-  reset: "Återställ",
-  submit: "Skicka",
-  back: "Tillbaka",
-  backToList: "Tillbaka till listan",
-  actions: "Åtgärder",
-  totalItems: "Totalt {{total}} objekt",
-  refresh: "Uppdatera",
-  filter: "Filtrera",
-  viewDetail: "Visa detaljer",
-  none: "Ingen",
-  keyword: "Nyckelord",
-  create: "Skapa",
-  update: "Uppdatera",
-  yes: "Ja",
-  no: "Nej",
-  enable: "Aktivera",
-  disable: "Inaktivera",
-  enabled: "Aktiverad",
-  disabled: "Inaktiverad",
-  operation: "Operation",
-  status: "Status",
-  detail: "Detalj",
-  description: "Beskrivning",
-  name: "Namn",
-  type: "Typ",
-  more: "Mer",
-  home: "Hem",
-  profile: "Profil",
-  logout: "Logga ut",
-  expandAll: "Expandera alla",
-  collapseAll: "Fäll ihop alla",
-  close: "Stäng",
-  updateSuccess: "Uppdatering lyckades",
-  updateFailed: "Uppdatering misslyckades",
-  fetchFailed: "Det gick inte att hämta data",
-  operationFailed: "Operationen misslyckades",
-  done: "Klar",
-  verify: "Verifiera",
-  previous: "Föregående",
-  next: "Nästa",
-  enter: "Ange",
-  select: "Välj",
-  pagination: {
-    total: "{{start}}-{{end}} av {{total}} objekt"
-  },
-  language: {
-    default: "Standardspråk",
-    "en-US": "Engelska",
-    "sv-SE": "Svenska",
-    "ar-AE": "Arabiska",
-    "de-DE": "Tyska",
-    "es-ES": "Spanska",
-    "fr-FR": "Franska",
-    "zh-CN": "Kinesiska"
-  }
-}, g = {
-  title: "Systemhantering",
-  settings: {
-    title: "Systeminställningar",
-    tabs: {
-      security: "Säkerhetsinställningar",
-      oauth: "OAuth2.0-autentisering",
-      ldap: "LDAP-autentisering",
-      smtp: "SMTP-inställningar",
-      base: "Grundinställningar",
-      toolSets: "Verktygssättinställningar",
-      aiModels: "AI-modellinställningar"
+    mfa: {
+      title: "Multifaktorautentisering",
+      totp: "TOTP-autentisering",
+      email: "E-postautentisering"
     },
-    days: "dagar",
-    minutes: "minuter",
-    fetchFailed: "Det gick inte att hämta systeminställningar",
-    updateSuccess: "Systeminställningarna har uppdaterats",
-    updateFailed: "Det gick inte att uppdatera systeminställningarna",
-    base: {
-      name: "Namn",
-      logo: "Logotyp",
-      homePage: "Hem",
-      disableLocalUserLogin: "Inaktivera lokal användare",
-      disableLocalUserLoginTooltip: "Inaktivera lokal användare, endast gällande när andra autentiseringsmetoder är aktiverade"
-    },
-    security: {
-      mfa: {
-        label: "Tvinga multifaktorautentisering (MFA)",
-        tooltip: "När detta är aktiverat måste alla användare ställa in och använda multifaktorautentisering för att logga in"
-      },
-      passwordComplexity: {
-        label: "Lösenordskomplexitet",
-        tooltip: "Ange komplexitetskraven för användarlösenord",
-        options: {
-          low: "Osäkert: Kan vara vilka tecken som helst",
-          medium: "Medium: Måste innehålla minst två typer av versaler, gemener och siffror",
-          high: "Säkert: Måste innehålla versaler, gemener och siffror",
-          veryHigh: "Mycket säkert: Måste innehålla versaler, gemener, siffror och specialtecken"
-        }
-      },
-      passwordMinLength: {
-        label: "Minsta lösenordslängd",
-        tooltip: "Ange minimilängdskravet för lösenord"
-      },
-      passwordExpiry: {
-        label: "Lösenordets giltighetstid",
-        tooltip: "Ange giltighetstiden för användarlösenord, 0 betyder att det aldrig går ut"
-      },
-      loginFailureLock: {
-        label: "Automatisk kontolåsning efter inloggningsfel",
-        tooltip: "När detta är aktiverat låses konton tillfälligt efter upprepade inloggningsfel"
-      },
-      loginFailureAttempts: {
-        label: "Antal inloggningsförsök",
-        tooltip: "Ange antalet misslyckade inloggningsförsök innan ett konto låses"
-      },
-      loginFailureLockoutMinutes: {
-        label: "Inloggningsfel lockout (minuter)",
-        tooltip: "Ange antalet minuter ett konto ska låsas efter ett angivet antal misslyckade inloggningsförsök"
-      },
-      historyPasswordCheck: {
-        label: "Kontrollpolicy för lösenordshistorik",
-        tooltip: "När detta är aktiverat kan användare inte återanvända nyligen använda lösenord"
-      },
-      historyPasswordCount: {
-        label: "Antal lösenord i historiken",
-        tooltip: "Ange antalet senaste lösenord att kontrollera"
-      },
-      inactiveAccountLock: {
-        label: "Låsning av inaktivt konto",
-        tooltip: "Ange antalet dagar efter vilka inaktiva konton låses, 0 betyder ingen låsning"
-      },
-      sessionTimeout: {
-        label: "Sessionstimeout",
-        tooltip: "Ange den automatiska timeoutperioden för användarsessioner"
-      },
-      sessionIdleTimeout: {
-        label: "Sessionstid utan aktivitet",
-        tooltip: "Ange den automatiska timeoutperioden för användarsessioner efter inaktivitet"
-      }
-    },
-    oauth: {
-      testConnection: {
-        button: "Testa anslutning",
-        failed: "Testa anslutning misslyckades: {{error}}",
-        success: "Testa anslutning lyckades",
-        callbackFailed: "Testa anslutning misslyckades",
-        missingRequiredParameters: "Vänligen ange de obligatoriska parametrarna",
-        responseUserInfoIsNull: "Användarinformationen är null",
-        responseUserIsNull: "Användaren är null",
-        oauthUserInfo: "OAuth-användarinformation",
-        loginUserInfo: "Inloggningsanvändarinformation"
-      },
-      enabled: {
-        label: "Aktivera OAuth2.0-autentisering",
-        tooltip: "När detta är aktiverat kan användare logga in med tredjeparts OAuth-tjänster"
-      },
-      provider: {
-        label: "OAuth-leverantör",
-        tooltip: "Välj OAuth2.0-autentiseringstjänstleverantör",
-        options: {
-          github: "GitHub",
-          google: "Google",
-          dingtalk: "DingTalk",
-          wechat: "WeChat",
-          autoDiscover: "Auto Discover",
-          custom: "Anpassad"
-        },
-        required: "Vänligen välj en OAuth-leverantör"
-      },
-      clientId: {
-        label: "Klient-ID",
-        tooltip: "Klient-ID för OAuth-applikationen",
-        required: "Vänligen ange klient-ID"
-      },
-      clientSecret: {
-        label: "Klienthemlighet",
-        tooltip: "Klienthemlighet för OAuth-applikationen",
-        required: "Vänligen ange klienthemligheten",
-        unchanged: "Lämna oförändrad"
-      },
-      wellknownEndpoint: {
-        label: "Wellknown-slutpunkt",
-        tooltip: "Wellknown-slutpunkts-URL för OAuth-tjänsten",
-        required: "Vänligen ange wellknown-slutpunkts-URL",
-        invalidUrl: "Vänligen ange en giltig URL"
-      },
-      authEndpoint: {
-        label: "Auktoriseringsslutpunkt",
-        tooltip: "Auktoriseringsslutpunkts-URL för OAuth-tjänsten",
-        required: "Vänligen ange auktoriseringsslutpunkts-URL",
-        invalidUrl: "Vänligen ange en giltig URL"
-      },
-      tokenEndpoint: {
-        label: "Tokenslutpunkt",
-        tooltip: "Tokenslutpunkts-URL för OAuth-tjänsten",
-        required: "Vänligen ange tokenslutpunkts-URL",
-        invalidUrl: "Vänligen ange en giltig URL"
-      },
-      userInfoEndpoint: {
-        label: "Användarinfo-slutpunkt",
-        tooltip: "Användarinformationsslutpunkts-URL för OAuth-tjänsten",
-        required: "Vänligen ange användarinformationsslutpunkts-URL",
-        invalidUrl: "Vänligen ange en giltig URL"
-      },
-      scope: {
-        label: "Omfattning",
-        tooltip: "Auktoriseringsomfattning för OAuth-förfrågningar, flera värden åtskilda med mellanslag",
-        required: "Vänligen ange auktoriseringsomfattningen"
-      },
-      redirectUri: {
-        label: "Omdirigerings-URI",
-        tooltip: "Omdirigerings-URI efter att OAuth2.0-autentisering har slutförts",
-        required: "Vänligen ange omdirigerings-URI",
-        invalidUrl: "Vänligen ange en giltig URL"
-      },
-      autoCreateUser: {
-        label: "Skapa användare automatiskt",
-        tooltip: "När detta är aktiverat skapar systemet automatiskt konton för användare som loggar in via OAuth för första gången"
-      },
-      defaultRole: {
-        label: "Standardroll",
-        tooltip: "Standardrollen som tilldelas användare som registrerats via OAuth",
-        required: "Vänligen ange en standardroll när automatisk användarskapande är aktiverat"
-      },
-      iconUrl: {
-        label: "Ikon-URL",
-        tooltip: "Ikon-URL:en för OAuth-leverantören som visas på inloggningssidan",
-        required: "Vänligen ange ikon-URL",
-        invalidUrl: "Vänligen ange en giltig URL"
-      },
-      displayName: {
-        label: "Visningsnamn",
-        tooltip: "Visningsnamnet för OAuth-leverantören som visas på inloggningssidan",
-        required: "Vänligen ange visningsnamnet"
-      },
-      mfaEnabled: {
-        label: "Aktivera MFA",
-        tooltip: "Aktivera MFA för OAuth-inloggning (endast gällande när MFA är aktiverat av användaren)"
-      },
-      fieldMapping: {
-        title: "Fältmappning",
-        presetDescription: 'Använder för närvarande förinställd fältmappningskonfiguration. För att anpassa, välj "Anpassad" leverantör',
-        autoDetectHint: "Fältmappning är valfritt. Om det inte anges kommer systemet automatiskt att upptäcka lämpliga fält",
-        emailField: {
-          label: "E-postfält",
-          tooltip: "Fältnamn för e-post i OAuth-användarinformation",
-          required: "Vänligen ange e-postfältets namn"
-        },
-        usernameField: {
-          label: "Användarnamnsfält",
-          tooltip: "Fältnamn för användarnamn i OAuth-användarinformation",
-          required: "Vänligen ange användarnamnsfältets namn"
-        },
-        fullNameField: {
-          label: "Fullständigt namnfält",
-          tooltip: "Fältnamn för fullständigt namn i OAuth-användarinformation"
-        },
-        avatarField: {
-          label: "Avatarfält",
-          tooltip: "Fältnamn för avatar-URL i OAuth-användarinformation"
-        },
-        roleField: {
-          label: "Rollfält",
-          tooltip: "Fältnamn för roll i OAuth-användarinformation (om leverantören returnerar rollinformation)"
-        }
-      }
-    },
-    ldap: {
-      enabled: "Aktivera LDAP-autentisering",
-      serverUrl: "LDAP-server-URL",
-      bindDn: "Bind DN",
-      bindPassword: "Bind-lösenord",
-      baseDn: "Base DN",
-      userFilter: "Användarfilter",
-      userAttr: "Användarattribut",
-      emailAttr: "E-postattribut",
-      displayNameAttr: "Visningsnamnsattribut",
-      autoCreateUser: "Skapa användare automatiskt",
-      defaultRole: "Standardroll",
-      importUsers: "Importera LDAP-användare",
-      testConnection: "Testa anslutning",
-      import: "Importera användare",
-      save: "Spara inställningar",
-      loadError: "Det gick inte att ladda LDAP-inställningar: {{error}}",
-      saveSuccess: "LDAP-inställningarna har uppdaterats",
-      saveError: "Det gick inte att uppdatera LDAP-inställningarna",
-      testError: "Det gick inte att testa LDAP-anslutningen: {{error}}",
-      importSuccess: "LDAP-användare har importerats",
-      importError: "Det gick inte att importera LDAP-användare",
-      serverUrlRequired: "Vänligen ange LDAP-server-URL",
-      bindDnRequired: "Vänligen ange bind DN",
-      bindPasswordRequired: "Vänligen ange bind-lösenord",
-      baseDnRequired: "Vänligen ange base DN",
-      userFilterRequired: "Vänligen ange användarfilter",
-      userAttrRequired: "Vänligen ange användarattribut",
-      emailAttrRequired: "Vänligen ange e-postattribut",
-      displayNameAttrRequired: "Vänligen ange visningsnamnsattribut",
-      defaultRoleRequired: "Vänligen ange standardroll",
-      test: {
-        title: "Testa LDAP-anslutning",
-        username: "Användarnamn",
-        password: "Lösenord",
-        test: "Testa",
-        cancel: "Avbryt",
-        usernameRequired: "Vänligen ange användarnamn",
-        passwordRequired: "Vänligen ange lösenord"
-      },
-      tlsDivider: "TLS-konfiguration",
-      startTls: "Aktivera TLS",
-      insecure: "Kontrollera inte certifikat",
-      caCert: "CA-certifikat",
-      clientCert: "Klientcertifikat",
-      clientCertPlaceholder: "Vänligen ange klientcertifikatet",
-      clientKey: "Klientnyckel",
-      clientKeyPlaceholder: "Ändra inte",
-      importTitle: "Importera LDAP-användare",
-      checkAll: "Markera alla",
-      timeout: "Timeout",
-      timeoutTooltip: "LDAP-anslutningstid (sekunder)"
-    },
-    smtp: {
-      enabled: "Aktivera SMTP",
-      host: "SMTP-värd",
-      port: "SMTP-port",
-      username: "SMTP-användarnamn",
-      password: "SMTP-lösenord",
-      encryption: "Kryptering",
-      encryptionNone: "Ingen",
-      encryptionRequired: "Kryptering krävs.",
-      encryptionSslTls: "SSL/TLS",
-      encryptionStartTls: "STARTTLS",
-      fromAddress: "Från-adress",
-      fromAddressInvalid: "Ogiltig e-postadress.",
-      fromAddressRequired: "Från-adress krävs.",
-      fromName: "Från-namn",
-      fromNamePlaceholder: "Systemmeddelanden",
-      hostRequired: "SMTP-värd krävs.",
-      portRequired: "SMTP-port krävs.",
-      sendTestEmail: "Skicka test-e-post",
-      testConnection: "Testa anslutning",
-      testConnectionTitle: "Testa SMTP-anslutning",
-      testEmailRecipient: "Mottagarens e-postadress",
-      testEmailRecipientInvalid: "Ogiltig e-postadress.",
-      testEmailRecipientRequired: "Mottagarens e-postadress krävs.",
-      usernameRequired: "Användarnamn krävs.",
-      templateDivider: "Mallinställningar",
-      resetPasswordTemplate: "Mall för återställning av lösenord",
-      userLockedTemplate: "Mall för låst användare",
-      mfaCodeTemplate: "Mall för MFA-kod"
-    },
-    toolsets: {
-      name: "Namn",
-      type: "Typ",
-      status: "Status",
-      description: "Beskrivning",
-      configuration: "Konfiguration",
-      create: "Skapa verktygsset",
-      edit: "Redigera verktygsset",
-      test: "Testa anslutning",
-      viewConfig: "Visa konfiguration",
-      searchPlaceholder: "Sök verktygsset...",
-      namePlaceholder: "Ange verktygsset-namn",
-      descriptionPlaceholder: "Ange verktygsset-beskrivning",
-      typePlaceholder: "Välj typ",
-      nameRequired: "Vänligen ange verktygsset-namn",
-      typeRequired: "Vänligen välj typ",
-      fieldRequired: "Vänligen ange {{field}}",
-      invalidJSON: "Ogiltigt JSON-format",
-      fetchFailed: "Misslyckades med att hämta verktygsset",
-      fetchTypeDefinitionsFailed: "Misslyckades med att hämta verktygsset-typdefinitioner",
-      createSuccess: "Verktygsset skapat framgångsrikt",
-      createFailed: "Misslyckades med att skapa verktygsset",
-      updateSuccess: "Verktygsset uppdaterat framgångsrikt",
-      updateFailed: "Misslyckades med att uppdatera verktygsset",
-      deleteSuccess: "Verktygsset borttaget framgångsrikt",
-      deleteFailed: "Misslyckades med att ta bort verktygsset",
-      testSuccess: "Verktygsset-anslutningstest lyckades",
-      testFailed: "Verktygsset-anslutningstest misslyckades",
-      deleteConfirm: "Är du säker på att du vill ta bort detta verktygsset?",
-      mcp: {
-        protocol: "Protokoll",
-        endpoint: "Slutpunkt",
-        username: "Användarnamn",
-        password: "Lösenord",
-        token: "Token",
-        args: "Argument",
-        protocolPlaceholder: "Välj protokoll",
-        endpointPlaceholder: "Ange slutpunkten",
-        usernamePlaceholder: "Ange användarnamnet",
-        passwordPlaceholder: "Ange lösenordet",
-        tokenPlaceholder: "Ange token",
-        argsPlaceholder: 'Ange argument, format: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: 'Argument, format: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "Protokoll, stödjer HTTP och WebSocket",
-        endpointTooltip: "MCP-serverns slutpunkt",
-        usernameTooltip: "MCP-serverns användarnamn",
-        passwordTooltip: "MCP-serverns lösenord",
-        tokenTooltip: "MCP-serverns token"
-      }
-    }
-  },
-  audit: {
-    title: "Granskningsloggar",
-    filter: {
-      username: "Användarnamn",
-      action: "Åtgärd",
-      status: "Status",
-      dateRange: "Datumintervall",
-      search: "Sök",
-      reset: "Återställ"
-    },
-    columns: {
-      username: "Användarnamn"
+    user: {
+      autoDisable: "Inaktivera inaktiva användare automatiskt"
     }
   },
   menu: {
-    system: "Systemhantering",
-    settings: "Systeminställningar",
-    audit: "Granskningsloggar"
+    authorization: {
+      users: "Användare",
+      roles: "Roll",
+      serviceAccounts: "Tjänstekonto",
+      authorization: "Auktoriseringshantering"
+    },
+    settings: "Inställningar",
+    dashboard: "Instrumentpanel",
+    system: {
+      settings: "Systeminställningar",
+      audit: "Granskningslogg",
+      system: "Systemhantering"
+    },
+    console: "Konsol"
+  },
+  breadcrumbs: {
+    "authorization.users": "Användare",
+    "authorization.roles": "Roll",
+    authorization: "Auktoriseringshantering",
+    settings: "Inställningar",
+    dashboard: "Instrumentpanel",
+    profile: "Profil",
+    system: "System",
+    "system.settings": "Systeminställningar",
+    "system.audit": "Granskningslogg",
+    "authorization.serviceAccounts": "Tjänstekonto"
+  },
+  error: {
+    notFound: "Tyvärr, sidan du besökte finns inte.",
+    forbidden: "Tyvärr, du är inte behörig att komma åt den här sidan.",
+    backHome: "Tillbaka till startsidan"
+  },
+  common: {
+    save: "Spara",
+    updateSuccess: "Uppdateringen lyckades",
+    updateFailed: "Uppdateringen misslyckades",
+    fetchFailed: "Det gick inte att hämta data",
+    operationFailed: "Operationen misslyckades",
+    done: "Klar",
+    verify: "Verifiera",
+    confirm: "Bekräfta",
+    cancel: "Avbryt"
   }
-}, q = {
-  common: p,
-  authorization: m,
-  system: g
-}, F = {
+}, L = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2627,7 +1886,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, U = {
+}, C = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -3102,7 +2361,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, I = {
+}, q = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -3513,7 +2772,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, M = {
+}, F = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3566,7 +2825,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerated: "标题生成成功",
     titleGenerationFailed: "生成标题失败"
   }
-}, N = {
+}, U = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3631,7 +2890,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, O = {
+}, I = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -4061,7 +3320,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, B = {
+}, M = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -4422,7 +3681,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, V = {
+}, N = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -4461,7 +3720,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Standard-KI-Modell konnte nicht festgelegt werden",
     deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?"
   }
-}, x = {
+}, O = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -4526,7 +3785,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, K = {
+}, V = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -4956,7 +4215,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, _ = {
+}, B = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -5317,7 +4576,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, j = {
+}, x = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -5356,7 +4615,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Error al establecer modelo de IA predeterminado",
     deleteConfirm: "¿Está seguro de que desea eliminar este modelo de IA?"
   }
-}, G = {
+}, K = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -5421,7 +4680,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, W = {
+}, _ = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -5851,7 +5110,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, H = {
+}, j = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -6212,7 +5471,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, J = {
+}, G = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -6251,7 +5510,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Échec de la définition du modèle IA par défaut",
     deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce modèle IA ?"
   }
-}, Z = {
+}, W = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -6316,7 +5575,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, Q = {
+}, H = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -6746,7 +6005,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, Y = {
+}, J = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -7107,7 +6366,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, $ = {
+}, Z = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -7145,6 +6404,862 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "تم تعيين النموذج الذكي الافتراضي بنجاح",
     setDefaultFailed: "فشل في تعيين النموذج الذكي الافتراضي",
     deleteConfirm: "هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟"
+  }
+}, Q = {
+  loading: "Laddar...",
+  success: "Operationen lyckades",
+  error: "Operationen misslyckades",
+  confirm: "Bekräfta",
+  cancel: "Avbryt",
+  save: "Spara",
+  edit: "Redigera",
+  delete: "Ta bort",
+  search: "Sök",
+  reset: "Återställ",
+  submit: "Skicka",
+  back: "Tillbaka",
+  backToList: "Tillbaka till listan",
+  actions: "Åtgärder",
+  totalItems: "Totalt {{total}} objekt",
+  refresh: "Uppdatera",
+  filter: "Filtrera",
+  viewDetail: "Visa detaljer",
+  none: "Ingen",
+  keyword: "Nyckelord",
+  create: "Skapa",
+  update: "Uppdatera",
+  yes: "Ja",
+  no: "Nej",
+  enable: "Aktivera",
+  disable: "Inaktivera",
+  enabled: "Aktiverad",
+  disabled: "Inaktiverad",
+  operation: "Operation",
+  status: "Status",
+  detail: "Detalj",
+  description: "Beskrivning",
+  name: "Namn",
+  type: "Typ",
+  more: "Mer",
+  home: "Hem",
+  profile: "Profil",
+  logout: "Logga ut",
+  expandAll: "Expandera alla",
+  collapseAll: "Fäll ihop alla",
+  close: "Stäng",
+  updateSuccess: "Uppdatering lyckades",
+  updateFailed: "Uppdatering misslyckades",
+  fetchFailed: "Det gick inte att hämta data",
+  operationFailed: "Operationen misslyckades",
+  done: "Klar",
+  verify: "Verifiera",
+  previous: "Föregående",
+  next: "Nästa",
+  enter: "Ange",
+  select: "Välj",
+  pagination: {
+    total: "{{start}}-{{end}} av {{total}} objekt"
+  },
+  language: {
+    default: "Standardspråk",
+    "en-US": "Engelska",
+    "sv-SE": "Svenska",
+    "ar-AE": "Arabiska",
+    "de-DE": "Tyska",
+    "es-ES": "Spanska",
+    "fr-FR": "Franska",
+    "zh-CN": "Kinesiska"
+  }
+}, Y = {
+  user: {
+    management: "Användarhantering",
+    create: "Skapa användare",
+    edit: "Redigera användare",
+    delete: "Ta bort användare",
+    username: "Användarnamn",
+    email: "E-post",
+    fullName: "Fullständigt namn",
+    mfaEnforced: "Tvinga MFA",
+    phone: "Telefon",
+    status: "Status",
+    role: "Roll",
+    lastLogin: "Senaste inloggning",
+    roles: "Roller",
+    mfa: "Tvåfaktorsautentisering",
+    viewDetail: "Visa detaljer",
+    resetPassword: "Återställ lösenord",
+    resetPasswordComingSoon: "Funktionen för återställning av lösenord kommer snart",
+    deleteConfirm: "Är du säker på att du vill ta bort den här användaren?",
+    loadError: "Det gick inte att ladda användarlistan",
+    deleteSuccess: "Användaren har tagits bort",
+    deleteError: "Det gick inte att ta bort användaren",
+    statusActive: "Aktiv",
+    statusDisabled: "Inaktiverad",
+    statusEnum: {
+      active: "Aktiv",
+      disabled: "Inaktiverad",
+      locked: "Låst",
+      password_expired: "Lösenordet har gått ut",
+      deleted: "Borttagen"
+    },
+    noRole: "Ingen roll",
+    mfaEnabled: "Aktiverad",
+    mfaDisabled: "Inaktiverad",
+    neverLogin: "Aldrig inloggad",
+    basicInfo: "Grundläggande information",
+    operationLogs: "Driftloggar",
+    auditLogs: "Granskningsloggar",
+    notFound: "Användaren hittades inte eller har tagits bort",
+    backToList: "Tillbaka till användarlistan",
+    detailLoadError: "Det gick inte att ladda användaruppgifterna",
+    noLogs: "Inga driftloggar tillgängliga",
+    createdAt: "Skapad den",
+    updatedAt: "Uppdaterad den",
+    emailRequired: "Vänligen ange e-post",
+    emailInvalid: "Vänligen ange en giltig e-postadress",
+    fullNameRequired: "Vänligen ange fullständigt namn",
+    statusRequired: "Vänligen välj status",
+    rolesRequired: "Vänligen välj minst en roll",
+    selectRoles: "Vänligen välj roller",
+    updateSuccess: "Användarinformationen har uppdaterats",
+    updateError: "Det gick inte att uppdatera användaren",
+    createTitle: "Skapa användare",
+    editTitle: "Redigera användare",
+    password: "Lösenord",
+    confirmPassword: "Bekräfta lösenord",
+    usernamePlaceholder: "Vänligen ange användarnamn",
+    emailPlaceholder: "Vänligen ange e-post",
+    fullNamePlaceholder: "Vänligen ange fullständigt namn",
+    statusPlaceholder: "Vänligen välj status",
+    passwordPlaceholder: "Vänligen ange lösenord",
+    confirmPasswordPlaceholder: "Vänligen bekräfta lösenord",
+    usernameRequired: "Vänligen ange användarnamn",
+    passwordRequired: "Vänligen ange lösenord",
+    passwordTooShort: "Lösenordet måste vara minst 8 tecken långt",
+    confirmPasswordRequired: "Vänligen bekräfta ditt lösenord",
+    passwordMismatch: "De två lösenorden matchar inte",
+    createSuccess: "Användaren har skapats",
+    createError: "Det gick inte att skapa användaren",
+    resetPasswordTitle: "Återställ lösenord",
+    resetPasswordConfirm: "Bekräfta återställning av lösenord",
+    resetPasswordSuccess: "Lösenordet har återställts",
+    resetPasswordSuccessSendByEmail: "Det nya lösenordet har skickats till användarens e-post: {{email}}",
+    resetPasswordSuccessContent: "Nytt lösenord: {{password}}",
+    resetPasswordError: "Återställning av lösenord misslyckades",
+    source: "Källa",
+    sourceLdap: "LDAP",
+    sourceOauth2: "OAuth2.0",
+    sourceLocal: "Lokal",
+    keywords: "Sök efter användarnamn, fullständigt namn eller e-post",
+    statusDeleted: "Borttagen",
+    oldPassword: "Nuvarande lösenord",
+    newPassword: "Nytt lösenord",
+    passwordChanged: "Lösenordet har ändrats",
+    passwordChangeFailed: {
+      normal: "Lösenordsändring misslyckades: {{error}}",
+      E40031: "Det nya lösenordet är detsamma som det nuvarande lösenordet",
+      E4041: "Användaren hittades inte",
+      E40032: "Gammalt lösenord är felaktigt",
+      E40033: "Ditt konto stöder inte lösenordsändring",
+      E40034: "Det gick inte att kontrollera lösenordskomplexiteten",
+      E40035: "Lösenordet uppfyller inte komplexitetskraven"
+    },
+    avatar: "Avatar",
+    fixUser: "Reparera användare",
+    fixUserBindLDAPUser: "Binda LDAP-användare",
+    fixUserConvertToLocal: "Konvertera till lokal användare",
+    fixUserTitle: "Reparera användare",
+    restore: "Återställ",
+    restoreConfirm: "Är du säker på att du vill återställa användaren {{username}}?",
+    unlock: "Lås upp",
+    unlockConfirm: "Är du säker på att du vill låsa upp användaren {{username}}?",
+    unlockTitle: "Lås upp användare",
+    unlockSuccess: "Användaren har låsts upp",
+    unlockError: "Det gick inte att låsa upp användaren: {{error}}",
+    ldapUserNotBound: "LDAP-användaren är inte bunden till en lokal användare, vänligen binda."
+  },
+  profile: {
+    title: "Profilcenter",
+    basic: "Grundläggande information",
+    password: "Ändra lösenord",
+    mfa: "Tvåfaktorsautentisering",
+    sessions: "Sessionshantering",
+    auditLogs: "Granskningsloggar"
+  },
+  mfa: {
+    title: "Tvåfaktorsautentisering",
+    enabled: "Tvåfaktorsautentisering är aktiverad",
+    enabledDescription: "Ditt konto är skyddat av tvåfaktorsautentisering",
+    disable: "Inaktivera tvåfaktorsautentisering",
+    startSetup: "Starta installationen",
+    totpStep1: "Starta",
+    totpStep1Description: "Förbered för att ställa in tvåfaktorsautentisering",
+    totpStep2: "Skanna",
+    totpStep2Description: "Skanna QR-koden med en autentiseringsapp",
+    totpStep3: "Slutför",
+    totpStep3Description: "Installationen av tvåfaktorsautentisering är klar",
+    emailStep1: "Starta",
+    emailStep1Description: "Förbered för att ställa in tvåfaktorsautentisering",
+    emailStep2: "Ta emot e-post",
+    emailStep2Description: "Kontrollera din e-post för verifieringskoden",
+    emailStep3: "Slutför",
+    emailStep3Description: "Installationen av tvåfaktorsautentisering är klar",
+    setupInfo: "Tvåfaktorsautentisering lägger till ett extra säkerhetslager till ditt konto",
+    scanQrCode: "Använd Google Authenticator eller en annan autentiseringsapp för att skanna QR-koden",
+    secretKey: "Hemlig nyckel",
+    enterCode: "Ange 6-siffrig verifieringskod",
+    enterVerificationCode: "Vänligen ange verifieringskod",
+    enableSuccess: "Tvåfaktorsautentisering har aktiverats",
+    disableSuccess: "Tvåfaktorsautentisering har inaktiverats",
+    verificationFailed: "Ogiltig verifieringskod",
+    setupSuccess: "Installationen lyckades",
+    setupSuccessDescription: "Tvåfaktorsautentisering har ställts in. Ditt konto är nu säkrare.",
+    confirmDisable: "Bekräfta inaktivering av tvåfaktorsautentisering",
+    disableWarning: "Efter att ha inaktiverat tvåfaktorsautentisering kommer din kontosäkerhet att minska. Är du säker på att du vill inaktivera den?",
+    totp: "TOTP",
+    email: "E-post",
+    totpTitle: "TOTP (Tidsbaserat engångslösenord)",
+    totpDescription: "MFA/TOTP är en autentiseringsmetod baserad på tidsstämplar, som genererar en 6-siffrig verifieringskod via Google Authenticator eller andra identitetsverifieringsverktyg för varje inloggning.",
+    emailTitle: "E-post (E-postbaserat engångslösenord)",
+    emailDescription: "MFA/E-post är en autentiseringsmetod baserad på e-post, som skickar en 6-siffrig verifieringskod till din e-post för varje inloggning."
+  },
+  session: {
+    title: "Sessionshantering",
+    device: "Enhet",
+    ipAddress: "IP-adress",
+    lastActive: "Senast aktiv",
+    status: "Status",
+    current: "Nuvarande",
+    active: "Aktiv",
+    terminate: "Logga ut",
+    terminateOthers: "Logga ut andra sessioner",
+    confirmTerminate: "Är du säker på att du vill avsluta den här sessionen?",
+    confirmTerminateAll: "Är du säker på att du vill avsluta alla andra sessioner?",
+    terminateSuccess: "Sessionen avslutades",
+    terminateFailed: "Det gick inte att avsluta sessionen",
+    terminateAllSuccess: "Alla andra sessioner avslutades",
+    terminateAllFailed: "Det gick inte att avsluta andra sessioner",
+    currentSession: "Nuvarande session",
+    noSessions: "Inga sessionsposter"
+  },
+  validation: {
+    emailRequired: "Vänligen ange din e-post",
+    emailInvalid: "Ogiltigt e-postformat",
+    fullNameRequired: "Vänligen ange ditt fullständiga namn",
+    oldPasswordRequired: "Vänligen ange ditt nuvarande lösenord",
+    newPasswordRequired: "Vänligen ange ett nytt lösenord",
+    confirmPasswordRequired: "Vänligen bekräfta ditt nya lösenord",
+    passwordMinLength: "Lösenordet måste vara minst 8 tecken långt",
+    passwordMismatch: "De två lösenorden matchar inte"
+  },
+  role: {
+    management: "Rollhantering",
+    create: "Skapa roll",
+    edit: "Redigera roll",
+    delete: "Ta bort roll",
+    name: "Rollnamn",
+    description: "Beskrivning",
+    permissions: "Behörigheter",
+    permissionCount: "Antal behörigheter",
+    viewDetail: "Visa detaljer",
+    deleteConfirm: "Är du säker på att du vill ta bort den här rollen?",
+    loadError: "Det gick inte att ladda rollistan",
+    deleteSuccess: "Rollen har tagits bort",
+    deleteError: "Det gick inte att ta bort rollen: {{error}}",
+    updateSuccess: "Rollen har uppdaterats",
+    updateError: "Det gick inte att uppdatera rollen",
+    createSuccess: "Rollen har skapats",
+    createError: "Det gick inte att skapa rollen",
+    nameRequired: "Vänligen ange rollnamn",
+    descriptionRequired: "Vänligen ange beskrivning",
+    permissionsRequired: "Vänligen välj minst en behörighet",
+    selectPermissions: "Vänligen välj behörigheter",
+    basicInfo: "Grundläggande information",
+    permissionDetails: "Behörighetsdetaljer",
+    notFound: "Rollen hittades inte eller har tagits bort",
+    backToList: "Tillbaka till rollistan",
+    detailLoadError: "Det gick inte att ladda rolldetaljer",
+    createdAt: "Skapad den",
+    updatedAt: "Uppdaterad den",
+    users: "Användare",
+    noUsers: "Inga användare med den här rollen",
+    searchPlaceholder: "Rollnamn/beskrivning",
+    namePlaceholder: "Vänligen ange rollnamn",
+    descriptionPlaceholder: "Vänligen ange rollbeskrivning",
+    createTitle: "Skapa roll",
+    editTitle: "Redigera roll",
+    saveSuccess: "Rollen {{action}}ades",
+    saveError: "Det gick inte att {{action}} rollen",
+    permissionRequired: "Vänligen välj minst en behörighet",
+    invalidJsonFormat: "Ogiltigt JSON-format",
+    permissionOrPolicyRequired: "Vänligen välj minst en behörighet eller policy",
+    policyDocument: "Policydokument"
+  },
+  permission: {
+    title: {
+      Audit_Log: "Granskningslogg",
+      Permission_Management: "Behörighetshantering",
+      Role_Management: "Rollhantering",
+      Security_Settings: "Säkerhetsinställningar",
+      Service_Management: "Tjänstehantering",
+      System_Management: "Systemhantering",
+      System_Settings: "Systeminställningar",
+      User_Management: "Användarhantering",
+      File_Management: "Filhantering",
+      Statistics: "Statistik",
+      Service_Account_Management: "Tjänstekontohantering",
+      "audit_log.view": "Visa granskningsloggar",
+      "authorization.permission.create": "Skapa behörigheter",
+      "authorization.permission.delete": "Ta bort behörigheter",
+      "authorization.permission.update": "Uppdatera behörigheter",
+      "authorization.permission.view": "Visa behörigheter",
+      "authorization.role.create": "Skapa roller",
+      "authorization.role.delete": "Ta bort roller",
+      "authorization.role.update": "Uppdatera roller",
+      "authorization.role.view": "Visa roller",
+      "authorization.user.create": "Skapa användare",
+      "authorization.user.delete": "Ta bort användare",
+      "authorization.user.update": "Uppdatera användare",
+      "authorization.user.view": "Visa användare",
+      "authorization.user.list": "Visa användarelista",
+      "authorization.user.view_audit_logs": "Visa användargranskningsloggar",
+      "authorization.user.assign-roles": "Tilldela roller till användare",
+      "system.security.update": "Uppdatera säkerhetsinställningar",
+      "system.security.view": "Visa säkerhetsinställningar",
+      "system.settings.update": "Uppdatera inställningar",
+      "system.settings.view": "Visa inställningar",
+      "system.view": "Visa systeminformation",
+      "system.audit_log.view": "Visa granskningsloggar",
+      "file.list": "Visa filer",
+      "authorization.service_account.list": "Visa tjänstekonton",
+      "authorization.service_account.create": "Skapa tjänstekonton",
+      "authorization.service_account.delete": "Ta bort tjänstekonton",
+      "authorization.service_account.update": "Uppdatera tjänstekonton",
+      "authorization.service_account.view": "Visa tjänstekonton",
+      "authorization.service_account.access_key.list": "Visa tjänstekonton åtkomstnycklar",
+      "authorization.service_account.access_key.create": "Skapa tjänstekonton åtkomstnycklar",
+      "authorization.service_account.access_key.delete": "Ta bort tjänstekonton åtkomstnycklar",
+      "authorization.service_account.access_key.update": "Uppdatera tjänstekonton åtkomstnycklar",
+      "authorization.service_account.access_key.view": "Visa tjänstekonton åtkomstnycklar",
+      "authorization.service_account.role.list": "Visa tjänstekonton roller",
+      "authorization.service_account.role.assign": "Tilldela roller till tjänstekonton",
+      "authorization.service_account.policy.view": "Visa tjänstekonton policy",
+      "authorization.service_account.policy.update": "Uppdatera tjänstekonton policy",
+      "statistics.view": "Visa statistik"
+    }
+  },
+  auditLog: {
+    title: "Granskningsloggar",
+    timestamp: "Tid",
+    action: "Åtgärd",
+    resource: "Resurs",
+    resourceId: "Resurs-ID",
+    ip: "IP-adress",
+    userAgent: "User Agent",
+    status: "Status",
+    details: "Detaljer",
+    search: "Sök",
+    searchPlaceholder: "Nyckelordssökning",
+    dateRange: "Datumintervall",
+    selectAction: "Välj åtgärdstyp",
+    selectStatus: "Välj status",
+    noUserSelected: "Ingen användare vald",
+    noLogs: "Inga loggposter",
+    username: "Användarnamn",
+    user_agent: "User Agent"
+  },
+  actions: {
+    login: "Logga in",
+    logout: "Logga ut",
+    passwordReset: "Återställning av lösenord",
+    mfaChange: "Ändring av MFA-inställning",
+    create: "Skapa",
+    update: "Uppdatera",
+    delete: "Ta bort"
+  },
+  statuses: {
+    success: "Lyckades",
+    failed: "Misslyckades"
+  },
+  serviceAccount: {
+    name: "Tjänstekonto",
+    description: "Beskrivning av tjänstekonto",
+    createdAt: "Skapad den",
+    updatedAt: "Uppdaterad den",
+    create: "Skapa tjänstekonto",
+    edit: "Redigera tjänstekonto",
+    delete: "Ta bort tjänstekonto",
+    viewDetail: "Visa detaljer för tjänstekonto",
+    deleteConfirm: "Är du säker på att du vill ta bort det här tjänstekontot?",
+    loadError: "Det gick inte att ladda listan över tjänstekonton",
+    deleteSuccess: "Tjänstekontot har tagits bort",
+    deleteError: "Det gick inte att ta bort tjänstekontot",
+    createSuccess: "Tjänstekontot har skapats",
+    createError: "Det gick inte att skapa tjänstekontot",
+    updateSuccess: "Tjänstekontot har uppdaterats",
+    updateError: "Det gick inte att uppdatera tjänstekontot",
+    detailLoadError: "Det gick inte att ladda detaljer för tjänstekontot",
+    notFound: "Tjänstekontot hittades inte eller har tagits bort",
+    backToList: "Tillbaka till listan över tjänstekonton",
+    basicInfo: "Grundläggande information",
+    details: "Detaljer för tjänstekonto",
+    nameRequired: "Vänligen ange namn på tjänstekonto",
+    descriptionRequired: "Vänligen ange beskrivning av tjänstekonto",
+    list: "Lista över tjänstekonton",
+    namePlaceholder: "Vänligen ange namn på tjänstekonto",
+    descriptionPlaceholder: "Vänligen ange beskrivning av tjänstekonto",
+    saveError: "Det gick inte att spara tjänstekontot",
+    searchPlaceholder: "Namn/beskrivning av tjänstekonto",
+    status: "Status",
+    active: "Aktiv",
+    disabled: "Inaktiverad",
+    hasPolicy: "Har policy",
+    noPolicy: "Ingen policy",
+    neverAccessed: "Aldrig åtkommen",
+    statusActive: "Aktiv",
+    statusDisabled: "Inaktiverad",
+    statusUpdating: "Uppdaterar",
+    statusCreating: "Skapar",
+    lastAccess: "Senaste åtkomst",
+    noDescription: "Ingen beskrivning",
+    authorization: "Auktoriseringshantering",
+    roles: "Roller",
+    availableRoles: "Tillgängliga roller",
+    assignRoles: "Tilldela roller",
+    noRoles: "Inga tilldelade roller",
+    rolesRequired: "Vänligen välj minst en roll",
+    selectRoles: "Vänligen välj roller",
+    loadRolesError: "Det gick inte att ladda rollistan",
+    assignRolesSuccess: "Rollen har tilldelats",
+    assignRolesError: "Det gick inte att tilldela roller",
+    policy: "Policyhantering",
+    policyStatements: "Policyuttalanden",
+    addStatement: "Lägg till policyuttalande",
+    editStatement: "Redigera policyuttalande",
+    deleteStatement: "Ta bort policyuttalande",
+    effect: "Effekt",
+    allow: "Tillåt",
+    deny: "Neka",
+    actions: "Åtgärder",
+    resources: "Resurser",
+    conditions: "Villkor",
+    addCondition: "Lägg till villkor",
+    removeCondition: "Ta bort villkor",
+    savePolicy: "Spara policy",
+    savePolicySuccess: "Policyn har sparats",
+    savePolicyError: "Det gick inte att spara policyn",
+    deleteStatementConfirm: "Är du säker på att du vill ta bort det här policyuttalandet?",
+    actionsRequired: "Vänligen välj minst en åtgärd",
+    resourcesRequired: "Vänligen ange minst en resurs",
+    wildcard: "Alla",
+    insertTemplate: "Infoga mall",
+    allowAll: "Tillåt alla",
+    denyAll: "Neka alla",
+    allowWithAction: "Tillåt med åtgärd",
+    denyWithCondition: "Neka med villkor",
+    allowWithUri: "Tillåt med URI",
+    policyUpdateSuccess: "Policyn har uppdaterats",
+    policyUpdateError: "Det gick inte att uppdatera policyn",
+    policyDocument: "Policydokument",
+    policyInvalidJson: "Felaktigt format för policydokument",
+    accessKeys: "Åtkomstnycklar",
+    createAccessKey: "Skapa åtkomstnyckel",
+    accessKey: "Åtkomstnyckel",
+    secretKey: "Hemlig nyckel",
+    keyDescription: "Beskrivning",
+    keyName: "Nyckelnamn",
+    keyStatus: "Status",
+    keyExpires: "Går ut den",
+    keyLastUsed: "Senast använd",
+    keyActive: "Aktiv",
+    keyDisabled: "Inaktiverad",
+    keyNeverUsed: "Aldrig använd",
+    createKeySuccess: "Nyckeln har skapats",
+    createKeyError: "Det gick inte att skapa nyckeln",
+    updateKeySuccess: "Nyckeln har uppdaterats",
+    updateKeyError: "Det gick inte att uppdatera nyckeln",
+    deleteKeySuccess: "Nyckeln har tagits bort",
+    deleteKeyError: "Det gick inte att ta bort nyckeln",
+    deleteKeyConfirm: "Är du säker på att du vill ta bort den här nyckeln?",
+    keyNameRequired: "Vänligen ange nyckelnamn",
+    keyNamePlaceholder: "Vänligen ange nyckelnamn",
+    keyDescriptionRequired: "Vänligen ange nyckelbeskrivning",
+    keyDescriptionPlaceholder: "Vänligen ange nyckelbeskrivning",
+    copyKeySuccess: "Nyckeln har kopierats till urklipp",
+    secretNoticeTitle: "Förvara den hemliga nyckeln säkert",
+    secretNoticeMessage: "Detta är det enda tillfället att visa den hemliga nyckeln, kopiera och spara den omedelbart.",
+    updateKey: "Uppdatera nyckel",
+    loadKeysError: "Det gick inte att ladda nyckellistan",
+    neverExpires: "Går aldrig ut",
+    selectExpireDate: "Välj utgångsdatum",
+    copyToClipboard: "Kopiera till urklipp",
+    tabs: {
+      basic: "Grundläggande information",
+      roles: "Rollhantering",
+      accessKeys: "Hantering av åtkomstnycklar",
+      policy: "Policyhantering"
+    }
+  }
+}, $ = {
+  title: "Systemhantering",
+  settings: {
+    title: "Systeminställningar",
+    tabs: {
+      security: "Säkerhetsinställningar",
+      oauth: "OAuth2.0-autentisering",
+      ldap: "LDAP-autentisering",
+      smtp: "SMTP-inställningar",
+      base: "Grundinställningar",
+      toolSets: "Verktygssättinställningar",
+      aiModels: "AI-modellinställningar"
+    },
+    days: "dagar",
+    minutes: "minuter",
+    fetchFailed: "Det gick inte att hämta systeminställningar",
+    updateSuccess: "Systeminställningarna har uppdaterats",
+    updateFailed: "Det gick inte att uppdatera systeminställningarna",
+    base: {
+      name: "Namn",
+      logo: "Logotyp",
+      homePage: "Hem",
+      disableLocalUserLogin: "Inaktivera lokal användare",
+      disableLocalUserLoginTooltip: "Inaktivera lokal användare, endast gällande när andra autentiseringsmetoder är aktiverade"
+    },
+    security: {
+      mfa: {
+        label: "Tvinga multifaktorautentisering (MFA)",
+        tooltip: "När detta är aktiverat måste alla användare ställa in och använda multifaktorautentisering för att logga in"
+      },
+      passwordComplexity: {
+        label: "Lösenordskomplexitet",
+        tooltip: "Ange komplexitetskraven för användarlösenord",
+        options: {
+          low: "Osäkert: Kan vara vilka tecken som helst",
+          medium: "Medium: Måste innehålla minst två typer av versaler, gemener och siffror",
+          high: "Säkert: Måste innehålla versaler, gemener och siffror",
+          veryHigh: "Mycket säkert: Måste innehålla versaler, gemener, siffror och specialtecken"
+        }
+      },
+      passwordMinLength: {
+        label: "Minsta lösenordslängd",
+        tooltip: "Ange minimilängdskravet för lösenord"
+      },
+      passwordExpiry: {
+        label: "Lösenordets giltighetstid",
+        tooltip: "Ange giltighetstiden för användarlösenord, 0 betyder att det aldrig går ut"
+      },
+      loginFailureLock: {
+        label: "Automatisk kontolåsning efter inloggningsfel",
+        tooltip: "När detta är aktiverat låses konton tillfälligt efter upprepade inloggningsfel"
+      },
+      loginFailureAttempts: {
+        label: "Antal inloggningsförsök",
+        tooltip: "Ange antalet misslyckade inloggningsförsök innan ett konto låses"
+      },
+      loginFailureLockoutMinutes: {
+        label: "Inloggningsfel lockout (minuter)",
+        tooltip: "Ange antalet minuter ett konto ska låsas efter ett angivet antal misslyckade inloggningsförsök"
+      },
+      historyPasswordCheck: {
+        label: "Kontrollpolicy för lösenordshistorik",
+        tooltip: "När detta är aktiverat kan användare inte återanvända nyligen använda lösenord"
+      },
+      historyPasswordCount: {
+        label: "Antal lösenord i historiken",
+        tooltip: "Ange antalet senaste lösenord att kontrollera"
+      },
+      inactiveAccountLock: {
+        label: "Låsning av inaktivt konto",
+        tooltip: "Ange antalet dagar efter vilka inaktiva konton låses, 0 betyder ingen låsning"
+      },
+      sessionTimeout: {
+        label: "Sessionstimeout",
+        tooltip: "Ange den automatiska timeoutperioden för användarsessioner"
+      },
+      sessionIdleTimeout: {
+        label: "Sessionstid utan aktivitet",
+        tooltip: "Ange den automatiska timeoutperioden för användarsessioner efter inaktivitet"
+      }
+    },
+    oauth: {
+      testConnection: {
+        button: "Testa anslutning",
+        failed: "Testa anslutning misslyckades: {{error}}",
+        success: "Testa anslutning lyckades",
+        callbackFailed: "Testa anslutning misslyckades",
+        missingRequiredParameters: "Vänligen ange de obligatoriska parametrarna",
+        responseUserInfoIsNull: "Användarinformationen är null",
+        responseUserIsNull: "Användaren är null",
+        oauthUserInfo: "OAuth-användarinformation",
+        loginUserInfo: "Inloggningsanvändarinformation"
+      },
+      enabled: {
+        label: "Aktivera OAuth2.0-autentisering",
+        tooltip: "När detta är aktiverat kan användare logga in med tredjeparts OAuth-tjänster"
+      },
+      provider: {
+        label: "OAuth-leverantör",
+        tooltip: "Välj OAuth2.0-autentiseringstjänstleverantör",
+        options: {
+          github: "GitHub",
+          google: "Google",
+          dingtalk: "DingTalk",
+          wechat: "WeChat",
+          autoDiscover: "Auto Discover",
+          custom: "Anpassad"
+        },
+        required: "Vänligen välj en OAuth-leverantör"
+      },
+      clientId: {
+        label: "Klient-ID",
+        tooltip: "Klient-ID för OAuth-applikationen",
+        required: "Vänligen ange klient-ID"
+      },
+      clientSecret: {
+        label: "Klienthemlighet",
+        tooltip: "Klienthemlighet för OAuth-applikationen",
+        required: "Vänligen ange klienthemligheten",
+        unchanged: "Lämna oförändrad"
+      },
+      wellknownEndpoint: {
+        label: "Wellknown-slutpunkt",
+        tooltip: "Wellknown-slutpunkts-URL för OAuth-tjänsten",
+        required: "Vänligen ange wellknown-slutpunkts-URL",
+        invalidUrl: "Vänligen ange en giltig URL"
+      },
+      authEndpoint: {
+        label: "Auktoriseringsslutpunkt",
+        tooltip: "Auktoriseringsslutpunkts-URL för OAuth-tjänsten",
+        required: "Vänligen ange auktoriseringsslutpunkts-URL",
+        invalidUrl: "Vänligen ange en giltig URL"
+      },
+      tokenEndpoint: {
+        label: "Tokenslutpunkt",
+        tooltip: "Tokenslutpunkts-URL för OAuth-tjänsten",
+        required: "Vänligen ange tokenslutpunkts-URL",
+        invalidUrl: "Vänligen ange en giltig URL"
+      },
+      userInfoEndpoint: {
+        label: "Användarinfo-slutpunkt",
+        tooltip: "Användarinformationsslutpunkts-URL för OAuth-tjänsten",
+        required: "Vänligen ange användarinformationsslutpunkts-URL",
+        invalidUrl: "Vänligen ange en giltig URL"
+      },
+      scope: {
+        label: "Omfattning",
+        tooltip: "Auktoriseringsomfattning för OAuth-förfrågningar, flera värden åtskilda med mellanslag",
+        required: "Vänligen ange auktoriseringsomfattningen"
+      },
+      redirectUri: {
+        label: "Omdirigerings-URI",
+        tooltip: "Omdirigerings-URI efter att OAuth2.0-autentisering har slutförts",
+        required: "Vänligen ange omdirigerings-URI",
+        invalidUrl: "Vänligen ange en giltig URL"
+      },
+      autoCreateUser: {
+        label: "Skapa användare automatiskt",
+        tooltip: "När detta är aktiverat skapar systemet automatiskt konton för användare som loggar in via OAuth för första gången"
+      },
+      defaultRole: {
+        label: "Standardroll",
+        tooltip: "Standardrollen som tilldelas användare som registrerats via OAuth",
+        required: "Vänligen ange en standardroll när automatisk användarskapande är aktiverat"
+      },
+      iconUrl: {
+        label: "Ikon-URL",
+        tooltip: "Ikon-URL:en för OAuth-leverantören som visas på inloggningssidan",
+        required: "Vänligen ange ikon-URL",
+        invalidUrl: "Vänligen ange en giltig URL"
+      },
+      displayName: {
+        label: "Visningsnamn",
+        tooltip: "Visningsnamnet för OAuth-leverantören som visas på inloggningssidan",
+        required: "Vänligen ange visningsnamnet"
+      },
+      mfaEnabled: {
+        label: "Aktivera MFA",
+        tooltip: "Aktivera MFA för OAuth-inloggning (endast gällande när MFA är aktiverat av användaren)"
+      },
+      fieldMapping: {
+        title: "Fältmappning",
+        presetDescription: 'Använder för närvarande förinställd fältmappningskonfiguration. För att anpassa, välj "Anpassad" leverantör',
+        autoDetectHint: "Fältmappning är valfritt. Om det inte anges kommer systemet automatiskt att upptäcka lämpliga fält",
+        emailField: {
+          label: "E-postfält",
+          tooltip: "Fältnamn för e-post i OAuth-användarinformation",
+          required: "Vänligen ange e-postfältets namn"
+        },
+        usernameField: {
+          label: "Användarnamnsfält",
+          tooltip: "Fältnamn för användarnamn i OAuth-användarinformation",
+          required: "Vänligen ange användarnamnsfältets namn"
+        },
+        fullNameField: {
+          label: "Fullständigt namnfält",
+          tooltip: "Fältnamn för fullständigt namn i OAuth-användarinformation"
+        },
+        avatarField: {
+          label: "Avatarfält",
+          tooltip: "Fältnamn för avatar-URL i OAuth-användarinformation"
+        },
+        roleField: {
+          label: "Rollfält",
+          tooltip: "Fältnamn för roll i OAuth-användarinformation (om leverantören returnerar rollinformation)"
+        }
+      }
+    },
+    ldap: {
+      enabled: "Aktivera LDAP-autentisering",
+      serverUrl: "LDAP-server-URL",
+      bindDn: "Bind DN",
+      bindPassword: "Bind-lösenord",
+      baseDn: "Base DN",
+      userFilter: "Användarfilter",
+      userAttr: "Användarattribut",
+      emailAttr: "E-postattribut",
+      displayNameAttr: "Visningsnamnsattribut",
+      autoCreateUser: "Skapa användare automatiskt",
+      defaultRole: "Standardroll",
+      importUsers: "Importera LDAP-användare",
+      testConnection: "Testa anslutning",
+      import: "Importera användare",
+      save: "Spara inställningar",
+      loadError: "Det gick inte att ladda LDAP-inställningar: {{error}}",
+      saveSuccess: "LDAP-inställningarna har uppdaterats",
+      saveError: "Det gick inte att uppdatera LDAP-inställningarna",
+      testError: "Det gick inte att testa LDAP-anslutningen: {{error}}",
+      importSuccess: "LDAP-användare har importerats",
+      importError: "Det gick inte att importera LDAP-användare",
+      serverUrlRequired: "Vänligen ange LDAP-server-URL",
+      bindDnRequired: "Vänligen ange bind DN",
+      bindPasswordRequired: "Vänligen ange bind-lösenord",
+      baseDnRequired: "Vänligen ange base DN",
+      userFilterRequired: "Vänligen ange användarfilter",
+      userAttrRequired: "Vänligen ange användarattribut",
+      emailAttrRequired: "Vänligen ange e-postattribut",
+      displayNameAttrRequired: "Vänligen ange visningsnamnsattribut",
+      defaultRoleRequired: "Vänligen ange standardroll",
+      test: {
+        title: "Testa LDAP-anslutning",
+        username: "Användarnamn",
+        password: "Lösenord",
+        test: "Testa",
+        cancel: "Avbryt",
+        usernameRequired: "Vänligen ange användarnamn",
+        passwordRequired: "Vänligen ange lösenord"
+      },
+      tlsDivider: "TLS-konfiguration",
+      startTls: "Aktivera TLS",
+      insecure: "Kontrollera inte certifikat",
+      caCert: "CA-certifikat",
+      clientCert: "Klientcertifikat",
+      clientCertPlaceholder: "Vänligen ange klientcertifikatet",
+      clientKey: "Klientnyckel",
+      clientKeyPlaceholder: "Ändra inte",
+      importTitle: "Importera LDAP-användare",
+      checkAll: "Markera alla",
+      timeout: "Timeout",
+      timeoutTooltip: "LDAP-anslutningstid (sekunder)"
+    },
+    smtp: {
+      enabled: "Aktivera SMTP",
+      host: "SMTP-värd",
+      port: "SMTP-port",
+      username: "SMTP-användarnamn",
+      password: "SMTP-lösenord",
+      encryption: "Kryptering",
+      encryptionNone: "Ingen",
+      encryptionRequired: "Kryptering krävs.",
+      encryptionSslTls: "SSL/TLS",
+      encryptionStartTls: "STARTTLS",
+      fromAddress: "Från-adress",
+      fromAddressInvalid: "Ogiltig e-postadress.",
+      fromAddressRequired: "Från-adress krävs.",
+      fromName: "Från-namn",
+      fromNamePlaceholder: "Systemmeddelanden",
+      hostRequired: "SMTP-värd krävs.",
+      portRequired: "SMTP-port krävs.",
+      sendTestEmail: "Skicka test-e-post",
+      testConnection: "Testa anslutning",
+      testConnectionTitle: "Testa SMTP-anslutning",
+      testEmailRecipient: "Mottagarens e-postadress",
+      testEmailRecipientInvalid: "Ogiltig e-postadress.",
+      testEmailRecipientRequired: "Mottagarens e-postadress krävs.",
+      usernameRequired: "Användarnamn krävs.",
+      templateDivider: "Mallinställningar",
+      resetPasswordTemplate: "Mall för återställning av lösenord",
+      userLockedTemplate: "Mall för låst användare",
+      mfaCodeTemplate: "Mall för MFA-kod"
+    },
+    toolsets: {
+      name: "Namn",
+      type: "Typ",
+      status: "Status",
+      description: "Beskrivning",
+      configuration: "Konfiguration",
+      create: "Skapa verktygsset",
+      edit: "Redigera verktygsset",
+      test: "Testa anslutning",
+      viewConfig: "Visa konfiguration",
+      searchPlaceholder: "Sök verktygsset...",
+      namePlaceholder: "Ange verktygsset-namn",
+      descriptionPlaceholder: "Ange verktygsset-beskrivning",
+      typePlaceholder: "Välj typ",
+      nameRequired: "Vänligen ange verktygsset-namn",
+      typeRequired: "Vänligen välj typ",
+      fieldRequired: "Vänligen ange {{field}}",
+      invalidJSON: "Ogiltigt JSON-format",
+      fetchFailed: "Misslyckades med att hämta verktygsset",
+      fetchTypeDefinitionsFailed: "Misslyckades med att hämta verktygsset-typdefinitioner",
+      createSuccess: "Verktygsset skapat framgångsrikt",
+      createFailed: "Misslyckades med att skapa verktygsset",
+      updateSuccess: "Verktygsset uppdaterat framgångsrikt",
+      updateFailed: "Misslyckades med att uppdatera verktygsset",
+      deleteSuccess: "Verktygsset borttaget framgångsrikt",
+      deleteFailed: "Misslyckades med att ta bort verktygsset",
+      testSuccess: "Verktygsset-anslutningstest lyckades",
+      testFailed: "Verktygsset-anslutningstest misslyckades",
+      deleteConfirm: "Är du säker på att du vill ta bort detta verktygsset?",
+      mcp: {
+        protocol: "Protokoll",
+        endpoint: "Slutpunkt",
+        username: "Användarnamn",
+        password: "Lösenord",
+        token: "Token",
+        args: "Argument",
+        protocolPlaceholder: "Välj protokoll",
+        endpointPlaceholder: "Ange slutpunkten",
+        usernamePlaceholder: "Ange användarnamnet",
+        passwordPlaceholder: "Ange lösenordet",
+        tokenPlaceholder: "Ange token",
+        argsPlaceholder: 'Ange argument, format: {"headers": {"Content-Type": "application/json"}}',
+        argsTooltip: 'Argument, format: {"headers": {"Content-Type": "application/json"}}',
+        protocolTooltip: "Protokoll, stödjer HTTP och WebSocket",
+        endpointTooltip: "MCP-serverns slutpunkt",
+        usernameTooltip: "MCP-serverns användarnamn",
+        passwordTooltip: "MCP-serverns lösenord",
+        tokenTooltip: "MCP-serverns token"
+      }
+    }
+  },
+  audit: {
+    title: "Granskningsloggar",
+    filter: {
+      username: "Användarnamn",
+      action: "Åtgärd",
+      status: "Status",
+      dateRange: "Datumintervall",
+      search: "Sök",
+      reset: "Återställ"
+    },
+    columns: {
+      username: "Användarnamn"
+    }
+  },
+  menu: {
+    system: "Systemhantering",
+    settings: "Systeminställningar",
+    audit: "Granskningsloggar"
   }
 }, X = {
   models: {
@@ -7186,57 +7301,57 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     deleteConfirm: "Är du säker på att du vill ta bort denna AI-modell?"
   }
 };
-h.use(v).use(f).init({
+m.use(g).use(p).init({
   ns: ["common", "authorization", "system", "ai"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: P,
-      common: F,
-      authorization: U,
-      system: I,
-      ai: M
+      translation: A,
+      common: L,
+      authorization: C,
+      system: q,
+      ai: F
     },
     "en-US": {
-      translation: k,
-      common: w,
-      authorization: R,
-      system: D,
-      ai: z
+      translation: S,
+      common: y,
+      authorization: P,
+      system: k,
+      ai: w
     },
     "de-DE": {
-      translation: E,
-      common: N,
-      authorization: O,
-      system: B,
-      ai: V
+      translation: R,
+      common: U,
+      authorization: I,
+      system: M,
+      ai: N
     },
     "es-ES": {
-      translation: T,
-      common: x,
-      authorization: K,
-      system: _,
-      ai: j
+      translation: D,
+      common: O,
+      authorization: V,
+      system: B,
+      ai: x
     },
     "fr-FR": {
-      translation: L,
-      common: G,
-      authorization: W,
-      system: H,
-      ai: J
+      translation: E,
+      common: K,
+      authorization: _,
+      system: j,
+      ai: G
     },
     "ar-AE": {
-      translation: C,
-      common: Z,
-      authorization: Q,
-      system: Y,
-      ai: $
+      translation: z,
+      common: W,
+      authorization: H,
+      system: J,
+      ai: Z
     },
     "sv-SE": {
-      translation: q,
-      common: p,
-      authorization: m,
-      system: g,
+      translation: T,
+      common: Q,
+      authorization: Y,
+      system: $,
       ai: X
     }
   },

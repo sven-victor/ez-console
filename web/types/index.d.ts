@@ -1,4 +1,4 @@
-import { AvatarProps } from 'antd';
+import { AvatarProps as AvatarProps_2 } from 'antd';
 import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
 import { ButtonProps } from 'antd';
@@ -14,6 +14,21 @@ import { TabsProps } from 'antd';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 
+/**
+ * Copyright 2025 Sven Victor
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 export declare type AccessType = "public" | "private" | "owner";
 
 declare interface Action extends ButtonProps {
@@ -557,11 +572,14 @@ declare interface AuthContextType {
     oauthLogin: (data: API.handleCallbackParams) => Promise<API.User | void>;
     logout: () => void;
     updateUser: (user: API.User) => void;
+    error?: Error;
 }
 
-export declare const Avatar: ({ src, ...props }: AvatarProps) => JSX_2.Element;
+export declare const Avatar: ({ src, fallback, ...props }: AvatarProps) => JSX_2.Element;
 
-export { AvatarProps }
+export declare interface AvatarProps extends AvatarProps_2 {
+    fallback?: default_2.ReactNode;
+}
 
 export declare const AvatarUpload: ({ value, onChange, shape, ...props }: AvatarUploadProps) => JSX_2.Element;
 
@@ -888,6 +906,21 @@ export declare interface getCurrentUserLogsParams {
     page_size?: number;
 }
 
+/**
+ * Copyright 2025 Sven Victor
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 export declare const getIconByName: (name: string) => ComponentType<    {}>;
 
 export declare interface getLdapUsersParams {
@@ -1036,6 +1069,21 @@ export declare interface IRouteItem {
 
 export declare const LabelCreater: React.FC<LabelCreaterProps>;
 
+/**
+ * Copyright 2025 Sven Victor
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 export declare interface LabelCreaterProps {
     onChange: (name: string, value: string) => void;
 }
@@ -1909,6 +1957,7 @@ declare interface SiteContextType {
     currentOrgId: string | null;
     setCurrentOrgId: (orgId: string) => void;
     clearCurrentOrgId: () => void;
+    error?: Error;
 }
 
 export declare interface SMTPSettings {
@@ -2291,6 +2340,21 @@ export declare interface UpdateUserStatusRequest {
 
 export declare const useAI: () => AIContextType;
 
+/**
+ * Copyright 2025 Sven Victor
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 export declare const useAuth: () => AuthContextType;
 
 /**

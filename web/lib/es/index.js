@@ -276,19 +276,34 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
     a ? document.title = `${D} | ${a}` : document.title = D;
   }, [F, g.pathname]);
   const ce = [
-    /* @__PURE__ */ e.jsx(q, { hidden: S.length <= 1, menu: {
-      items: S.map((a) => ({
-        key: a.path,
-        style: { paddingRight: "20px" },
-        label: /* @__PURE__ */ e.jsx("a", { href: a.path, children: f(`menu.${a.name}`, { defaultValue: a.name }) })
-      }))
-    }, children: /* @__PURE__ */ e.jsx(He, {}) }),
+    /* @__PURE__ */ e.jsx(
+      q,
+      {
+        hidden: S.length <= 1,
+        menu: {
+          items: S.map((a) => ({
+            key: a.path,
+            style: { paddingRight: "20px" },
+            label: /* @__PURE__ */ e.jsx("a", { href: a.path, children: f(`menu.${a.name}`, { defaultValue: a.name }) })
+          }))
+        },
+        children: /* @__PURE__ */ e.jsx(He, {})
+      },
+      "navigation-dropdown"
+    ),
     ...n != null && n.enable_multi_org ? [/* @__PURE__ */ e.jsx($e, {}, "org-switcher")] : [],
-    /* @__PURE__ */ e.jsxs(q, { menu: { items: oe }, children: [
-      i != null && i.avatar ? /* @__PURE__ */ e.jsx(Q, { src: i.avatar }) : /* @__PURE__ */ e.jsx(Q, { icon: /* @__PURE__ */ e.jsx(P, {}) }),
-      /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em", marginLeft: "5px" }, children: (i == null ? void 0 : i.full_name) || (i == null ? void 0 : i.username) })
-    ] }),
-    /* @__PURE__ */ e.jsx(Ie, { transformLangConfig: j })
+    /* @__PURE__ */ e.jsxs(
+      q,
+      {
+        menu: { items: oe },
+        children: [
+          i != null && i.avatar ? /* @__PURE__ */ e.jsx(Q, { src: i.avatar }) : /* @__PURE__ */ e.jsx(Q, { icon: /* @__PURE__ */ e.jsx(P, {}) }),
+          /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em", marginLeft: "5px" }, children: (i == null ? void 0 : i.full_name) || (i == null ? void 0 : i.username) })
+        ]
+      },
+      "user-dropdown"
+    ),
+    /* @__PURE__ */ e.jsx(Ie, { transformLangConfig: j }, "language-switch")
   ];
   return (b ?? ((a, r, u, t, d) => {
     const [p, V] = A(!1);

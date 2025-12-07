@@ -212,6 +212,10 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
     return <Loading />
   }
 
+  if (siteConfigLoading) {
+    return <Loading />
+  }
+
   if (currentUser && currentUser.status === 'active') {
     const redirect = searchParams.get('redirect');
     if (redirect) {

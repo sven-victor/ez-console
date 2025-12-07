@@ -501,3 +501,4 @@ The application logs the effective configuration on startup. Review logs to veri
 - Explore [Authentication & Authorization](./07-auth-system.md)
 - Review [Deployment Guide](./12-deployment.md)
 
+
