@@ -15,7 +15,7 @@
  */
 
 import ImgCrop from 'antd-img-crop';
-import { Upload, UploadFile, UploadProps, Avatar as AntdAvatar, AvatarProps, Divider, List, Popover, Skeleton, Modal } from 'antd';
+import { Upload, UploadFile, UploadProps, Avatar as AntdAvatar, AvatarProps as AntdAvatarProps, Divider, List, Popover, Skeleton, Modal } from 'antd';
 import api from '@/service/api';
 import { RcFile } from 'antd/es/upload';
 import React, { useEffect, useState } from 'react';
@@ -48,9 +48,13 @@ const getFileSrc = <T = React.ReactNode>(fileSrc?: T) => {
   return fileSrc;
 };
 
+interface AvatarProps extends AntdAvatarProps {
+  fallback?: React.ReactNode;
+}
 
-export const Avatar = ({ src, ...props }: AvatarProps) => {
-  return <AntdAvatar src={getFileSrc(src)} {...props} />;
+
+export const Avatar = ({ src, fallback, ...props }: AvatarProps) => {
+  return <AntdAvatar src={getFileSrc(src)} icon={fallback} {...props} />;
 };
 
 export type { AvatarProps }
