@@ -28,9 +28,10 @@ import OrganizationSettings from './OrganizationSettings';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSite } from '@/contexts/SiteContext';
 import usePermission from '@/hooks/usePermission';
+import { TFunction } from 'i18next';
 
 export interface SystemSettingsProps {
-  transformItems?: (items: AntTabsProps['items']) => AntTabsProps['items'];
+  transformItems?: (items: AntTabsProps['items'], t: TFunction) => AntTabsProps['items'];
 }
 
 const SystemSettings: React.FC<SystemSettingsProps> = ({
@@ -110,7 +111,7 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
           navigate(`${location.pathname}#${key}`);
           // window.history.pushState({}, '', `${location.pathname}#${key}`);
         }}
-        items={transformItems(items.filter(item => !item.hidden))}
+        items={transformItems(items.filter(item => !item.hidden), t)}
       />
     </Card>
   );
