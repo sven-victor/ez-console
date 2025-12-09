@@ -1,0 +1,38 @@
+// Copyright 2025 Sven Victor
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package mcpapi
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/service"
+)
+
+// Controller combines all MCP controllers
+type Controller struct {
+	*MCPController
+}
+
+// NewController creates a new MCP controller
+func NewController(svc *service.Service) *Controller {
+	return &Controller{
+		MCPController: NewMCPController(svc),
+	}
+}
+
+// RegisterRoutes registers all MCP routes
+func (c *Controller) RegisterRoutes(router *gin.RouterGroup) {
+	// Register MCP routes
+	c.MCPController.RegisterRoutes(router)
+}

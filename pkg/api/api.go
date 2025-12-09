@@ -19,6 +19,7 @@ import (
 	aiapi "github.com/sven-victor/ez-console/pkg/api/ai"
 	authorizationapi "github.com/sven-victor/ez-console/pkg/api/authorization"
 	fileapi "github.com/sven-victor/ez-console/pkg/api/files"
+	mcpapi "github.com/sven-victor/ez-console/pkg/api/mcp"
 	statisticsapi "github.com/sven-victor/ez-console/pkg/api/statistics"
 	systemapi "github.com/sven-victor/ez-console/pkg/api/system"
 	"github.com/sven-victor/ez-console/pkg/middleware"
@@ -46,6 +47,9 @@ var controllers = []ControllerGenerator{
 	},
 	func(svc *service.Service) Controller {
 		return aiapi.NewController(svc)
+	},
+	func(svc *service.Service) Controller {
+		return mcpapi.NewController(svc)
 	},
 }
 

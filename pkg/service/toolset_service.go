@@ -22,6 +22,7 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/db"
+	"github.com/sven-victor/ez-console/pkg/mcp"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -39,6 +40,9 @@ var (
 func NewToolSetService() *ToolSetService {
 	toolSetServiceOnce.Do(func() {
 		toolSetService = &ToolSetService{}
+		mcp.RegisterToolSetsFactory(func(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+			return toolSetService.GetAuthorizedToolSets(ctx, organizationID)
+		})
 	})
 	return toolSetService
 }
@@ -300,4 +304,74 @@ func convertOpenAITools(tools []openai.Tool) []model.ToolDefinition {
 	}
 
 	return definitions
+}
+
+func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+	allowedTools := getAllowedAIToolPermissions(ctx, organizationID)
+	if len(allowedTools) == 0 {
+		return nil, nil
+	}
+
+	var filtered toolset.ToolSets
+	for toolSetID, toolNames := range allowedTools {
+		if toolSetID == "*" {
+			orgToolSets, _, err := s.ListToolSets(ctx, organizationID, 1, 1000, "", "", false)
+			if err != nil {
+				return nil, fmt.Errorf("failed to list toolsets: %w", err)
+			}
+			for _, toolSet := range orgToolSets {
+				if toolSet.Status != model.ToolSetStatusEnabled {
+					continue
+				}
+				instance, err := s.createToolSetInstance(&toolSet)
+				if err != nil {
+					return nil, fmt.Errorf("failed to create toolset instance: %w", err)
+				}
+				filtered = append(filtered, newFilteredToolSet(instance, toolNames))
+			}
+		} else {
+			instance, err := s.GetToolSetInstance(ctx, organizationID, toolSetID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get toolset instance %s: %w", toolSetID, err)
+			}
+			filtered = append(filtered, newFilteredToolSet(instance, toolNames))
+		}
+	}
+	return filtered, nil
+}
+
+func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map[string]map[string]struct{} {
+	result := make(map[string]map[string]struct{})
+	if organizationID == "" {
+		return result
+	}
+
+	roles, ok := ctx.Value("roles").([]model.Role)
+	if !ok {
+		return result
+	}
+
+	for _, role := range roles {
+		if (role.OrganizationID == nil || *role.OrganizationID == "") && role.Name == "admin" {
+			return map[string]map[string]struct{}{
+				"*": {
+					"*": {},
+				},
+			}
+		}
+		if role.OrganizationID != nil && *role.OrganizationID != "" && *role.OrganizationID != organizationID {
+			continue
+		}
+		for _, perm := range role.AIToolPermissions {
+			if perm.OrganizationID != organizationID {
+				continue
+			}
+			if _, exists := result[perm.ToolSetID]; !exists {
+				result[perm.ToolSetID] = make(map[string]struct{})
+			}
+			result[perm.ToolSetID][perm.ToolName] = struct{}{}
+		}
+	}
+
+	return result
 }

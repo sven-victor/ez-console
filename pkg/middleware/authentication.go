@@ -218,7 +218,7 @@ func serviceAuthenticationMiddleware(c *gin.Context, accessKey, secretKey string
 	}
 
 	var serviceAccount model.ServiceAccount
-	if err := db.Session(ctx).Where("resource_id = ?", key.ServiceAccountID).Preload("Roles.Permissions").First(&serviceAccount).Error; err != nil {
+	if err := db.Session(ctx).Where("resource_id = ?", key.ServiceAccountID).Preload("Roles.Permissions").Preload("Roles.AIToolPermissions").First(&serviceAccount).Error; err != nil {
 		return util.NewErrorMessage("E4011", "Service account not found")
 	}
 	if serviceAccount.Status != "active" {

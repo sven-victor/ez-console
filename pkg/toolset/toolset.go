@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/go-kit/log/level"
 	"github.com/sashabaranov/go-openai"
@@ -102,4 +103,22 @@ func GetRegisteredToolSets() map[ToolSetType]ToolSetFactory {
 		toolSets[toolSetType] = toolSetFactory
 	}
 	return toolSets
+}
+
+func NewStaticToolSetsFactory(toolSets ToolSets) func(ctx context.Context) (ToolSets, error) {
+	return func(ctx context.Context) (ToolSets, error) {
+		return toolSets, nil
+	}
+}
+
+func NewCachedToolSetsFactory(factory func(ctx context.Context) (ToolSets, error)) func(ctx context.Context) (ToolSets, error) {
+	once := sync.Once{}
+	var cachedToolSets ToolSets
+	var err error
+	return func(ctx context.Context) (ToolSets, error) {
+		once.Do(func() {
+			cachedToolSets, err = factory(ctx)
+		})
+		return cachedToolSets, err
+	}
 }
