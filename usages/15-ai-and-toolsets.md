@@ -89,7 +89,7 @@ func useAIModel(ctx context.Context, svc *service.Service) error {
     }
 
     // Create AI client from config
-    client, err := factory.CreateClient(aiModel.Config)
+    client, err := factory.CreateClient(ctx,organizationID,aiModel.Config)
     if err != nil {
         return err
     }
@@ -266,7 +266,7 @@ func (f *CustomAIClientFactory) GetConfigFields() []util.ConfigField {
 }
 
 // CreateClient creates a client from configuration
-func (f *CustomAIClientFactory) CreateClient(config map[string]interface{}) (ai.AIClient, error) {
+func (f *CustomAIClientFactory) CreateClient(ctx content,organizationID string,config map[string]interface{}) (ai.AIClient, error) {
     apiKey, ok := config["api_key"].(string)
     if !ok || apiKey == "" {
         return nil, fmt.Errorf("api_key is required")
@@ -401,7 +401,7 @@ func useAIWithToolsets(ctx context.Context, svc *service.Service) error {
     }
     
     factory, _ := ai.GetFactory(aiModel.Provider)
-    client, err := factory.CreateClient(aiModel.Config)
+    client, err := factory.CreateClient(ctx,organizationID,aiModel.Config)
     if err != nil {
         return err
     }
@@ -700,7 +700,7 @@ func HandleChat(svc *service.Service) gin.HandlerFunc {
         }
         
         factory, _ := ai.GetFactory(aiModel.Provider)
-        client, err := factory.CreateClient(aiModel.Config)
+        client, err := factory.CreateClient(ctx,organizationID,aiModel.Config)
         if err != nil {
             ctx.JSON(500, gin.H{"error": "Failed to create AI client"})
             return
@@ -957,5 +957,6 @@ func ProcessAITask(ctx context.Context, client ai.AIClient) error {
 ---
 
 For more information, refer to the code examples in `/demo` directory or contact the development team.
+
 
 

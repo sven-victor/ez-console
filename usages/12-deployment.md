@@ -488,3 +488,4 @@ tar -czf uploads_backup_$DATE.tar.gz /opt/myapp/uploads
 - Check [Troubleshooting](./14-troubleshooting.md)
 
 
+
