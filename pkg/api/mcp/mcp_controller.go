@@ -47,6 +47,7 @@ func NewMCPController(svc *service.Service) *MCPController {
 func (c *MCPController) RegisterRoutes(router *gin.RouterGroup) {
 	mcpGroup := router.Group("/mcp")
 	{
+		mcpGroup.POST("", c.HandleMCP)
 		mcpGroup.POST("/sse", c.HandleSSE)
 	}
 }
@@ -65,6 +66,57 @@ func (c *MCPController) RegisterRoutes(router *gin.RouterGroup) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/mcp/sse [post]
 func (c *MCPController) HandleSSE(ctx *gin.Context) {
+	logger := log.GetContextLogger(ctx)
+
+	// Get organization ID from context
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	// Parse JSON-RPC request from body
+	var req mcp.JSONRPCRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		level.Error(logger).Log("msg", "Failed to parse JSON-RPC request", "error", err)
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+
+	// Validate JSON-RPC version
+	if req.JSONRPC != "2.0" {
+		level.Warn(logger).Log("msg", "Invalid JSON-RPC version", "version", req.JSONRPC)
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid JSON-RPC version, expected 2.0"))
+		return
+	}
+	ctx.Writer.Header().Set("Cache-Control", "no-cache")
+	ctx.Writer.Header().Set("Connection", "keep-alive")
+	ctx.Writer.Header().Set("X-Accel-Buffering", "no")
+	// Set SSE headers
+	ctx.Writer.Header().Set("Content-Type", "text/event-stream")
+	// Handle the request
+	response := c.handler.HandleRequest(ctx, organizationID, &req)
+
+	// Send the response as an SSE event
+	ctx.Stream(func(w io.Writer) bool {
+		ctx.SSEvent("message", response)
+		return false // Only send one response per request
+	})
+}
+
+// HandleMCP handles MCP protocol communication over HTTP
+//
+//	@Summary		MCP HTTP endpoint
+//	@Description	Handle MCP protocol communication over HTTP
+//	@ID             mcpHTTP
+//	@Tags			MCP
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body	mcp.JSONRPCRequest	true	"JSON-RPC request"
+//	@Success		200	{object}	mcp.JSONRPCResponse	"JSON-RPC response"
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/mcp [post]
+func (c *MCPController) HandleMCP(ctx *gin.Context) {
 	logger := log.GetContextLogger(ctx)
 
 	// Get organization ID from context
