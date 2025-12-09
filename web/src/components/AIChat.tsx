@@ -231,10 +231,25 @@ class AIProvider<
     }
     const chunkJson = JSON.parse(chunk.data) as API.ChatStreamEvent;
     const content = originMessage?.content || '';
-    return {
-      content: `${content || ''}${chunkJson.content || ''}`,
-      role: 'assistant',
-    } as ChatMessage;
+    switch (chunkJson.event_type) {
+      case 'content':
+        return {
+          content: `${content || ''}${chunkJson.content || ''}`,
+          role: 'assistant',
+        } as ChatMessage;
+      case 'tool_call':
+        return {
+          content: content.endsWith('<br/>') ? `${content}${chunkJson.content || ''}` : `${content}<br/>${chunkJson.content || ''}`,
+          role: 'assistant',
+        } as ChatMessage;
+      case 'error':
+        return {
+          content: content,
+          role: 'assistant',
+          error: chunkJson.content,
+        } as ChatMessage;
+    }
+
   }
 }
 
@@ -389,14 +404,60 @@ const AIChat: React.FC = () => {
       if (messages && messages.length > 0 && (messages[messages.length - 1].status === 'loading' || messages.length > data.messages.length)) {
         return
       }
-      setMessages(data.messages.filter((item) => item.role !== 'tool').map((item) => ({
-        id: item.id,
-        message: {
-          content: item.content,
-          role: item.role,
-        },
-        status: 'success',
-      })));
+
+      const chatMessages: MessageInfo<ChatStreamMessage>[] = [];
+      let buffer: MessageInfo<ChatStreamMessage> = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
+      for (const item of data.messages) {
+        switch (item.role) {
+          case 'assistant':
+            buffer.status = (item.status === 'completed' && buffer.status === 'success') ? 'success' : 'error';
+            buffer.message.role = 'assistant';
+            buffer.id = item.id;
+            if (item.tool_calls && item.tool_calls.length > 0) {
+              if (buffer.message.content.endsWith('<br/>')) {
+                buffer.message.content = `${buffer.message.content}${item.content}`;
+              } else {
+                buffer.message.content = `${buffer.message.content}<br/>${item.content}`;
+              }
+            } else {
+              buffer.message.content = `${buffer.message.content}${item.content}`;
+            }
+            break;
+          case 'user':
+          case 'system':
+            if (buffer.message.content.length > 0) {
+              chatMessages.push({
+                id: buffer.id,
+                message: {
+                  content: buffer.message.content,
+                  role: buffer.message.role,
+                },
+                status: buffer.status,
+              });
+              buffer = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
+            }
+            chatMessages.push({
+              id: item.id,
+              message: {
+                content: item.content,
+                role: item.role,
+              },
+              status: (item.status === 'completed') ? 'success' : 'error',
+            });
+            break;
+        }
+      }
+      if (buffer.message.content.length > 0) {
+        chatMessages.push({
+          id: buffer.id,
+          message: {
+            content: buffer.message.content,
+            role: buffer.message.role,
+          },
+          status: buffer.status,
+        });
+      }
+      setMessages(chatMessages);
     }
   });
   const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string, messages?: API.SimpleChatMessage[]) => {
@@ -423,17 +484,6 @@ const AIChat: React.FC = () => {
   useEffect(() => {
     setConversations(rawConversations?.map((conversation) => convertConversation(conversation)) || []);
   }, [rawConversations])
-
-  // const { loading: fetchConversationsLoading, runAsync: fetchConversations } = useRequest(async () => {
-  //   const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
-  //   setConversations(response.data.map(convertConversation));
-  // }, {
-  //   onError: () => {
-  //     message.error(t('chat.fetchConversationsFailed', { defaultValue: 'Failed to fetch conversations' }));
-  //   },
-  //   ready: !createNewConversationLoading,
-  //   manual: false,
-  // });
 
   const { run: deleteConversation } = useRequest(async (sessionId: string) => {
     return await api.ai.deleteChatSession({ sessionId });
