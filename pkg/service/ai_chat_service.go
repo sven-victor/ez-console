@@ -265,7 +265,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 
 	options = append([]ai.WithChatCompletionOptions{
 		ai.WithChatCompletionToolSetsFactory(func(ctx context.Context) (toolset.ToolSets, error) {
-			return s.getAuthorizedToolSets(ctx, organizationID)
+			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
 		}),
 	}, options...)
 
@@ -286,7 +286,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 	if config == nil {
 		config = make(map[string]interface{})
 	}
-	client, err := factory.CreateClient(config)
+	client, err := factory.CreateClient(ctx, organizationID, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
@@ -308,7 +308,7 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
 	}
 
-	toolSets, err := s.getAuthorizedToolSets(ctx, organizationID)
+	toolSets, err := s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
 	if err != nil {
 		return nil, err
 	}
@@ -324,7 +324,7 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	if config == nil {
 		config = make(map[string]interface{})
 	}
-	client, err := factory.CreateClient(config)
+	client, err := factory.CreateClient(ctx, organizationID, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
@@ -357,7 +357,7 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 func (s *AIChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, error) {
 	logger := log.GetContextLogger(ctx)
 	organizationID := getOrganizationIDFromContext(ctx)
-	toolSets, err := s.getAuthorizedToolSets(ctx, organizationID)
+	toolSets, err := s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get enabled toolset instances: %w", err)
 	}
@@ -374,76 +374,6 @@ func (s *AIChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, e
 	}
 
 	return allTools, nil
-}
-
-func (s *AIChatService) getAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
-	allowedTools := getAllowedAIToolPermissions(ctx, organizationID)
-	if len(allowedTools) == 0 {
-		return nil, nil
-	}
-
-	var filtered toolset.ToolSets
-	for toolSetID, toolNames := range allowedTools {
-		if toolSetID == "*" {
-			orgToolSets, _, err := s.toolSetService.ListToolSets(ctx, organizationID, 1, 1000, "", "", false)
-			if err != nil {
-				return nil, fmt.Errorf("failed to list toolsets: %w", err)
-			}
-			for _, toolSet := range orgToolSets {
-				if toolSet.Status != model.ToolSetStatusEnabled {
-					continue
-				}
-				instance, err := s.toolSetService.createToolSetInstance(&toolSet)
-				if err != nil {
-					return nil, fmt.Errorf("failed to create toolset instance: %w", err)
-				}
-				filtered = append(filtered, newFilteredToolSet(instance, toolNames))
-			}
-		} else {
-			instance, err := s.toolSetService.GetToolSetInstance(ctx, organizationID, toolSetID)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get toolset instance %s: %w", toolSetID, err)
-			}
-			filtered = append(filtered, newFilteredToolSet(instance, toolNames))
-		}
-	}
-	return filtered, nil
-}
-
-func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map[string]map[string]struct{} {
-	result := make(map[string]map[string]struct{})
-	if organizationID == "" {
-		return result
-	}
-
-	roles, ok := ctx.Value("roles").([]model.Role)
-	if !ok {
-		return result
-	}
-
-	for _, role := range roles {
-		if role.OrganizationID == nil || *role.OrganizationID == "" && role.Name == "admin" {
-			return map[string]map[string]struct{}{
-				"*": {
-					"*": {},
-				},
-			}
-		}
-		if role.OrganizationID != nil && *role.OrganizationID != "" && *role.OrganizationID != organizationID {
-			continue
-		}
-		for _, perm := range role.AIToolPermissions {
-			if perm.OrganizationID != organizationID {
-				continue
-			}
-			if _, exists := result[perm.ToolSetID]; !exists {
-				result[perm.ToolSetID] = make(map[string]struct{})
-			}
-			result[perm.ToolSetID][perm.ToolName] = struct{}{}
-		}
-	}
-
-	return result
 }
 
 func getOrganizationIDFromContext(ctx context.Context) string {

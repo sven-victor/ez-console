@@ -47,7 +47,7 @@ type AIClient interface {
 // AIClientFactory is the interface for AI client factories
 type AIClientFactory interface {
 	// CreateClient creates an AI client from configuration
-	CreateClient(config map[string]interface{}) (AIClient, error)
+	CreateClient(ctx context.Context, organizationID string, config map[string]interface{}) (AIClient, error)
 	// GetConfigFields returns the configuration fields for frontend form rendering
 	GetConfigFields() []util.ConfigField
 	// GetName returns the name of the AI provider

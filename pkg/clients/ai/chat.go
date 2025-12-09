@@ -16,7 +16,6 @@ package ai
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/sashabaranov/go-openai"
@@ -71,28 +70,10 @@ type ChatStream interface {
 	Close() error
 }
 
-func NewStaticToolSetsFactory(toolSets toolset.ToolSets) func(ctx context.Context) (toolset.ToolSets, error) {
-	return func(ctx context.Context) (toolset.ToolSets, error) {
-		return toolSets, nil
-	}
-}
-
-func NewCachedToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) func(ctx context.Context) (toolset.ToolSets, error) {
-	once := sync.Once{}
-	var cachedToolSets toolset.ToolSets
-	var err error
-	return func(ctx context.Context) (toolset.ToolSets, error) {
-		once.Do(func() {
-			cachedToolSets, err = factory(ctx)
-		})
-		return cachedToolSets, err
-	}
-}
-
 func WithChatCompletionToolSets(toolSets toolset.ToolSets) WithChatCompletionOptions {
 	return func(options *ChatCompletionOptions) {
 		if toolSets != nil {
-			options.ToolSetsFactory = NewStaticToolSetsFactory(toolSets)
+			options.ToolSetsFactory = toolset.NewStaticToolSetsFactory(toolSets)
 		}
 	}
 }
@@ -100,9 +81,9 @@ func WithChatCompletionToolSets(toolSets toolset.ToolSets) WithChatCompletionOpt
 func WithChatCompletionToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatCompletionOptions {
 	return func(options *ChatCompletionOptions) {
 		if factory != nil {
-			options.ToolSetsFactory = NewCachedToolSetsFactory(factory)
+			options.ToolSetsFactory = toolset.NewCachedToolSetsFactory(factory)
 		} else {
-			options.ToolSetsFactory = NewStaticToolSetsFactory(nil)
+			options.ToolSetsFactory = toolset.NewStaticToolSetsFactory(nil)
 		}
 	}
 }

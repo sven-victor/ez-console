@@ -126,9 +126,9 @@ func (c *OpenAIClient) CreateChatStream(ctx context.Context, messages []ChatMess
 func (c *OpenAIClient) CreateChat(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionOptions) ([]ChatMessage, error) {
 	logger := log.GetContextLogger(ctx)
 
-	// Apply options (default maxIterations is 10)
+	// Apply options (default maxIterations is 30)
 	opts := ChatCompletionOptions{
-		MaxIterations: 10,
+		MaxIterations: 30,
 	}
 	for _, option := range options {
 		option(&opts)
@@ -686,7 +686,7 @@ func applyChatCompletionOptions(stream *OpenAIChatStream, o ChatCompletionOption
 func NewChatStream(ctx context.Context, client *OpenAIClient, messages []openai.ChatCompletionMessage, options ...WithChatCompletionOptions) (ChatStream, error) {
 	// Apply options with defaults
 	opts := ChatCompletionOptions{
-		MaxIterations: 10,
+		MaxIterations: 30,
 	}
 	for _, option := range options {
 		option(&opts)
@@ -782,7 +782,7 @@ func (f *OpenAIClientFactory) GetConfigFields() []util.ConfigField {
 }
 
 // CreateClient creates an OpenAI client from configuration
-func (f *OpenAIClientFactory) CreateClient(config map[string]interface{}) (AIClient, error) {
+func (f *OpenAIClientFactory) CreateClient(ctx context.Context, organizationID string, config map[string]interface{}) (AIClient, error) {
 	return newOpenAIClientFromConfig(config)
 }
 
