@@ -1,3 +1,5 @@
+//go:build !ignore_console_static
+
 // Copyright 2025 Sven Victor
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,4 +49,9 @@ func CacheControl(c *gin.Context) {
 	c.Writer.Header().Set("Last-Modified", upTime.Format(http.TimeFormat))
 	c.Writer.Header().Set("Cache-Control", "max-age=3600")
 	c.Next()
+}
+
+var RegisterStaticRoutes = func(engine *gin.Engine) {
+	engine.GET("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)
+	engine.HEAD("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)
 }

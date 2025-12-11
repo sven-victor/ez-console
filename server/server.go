@@ -21,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
 	"github.com/go-ldap/ldap/v3"
@@ -322,8 +321,7 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	// Setup API routes
 	api.RegisterControllers(ctx, engine, svc)
 	// Frontend resource directory
-	engine.GET("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)
-	engine.HEAD("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)
+	RegisterStaticRoutes(engine)
 
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
