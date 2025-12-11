@@ -17,12 +17,14 @@ package toolset
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"sync"
 
 	"github.com/go-kit/log/level"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-utils/errors"
 	"github.com/sven-victor/ez-utils/log"
 )
 
@@ -48,8 +50,10 @@ var registeredToolSets = make(map[ToolSetType]ToolSetFactory)
 
 func RegisterToolSet(toolSetType ToolSetType, toolSetFactory ToolSetFactory) error {
 	if _, ok := registeredToolSets[toolSetType]; ok {
-		return fmt.Errorf("tool set %s already registered", toolSetType)
+		panic(fmt.Errorf("tool set %s already registered", toolSetType))
 	}
+	toolSetFactory.GetName()
+	toolSetFactory.GetDescription()
 	registeredToolSets[toolSetType] = toolSetFactory
 	return nil
 }
@@ -61,17 +65,28 @@ func GetToolSetFactory(toolSetType ToolSetType) (ToolSetFactory, bool) {
 	return nil, false
 }
 
-type ToolSets []ToolSet
+type ToolSets map[string]ToolSet
 
+func (t ToolSets) keys() []string {
+	keys := make([]string, 0, len(t))
+	for idx := range t {
+		keys = append(keys, idx)
+	}
+	slices.Sort(keys)
+	return keys
+}
 func (t ToolSets) GetTools(ctx context.Context) ([]openai.Tool, error) {
+	var errors errors.Errors
 	var tools []openai.Tool
-	for idx, toolSet := range t {
+	for _, key := range t.keys() {
+		toolSet := t[key]
 		tool, err := toolSet.ListTools(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get tools: %w", err)
+			errors.Append(err)
+			continue
 		}
 		for _, tool := range tool {
-			functionName := fmt.Sprintf("toolset%d_%s", idx, tool.Function.Name)
+			functionName := fmt.Sprintf("%s_%s", key, tool.Function.Name)
 			tools = append(tools, openai.Tool{
 				Type: openai.ToolTypeFunction,
 				Function: &openai.FunctionDefinition{
@@ -87,10 +102,11 @@ func (t ToolSets) GetTools(ctx context.Context) ([]openai.Tool, error) {
 
 func (t ToolSets) CallTool(ctx context.Context, name string, parameters string) (string, error) {
 	logger := log.GetContextLogger(ctx)
-	for idx, toolSet := range t {
-		if strings.HasPrefix(name, fmt.Sprintf("toolset%d_", idx)) {
-			name = strings.TrimPrefix(name, fmt.Sprintf("toolset%d_", idx))
-			level.Debug(logger).Log("msg", "Calling tool", "tool", name, "parameters", parameters)
+	for _, key := range t.keys() {
+		if strings.HasPrefix(name, fmt.Sprintf("%s_", key)) {
+			toolSet := t[key]
+			name = strings.TrimPrefix(name, fmt.Sprintf("%s_", key))
+			level.Debug(logger).Log("msg", "Calling tool", "tool", key, "name", name, "parameters", parameters)
 			return toolSet.Call(ctx, name, parameters)
 		}
 	}

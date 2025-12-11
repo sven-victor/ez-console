@@ -15,6 +15,8 @@
 package api
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	aiapi "github.com/sven-victor/ez-console/pkg/api/ai"
 	authorizationapi "github.com/sven-victor/ez-console/pkg/api/authorization"
@@ -54,7 +56,7 @@ var controllers = []ControllerGenerator{
 }
 
 // RegisterControllers registers all API controllers to the routing engine.
-func RegisterControllers(router *gin.Engine, svc *service.Service) {
+func RegisterControllers(ctx context.Context, router *gin.Engine, svc *service.Service) {
 	api := router.Group("/api")
 	api.Use(middleware.AuthenticationMiddleware())
 

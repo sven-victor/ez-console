@@ -160,7 +160,7 @@ func WithEngineOptions(options ...withEngineOption) WithServerOption {
 	}
 }
 
-func NewCommandServer(serviceName string, description string, options ...WithServerOption) *CommandServer {
+func NewCommandServer(serviceName string, version string, description string, options ...WithServerOption) *CommandServer {
 	serverOption := &ServerOption{}
 	for _, option := range options {
 		option(serverOption)
@@ -168,9 +168,9 @@ func NewCommandServer(serviceName string, description string, options ...WithSer
 
 	var cfgFile string
 	rootCmd := &cobra.Command{
-		Use:   serviceName,
-		Short: description,
-
+		Use:     serviceName,
+		Short:   description,
+		Version: version,
 		Run: func(cmd *cobra.Command, args []string) {
 			newServer(cmd.Context(), serviceName, serverOption.withEngine...)
 		},
@@ -190,6 +190,8 @@ func NewCommandServer(serviceName string, description string, options ...WithSer
 			level.Error(log.New()).Log("msg", "Failed to load configuration", "err", err)
 			os.Exit(1)
 		}
+		viper.Set("service.version", version)
+		viper.Set("service.name", serviceName)
 	}
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yaml)")
 	cobra.OnInitialize(initConfig)
@@ -318,7 +320,7 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	initSettings(ctx, cfg, svc)
 
 	// Setup API routes
-	api.RegisterControllers(engine, svc)
+	api.RegisterControllers(ctx, engine, svc)
 	// Frontend resource directory
 	engine.GET("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)
 	engine.HEAD("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)

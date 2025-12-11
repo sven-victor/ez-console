@@ -15,12 +15,16 @@
 package mcpapi
 
 import (
-	"io"
-	"slices"
+	"context"
+	"encoding/json"
+	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
-	"github.com/sven-victor/ez-console/pkg/mcp"
+	"github.com/hashicorp/golang-lru/v2/expirable"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+	"github.com/spf13/viper"
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/log"
@@ -28,18 +32,74 @@ import (
 
 // MCPController handles MCP protocol endpoints
 type MCPController struct {
-	service *service.Service
-	handler *mcp.MCPHandler
+	service     *service.Service
+	handler     *mcp.StreamableHTTPHandler
+	serverCache *expirable.LRU[string, *mcp.Server]
 }
 
 // NewMCPController creates a new MCP controller
 func NewMCPController(svc *service.Service) *MCPController {
-	registry := mcp.GetGlobalRegistry()
-	handler := mcp.NewMCPHandler(registry)
+	serviceName := viper.GetString("service_name")
+	version := viper.GetString("service.version")
+	mcpServerCache := expirable.NewLRU[string, *mcp.Server](32, nil, time.Minute*10)
+	handler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server {
+		logger := log.GetContextLogger(r.Context())
+		ctx, ok := r.Context().(*gin.Context)
+		if !ok {
+			level.Error(logger).Log("msg", "Failed to get context from request")
+			return nil
+		}
+		accountID := ctx.GetString("service_account_id")
+		if accountID == "" {
+			accountID = ctx.GetString("user_id")
+		}
+		if accountID == "" {
+			level.Error(logger).Log("msg", "Account not authenticated")
+			return nil
+		}
+		organizationID := ctx.GetString("organization_id")
+		if organizationID == "" {
+			level.Error(logger).Log("msg", "Organization not authenticated")
+			return nil
+		}
+
+		server, ok := mcpServerCache.Get(accountID)
+		if !ok {
+			server = mcp.NewServer(&mcp.Implementation{Name: serviceName, Version: version}, nil)
+			toolSets, err := svc.GetAuthorizedToolSets(ctx, organizationID)
+			if err != nil {
+				level.Error(logger).Log("msg", "Failed to get tool sets", "error", err)
+				return nil
+			} else {
+				tools, err := toolSets.GetTools(ctx)
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to get tools", "error", err)
+				}
+				for _, tool := range tools {
+					mcp.AddTool[json.RawMessage, any](server, &mcp.Tool{
+						Name:        tool.Function.Name,
+						Description: tool.Function.Description,
+						InputSchema: tool.Function.Parameters,
+					}, func(ctx context.Context, request *mcp.CallToolRequest, input json.RawMessage) (*mcp.CallToolResult, any, error) {
+						result, err := toolSets.CallTool(ctx, tool.Function.Name, string(input))
+						if err != nil {
+							return nil, nil, err
+						}
+
+						return &mcp.CallToolResult{Content: []mcp.Content{&mcp.TextContent{Text: result}}}, nil, nil
+					})
+				}
+			}
+
+			mcpServerCache.Add(accountID, server)
+		}
+		return server
+	}, &mcp.StreamableHTTPOptions{Stateless: true})
 
 	return &MCPController{
-		service: svc,
-		handler: handler,
+		service:     svc,
+		handler:     handler,
+		serverCache: mcpServerCache,
 	}
 }
 
@@ -47,118 +107,13 @@ func NewMCPController(svc *service.Service) *MCPController {
 func (c *MCPController) RegisterRoutes(router *gin.RouterGroup) {
 	mcpGroup := router.Group("/mcp")
 	{
-		mcpGroup.POST("", c.HandleMCP)
-		mcpGroup.POST("/sse", c.HandleSSE)
-	}
-}
-
-// HandleSSE handles SSE-based MCP communication
-//
-//	@Summary		MCP SSE endpoint
-//	@Description	Handle MCP protocol communication over Server-Sent Events
-//	@ID             mcpSSE
-//	@Tags			MCP
-//	@Accept			json
-//	@Produce		text/event-stream
-//	@Param			request	body	mcp.JSONRPCRequest	true	"JSON-RPC request"
-//	@Success		200	{object}	mcp.JSONRPCResponse	"JSON-RPC response"
-//	@Failure		400	{object}	util.ErrorResponse
-//	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/mcp/sse [post]
-func (c *MCPController) HandleSSE(ctx *gin.Context) {
-	logger := log.GetContextLogger(ctx)
-
-	// Get organization ID from context
-	organizationID := ctx.GetString("organization_id")
-	if organizationID == "" {
-		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
-		return
-	}
-	// Parse JSON-RPC request from body
-	var req mcp.JSONRPCRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		level.Error(logger).Log("msg", "Failed to parse JSON-RPC request", "error", err)
-		util.RespondWithError(ctx, util.NewError("E4001", err))
-		return
-	}
-
-	// Validate JSON-RPC version
-	if req.JSONRPC != "2.0" {
-		level.Warn(logger).Log("msg", "Invalid JSON-RPC version", "version", req.JSONRPC)
-		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid JSON-RPC version, expected 2.0"))
-		return
-	}
-	ctx.Writer.Header().Set("Cache-Control", "no-cache")
-	ctx.Writer.Header().Set("Connection", "keep-alive")
-	ctx.Writer.Header().Set("X-Accel-Buffering", "no")
-	// Set SSE headers
-	ctx.Writer.Header().Set("Content-Type", "text/event-stream")
-	// Handle the request
-	response := c.handler.HandleRequest(ctx, organizationID, &req)
-
-	// Send the response as an SSE event
-	ctx.Stream(func(w io.Writer) bool {
-		ctx.SSEvent("message", response)
-		return false // Only send one response per request
-	})
-}
-
-// HandleMCP handles MCP protocol communication over HTTP
-//
-//	@Summary		MCP HTTP endpoint
-//	@Description	Handle MCP protocol communication over HTTP
-//	@ID             mcpHTTP
-//	@Tags			MCP
-//	@Accept			json
-//	@Produce		json
-//	@Param			request	body	mcp.JSONRPCRequest	true	"JSON-RPC request"
-//	@Success		200	{object}	mcp.JSONRPCResponse	"JSON-RPC response"
-//	@Failure		400	{object}	util.ErrorResponse
-//	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/mcp [post]
-func (c *MCPController) HandleMCP(ctx *gin.Context) {
-	logger := log.GetContextLogger(ctx)
-
-	// Get organization ID from context
-	organizationID := ctx.GetString("organization_id")
-	if organizationID == "" {
-		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
-		return
-	}
-	// Parse JSON-RPC request from body
-	var req mcp.JSONRPCRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		level.Error(logger).Log("msg", "Failed to parse JSON-RPC request", "error", err)
-		util.RespondWithError(ctx, util.NewError("E4001", err))
-		return
-	}
-
-	// Validate JSON-RPC version
-	if req.JSONRPC != "2.0" {
-		level.Warn(logger).Log("msg", "Invalid JSON-RPC version", "version", req.JSONRPC)
-		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid JSON-RPC version, expected 2.0"))
-		return
-	}
-	ctx.Writer.Header().Set("Cache-Control", "no-cache")
-	ctx.Writer.Header().Set("Connection", "keep-alive")
-	ctx.Writer.Header().Set("X-Accel-Buffering", "no")
-	if slices.Contains(ctx.Accepted, "application/json") {
-		// Set JSON headers
-		ctx.Writer.Header().Set("Content-Type", "application/json")
-		// Handle the request
-		response := c.handler.HandleRequest(ctx, organizationID, &req)
-		// Send the response as a JSON response
-		ctx.JSON(200, response)
-	} else {
-		// Set SSE headers
-		ctx.Writer.Header().Set("Content-Type", "text/event-stream")
-		// Handle the request
-		response := c.handler.HandleRequest(ctx, organizationID, &req)
-
-		// Send the response as an SSE event
-		ctx.Stream(func(w io.Writer) bool {
-			ctx.SSEvent("message", response)
-			return false // Only send one response per request
+		mcpGroup.Any("", func(ctx *gin.Context) {
+			organizationID := ctx.GetString("organization_id")
+			if organizationID == "" {
+				util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+				return
+			}
+			c.handler.ServeHTTP(ctx.Writer, ctx.Request.WithContext(ctx))
 		})
 	}
 }

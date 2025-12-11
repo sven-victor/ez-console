@@ -358,7 +358,6 @@ func LoadConfig(appName, configPath string) (*Config, error) {
 	setDefaultConfig(appName)
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-
 	if configPath != "" {
 		viper.SetConfigFile(configPath)
 	} else {

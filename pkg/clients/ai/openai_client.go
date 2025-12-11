@@ -142,7 +142,7 @@ func (c *OpenAIClient) CreateChat(ctx context.Context, messages []ChatMessage, o
 
 	// Convert toolsets to openai.Tool format
 	var openaiTools []openai.Tool
-	var toolSets toolset.ToolSets
+	toolSets := make(toolset.ToolSets)
 	if opts.ToolSetsFactory != nil {
 		var err error
 		toolSets, err = opts.ToolSetsFactory(ctx)
@@ -694,7 +694,7 @@ func NewChatStream(ctx context.Context, client *OpenAIClient, messages []openai.
 
 	// Get tools from toolSets if provided
 	var tools []openai.Tool
-	var toolSets toolset.ToolSets
+	toolSets := make(toolset.ToolSets)
 	var err error
 	if opts.ToolSetsFactory != nil {
 		toolSets, err = opts.ToolSetsFactory(ctx)

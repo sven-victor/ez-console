@@ -22,7 +22,6 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/db"
-	"github.com/sven-victor/ez-console/pkg/mcp"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -40,9 +39,6 @@ var (
 func NewToolSetService() *ToolSetService {
 	toolSetServiceOnce.Do(func() {
 		toolSetService = &ToolSetService{}
-		mcp.RegisterToolSetsFactory(func(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
-			return toolSetService.GetAuthorizedToolSets(ctx, organizationID)
-		})
 	})
 	return toolSetService
 }
@@ -221,14 +217,14 @@ func (s *ToolSetService) GetAllEnabledToolSetInstances(ctx context.Context, orga
 		return nil, fmt.Errorf("failed to get enabled toolsets: %w", err)
 	}
 
-	var instances []toolset.ToolSet
+	instances := make(toolset.ToolSets)
 	for _, toolset := range toolsets {
 		instance, err := s.createToolSetInstance(&toolset)
 		if err != nil {
 			// Log error but continue with other toolsets
 			continue
 		}
-		instances = append(instances, instance)
+		instances[fmt.Sprintf("%s%d", toolset.Type, toolset.ID)] = instance
 	}
 
 	return instances, nil
@@ -312,7 +308,7 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 		return nil, nil
 	}
 
-	var filtered toolset.ToolSets
+	filtered := make(toolset.ToolSets)
 	for toolSetID, toolNames := range allowedTools {
 		if toolSetID == "*" {
 			orgToolSets, _, err := s.ListToolSets(ctx, organizationID, 1, 1000, "", "", false)
@@ -327,14 +323,18 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 				if err != nil {
 					return nil, fmt.Errorf("failed to create toolset instance: %w", err)
 				}
-				filtered = append(filtered, newFilteredToolSet(instance, toolNames))
+				filtered[fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)] = newFilteredToolSet(instance, toolNames)
 			}
 		} else {
-			instance, err := s.GetToolSetInstance(ctx, organizationID, toolSetID)
+			toolSet, err := s.GetToolSet(ctx, organizationID, toolSetID)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get toolset: %w", err)
+			}
+			instance, err := s.createToolSetInstance(toolSet)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get toolset instance %s: %w", toolSetID, err)
 			}
-			filtered = append(filtered, newFilteredToolSet(instance, toolNames))
+			filtered[fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)] = newFilteredToolSet(instance, toolNames)
 		}
 	}
 	return filtered, nil
