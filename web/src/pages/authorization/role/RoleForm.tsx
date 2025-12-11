@@ -357,6 +357,18 @@ const RoleForm: React.FC = () => {
     }));
   }, []);
 
+  const handleToolsetSelectAll = useCallback((toolsetId: string, checked: boolean) => {
+    const toolset = aiToolsets.find((ts) => ts.id === toolsetId);
+    if (!toolset) {
+      return;
+    }
+    const allToolNames = (toolset.tools || []).map((tool) => tool.name);
+    setAiToolSelections((prev) => ({
+      ...prev,
+      [toolsetId]: checked ? allToolNames : [],
+    }));
+  }, [aiToolsets]);
+
   const validatePolicyDocument = (_: unknown, value: string) => {
     if (roleType === 'organization') {
       return Promise.resolve();
@@ -701,51 +713,67 @@ const RoleForm: React.FC = () => {
                   {roleType === 'organization' ? (
                     aiToolsets.length > 0 ? (
                       <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                        {aiToolsets.map((toolset) => (
-                          <Card
-                            key={toolset.id}
-                            size="small"
-                            title={toolset.name}
-                            extra={toolset.description ? <span>{toolset.description}</span> : undefined}
-                          >
-                            {(toolset.tools || []).length > 0 ? (
-                              <Checkbox.Group
-                                style={{ width: '100%' }}
-                                value={aiToolSelections[toolset.id] || []}
-                                onChange={(checked) =>
-                                  handleAiToolSelectionChange(toolset.id, checked as string[])
-                                }
-                              >
-                                <Space direction="vertical" style={{ width: '100%' }}>
-                                  {(toolset.tools || []).map((tool) => (
-                                    <Checkbox value={tool.name} key={tool.name}>
-                                      <div>
-                                        <div>{tool.name}</div>
-                                        {tool.description && (
-                                          <div
-                                            style={{
-                                              color: 'rgba(0,0,0,0.45)',
-                                              fontSize: 12,
-                                            }}
-                                          >
-                                            {tool.description}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </Checkbox>
-                                  ))}
-                                </Space>
-                              </Checkbox.Group>
-                            ) : (
-                              <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description={t('role.aiToolsetNoTools', {
-                                  defaultValue: 'No tools available in this toolset.',
-                                })}
-                              />
-                            )}
-                          </Card>
-                        ))}
+                        {aiToolsets.map((toolset) => {
+                          const allToolNames = (toolset.tools || []).map((tool) => tool.name);
+                          const selectedToolNames = aiToolSelections[toolset.id] || [];
+                          const allSelected = allToolNames.length > 0 && selectedToolNames.length === allToolNames.length;
+                          const someSelected = selectedToolNames.length > 0 && selectedToolNames.length < allToolNames.length;
+
+                          return (
+                            <Card
+                              key={toolset.id}
+                              size="small"
+                              title={
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <Checkbox
+                                    checked={allSelected}
+                                    indeterminate={someSelected}
+                                    onChange={(e) => handleToolsetSelectAll(toolset.id, e.target.checked)}
+                                  />
+                                  <span>{toolset.name}</span>
+                                </div>
+                              }
+                              extra={toolset.description ? <span>{toolset.description}</span> : undefined}
+                            >
+                              {(toolset.tools || []).length > 0 ? (
+                                <Checkbox.Group
+                                  style={{ width: '100%' }}
+                                  value={aiToolSelections[toolset.id] || []}
+                                  onChange={(checked) =>
+                                    handleAiToolSelectionChange(toolset.id, checked as string[])
+                                  }
+                                >
+                                  <Space direction="vertical" style={{ width: '100%' }}>
+                                    {(toolset.tools || []).map((tool) => (
+                                      <Checkbox value={tool.name} key={tool.name}>
+                                        <div>
+                                          <div>{tool.name}</div>
+                                          {tool.description && (
+                                            <div
+                                              style={{
+                                                color: 'rgba(0,0,0,0.45)',
+                                                fontSize: 12,
+                                              }}
+                                            >
+                                              {tool.description}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </Checkbox>
+                                    ))}
+                                  </Space>
+                                </Checkbox.Group>
+                              ) : (
+                                <Empty
+                                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                  description={t('role.aiToolsetNoTools', {
+                                    defaultValue: 'No tools available in this toolset.',
+                                  })}
+                                />
+                              )}
+                            </Card>
+                          );
+                        })}
                       </Space>
                     ) : (
                       <Empty
