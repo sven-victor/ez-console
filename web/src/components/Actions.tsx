@@ -18,7 +18,7 @@ import { Button, ButtonProps, Popconfirm, Tooltip } from 'antd';
 import { PermissionGuard } from './PermissionGuard';
 import { useState } from 'react';
 
-export interface Action extends ButtonProps {
+export interface ActionProps extends ButtonProps {
   key: string;
   label?: string;
   permission?: string;
@@ -35,42 +35,65 @@ export interface Action extends ButtonProps {
 }
 
 
-const renderButton = (action: Action) => {
+const ActionButton: React.FC<ActionProps> = (action) => {
   const [loading, setLoading] = useState(false);
   const { permission, icon, tooltip, onClick, confirm, label, ...rest } = action;
-  if (permission) {
-    return <PermissionGuard permission={permission} key={action.key}>
-      {renderButton({ icon, tooltip, onClick, confirm, label, ...rest })}
-    </PermissionGuard>
-  }
-  if (confirm) {
-    return <Popconfirm title={confirm.title} onConfirm={confirm.onConfirm || onClick} okText={confirm.okText} cancelText={confirm.cancelText} key={action.key}>
-      {renderButton({ icon, tooltip, label, ...rest })}
-    </Popconfirm>
-  }
-  if (tooltip) {
-    return <Tooltip title={tooltip} key={action.key}>
-      {renderButton({ icon, onClick, label, ...rest })}
-    </Tooltip>
-  }
 
   const handleClick = onClick ? async () => {
-    console.log(new Date(), "handleClick")
     setLoading(true);
     try {
       await onClick();
     } finally {
       setLoading(false);
-      console.log(new Date(), "handleClick1")
     }
   } : undefined;
 
-  return <Button type='text' size='small' loading={loading} icon={icon} onClick={handleClick} {...rest} key={action.key} >
-    {label && <span style={{ position: 'inherit', top: '-2px' }}>{label}</span>}
-  </Button>
-}
+  let button = (
+    <Button
+      type='text'
+      size='small'
+      loading={loading}
+      icon={icon}
+      onClick={confirm ? undefined : handleClick}
+      {...rest}
+    >
+      {label && <span style={{ position: 'inherit', top: '-2px' }}>{label}</span>}
+    </Button>
+  );
 
-export const Actions = ({ actions }: { actions: Action[] }) => {
-  return actions.filter(action => !action.hidden).map((action) => renderButton(action))
+  if (tooltip) {
+    button = <Tooltip title={tooltip}>{button}</Tooltip>;
+  }
+
+  if (confirm) {
+    const confirmHandler = async () => {
+      if (confirm.onConfirm) {
+        confirm.onConfirm();
+      } else if (handleClick) {
+        await handleClick();
+      }
+    };
+
+    button = (
+      <Popconfirm
+        title={confirm.title}
+        onConfirm={confirmHandler}
+        okText={confirm.okText}
+        cancelText={confirm.cancelText}
+      >
+        {button}
+      </Popconfirm>
+    );
+  }
+
+  if (permission) {
+    button = <PermissionGuard permission={permission}>{button}</PermissionGuard>;
+  }
+
+  return button;
+};
+
+export const Actions = ({ actions }: { actions: ActionProps[] }) => {
+  return actions.filter(action => !action.hidden).map((action) => <ActionButton {...action} />)
 }
 export default Actions;
