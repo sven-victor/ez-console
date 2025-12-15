@@ -24,7 +24,7 @@ export { default as i18n } from '@/i18n'
 export { withSuspense, type IRoute, type IRouteGroup, type IRouteItem } from '@/routes'
 
 export { default as Loading } from '@/components/Loading';
-export { default as Actions } from '@/components/Actions';
+export { default as Actions, type ActionProps } from '@/components/Actions';
 export { default as Avatar, AvatarUpload, type AvatarProps, type AvatarUploadProps } from '@/components/Avatar';
 export { default as DynamicIcon, getIconByName, type DynamicIconProps } from '@/components/DynamicIcon';
 export { default as HeaderDropdown, type HeaderDropdownProps } from '@/components/HeaderDropdown';

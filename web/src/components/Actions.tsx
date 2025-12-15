@@ -14,23 +14,25 @@
  * limitations under the License.
  */
 
-import { Button, ButtonProps, Popconfirm, Tooltip } from 'antd';
+import { Button, ButtonProps, Popconfirm, Tooltip, Dropdown, MenuProps, Modal } from 'antd';
+import { MoreOutlined } from '@ant-design/icons';
 import { PermissionGuard } from './PermissionGuard';
 import { useState } from 'react';
 
 export interface ActionProps extends ButtonProps {
   key: string;
-  label?: string;
+  label?: React.ReactNode;
   permission?: string;
   icon?: React.ReactNode;
-  tooltip?: string;
+  tooltip?: React.ReactNode;
   onClick?: () => Promise<any>;
   hidden?: boolean;
   confirm?: {
-    title: string;
+    title: React.ReactNode;
+    description?: React.ReactNode;
     onConfirm: () => void;
-    okText?: string;
-    cancelText?: string;
+    okText?: React.ComponentProps<typeof Popconfirm>['okText'];
+    cancelText?: React.ComponentProps<typeof Popconfirm>['cancelText'];
   }
 }
 
@@ -77,6 +79,7 @@ const ActionButton: React.FC<ActionProps> = (action) => {
     button = (
       <Popconfirm
         title={confirm.title}
+        description={confirm.description}
         onConfirm={confirmHandler}
         okText={confirm.okText}
         cancelText={confirm.cancelText}
@@ -93,7 +96,74 @@ const ActionButton: React.FC<ActionProps> = (action) => {
   return button;
 };
 
-export const Actions = ({ actions }: { actions: ActionProps[] }) => {
-  return actions.filter(action => !action.hidden).map((action) => <ActionButton {...action} />)
+export interface ActionsProps {
+  actions: ActionProps[];
+  maxVisibleItems?: number;
 }
+
+export const Actions: React.FC<ActionsProps> = ({ actions, maxVisibleItems }) => {
+  const visibleActions = actions.filter(action => !action.hidden);
+
+  // If no limit or actions fit within limit, render all normally
+  if (!maxVisibleItems || visibleActions.length <= maxVisibleItems) {
+    return <>{visibleActions.map(({ key, ...action }) => <ActionButton key={key} {...action} />)}</>;
+  }
+
+  // Split actions into visible and overflow
+  const displayedActions = visibleActions.slice(0, maxVisibleItems - 1);
+  const overflowActions = visibleActions.slice(maxVisibleItems - 1);
+
+  // Create dropdown menu items from overflow actions
+  const menuItems: MenuProps['items'] = overflowActions.map((action) => {
+    const { key, label, icon, permission, onClick, confirm, disabled, tooltip } = action;
+
+    const handleMenuClick = async () => {
+      if (confirm) {
+        Modal.confirm({
+          title: confirm.title,
+          content: confirm.description,
+          onOk: confirm.onConfirm,
+          okText: confirm.okText,
+          cancelText: confirm.cancelText,
+        });
+      } else if (onClick) {
+        await onClick();
+      }
+    };
+
+    const menuItem = {
+      key,
+      label,
+      icon,
+      disabled,
+      onClick: handleMenuClick,
+    };
+
+    // If has permission requirement, wrap the label
+    if (permission) {
+      return {
+        ...menuItem,
+        label: (
+          <PermissionGuard permission={permission}>
+            <span>{label ?? tooltip}</span>
+          </PermissionGuard>
+        ),
+      };
+    }
+
+    return menuItem;
+  });
+
+  return (
+    <>
+      {displayedActions.map(({ key, ...action }) => (
+        <ActionButton key={key} {...action} />
+      ))}
+      <Dropdown menu={{ items: menuItems }} trigger={['click']}>
+        <Button type="text" size="small" icon={<MoreOutlined />} />
+      </Dropdown>
+    </>
+  );
+};
+
 export default Actions;

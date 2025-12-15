@@ -90,17 +90,17 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     scope: ""
   }
 }, jt = ({ initialData: t, onRefresh: a }) => {
-  const { t: s } = N("system"), { t: _ } = N("common"), [p] = l.useForm(), [h, v] = j((t == null ? void 0 : t.provider) || "custom"), [b, x] = j((t == null ? void 0 : t.provider) === "custom" || (t == null ? void 0 : t.provider) === "autoDiscover"), [o, d] = j((t == null ? void 0 : t.enabled) || !1), [g, R] = j((t == null ? void 0 : t.auto_create_user) || !1), { loading: E, data: F, refresh: c } = S(A.system.getOauthSettings, {
+  const { t: s } = N("system"), { t: _ } = N("common"), [p] = l.useForm(), [h, v] = j((t == null ? void 0 : t.provider) || "custom"), [b, x] = j((t == null ? void 0 : t.provider) === "custom" || (t == null ? void 0 : t.provider) === "autoDiscover"), [o, d] = j((t == null ? void 0 : t.enabled) || !1), [g, O] = j((t == null ? void 0 : t.auto_create_user) || !1), { loading: E, data: F, refresh: c } = S(A.system.getOauthSettings, {
     manual: !!t,
     onSuccess: (V) => {
-      p.setFieldsValue(V), v(V.provider), x(V.provider === "custom" || V.provider === "autoDiscover"), d(V.enabled), R(V.auto_create_user);
+      p.setFieldsValue(V), v(V.provider), x(V.provider === "custom" || V.provider === "autoDiscover"), d(V.enabled), O(V.auto_create_user);
     },
     onError: (V) => {
       m.error(s("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get OAuth settings", V);
     }
   });
   _e(() => {
-    t && (p.setFieldsValue(t), v(t.provider), x(t.provider === "custom" || t.provider === "autoDiscover"), d(t.enabled), R(t.auto_create_user));
+    t && (p.setFieldsValue(t), v(t.provider), x(t.provider === "custom" || t.provider === "autoDiscover"), d(t.enabled), O(t.auto_create_user));
   }, [t, p]);
   const w = (V) => {
     v(V), x(V === "custom" || V === "autoDiscover");
@@ -123,7 +123,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   }, T = (V) => {
     d(V);
   }, I = (V) => {
-    R(V);
+    O(V);
   }, { loading: C, run: K } = S(A.system.updateOauthSettings, {
     manual: !0,
     onSuccess: () => {
@@ -136,9 +136,9 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     K(V);
   }, X = () => {
     a ? a() : c();
-  }, { loading: G, run: O } = S(async ({ redirect_uri: V, ...i }) => {
-    let U;
-    return V ? U = new URL(V) : U = new URL(window.location.origin), U.pathname = Oe("/system/settings/oauth/test-callback"), U.searchParams.set("provider", h), A.system.testOauthConnection({ redirect_uri: U.toString(), ...i });
+  }, { loading: G, run: U } = S(async ({ redirect_uri: V, ...i }) => {
+    let R;
+    return V ? R = new URL(V) : R = new URL(window.location.origin), R.pathname = Oe("/system/settings/oauth/test-callback"), R.searchParams.set("provider", h), A.system.testOauthConnection({ redirect_uri: R.toString(), ...i });
   }, {
     manual: !0,
     onSuccess: ({ url: V }) => {
@@ -461,7 +461,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               loading: G,
               onClick: async () => {
                 const V = p.getFieldsValue();
-                O(V);
+                U(V);
               },
               children: s("settings.oauth.testConnection.button", { defaultValue: "Test Connection" })
             }
@@ -675,7 +675,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       v(E);
     },
     manual: !0
-  }), { run: g, loading: R } = S(async () => {
+  }), { run: g, loading: O } = S(async () => {
     for (const E of b.filter((F) => {
       const c = h.find((w) => w.ldap_dn === F);
       return !(!c || c.status === "imported");
@@ -702,7 +702,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         g();
       },
       width: 900,
-      confirmLoading: R,
+      confirmLoading: O,
       loading: d,
       children: /* @__PURE__ */ e.jsx(
         xe,
@@ -719,7 +719,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           columns: s.map(({ render: E, ...F }) => E ? {
             ...F,
             render: (c, w, T) => {
-              const I = b.includes(w.ldap_dn) && R && w.status !== "imported";
+              const I = b.includes(w.ldap_dn) && O && w.status !== "imported";
               return E(c, w, T, I);
             }
           } : F),
@@ -732,10 +732,10 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   );
 }, St = () => {
   var w, T, I;
-  const { t } = N("system"), [a] = l.useForm(), [s, _] = j(!1), [p, h] = j(null), [v, b] = j(!1), [x, o] = j(!1), [d] = l.useForm(), [g, R] = j(!1);
+  const { t } = N("system"), [a] = l.useForm(), [s, _] = j(!1), [p, h] = j(null), [v, b] = j(!1), [x, o] = j(!1), [d] = l.useForm(), [g, O] = j(!1);
   S(A.system.getLdapSettings, {
     onSuccess: (C) => {
-      a.setFieldsValue(C), R(C.enabled);
+      a.setFieldsValue(C), O(C.enabled);
     },
     onError: (C) => {
       m.error(t("settings.ldap.loadError", { defaultValue: "Failed to load LDAP settings: {{error}}", error: `${C.message}` }));
@@ -787,7 +787,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               label: t("settings.ldap.enabled", { defaultValue: "Enable LDAP Authentication" }),
               name: "enabled",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(W, { onChange: (C) => R(C) })
+              children: /* @__PURE__ */ e.jsx(W, { onChange: (C) => O(C) })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1056,7 +1056,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   _e(() => {
     p(null);
   }, [h]);
-  const { run: g, loading: R } = S(({ port: c, ...w }) => A.system.updateSmtpSettings({ ...w, port: Number(c) }), {
+  const { run: g, loading: O } = S(({ port: c, ...w }) => A.system.updateSmtpSettings({ ...w, port: Number(c) }), {
     manual: !0,
     onSuccess: () => {
       m.success(t("settings.smtp.saveSuccess", { defaultValue: "SMTP settings saved successfully." }));
@@ -1195,7 +1195,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             }
           ),
           /* @__PURE__ */ e.jsxs(l.Item, { children: [
-            /* @__PURE__ */ e.jsx(ne, { permission: "system:setting:update", children: /* @__PURE__ */ e.jsx(z, { type: "primary", htmlType: "submit", loading: R, style: { marginRight: 8 }, children: a("save", { defaultValue: "Save" }) }) }),
+            /* @__PURE__ */ e.jsx(ne, { permission: "system:setting:update", children: /* @__PURE__ */ e.jsx(z, { type: "primary", htmlType: "submit", loading: O, style: { marginRight: 8 }, children: a("save", { defaultValue: "Save" }) }) }),
             /* @__PURE__ */ e.jsx(
               z,
               {
@@ -1328,7 +1328,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   ) });
 }, { TextArea: Ft } = f, wt = () => {
   var oe;
-  const { t } = N("ai"), { t: a } = N("common"), [s] = l.useForm(), [_, p] = j(!1), [h, v] = j(null), [b, x] = j(""), [o, d] = j(""), [g, R] = j({}), { loading: E, data: F } = S(
+  const { t } = N("ai"), { t: a } = N("common"), [s] = l.useForm(), [_, p] = j(!1), [h, v] = j(null), [b, x] = j(""), [o, d] = j(""), [g, O] = j({}), { loading: E, data: F } = S(
     () => A.ai.getAiTypeDefinitions(),
     {
       refreshDeps: [],
@@ -1377,7 +1377,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("models.deleteFailed", { defaultValue: "Failed to delete AI model" })), console.error("Failed to delete AI model:", r);
       }
     }
-  ), { runAsync: O } = S(
+  ), { runAsync: U } = S(
     (r) => A.ai.testAiModel({ id: r }),
     {
       manual: !0,
@@ -1400,7 +1400,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }
     }
   ), V = () => {
-    v(null), d(""), R({}), s.resetFields(), p(!0);
+    v(null), d(""), O({}), s.resetFields(), p(!0);
   }, i = (r) => {
     v(r), d(r.provider);
     const k = r.config || {}, Z = {
@@ -1413,8 +1413,8 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     };
     c != null && c.config_fields && c.config_fields.forEach((J) => {
       J.type === "password" && (Z[J.name] = "");
-    }), R(Z), s.setFieldsValue(Z), p(!0);
-  }, U = (r) => {
+    }), O(Z), s.setFieldsValue(Z), p(!0);
+  }, R = (r) => {
     d(r), c != null && c.config_fields && c.config_fields.forEach((k) => {
       s.setFieldValue(k.name, void 0);
     });
@@ -1473,7 +1473,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           permission: "ai:models:test",
           icon: /* @__PURE__ */ e.jsx(Me, {}),
           tooltip: t("models.test", { defaultValue: "Test Connection" }),
-          onClick: async () => O(k.id)
+          onClick: async () => U(k.id)
         },
         {
           key: "setDefault",
@@ -1572,7 +1572,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             form: s,
             layout: "vertical",
             onFinish: pe,
-            onValuesChange: (r, k) => R(k),
+            onValuesChange: (r, k) => O(k),
             children: [
               /* @__PURE__ */ e.jsx(
                 l.Item,
@@ -1608,7 +1608,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                     {
                       loading: E,
                       placeholder: t("models.providerPlaceholder", { defaultValue: "Select provider" }),
-                      onChange: U,
+                      onChange: R,
                       value: o,
                       options: F == null ? void 0 : F.map((r) => ({
                         label: r.name,
@@ -1654,7 +1654,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                   z,
                   {
                     onClick: () => {
-                      p(!1), s.resetFields(), v(null), d(""), R({});
+                      p(!1), s.resetFields(), v(null), d(""), O({});
                     },
                     children: a("cancel", { defaultValue: "Cancel" })
                   }
@@ -1668,7 +1668,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   ] });
 }, { TextArea: Tt } = f, kt = () => {
   var Ee;
-  const { t } = N("system"), { t: a } = N("common"), [s] = l.useForm(), [_, p] = j(!1), [h, v] = j(null), [b, x] = j(""), [o, d] = j(!1), [g, R] = j(null), [E, F] = j(""), [c, w] = j(!1), [T, I] = j([]), [C, K] = j({}), [M, X] = j(), { loading: G, data: O, refresh: H } = S(
+  const { t } = N("system"), { t: a } = N("common"), [s] = l.useForm(), [_, p] = j(!1), [h, v] = j(null), [b, x] = j(""), [o, d] = j(!1), [g, O] = j(null), [E, F] = j(""), [c, w] = j(!1), [T, I] = j([]), [C, K] = j({}), [M, X] = j(), { loading: G, data: U, refresh: H } = S(
     () => A.system.listToolSets({ current: 1, page_size: 100, search: b, type: M }),
     {
       refreshDeps: [b, M],
@@ -1684,7 +1684,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         m.error(t("settings.toolsets.fetchTypeDefinitionsFailed", { defaultValue: "Failed to fetch toolset type definitions" })), console.error("Failed to fetch toolset type definitions:", n);
       }
     }
-  ), U = qe(() => i == null ? void 0 : i.find((n) => n.tool_set_type === E), [i, E]), { loading: pe, run: ge } = S(
+  ), R = qe(() => i == null ? void 0 : i.find((n) => n.tool_set_type === E), [i, E]), { loading: pe, run: ge } = S(
     (n) => A.system.createToolSet({
       ...n,
       type: n.type
@@ -1798,9 +1798,9 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     } else
       s.setFieldValue("config", void 0);
   }, ye = (n) => {
-    if (n.config && U) {
+    if (n.config && R) {
       const y = {};
-      U.config_fields.forEach((q) => {
+      R.config_fields.forEach((q) => {
         var $;
         const P = ($ = n.config) == null ? void 0 : $[q.name];
         if (P !== void 0)
@@ -1818,7 +1818,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   }, he = (n) => {
     r(n);
   }, u = (n) => {
-    R(n), d(!0);
+    O(n), d(!0);
   }, D = (n) => {
     console.log(/* @__PURE__ */ new Date(), "handleToggleStatus");
     const y = n.status === "enabled" ? "disabled" : "enabled";
@@ -1836,7 +1836,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       $ !== void 0 && (y[P] = $);
     }), y;
   };
-  console.log(O);
+  console.log(U);
   const be = [
     {
       title: t("settings.toolsets.name", { defaultValue: "Name" }),
@@ -1971,13 +1971,13 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       xe,
       {
         columns: be,
-        dataSource: (O == null ? void 0 : O.data) || [],
+        dataSource: (U == null ? void 0 : U.data) || [],
         loading: G,
         rowKey: "id",
         pagination: {
-          total: (O == null ? void 0 : O.total) || 0,
-          current: (O == null ? void 0 : O.current) || 1,
-          pageSize: (O == null ? void 0 : O.page_size) || 10,
+          total: (U == null ? void 0 : U.total) || 0,
+          current: (U == null ? void 0 : U.current) || 1,
+          pageSize: (U == null ? void 0 : U.page_size) || 10,
           showSizeChanger: !0,
           showQuickJumper: !0,
           showTotal: (n, y) => t("common.pagination.total", {
@@ -2051,7 +2051,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                   )
                 }
               ),
-              (Ee = U == null ? void 0 : U.config_fields) == null ? void 0 : Ee.map((n) => /* @__PURE__ */ e.jsx(
+              (Ee = R == null ? void 0 : R.config_fields) == null ? void 0 : Ee.map((n) => /* @__PURE__ */ e.jsx(
                 Ne,
                 {
                   field: n,
@@ -2143,10 +2143,10 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     )
   ] });
 }, { TextArea: At } = f, zt = () => {
-  const t = ze(), { t: a } = N("system"), { t: s } = N("common"), [_] = l.useForm(), [p, h] = j(!1), [v, b] = j(null), [x, o] = j(""), [d, g] = j(1), [R, E] = j(10), { loading: F, data: c, refresh: w } = S(
-    () => ot({ current: d, page_size: R, search: x }),
+  const t = ze(), { t: a } = N("system"), { t: s } = N("common"), [_] = l.useForm(), [p, h] = j(!1), [v, b] = j(null), [x, o] = j(""), [d, g] = j(1), [O, E] = j(10), { loading: F, data: c, refresh: w } = S(
+    () => ot({ current: d, page_size: O, search: x }),
     {
-      refreshDeps: [d, R, x],
+      refreshDeps: [d, O, x],
       onError: (i) => {
         m.error(a("settings.organizations.fetchFailed", { defaultValue: "Failed to fetch organizations" })), console.error("Failed to fetch organizations:", i);
       }
@@ -2163,7 +2163,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }
     }
   ), { loading: C, run: K } = S(
-    ({ id: i, ...U }) => dt({ id: i }, U),
+    ({ id: i, ...R }) => dt({ id: i }, R),
     {
       manual: !0,
       onSuccess: () => {
@@ -2192,7 +2192,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       description: i.description,
       status: i.status
     }), h(!0);
-  }, O = (i) => {
+  }, U = (i) => {
     Q.confirm({
       title: a("settings.organizations.deleteConfirm", { defaultValue: "Delete Organization" }),
       content: a("settings.organizations.deleteConfirmContent", {
@@ -2224,7 +2224,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     {
       title: s("actions", { defaultValue: "Actions" }),
       key: "actions",
-      render: (i, U) => /* @__PURE__ */ e.jsx(
+      render: (i, R) => /* @__PURE__ */ e.jsx(
         Ie,
         {
           actions: [
@@ -2232,14 +2232,14 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               key: "view",
               label: s("view", { defaultValue: "View" }),
               icon: /* @__PURE__ */ e.jsx(et, {}),
-              onClick: async () => t(`/system/settings/organizations/${U.id}`),
+              onClick: async () => t(`/system/settings/organizations/${R.id}`),
               permission: "system:organization:view"
             },
             {
               key: "edit",
               label: s("edit", { defaultValue: "Edit" }),
               icon: /* @__PURE__ */ e.jsx(ve, {}),
-              onClick: async () => G(U),
+              onClick: async () => G(R),
               permission: "system:organization:update"
             },
             {
@@ -2247,7 +2247,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               label: s("delete", { defaultValue: "Delete" }),
               icon: /* @__PURE__ */ e.jsx(Se, {}),
               danger: !0,
-              onClick: async () => O(U),
+              onClick: async () => U(R),
               permission: "system:organization:delete"
             }
           ]
@@ -2285,12 +2285,17 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               rowKey: "id",
               pagination: {
                 current: d,
-                pageSize: R,
+                pageSize: O,
                 total: (c == null ? void 0 : c.total) || 0,
                 showSizeChanger: !0,
-                showTotal: (i) => s("pagination.total", { defaultValue: `Total ${i} items` }),
-                onChange: (i, U) => {
-                  g(i), E(U);
+                showTotal: (i, R) => a("common.pagination.total", {
+                  defaultValue: `${R[0]}-${R[1]} of ${i} items`,
+                  start: R[0],
+                  end: R[1],
+                  total: i
+                }),
+                onChange: (i, R) => {
+                  g(i), E(R);
                 }
               }
             }
@@ -2412,7 +2417,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
   default: Et
 }, Symbol.toStringTag, { value: "Module" })), Pt = () => {
   var Ve, ye, he;
-  const t = ze(), { id: a } = nt(), { t: s } = N("system"), { t: _ } = N("common"), [p] = l.useForm(), [h] = l.useForm(), [v, b] = j(!1), [x, o] = j(!1), [d, g] = j(null), [R, E] = j(""), [F, c] = j(1), [w, T] = j(10), { data: I, loading: C, refresh: K } = S(
+  const t = ze(), { id: a } = nt(), { t: s } = N("system"), { t: _ } = N("common"), [p] = l.useForm(), [h] = l.useForm(), [v, b] = j(!1), [x, o] = j(!1), [d, g] = j(null), [O, E] = j(""), [F, c] = j(1), [w, T] = j(10), { data: I, loading: C, refresh: K } = S(
     () => ct({ id: a }),
     {
       ready: !!a,
@@ -2421,15 +2426,15 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }
     }
   ), { data: M, loading: X, refresh: G } = S(
-    () => mt({ id: a, current: F, page_size: w, search: R }),
+    () => mt({ id: a, current: F, page_size: w, search: O }),
     {
       ready: !!a,
-      refreshDeps: [a, F, w, R],
+      refreshDeps: [a, F, w, O],
       onError: (u) => {
         m.error(s("settings.organizations.users.fetchFailed", { defaultValue: "Failed to fetch organization users" })), console.error("Failed to fetch organization users:", u);
       }
     }
-  ), { data: O, loading: H } = S(
+  ), { data: U, loading: H } = S(
     () => Vt({ current: 1, page_size: 1e3 }),
     {
       ready: v
@@ -2439,7 +2444,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     {
       ready: !!a
     }
-  ), { loading: U, run: pe } = S(
+  ), { loading: R, run: pe } = S(
     (u) => pt({ id: a }, u),
     {
       manual: !0,
@@ -2495,7 +2500,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     h.validateFields().then((u) => {
       fe(u);
     });
-  }, re = ((Ve = O == null ? void 0 : O.data) == null ? void 0 : Ve.filter((u) => {
+  }, re = ((Ve = U == null ? void 0 : U.data) == null ? void 0 : Ve.filter((u) => {
     var D;
     return !((D = M == null ? void 0 : M.data) != null && D.some((le) => le.id === u.id));
   })) || [], Fe = [
@@ -2632,7 +2637,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         onCancel: () => {
           b(!1), p.resetFields();
         },
-        confirmLoading: U,
+        confirmLoading: R,
         width: 600,
         children: /* @__PURE__ */ e.jsxs(l, { form: p, layout: "vertical", children: [
           /* @__PURE__ */ e.jsx(

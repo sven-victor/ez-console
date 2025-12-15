@@ -52,7 +52,7 @@ import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { PAGINATION } from '@/constants';
 import { useTranslation } from 'react-i18next';
-import Actions, { Action } from '@/components/Actions';
+import Actions, { ActionProps } from '@/components/Actions';
 import { Avatar } from '@/components/Avatar';
 import { useRequest } from 'ahooks';
 import { useSite } from '@/contexts/SiteContext';
@@ -423,7 +423,7 @@ const UserList: React.FC = () => {
       key: 'action',
       width: 150,
       render: (_: any, record: API.User) => {
-        const actions: Action[] = [{
+        const actions: ActionProps[] = [{
           key: 'view',
           permission: "authorization:user:view",
           icon: <EyeOutlined />,

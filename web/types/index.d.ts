@@ -8,6 +8,7 @@ import { DropDownProps } from 'antd/es/dropdown';
 import { default as i18n } from 'i18next';
 import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { Popconfirm } from 'antd';
 import { ReactNode } from 'react';
 import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
@@ -31,25 +32,29 @@ import { useTranslation } from 'react-i18next';
  */
 export declare type AccessType = "public" | "private" | "owner";
 
-declare interface Action extends ButtonProps {
+export declare interface ActionProps extends ButtonProps {
     key: string;
-    label?: string;
+    label?: React.ReactNode;
     permission?: string;
     icon?: React.ReactNode;
-    tooltip?: string;
+    tooltip?: React.ReactNode;
     onClick?: () => Promise<any>;
     hidden?: boolean;
     confirm?: {
-        title: string;
+        title: React.ReactNode;
+        description?: React.ReactNode;
         onConfirm: () => void;
-        okText?: string;
-        cancelText?: string;
+        okText?: React.ComponentProps<typeof Popconfirm>['okText'];
+        cancelText?: React.ComponentProps<typeof Popconfirm>['cancelText'];
     };
 }
 
-export declare const Actions: ({ actions }: {
-    actions: Action[];
-}) => JSX_2.Element[];
+export declare const Actions: React.FC<ActionsProps>;
+
+declare interface ActionsProps {
+    actions: ActionProps[];
+    maxVisibleItems?: number;
+}
 
 export declare interface addUserToOrganizationParams {
     /** Organization ID */
