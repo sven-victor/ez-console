@@ -56,7 +56,6 @@ const ServiceAccountList: React.FC = () => {
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
   const [searchForm] = Form.useForm();
-  const [serviceAccountForm] = Form.useForm();
 
   // Data State
   const [loading, setLoading] = useState(false);
@@ -137,7 +136,6 @@ const ServiceAccountList: React.FC = () => {
   // Close drawer
   const closeModal = () => {
     setModalVisible(false);
-    serviceAccountForm.resetFields();
   };
 
 

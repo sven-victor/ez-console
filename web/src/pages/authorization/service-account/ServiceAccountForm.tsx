@@ -86,6 +86,10 @@ const ServiceAccountForm = ({
       form.resetFields();
       onClose()
     }}
+    onCancel={() => {
+      form.resetFields();
+      onClose()
+    }}
     open={open}
     footer={
       <Space>
