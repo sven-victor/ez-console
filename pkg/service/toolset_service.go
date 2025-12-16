@@ -168,7 +168,7 @@ func (s *ToolSetService) TestToolSet(ctx context.Context, organizationID, id str
 	}
 
 	// Create toolset instance
-	toolsetInstance, err := s.createToolSetInstance(toolset)
+	toolsetInstance, err := s.CreateToolSetInstance(toolset)
 	if err != nil {
 		return fmt.Errorf("failed to create toolset instance: %w", err)
 	}
@@ -192,11 +192,11 @@ func (s *ToolSetService) GetToolSetInstance(ctx context.Context, organizationID,
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
 	}
 
-	return s.createToolSetInstance(toolset)
+	return s.CreateToolSetInstance(toolset)
 }
 
-// createToolSetInstance creates a toolset instance from database model
-func (s *ToolSetService) createToolSetInstance(toolSet *model.ToolSet) (toolset.ToolSet, error) {
+// CreateToolSetInstance creates a toolset instance from database model
+func (s *ToolSetService) CreateToolSetInstance(toolSet *model.ToolSet) (toolset.ToolSet, error) {
 	factory, exists := toolset.GetToolSetFactory(toolset.ToolSetType(toolSet.Type))
 	if !exists {
 		return nil, fmt.Errorf("unsupported toolset type: %s", toolSet.Type)
@@ -219,7 +219,7 @@ func (s *ToolSetService) GetAllEnabledToolSetInstances(ctx context.Context, orga
 
 	instances := make(toolset.ToolSets)
 	for _, toolset := range toolsets {
-		instance, err := s.createToolSetInstance(&toolset)
+		instance, err := s.CreateToolSetInstance(&toolset)
 		if err != nil {
 			// Log error but continue with other toolsets
 			continue
@@ -319,7 +319,7 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 				if toolSet.Status != model.ToolSetStatusEnabled {
 					continue
 				}
-				instance, err := s.createToolSetInstance(&toolSet)
+				instance, err := s.CreateToolSetInstance(&toolSet)
 				if err != nil {
 					return nil, fmt.Errorf("failed to create toolset instance: %w", err)
 				}
@@ -330,7 +330,7 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 			if err != nil {
 				return nil, fmt.Errorf("failed to get toolset: %w", err)
 			}
-			instance, err := s.createToolSetInstance(toolSet)
+			instance, err := s.CreateToolSetInstance(toolSet)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get toolset instance %s: %w", toolSetID, err)
 			}
