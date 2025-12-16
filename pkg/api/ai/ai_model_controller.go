@@ -70,6 +70,7 @@ type UpdateAIModelRequest struct {
 	Provider    model.AIModelProvider `json:"provider" binding:"required"`
 	Config      model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
 	IsDefault   bool                  `json:"is_default" validate:"optional"`
+	Status      model.AIModelStatus   `json:"status" validate:"optional"`
 }
 
 // ListAIModels lists AI models with pagination
@@ -317,6 +318,7 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 		Config:      req.Config,
 		IsDefault:   req.IsDefault,
 		UpdatedBy:   userID.(string),
+		Status:      req.Status,
 	}
 
 	updatedModel, err := c.service.UpdateAIModel(ctx, organizationID, id, aiModel)

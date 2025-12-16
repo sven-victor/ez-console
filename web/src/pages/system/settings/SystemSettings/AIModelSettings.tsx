@@ -68,6 +68,7 @@ interface AIModelFormData {
   provider: API.AIModelProvider;
   config?: Record<string, any>;
   is_default?: boolean;
+  status?: 'enabled' | 'disabled';
 }
 
 const AIModelSettings: React.FC = () => {
@@ -210,15 +211,9 @@ const AIModelSettings: React.FC = () => {
       provider: record.provider,
       is_default: record.is_default,
       config: config, // Spread config fields to form
+      status: record.status,
     };
-    // Don't populate password fields for security
-    if (currentProviderDefinition?.config_fields) {
-      currentProviderDefinition.config_fields.forEach((field) => {
-        if (field.type === 'password') {
-          formData[field.name] = '';
-        }
-      });
-    }
+    console.log(formData)
     setFormValues(formData);
     form.setFieldsValue(formData);
     setIsModalVisible(true);
@@ -252,6 +247,7 @@ const AIModelSettings: React.FC = () => {
       provider: values.provider,
       config,
       is_default: values.is_default,
+      status: values.status,
     };
 
     if (editingModel) {
@@ -476,6 +472,9 @@ const AIModelSettings: React.FC = () => {
             valuePropName="checked"
           >
             <Switch /> <span style={{ marginLeft: 8 }}>{t('models.setAsDefault', { defaultValue: 'Set as default model' })}</span>
+          </Form.Item>
+          <Form.Item hidden name="status" label={t('models.status', { defaultValue: 'Status' })}>
+            <Input />
           </Form.Item>
 
           <Form.Item>

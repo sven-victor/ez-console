@@ -377,12 +377,14 @@ const ToolSetSettings: React.FC = () => {
             permission: 'system:toolsets:test',
             tooltip: t('settings.toolsets.test', { defaultValue: 'Test Connection' }),
             icon: <ThunderboltOutlined />,
+            disabled: record.status !== 'enabled',
             onClick: async () => testToolSet(record.id),
           },
           {
             key: 'viewTools',
             icon: <ToolOutlined />,
             permission: 'system:toolsets:view',
+            disabled: record.status !== 'enabled',
             tooltip: t('settings.toolsets.viewTools', { defaultValue: 'View Tools' }),
             onClick: async () => fetchTools(record.id),
           },
@@ -573,6 +575,9 @@ const ToolSetSettings: React.FC = () => {
               formValues={formValues}
             />
           ))}
+          <Form.Item hidden name="status" label={t('settings.toolsets.status', { defaultValue: 'Status' })}>
+            <Input />
+          </Form.Item>
 
           <Form.Item>
             <Space>
