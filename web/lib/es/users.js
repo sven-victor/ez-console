@@ -8,7 +8,7 @@ import { a as V } from "./index.js";
 import { P as R, f as $ } from "./base.js";
 import { useTranslation as F } from "react-i18next";
 import { useRequest as U } from "ahooks";
-import { b as Z, a as Pe } from "./contexts.js";
+import { c as Z, b as Pe } from "./contexts.js";
 import { A as ve } from "./client.js";
 const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
   const { t: f } = F("authorization"), [h, d] = A(null), [n, y] = A(null), { run: k, loading: P } = U(V.authorization.updateUser, {

@@ -3,23 +3,24 @@ import { a as X } from "./authorization.js";
 import { b as Z, g as ee } from "./base.js";
 import { a as M } from "./system.js";
 import { o as te } from "./oauth.js";
-import { j as e, d as de, e as me, f as ue, g as pe, h as xe, i as B, k as fe } from "./vendor.js";
+import { j as e, E as de, G as me, H as ue, J as pe, L as xe, N as B, O as fe } from "./vendor.js";
 import { QueryClient as ge, QueryClientProvider as je } from "react-query";
-import { useLocation as ve, useNavigate as ye, Link as $, Outlet as ze, matchRoutes as we, BrowserRouter as be, Routes as _e, Route as T } from "react-router-dom";
+import { useLocation as ve, useNavigate as ye, Link as k, Outlet as ze, matchRoutes as we, BrowserRouter as be, Routes as _e, Route as T } from "react-router-dom";
 import { Layout as U, Menu as I, Spin as Se, Button as Ae, Breadcrumb as Le, ConfigProvider as Oe } from "antd";
 import { useTranslation as C } from "react-i18next";
 import { lazy as l, Suspense as Re, useState as A, useEffect as N } from "react";
-import { L as ke, H as q, O as $e, A as Q, a as Ie, b as Ne, c as Pe, d as De, P as Fe } from "./components.js";
+import { L as $e, H as q, O as ke, A as Q, a as Ie, b as Ne, c as Pe, d as De, P as Fe } from "./components.js";
 import { DashboardOutlined as Me, SolutionOutlined as Be, UserOutlined as P, SafetyOutlined as Ue, FileSearchOutlined as Ce, SettingOutlined as Ee, SwapOutlined as He, MenuUnfoldOutlined as Ve, MenuFoldOutlined as Ke } from "@ant-design/icons";
-import { c as Te, a as qe, u as Qe, b as We, A as Ye, S as Ge, e as Je } from "./contexts.js";
+import { u as Te, b as qe, a as Qe, c as We, A as Ge, S as Je, e as Ye } from "./contexts.js";
 import Xe from "lodash";
+import "./ai-chat.js";
 import "./forbidden.js";
 import "./not_found.js";
 import "./client.js";
 import "i18next";
-const Ze = l(() => import("./dashboard.js")), et = l(() => import("./login.js")), tt = l(() => import("./profile.js")), W = l(() => import("./not_found.js")), it = l(() => import("./forbidden.js")), nt = l(() => import("./users.js").then((s) => s.U)), at = l(() => import("./users.js").then((s) => s.a)), Y = l(() => import("./users.js").then((s) => s.b)), st = l(() => import("./roles.js").then((s) => s.R)), G = l(() => import("./roles.js").then((s) => s.a)), ot = l(() => import("./system-settings.js").then((s) => s.i)), rt = l(() => import("./system-settings.js").then((s) => s.O)), lt = l(() => import("./system-settings.js").then((s) => s.a)), ct = l(() => import("./audit.js")), ht = l(() => import("./service-accounts.js").then((s) => s.S)), dt = l(() => import("./service-accounts.js").then((s) => s.a));
+const Ze = l(() => import("./dashboard.js")), et = l(() => import("./login.js")), tt = l(() => import("./profile.js")), W = l(() => import("./not_found.js")), it = l(() => import("./forbidden.js")), nt = l(() => import("./users.js").then((s) => s.U)), at = l(() => import("./users.js").then((s) => s.a)), G = l(() => import("./users.js").then((s) => s.b)), st = l(() => import("./roles.js").then((s) => s.R)), J = l(() => import("./roles.js").then((s) => s.a)), ot = l(() => import("./system-settings.js").then((s) => s.i)), rt = l(() => import("./system-settings.js").then((s) => s.O)), lt = l(() => import("./system-settings.js").then((s) => s.a)), ct = l(() => import("./audit.js")), ht = l(() => import("./service-accounts.js").then((s) => s.S)), dt = l(() => import("./service-accounts.js").then((s) => s.a));
 function o(s, m) {
-  return /* @__PURE__ */ e.jsx(Re, { fallback: /* @__PURE__ */ e.jsx(ke, {}), children: /* @__PURE__ */ e.jsx(s, { ...m }) });
+  return /* @__PURE__ */ e.jsx(Re, { fallback: /* @__PURE__ */ e.jsx($e, {}), children: /* @__PURE__ */ e.jsx(s, { ...m }) });
 }
 const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoutes: j = [], extraPublicRoutes: v = [] }) => {
   const w = [
@@ -81,13 +82,13 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
                 },
                 {
                   path: "/authorization/roles/create",
-                  element: o(G),
+                  element: o(J),
                   permissions: ["authorization:role:create"],
                   index: !0
                 },
                 {
                   path: "/authorization/roles/:id/edit",
-                  element: o(G),
+                  element: o(J),
                   permissions: ["authorization:role:update"],
                   index: !0
                 }
@@ -107,7 +108,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
                 },
                 {
                   path: "/authorization/users/create",
-                  element: o(Y),
+                  element: o(G),
                   permissions: ["authorization:user:create"],
                   index: !0
                 },
@@ -119,7 +120,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
                 },
                 {
                   path: "/authorization/users/:id/edit",
-                  element: o(Y),
+                  element: o(G),
                   permissions: ["authorization:user:update"],
                   index: !0
                 }
@@ -195,7 +196,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
     }
   ];
   return [...w, ...b];
-}, Ct = {
+}, Et = {
   ai: he,
   authorization: X,
   base: Z,
@@ -216,7 +217,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
   }, oe = [
     {
       key: "profile",
-      label: /* @__PURE__ */ e.jsx($, { to: "/profile", children: y("profile") })
+      label: /* @__PURE__ */ e.jsx(k, { to: "/profile", children: y("profile") })
     },
     {
       key: "logout",
@@ -266,9 +267,9 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
         return null;
       if ("children" in t && t.children) {
         const p = H(t.children, [...r, t.name]);
-        return p.length == 0 && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx($, { to: t.path, children: f(`menu.${[...r, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : /* @__PURE__ */ e.jsx(gt, { icon: t.icon, title: f(`menu.${[...r, t.name, t.name].join(".")}`, { defaultValue: d }), children: p }, t.path ?? t.name);
+        return p.length == 0 && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: f(`menu.${[...r, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : /* @__PURE__ */ e.jsx(gt, { icon: t.icon, title: f(`menu.${[...r, t.name, t.name].join(".")}`, { defaultValue: d }), children: p }, t.path ?? t.name);
       }
-      return t.name && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx($, { to: t.path, children: f(`menu.${[...r, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : null;
+      return t.name && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: f(`menu.${[...r, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : null;
     }).filter(Boolean);
   };
   N(() => {
@@ -291,7 +292,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
       },
       "navigation-dropdown"
     ),
-    ...n != null && n.enable_multi_org ? [/* @__PURE__ */ e.jsx($e, {}, "org-switcher")] : [],
+    ...n != null && n.enable_multi_org ? [/* @__PURE__ */ e.jsx(ke, {}, "org-switcher")] : [],
     /* @__PURE__ */ e.jsxs(
       q,
       {
@@ -326,9 +327,9 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
           /* @__PURE__ */ e.jsx("div", { style: { marginRight: "20px" }, children: u })
         ] }),
         /* @__PURE__ */ e.jsxs(pt, { style: { margin: "0 16px", height: "calc(100vh - 170px)", overflow: "auto" }, children: [
-          /* @__PURE__ */ e.jsx(Le, { style: { margin: "16px 0" }, itemRender: (k) => {
-            const K = k.href || k.path;
-            return K ? /* @__PURE__ */ e.jsx($, { to: K, children: k.title }) : /* @__PURE__ */ e.jsx("span", { children: k.title });
+          /* @__PURE__ */ e.jsx(Le, { style: { margin: "16px 0" }, itemRender: ($) => {
+            const K = $.href || $.path;
+            return K ? /* @__PURE__ */ e.jsx(k, { to: K, children: $.title }) : /* @__PURE__ */ e.jsx("span", { children: $.title });
           }, items: t }),
           /* @__PURE__ */ e.jsx("div", { className: "site-layout-background", style: { padding: 24, minHeight: "calc(100vh - 190px)" }, children: d }),
           (n == null ? void 0 : n.attrs.ai_enabled) && /* @__PURE__ */ e.jsx(Ne, {}),
@@ -351,7 +352,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
       retry: 1
     }
   }
-}), J = {
+}), Y = {
   "zh-CN": fe,
   "en-US": B,
   "de-DE": xe,
@@ -360,7 +361,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
   "ar-AE": me,
   "sv-SE": de
 };
-function Et({
+function Ht({
   transformRouter: s = (c) => c,
   transformSettingTabs: m = (c) => c,
   transformLangConfig: j = (c) => c,
@@ -370,9 +371,9 @@ function Et({
   transformHeaderItems: x = (c) => c,
   renderLayout: L
 }) {
-  const { i18n: c } = C(), [f, _] = A(J[c.language] || B);
+  const { i18n: c } = C(), [f, _] = A(Y[c.language] || B);
   N(() => {
-    _(J[c.language] || B);
+    _(Y[c.language] || B);
   }, [c.language]);
   const y = (z) => z.map((h) => h.children === void 0 ? h : {
     ...h,
@@ -403,11 +404,11 @@ function Et({
     Oe,
     {
       locale: f,
-      children: /* @__PURE__ */ e.jsx(Ye, { children: /* @__PURE__ */ e.jsx(Ge, { children: /* @__PURE__ */ e.jsx(Je, { children: /* @__PURE__ */ e.jsx(be, { basename: ee(), children: /* @__PURE__ */ e.jsx(_e, { children: O(g) }) }) }) }) })
+      children: /* @__PURE__ */ e.jsx(Ge, { children: /* @__PURE__ */ e.jsx(Je, { children: /* @__PURE__ */ e.jsx(Ye, { children: /* @__PURE__ */ e.jsx(be, { basename: ee(), children: /* @__PURE__ */ e.jsx(_e, { children: O(g) }) }) }) }) })
     }
   ) });
 }
-const Ht = {
+const Vt = {
   ...X,
   ...Z,
   ...te,
@@ -415,9 +416,9 @@ const Ht = {
   ...M
 };
 export {
-  Et as A,
-  Ct as a,
-  Ht as b,
+  Ht as A,
+  Et as a,
+  Vt as b,
   jt as c,
   o as w
 };

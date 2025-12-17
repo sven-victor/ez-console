@@ -1,17 +1,17 @@
 import { j as e } from "./vendor.js";
 import { useRef as ne, useState as f, useEffect as k, useCallback as O, useMemo as Re } from "react";
-import { Space as P, Tag as B, Tooltip as le, Button as b, Popconfirm as Pe, Card as K, Row as we, Col as te, message as _, Form as x, Tabs as Te, Input as re, Radio as $, Select as N, Tree as Oe, Spin as Ce, Checkbox as W, Empty as R } from "antd";
+import { Space as P, Tag as B, Tooltip as le, Button as V, Popconfirm as Pe, Card as K, Row as we, Col as te, message as _, Form as x, Tabs as Te, Input as re, Radio as $, Select as N, Tree as Oe, Spin as Ce, Checkbox as W, Empty as R } from "antd";
 import { UserOutlined as Ie, TeamOutlined as ke, LockOutlined as Ne, EditOutlined as Fe, DeleteOutlined as De, ReloadOutlined as Le, PlusOutlined as qe, DownOutlined as Ge, UpOutlined as Me } from "@ant-design/icons";
 import { j as H, T as Je } from "./components.js";
 import { a as S } from "./index.js";
 import { useTranslation as F } from "react-i18next";
-import { b as se, u as Ue } from "./contexts.js";
+import { c as se, a as Ue } from "./contexts.js";
 import { useNavigate as de, useParams as Be } from "react-router-dom";
 import oe from "lodash";
 import { createStyles as $e } from "antd-style";
 const We = () => {
-  const { t: c } = F("authorization"), { t: o } = F("common"), { siteConfig: m } = se(), V = de(), p = ne(null), h = (r) => {
-    V(`/authorization/roles/${r}/edit`);
+  const { t: c } = F("authorization"), { t: o } = F("common"), { siteConfig: m } = se(), b = de(), p = ne(null), h = (r) => {
+    b(`/authorization/roles/${r}/edit`);
   }, v = async (r) => {
     var a, n;
     try {
@@ -66,7 +66,7 @@ const We = () => {
       key: "action",
       render: (r, a) => /* @__PURE__ */ e.jsxs(P, { size: "small", children: [
         /* @__PURE__ */ e.jsx(H, { permission: "authorization:role:update", children: /* @__PURE__ */ e.jsx(le, { title: c("role.edit", { defaultValue: "Edit Role" }), children: /* @__PURE__ */ e.jsx(
-          b,
+          V,
           {
             type: "text",
             size: "small",
@@ -82,7 +82,7 @@ const We = () => {
             okText: o("confirm", { defaultValue: "Confirm" }),
             cancelText: o("cancel", { defaultValue: "Cancel" }),
             children: /* @__PURE__ */ e.jsx(
-              b,
+              V,
               {
                 type: "text",
                 size: "small",
@@ -98,7 +98,7 @@ const We = () => {
   return /* @__PURE__ */ e.jsx("div", { children: /* @__PURE__ */ e.jsxs(K, { style: { marginBottom: 16 }, children: [
     /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(we, { justify: "space-between", align: "middle", gutter: 16, children: [
       /* @__PURE__ */ e.jsx(te, { children: /* @__PURE__ */ e.jsx(P, { children: /* @__PURE__ */ e.jsx(
-        b,
+        V,
         {
           type: "primary",
           onClick: () => {
@@ -110,11 +110,11 @@ const We = () => {
         }
       ) }) }),
       /* @__PURE__ */ e.jsx(te, { children: /* @__PURE__ */ e.jsx(H, { permission: "authorization:role:create", children: /* @__PURE__ */ e.jsx(
-        b,
+        V,
         {
           type: "primary",
           icon: /* @__PURE__ */ e.jsx(qe, {}),
-          onClick: () => V("/authorization/roles/create"),
+          onClick: () => b("/authorization/roles/create"),
           children: c("role.create", { defaultValue: "Create Role" })
         }
       ) }) })
@@ -208,7 +208,7 @@ const We = () => {
     ]
   }
 }, ae = JSON.stringify({ Statement: [] }, null, 2), Xe = () => {
-  const { styles: c } = He(), { t: o } = F("authorization"), { t: m } = F("common"), V = de(), { id: p } = Be(), h = !!p, { enableMultiOrg: v, currentOrgId: D } = se(), { user: r } = Ue(), a = (r == null ? void 0 : r.organizations) || [], [n] = x.useForm(), [E, w] = f([]), [C, ce] = f([]), [ue, L] = f([]), [me, q] = f(!0), [I, j] = f([]), [T, g] = f({}), G = ne({}), [fe, X] = f(!1), [y, M] = f("global"), [J, pe] = f(void 0), [he, Y] = f(!1), [ge, Q] = f(!1);
+  const { styles: c } = He(), { t: o } = F("authorization"), { t: m } = F("common"), b = de(), { id: p } = Be(), h = !!p, { enableMultiOrg: v, currentOrgId: D } = se(), { user: r } = Ue(), a = (r == null ? void 0 : r.organizations) || [], [n] = x.useForm(), [E, w] = f([]), [C, ce] = f([]), [ue, L] = f([]), [me, q] = f(!0), [I, j] = f([]), [T, g] = f({}), G = ne({}), [fe, X] = f(!1), [y, M] = f("global"), [J, pe] = f(void 0), [he, Y] = f(!1), [ge, Q] = f(!1);
   k(() => {
     G.current = T;
   }, [T]), k(() => {
@@ -285,12 +285,12 @@ const We = () => {
           policy_document: JSON.stringify(i.policy_document || { Statement: [] }, null, 2)
         });
       } catch {
-        _.error(o("role.detailLoadError", { defaultValue: "Failed to load role details" })), V("/authorization/roles");
+        _.error(o("role.detailLoadError", { defaultValue: "Failed to load role details" })), b("/authorization/roles");
       } finally {
         Y(!1);
       }
     },
-    [A, n, V, o]
+    [A, n, b, o]
   );
   k(() => {
     if (h && p) {
@@ -327,9 +327,9 @@ const We = () => {
   }, _e = () => {
     const t = C.map((l) => l.key);
     L(t), q(!0);
-  }, be = () => {
+  }, Ve = () => {
     L([]), q(!1);
-  }, Ve = O((t, l) => {
+  }, be = O((t, l) => {
     g((i) => ({
       ...i,
       [t]: l
@@ -369,7 +369,7 @@ const We = () => {
         toolset_id: d,
         tools: Array.from(new Set(s))
       })).filter((d) => d.tools.length > 0) : [];
-      l.ai_tool_permissions = i, l.permissions = E.filter((d) => !d.startsWith("[group]-")), Q(!0), h && p ? (await S.authorization.updateRole({ id: p }, l), _.success(o("role.updateSuccess", { defaultValue: "Role updated successfully." }))) : (await S.authorization.createRole(l), _.success(o("role.createSuccess", { defaultValue: "Role created successfully." }))), V("/authorization/roles");
+      l.ai_tool_permissions = i, l.permissions = E.filter((d) => !d.startsWith("[group]-")), Q(!0), h && p ? (await S.authorization.updateRole({ id: p }, l), _.success(o("role.updateSuccess", { defaultValue: "Role updated successfully." }))) : (await S.authorization.createRole(l), _.success(o("role.createSuccess", { defaultValue: "Role created successfully." }))), b("/authorization/roles");
     } catch {
       _.error(
         o("role.saveError", {
@@ -565,8 +565,8 @@ const We = () => {
                             },
                             children: [
                               /* @__PURE__ */ e.jsxs("span", { className: c.rolePermissionExtra, children: [
-                                /* @__PURE__ */ e.jsx(b, { type: "link", onClick: _e, icon: /* @__PURE__ */ e.jsx(Ge, {}), children: m("expandAll", { defaultValue: "Expand All" }) }),
-                                /* @__PURE__ */ e.jsx(b, { type: "link", onClick: be, icon: /* @__PURE__ */ e.jsx(Me, {}), children: m("collapseAll", { defaultValue: "Collapse All" }) })
+                                /* @__PURE__ */ e.jsx(V, { type: "link", onClick: _e, icon: /* @__PURE__ */ e.jsx(Ge, {}), children: m("expandAll", { defaultValue: "Expand All" }) }),
+                                /* @__PURE__ */ e.jsx(V, { type: "link", onClick: Ve, icon: /* @__PURE__ */ e.jsx(Me, {}), children: m("collapseAll", { defaultValue: "Collapse All" }) })
                               ] }),
                               /* @__PURE__ */ e.jsx(
                                 Oe,
@@ -620,7 +620,7 @@ const We = () => {
                             {
                               style: { width: "100%" },
                               value: T[t.id] || [],
-                              onChange: (u) => Ve(t.id, u),
+                              onChange: (u) => be(t.id, u),
                               children: /* @__PURE__ */ e.jsx(P, { direction: "vertical", style: { width: "100%" }, children: (t.tools || []).map((u) => /* @__PURE__ */ e.jsx(W, { value: u.name, children: /* @__PURE__ */ e.jsxs("div", { children: [
                                 /* @__PURE__ */ e.jsx("div", { children: u.name }),
                                 u.description && /* @__PURE__ */ e.jsx(
@@ -742,7 +742,7 @@ const We = () => {
             ),
             /* @__PURE__ */ e.jsx(x.Item, { children: /* @__PURE__ */ e.jsxs(P, { children: [
               /* @__PURE__ */ e.jsx(
-                b,
+                V,
                 {
                   type: "primary",
                   htmlType: "submit",
@@ -751,9 +751,9 @@ const We = () => {
                 }
               ),
               /* @__PURE__ */ e.jsx(
-                b,
+                V,
                 {
-                  onClick: () => V("/authorization/roles"),
+                  onClick: () => b("/authorization/roles"),
                   children: m("cancel", { defaultValue: "Cancel" })
                 }
               )

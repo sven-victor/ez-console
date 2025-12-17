@@ -1,6 +1,6 @@
 import { j as r } from "./vendor.js";
-import { message as p, Skeleton as u, Row as c, Col as f, Card as l, Statistic as b } from "antd";
-import { u as g } from "./contexts.js";
+import { message as p, Skeleton as c, Row as u, Col as f, Card as l, Statistic as b } from "antd";
+import { a as g } from "./contexts.js";
 import { useTranslation as x } from "react-i18next";
 import { Chart as j, CategoryScale as h, LinearScale as C, BarElement as S, Title as v, Tooltip as E, Legend as y } from "chart.js";
 import { Bar as R } from "react-chartjs-2";
@@ -47,9 +47,9 @@ const F = () => {
       }
     }
   } }) });
-  return /* @__PURE__ */ r.jsxs(u, { active: !0, loading: n, children: [
+  return /* @__PURE__ */ r.jsxs(c, { active: !0, loading: n, children: [
     /* @__PURE__ */ r.jsx("p", { children: s("dashboard.welcome", { defaultValue: "Welcome, {{name}}!", name: (o == null ? void 0 : o.full_name) || (o == null ? void 0 : o.username) }) }),
-    a == null ? void 0 : a.map((e, t) => /* @__PURE__ */ r.jsx(c, { gutter: 16, style: { marginTop: 20 }, children: e.map((i, d) => /* @__PURE__ */ r.jsx(f, { span: i.width, children: m(i) }, d)) }, t))
+    a == null ? void 0 : a.map((e, t) => /* @__PURE__ */ r.jsx(u, { gutter: 16, style: { marginTop: 20 }, children: e.map((i, d) => /* @__PURE__ */ r.jsx(f, { span: i.width, children: m(i) }, d)) }, t))
   ] });
 };
 export {

@@ -1,13 +1,13 @@
 import { j as e } from "./vendor.js";
-import { useState as p, useEffect as h } from "react";
+import { useState as h, useEffect as p } from "react";
 import { Card as b, Tabs as g, message as x } from "antd";
 import { useTranslation as l } from "react-i18next";
-import { n as y, m as P, o as j, p as V, U as w } from "./components.js";
+import { m as y, l as P, n as j, o as V, U as w } from "./components.js";
 import { f as A } from "./contexts.js";
 import { a as L } from "./index.js";
 import { useNavigate as S, useLocation as k } from "react-router-dom";
 const _ = () => {
-  const { t: a } = l("authorization"), { t: n } = l("common"), { user: s, updateUser: c } = A(), [f, r] = p(!1), u = S(), i = k(), d = i.hash.replace("#", "") || "basic", o = async () => {
+  const { t: a } = l("authorization"), { t: n } = l("common"), { user: s, updateUser: c } = A(), [f, r] = h(!1), u = S(), i = k(), d = i.hash.replace("#", "") || "basic", o = async () => {
     try {
       r(!0);
       const t = await L.authorization.getCurrentUser();
@@ -18,7 +18,7 @@ const _ = () => {
       r(!1);
     }
   };
-  h(() => {
+  p(() => {
     o();
   }, []);
   const m = [

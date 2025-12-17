@@ -53,6 +53,12 @@ const baseConfig: UserConfig = {
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks(id, meta) {
+          if (id.includes('/node_modules/highlight.js/')) return 'highlight';
+          if (id.includes('/src/components/AIChat.tsx')) return 'ai-chat';
+          // if (id.includes('/src/components/AIChatLayout.tsx')) return 'ai-chat-layout';
+          if (id.includes('/node_modules/mermaid/')) return 'mermaid';
+          if (id.includes('/node_modules/refractor/')) return 'refractor';
+          if (id.includes('/node_modules/@ant-design/x/') || id.includes('/node_modules/@ant-design/x-markdown/') || id.includes('/node_modules/@ant-design/x-sdk/')) return 'ant-design-x';
           if (id.includes('node_modules')) return 'vendor';
           if (id.includes('/src/main.tsx') || id.includes('/src/App.tsx') || id.includes('/src/components/Layout.tsx') || id.includes('/src/routes/')) return 'index';
           if (id.includes('/src/contexts/') || id.includes('/src/hooks/')) return "contexts";
@@ -65,7 +71,7 @@ const baseConfig: UserConfig = {
           if (id.includes('/src/pages/profile')) return 'profile';
           if (id.includes('/src/i18n/') || id.includes('/src/utils/') || id.includes('/src/constants/') || id.includes('/src/api/')) return 'base';
           if (id.includes('/src/components/')) return 'components';
-          if (id.startsWith('\x00vite/') || id === '\x00commonjsHelpers.js') {
+          if (id.startsWith('\x00')) {
             return "vite";
           };
           return toSnakeCase(path.basename(id, path.extname(id)))

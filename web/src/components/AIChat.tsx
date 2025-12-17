@@ -30,10 +30,12 @@ import {
   Conversations,
   Sender,
   XProvider,
+  CodeHighlighter,
+  Mermaid,
 } from '@ant-design/x';
 import { AbstractChatProvider, TransformMessage, useXChat, XRequest, XRequestOptions } from '@ant-design/x-sdk';
 import { useXConversations, type MessageInfo } from '@ant-design/x-sdk';
-import { XMarkdown } from '@ant-design/x-markdown';
+import { ComponentProps, XMarkdown } from '@ant-design/x-markdown';
 
 import { useRequest } from 'ahooks';
 import { Button, Dropdown, Radio, Space, Spin, message } from 'antd';
@@ -286,6 +288,17 @@ const providerFactory = (conversationKey: string) => {
     );
   }
   return providerCaches.get(conversationKey);
+};
+
+const Code: React.FC<ComponentProps> = (props) => {
+  const { className, children } = props;
+  const lang = className?.match(/language-(\w+)/)?.[1] || '';
+
+  if (typeof children !== 'string') return null;
+  if (lang === 'mermaid') {
+    return <Mermaid>{children}</Mermaid>;
+  }
+  return <CodeHighlighter lang={lang}>{children}</CodeHighlighter>;
 };
 
 export const useMarkdownTheme = () => {
@@ -604,7 +617,7 @@ const AIChat: React.FC = () => {
     if (message.error) {
       return (
         <div>
-          <XMarkdown content={message.error} />
+          <XMarkdown content={message.error} components={{ code: Code }} />
         </div>
       );
     }
@@ -619,6 +632,7 @@ const AIChat: React.FC = () => {
           paragraphTag="div"
           content={content}
           className={className}
+          components={{ code: Code }}
         />
       );
     },
