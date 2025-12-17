@@ -262,18 +262,25 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 
 // CreateChatCompletionWithToolSets creates a chat completion using the specified model with toolSets
 func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatCompletionOptions) ([]ai.ChatMessage, error) {
-
+	var err error
+	var aiModel *model.AIModel
+	// Get the AI model
+	if modelID == "" {
+		aiModel, err = s.aiModelService.GetDefaultAIModel(ctx, organizationID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get default AI model: %w", err)
+		}
+	} else {
+		aiModel, err = s.aiModelService.GetAIModel(ctx, organizationID, modelID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get AI model: %w", err)
+		}
+	}
 	options = append([]ai.WithChatCompletionOptions{
 		ai.WithChatCompletionToolSetsFactory(func(ctx context.Context) (toolset.ToolSets, error) {
 			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
 		}),
 	}, options...)
-
-	// Get the AI model
-	aiModel, err := s.aiModelService.GetAIModel(ctx, organizationID, modelID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get AI model: %w", err)
-	}
 
 	// Get factory for the provider
 	factory, ok := ai.GetFactory(aiModel.Provider)
@@ -302,10 +309,19 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 
 // CreateChatCompletionStream creates a streaming chat completion
 func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatCompletionOptions) (ai.ChatStream, error) {
+	var err error
+	var aiModel *model.AIModel
 	// Get the AI model
-	aiModel, err := s.aiModelService.GetAIModel(ctx, organizationID, modelID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get AI model: %w", err)
+	if modelID == "" {
+		aiModel, err = s.aiModelService.GetDefaultAIModel(ctx, organizationID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get default AI model: %w", err)
+		}
+	} else {
+		aiModel, err = s.aiModelService.GetAIModel(ctx, organizationID, modelID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get AI model: %w", err)
+		}
 	}
 
 	toolSets, err := s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
