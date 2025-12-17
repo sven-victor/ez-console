@@ -437,7 +437,6 @@ const AIChat: React.FC = () => {
             }
             break;
           case 'user':
-          case 'system':
             if (buffer.message.content.length > 0) {
               chatMessages.push({
                 id: buffer.id,
