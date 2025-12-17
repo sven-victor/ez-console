@@ -296,7 +296,6 @@ const A = /* @__PURE__ */ new Map(), Oe = (s) => (A.get(s) || A.set(
             a.status = c.status === "completed" && a.status === "success" ? "success" : "error", a.message.role = "assistant", a.id = c.id, c.tool_calls && c.tool_calls.length > 0 ? a.message.content.endsWith("<br/>") ? a.message.content = `${a.message.content}${c.content}` : a.message.content = `${a.message.content}<br/>${c.content}` : a.message.content = `${a.message.content}${c.content}`;
             break;
           case "user":
-          case "system":
             a.message.content.length > 0 && (o.push({
               id: a.id,
               message: {
@@ -323,10 +322,11 @@ const A = /* @__PURE__ */ new Map(), Oe = (s) => (A.get(s) || A.set(
         status: a.status
       }), se(o);
     }
-  }), { run: f, loading: M } = C(async (e, o) => await v.ai.createChatSession({
+  }), { run: f, loading: M } = C(async (e, o, a = !1) => await v.ai.createChatSession({
     title: m("chat.defaultConversationTitle"),
     model_id: "",
-    messages: o || []
+    messages: o || [],
+    anonymous: a
   }), {
     manual: !0,
     onError: () => {
@@ -374,7 +374,7 @@ const A = /* @__PURE__ */ new Map(), Oe = (s) => (A.get(s) || A.set(
     }
   }, [u]), w(() => {
     i && f && i((e, o) => {
-      f(e, o);
+      f(e, o, !0);
     });
   }, [f, i]);
   const ce = /* @__PURE__ */ n.jsxs("div", { className: g.sider, children: [

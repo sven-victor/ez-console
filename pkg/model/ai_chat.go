@@ -117,6 +117,7 @@ type AIChatSession struct {
 	StartTime      time.Time       `gorm:"not null" json:"start_time"`              // Session start time
 	EndTime        *time.Time      `json:"end_time"`                                // Session end time
 	Messages       []AIChatMessage `gorm:"-" json:"messages"`                       // Messages
+	Anonymous      bool            `gorm:"default:false" json:"anonymous"`          // Whether the session is anonymous
 }
 
 // TableName returns the table name for AIChatSession
@@ -146,13 +147,14 @@ func (AIChatMessage) TableName() string {
 }
 
 // NewAIChatSession creates a new chat session
-func NewAIChatSession(organizationID, userID, title, modelID string) *AIChatSession {
+func NewAIChatSession(organizationID, userID, title, modelID string, anonymous bool) *AIChatSession {
 	return &AIChatSession{
 		OrganizationID: organizationID,
 		Title:          title,
 		UserID:         userID,
 		ModelID:        modelID,
 		StartTime:      time.Now(),
+		Anonymous:      anonymous,
 	}
 }
 

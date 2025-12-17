@@ -97,6 +97,8 @@ export declare type AIChatMessageStatus = "pending" | "streaming" | "completed" 
 export declare const AIChatModal: default_2.FC;
 
 export declare interface AIChatSession {
+    /** Whether the session is anonymous */
+    anonymous: boolean;
     created_at: string;
     /** Session end time */
     end_time: string;
@@ -644,6 +646,7 @@ export declare interface CreateAIModelRequest {
 }
 
 export declare interface CreateChatSessionRequest {
+    anonymous: boolean;
     messages: SimpleChatMessage[];
     model_id: string;
     title: string;

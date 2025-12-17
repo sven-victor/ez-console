@@ -45,6 +45,8 @@ export type AIChatMessageRole = "user" | "assistant" | "system" | "tool";
 export type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
 
 export interface AIChatSession {
+  /** Whether the session is anonymous */
+  anonymous: boolean;
   created_at: string;
   /** Session end time */
   end_time: string;
@@ -233,6 +235,7 @@ export interface CreateAIModelRequest {
 }
 
 export interface CreateChatSessionRequest {
+  anonymous: boolean;
   messages: SimpleChatMessage[];
   model_id: string;
   title: string;

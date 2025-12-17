@@ -472,11 +472,12 @@ const AIChat: React.FC = () => {
       setMessages(chatMessages);
     }
   });
-  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string, messages?: API.SimpleChatMessage[]) => {
+  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string, messages?: API.SimpleChatMessage[], anonymous: boolean = false) => {
     return await api.ai.createChatSession({
       title: t('chat.defaultConversationTitle'),
       model_id: '',
       messages: messages || [],
+      anonymous,
     });
   }, {
     manual: true,
@@ -553,7 +554,7 @@ const AIChat: React.FC = () => {
   useEffect(() => {
     if (onCallAI && createNewConversation) {
       onCallAI((message, messages) => {
-        createNewConversation(message, messages);
+        createNewConversation(message, messages, true);
       });
     }
   }, [createNewConversation, onCallAI])

@@ -45,8 +45,8 @@ func NewAIChatService() *AIChatService {
 }
 
 // CreateChatSession creates a new chat session
-func (s *AIChatService) CreateChatSession(ctx context.Context, organizationID, userID, title, modelID string, messages []ai.SimpleChatMessage) (*model.AIChatSession, error) {
-	session := model.NewAIChatSession(organizationID, userID, title, modelID)
+func (s *AIChatService) CreateChatSession(ctx context.Context, organizationID, userID, title, modelID string, messages []ai.SimpleChatMessage, anonymous bool) (*model.AIChatSession, error) {
+	session := model.NewAIChatSession(organizationID, userID, title, modelID, anonymous)
 
 	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := db.Session(ctx).Create(session).Error; err != nil {
@@ -90,7 +90,7 @@ func (s *AIChatService) GetUserChatSessions(ctx context.Context, organizationID,
 	var sessions []model.AIChatSession
 	var total int64
 
-	query := db.Session(ctx).Model(&model.AIChatSession{}).Where("organization_id = ? AND user_id = ?", organizationID, userID)
+	query := db.Session(ctx).Model(&model.AIChatSession{}).Where("organization_id = ? AND user_id = ? and anonymous = ?", organizationID, userID, false)
 
 	// Get total count
 	if err := query.Count(&total).Error; err != nil {

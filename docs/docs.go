@@ -4869,11 +4869,15 @@ const docTemplate = `{
         "aiapi.CreateChatSessionRequest": {
             "type": "object",
             "required": [
+                "anonymous",
                 "messages",
                 "model_id",
                 "title"
             ],
             "properties": {
+                "anonymous": {
+                    "type": "boolean"
+                },
                 "messages": {
                     "type": "array",
                     "items": {
@@ -5493,6 +5497,7 @@ const docTemplate = `{
         "model.AIChatSession": {
             "type": "object",
             "required": [
+                "anonymous",
                 "created_at",
                 "end_time",
                 "id",
@@ -5505,6 +5510,10 @@ const docTemplate = `{
                 "user_id"
             ],
             "properties": {
+                "anonymous": {
+                    "description": "Whether the session is anonymous",
+                    "type": "boolean"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -7884,22 +7893,16 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                1000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7918,22 +7921,16 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "Second"
             ]
         },
         "toolset.ToolSetType": {

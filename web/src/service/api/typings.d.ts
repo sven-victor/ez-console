@@ -47,6 +47,8 @@ declare global {
     type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
   
     interface AIChatSession {
+      /** Whether the session is anonymous */
+      anonymous: boolean;
       created_at: string;
       /** Session end time */
       end_time: string;
@@ -235,6 +237,7 @@ declare global {
     }
   
     interface CreateChatSessionRequest {
+      anonymous: boolean;
       messages: SimpleChatMessage[];
       model_id: string;
       title: string;
