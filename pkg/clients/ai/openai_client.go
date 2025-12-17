@@ -277,13 +277,21 @@ type OpenAIChatStream struct {
 	messageID               string
 	messageBuffer           bytes.Buffer
 	summaryPrompt           string
-	onMessageEnd            func(ctx context.Context, messageID string, content string)
-	onToolCallEnd           func(ctx context.Context, toolCall ToolCall)
-	onToolCallsStart        func(ctx context.Context, toolCall []ToolCall)
 	maxIterations           int
 	currentIteration        int
 	maxTokens               int
 	enableAutoSummarization bool
+
+	onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
+	onMessageAdded          func(ctx context.Context, message ChatMessage)
+	onSummary               func(ctx context.Context, messages []ChatMessage)
+}
+
+func (o *OpenAIChatStream) appendMessage(ctx context.Context, message openai.ChatCompletionMessage) {
+	o.messages = append(o.messages, message)
+	if o.onMessageAdded != nil {
+		o.onMessageAdded(ctx, ChatMessageFromOpenAI(message))
+	}
 }
 
 func (o *OpenAIChatStream) callToolsRunning() bool {
@@ -357,6 +365,14 @@ func (o *OpenAIChatStream) calculateTokens(messages []openai.ChatCompletionMessa
 	return (totalChars + 3) / 4
 }
 
+func convertOpenAIMessagesToChatMessages(messages []openai.ChatCompletionMessage) []ChatMessage {
+	chatMessages := make([]ChatMessage, 0, len(messages))
+	for _, msg := range messages {
+		chatMessages = append(chatMessages, ChatMessageFromOpenAI(msg))
+	}
+	return chatMessages
+}
+
 // summarizeMessages creates a summary of old messages while preserving the first system message
 func (o *OpenAIChatStream) summarizeMessages(ctx context.Context) error {
 	logger := log.GetContextLogger(ctx)
@@ -426,6 +442,8 @@ func (o *OpenAIChatStream) summarizeMessages(ctx context.Context) error {
 		Content: fmt.Sprintf("[Previous conversation summary]: %s", summaryContent),
 	})
 
+	o.onSummary(ctx, convertOpenAIMessagesToChatMessages(o.messages))
+
 	level.Debug(logger).Log("msg", "Messages summarized", "original_count", len(messagesToSummarize)+1, "new_count", len(o.messages))
 	return nil
 }
@@ -452,15 +470,12 @@ func (o *OpenAIChatStream) backgroundCallTool(ctx context.Context, toolCall *Too
 				}
 			}
 
-			o.messages = append(o.messages, openai.ChatCompletionMessage{
+			o.appendMessage(ctx, openai.ChatCompletionMessage{
 				Role:       string(model.AIChatMessageRoleTool),
 				Content:    toolCall.Result,
 				ToolCallID: toolCall.ID,
 			})
 			toolCall.Status = toolStatus
-			if o.onToolCallEnd != nil {
-				o.onToolCallEnd(ctx, *toolCall)
-			}
 		}()
 
 		// Check if context is already cancelled before starting
@@ -510,9 +525,6 @@ func (o *OpenAIChatStream) CallTools(ctx context.Context) (isRunning bool) {
 		}
 	}
 	o.toolCallRunning = true
-	if o.onToolCallsStart != nil {
-		o.onToolCallsStart(ctx, o.toolCalls)
-	}
 	for idx := range o.toolCalls {
 		if o.toolCalls[idx].Status == ToolCallStatusPending {
 			o.toolCalls[idx].Status = ToolCallStatusRunning
@@ -533,13 +545,10 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 					o.currentChatStream = nil
 					o.messageID = uuid.Must(uuid.NewV4()).String()
 					if o.messageBuffer.Len() > 0 {
-						o.messages = append(o.messages, openai.ChatCompletionMessage{
+						o.appendMessage(ctx, openai.ChatCompletionMessage{
 							Role:    string(model.AIChatMessageRoleAssistant),
 							Content: o.messageBuffer.String(),
 						})
-						if o.onMessageEnd != nil {
-							o.onMessageEnd(ctx, o.messageID, o.messageBuffer.String())
-						}
 						o.messageBuffer.Reset()
 					}
 
@@ -556,7 +565,7 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 								},
 							})
 						}
-						o.messages = append(o.messages, openai.ChatCompletionMessage{
+						o.appendMessage(ctx, openai.ChatCompletionMessage{
 							Role:      string(model.AIChatMessageRoleAssistant),
 							ToolCalls: toolCalls,
 						})
@@ -670,14 +679,14 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 }
 
 func applyChatCompletionOptions(stream *OpenAIChatStream, o ChatCompletionOptions) {
-	if o.OnMessageEnd != nil {
-		stream.onMessageEnd = o.OnMessageEnd
+	if o.OnToolCallResultChanged != nil {
+		stream.onToolCallResultChanged = o.OnToolCallResultChanged
 	}
-	if o.OnToolCallEnd != nil {
-		stream.onToolCallEnd = o.OnToolCallEnd
+	if o.OnMessageAdded != nil {
+		stream.onMessageAdded = o.OnMessageAdded
 	}
-	if o.OnToolCallsStart != nil {
-		stream.onToolCallsStart = o.OnToolCallsStart
+	if o.OnSummary != nil {
+		stream.onSummary = o.OnSummary
 	}
 	stream.maxTokens = o.MaxTokens
 	stream.enableAutoSummarization = o.EnableAutoSummarization

@@ -128,9 +128,18 @@ func (s *AIChatService) GetChatMessages(ctx context.Context, organizationID, use
 }
 
 // UpdateChatMessage updates a chat message
-func (s *AIChatService) UpdateChatMessage(ctx context.Context, organizationID, userID, messageID string, updates map[string]interface{}) error {
-	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, messageID).Updates(updates).Error; err != nil {
-		return fmt.Errorf("failed to update chat message: %w", err)
+func (s *AIChatService) UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error {
+	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND session_id = ? AND tool_call_id = ?", organizationID, userID, sessionID, toolCallID).Update("result", result).Error; err != nil {
+		return fmt.Errorf("failed to update chat tool call result: %w", err)
+	}
+
+	return nil
+}
+
+// UpdateChatMessage updates a chat message
+func (s *AIChatService) DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error {
+	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).Delete(&model.AIChatMessage{}).Error; err != nil {
+		return fmt.Errorf("failed to delete session messages: %w", err)
 	}
 
 	return nil

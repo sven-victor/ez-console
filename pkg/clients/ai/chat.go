@@ -102,28 +102,28 @@ type ChatCompletionOptions struct {
 
 	ToolSetsFactory func(ctx context.Context) (toolset.ToolSets, error)
 
-	OnMessageEnd     func(ctx context.Context, messageID string, content string)
-	OnToolCallEnd    func(ctx context.Context, toolCall ToolCall)
-	OnToolCallsStart func(ctx context.Context, toolCalls []ToolCall)
+	OnSummary               func(ctx context.Context, messages []ChatMessage)
+	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
+	OnMessageAdded          func(ctx context.Context, message ChatMessage)
 }
 
 type WithChatCompletionOptions func(options *ChatCompletionOptions)
 
-func WithChatCompletionOnMessageEnd(onMessageEnd func(ctx context.Context, messageID string, content string)) WithChatCompletionOptions {
+func WithChatCompletionOnSummary(onSummary func(ctx context.Context, messages []ChatMessage)) WithChatCompletionOptions {
 	return func(options *ChatCompletionOptions) {
-		options.OnMessageEnd = onMessageEnd
+		options.OnSummary = onSummary
 	}
 }
 
-func WithChatCompletionOnToolCallEnd(onToolCallEnd func(ctx context.Context, toolCall ToolCall)) WithChatCompletionOptions {
+func WithChatCompletionOnToolCallResultChanged(onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)) WithChatCompletionOptions {
 	return func(options *ChatCompletionOptions) {
-		options.OnToolCallEnd = onToolCallEnd
+		options.OnToolCallResultChanged = onToolCallResultChanged
 	}
 }
 
-func WithChatCompletionOnToolCallsStart(onToolCallsStart func(ctx context.Context, toolCalls []ToolCall)) WithChatCompletionOptions {
+func WithChatCompletionOnMessageAdded(onMessageAdded func(ctx context.Context, message ChatMessage)) WithChatCompletionOptions {
 	return func(options *ChatCompletionOptions) {
-		options.OnToolCallsStart = onToolCallsStart
+		options.OnMessageAdded = onMessageAdded
 	}
 }
 

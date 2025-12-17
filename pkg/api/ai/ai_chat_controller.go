@@ -356,66 +356,88 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	roles, _ := ctx.Get("roles")
 
 	options := []ai.WithChatCompletionOptions{
-		ai.WithChatCompletionOnMessageEnd(func(ctx context.Context, messageID string, content string) {
-			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, content, nil, "")
-			if err != nil {
-				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
-				return
-			}
-			// Check if this is the first conversation (exactly 2 messages: 1 user + 1 assistant)
-			// After adding the assistant message, we should have: initialMessageCount (0) + 1 user + 1 assistant = 2
-			if initialMessageCount == 0 {
-				// Auto-generate title in background (don't block)
-				go func() {
-					// Create a new context for background operation
-					bgCtx := context.Background()
-					// Copy organization_id
-					bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
-					// Copy user_id
-					if userID != nil {
-						bgCtx = context.WithValue(bgCtx, "user_id", userID)
-					}
-					// Copy roles
-					if roles != nil {
-						bgCtx = context.WithValue(bgCtx, "roles", roles)
-					}
+		ai.WithChatCompletionOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
+			if len(message.ToolCalls) > 0 {
+				var aiToolCalls model.AIToolCalls
+				for _, toolCall := range message.ToolCalls {
+					aiToolCalls = append(aiToolCalls, model.AIToolCall{
+						Index: toolCall.Index,
+						ID:    toolCall.ID,
+						Type:  string(toolCall.Type),
+						Function: model.AIFunctionCall{
+							Name:      toolCall.Function.Name,
+							Arguments: toolCall.Function.Arguments,
+						},
+					})
+				}
+				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, "", aiToolCalls, "")
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+					return
+				}
+			} else if message.ToolCallID != "" {
+				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleTool, message.Content, nil, message.ToolCallID)
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+					return
+				}
+			} else if len(message.Content) > 0 {
+				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, message.Content, nil, "")
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+					return
+				}
+				// Check if this is the first conversation (exactly 2 messages: 1 user + 1 assistant)
+				// After adding the assistant message, we should have: initialMessageCount (0) + 1 user + 1 assistant = 2
+				if initialMessageCount == 0 {
+					// Auto-generate title in background (don't block)
+					go func() {
+						// Create a new context for background operation
+						bgCtx := context.Background()
+						// Copy organization_id
+						bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
+						// Copy user_id
+						if userID != nil {
+							bgCtx = context.WithValue(bgCtx, "user_id", userID)
+						}
+						// Copy roles
+						if roles != nil {
+							bgCtx = context.WithValue(bgCtx, "roles", roles)
+						}
 
-					title, err := c.service.GenerateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, session.ModelID)
-					if err != nil {
-						level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
-						return
-					}
-					if err := c.service.UpdateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, title); err != nil {
-						level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
-						return
-					}
-					level.Info(logger).Log("msg", "Auto-generated chat session title", "sessionId", sessionID, "title", title)
-				}()
+						title, err := c.service.GenerateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, session.ModelID)
+						if err != nil {
+							level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
+							return
+						}
+						if err := c.service.UpdateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, title); err != nil {
+							level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
+							return
+						}
+						level.Info(logger).Log("msg", "Auto-generated chat session title", "sessionId", sessionID, "title", title)
+					}()
+				}
 			}
 		}),
-		ai.WithChatCompletionOnToolCallsStart(func(ctx context.Context, toolCalls []ai.ToolCall) {
-			var aiToolCalls model.AIToolCalls
-			for _, toolCall := range toolCalls {
-				aiToolCalls = append(aiToolCalls, model.AIToolCall{
-					Index: toolCall.Index,
-					ID:    toolCall.ID,
-					Type:  string(toolCall.Type),
-					Function: model.AIFunctionCall{
-						Name:      toolCall.Function.Name,
-						Arguments: toolCall.Function.Arguments,
-					},
-				})
-			}
-			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, "", aiToolCalls, "")
+
+		ai.WithChatCompletionOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
+			err := c.service.DeleteSessionAllMessages(ctx, organizationID, userID.(string), sessionID)
 			if err != nil {
-				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+				level.Error(logger).Log("msg", "Failed to delete session messages", "error", err)
 				return
 			}
+			for _, message := range messages {
+				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, message.Role, message.Content, nil, "")
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+					return
+				}
+			}
 		}),
-		ai.WithChatCompletionOnToolCallEnd(func(ctx context.Context, toolCall ai.ToolCall) {
-			_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleTool, toolCall.Result, nil, toolCall.ID)
+		ai.WithChatCompletionOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
+			err := c.service.UpdateChatToolCallResult(ctx, organizationID, userID.(string), sessionID, toolCallID, result)
 			if err != nil {
-				level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+				level.Error(logger).Log("msg", "Failed to update chat tool call result", "error", err)
 				return
 			}
 		}),
