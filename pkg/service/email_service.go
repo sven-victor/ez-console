@@ -205,6 +205,10 @@ func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSe
 
 // TestSMTPConnection tests the SMTP connection by sending an email
 func (s *EmailService) TestSMTPConnection(ctx context.Context, testReq *model.SMTPTestRequest) error {
+	systemName, err := s.settingService.GetStringSetting(ctx, model.SettingSystemName, "EZ-Console")
+	if err != nil {
+		return err
+	}
 	smtpSettings := &testReq.SMTPSettings
 
 	if !smtpSettings.Enabled {
@@ -227,8 +231,8 @@ func (s *EmailService) TestSMTPConnection(ctx context.Context, testReq *model.SM
 		fromName = "EZ-Console Test"
 	}
 
-	subject := "EZ-Console SMTP Test"
-	msg := "This is a test email from EZ-Console to verify SMTP settings."
+	subject := fmt.Sprintf("%s SMTP Test", systemName)
+	msg := fmt.Sprintf("This is a test email from %s to verify SMTP settings.", systemName)
 
 	return s.SendEmail(ctx, smtpSettings, []string{testReq.To}, subject, msg)
 }
