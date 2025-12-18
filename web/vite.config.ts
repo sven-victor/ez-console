@@ -130,12 +130,6 @@ export default defineConfig((env: ConfigEnv) => {
               }
               return '[format]/[name].[ext]'
             },
-
-            globals: {
-              react: 'React',
-              'react-dom': 'ReactDOM',
-              'antd': 'Antd',
-            },
           },
           external: [
             "@ant-design/icons",
