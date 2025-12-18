@@ -359,6 +359,10 @@ const AIChat: React.FC = () => {
     defaultConversations: rawConversations?.map((conversation) => convertConversation(conversation)) || [],
   });
 
+  useEffect(() => {
+    setDefaultActiveConversationKey(activeConversationKey)
+  }, [activeConversationKey])
+
   const [className] = useMarkdownTheme();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -486,11 +490,10 @@ const AIChat: React.FC = () => {
     },
     onSuccess: (data, [message]) => {
       addConversation(convertConversation(data), 'prepend');
+      setActiveConversationKey(data.id);
       if (message) {
         setMessageBuffer({ message, sessionId: data.id });
       }
-      setActiveConversationKey(data.id);
-      setDefaultActiveConversationKey(data.id);
     },
   });
 
@@ -532,10 +535,12 @@ const AIChat: React.FC = () => {
 
   useEffect(() => {
     if (activeConversationKey && messageBuffer?.sessionId === activeConversationKey) {
-      onRequest({
-        content: messageBuffer.message,
-      });
-
+      const msg = messageBuffer.message;
+      setTimeout(() => {
+        onRequest({
+          content: msg,
+        });
+      }, 1000)
       setMessageBuffer(undefined);
     }
   }, [activeConversationKey, messageBuffer])
@@ -578,7 +583,6 @@ const AIChat: React.FC = () => {
           onActiveChange={async (val) => {
             if (!val) return;
             setActiveConversationKey(val);
-            setDefaultActiveConversationKey(val);
           }}
 
           className={styles.conversations}
@@ -603,7 +607,6 @@ const AIChat: React.FC = () => {
                 onClick: () => {
                   setConversation(conversation.key, { ...conversation, loading: true });
                   deleteConversation(conversation.key)
-
                 },
               },
             ],
@@ -732,7 +735,6 @@ const AIChat: React.FC = () => {
                 })),
                 onClick: ({ key }) => {
                   setActiveConversationKey(key);
-                  setDefaultActiveConversationKey(key);
                 }
               }}
               placement="bottomRight"
