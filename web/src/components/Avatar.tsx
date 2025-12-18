@@ -24,7 +24,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import { useRequest } from 'ahooks';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { createStyles } from 'antd-style';
-import { isString } from 'lodash';
+import { isString } from 'lodash-es';
 
 const useStyles = createStyles(({ css }) => {
   return {

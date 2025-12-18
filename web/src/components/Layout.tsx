@@ -32,7 +32,7 @@ import OrganizationSwitcher from './OrganizationSwitcher';
 import { useTranslation } from 'react-i18next';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
-import _ from 'lodash';
+import { flatMapDeep } from 'lodash-es';
 import { getURL } from '@/utils';
 import { AIChatModal, AIChatButton, AIChatSider } from './AIChatLayout';
 import { useSite } from '@/contexts/SiteContext';
@@ -151,7 +151,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     return permissions.some(permission => hasPermission(permission));
   }
 
-  const defaultOpenKeys: string[] = _.flatMapDeep(routes, item => item.children).map(item => item?.name).filter(item => item !== undefined)
+  const defaultOpenKeys: string[] = flatMapDeep(routes, item => item.children).map(item => item?.name).filter(item => item !== undefined)
 
   const renderMenuItems = (routes: IRoute[], parent: (string | undefined)[] = []): React.ReactNode[] => {
     const toTitle = (name: string | undefined) => {

@@ -1,18 +1,16 @@
-import { j as e } from "./vendor.js";
+import { j as e, R as we, i as Re } from "./vendor.js";
 import { Form as l, message as c, Spin as me, Switch as W, Select as L, Input as p, Divider as ke, Alert as De, Space as B, Button as z, InputNumber as ae, Modal as J, Skeleton as $e, Descriptions as ee, Steps as Be, Tag as X, Table as xe, Radio as je, Tabs as Le, Tooltip as He, Card as Y, Row as Te, Col as ce, Result as Ke } from "antd";
 import { useTranslation as N } from "react-i18next";
 import { useState as j, useEffect as _e, useMemo as qe } from "react";
 import { useRequest as S } from "ahooks";
-import { SaveOutlined as Ae, ReloadOutlined as ie, LoadingOutlined as Ge, CheckCircleTwoTone as Ze, StarFilled as We, CheckCircleOutlined as Me, StarOutlined as Je, EditOutlined as ve, DeleteOutlined as Se, PlusOutlined as Ce, ThunderboltOutlined as Qe, ToolOutlined as Re, SettingOutlined as Xe, LockOutlined as Ye, EyeOutlined as et, ArrowLeftOutlined as tt } from "@ant-design/icons";
+import { SaveOutlined as Ae, ReloadOutlined as ie, LoadingOutlined as Ge, CheckCircleTwoTone as Ze, StarFilled as We, CheckCircleOutlined as Me, StarOutlined as Je, EditOutlined as ve, DeleteOutlined as Se, PlusOutlined as Ce, ThunderboltOutlined as Qe, ToolOutlined as Oe, SettingOutlined as Xe, LockOutlined as Ye, EyeOutlined as et, ArrowLeftOutlined as tt } from "@ant-design/icons";
 import { a as A } from "./index.js";
-import { g as Oe } from "./base.js";
-import { j as ne, i as st, e as Ie, p as Ne, L as lt } from "./components.js";
-import we from "react-quill";
+import { g as Ue } from "./base.js";
+import { f as ne, e as st, b as Ie, m as Ne, L as lt } from "./components.js";
 import { useNavigate as ze, useLocation as at, useParams as nt, useSearchParams as it } from "react-router-dom";
 import { l as ot, c as rt, u as dt, d as ut, g as ct, b as mt, e as pt, f as gt, r as ft } from "./system.js";
 import { c as ht, b as xt } from "./contexts.js";
 import { l as Vt, b as bt } from "./authorization.js";
-import Ue from "react-json-view";
 const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/, yt = {
   github: {
     email_field: "email",
@@ -138,7 +136,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     a ? a() : m();
   }, { loading: G, run: U } = S(async ({ redirect_uri: b, ...i }) => {
     let R;
-    return b ? R = new URL(b) : R = new URL(window.location.origin), R.pathname = Oe("/system/settings/oauth/test-callback"), R.searchParams.set("provider", h), A.system.testOauthConnection({ redirect_uri: R.toString(), ...i });
+    return b ? R = new URL(b) : R = new URL(window.location.origin), R.pathname = Ue("/system/settings/oauth/test-callback"), R.searchParams.set("provider", h), A.system.testOauthConnection({ redirect_uri: R.toString(), ...i });
   }, {
     manual: !0,
     onSuccess: ({ url: b }) => {
@@ -350,7 +348,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
               pattern: ue,
               message: s("settings.oauth.redirectUri.invalidUrl", { defaultValue: "Please enter a valid URL." })
             } : { required: !1 }],
-            children: /* @__PURE__ */ e.jsx(p, { disabled: !o, placeholder: `http://${window.location.host}${Oe(`/login?provider=settings.${h}`)}` })
+            children: /* @__PURE__ */ e.jsx(p, { disabled: !o, placeholder: `http://${window.location.host}${Ue(`/login?provider=settings.${h}`)}` })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -1871,7 +1869,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         },
         {
           key: "viewTools",
-          icon: /* @__PURE__ */ e.jsx(Re, {}),
+          icon: /* @__PURE__ */ e.jsx(Oe, {}),
           permission: "system:toolsets:view",
           disabled: V.status !== "enabled",
           tooltip: t("settings.toolsets.viewTools", { defaultValue: "View Tools" }),
@@ -2120,7 +2118,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             {
               style: { marginBottom: 16 },
               title: /* @__PURE__ */ e.jsxs(B, { children: [
-                /* @__PURE__ */ e.jsx(Re, {}),
+                /* @__PURE__ */ e.jsx(Oe, {}),
                 /* @__PURE__ */ e.jsx("strong", { children: ((q = n.function) == null ? void 0 : q.name) || "Unknown" })
               ] }),
               children: /* @__PURE__ */ e.jsxs(Te, { gutter: 16, children: [
@@ -2416,7 +2414,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       items: t(o.filter((d) => !d.hidden), a)
     }
   ) });
-}, Qt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Wt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Et
 }, Symbol.toStringTag, { value: "Module" })), Pt = () => {
@@ -2735,7 +2733,7 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       }
     )
   ] });
-}, Xt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Jt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Pt
 }, Symbol.toStringTag, { value: "Module" })), Rt = () => {
@@ -2770,17 +2768,17 @@ const ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       title: o.message,
       subTitle: o.error,
       extra: /* @__PURE__ */ e.jsxs(B, { style: { display: !y || !h ? "none" : "inline-block", textAlign: "left" }, direction: "vertical", children: [
-        /* @__PURE__ */ e.jsx(Y, { title: t("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(Ue, { src: y || {} }) }),
-        /* @__PURE__ */ e.jsx(Y, { title: t("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(Ue, { src: h || {} }) })
+        /* @__PURE__ */ e.jsx(Y, { title: t("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(Re, { src: y || {} }) }),
+        /* @__PURE__ */ e.jsx(Y, { title: t("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(Re, { src: h || {} }) })
       ] })
     }
   ) }) : /* @__PURE__ */ e.jsx(lt, {});
-}, Yt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Qt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Rt
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  Xt as O,
-  Yt as a,
-  Qt as i
+  Jt as O,
+  Qt as a,
+  Wt as i
 };

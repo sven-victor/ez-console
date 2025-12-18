@@ -3,22 +3,23 @@ import { a as X } from "./authorization.js";
 import { b as Z, g as ee } from "./base.js";
 import { a as M } from "./system.js";
 import { o as te } from "./oauth.js";
-import { j as e, E as de, G as me, H as ue, J as pe, L as xe, N as B, O as fe } from "./vendor.js";
+import { j as e, d as de, b as me, c as ue, e as pe, f as xe, g as B, h as fe } from "./vendor.js";
 import { QueryClient as ge, QueryClientProvider as je } from "react-query";
 import { useLocation as ve, useNavigate as ye, Link as k, Outlet as ze, matchRoutes as we, BrowserRouter as be, Routes as _e, Route as T } from "react-router-dom";
 import { Layout as U, Menu as I, Spin as Se, Button as Ae, Breadcrumb as Le, ConfigProvider as Oe } from "antd";
 import { useTranslation as C } from "react-i18next";
 import { lazy as l, Suspense as Re, useState as A, useEffect as N } from "react";
-import { L as $e, H as q, O as ke, A as Q, a as Ie, b as Ne, c as Pe, d as De, P as Fe } from "./components.js";
-import { DashboardOutlined as Me, SolutionOutlined as Be, UserOutlined as P, SafetyOutlined as Ue, FileSearchOutlined as Ce, SettingOutlined as Ee, SwapOutlined as He, MenuUnfoldOutlined as Ve, MenuFoldOutlined as Ke } from "@ant-design/icons";
-import { u as Te, b as qe, a as Qe, c as We, A as Ge, S as Je, e as Ye } from "./contexts.js";
-import Xe from "lodash";
+import { L as $e, H as q, O as ke, A as Q, a as Ie, P as Ne } from "./components.js";
+import { DashboardOutlined as Pe, SolutionOutlined as De, UserOutlined as P, SafetyOutlined as Fe, FileSearchOutlined as Me, SettingOutlined as Be, SwapOutlined as Ue, MenuUnfoldOutlined as Ce, MenuFoldOutlined as Ee } from "@ant-design/icons";
+import { u as He, b as Ve, a as Ke, c as Te, A as qe, S as Qe, e as We } from "./contexts.js";
+import { flatMapDeep as Ye } from "lodash-es";
+import { A as Ge, a as Je, b as Xe } from "./ai-chat-layout.js";
 import "./ai-chat.js";
 import "./forbidden.js";
 import "./not_found.js";
 import "./client.js";
 import "i18next";
-const Ze = l(() => import("./dashboard.js")), et = l(() => import("./login.js")), tt = l(() => import("./profile.js")), W = l(() => import("./not_found.js")), it = l(() => import("./forbidden.js")), nt = l(() => import("./users.js").then((s) => s.U)), at = l(() => import("./users.js").then((s) => s.a)), G = l(() => import("./users.js").then((s) => s.b)), st = l(() => import("./roles.js").then((s) => s.R)), J = l(() => import("./roles.js").then((s) => s.a)), ot = l(() => import("./system-settings.js").then((s) => s.i)), rt = l(() => import("./system-settings.js").then((s) => s.O)), lt = l(() => import("./system-settings.js").then((s) => s.a)), ct = l(() => import("./audit.js")), ht = l(() => import("./service-accounts.js").then((s) => s.S)), dt = l(() => import("./service-accounts.js").then((s) => s.a));
+const Ze = l(() => import("./dashboard.js")), et = l(() => import("./login.js")), tt = l(() => import("./profile.js")), W = l(() => import("./not_found.js")), it = l(() => import("./forbidden.js")), nt = l(() => import("./users.js").then((s) => s.U)), at = l(() => import("./users.js").then((s) => s.a)), Y = l(() => import("./users.js").then((s) => s.b)), st = l(() => import("./roles.js").then((s) => s.R)), G = l(() => import("./roles.js").then((s) => s.a)), ot = l(() => import("./system-settings.js").then((s) => s.i)), rt = l(() => import("./system-settings.js").then((s) => s.O)), lt = l(() => import("./system-settings.js").then((s) => s.a)), ct = l(() => import("./audit.js")), ht = l(() => import("./service-accounts.js").then((s) => s.S)), dt = l(() => import("./service-accounts.js").then((s) => s.a));
 function o(s, m) {
   return /* @__PURE__ */ e.jsx(Re, { fallback: /* @__PURE__ */ e.jsx($e, {}), children: /* @__PURE__ */ e.jsx(s, { ...m }) });
 }
@@ -54,7 +55,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
           path: "/",
           element: o(Ze),
           name: "dashboard",
-          icon: /* @__PURE__ */ e.jsx(Me, {}),
+          icon: /* @__PURE__ */ e.jsx(Pe, {}),
           index: !0
         },
         {
@@ -72,7 +73,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             {
               path: "/authorization/roles",
               name: "roles",
-              icon: /* @__PURE__ */ e.jsx(Be, {}),
+              icon: /* @__PURE__ */ e.jsx(De, {}),
               permissions: ["authorization:role:view", "authorization:role:create", "authorization:role:update", "authorization:role:delete"],
               children: [
                 {
@@ -82,13 +83,13 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
                 },
                 {
                   path: "/authorization/roles/create",
-                  element: o(J),
+                  element: o(G),
                   permissions: ["authorization:role:create"],
                   index: !0
                 },
                 {
                   path: "/authorization/roles/:id/edit",
-                  element: o(J),
+                  element: o(G),
                   permissions: ["authorization:role:update"],
                   index: !0
                 }
@@ -108,7 +109,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
                 },
                 {
                   path: "/authorization/users/create",
-                  element: o(G),
+                  element: o(Y),
                   permissions: ["authorization:user:create"],
                   index: !0
                 },
@@ -120,7 +121,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
                 },
                 {
                   path: "/authorization/users/:id/edit",
-                  element: o(G),
+                  element: o(Y),
                   permissions: ["authorization:user:update"],
                   index: !0
                 }
@@ -152,13 +153,13 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
         // System management menu
         {
           name: "system",
-          icon: /* @__PURE__ */ e.jsx(Ee, {}),
+          icon: /* @__PURE__ */ e.jsx(Be, {}),
           permissions: ["system:settings:view", "system:settings:update", "system:audit:view", "system:organization:view", "ai:models:view", "ai:toolsets:view"],
           children: [
             // System settings
             {
               path: "/system/settings",
-              icon: /* @__PURE__ */ e.jsx(Ue, {}),
+              icon: /* @__PURE__ */ e.jsx(Fe, {}),
               name: "settings",
               permissions: ["system:settings:view", "system:settings:update", "system:organization:view", "ai:models:view", "ai:toolsets:view"],
               children: [
@@ -178,7 +179,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             // Audit logs
             {
               path: "/system/audit",
-              icon: /* @__PURE__ */ e.jsx(Ce, {}),
+              icon: /* @__PURE__ */ e.jsx(Me, {}),
               name: "audit",
               permissions: ["system:audit:view"],
               index: !0,
@@ -196,7 +197,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
     }
   ];
   return [...w, ...b];
-}, Et = {
+}, Ht = {
   ai: he,
   authorization: X,
   base: Z,
@@ -210,7 +211,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
   transformHeaderItems: w = (x) => x,
   renderLayout: b
 }) => {
-  const { layout: x, visible: L, loaded: c } = Te(), { t: f, i18n: _ } = C(), { t: y } = C("common"), g = ve(), { hasPermission: O } = qe(), z = ye(), { logout: h, user: i } = Qe(), { siteConfig: n, clearCurrentOrgId: R } = We(), [S, E] = A([]), [ie, ne] = A(null), [D, ae] = A("Loading...");
+  const { layout: x, visible: L, loaded: c } = He(), { t: f, i18n: _ } = C(), { t: y } = C("common"), g = ve(), { hasPermission: O } = Ve(), z = ye(), { logout: h, user: i } = Ke(), { siteConfig: n, clearCurrentOrgId: R } = Te(), [S, E] = A([]), [ie, ne] = A(null), [D, ae] = A("Loading...");
   g.pathname !== "/profile" && (i && i.mfa_enforced && !i.mfa_enabled ? z("/profile#mfa") : i && i.status === "password_expired" && z("/profile#password"));
   const se = () => {
     h(), R(), window.location.href = ee("/login?redirect=" + encodeURIComponent(window.location.href));
@@ -257,7 +258,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
         }
     }
     return r;
-  }, re = (a) => a.some((r) => O(r)), le = Xe.flatMapDeep(m, (a) => a.children).map((a) => a == null ? void 0 : a.name).filter((a) => a !== void 0), H = (a, r = []) => {
+  }, re = (a) => a.some((r) => O(r)), le = Ye(m, (a) => a.children).map((a) => a == null ? void 0 : a.name).filter((a) => a !== void 0), H = (a, r = []) => {
     const u = (t) => t && t.replace(/_/g, " ").split(" ").map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(" ");
     return a.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
       if (t.permissions && !re(t.permissions))
@@ -288,7 +289,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             label: /* @__PURE__ */ e.jsx("a", { href: a.path, children: f(`menu.${a.name}`, { defaultValue: a.name }) })
           }))
         },
-        children: /* @__PURE__ */ e.jsx(He, {})
+        children: /* @__PURE__ */ e.jsx(Ue, {})
       },
       "navigation-dropdown"
     ),
@@ -319,7 +320,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             Ae,
             {
               type: "text",
-              icon: p ? /* @__PURE__ */ e.jsx(Ve, {}) : /* @__PURE__ */ e.jsx(Ke, {}),
+              icon: p ? /* @__PURE__ */ e.jsx(Ce, {}) : /* @__PURE__ */ e.jsx(Ee, {}),
               onClick: () => V(!p),
               style: { fontSize: "16px", width: 64, height: 64 }
             }
@@ -332,8 +333,8 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             return K ? /* @__PURE__ */ e.jsx(k, { to: K, children: $.title }) : /* @__PURE__ */ e.jsx("span", { children: $.title });
           }, items: t }),
           /* @__PURE__ */ e.jsx("div", { className: "site-layout-background", style: { padding: 24, minHeight: "calc(100vh - 190px)" }, children: d }),
-          (n == null ? void 0 : n.attrs.ai_enabled) && /* @__PURE__ */ e.jsx(Ne, {}),
-          (n == null ? void 0 : n.attrs.ai_enabled) && x === "classic" && (L || c) && /* @__PURE__ */ e.jsx(Pe, {})
+          (n == null ? void 0 : n.attrs.ai_enabled) && /* @__PURE__ */ e.jsx(Ge, {}),
+          (n == null ? void 0 : n.attrs.ai_enabled) && x === "classic" && (L || c) && /* @__PURE__ */ e.jsx(Je, {})
         ] }),
         /* @__PURE__ */ e.jsxs(xt, { style: { textAlign: "center" }, children: [
           " ©",
@@ -342,7 +343,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
           D
         ] })
       ] }),
-      (n == null ? void 0 : n.attrs.ai_enabled) && (x === "sidebar" || x === "float-sidebar") && (L || c) && /* @__PURE__ */ e.jsx(De, {})
+      (n == null ? void 0 : n.attrs.ai_enabled) && (x === "sidebar" || x === "float-sidebar") && (L || c) && /* @__PURE__ */ e.jsx(Xe, {})
     ] });
   }))(ie, H(m), w(ce), F(), s ?? /* @__PURE__ */ e.jsx(ze, {}));
 }, vt = new ge({
@@ -352,7 +353,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
       retry: 1
     }
   }
-}), Y = {
+}), J = {
   "zh-CN": fe,
   "en-US": B,
   "de-DE": xe,
@@ -361,7 +362,7 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
   "ar-AE": me,
   "sv-SE": de
 };
-function Ht({
+function Vt({
   transformRouter: s = (c) => c,
   transformSettingTabs: m = (c) => c,
   transformLangConfig: j = (c) => c,
@@ -371,9 +372,9 @@ function Ht({
   transformHeaderItems: x = (c) => c,
   renderLayout: L
 }) {
-  const { i18n: c } = C(), [f, _] = A(Y[c.language] || B);
+  const { i18n: c } = C(), [f, _] = A(J[c.language] || B);
   N(() => {
-    _(Y[c.language] || B);
+    _(J[c.language] || B);
   }, [c.language]);
   const y = (z) => z.map((h) => h.children === void 0 ? h : {
     ...h,
@@ -384,7 +385,7 @@ function Ht({
     extraPrivateRoutes: v,
     extraPublicRoutes: w
   }))), O = (z, h) => z.flatMap((i) => i.is_private ? [i] : "children" in i && i.children ? i.children : [i]).map((i, n) => {
-    const R = i.is_private ? /* @__PURE__ */ e.jsx(Fe, { element: /* @__PURE__ */ e.jsx(
+    const R = i.is_private ? /* @__PURE__ */ e.jsx(Ne, { element: /* @__PURE__ */ e.jsx(
       jt,
       {
         routes: g,
@@ -404,11 +405,11 @@ function Ht({
     Oe,
     {
       locale: f,
-      children: /* @__PURE__ */ e.jsx(Ge, { children: /* @__PURE__ */ e.jsx(Je, { children: /* @__PURE__ */ e.jsx(Ye, { children: /* @__PURE__ */ e.jsx(be, { basename: ee(), children: /* @__PURE__ */ e.jsx(_e, { children: O(g) }) }) }) }) })
+      children: /* @__PURE__ */ e.jsx(qe, { children: /* @__PURE__ */ e.jsx(Qe, { children: /* @__PURE__ */ e.jsx(We, { children: /* @__PURE__ */ e.jsx(be, { basename: ee(), children: /* @__PURE__ */ e.jsx(_e, { children: O(g) }) }) }) }) })
     }
   ) });
 }
-const Vt = {
+const Kt = {
   ...X,
   ...Z,
   ...te,
@@ -416,9 +417,9 @@ const Vt = {
   ...M
 };
 export {
-  Ht as A,
-  Et as a,
-  Vt as b,
+  Vt as A,
+  Ht as a,
+  Kt as b,
   jt as c,
   o as w
 };

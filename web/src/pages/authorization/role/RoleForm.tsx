@@ -34,7 +34,7 @@ import type { DataNode } from 'antd/es/tree';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import _ from 'lodash';
+import { isArray, has } from 'lodash-es';
 import { createStyles } from 'antd-style';
 import api from '@/service/api';
 import { useAuth } from '@/hooks/useAuth';
@@ -690,9 +690,9 @@ const RoleForm: React.FC = () => {
                         checkedKeys={checkedKeys}
                         onCheck={(newCheckedKeys) => {
                           let values: string[] = [];
-                          if (_.isArray(newCheckedKeys)) {
+                          if (isArray(newCheckedKeys)) {
                             values = newCheckedKeys as string[];
-                          } else if (_.has(newCheckedKeys, 'checked')) {
+                          } else if (has(newCheckedKeys, 'checked')) {
                             values = (newCheckedKeys as any).checked as string[];
                           }
                           setCheckedKeys(values);

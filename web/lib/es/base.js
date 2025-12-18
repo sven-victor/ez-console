@@ -1,7 +1,7 @@
 import { r as c } from "./client.js";
 import m from "i18next";
 import { initReactI18next as p } from "react-i18next";
-import g from "i18next-browser-languagedetector";
+import { B as g } from "./vendor.js";
 const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = t instanceof Date ? t : new Date(t), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), l = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), n = String(a.getSeconds()).padStart(2, "0");
   return e.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", l).replace("mm", i).replace("ss", n);

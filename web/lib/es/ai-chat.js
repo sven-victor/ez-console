@@ -4,15 +4,17 @@ var O = (s, t, r) => he(s, typeof t != "symbol" ? t + "" : t, r);
 import { j as n } from "./vendor.js";
 import { a as C } from "./index.js";
 import { PlusOutlined as q, ReloadOutlined as fe, DeleteOutlined as xe, BlockOutlined as be, BorderRightOutlined as D, HistoryOutlined as ye, CloseOutlined as ve } from "@ant-design/icons";
+import { Conversations as Ce, Bubble as je, Sender as we, XProvider as ke, Mermaid as Se, CodeHighlighter as $e } from "@ant-design/x";
+import { useXConversations as Le, useXChat as Me, XRequest as Te, AbstractChatProvider as Ae } from "@ant-design/x-sdk";
+import { XMarkdown as V } from "@ant-design/x-markdown";
 import { useRequest as j } from "ahooks";
-import { theme as Ce, message as L, Button as w, Spin as y, Radio as je, Space as we, Dropdown as ke } from "antd";
-import { createStyles as Se } from "antd-style";
-import A, { useEffect as v, useState as V } from "react";
-import { useTranslation as X } from "react-i18next";
-import F from "dayjs";
-import { u as $e } from "./contexts.js";
-import { u as Me, a as Le, C as Fe, X as H, F as Te, S as Ae, b as Re, c as Ne, M as _e, d as Be, A as Ie } from "./ant-design-x.js";
-const Pe = Se(({ token: s, css: t }) => ({
+import { theme as Fe, message as M, Button as w, Spin as y, Radio as Re, Space as Ne, Dropdown as _e } from "antd";
+import { createStyles as Be } from "antd-style";
+import F, { useEffect as v, useState as X } from "react";
+import { useTranslation as H } from "react-i18next";
+import T from "dayjs";
+import { u as Ie } from "./contexts.js";
+const Pe = Be(({ token: s, css: t }) => ({
   siderLayout: t`
       width: 100%;
       height: calc(100vh - 100px);
@@ -151,7 +153,7 @@ class ze extends Error {
     this.buffer = i;
   }
 }
-class Ee extends Ie {
+class Ee extends Ae {
   transformParams(t, r) {
     if (typeof t != "object")
       throw new Error("requestParams must be an object");
@@ -194,10 +196,10 @@ class Ee extends Ie {
     }
   }
 }
-const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
+const A = /* @__PURE__ */ new Map(), Oe = (s) => (A.get(s) || A.set(
   s,
   new Ee({
-    request: Ne(
+    request: Te(
       `/api/ai/chat/sessions/${s}`,
       {
         manual: !0,
@@ -215,17 +217,17 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
       }
     )
   })
-), T.get(s)), K = (s) => {
+), A.get(s)), K = (s) => {
   var l;
   const { className: t, children: r } = s, i = ((l = t == null ? void 0 : t.match(/language-(\w+)/)) == null ? void 0 : l[1]) || "";
-  return typeof r != "string" ? null : i === "mermaid" ? /* @__PURE__ */ n.jsx(_e, { children: r }) : /* @__PURE__ */ n.jsx(Be, { lang: i, children: r });
+  return typeof r != "string" ? null : i === "mermaid" ? /* @__PURE__ */ n.jsx(Se, { children: r }) : /* @__PURE__ */ n.jsx($e, { lang: i, children: r });
 }, qe = () => {
-  const s = Ce.useToken(), t = A.useMemo(() => {
+  const s = Fe.useToken(), t = F.useMemo(() => {
     var i;
     return ((i = s == null ? void 0 : s.theme) == null ? void 0 : i.id) === 0;
   }, [s]);
-  return [A.useMemo(() => t ? "x-markdown-light" : "x-markdown-dark", [t])];
-}, De = A.createContext({}), tt = () => {
+  return [F.useMemo(() => t ? "x-markdown-light" : "x-markdown-dark", [t])];
+}, De = F.createContext({}), nt = () => {
   const {
     layout: s,
     setVisible: t,
@@ -235,10 +237,10 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
     setActiveConversationKey: u,
     conversations: h,
     fetchConversationsLoading: R
-  } = $e(), { t: m } = X("ai"), { t: N } = X("common"), { styles: g } = Pe(), k = (e) => ({
+  } = Ie(), { t: m } = H("ai"), { t: N } = H("common"), { styles: g } = Pe(), k = (e) => ({
     key: e.id,
     label: e.title,
-    group: F(e.start_time).isSame(F(), "day") ? m("chat.today") : F(e.start_time).format("YYYY-MM-DD")
+    group: T(e.start_time).isSame(T(), "day") ? m("chat.today") : T(e.start_time).format("YYYY-MM-DD")
   }), {
     conversations: _,
     activeConversationKey: c,
@@ -249,14 +251,14 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
     setConversation: x,
     removeConversation: W,
     getMessages: J
-  } = Me({
+  } = Le({
     defaultActiveConversationKey: l,
     defaultConversations: (h == null ? void 0 : h.map((e) => k(e))) || []
   });
   v(() => {
     u(c);
   }, [c]);
-  const [U] = qe(), [B, Q] = L.useMessage(), [I, P] = V(""), [b, z] = V(), { onRequest: E, messages: p, isRequesting: Z, abort: ee, onReload: te, setMessages: se, setMessage: ne } = Le({
+  const [U] = qe(), [B, Q] = M.useMessage(), [I, P] = X(""), [b, z] = X(), { onRequest: E, messages: p, isRequesting: Z, abort: ee, onReload: te, setMessages: se, setMessage: ne } = Me({
     provider: Oe(c),
     // every conversation has its own provider
     conversationKey: c,
@@ -287,7 +289,7 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
   }, { run: oe, loading: re } = j(async (e) => await C.ai.getChatSession({ sessionId: e }), {
     manual: !0,
     onError: () => {
-      L.error(m("chat.fetchConversationFailed", { defaultValue: "Failed to fetch conversation" }));
+      M.error(m("chat.fetchConversationFailed", { defaultValue: "Failed to fetch conversation" }));
     },
     onSuccess: (e) => {
       if (p && p.length > 0 && (p[p.length - 1].status === "loading" || p.length > e.messages.length))
@@ -326,7 +328,7 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
         status: a.status
       }), se(o);
     }
-  }), { run: f, loading: M } = j(async (e, o, a = !1) => await C.ai.createChatSession({
+  }), { run: f, loading: L } = j(async (e, o, a = !1) => await C.ai.createChatSession({
     title: m("chat.defaultConversationTitle"),
     model_id: "",
     messages: o || [],
@@ -334,7 +336,7 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
   }), {
     manual: !0,
     onError: () => {
-      L.error(m("chat.createConversationFailed", { defaultValue: "Failed to create conversation" }));
+      M.error(m("chat.createConversationFailed", { defaultValue: "Failed to create conversation" }));
     },
     onSuccess: (e, [o]) => {
       Y(k(e), "prepend"), S(e.id), o && z({ message: o, sessionId: e.id });
@@ -396,12 +398,12 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
         type: "link",
         className: g.addBtn,
         icon: /* @__PURE__ */ n.jsx(q, {}),
-        loading: M,
+        loading: L,
         children: m("chat.newConversation", { defaultValue: "New Conversation" })
       }
     ),
     /* @__PURE__ */ n.jsx(y, { spinning: R, wrapperClassName: g.conversationsSpin, children: /* @__PURE__ */ n.jsx(
-      Fe,
+      Ce,
       {
         items: _,
         activeKey: c,
@@ -436,12 +438,12 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
     ) })
   ] }), de = ({ message: e }) => {
     if (e.error)
-      return /* @__PURE__ */ n.jsx("div", { children: /* @__PURE__ */ n.jsx(H, { content: e.error, components: { code: K } }) });
+      return /* @__PURE__ */ n.jsx("div", { children: /* @__PURE__ */ n.jsx(V, { content: e.error, components: { code: K } }) });
   }, ue = p == null ? void 0 : p.map((e) => ({
     ...e.message,
     key: e.id,
     contentRender: (o) => /* @__PURE__ */ n.jsx(
-      H,
+      V,
       {
         paragraphTag: "div",
         content: o,
@@ -450,8 +452,8 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
       }
     ),
     footer: de(e)
-  })), me = /* @__PURE__ */ n.jsx("div", { className: g.chatList, children: /* @__PURE__ */ n.jsx(y, { spinning: re || M, children: /* @__PURE__ */ n.jsx(
-    Te.List,
+  })), me = /* @__PURE__ */ n.jsx("div", { className: g.chatList, children: /* @__PURE__ */ n.jsx(y, { spinning: re || L, children: /* @__PURE__ */ n.jsx(
+    je.List,
     {
       items: ue,
       style: {
@@ -478,7 +480,7 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
       }
     }
   ) }) }), ge = /* @__PURE__ */ n.jsx(n.Fragment, { children: /* @__PURE__ */ n.jsx(
-    Ae,
+    we,
     {
       value: I,
       onSubmit: async () => {
@@ -493,12 +495,12 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
       placeholder: m("chat.inputPlaceholder")
     }
   ) });
-  return /* @__PURE__ */ n.jsxs(Re, { children: [
+  return /* @__PURE__ */ n.jsxs(ke, { children: [
     Q,
     /* @__PURE__ */ n.jsxs(De.Provider, { value: { onReload: te, setMessage: ne }, children: [
       /* @__PURE__ */ n.jsxs("div", { style: { height: "50px", width: "100%", position: "relative" }, children: [
         /* @__PURE__ */ n.jsx(
-          je.Group,
+          Re.Group,
           {
             style: {
               position: "absolute",
@@ -525,7 +527,7 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
             value: s
           }
         ),
-        /* @__PURE__ */ n.jsxs(we, { style: { float: "right", marginTop: 10 }, children: [
+        /* @__PURE__ */ n.jsxs(Ne, { style: { float: "right", marginTop: 10 }, children: [
           /* @__PURE__ */ n.jsx(
             w,
             {
@@ -533,13 +535,13 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
               onClick: () => {
                 f();
               },
-              loading: M,
+              loading: L,
               icon: /* @__PURE__ */ n.jsx(q, {}),
               style: { display: s === "classic" ? "none" : "block" }
             }
           ),
           /* @__PURE__ */ n.jsx(
-            ke,
+            _e,
             {
               menu: {
                 items: _.map((e) => ({
@@ -570,6 +572,6 @@ const T = /* @__PURE__ */ new Map(), Oe = (s) => (T.get(s) || T.set(
   ] });
 };
 export {
-  tt as default,
+  nt as default,
   qe as useMarkdownTheme
 };

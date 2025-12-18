@@ -53,12 +53,15 @@ const baseConfig: UserConfig = {
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks(id, meta) {
+          if (id.includes('/node_modules/chart.js/') || id.includes('/node_modules/react-chartjs-2/')) return 'chartjs';
           if (id.includes('/node_modules/highlight.js/')) return 'highlight';
           if (id.includes('/src/components/AIChat.tsx')) return 'ai-chat';
-          // if (id.includes('/src/components/AIChatLayout.tsx')) return 'ai-chat-layout';
+          if (id.includes('/src/components/AIChatLayout.tsx')) return 'ai-chat-layout';
+          if (id.includes('/node_modules/react-syntax-highlighter/')) return 'highlighter';
           if (id.includes('/node_modules/mermaid/')) return 'mermaid';
           if (id.includes('/node_modules/refractor/')) return 'refractor';
           if (id.includes('/node_modules/@ant-design/x/') || id.includes('/node_modules/@ant-design/x-markdown/') || id.includes('/node_modules/@ant-design/x-sdk/')) return 'ant-design-x';
+          if (id.includes('/node_modules/lodash/') || id.includes('/node_modules/lodash-es/')) return `lodash`;
           if (id.includes('node_modules')) return 'vendor';
           if (id.includes('/src/main.tsx') || id.includes('/src/App.tsx') || id.includes('/src/components/Layout.tsx') || id.includes('/src/routes/')) return 'index';
           if (id.includes('/src/contexts/') || id.includes('/src/hooks/')) return "contexts";
@@ -135,32 +138,24 @@ export default defineConfig((env: ConfigEnv) => {
             },
           },
           external: [
-            // react
-            'react',
-            'react-router-dom',
-            'react-quill',
-            'react-query',
-            'react-json-view',
-            'react-dom',
-            'react-chartjs-2',
-            // i18n
-            'react-i18next',
-            'i18next',
-            'i18next-browser-languagedetector',
-            // antd
-            'antd',
-            'antd-style',
-            'antd-img-crop',
-            '@ant-design/pro-components',
-            '@ant-design/icons',
-            // utils
-            'axios',
-            'lodash',
-            'moment',
-            'dayjs',
-            'classnames',
-            'chart.js',
-            'ahooks',
+            "@ant-design/icons",
+            "@ant-design/pro-components",
+            "@ant-design/x",
+            "@ant-design/x-markdown",
+            "@ant-design/x-sdk",
+            "ahooks",
+            "antd",
+            "antd-style",
+            "axios",
+            "classnames",
+            "dayjs",
+            "i18next",
+            "lodash-es",
+            "react",
+            "react-dom",
+            "react-i18next",
+            "react-query",
+            "react-router-dom"
           ],
         },
         cssCodeSplit: false

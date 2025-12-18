@@ -1,53 +1,54 @@
 import { c as i, A as p, b as u, w as n } from "./es/index.js";
-import { useTranslation as m } from "react-i18next";
+import { useTranslation as d } from "react-i18next";
 import "./es/base.js";
-import { b as A, c as l, d as c, e as h, k as x, i as g, A as I, f as b, D as C, H as L, h as P, a as S, L as w, j as D, P as v, T as y, g as E } from "./es/components.js";
-import { default as T } from "./es/ai-chat.js";
-import { default as F } from "./es/forbidden.js";
-import { default as N } from "./es/not_found.js";
-import { u as j, a as k, b as q, c as M } from "./es/contexts.js";
-import { A as Z, d as z, a as J, e as K, f as O, c as Q, g as V, r as W } from "./es/client.js";
+import { b as A, h as l, e as c, A as x, c as h, D as g, H as I, d as b, a as C, L, f as P, P as S, T as w, g as D } from "./es/components.js";
+import { default as y } from "./es/ai-chat.js";
+import { A as G, a as T, b as B } from "./es/ai-chat-layout.js";
+import { default as H } from "./es/forbidden.js";
+import { default as U } from "./es/not_found.js";
+import { u as M, a as R, b as Z, c as j } from "./es/contexts.js";
+import { A as z, d as J, a as K, e as O, f as Q, c as V, g as W, r as X } from "./es/client.js";
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";
-import { default as Y } from "i18next";
+import { default as _ } from "i18next";
 export {
-  T as AIChat,
-  A as AIChatButton,
-  l as AIChatModal,
-  c as AIChatSider,
-  h as Actions,
-  x as AdminGuard,
-  g as AllLangUIConfig,
-  Z as ApiError,
+  y as AIChat,
+  G as AIChatButton,
+  T as AIChatModal,
+  B as AIChatSider,
+  A as Actions,
+  l as AdminGuard,
+  c as AllLangUIConfig,
+  z as ApiError,
   i as AppLayout,
-  I as Avatar,
-  b as AvatarUpload,
-  C as DynamicIcon,
+  x as Avatar,
+  h as AvatarUpload,
+  g as DynamicIcon,
   p as EZApp,
-  F as Forbidden,
-  L as HeaderDropdown,
-  P as LabelCreater,
-  S as LanguageSwitch,
-  w as Loading,
-  N as NotFound,
-  D as PermissionGuard,
-  v as PrivateRoute,
-  y as Table,
+  H as Forbidden,
+  I as HeaderDropdown,
+  b as LabelCreater,
+  C as LanguageSwitch,
+  L as Loading,
+  U as NotFound,
+  P as PermissionGuard,
+  S as PrivateRoute,
+  w as Table,
   u as api,
-  z as apiDelete,
-  J as apiGet,
-  K as apiPost,
-  O as apiPut,
-  Q as client,
-  V as fetchSSE,
-  E as getIconByName,
-  Y as i18n,
-  W as request,
-  j as useAI,
-  k as useAuth,
-  q as usePermission,
-  M as useSite,
-  m as useTranslation,
+  J as apiDelete,
+  K as apiGet,
+  O as apiPost,
+  Q as apiPut,
+  V as client,
+  W as fetchSSE,
+  D as getIconByName,
+  _ as i18n,
+  X as request,
+  M as useAI,
+  R as useAuth,
+  Z as usePermission,
+  j as useSite,
+  d as useTranslation,
   n as withSuspense
 };
