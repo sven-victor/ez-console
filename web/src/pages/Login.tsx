@@ -200,6 +200,10 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
     }
   }, [siteConfig])
 
+  if (siteConfigLoading) {
+    return <Loading />
+  }
+
   if (!siteConfig) {
     return <Result
       status="500"
@@ -209,10 +213,6 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
   }
 
   if (code && state && provider) {
-    return <Loading />
-  }
-
-  if (siteConfigLoading) {
     return <Loading />
   }
 

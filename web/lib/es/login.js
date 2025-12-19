@@ -79,7 +79,9 @@ const { Title: ke } = se, qe = ({ transformLangConfig: N }) => {
   if (V(() => {
     var t;
     o && (E(o.name), window.document.title = o.name, (t = document.getElementById("site-icon")) == null || t.setAttribute("href", o.logo || ""));
-  }, [o]), !o)
+  }, [o]), H)
+    return /* @__PURE__ */ e.jsx(D, {});
+  if (!o)
     return /* @__PURE__ */ e.jsx(
       ae,
       {
@@ -89,8 +91,6 @@ const { Title: ke } = se, qe = ({ transformLangConfig: N }) => {
       }
     );
   if (ee && re && te)
-    return /* @__PURE__ */ e.jsx(D, {});
-  if (H)
     return /* @__PURE__ */ e.jsx(D, {});
   if (A && A.status === "active") {
     const t = s.get("redirect");
