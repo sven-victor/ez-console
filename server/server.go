@@ -124,6 +124,21 @@ type Service interface {
 	GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error)
 	RegisterUserChangeHook(hook service.UserChangeHook)
 	RegisterUserRoleChangeHook(hook service.UserRoleChangeHook)
+	CreateServiceAccount(ctx context.Context, serviceAccount *model.ServiceAccount) error
+	GetServiceAccountByID(ctx context.Context, id string) (*model.ServiceAccount, error)
+
+	// Service Account Management
+	UpdateServiceAccount(ctx context.Context, id string, serviceAccount *model.ServiceAccount) error
+	DeleteServiceAccount(ctx context.Context, id string) error
+	UpdateServiceAccountStatus(ctx context.Context, id, status string) error
+	GetServiceAccountList(ctx context.Context, page, pageSize int, search string) ([]model.ServiceAccount, int64, error)
+	GetServiceAccountAccessKeys(ctx context.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error)
+	CreateServiceAccountAccessKey(ctx context.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error)
+	DeleteServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID string) error
+	GetServiceAccountRoles(ctx context.Context, serviceAccountID string) ([]model.Role, error)
+	AssignServiceAccountRoles(ctx context.Context, serviceAccountID string, roleIDs []string) error
+	GetServiceAccountPolicy(ctx context.Context, serviceAccountID string) (model.PolicyDocument, error)
+	SetServiceAccountPolicy(ctx context.Context, serviceAccountID string, policyDoc model.PolicyDocument) error
 
 	FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error)
 	GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)
