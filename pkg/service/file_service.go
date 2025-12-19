@@ -161,7 +161,7 @@ accessMode:
 	return nil
 }
 
-func (s *FileService) ListFiles(ctx *gin.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, error) {
+func (s *FileService) ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, error) {
 	roles := middleware.GetRolesFromContext(ctx)
 	var hasPermission bool
 	for _, role := range roles {

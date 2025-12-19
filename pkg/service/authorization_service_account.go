@@ -15,12 +15,12 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -37,7 +37,7 @@ func NewServiceAccountService() *ServiceAccountService {
 }
 
 // GetServiceAccountList gets the list of service accounts
-func (s *ServiceAccountService) GetServiceAccountList(ctx *gin.Context, page, pageSize int, search string) ([]model.ServiceAccount, int64, error) {
+func (s *ServiceAccountService) GetServiceAccountList(ctx context.Context, page, pageSize int, search string) ([]model.ServiceAccount, int64, error) {
 	var serviceAccounts []model.ServiceAccount
 	var total int64
 
@@ -69,7 +69,7 @@ func (s *ServiceAccountService) GetServiceAccountList(ctx *gin.Context, page, pa
 }
 
 // GetServiceAccountByID gets a service account by ID
-func (s *ServiceAccountService) GetServiceAccountByID(ctx *gin.Context, id string) (*model.ServiceAccount, error) {
+func (s *ServiceAccountService) GetServiceAccountByID(ctx context.Context, id string) (*model.ServiceAccount, error) {
 	var serviceAccount model.ServiceAccount
 
 	err := db.Session(ctx).Where("resource_id = ?", id).Preload("Roles").First(&serviceAccount).Error
@@ -81,12 +81,12 @@ func (s *ServiceAccountService) GetServiceAccountByID(ctx *gin.Context, id strin
 }
 
 // CreateServiceAccount creates a service account
-func (s *ServiceAccountService) CreateServiceAccount(ctx *gin.Context, serviceAccount *model.ServiceAccount) error {
+func (s *ServiceAccountService) CreateServiceAccount(ctx context.Context, serviceAccount *model.ServiceAccount) error {
 	return db.Session(ctx).Create(serviceAccount).Error
 }
 
 // UpdateServiceAccount updates a service account
-func (s *ServiceAccountService) UpdateServiceAccount(ctx *gin.Context, id string, serviceAccount *model.ServiceAccount) error {
+func (s *ServiceAccountService) UpdateServiceAccount(ctx context.Context, id string, serviceAccount *model.ServiceAccount) error {
 	return db.Session(ctx).Model(&model.ServiceAccount{}).Where("resource_id = ?", id).
 		Updates(map[string]interface{}{
 			"name":        serviceAccount.Name,
@@ -95,7 +95,7 @@ func (s *ServiceAccountService) UpdateServiceAccount(ctx *gin.Context, id string
 }
 
 // DeleteServiceAccount deletes a service account
-func (s *ServiceAccountService) DeleteServiceAccount(ctx *gin.Context, id string) error {
+func (s *ServiceAccountService) DeleteServiceAccount(ctx context.Context, id string) error {
 	// If the service account has a key, it cannot be deleted
 	var accessKey model.ServiceAccountAccessKey
 	err := db.Session(ctx).Where("service_account_id = ?", id).First(&accessKey).Error
@@ -114,7 +114,7 @@ func (s *ServiceAccountService) DeleteServiceAccount(ctx *gin.Context, id string
 }
 
 // UpdateServiceAccountStatus updates the status of a service account
-func (s *ServiceAccountService) UpdateServiceAccountStatus(ctx *gin.Context, id, status string) error {
+func (s *ServiceAccountService) UpdateServiceAccountStatus(ctx context.Context, id, status string) error {
 	return db.Session(ctx).Model(&model.ServiceAccount{}).Where("resource_id = ?", id).
 		Update("status", status).Error
 }
@@ -122,14 +122,14 @@ func (s *ServiceAccountService) UpdateServiceAccountStatus(ctx *gin.Context, id,
 // Other service account related methods can be added, such as managing access keys, role assignment, policy management, etc.
 
 // GetServiceAccountAccessKeys gets the list of access keys for a service account
-func (s *ServiceAccountService) GetServiceAccountAccessKeys(ctx *gin.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error) {
+func (s *ServiceAccountService) GetServiceAccountAccessKeys(ctx context.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error) {
 	var accessKeys []model.ServiceAccountAccessKey
 	err := db.Session(ctx).Where("service_account_id = ?", serviceAccountID).Find(&accessKeys).Error
 	return accessKeys, err
 }
 
 // CreateServiceAccountAccessKey creates an access key for a service account
-func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx *gin.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error) {
+func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx context.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error) {
 	// Check if the service account exists
 	var serviceAccount model.ServiceAccount
 	err := db.Session(ctx).Where("resource_id = ?", serviceAccountID).First(&serviceAccount).Error
@@ -162,7 +162,7 @@ func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx *gin.Context, 
 }
 
 // UpdateServiceAccountAccessKey updates a service account access key
-func (s *ServiceAccountService) UpdateServiceAccountAccessKey(ctx *gin.Context, serviceAccountID, keyID, name, description, status string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, error) {
+func (s *ServiceAccountService) UpdateServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID, name, description, status string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, error) {
 	var accessKey model.ServiceAccountAccessKey
 	err := db.Session(ctx).Where("service_account_id = ? AND resource_id = ?", serviceAccountID, keyID).First(&accessKey).Error
 	if err != nil {
@@ -197,12 +197,12 @@ func (s *ServiceAccountService) UpdateServiceAccountAccessKey(ctx *gin.Context, 
 }
 
 // DeleteServiceAccountAccessKey deletes a service account access key
-func (s *ServiceAccountService) DeleteServiceAccountAccessKey(ctx *gin.Context, serviceAccountID, keyID string) error {
+func (s *ServiceAccountService) DeleteServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID string) error {
 	return db.Session(ctx).Where("service_account_id = ? AND resource_id = ?", serviceAccountID, keyID).Delete(&model.ServiceAccountAccessKey{}).Error
 }
 
 // GetServiceAccountRoles gets the list of roles for a service account
-func (s *ServiceAccountService) GetServiceAccountRoles(ctx *gin.Context, serviceAccountID string) ([]model.Role, error) {
+func (s *ServiceAccountService) GetServiceAccountRoles(ctx context.Context, serviceAccountID string) ([]model.Role, error) {
 	var serviceAccount model.ServiceAccount
 	err := db.Session(ctx).Where("resource_id = ?", serviceAccountID).Preload("Roles").First(&serviceAccount).Error
 	if err != nil {
@@ -212,7 +212,7 @@ func (s *ServiceAccountService) GetServiceAccountRoles(ctx *gin.Context, service
 }
 
 // AssignServiceAccountRoles assigns roles to a service account
-func (s *ServiceAccountService) AssignServiceAccountRoles(ctx *gin.Context, serviceAccountID string, roleIDs []string) error {
+func (s *ServiceAccountService) AssignServiceAccountRoles(ctx context.Context, serviceAccountID string, roleIDs []string) error {
 	var serviceAccount model.ServiceAccount
 	err := db.Session(ctx).Where("resource_id = ?", serviceAccountID).First(&serviceAccount).Error
 	if err != nil {
@@ -231,7 +231,7 @@ func (s *ServiceAccountService) AssignServiceAccountRoles(ctx *gin.Context, serv
 }
 
 // GetServiceAccountPolicy gets the policy document for a service account
-func (s *ServiceAccountService) GetServiceAccountPolicy(ctx *gin.Context, serviceAccountID string) (model.PolicyDocument, error) {
+func (s *ServiceAccountService) GetServiceAccountPolicy(ctx context.Context, serviceAccountID string) (model.PolicyDocument, error) {
 	var serviceAccount model.ServiceAccount
 	err := db.Session(ctx).Where("resource_id = ?", serviceAccountID).First(&serviceAccount).Error
 	if err != nil {
@@ -241,7 +241,7 @@ func (s *ServiceAccountService) GetServiceAccountPolicy(ctx *gin.Context, servic
 }
 
 // SetServiceAccountPolicy sets the policy document for a service account
-func (s *ServiceAccountService) SetServiceAccountPolicy(ctx *gin.Context, serviceAccountID string, policyDoc model.PolicyDocument) error {
+func (s *ServiceAccountService) SetServiceAccountPolicy(ctx context.Context, serviceAccountID string, policyDoc model.PolicyDocument) error {
 	// Validate policy document
 	if !policyDoc.IsValid() {
 		return errors.New("invalid policy document")
