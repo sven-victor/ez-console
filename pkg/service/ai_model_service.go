@@ -244,14 +244,33 @@ func (s *AIModelService) TestAIModel(ctx context.Context, organizationID, id str
 		return fmt.Errorf("failed to get AI model: %w", err)
 	}
 
-	// TODO: Implement actual connection test based on provider
-	switch aiModel.Provider {
-	case model.AIModelProviderOpenAI:
-		// Test OpenAI connection
-		return s.testOpenAIModel(ctx, aiModel)
-	default:
+	factory, ok := ai.GetFactory(aiModel.Provider)
+	if !ok {
 		return fmt.Errorf("unsupported provider: %s", aiModel.Provider)
 	}
+
+	client, err := factory.CreateClient(ctx, organizationID, aiModel.Config)
+	if err != nil {
+		return fmt.Errorf("failed to create AI client: %w", err)
+	}
+
+	if client, ok := client.(ai.TestClient); ok {
+		return client.Test(ctx)
+	}
+
+	resp, err := client.CreateChat(ctx, []ai.ChatMessage{
+		{
+			Role:    model.AIChatMessageRoleUser,
+			Content: "Hello, how are you?",
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create chat: %w", err)
+	}
+	if len(resp) == 0 || resp[0].Content == "" {
+		return fmt.Errorf("failed to create chat: no response")
+	}
+	return nil
 }
 
 // testOpenAIModel tests OpenAI model connection

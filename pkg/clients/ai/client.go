@@ -44,6 +44,10 @@ type AIClient interface {
 	CreateChat(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionOptions) ([]ChatMessage, error)
 }
 
+type TestClient interface {
+	Test(ctx context.Context) error
+}
+
 // AIClientFactory is the interface for AI client factories
 type AIClientFactory interface {
 	// CreateClient creates an AI client from configuration
