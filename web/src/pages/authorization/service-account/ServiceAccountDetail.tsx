@@ -260,9 +260,10 @@ const ServiceAccountDetail: React.FC = () => {
           <UserOutlined />
           {serviceAccount.name}
           {serviceAccount.status === 'active' ? (
-            <Badge status="success" text={t('serviceAccount.status.active', { defaultValue: 'Active' })} />
+            <Badge status="success" text={t('serviceAccount.statusActive', { defaultValue: 'Active' })} />
+
           ) : (
-            <Badge status="error" text={t('serviceAccount.status.disabled', { defaultValue: 'Disabled' })} />
+            <Badge status="error" text={t('serviceAccount.statusDisabled', { defaultValue: 'Disabled' })} />
           )}
         </Space>
       }

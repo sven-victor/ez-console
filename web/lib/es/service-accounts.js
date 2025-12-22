@@ -886,7 +886,7 @@ Secret Key: ${b.secret_access_key}`;
       title: /* @__PURE__ */ e.jsxs(_, { children: [
         /* @__PURE__ */ e.jsx(Te, {}),
         o.name,
-        o.status === "active" ? /* @__PURE__ */ e.jsx(T, { status: "success", text: a("serviceAccount.status.active", { defaultValue: "Active" }) }) : /* @__PURE__ */ e.jsx(T, { status: "error", text: a("serviceAccount.status.disabled", { defaultValue: "Disabled" }) })
+        o.status === "active" ? /* @__PURE__ */ e.jsx(T, { status: "success", text: a("serviceAccount.statusActive", { defaultValue: "Active" }) }) : /* @__PURE__ */ e.jsx(T, { status: "error", text: a("serviceAccount.statusDisabled", { defaultValue: "Disabled" }) })
       ] }),
       extra: /* @__PURE__ */ e.jsxs(_, { children: [
         /* @__PURE__ */ e.jsx(z, { permission: "authorization:service_account:update", children: /* @__PURE__ */ e.jsx(
