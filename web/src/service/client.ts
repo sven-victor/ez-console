@@ -15,7 +15,7 @@
  */
 
 import { getURL } from '@/utils';
-import axios, { AxiosError, AxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export const baseURL = '/api';
 
@@ -71,6 +71,10 @@ client.interceptors.request.use(
 // Response interceptor
 client.interceptors.response.use(
   (response) => {
+    const contentType = response.headers['content-type']
+    if (contentType && !contentType.includes('application/json')) {
+      return response;
+    }
     // Check for new format response
     const data = response.data;
     if (data && data.code !== undefined) {
@@ -108,16 +112,17 @@ client.interceptors.response.use(
     }
 
     // Extract error message
-    const errorResponse = error.response?.data as any;
     let errorMessage = new ApiError(error.response?.status.toString() || '500', error.message);
-    console.log("errorResponse", errorResponse)
-    if (errorResponse) {
-      if (errorResponse.err) {
-        // New format error
-        errorMessage = new ApiError(errorResponse.code, errorResponse.err);
-      } else if (errorResponse.error) {
-        // Old format error
-        errorMessage = new ApiError(errorResponse.code, errorResponse.error);
+    if (error.response?.headers['content-type']?.includes('application/json')) {
+      const errorResponse = error.response?.data as any;
+      if (errorResponse) {
+        if (errorResponse.err) {
+          // New format error
+          errorMessage = new ApiError(errorResponse.code, errorResponse.err);
+        } else if (errorResponse.error) {
+          // Old format error
+          errorMessage = new ApiError(errorResponse.code, errorResponse.error);
+        }
       }
     }
     return Promise.reject(errorMessage);
@@ -182,6 +187,15 @@ export async function fetchSSE(url: string, config?: SSEConfig): Promise<Readabl
 export interface RequestConfig extends AxiosRequestConfig {
   requestType?: 'form'
 }
+export interface TextRequestConfig extends Omit<RequestConfig, 'responseType'> {
+  responseType: 'text';
+}
+export interface BlobRequestConfig extends Omit<RequestConfig, 'responseType'> {
+  responseType: 'blob';
+}
+export interface ArrayBufferRequestConfig extends Omit<RequestConfig, 'responseType'> {
+  responseType: 'arraybuffer';
+}
 export interface SSERequestConfig extends Omit<RequestConfig, 'requestType' | 'signal'> {
   requestType: 'sse';
   signal?: AbortSignal;
@@ -199,14 +213,17 @@ function normalizeHeaders(headers?: AxiosRequestConfig['headers']): Record<strin
   );
 }
 
-
-export function request<T extends any>(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
+export function request(url: string, config: ArrayBufferRequestConfig): Promise<AxiosResponse<ArrayBuffer>>;
+export function request(url: string, config: BlobRequestConfig): Promise<AxiosResponse<Blob>>;
+export function request(url: string, config: TextRequestConfig): Promise<AxiosResponse<string>>;
+export function request(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
 export function request<T extends { data: any; current?: number; total?: number; page_size?: number }>(url: string, config?: RequestConfig): Promise<Result<T>>;
 export async function request<T extends { data: any; current?: number; total?: number; page_size?: number }>(
   url: string,
-  config?: RequestConfig | SSERequestConfig
-): Promise<Result<T> | ReadableStream<Uint8Array<ArrayBuffer>>> {
+  config?: RequestConfig | SSERequestConfig | ArrayBufferRequestConfig
+): Promise<Result<T> | ReadableStream<Uint8Array<ArrayBuffer>> | AxiosResponse<ArrayBuffer | Blob | string>> {
   const { requestType, signal, ...requestConfig } = config || {};
+  const responseType = requestConfig.responseType;
   if (requestType === 'sse') {
     const orgID = localStorage.getItem('orgID');
     return fetchSSE(url, {
@@ -224,22 +241,40 @@ export async function request<T extends { data: any; current?: number; total?: n
     });
   }
 
-  if (requestType === 'form') {
-    return client.request<T, Result<T>>({
-      url,
-      baseURL: "",
-      ...requestConfig,
-      headers: {
-        ...config?.headers,
-        "Content-Type": "multipart/form-data",
-      }
-    });
+  const headers = requestType === 'form' ? {
+    ...config?.headers,
+    "Content-Type": "multipart/form-data",
+  } : config?.headers;
+  switch (responseType) {
+    case 'arraybuffer':
+      return client.request<T, AxiosResponse<ArrayBuffer>>({
+        url,
+        baseURL: "",
+        ...requestConfig,
+        headers: headers,
+      });
+    case 'blob':
+      return client.request<T, AxiosResponse<Blob>>({
+        url,
+        baseURL: "",
+        ...requestConfig,
+        headers: headers,
+      });
+    case 'text':
+      return client.request<T, AxiosResponse<string>>({
+        url,
+        baseURL: "",
+        ...requestConfig,
+        headers: headers,
+      });
+    default:
+      return client.request<T, Result<T>>({
+        url,
+        baseURL: "",
+        ...requestConfig,
+        headers: headers,
+      });
   }
-  return client.request<T, Result<T>>({
-    url,
-    baseURL: "",
-    ...requestConfig
-  });
 };
 
 export default client; 

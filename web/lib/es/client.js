@@ -1,125 +1,152 @@
-var p = Object.defineProperty;
-var l = (t, e, r) => e in t ? p(t, e, { enumerable: !0, configurable: !0, writable: !0, value: r }) : t[e] = r;
-var d = (t, e, r) => l(t, typeof e != "symbol" ? e + "" : e, r);
-import { g as u } from "./base.js";
-import g from "axios";
-const m = "/api", s = g.create({
-  baseURL: m,
+var l = Object.defineProperty;
+var h = (e, t, r) => t in e ? l(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r;
+var u = (e, t, r) => h(e, typeof t != "symbol" ? t + "" : t, r);
+import { g as p } from "./base.js";
+import m from "axios";
+const g = "/api", n = m.create({
+  baseURL: g,
   timeout: 3e4,
   headers: {
     "Content-Type": "application/json"
   }
 });
-class c extends Error {
+class d extends Error {
   constructor(r, a) {
     super(a);
-    d(this, "code");
+    u(this, "code");
     this.code = r;
   }
 }
-s.interceptors.request.use(
-  (t) => {
-    if (!t.withoutAuth) {
+n.interceptors.request.use(
+  (e) => {
+    if (!e.withoutAuth) {
       const r = localStorage.getItem("token");
-      if (r && (t.headers = t.headers || {}, t.headers.Authorization = `Bearer ${r}`, !t.headers["X-Scope-OrgID"])) {
+      if (r && (e.headers = e.headers || {}, e.headers.Authorization = `Bearer ${r}`, !e.headers["X-Scope-OrgID"])) {
         const a = localStorage.getItem("orgID");
-        a && (t.headers["X-Scope-OrgID"] = a);
+        a && (e.headers["X-Scope-OrgID"] = a);
       }
     }
-    const e = localStorage.getItem("i18nextLng");
-    return e && (t.headers["Accept-Language"] = e), t;
+    const t = localStorage.getItem("i18nextLng");
+    return t && (e.headers["Accept-Language"] = t), e;
   },
-  (t) => Promise.reject(t)
+  (e) => Promise.reject(e)
 );
-s.interceptors.response.use(
-  (t) => {
-    const e = t.data;
-    return e && e.code !== void 0 ? e.code === "0" ? e.total !== void 0 && e.current !== void 0 && e.page_size !== void 0 ? {
-      data: e.data,
-      total: e.total,
-      current: e.current,
-      page_size: e.page_size
-    } : e.data : Promise.reject(e || "Unknown error") : t.data;
+n.interceptors.response.use(
+  (e) => {
+    const t = e.headers["content-type"];
+    if (t && !t.includes("application/json"))
+      return e;
+    const r = e.data;
+    return r && r.code !== void 0 ? r.code === "0" ? r.total !== void 0 && r.current !== void 0 && r.page_size !== void 0 ? {
+      data: r.data,
+      total: r.total,
+      current: r.current,
+      page_size: r.page_size
+    } : r.data : Promise.reject(r || "Unknown error") : e.data;
   },
-  (t) => {
-    var a, o, n;
-    ((a = t.response) == null ? void 0 : a.status) === 401 && window.location.pathname !== u("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = u("/login?redirect=" + encodeURIComponent(window.location.href)));
-    const e = (o = t.response) == null ? void 0 : o.data;
-    let r = new c(((n = t.response) == null ? void 0 : n.status.toString()) || "500", t.message);
-    return console.log("errorResponse", e), e && (e.err ? r = new c(e.code, e.err) : e.error && (r = new c(e.code, e.error))), Promise.reject(r);
+  (e) => {
+    var r, a, o, i, s;
+    ((r = e.response) == null ? void 0 : r.status) === 401 && window.location.pathname !== p("/login") && (localStorage.removeItem("token"), delete n.defaults.headers.common.Authorization, window.location.href = p("/login?redirect=" + encodeURIComponent(window.location.href)));
+    let t = new d(((a = e.response) == null ? void 0 : a.status.toString()) || "500", e.message);
+    if ((i = (o = e.response) == null ? void 0 : o.headers["content-type"]) != null && i.includes("application/json")) {
+      const c = (s = e.response) == null ? void 0 : s.data;
+      c && (c.err ? t = new d(c.code, c.err) : c.error && (t = new d(c.code, c.error)));
+    }
+    return Promise.reject(t);
   }
 );
-const I = async (t, e) => s.get(t, e), b = async (t, e, r) => s.post(t, e, r), E = async (t, e, r) => s.put(t, e, r), j = async (t, e) => s.delete(t, e);
-async function f(t, e) {
-  const { signal: r, ...a } = e || {}, o = await fetch(t, {
+const I = async (e, t) => n.get(e, t), j = async (e, t, r) => n.post(e, t, r), L = async (e, t, r) => n.put(e, t, r), x = async (e, t) => n.delete(e, t);
+async function f(e, t) {
+  const { signal: r, ...a } = t || {}, o = await fetch(e, {
     method: a.method || "GET",
     headers: a.headers,
     body: a.body,
     signal: r
   });
   if (!o.ok || !o.body) {
-    let n = o.statusText;
+    let i = o.statusText;
     if (o.body)
       try {
-        const i = await o.json();
-        n = `SSE connection failed: ${i.message || i.err}`;
+        const s = await o.json();
+        i = `SSE connection failed: ${s.message || s.err}`;
       } catch {
-        n = `SSE connection failed: ${o.statusText}`;
+        i = `SSE connection failed: ${o.statusText}`;
       }
-    throw new Error(n);
+    throw new Error(i);
   }
   if (o.status !== 200) {
-    const n = await o.json();
-    throw new Error(`SSE connection failed: ${n.message}`);
+    const i = await o.json();
+    throw new Error(`SSE connection failed: ${i.message}`);
   }
   return o.body;
 }
-function h(t) {
-  if (t)
-    return typeof t.toJSON == "function" ? t.toJSON() : Object.fromEntries(
-      Object.entries(t).map(([e, r]) => [e, String(r)])
+function y(e) {
+  if (e)
+    return typeof e.toJSON == "function" ? e.toJSON() : Object.fromEntries(
+      Object.entries(e).map(([t, r]) => [t, String(r)])
     );
 }
-async function x(t, e) {
-  const { requestType: r, signal: a, ...o } = e || {};
+async function E(e, t) {
+  const { requestType: r, signal: a, ...o } = t || {}, i = o.responseType;
   if (r === "sse") {
-    const n = localStorage.getItem("orgID");
-    return f(t, {
+    const c = localStorage.getItem("orgID");
+    return f(e, {
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
         "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
-        ...n ? { "X-Scope-OrgID": n } : {},
-        ...h(o.headers)
+        ...c ? { "X-Scope-OrgID": c } : {},
+        ...y(o.headers)
       },
       method: o.method,
       body: JSON.stringify(o.data),
       signal: a
     });
   }
-  return r === "form" ? s.request({
-    url: t,
-    baseURL: "",
-    ...o,
-    headers: {
-      ...e == null ? void 0 : e.headers,
-      "Content-Type": "multipart/form-data"
-    }
-  }) : s.request({
-    url: t,
-    baseURL: "",
-    ...o
-  });
+  const s = r === "form" ? {
+    ...t == null ? void 0 : t.headers,
+    "Content-Type": "multipart/form-data"
+  } : t == null ? void 0 : t.headers;
+  switch (i) {
+    case "arraybuffer":
+      return n.request({
+        url: e,
+        baseURL: "",
+        ...o,
+        headers: s
+      });
+    case "blob":
+      return n.request({
+        url: e,
+        baseURL: "",
+        ...o,
+        headers: s
+      });
+    case "text":
+      return n.request({
+        url: e,
+        baseURL: "",
+        ...o,
+        headers: s
+      });
+    default:
+      return n.request({
+        url: e,
+        baseURL: "",
+        ...o,
+        headers: s
+      });
+  }
 }
 export {
-  c as A,
+  d as A,
   I as a,
-  m as b,
-  s as c,
-  j as d,
-  b as e,
-  E as f,
+  g as b,
+  n as c,
+  x as d,
+  j as e,
+  L as f,
   f as g,
-  x as r
+  E as r
 };

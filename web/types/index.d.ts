@@ -1,6 +1,7 @@
 import { AvatarProps as AvatarProps_2 } from 'antd';
 import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
+import { AxiosResponse } from 'axios';
 import { ButtonProps } from 'antd';
 import { ComponentType } from 'react';
 import { default as default_2 } from 'react';
@@ -497,6 +498,10 @@ export declare interface AppLayoutProps {
     renderLayout?: (siteIconUrl: string | null, menuItems: default_2.ReactNode[], headerItems: default_2.ReactNode[], breadcrumbs: ItemType[], content: default_2.ReactNode) => default_2.ReactNode;
 }
 
+declare interface ArrayBufferRequestConfig extends Omit<RequestConfig, 'responseType'> {
+    responseType: 'arraybuffer';
+}
+
 export declare interface assignPermissionsParams {
     /** Role ID */
     id: string;
@@ -579,6 +584,10 @@ export declare interface AvatarUploadProps extends Omit<UploadProps, 'onChange'>
     value?: string;
     onChange?: (value?: string) => void;
     shape?: 'circle' | 'square';
+}
+
+declare interface BlobRequestConfig extends Omit<RequestConfig, 'responseType'> {
+    responseType: 'blob';
 }
 
 export declare interface ChangePasswordRequest {
@@ -1502,7 +1511,13 @@ export declare interface removeUserFromOrganizationParams {
     user_id: string;
 }
 
-export declare function request<T extends any>(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
+export declare function request(url: string, config: ArrayBufferRequestConfig): Promise<AxiosResponse<ArrayBuffer>>;
+
+export declare function request(url: string, config: BlobRequestConfig): Promise<AxiosResponse<Blob>>;
+
+export declare function request(url: string, config: TextRequestConfig): Promise<AxiosResponse<string>>;
+
+export declare function request(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
 
 export declare function request<T extends {
     data: any;
@@ -2075,6 +2090,10 @@ export declare interface TestOAuthCallbackResponse {
 export declare interface testToolSetParams {
     /** Toolset ID */
     id: string;
+}
+
+declare interface TextRequestConfig extends Omit<RequestConfig, 'responseType'> {
+    responseType: 'text';
 }
 
 export declare interface TokenResponse {

@@ -229,7 +229,7 @@ export async function streamChat(
   options: SSERequestConfig
 ) {
   const { sessionId: param0, ...queryParams } = params;
-  return request<ReadableStream<Uint8Array<ArrayBuffer>>>(`/api/ai/chat/sessions/${param0}`, {
+  return request(`/api/ai/chat/sessions/${param0}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
