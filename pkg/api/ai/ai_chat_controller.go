@@ -356,8 +356,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	// Capture context values for background goroutine
 	roles, _ := ctx.Get("roles")
 
-	options := []ai.WithChatCompletionOptions{
-		ai.WithChatCompletionOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
+	options := []ai.WithChatOptions{
+		ai.WithChatOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
 			if len(message.ToolCalls) > 0 {
 				var aiToolCalls model.AIToolCalls
 				for _, toolCall := range message.ToolCalls {
@@ -421,7 +421,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 			}
 		}),
 
-		ai.WithChatCompletionOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
+		ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
 			err := c.service.DeleteSessionAllMessages(ctx, organizationID, userID.(string), sessionID)
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to delete session messages", "error", err)
@@ -435,7 +435,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				}
 			}
 		}),
-		ai.WithChatCompletionOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
+		ai.WithChatOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
 			err := c.service.UpdateChatToolCallResult(ctx, organizationID, userID.(string), sessionID, toolCallID, result)
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to update chat tool call result", "error", err)

@@ -258,16 +258,16 @@ func (s *AIModelService) TestAIModel(ctx context.Context, organizationID, id str
 		return client.Test(ctx)
 	}
 
-	resp, err := client.CreateChat(ctx, []ai.ChatMessage{
+	resp, err := client.Chat(ctx, []ai.ChatMessage{
 		{
 			Role:    model.AIChatMessageRoleUser,
 			Content: "Hello, how are you?",
 		},
-	})
+	}, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create chat: %w", err)
 	}
-	if len(resp) == 0 || resp[0].Content == "" {
+	if resp == nil || resp.Content == "" {
 		return fmt.Errorf("failed to create chat: no response")
 	}
 	return nil

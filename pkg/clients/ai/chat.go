@@ -70,7 +70,7 @@ type ChatStream interface {
 	Close() error
 }
 
-func WithChatCompletionToolSets(toolSets toolset.ToolSets) WithChatCompletionOptions {
+func WithChatToolSets(toolSets toolset.ToolSets) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		if toolSets != nil {
 			options.ToolSetsFactory = toolset.NewStaticToolSetsFactory(toolSets)
@@ -78,7 +78,7 @@ func WithChatCompletionToolSets(toolSets toolset.ToolSets) WithChatCompletionOpt
 	}
 }
 
-func WithChatCompletionToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatCompletionOptions {
+func WithChatToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		if factory != nil {
 			options.ToolSetsFactory = toolset.NewCachedToolSetsFactory(factory)
@@ -88,7 +88,7 @@ func WithChatCompletionToolSetsFactory(factory func(ctx context.Context) (toolse
 	}
 }
 
-func WithoutChatCompletionToolSets() WithChatCompletionOptions {
+func WithoutChatCompletionToolSets() WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.ToolSetsFactory = nil
 	}
@@ -107,45 +107,45 @@ type ChatCompletionOptions struct {
 	OnMessageAdded          func(ctx context.Context, message ChatMessage)
 }
 
-type WithChatCompletionOptions func(options *ChatCompletionOptions)
+type WithChatOptions func(options *ChatCompletionOptions)
 
-func WithChatCompletionOnSummary(onSummary func(ctx context.Context, messages []ChatMessage)) WithChatCompletionOptions {
+func WithChatOnSummary(onSummary func(ctx context.Context, messages []ChatMessage)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.OnSummary = onSummary
 	}
 }
 
-func WithChatCompletionOnToolCallResultChanged(onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)) WithChatCompletionOptions {
+func WithChatOnToolCallResultChanged(onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.OnToolCallResultChanged = onToolCallResultChanged
 	}
 }
 
-func WithChatCompletionOnMessageAdded(onMessageAdded func(ctx context.Context, message ChatMessage)) WithChatCompletionOptions {
+func WithChatOnMessageAdded(onMessageAdded func(ctx context.Context, message ChatMessage)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.OnMessageAdded = onMessageAdded
 	}
 }
 
-func WithChatCompletionMaxIterations(maxIterations int) WithChatCompletionOptions {
+func WithChatMaxIterations(maxIterations int) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.MaxIterations = maxIterations
 	}
 }
 
-func WithChatCompletionMaxTokens(maxTokens int) WithChatCompletionOptions {
+func WithChatMaxTokens(maxTokens int) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.MaxTokens = maxTokens
 	}
 }
 
-func WithChatCompletionAutoSummarization(enabled bool) WithChatCompletionOptions {
+func WithChatAutoSummarization(enabled bool) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.EnableAutoSummarization = enabled
 	}
 }
 
-func WithChatCompletionFinalPrompt(finalPrompt string) WithChatCompletionOptions {
+func WithChatFinalPrompt(finalPrompt string) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.FinalPrompt = finalPrompt
 	}

@@ -270,7 +270,7 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 // }
 
 // CreateChatCompletionWithToolSets creates a chat completion using the specified model with toolSets
-func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatCompletionOptions) ([]ai.ChatMessage, error) {
+func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -285,8 +285,8 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 			return nil, fmt.Errorf("failed to get AI model: %w", err)
 		}
 	}
-	options = append([]ai.WithChatCompletionOptions{
-		ai.WithChatCompletionToolSetsFactory(func(ctx context.Context) (toolset.ToolSets, error) {
+	options = append([]ai.WithChatOptions{
+		ai.WithChatToolSetsFactory(func(ctx context.Context) (toolset.ToolSets, error) {
 			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
 		}),
 	}, options...)
@@ -308,7 +308,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 	}
 
 	// Call CreateChat
-	responseMessages, err := client.CreateChat(ctx, messages, options...)
+	responseMessages, err := client.Exchange(ctx, messages, options...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)
 	}
@@ -317,7 +317,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 }
 
 // CreateChatCompletionStream creates a streaming chat completion
-func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatCompletionOptions) (ai.ChatStream, error) {
+func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) (ai.ChatStream, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -365,12 +365,12 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	}
 
 	// Call CreateChatStream
-	allOptions := []ai.WithChatCompletionOptions{ai.WithChatCompletionToolSets(toolSets)}
+	allOptions := []ai.WithChatOptions{ai.WithChatToolSets(toolSets)}
 	if maxTokens > 0 {
-		allOptions = append(allOptions, ai.WithChatCompletionMaxTokens(maxTokens))
+		allOptions = append(allOptions, ai.WithChatMaxTokens(maxTokens))
 	}
 	allOptions = append(allOptions, options...)
-	stream, err := client.CreateChatStream(ctx, messages, allOptions...)
+	stream, err := client.ExchangeStream(ctx, messages, allOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
 	}

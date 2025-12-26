@@ -20,6 +20,7 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
@@ -38,10 +39,10 @@ type ChatMessage struct {
 
 // AIClient is the interface that all AI client implementations must satisfy
 type AIClient interface {
-	// CreateChatStream creates a streaming chat completion
-	CreateChatStream(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionOptions) (ChatStream, error)
-	// CreateChat creates a non-streaming chat completion
-	CreateChat(ctx context.Context, messages []ChatMessage, options ...WithChatCompletionOptions) ([]ChatMessage, error)
+	// ChatStream creates a streaming chat completion
+	ChatStream(ctx context.Context, messages []ChatMessage, toolSets toolset.ToolSets) (ChatStream, error)
+	// Chat creates a non-streaming chat completion
+	Chat(ctx context.Context, messages []ChatMessage, toolSets toolset.ToolSets) (*ChatMessage, error)
 }
 
 type TestClient interface {
@@ -72,9 +73,12 @@ func RegisterFactory(provider model.AIModelProvider, factory AIClientFactory) er
 }
 
 // GetFactory returns the factory for a given provider
-func GetFactory(provider model.AIModelProvider) (AIClientFactory, bool) {
+func GetFactory(provider model.AIModelProvider) (*ClassicChatClientFactory, bool) {
 	factory, ok := registeredClients[provider]
-	return factory, ok
+	if ok {
+		return NewClassicChatClientFactory(factory), ok
+	}
+	return nil, false
 }
 
 // GetRegisteredFactories returns all registered factories
