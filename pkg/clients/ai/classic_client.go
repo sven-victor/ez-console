@@ -82,9 +82,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 	}
 	logger := log.GetContextLogger(ctx)
 
-	// Apply options (default maxIterations is 30)
+	// Apply options (default maxIterations is 30, toolResultMaxSize is 32KB)
 	opts := ChatCompletionOptions{
-		MaxIterations: 30,
+		MaxIterations:     30,
+		ToolResultMaxSize: 32 * 1024, // 32KB
 	}
 	for _, option := range options {
 		option(&opts)
@@ -99,12 +100,150 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		}
 	}
 
+	// Helper function to append message and trigger callback
+	appendMessage := func(msg ChatMessage) {
+		messages = append(messages, msg)
+		if opts.OnMessageAdded != nil {
+			opts.OnMessageAdded(ctx, msg)
+		}
+	}
+
+	// Helper function to calculate tokens (1 token ≈ 4 characters)
+	calculateTokens := func(msgs []ChatMessage) int {
+		totalChars := 0
+		for _, msg := range msgs {
+			totalChars += len(msg.Content) + len(msg.Role)
+			for _, tc := range msg.ToolCalls {
+				totalChars += len(tc.ID) + len(string(tc.Type)) + len(tc.Function.Name) + len(tc.Function.Arguments)
+			}
+			totalChars += len(msg.ToolCallID)
+		}
+		return (totalChars + 3) / 4
+	}
+
+	// Helper function to summarize messages
+	summarizeMessages := func() error {
+		if len(messages) <= 1 {
+			return nil
+		}
+
+		// Find the first system message
+		var systemMessage *ChatMessage
+		var messagesToSummarize []ChatMessage
+		firstSystemFound := false
+
+		for i, msg := range messages {
+			if !firstSystemFound && msg.Role == model.AIChatMessageRoleSystem {
+				systemMessage = &messages[i]
+				firstSystemFound = true
+			} else {
+				messagesToSummarize = append(messagesToSummarize, msg)
+			}
+		}
+
+		if len(messagesToSummarize) == 0 {
+			return nil
+		}
+
+		// Create summary prompt
+		summaryPrompt := "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive."
+
+		// Build summary request messages
+		summaryMessages := []ChatMessage{
+			{
+				Role:    model.AIChatMessageRoleSystem,
+				Content: summaryPrompt,
+			},
+		}
+		summaryMessages = append(summaryMessages, messagesToSummarize...)
+
+		// Call non-streaming API for summarization
+		level.Debug(logger).Log("msg", "Summarizing messages", "count", len(messagesToSummarize))
+		response, err := c.aiClient.Chat(ctx, summaryMessages, nil)
+		if err != nil {
+			return fmt.Errorf("failed to create summary: %w", err)
+		}
+
+		if response == nil {
+			return fmt.Errorf("no response")
+		}
+
+		// Rebuild messages: system message (if exists) + summary
+		messages = make([]ChatMessage, 0, 2)
+		if systemMessage != nil {
+			messages = append(messages, *systemMessage)
+		}
+		messages = append(messages, ChatMessage{
+			Role:    model.AIChatMessageRoleUser,
+			Content: fmt.Sprintf("[Previous conversation summary]: %s", response.Content),
+		})
+
+		if opts.OnSummary != nil {
+			opts.OnSummary(ctx, messages)
+		}
+
+		level.Debug(logger).Log("msg", "Messages summarized", "original_count", len(messagesToSummarize)+1, "new_count", len(messages))
+		return nil
+	}
+
+	// Helper function to summarize tool result
+	summarizeToolResult := func(toolCallID, toolName, originalResult string) (string, error) {
+		summarizePrompt := fmt.Sprintf(
+			"The tool '%s' returned a very large result. Please analyze and extract the key information from the following result. Focus on the most important data and provide a concise summary:\n\n%s",
+			toolName,
+			originalResult,
+		)
+
+		summarizeMessages := []ChatMessage{
+			{
+				Role:    model.AIChatMessageRoleUser,
+				Content: summarizePrompt,
+			},
+		}
+
+		level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult))
+		response, err := c.aiClient.Chat(ctx, summarizeMessages, nil)
+		if err != nil {
+			return "", fmt.Errorf("failed to summarize tool result: %w", err)
+		}
+
+		if response == nil {
+			return "", fmt.Errorf("no response")
+		}
+
+		level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(response.Content))
+		return response.Content, nil
+	}
+
 	// Collect all assistant messages for the final result
 	var resultMessages []ChatMessage
 	reachedMaxIterations := false
 
 	// Main loop for handling tool calls
 	for iteration := 0; iteration < opts.MaxIterations; iteration++ {
+		// Check token limit and summarize if needed
+		if opts.MaxTokens > 0 {
+			currentTokens := calculateTokens(messages)
+			tokenThreshold := int(float64(opts.MaxTokens) * 0.9) // 90% threshold
+
+			if currentTokens >= opts.MaxTokens {
+				// Token limit exceeded
+				if !opts.EnableAutoSummarization {
+					return nil, fmt.Errorf("token limit exceeded (%d/%d), auto summarization is disabled", currentTokens, opts.MaxTokens)
+				}
+				// Try to summarize
+				if err := summarizeMessages(); err != nil {
+					return nil, fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, opts.MaxTokens, err)
+				}
+			} else if currentTokens >= tokenThreshold && opts.EnableAutoSummarization {
+				// At 90% threshold, summarize proactively
+				if err := summarizeMessages(); err != nil {
+					// Log error but continue (don't fail the request)
+					level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
+				}
+			}
+		}
+
 		// Call OpenAI API
 		response, err := c.aiClient.Chat(ctx, messages, toolSets)
 		if err != nil {
@@ -119,12 +258,13 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		// Check if there are tool calls
 		if len(response.ToolCalls) == 0 {
 			// No tool calls, add the final message and break
+			appendMessage(*response)
 			resultMessages = append(resultMessages, *response)
 			break
 		}
 
 		// Add assistant message with tool calls to messages and results
-		messages = append(messages, *response)
+		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
 
 		// Execute tool calls serially
@@ -141,13 +281,30 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 				toolResult = err.Error()
 			}
 
+			// Trigger tool call result changed callback
+			if opts.OnToolCallResultChanged != nil {
+				opts.OnToolCallResultChanged(ctx, toolCall.ID, toolResult)
+			}
+
+			// Check if tool result exceeds max size and summarize if needed
+			if opts.ToolResultMaxSize > 0 && len(toolResult) > opts.ToolResultMaxSize {
+				level.Info(logger).Log("msg", "Tool result exceeds max size, summarizing", "tool", toolCall.Function.Name, "size", len(toolResult), "max_size", opts.ToolResultMaxSize)
+				summarized, err := summarizeToolResult(toolCall.ID, toolCall.Function.Name, toolResult)
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to summarize tool result", "error", err, "tool", toolCall.Function.Name)
+					// Continue with original result if summarization fails
+				} else {
+					toolResult = summarized
+				}
+			}
+
 			// Add tool result to messages
 			toolResultMessage := ChatMessage{
 				Role:       model.AIChatMessageRoleTool,
 				Content:    toolResult,
 				ToolCallID: toolCall.ID,
 			}
-			messages = append(messages, toolResultMessage)
+			appendMessage(toolResultMessage)
 			resultMessages = append(resultMessages, toolResultMessage)
 		}
 
@@ -158,19 +315,18 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 
 		// Continue to next iteration
 	}
-
-	// Check if we need to make a final prompt call
 	if opts.FinalPrompt != "" {
+		// Check if we need to make a final prompt call
 		// Append the final prompt as a user message
 		finalPromptMessage := ChatMessage{
 			Role:    model.AIChatMessageRoleUser,
 			Content: opts.FinalPrompt,
 		}
-		messages = append(messages, finalPromptMessage)
+		appendMessage(finalPromptMessage)
 		resultMessages = append(resultMessages, finalPromptMessage)
 
 		// Make one more API call without tools
-		response, err := c.aiClient.Chat(ctx, messages, toolSets)
+		response, err := c.aiClient.Chat(ctx, messages, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create final prompt completion: %w", err)
 		}
@@ -180,11 +336,35 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			return nil, fmt.Errorf("no response")
 		}
 
+		appendMessage(*response)
+		resultMessages = append(resultMessages, *response)
+	}
+	// If ResponseJsonSchema is set and there were tool calls, request JSON format response
+	if opts.ResponseJsonSchema != "" && len(toolSets) > 0 {
+		schemaPrompt := fmt.Sprintf("Please provide your final response in the following JSON format:\n%s", opts.ResponseJsonSchema)
+		schemaMessage := ChatMessage{
+			Role:    model.AIChatMessageRoleUser,
+			Content: schemaPrompt,
+		}
+		appendMessage(schemaMessage)
+		resultMessages = append(resultMessages, schemaMessage)
+
+		// Make API call for JSON formatted response
+		response, err := c.aiClient.Chat(ctx, messages, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create JSON formatted response: %w", err)
+		}
+
+		if response == nil {
+			return nil, fmt.Errorf("no response")
+		}
+
+		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
 	}
 
 	// If we reached max iterations without completion and no final prompt, return error
-	if reachedMaxIterations && opts.FinalPrompt == "" {
+	if reachedMaxIterations && opts.FinalPrompt == "" && opts.ResponseJsonSchema == "" {
 		return nil, fmt.Errorf("reached maximum iterations (%d) without completion", opts.MaxIterations)
 	}
 
@@ -225,6 +405,10 @@ type ClassicChatStream struct {
 	currentIteration        int
 	maxTokens               int
 	enableAutoSummarization bool
+	toolResultMaxSize       int
+	responseJsonSchema      string
+	hasToolCalls            bool // Track if we had tool calls in this session
+	jsonSchemaRequested     bool // Track if we've already requested JSON schema response
 
 	onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
 	onMessageAdded          func(ctx context.Context, message ChatMessage)
@@ -347,6 +531,37 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 	return nil
 }
 
+// summarizeToolResult summarizes a large tool result
+func (o *ClassicChatStream) summarizeToolResult(ctx context.Context, toolName, originalResult string) (string, error) {
+	logger := log.GetContextLogger(ctx)
+
+	summarizePrompt := fmt.Sprintf(
+		"The tool '%s' returned a very large result. Please analyze and extract the key information from the following result. Focus on the most important data and provide a concise summary:\n\n%s",
+		toolName,
+		originalResult,
+	)
+
+	summarizeMessages := []ChatMessage{
+		{
+			Role:    model.AIChatMessageRoleUser,
+			Content: summarizePrompt,
+		},
+	}
+
+	level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult))
+	response, err := o.client.Chat(ctx, summarizeMessages, nil)
+	if err != nil {
+		return "", fmt.Errorf("failed to summarize tool result: %w", err)
+	}
+
+	if response == nil {
+		return "", fmt.Errorf("no response")
+	}
+
+	level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(response.Content))
+	return response.Content, nil
+}
+
 func (o *ClassicChatStream) backgroundCallTool(ctx context.Context, toolCall *ToolCall) {
 	logger := log.GetContextLogger(ctx)
 	go func() {
@@ -402,6 +617,23 @@ func (o *ClassicChatStream) backgroundCallTool(ctx context.Context, toolCall *To
 		} else {
 			toolStatus = ToolCallStatusCompleted
 			toolCall.Result = resp
+
+			// Trigger tool call result changed callback with original result
+			if o.onToolCallResultChanged != nil {
+				o.onToolCallResultChanged(ctx, toolCall.ID, resp)
+			}
+
+			// Check if tool result exceeds max size and summarize if needed
+			if o.toolResultMaxSize > 0 && len(resp) > o.toolResultMaxSize {
+				level.Info(logger).Log("msg", "Tool result exceeds max size, summarizing", "tool", toolCall.Function.Name, "size", len(resp), "max_size", o.toolResultMaxSize)
+				summarized, err := o.summarizeToolResult(ctx, toolCall.Function.Name, resp)
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to summarize tool result", "error", err, "tool", toolCall.Function.Name)
+					// Continue with original result if summarization fails
+				} else {
+					toolCall.Result = summarized
+				}
+			}
 		}
 	}()
 }
@@ -484,6 +716,8 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 					}
 
 					if len(o.toolCalls) > 0 {
+						// Mark that we had tool calls
+						o.hasToolCalls = true
 						var toolCalls []ToolCall
 						for _, toolCall := range o.toolCalls {
 							toolCalls = append(toolCalls, ToolCall{
@@ -505,6 +739,22 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 							ToolCalls: o.toolCalls,
 							EventType: EventTypeToolCall,
 						}, nil
+					}
+
+					// No tool calls in this response - check if we should request JSON schema
+					if o.responseJsonSchema != "" && !o.jsonSchemaRequested {
+						// If we had tool calls earlier, request JSON format now
+						if o.hasToolCalls {
+							o.jsonSchemaRequested = true
+							schemaPrompt := fmt.Sprintf("Please provide your final response in the following JSON format:\n%s", o.responseJsonSchema)
+							schemaMessage := ChatMessage{
+								Role:    model.AIChatMessageRoleUser,
+								Content: schemaPrompt,
+							}
+							o.appendMessage(ctx, schemaMessage)
+							// Continue to trigger a new stream
+							return o.Recv(ctx)
+						}
 					}
 
 					if o.summaryPrompt != "" {
@@ -562,9 +812,23 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 			if lastMessage.Role == model.AIChatMessageRoleTool {
 				// Tool calls completed, check iteration limit before starting new iteration
 				if o.currentIteration >= o.maxIterations {
-					return nil, fmt.Errorf("reached maximum iterations (%d) without completion", o.maxIterations)
+					// Before returning error, check if we need to request JSON schema
+					if o.responseJsonSchema != "" && o.hasToolCalls && !o.jsonSchemaRequested {
+						o.jsonSchemaRequested = true
+						schemaPrompt := fmt.Sprintf("Please provide your final response in the following JSON format:\n%s", o.responseJsonSchema)
+						schemaMessage := ChatMessage{
+							Role:    model.AIChatMessageRoleUser,
+							Content: schemaPrompt,
+						}
+						o.appendMessage(ctx, schemaMessage)
+						// Don't increment iteration for JSON schema request
+						// Continue to create new stream
+					} else {
+						return nil, fmt.Errorf("reached maximum iterations (%d) without completion", o.maxIterations)
+					}
+				} else {
+					o.currentIteration++
 				}
-				o.currentIteration++
 			}
 		}
 
@@ -614,12 +878,14 @@ func (stream *ClassicChatStream) applyChatCompletionOptions(o ChatCompletionOpti
 	}
 	stream.maxTokens = o.MaxTokens
 	stream.enableAutoSummarization = o.EnableAutoSummarization
+	stream.toolResultMaxSize = o.ToolResultMaxSize
 }
 
 func NewClassicChatStream(ctx context.Context, client ClassicChatClient, messages []ChatMessage, options ...WithChatOptions) (ChatStream, error) {
 	// Apply options with defaults
 	opts := ChatCompletionOptions{
-		MaxIterations: 30,
+		MaxIterations:     30,
+		ToolResultMaxSize: 32 * 1024, // 32KB
 	}
 	for _, option := range options {
 		option(&opts)

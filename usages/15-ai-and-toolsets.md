@@ -190,7 +190,7 @@ type CustomAIClient struct {
 func (c *CustomAIClient) CreateChatStream(
     ctx context.Context,
     messages []ai.ChatMessage,
-    options ...ai.WithChatCompletionOptions,
+    options ...ai.WithChatOptions,
 ) (ai.ChatStream, error) {
     // Implement streaming chat logic
     // Convert messages to your API format
@@ -203,7 +203,7 @@ func (c *CustomAIClient) CreateChatStream(
 func (c *CustomAIClient) CreateChat(
     ctx context.Context,
     messages []ai.ChatMessage,
-    options ...ai.WithChatCompletionOptions,
+    options ...ai.WithChatOptions,
 ) ([]ai.ChatMessage, error) {
     // Implement non-streaming chat logic
     // Convert messages to your API format
@@ -788,7 +788,7 @@ func ProcessAITask(ctx context.Context, client ai.AIClient) error {
     }
 
     // Create options with callbacks
-    options := []ai.WithChatCompletionOptions{
+    options := []ai.WithChatOptions{
         ai.WithMaxIterations(20),
         ai.WithOnMessageEnd(func(ctx context.Context, messageID, content string) {
             fmt.Printf("Message completed: %s\n", messageID)

@@ -99,6 +99,8 @@ type ChatCompletionOptions struct {
 	MaxTokens               int
 	EnableAutoSummarization bool
 	FinalPrompt             string
+	ToolResultMaxSize       int    // Maximum size of tool result in bytes, default 32KB
+	ResponseJsonSchema      string // JSON Schema for expected response format
 
 	ToolSetsFactory func(ctx context.Context) (toolset.ToolSets, error)
 
@@ -148,5 +150,17 @@ func WithChatAutoSummarization(enabled bool) WithChatOptions {
 func WithChatFinalPrompt(finalPrompt string) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.FinalPrompt = finalPrompt
+	}
+}
+
+func WithChatToolResultMaxSize(maxSize int) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.ToolResultMaxSize = maxSize
+	}
+}
+
+func WithChatResponseJsonSchema(schema string) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.ResponseJsonSchema = schema
 	}
 }
