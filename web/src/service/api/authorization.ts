@@ -30,7 +30,6 @@ export async function logout(options?: { [key: string]: any }) {
 
 /** Get LDAP users Get LDAP users GET /api/authorization/ldap/users */
 export async function getLdapUsers(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getLdapUsersParams,
   options?: { [key: string]: any }
 ) {
@@ -123,7 +122,6 @@ export async function updateCurrentUser(
 
 /** Get current user's audit logs Get current user's audit logs GET /api/authorization/profile/audit-logs */
 export async function getCurrentUserLogs(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getCurrentUserLogsParams,
   options?: { [key: string]: any }
 ) {
@@ -163,7 +161,6 @@ export async function changePassword(
 
 /** Get all sessions for the user Get all sessions for the user GET /api/authorization/profile/sessions */
 export async function getUserSessions(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getUserSessionsParams,
   options?: { [key: string]: any }
 ) {
@@ -185,7 +182,6 @@ export async function getUserSessions(
 
 /** Terminate the specified session Terminate the specified session DELETE /api/authorization/profile/sessions/${param0} */
 export async function terminateSession(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.terminateSessionParams,
   options?: { [key: string]: any }
 ) {
@@ -224,7 +220,6 @@ export async function refreshToken(options?: { [key: string]: any }) {
 
 /** Get a list of roles Get a list of roles GET /api/authorization/roles */
 export async function listRoles(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.listRolesParams,
   options?: { [key: string]: any }
 ) {
@@ -259,7 +254,6 @@ export async function createRole(
 
 /** Get a role by ID Get a role by ID GET /api/authorization/roles/${param0} */
 export async function getRole(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getRoleParams,
   options?: { [key: string]: any }
 ) {
@@ -273,7 +267,6 @@ export async function getRole(
 
 /** Update a role Update a role PUT /api/authorization/roles/${param0} */
 export async function updateRole(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateRoleParams,
   body: API.UpdateRoleRequest,
   options?: { [key: string]: any }
@@ -292,7 +285,6 @@ export async function updateRole(
 
 /** Delete a role Delete a role DELETE /api/authorization/roles/${param0} */
 export async function deleteRole(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteRoleParams,
   options?: { [key: string]: any }
 ) {
@@ -309,7 +301,6 @@ export async function deleteRole(
 
 /** Assign permissions to a role Assign permissions to a role PUT /api/authorization/roles/${param0}/permissions */
 export async function assignPermissions(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.assignPermissionsParams,
   body: API.AssignPermissionsRequest,
   options?: { [key: string]: any }
@@ -331,7 +322,6 @@ export async function assignPermissions(
 
 /** Get the policy document for a role Get the policy document for a role GET /api/authorization/roles/${param0}/policy */
 export async function getRolePolicy(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getRolePolicyParams,
   options?: { [key: string]: any }
 ) {
@@ -348,7 +338,6 @@ export async function getRolePolicy(
 
 /** Set the policy for a role Set the policy for a role PUT /api/authorization/roles/${param0}/policy */
 export async function setRolePolicy(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.setRolePolicyParams,
   body: API.PolicyDocument,
   options?: { [key: string]: any }
@@ -370,7 +359,6 @@ export async function setRolePolicy(
 
 /** Get service account list Get service account list GET /api/authorization/service-accounts */
 export async function getServiceAccounts(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getServiceAccountsParams,
   options?: { [key: string]: any }
 ) {
@@ -410,7 +398,6 @@ export async function createServiceAccount(
 
 /** Get service account by ID Get service account by ID GET /api/authorization/service-accounts/${param0} */
 export async function getServiceAccountById(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getServiceAccountByIdParams,
   options?: { [key: string]: any }
 ) {
@@ -427,7 +414,6 @@ export async function getServiceAccountById(
 
 /** Update service account Update service account PUT /api/authorization/service-accounts/${param0} */
 export async function updateServiceAccount(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateServiceAccountParams,
   body: API.UpdateServiceAccountRequest,
   options?: { [key: string]: any }
@@ -449,7 +435,6 @@ export async function updateServiceAccount(
 
 /** Delete service account Delete service account DELETE /api/authorization/service-accounts/${param0} */
 export async function deleteServiceAccount(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteServiceAccountParams,
   options?: { [key: string]: any }
 ) {
@@ -466,7 +451,6 @@ export async function deleteServiceAccount(
 
 /** Get service account access keys Get service account access keys GET /api/authorization/service-accounts/${param0}/access-keys */
 export async function getServiceAccountAccessKeys(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getServiceAccountAccessKeysParams,
   options?: { [key: string]: any }
 ) {
@@ -483,7 +467,6 @@ export async function getServiceAccountAccessKeys(
 
 /** Create service account access key Create service account access key POST /api/authorization/service-accounts/${param0}/access-keys */
 export async function createServiceAccountAccessKey(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.createServiceAccountAccessKeyParams,
   body: API.CreateServiceAccountAccessKeyRequest,
   options?: { [key: string]: any }
@@ -505,7 +488,6 @@ export async function createServiceAccountAccessKey(
 
 /** Update service account access key Update service account access key PUT /api/authorization/service-accounts/${param0}/access-keys/${param1} */
 export async function updateServiceAccountAccessKey(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateServiceAccountAccessKeyParams,
   body: API.UpdateServiceAccountAccessKeyRequest,
   options?: { [key: string]: any }
@@ -527,7 +509,6 @@ export async function updateServiceAccountAccessKey(
 
 /** Delete service account access key Delete service account access key DELETE /api/authorization/service-accounts/${param0}/access-keys/${param1} */
 export async function deleteServiceAccountAccessKey(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteServiceAccountAccessKeyParams,
   options?: { [key: string]: any }
 ) {
@@ -544,7 +525,6 @@ export async function deleteServiceAccountAccessKey(
 
 /** Get service account policy Get service account policy GET /api/authorization/service-accounts/${param0}/policy */
 export async function getServiceAccountPolicy(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getServiceAccountPolicyParams,
   options?: { [key: string]: any }
 ) {
@@ -561,7 +541,6 @@ export async function getServiceAccountPolicy(
 
 /** Set service account policy Set service account policy PUT /api/authorization/service-accounts/${param0}/policy */
 export async function setServiceAccountPolicy(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.setServiceAccountPolicyParams,
   body: API.SetServiceAccountPolicyRequest,
   options?: { [key: string]: any }
@@ -583,7 +562,6 @@ export async function setServiceAccountPolicy(
 
 /** Get service account roles Get service account roles GET /api/authorization/service-accounts/${param0}/roles */
 export async function getServiceAccountRoles(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getServiceAccountRolesParams,
   options?: { [key: string]: any }
 ) {
@@ -600,7 +578,6 @@ export async function getServiceAccountRoles(
 
 /** Assign roles to service account Assign roles to service account POST /api/authorization/service-accounts/${param0}/roles */
 export async function assignServiceAccountRoles(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.assignServiceAccountRolesParams,
   body: API.AssignServiceAccountRolesRequest,
   options?: { [key: string]: any }
@@ -622,7 +599,6 @@ export async function assignServiceAccountRoles(
 
 /** Update service account status Update service account status PUT /api/authorization/service-accounts/${param0}/status */
 export async function updateServiceAccountStatus(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateServiceAccountStatusParams,
   body: API.UpdateServiceAccountStatusRequest,
   options?: { [key: string]: any }
@@ -644,7 +620,6 @@ export async function updateServiceAccountStatus(
 
 /** Get user list Get a list of users with optional filtering GET /api/authorization/users */
 export async function listUsers(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.listUsersParams,
   options?: { [key: string]: any }
 ) {
@@ -679,7 +654,6 @@ export async function createUser(
 
 /** Get user by ID Get a user by ID GET /api/authorization/users/${param0} */
 export async function getUser(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getUserParams,
   options?: { [key: string]: any }
 ) {
@@ -693,7 +667,6 @@ export async function getUser(
 
 /** Update a user Update a user PUT /api/authorization/users/${param0} */
 export async function updateUser(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateUserParams,
   body: API.UpdateUserRequest,
   options?: { [key: string]: any }
@@ -712,7 +685,6 @@ export async function updateUser(
 
 /** Delete a user Delete a user DELETE /api/authorization/users/${param0} */
 export async function deleteUser(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteUserParams,
   options?: { [key: string]: any }
 ) {
@@ -729,7 +701,6 @@ export async function deleteUser(
 
 /** Get user's audit logs Get user's audit logs GET /api/authorization/users/${param0}/audit-logs */
 export async function getUserLogs(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getUserLogsParams,
   options?: { [key: string]: any }
 ) {
@@ -752,7 +723,6 @@ export async function getUserLogs(
 
 /** Reset a user's password Reset a user's password PUT /api/authorization/users/${param0}/password */
 export async function resetUserPassword(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.resetUserPasswordParams,
   body: API.ResetUserPasswordRequest,
   options?: { [key: string]: any }
@@ -774,7 +744,6 @@ export async function resetUserPassword(
 
 /** Restore a user Restore a user POST /api/authorization/users/${param0}/restore */
 export async function restoreUser(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.restoreUserParams,
   options?: { [key: string]: any }
 ) {
@@ -791,7 +760,6 @@ export async function restoreUser(
 
 /** Assign roles to a user Assign roles to a user POST /api/authorization/users/${param0}/roles */
 export async function assignRoles(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.assignRolesParams,
   body: API.AssignRolesRequest,
   options?: { [key: string]: any }
@@ -813,7 +781,6 @@ export async function assignRoles(
 
 /** Update a user's status Update a user's status PUT /api/authorization/users/${param0}/status */
 export async function updateUserStatus(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateUserStatusParams,
   body: API.UpdateUserStatusRequest,
   options?: { [key: string]: any }
@@ -835,7 +802,6 @@ export async function updateUserStatus(
 
 /** Unlock a user Unlock a user POST /api/authorization/users/${param0}/unlock */
 export async function unlockUser(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.unlockUserParams,
   options?: { [key: string]: any }
 ) {

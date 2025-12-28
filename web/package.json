@@ -38,13 +38,14 @@
   "dependencies": {
     "antd-img-crop": ">=4.25.0",
     "chart.js": "^4.4.1",
-    "react-chartjs-2": "^5.2.0",
     "i18next-browser-languagedetector": "^8.0.4",
+    "react-chartjs-2": "^5.2.0",
     "react-infinite-scroll-component": "^6.1.0",
     "react-json-view": "^1.21.3",
     "react-quill": "^2.0.0"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.12",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",

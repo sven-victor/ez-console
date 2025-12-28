@@ -4,7 +4,6 @@ import { request } from "@/service/client";
 
 /** Handle the OAuth callback Handle the OAuth callback GET /api/oauth/callback */
 export async function handleCallback(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.handleCallbackParams,
   options?: { [key: string]: any }
 ) {
@@ -19,7 +18,6 @@ export async function handleCallback(
 
 /** Get the OAuth login URL Get the OAuth login URL GET /api/oauth/login/${param0} */
 export async function getLoginUrl(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getLoginUrlParams,
   options?: { [key: string]: any }
 ) {

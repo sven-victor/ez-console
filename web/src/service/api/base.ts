@@ -4,7 +4,6 @@ import { request } from "@/service/client";
 
 /** Get file list Get file list GET /api/files */
 export async function listFiles(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.listFilesParams,
   options?: { [key: string]: any }
 ) {
@@ -60,7 +59,6 @@ export async function uploadFile(
 
 /** Download file Download file GET /api/files/${param0} */
 export async function downloadFile(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.downloadFileParams,
   options?: { [key: string]: any }
 ) {

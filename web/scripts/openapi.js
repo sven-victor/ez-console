@@ -17,15 +17,18 @@
 import {generateService} from '@umijs/openapi';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import fs from 'fs';
+import fs,{readdirSync} from 'fs';
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const baseSerPath = path.join(__dirname, '../src/service/');
+const baseApiPath = path.join(baseSerPath, 'api/');
+
 generateService({
   schemaPath: path.join(__dirname, '../swagger.json'),
-  serversPath: path.join(__dirname, '../src/service/'),
+  serversPath: baseSerPath,
   requestLibPath: "import { request } from '@/service/client'",
   hook: {
     customFileNames: (data, path, method) => {
@@ -48,8 +51,8 @@ generateService({
   declareType: 'interface',
 }).then(()=>{
   // Post-process typings.d.ts to convert to exported types
-  const typingsPath = path.join(__dirname, '../src/service/api/typings.d.ts');
-  const typingTsPath = path.join(__dirname, '../src/service/api/typing.ts');
+  const typingsPath = path.join(baseApiPath, 'typings.d.ts');
+  const typingTsPath = path.join(baseApiPath, 'typing.ts');
   
   if (fs.existsSync(typingsPath)) {
     const content = fs.readFileSync(typingsPath, 'utf-8');
@@ -66,12 +69,24 @@ generateService({
     console.log('✅ Created typing.ts with exported types');
   }
   // Post-process api/ai.ts
-  if (fs.existsSync(path.join(__dirname, '../src/service/api/ai.ts'))) {
-    const content = fs.readFileSync(path.join(__dirname, '../src/service/api/ai.ts'), 'utf-8');
+  if (fs.existsSync(path.join(baseApiPath, 'ai.ts'))) {
+    const content = fs.readFileSync(path.join(baseApiPath, 'ai.ts'), 'utf-8');
     const newContent = injectSSE(content);
-    fs.writeFileSync(path.join(__dirname, '../src/service/api/ai.ts'), newContent, 'utf-8');
+    fs.writeFileSync(path.join(baseApiPath, 'ai.ts'), newContent, 'utf-8');
     console.log('✅ Successfully transformed ai.ts');
     console.log('✅ Created ai.ts with exported types');
+  }
+}).then(()=>{
+  try {
+    const dir = readdirSync(baseApiPath);
+    for (const dirent of dir){
+      const filePath = path.join(baseApiPath, dirent);
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const newContent = content.replace(/^  \/\/ .+$\n/gm, '');
+      fs.writeFileSync(filePath, newContent, 'utf-8');
+    }
+  } catch (err) {
+    console.error(err);
   }
 });
 

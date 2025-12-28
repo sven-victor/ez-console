@@ -4,7 +4,6 @@ import { request } from "@/service/client";
 
 /** List chat sessions List chat sessions for the current user with pagination GET /api/ai/chat/sessions */
 export async function listChatSessions(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.listChatSessionsParams,
   options?: { [key: string]: any }
 ) {
@@ -41,7 +40,6 @@ export async function createChatSession(
 
 /** Get chat session Get a chat session by ID GET /api/ai/chat/sessions/${param0} */
 export async function getChatSession(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getChatSessionParams,
   options?: { [key: string]: any }
 ) {
@@ -58,7 +56,6 @@ export async function getChatSession(
 
 /** Delete chat session Delete a chat session and all its messages DELETE /api/ai/chat/sessions/${param0} */
 export async function deleteChatSession(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteChatSessionParams,
   options?: { [key: string]: any }
 ) {
@@ -75,7 +72,6 @@ export async function deleteChatSession(
 
 /** Generate or update chat session title Generate a title for a chat session based on conversation content, or update with provided title PUT /api/ai/chat/sessions/${param0}/title */
 export async function generateChatSessionTitle(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.generateChatSessionTitleParams,
   body: API.GenerateChatSessionTitleRequest,
   options?: { [key: string]: any }
@@ -97,7 +93,6 @@ export async function generateChatSessionTitle(
 
 /** List AI models List AI models with pagination and search GET /api/ai/models */
 export async function listAiModels(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.listAIModelsParams,
   options?: { [key: string]: any }
 ) {
@@ -131,7 +126,6 @@ export async function createAiModel(
 
 /** Get AI model Get an AI model by ID GET /api/ai/models/${param0} */
 export async function getAiModel(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.getAIModelParams,
   options?: { [key: string]: any }
 ) {
@@ -145,7 +139,6 @@ export async function getAiModel(
 
 /** Update AI model Update an AI model PUT /api/ai/models/${param0} */
 export async function updateAiModel(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.updateAIModelParams,
   body: API.UpdateAIModelRequest,
   options?: { [key: string]: any }
@@ -164,7 +157,6 @@ export async function updateAiModel(
 
 /** Delete AI model Delete an AI model DELETE /api/ai/models/${param0} */
 export async function deleteAiModel(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.deleteAIModelParams,
   options?: { [key: string]: any }
 ) {
@@ -178,7 +170,6 @@ export async function deleteAiModel(
 
 /** Set default AI model Set an AI model as default POST /api/ai/models/${param0}/set-default */
 export async function setDefaultAiModel(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.setDefaultAIModelParams,
   options?: { [key: string]: any }
 ) {
@@ -195,7 +186,6 @@ export async function setDefaultAiModel(
 
 /** Test AI model Test an AI model connection POST /api/ai/models/${param0}/test */
 export async function testAiModel(
-  // 叠加生成的Param类型 (非body参数swagger默认没有生成对象)
   params: API.testAIModelParams,
   options?: { [key: string]: any }
 ) {
