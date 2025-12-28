@@ -326,9 +326,9 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 
 	engine.ContextWithFallback = true
 	engine.GET("/metrics", gin.WrapH(promhttp.Handler())) // Prometheus metrics
-	engine.Use(otelgin.Middleware(serviceName))
-	engine.Use(middleware.Log(serviceName))
-	engine.Use(gin.Recovery(), middleware.CORSMiddleware(), middleware.DelayMiddleware())
+	engine.Use(gin.CustomRecovery(middleware.Recovery()), otelgin.Middleware(serviceName))
+	engine.Use(middleware.PrometheusMetrics(), middleware.Log(serviceName))
+	engine.Use(middleware.CORSMiddleware(), middleware.DelayMiddleware())
 	// Default middleware is provided by gin.Default()
 	// No need for additional logger and recovery middleware
 	svc := service.NewService(ctx)

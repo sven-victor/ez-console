@@ -66,3 +66,5 @@ __debug_bin*
 
 /uploads/
 /local/
+
+/pkg/api/api_local.go
