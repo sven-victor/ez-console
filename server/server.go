@@ -24,6 +24,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
 	"github.com/go-ldap/ldap/v3"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -324,6 +325,7 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	engine := gin.New()
 
 	engine.ContextWithFallback = true
+	engine.GET("/metrics", gin.WrapH(promhttp.Handler())) // Prometheus metrics
 	engine.Use(otelgin.Middleware(serviceName))
 	engine.Use(middleware.Log(serviceName))
 	engine.Use(gin.Recovery(), middleware.CORSMiddleware(), middleware.DelayMiddleware())

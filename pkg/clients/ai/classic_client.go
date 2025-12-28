@@ -24,11 +24,24 @@ import (
 
 	"github.com/go-kit/log/level"
 	"github.com/gofrs/uuid"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/log"
+)
+
+var (
+	// aiTokensTotal tracks the total number of tokens used in AI interactions
+	aiTokensTotal = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ai_tokens_total",
+			Help: "Total number of tokens used in AI interactions",
+		},
+		[]string{"type"}, // type can be "prompt" or "completion"
+	)
 )
 
 var _ ClassicChatClient = (*classicChatClient)(nil)
@@ -244,6 +257,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			}
 		}
 
+		// Record prompt tokens before API call
+		promptTokens := calculateTokens(messages)
+		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
+
 		// Call OpenAI API
 		response, err := c.aiClient.Chat(ctx, messages, toolSets)
 		if err != nil {
@@ -254,6 +271,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		if response == nil {
 			return nil, fmt.Errorf("no response")
 		}
+
+		// Record completion tokens for the response
+		completionTokens := calculateTokens([]ChatMessage{*response})
+		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
 
 		// Check if there are tool calls
 		if len(response.ToolCalls) == 0 {
@@ -325,6 +346,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		appendMessage(finalPromptMessage)
 		resultMessages = append(resultMessages, finalPromptMessage)
 
+		// Record prompt tokens before API call
+		promptTokens := calculateTokens(messages)
+		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
+
 		// Make one more API call without tools
 		response, err := c.aiClient.Chat(ctx, messages, nil)
 		if err != nil {
@@ -335,6 +360,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		if response == nil {
 			return nil, fmt.Errorf("no response")
 		}
+
+		// Record completion tokens
+		completionTokens := calculateTokens([]ChatMessage{*response})
+		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
 
 		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
@@ -349,6 +378,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		appendMessage(schemaMessage)
 		resultMessages = append(resultMessages, schemaMessage)
 
+		// Record prompt tokens before API call
+		promptTokens := calculateTokens(messages)
+		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
+
 		// Make API call for JSON formatted response
 		response, err := c.aiClient.Chat(ctx, messages, nil)
 		if err != nil {
@@ -358,6 +391,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		if response == nil {
 			return nil, fmt.Errorf("no response")
 		}
+
+		// Record completion tokens
+		completionTokens := calculateTokens([]ChatMessage{*response})
+		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
 
 		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
@@ -708,10 +745,15 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 					o.currentChatStream = nil
 					o.messageID = uuid.Must(uuid.NewV4()).String()
 					if o.messageBuffer.Len() > 0 {
-						o.appendMessage(ctx, ChatMessage{
+						msg := ChatMessage{
 							Role:    model.AIChatMessageRoleAssistant,
 							Content: o.messageBuffer.String(),
-						})
+						}
+						// Record completion tokens for content message
+						completionTokens := o.calculateTokens([]ChatMessage{msg})
+						aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
+
+						o.appendMessage(ctx, msg)
 						o.messageBuffer.Reset()
 					}
 
@@ -730,10 +772,15 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 								},
 							})
 						}
-						o.appendMessage(ctx, ChatMessage{
+						msg := ChatMessage{
 							Role:      model.AIChatMessageRoleAssistant,
 							ToolCalls: toolCalls,
-						})
+						}
+						// Record completion tokens for tool call message
+						completionTokens := o.calculateTokens([]ChatMessage{msg})
+						aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
+
+						o.appendMessage(ctx, msg)
 						return &ChatStreamEvent{
 							MessageID: o.messageID,
 							ToolCalls: o.toolCalls,
@@ -855,6 +902,10 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 				}
 			}
 		}
+
+		// Record prompt tokens before API call
+		promptTokens := o.calculateTokens(o.messages)
+		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
 
 		var err error
 		// Call OpenAI API
