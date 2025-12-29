@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -43,7 +42,7 @@ func (l *logfmtEncoder) Reset() {
 	l.buf.Reset()
 }
 
-var maryEncoderPool = sync.Pool{
+var logfmtXEncoderPool = sync.Pool{
 	New: func() interface{} {
 		var enc logfmtEncoder
 		enc.Encoder = logfmt.NewEncoder(&enc.buf)
@@ -64,28 +63,35 @@ type logKvPair struct {
 	val interface{}
 }
 
-type maryLog struct {
+type logfmtXLog struct {
 	level          interface{}
 	ts             interface{}
 	caller         interface{}
 	traceId        interface{}
 	msg            interface{}
-	topic          string
+	err            interface{}
 	kvs            []interface{}
 	other          []logKvPair
 	otherKeyMaxLen int
 }
 
-type lucyLogger struct {
+type logfmtXLogger struct {
 	w io.Writer
 }
 
-func (l *lucyLogger) encodeKeyvals(keyvals ...interface{}) ([]byte, error) {
-	enc := maryEncoderPool.Get().(*logfmtEncoder)
+func (l *logfmtXLogger) encodeKeyvals(ll *logfmtXLog) ([]byte, error) {
+	enc := logfmtXEncoderPool.Get().(*logfmtEncoder)
 	enc.Reset()
-	defer maryEncoderPool.Put(enc)
+	defer logfmtXEncoderPool.Put(enc)
 
-	if err := enc.EncodeKeyvals(keyvals...); err != nil {
+	enc.EncodeKeyvals("ts", ll.ts, "level", ll.level, "traceId", ll.traceId, "caller", ll.caller)
+	if ll.msg != nil {
+		enc.EncodeKeyval("msg", ll.msg)
+	}
+	if ll.err != nil {
+		enc.EncodeKeyval("err", ll.err)
+	}
+	if err := enc.EncodeKeyvals(ll.kvs...); err != nil {
 		return nil, err
 	}
 
@@ -93,21 +99,19 @@ func (l *lucyLogger) encodeKeyvals(keyvals ...interface{}) ([]byte, error) {
 	if err := enc.EndRecord(); err != nil {
 		return nil, err
 	}
+	for _, v := range ll.other {
+		enc.buf.WriteString(fmt.Sprintf("%-"+strconv.Itoa(ll.otherKeyMaxLen)+"s%v\n", fmt.Sprintf("%s:", v.key), v.val))
+	}
 	return enc.buf.Bytes(), nil
 }
 
-func (l *lucyLogger) Log(keyvals ...interface{}) error {
-	ll := &maryLog{otherKeyMaxLen: 18, caller: log.DefaultCaller}
+func (l *logfmtXLogger) Log(keyvals ...interface{}) error {
+	ll := &logfmtXLog{otherKeyMaxLen: 18, caller: log.DefaultCaller}
 	for i := 0; ; {
 		v := keyvals[i+1]
-		if keyvals[i] == TopicKey {
-			ll.topic = fmt.Sprintf("%s", v)
-		}
 		switch k := keyvals[i].(type) {
-		case topicKey, *topicKey:
-			ll.topic = fmt.Sprintf("%s", v)
 		case log.KeyName, *log.KeyName:
-			key := fmt.Sprintf("[%s]", k)
+			key := fmt.Sprintf("<%s>", k)
 			ll.other = append(ll.other, logKvPair{key: key, val: v})
 			if len(key) > ll.otherKeyMaxLen {
 				ll.otherKeyMaxLen = len(key)
@@ -149,53 +153,31 @@ func (l *lucyLogger) Log(keyvals ...interface{}) error {
 	if ll.ts == nil {
 		ll.ts = log.TimestampFormat()
 	}
-	if ll.msg == nil {
-		ll.msg = ""
-	}
-	buffer := bytes.NewBufferString(fmt.Sprintf("%s [%s] %s %s - %v - ", ll.ts, ll.level, ll.traceId, ll.caller, ll.msg))
-
-	if data, err := l.encodeKeyvals(ll.kvs...); err != nil {
+	data, err := l.encodeKeyvals(ll)
+	if err != nil {
 		return err
-	} else if _, err = buffer.Write(data); err != nil {
-		return err
-	} else if len(ll.topic) > 0 || len(ll.other) > 0 {
-		if len(ll.topic) > 0 {
-			if len(ll.topic) > len(topicBg) {
-				buffer.WriteString(ll.topic)
-			} else {
-				topic := []byte(topicBg)
-				idx := (len(topic) - len(ll.topic)) / 2
-				copy(topic[idx:len(ll.topic)+idx], ll.topic)
-				buffer.Write(topic)
-			}
-		}
-		for _, v := range ll.other {
-			buffer.WriteString(fmt.Sprintf("%-"+strconv.Itoa(ll.otherKeyMaxLen)+"s%v\n", fmt.Sprintf("%s:", v.key), v.val))
-		}
-		if len(ll.topic) > 0 {
-			buffer.WriteString(topicBg)
-		}
 	}
-	if _, err := l.w.Write(buffer.Bytes()); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to write log: log=%s,err=%s\n", buffer.String(), err)
+	_, err = l.w.Write(data)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
-// NewLucyLogger returns a logger that encodes keyvals to the Writer in
+// NewLogfmtXLogger returns a logger that encodes keyvals to the Writer in
 // logfmt format. Each log event produces no more than one call to w.Write.
 // The passed Writer must be safe for concurrent use by multiple goroutines if
 // the returned Logger will be used concurrently.
-func NewLucyLogger(w io.Writer) kitlog.Logger {
-	return &lucyLogger{w}
+func NewLogfmtXLogger(w io.Writer) kitlog.Logger {
+	return &logfmtXLogger{w}
 }
 
 var sourceDir = log.GetSourceCodeDir("pkg/logs/logger.go")
 
-const FormatLucy log.AllowedFormat = "lucy"
+const FormatLogfmtX log.AllowedFormat = "logfmtx"
 
 func init() {
-	log.RegisterLogFormat(FormatLucy, NewLucyLogger)
+	log.RegisterLogFormat(FormatLogfmtX, NewLogfmtXLogger)
 	log.SetSourceCodeDir(sourceDir)
 }
 

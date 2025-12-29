@@ -26,10 +26,10 @@ import (
 )
 
 func TestRegisterLogger(t *testing.T) {
-	log.RegisterLogFormat(FormatLucy, NewLucyLogger)
+	log.RegisterLogFormat(FormatLogfmtX, NewLogfmtXLogger)
 	buf := bytes.NewBuffer(nil)
-	l := log.New(log.WithWriter(buf), log.WithConfig(log.MustNewConfig("info", string(FormatLucy))))
+	l := log.New(log.WithWriter(buf), log.WithConfig(log.MustNewConfig("info", string(FormatLogfmtX))))
 	level.Error(l).Log("msg", "test message", log.WrapKeyName("Test"), "Test")
-	const matchExpr = `(?m)^[-.\d:TZ]+ \[error] [-\w]+ \S+ - test message - \n\[Test]:\s+Test`
+	const matchExpr = `(?m)^ts=[-.\d:TZ]+ level=error traceId=\w+ caller=.+ msg="test message"\n<Test>:           Test`
 	require.Regexp(t, matchExpr, buf.String())
 }
