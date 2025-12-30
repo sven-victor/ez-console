@@ -15,12 +15,14 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Layout, Menu, Breadcrumb, Button, Spin } from 'antd';
+import { Layout, Menu, Breadcrumb, Button, Spin, Space } from 'antd';
 import {
   UserOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   SwapOutlined,
+  MoonOutlined,
+  SunOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -37,9 +39,47 @@ import { getURL } from '@/utils';
 import { AIChatModal, AIChatButton, AIChatSider } from './AIChatLayout';
 import { useSite } from '@/contexts/SiteContext';
 import { useAI } from '@/contexts/AIContext';
+import { useThemeMode, createStyles } from 'antd-style';
+import classNames from 'classnames';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
+const useStyle = createStyles(({ token, css }) => {
+  return {
+    header: css`
+      padding: 0;
+      display: flex;
+      justify-content: space-between;
+      background-color: ${token.colorBgContainer};
+      border-block-end: 1px solid ${token.colorBorderSecondary};
+    `,
+    content: css`
+      padding: 24px;
+      min-height: calc(100vh - 190px);
+      background-color: ${token.colorBgContainer};
+    `,
+    mainLayout: css`
+      flex: 1;
+      min-width: 0;
+      background-color: ${token.colorBgContainer};
+    `,
+    breadcrumb: css`
+      margin-left: 8px;
+    `,
+    themeSwitch: css`
+      display: inline-flex;
+    `,
+    menuSider: css`
+      .ant-layout-sider-children{
+        display: flex;
+        flex-direction: column;
+      }
+    `,
+    menu: css`
+      flex: 1 1 0%;
+    `,
+  }
+})
 export interface AppLayoutProps {
   routes: IRoute[];
   element?: React.ReactNode | null;
@@ -57,6 +97,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   transformHeaderItems = (items) => items,
   renderLayout,
 }) => {
+  const { themeMode, setThemeMode, isDarkMode } = useThemeMode();
+  const { styles } = useStyle();
   const { layout, visible: chatVisible, loaded: chatLoaded } = useAI()
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
@@ -205,6 +247,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     }
   }, [getBreadcrumbs, location.pathname])
 
+
   const headerItems: React.ReactNode[] = [
     <HeaderDropdown
       key="navigation-dropdown"
@@ -226,43 +269,59 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <span style={{ height: '1em', lineHeight: '1em', marginLeft: '5px' }}>{user?.full_name || user?.username}</span>
     </HeaderDropdown>,
     <LanguageSwitch key="language-switch" transformLangConfig={transformLangConfig} />,
+    <HeaderDropdown
+      key="theme-switch"
+      menu={{
+        items: [
+          { key: 'light', label: <span><SunOutlined /> {tCommon('light', { defaultValue: 'Light Mode' })}</span> },
+          { key: 'dark', label: <span><MoonOutlined /> {tCommon('dark', { defaultValue: 'Dark Mode' })}</span> }
+        ],
+        onClick: ({ key }) => {
+          setThemeMode(key as 'light' | 'dark')
+        },
+        selectedKeys: [themeMode],
+      }}
+    >
+      {themeMode === 'light' ? <SunOutlined /> : <MoonOutlined />}
+    </HeaderDropdown>
   ]
-
   const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
     const [collapsed, setCollapsed] = useState(false);
 
     return <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'row' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} theme={menuStyle}>
+      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} className={styles.menuSider} theme={isDarkMode ? 'light' : menuStyle} >
         <div className="logo" style={{ margin: '8px', display: 'flex' }}>
           <div style={{ width: '100%', height: '100%', textAlign: 'center' }}>
             {siteIconUrl ? <img src={siteIconUrl} alt="logo" style={{ height: '32px', width: '32px', }} /> : <Spin size="large" tip="Loading..." />}
           </div>
         </div>
-        <Menu theme={menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[location.pathname]}>
+        <Menu className={styles.menu} theme={isDarkMode ? 'light' : menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[location.pathname]}>
           {menuItems}
         </Menu>
       </Sider>
-      <Layout className="site-layout main-layout" style={{ flex: 1, minWidth: 0 }}>
-        <Header className="site-layout-background" style={{ padding: 0, display: 'flex', justifyContent: 'space-between' }}>
-          <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{ fontSize: '16px', width: 64, height: 64 }}
-          />
+      <Layout className={classNames("site-layout", "main-layout", styles.mainLayout)}>
+        <Header className={classNames("site-header", styles.header)}>
+          <Space>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed(!collapsed)}
+              style={{ fontSize: '16px', width: 64, height: 64 }}
+            />
+            <Breadcrumb className={classNames("site-breadcrumb", styles.breadcrumb)} itemRender={(route) => {
+              const path = route.href || route.path
+              if (path) {
+                return <Link to={path}>{route.title}</Link>
+              }
+              return <span>{route.title}</span>
+            }} items={breadcrumbs} />
+          </Space>
           <div style={{ marginRight: '20px' }}>
             {headerItems}
           </div>
         </Header>
         <Content style={{ margin: '0 16px', height: 'calc(100vh - 170px)', overflow: 'auto' }}>
-          <Breadcrumb style={{ margin: '16px 0' }} itemRender={(route) => {
-            const path = route.href || route.path
-            if (path) {
-              return <Link to={path}>{route.title}</Link>
-            }
-            return <span>{route.title}</span>
-          }} items={breadcrumbs} />
-          <div className="site-layout-background" style={{ padding: 24, minHeight: 'calc(100vh - 190px)' }}>
+          <div className={classNames("site-content", styles.content)}>
             {content}
           </div>
           {siteConfig?.attrs.ai_enabled && <AIChatButton />}

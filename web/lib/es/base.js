@@ -356,6 +356,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   enter: "Enter",
   select: "Select",
   view: "View",
+  light: "Light Mode",
+  dark: "Dark Mode",
   pagination: {
     total: "{{start}}-{{end}} of {{total}} items"
   },
@@ -1873,6 +1875,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   enter: "请输入",
   select: "请选择",
   view: "查看",
+  light: "浅色模式",
+  dark: "深色模式",
   pagination: {
     total: "第 {{start}}-{{end}} 条，共 {{total}} 条"
   },
@@ -2877,6 +2881,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Weiter",
   enter: "Eingeben",
   select: "Auswählen",
+  light: "Heller Modus",
+  dark: "Dunkler Modus",
   pagination: {
     total: "{{start}}-{{end}} von {{total}} Einträgen"
   },
@@ -3772,6 +3778,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Siguiente",
   enter: "Ingresar",
   select: "Seleccionar",
+  light: "Modo Claro",
+  dark: "Modo Oscuro",
   pagination: {
     total: "{{start}}-{{end}} de {{total}} elementos"
   },
@@ -4667,6 +4675,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Suivant",
   enter: "Entrer",
   select: "Sélectionner",
+  light: "Mode Clair",
+  dark: "Mode Sombre",
   pagination: {
     total: "{{start}}-{{end}} sur {{total}} éléments"
   },
@@ -5562,6 +5572,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "التالي",
   enter: "أدخل",
   select: "اختر",
+  light: "الوضع الفاتح",
+  dark: "الوضع الداكن",
   pagination: {
     total: "{{start}}-{{end}} من {{total}} عناصر"
   },
@@ -6457,6 +6469,8 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Nästa",
   enter: "Ange",
   select: "Välj",
+  light: "Ljust läge",
+  dark: "Mörkt läge",
   pagination: {
     total: "{{start}}-{{end}} av {{total}} objekt"
   },

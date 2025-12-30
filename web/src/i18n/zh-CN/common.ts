@@ -74,6 +74,8 @@ export default {
   enter: '请输入',
   select: '请选择',
   view: '查看',
+  light: '浅色模式',
+  dark: '深色模式',
   pagination: {
     total: '第 {{start}}-{{end}} 条，共 {{total}} 条',
   },

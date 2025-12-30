@@ -66,6 +66,8 @@ export default {
   next: 'Weiter',
   enter: 'Eingeben',
   select: 'Auswählen',
+  light: 'Heller Modus',
+  dark: 'Dunkler Modus',
   pagination: {
     total: '{{start}}-{{end}} von {{total}} Einträgen',
   },

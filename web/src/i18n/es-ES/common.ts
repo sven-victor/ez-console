@@ -66,6 +66,8 @@ export default {
   next: 'Siguiente',
   enter: 'Ingresar',
   select: 'Seleccionar',
+  light: 'Modo Claro',
+  dark: 'Modo Oscuro',
   pagination: {
     total: '{{start}}-{{end}} de {{total}} elementos',
   },

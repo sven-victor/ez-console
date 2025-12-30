@@ -66,6 +66,8 @@ export default {
   next: 'التالي',
   enter: 'أدخل',
   select: 'اختر',
+  light: 'الوضع الفاتح',
+  dark: 'الوضع الداكن',
   pagination: {
     total: '{{start}}-{{end}} من {{total}} عناصر',
   },

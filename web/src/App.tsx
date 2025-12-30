@@ -40,6 +40,7 @@ import { getURL } from './utils';
 import { LanguageConfig } from './components/LanguageSwitch';
 import { SiteProvider } from './contexts/SiteContext';
 import { AIProvider } from './contexts/AIContext';
+import { ThemeProvider } from 'antd-style';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -137,21 +138,21 @@ function App({
   }
   return (
     <QueryClientProvider client={queryClient} >
-      <ConfigProvider
-        locale={antdLocale}
-      >
-        <AuthProvider>
-          <SiteProvider>
-            <AIProvider>
-              <Router basename={getURL()}>
-                <Routes>
-                  {renderRoutes(routes)}
-                </Routes>
-              </Router>
-            </AIProvider>
-          </SiteProvider>
-        </AuthProvider>
-      </ConfigProvider>
+      <ThemeProvider>
+        <ConfigProvider locale={antdLocale}        >
+          <AuthProvider>
+            <SiteProvider>
+              <AIProvider>
+                <Router basename={getURL()}>
+                  <Routes>
+                    {renderRoutes(routes)}
+                  </Routes>
+                </Router>
+              </AIProvider>
+            </SiteProvider>
+          </AuthProvider>
+        </ConfigProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

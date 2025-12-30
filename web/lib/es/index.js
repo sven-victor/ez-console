@@ -1,95 +1,97 @@
-import { a as he } from "./ai.js";
-import { a as X } from "./authorization.js";
-import { b as Z, g as ee } from "./base.js";
-import { a as M } from "./system.js";
-import { o as te } from "./oauth.js";
-import { j as e, d as de, b as me, c as ue, e as pe, f as xe, g as B, h as fe } from "./vendor.js";
-import { QueryClient as ge, QueryClientProvider as je } from "react-query";
-import { useLocation as ve, useNavigate as ye, Link as k, Outlet as ze, matchRoutes as we, BrowserRouter as be, Routes as _e, Route as T } from "react-router-dom";
-import { Layout as U, Menu as I, Spin as Se, Button as Ae, Breadcrumb as Le, ConfigProvider as Oe } from "antd";
-import { useTranslation as C } from "react-i18next";
-import { lazy as l, Suspense as Re, useState as A, useEffect as N } from "react";
-import { L as $e, H as q, O as ke, A as Q, a as Ie, P as Ne } from "./components.js";
-import { DashboardOutlined as Pe, SolutionOutlined as De, UserOutlined as P, SafetyOutlined as Fe, FileSearchOutlined as Me, SettingOutlined as Be, SwapOutlined as Ue, MenuUnfoldOutlined as Ce, MenuFoldOutlined as Ee } from "@ant-design/icons";
-import { u as He, b as Ve, a as Ke, c as Te, A as qe, S as Qe, e as We } from "./contexts.js";
-import { flatMapDeep as Ye } from "lodash-es";
-import { A as Ge, a as Je, b as Xe } from "./ai-chat-layout.js";
+import { a as ge } from "./ai.js";
+import { a as ae } from "./authorization.js";
+import { b as se, g as oe } from "./base.js";
+import { a as E } from "./system.js";
+import { o as re } from "./oauth.js";
+import { j as e, d as je, b as ve, c as ye, e as be, f as we, g as V, h as ze } from "./vendor.js";
+import { QueryClient as Se, QueryClientProvider as _e } from "react-query";
+import { useLocation as Ae, useNavigate as Le, Link as M, Outlet as ke, matchRoutes as Oe, BrowserRouter as $e, Routes as Re, Route as G } from "react-router-dom";
+import { Layout as T, Menu as I, Spin as Me, Space as Ne, Button as Ie, Breadcrumb as Be, ConfigProvider as De } from "antd";
+import { useTranslation as H } from "react-i18next";
+import { lazy as c, Suspense as Pe, useState as k, useEffect as B } from "react";
+import { L as Ce, H as U, O as Fe, A as J, a as Ue, P as Ee } from "./components.js";
+import { DashboardOutlined as Ve, SolutionOutlined as Te, UserOutlined as D, SafetyOutlined as He, FileSearchOutlined as Ke, SettingOutlined as qe, SwapOutlined as Qe, SunOutlined as X, MoonOutlined as Z, MenuUnfoldOutlined as We, MenuFoldOutlined as Ye } from "@ant-design/icons";
+import { u as Ge, b as Je, a as Xe, c as Ze, A as et, S as tt, e as it } from "./contexts.js";
+import { flatMapDeep as nt } from "lodash-es";
+import { A as at, a as st, b as ot } from "./ai-chat-layout.js";
+import { createStyles as rt, useThemeMode as lt, ThemeProvider as ct } from "antd-style";
+import N from "classnames";
 import "./ai-chat.js";
 import "./forbidden.js";
 import "./not_found.js";
 import "./client.js";
 import "i18next";
-const Ze = l(() => import("./dashboard.js")), et = l(() => import("./login.js")), tt = l(() => import("./profile.js")), W = l(() => import("./not_found.js")), it = l(() => import("./forbidden.js")), nt = l(() => import("./users.js").then((s) => s.U)), at = l(() => import("./users.js").then((s) => s.a)), Y = l(() => import("./users.js").then((s) => s.b)), st = l(() => import("./roles.js").then((s) => s.R)), G = l(() => import("./roles.js").then((s) => s.a)), ot = l(() => import("./system-settings.js").then((s) => s.i)), rt = l(() => import("./system-settings.js").then((s) => s.O)), lt = l(() => import("./system-settings.js").then((s) => s.a)), ct = l(() => import("./audit.js")), ht = l(() => import("./service-accounts.js").then((s) => s.S)), dt = l(() => import("./service-accounts.js").then((s) => s.a));
-function o(s, m) {
-  return /* @__PURE__ */ e.jsx(Re, { fallback: /* @__PURE__ */ e.jsx($e, {}), children: /* @__PURE__ */ e.jsx(s, { ...m }) });
+const dt = c(() => import("./dashboard.js")), ht = c(() => import("./login.js")), mt = c(() => import("./profile.js")), ee = c(() => import("./not_found.js")), ut = c(() => import("./forbidden.js")), pt = c(() => import("./users.js").then((i) => i.U)), xt = c(() => import("./users.js").then((i) => i.a)), te = c(() => import("./users.js").then((i) => i.b)), ft = c(() => import("./roles.js").then((i) => i.R)), ie = c(() => import("./roles.js").then((i) => i.a)), gt = c(() => import("./system-settings.js").then((i) => i.i)), jt = c(() => import("./system-settings.js").then((i) => i.O)), vt = c(() => import("./system-settings.js").then((i) => i.a)), yt = c(() => import("./audit.js")), bt = c(() => import("./service-accounts.js").then((i) => i.S)), wt = c(() => import("./service-accounts.js").then((i) => i.a));
+function o(i, l) {
+  return /* @__PURE__ */ e.jsx(Pe, { fallback: /* @__PURE__ */ e.jsx(Ce, {}), children: /* @__PURE__ */ e.jsx(i, { ...l }) });
 }
-const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoutes: j = [], extraPublicRoutes: v = [] }) => {
+const zt = ({ transformSettingTabs: i, transformLangConfig: l, extraPrivateRoutes: v = [], extraPublicRoutes: y = [] }) => {
   const w = [
     {
       path: "/login",
-      element: o(et, { transformLangConfig: m }),
+      element: o(ht, { transformLangConfig: l }),
       index: !0
     },
     {
       path: "/404",
-      element: o(W),
+      element: o(ee),
       index: !0
     },
     {
       path: "/403",
-      element: o(it),
+      element: o(ut),
       index: !0
     },
     {
       path: "/system/settings/oauth/test-callback",
-      element: o(lt),
+      element: o(vt),
       index: !0
     },
-    ...v
-  ], b = [
+    ...y
+  ], z = [
     {
       path: "/",
       is_private: !0,
       children: [
         {
           path: "/",
-          element: o(Ze),
+          element: o(dt),
           name: "dashboard",
-          icon: /* @__PURE__ */ e.jsx(Pe, {}),
+          icon: /* @__PURE__ */ e.jsx(Ve, {}),
           index: !0
         },
         {
           path: "/profile",
-          element: o(tt),
+          element: o(mt),
           name: void 0,
           index: !0
         },
         {
           name: "authorization",
-          icon: /* @__PURE__ */ e.jsx(P, {}),
+          icon: /* @__PURE__ */ e.jsx(D, {}),
           permissions: ["authorization:user:view", "authorization:user:create", "authorization:user:update", "authorization:user:delete", "authorization:service_account:view", "authorization:service_account:create", "authorization:service_account:update", "authorization:service_account:delete", "authorization:role:view"],
           children: [
             // Role management
             {
               path: "/authorization/roles",
               name: "roles",
-              icon: /* @__PURE__ */ e.jsx(De, {}),
+              icon: /* @__PURE__ */ e.jsx(Te, {}),
               permissions: ["authorization:role:view", "authorization:role:create", "authorization:role:update", "authorization:role:delete"],
               children: [
                 {
-                  element: o(st),
+                  element: o(ft),
                   permissions: ["authorization:role:view"],
                   index: !0
                 },
                 {
                   path: "/authorization/roles/create",
-                  element: o(G),
+                  element: o(ie),
                   permissions: ["authorization:role:create"],
                   index: !0
                 },
                 {
                   path: "/authorization/roles/:id/edit",
-                  element: o(G),
+                  element: o(ie),
                   permissions: ["authorization:role:update"],
                   index: !0
                 }
@@ -99,29 +101,29 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             {
               path: "/authorization/users",
               name: "users",
-              icon: /* @__PURE__ */ e.jsx(P, {}),
+              icon: /* @__PURE__ */ e.jsx(D, {}),
               permissions: ["authorization:user:view", "authorization:user:list", "authorization:user:create", "authorization:user:update", "authorization:user:delete"],
               children: [
                 {
-                  element: o(nt),
+                  element: o(pt),
                   permissions: ["authorization:user:list"],
                   index: !0
                 },
                 {
                   path: "/authorization/users/create",
-                  element: o(Y),
+                  element: o(te),
                   permissions: ["authorization:user:create"],
                   index: !0
                 },
                 {
                   path: "/authorization/users/:id",
-                  element: o(at),
+                  element: o(xt),
                   permissions: ["authorization:user:view"],
                   index: !0
                 },
                 {
                   path: "/authorization/users/:id/edit",
-                  element: o(Y),
+                  element: o(te),
                   permissions: ["authorization:user:update"],
                   index: !0
                 }
@@ -131,17 +133,17 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             {
               path: "/authorization/service-accounts",
               name: "serviceAccounts",
-              icon: /* @__PURE__ */ e.jsx(P, {}),
+              icon: /* @__PURE__ */ e.jsx(D, {}),
               permissions: ["authorization:service_account:view"],
               children: [
                 {
-                  element: o(ht),
+                  element: o(bt),
                   permissions: ["authorization:service_account:view"],
                   index: !0
                 },
                 {
                   path: "/authorization/service-accounts/:id",
-                  element: o(dt),
+                  element: o(wt),
                   permissions: ["authorization:service_account:view"],
                   index: !0
                 }
@@ -149,29 +151,29 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             }
           ]
         },
-        ...j,
+        ...v,
         // System management menu
         {
           name: "system",
-          icon: /* @__PURE__ */ e.jsx(Be, {}),
+          icon: /* @__PURE__ */ e.jsx(qe, {}),
           permissions: ["system:settings:view", "system:settings:update", "system:audit:view", "system:organization:view", "ai:models:view", "ai:toolsets:view"],
           children: [
             // System settings
             {
               path: "/system/settings",
-              icon: /* @__PURE__ */ e.jsx(Fe, {}),
+              icon: /* @__PURE__ */ e.jsx(He, {}),
               name: "settings",
               permissions: ["system:settings:view", "system:settings:update", "system:organization:view", "ai:models:view", "ai:toolsets:view"],
               children: [
                 {
                   path: "/system/settings",
                   index: !0,
-                  element: o(ot, { transformItems: s })
+                  element: o(gt, { transformItems: i })
                 },
                 {
                   path: "/system/settings/organizations/:id",
                   permissions: ["system:organization:view"],
-                  element: o(rt),
+                  element: o(jt),
                   index: !0
                 }
               ]
@@ -179,247 +181,301 @@ const mt = ({ transformSettingTabs: s, transformLangConfig: m, extraPrivateRoute
             // Audit logs
             {
               path: "/system/audit",
-              icon: /* @__PURE__ */ e.jsx(Me, {}),
+              icon: /* @__PURE__ */ e.jsx(Ke, {}),
               name: "audit",
               permissions: ["system:audit:view"],
               index: !0,
-              element: o(ct)
+              element: o(yt)
             }
           ]
         },
         // Redirect and error handling
         {
           path: "*",
-          element: o(W),
+          element: o(ee),
           index: !0
         }
       ]
     }
   ];
-  return [...w, ...b];
-}, Ht = {
-  ai: he,
-  authorization: X,
-  base: Z,
-  system: M,
-  oauth: te
-}, { Header: ut, Content: pt, Footer: xt, Sider: ft } = U, { SubMenu: gt } = I, jt = ({
-  element: s,
-  routes: m,
-  transformLangConfig: j,
-  menuStyle: v = "dark",
-  transformHeaderItems: w = (x) => x,
-  renderLayout: b
+  return [...w, ...z];
+}, ii = {
+  ai: ge,
+  authorization: ae,
+  base: se,
+  system: E,
+  oauth: re
+}, { Header: St, Content: _t, Footer: At, Sider: Lt } = T, { SubMenu: kt } = I, Ot = rt(({ token: i, css: l }) => ({
+  header: l`
+      padding: 0;
+      display: flex;
+      justify-content: space-between;
+      background-color: ${i.colorBgContainer};
+      border-block-end: 1px solid ${i.colorBorderSecondary};
+    `,
+  content: l`
+      padding: 24px;
+      min-height: calc(100vh - 190px);
+      background-color: ${i.colorBgContainer};
+    `,
+  mainLayout: l`
+      flex: 1;
+      min-width: 0;
+      background-color: ${i.colorBgContainer};
+    `,
+  breadcrumb: l`
+      margin-left: 8px;
+    `,
+  themeSwitch: l`
+      display: inline-flex;
+    `,
+  menuSider: l`
+      .ant-layout-sider-children{
+        display: flex;
+        flex-direction: column;
+      }
+    `,
+  menu: l`
+      flex: 1 1 0%;
+    `
+})), $t = ({
+  element: i,
+  routes: l,
+  transformLangConfig: v,
+  menuStyle: y = "dark",
+  transformHeaderItems: w = (b) => b,
+  renderLayout: z
 }) => {
-  const { layout: x, visible: L, loaded: c } = He(), { t: f, i18n: _ } = C(), { t: y } = C("common"), g = ve(), { hasPermission: O } = Ve(), z = ye(), { logout: h, user: i } = Ke(), { siteConfig: n, clearCurrentOrgId: R } = Te(), [S, E] = A([]), [ie, ne] = A(null), [D, ae] = A("Loading...");
-  g.pathname !== "/profile" && (i && i.mfa_enforced && !i.mfa_enabled ? z("/profile#mfa") : i && i.status === "password_expired" && z("/profile#password"));
-  const se = () => {
-    h(), R(), window.location.href = ee("/login?redirect=" + encodeURIComponent(window.location.href));
-  }, oe = [
+  const { themeMode: b, setThemeMode: P, isDarkMode: h } = lt(), { styles: p } = Ot(), { layout: S, visible: _, loaded: A } = Ge(), { t: x, i18n: j } = H(), { t: m } = H("common"), s = Ae(), { hasPermission: O } = Je(), L = Le(), { logout: $, user: d } = Xe(), { siteConfig: a, clearCurrentOrgId: le } = Ze(), [K, q] = k([]), [ce, de] = k(null), [C, he] = k("Loading...");
+  s.pathname !== "/profile" && (d && d.mfa_enforced && !d.mfa_enabled ? L("/profile#mfa") : d && d.status === "password_expired" && L("/profile#password"));
+  const me = () => {
+    $(), le(), window.location.href = oe("/login?redirect=" + encodeURIComponent(window.location.href));
+  }, ue = [
     {
       key: "profile",
-      label: /* @__PURE__ */ e.jsx(k, { to: "/profile", children: y("profile") })
+      label: /* @__PURE__ */ e.jsx(M, { to: "/profile", children: m("profile") })
     },
     {
       key: "logout",
-      label: y("logout"),
-      onClick: se
+      label: m("logout"),
+      onClick: me
     }
   ];
-  N(() => {
-    var a;
-    if (n) {
-      const r = n.navigation.filter((t) => t.path !== n.home_page), u = [...n.home_page ? [{
-        name: "home",
-        path: n.home_page
-      }] : [], ...r];
-      u.length > 1 ? E(u) : E([]), ne(n.logo), (a = document.getElementById("site-icon")) == null || a.setAttribute("href", n.logo);
-    }
-  }, [n]), N(() => {
-    _.language && ae((n == null ? void 0 : n.name_i18n[_.language]) || (n == null ? void 0 : n.name) || "");
-  }, [n, _.language]);
-  const F = () => {
-    const a = we(m, g.pathname), r = [];
+  B(() => {
+    var n;
     if (a) {
-      for (const [u, t] of a.entries())
+      const r = a.navigation.filter((t) => t.path !== a.home_page), f = [...a.home_page ? [{
+        name: "home",
+        path: a.home_page
+      }] : [], ...r];
+      f.length > 1 ? q(f) : q([]), de(a.logo), (n = document.getElementById("site-icon")) == null || n.setAttribute("href", a.logo);
+    }
+  }, [a]), B(() => {
+    j.language && he((a == null ? void 0 : a.name_i18n[j.language]) || (a == null ? void 0 : a.name) || "");
+  }, [a, j.language]);
+  const F = () => {
+    const n = Oe(l, s.pathname), r = [];
+    if (n) {
+      for (const [f, t] of n.entries())
         if (t.route.path === "/" && !t.route.name)
           r.push({
             href: t.route.path,
-            title: y("home"),
+            title: m("home"),
             key: "home"
           });
         else if (t.route.name) {
-          const d = a.slice(0, u + 1).map((p) => p.route.name).filter(Boolean).join(".");
+          const u = n.slice(0, f + 1).map((g) => g.route.name).filter(Boolean).join(".");
           r.push({
             path: t.route.path,
-            title: t.route.name ? f(`breadcrumbs.${d}`) : void 0,
+            title: t.route.name ? x(`breadcrumbs.${u}`) : void 0,
             key: t.route.path
           });
         }
     }
     return r;
-  }, re = (a) => a.some((r) => O(r)), le = Ye(m, (a) => a.children).map((a) => a == null ? void 0 : a.name).filter((a) => a !== void 0), H = (a, r = []) => {
-    const u = (t) => t && t.replace(/_/g, " ").split(" ").map((d) => d.charAt(0).toUpperCase() + d.slice(1)).join(" ");
-    return a.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
-      if (t.permissions && !re(t.permissions))
+  }, pe = (n) => n.some((r) => O(r)), xe = nt(l, (n) => n.children).map((n) => n == null ? void 0 : n.name).filter((n) => n !== void 0), Q = (n, r = []) => {
+    const f = (t) => t && t.replace(/_/g, " ").split(" ").map((u) => u.charAt(0).toUpperCase() + u.slice(1)).join(" ");
+    return n.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
+      if (t.permissions && !pe(t.permissions))
         return null;
-      const d = u(t.name);
+      const u = f(t.name);
       if (!t.name)
         return null;
       if ("children" in t && t.children) {
-        const p = H(t.children, [...r, t.name]);
-        return p.length == 0 && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: f(`menu.${[...r, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : /* @__PURE__ */ e.jsx(gt, { icon: t.icon, title: f(`menu.${[...r, t.name, t.name].join(".")}`, { defaultValue: d }), children: p }, t.path ?? t.name);
+        const g = Q(t.children, [...r, t.name]);
+        return g.length == 0 && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(M, { to: t.path, children: x(`menu.${[...r, t.name].join(".")}`, { defaultValue: u }) }) }, t.path) : /* @__PURE__ */ e.jsx(kt, { icon: t.icon, title: x(`menu.${[...r, t.name, t.name].join(".")}`, { defaultValue: u }), children: g }, t.path ?? t.name);
       }
-      return t.name && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(k, { to: t.path, children: f(`menu.${[...r, t.name].join(".")}`, { defaultValue: d }) }) }, t.path) : null;
+      return t.name && t.path ? /* @__PURE__ */ e.jsx(I.Item, { icon: t.icon, children: /* @__PURE__ */ e.jsx(M, { to: t.path, children: x(`menu.${[...r, t.name].join(".")}`, { defaultValue: u }) }) }, t.path) : null;
     }).filter(Boolean);
   };
-  N(() => {
-    const a = F().filter((r) => r.path !== "/").map((r) => r.title).join(" - ");
-    a ? document.title = `${D} | ${a}` : document.title = D;
-  }, [F, g.pathname]);
-  const ce = [
+  B(() => {
+    const n = F().filter((r) => r.path !== "/").map((r) => r.title).join(" - ");
+    n ? document.title = `${C} | ${n}` : document.title = C;
+  }, [F, s.pathname]);
+  const fe = [
     /* @__PURE__ */ e.jsx(
-      q,
+      U,
       {
-        hidden: S.length <= 1,
+        hidden: K.length <= 1,
         menu: {
-          items: S.map((a) => ({
-            key: a.path,
+          items: K.map((n) => ({
+            key: n.path,
             style: { paddingRight: "20px" },
-            label: /* @__PURE__ */ e.jsx("a", { href: a.path, children: f(`menu.${a.name}`, { defaultValue: a.name }) })
+            label: /* @__PURE__ */ e.jsx("a", { href: n.path, children: x(`menu.${n.name}`, { defaultValue: n.name }) })
           }))
         },
-        children: /* @__PURE__ */ e.jsx(Ue, {})
+        children: /* @__PURE__ */ e.jsx(Qe, {})
       },
       "navigation-dropdown"
     ),
-    ...n != null && n.enable_multi_org ? [/* @__PURE__ */ e.jsx(ke, {}, "org-switcher")] : [],
+    ...a != null && a.enable_multi_org ? [/* @__PURE__ */ e.jsx(Fe, {}, "org-switcher")] : [],
     /* @__PURE__ */ e.jsxs(
-      q,
+      U,
       {
-        menu: { items: oe },
+        menu: { items: ue },
         children: [
-          i != null && i.avatar ? /* @__PURE__ */ e.jsx(Q, { src: i.avatar }) : /* @__PURE__ */ e.jsx(Q, { icon: /* @__PURE__ */ e.jsx(P, {}) }),
-          /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em", marginLeft: "5px" }, children: (i == null ? void 0 : i.full_name) || (i == null ? void 0 : i.username) })
+          d != null && d.avatar ? /* @__PURE__ */ e.jsx(J, { src: d.avatar }) : /* @__PURE__ */ e.jsx(J, { icon: /* @__PURE__ */ e.jsx(D, {}) }),
+          /* @__PURE__ */ e.jsx("span", { style: { height: "1em", lineHeight: "1em", marginLeft: "5px" }, children: (d == null ? void 0 : d.full_name) || (d == null ? void 0 : d.username) })
         ]
       },
       "user-dropdown"
     ),
-    /* @__PURE__ */ e.jsx(Ie, { transformLangConfig: j }, "language-switch")
+    /* @__PURE__ */ e.jsx(Ue, { transformLangConfig: v }, "language-switch"),
+    /* @__PURE__ */ e.jsx(
+      U,
+      {
+        menu: {
+          items: [
+            { key: "light", label: /* @__PURE__ */ e.jsxs("span", { children: [
+              /* @__PURE__ */ e.jsx(X, {}),
+              " ",
+              m("light", { defaultValue: "Light Mode" })
+            ] }) },
+            { key: "dark", label: /* @__PURE__ */ e.jsxs("span", { children: [
+              /* @__PURE__ */ e.jsx(Z, {}),
+              " ",
+              m("dark", { defaultValue: "Dark Mode" })
+            ] }) }
+          ],
+          onClick: ({ key: n }) => {
+            P(n);
+          },
+          selectedKeys: [b]
+        },
+        children: b === "light" ? /* @__PURE__ */ e.jsx(X, {}) : /* @__PURE__ */ e.jsx(Z, {})
+      },
+      "theme-switch"
+    )
   ];
-  return (b ?? ((a, r, u, t, d) => {
-    const [p, V] = A(!1);
-    return /* @__PURE__ */ e.jsxs(U, { style: { minHeight: "100vh", display: "flex", flexDirection: "row" }, children: [
-      /* @__PURE__ */ e.jsxs(ft, { collapsible: !0, collapsed: p, onCollapse: V, theme: v, children: [
-        /* @__PURE__ */ e.jsx("div", { className: "logo", style: { margin: "8px", display: "flex" }, children: /* @__PURE__ */ e.jsx("div", { style: { width: "100%", height: "100%", textAlign: "center" }, children: a ? /* @__PURE__ */ e.jsx("img", { src: a, alt: "logo", style: { height: "32px", width: "32px" } }) : /* @__PURE__ */ e.jsx(Se, { size: "large", tip: "Loading..." }) }) }),
-        /* @__PURE__ */ e.jsx(I, { theme: v, defaultOpenKeys: le, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [g.pathname], children: r })
+  return (z ?? ((n, r, f, t, u) => {
+    const [g, W] = k(!1);
+    return /* @__PURE__ */ e.jsxs(T, { style: { minHeight: "100vh", display: "flex", flexDirection: "row" }, children: [
+      /* @__PURE__ */ e.jsxs(Lt, { collapsible: !0, collapsed: g, onCollapse: W, className: p.menuSider, theme: h ? "light" : y, children: [
+        /* @__PURE__ */ e.jsx("div", { className: "logo", style: { margin: "8px", display: "flex" }, children: /* @__PURE__ */ e.jsx("div", { style: { width: "100%", height: "100%", textAlign: "center" }, children: n ? /* @__PURE__ */ e.jsx("img", { src: n, alt: "logo", style: { height: "32px", width: "32px" } }) : /* @__PURE__ */ e.jsx(Me, { size: "large", tip: "Loading..." }) }) }),
+        /* @__PURE__ */ e.jsx(I, { className: p.menu, theme: h ? "light" : y, defaultOpenKeys: xe, defaultSelectedKeys: ["1"], mode: "inline", selectedKeys: [s.pathname], children: r })
       ] }),
-      /* @__PURE__ */ e.jsxs(U, { className: "site-layout main-layout", style: { flex: 1, minWidth: 0 }, children: [
-        /* @__PURE__ */ e.jsxs(ut, { className: "site-layout-background", style: { padding: 0, display: "flex", justifyContent: "space-between" }, children: [
-          /* @__PURE__ */ e.jsx(
-            Ae,
-            {
-              type: "text",
-              icon: p ? /* @__PURE__ */ e.jsx(Ce, {}) : /* @__PURE__ */ e.jsx(Ee, {}),
-              onClick: () => V(!p),
-              style: { fontSize: "16px", width: 64, height: 64 }
-            }
-          ),
-          /* @__PURE__ */ e.jsx("div", { style: { marginRight: "20px" }, children: u })
+      /* @__PURE__ */ e.jsxs(T, { className: N("site-layout", "main-layout", p.mainLayout), children: [
+        /* @__PURE__ */ e.jsxs(St, { className: N("site-header", p.header), children: [
+          /* @__PURE__ */ e.jsxs(Ne, { children: [
+            /* @__PURE__ */ e.jsx(
+              Ie,
+              {
+                type: "text",
+                icon: g ? /* @__PURE__ */ e.jsx(We, {}) : /* @__PURE__ */ e.jsx(Ye, {}),
+                onClick: () => W(!g),
+                style: { fontSize: "16px", width: 64, height: 64 }
+              }
+            ),
+            /* @__PURE__ */ e.jsx(Be, { className: N("site-breadcrumb", p.breadcrumb), itemRender: (R) => {
+              const Y = R.href || R.path;
+              return Y ? /* @__PURE__ */ e.jsx(M, { to: Y, children: R.title }) : /* @__PURE__ */ e.jsx("span", { children: R.title });
+            }, items: t })
+          ] }),
+          /* @__PURE__ */ e.jsx("div", { style: { marginRight: "20px" }, children: f })
         ] }),
-        /* @__PURE__ */ e.jsxs(pt, { style: { margin: "0 16px", height: "calc(100vh - 170px)", overflow: "auto" }, children: [
-          /* @__PURE__ */ e.jsx(Le, { style: { margin: "16px 0" }, itemRender: ($) => {
-            const K = $.href || $.path;
-            return K ? /* @__PURE__ */ e.jsx(k, { to: K, children: $.title }) : /* @__PURE__ */ e.jsx("span", { children: $.title });
-          }, items: t }),
-          /* @__PURE__ */ e.jsx("div", { className: "site-layout-background", style: { padding: 24, minHeight: "calc(100vh - 190px)" }, children: d }),
-          (n == null ? void 0 : n.attrs.ai_enabled) && /* @__PURE__ */ e.jsx(Ge, {}),
-          (n == null ? void 0 : n.attrs.ai_enabled) && x === "classic" && (L || c) && /* @__PURE__ */ e.jsx(Je, {})
+        /* @__PURE__ */ e.jsxs(_t, { style: { margin: "0 16px", height: "calc(100vh - 170px)", overflow: "auto" }, children: [
+          /* @__PURE__ */ e.jsx("div", { className: N("site-content", p.content), children: u }),
+          (a == null ? void 0 : a.attrs.ai_enabled) && /* @__PURE__ */ e.jsx(at, {}),
+          (a == null ? void 0 : a.attrs.ai_enabled) && S === "classic" && (_ || A) && /* @__PURE__ */ e.jsx(st, {})
         ] }),
-        /* @__PURE__ */ e.jsxs(xt, { style: { textAlign: "center" }, children: [
+        /* @__PURE__ */ e.jsxs(At, { style: { textAlign: "center" }, children: [
           " ©",
           (/* @__PURE__ */ new Date()).getFullYear(),
           " ",
-          D
+          C
         ] })
       ] }),
-      (n == null ? void 0 : n.attrs.ai_enabled) && (x === "sidebar" || x === "float-sidebar") && (L || c) && /* @__PURE__ */ e.jsx(Xe, {})
+      (a == null ? void 0 : a.attrs.ai_enabled) && (S === "sidebar" || S === "float-sidebar") && (_ || A) && /* @__PURE__ */ e.jsx(ot, {})
     ] });
-  }))(ie, H(m), w(ce), F(), s ?? /* @__PURE__ */ e.jsx(ze, {}));
-}, vt = new ge({
+  }))(ce, Q(l), w(fe), F(), i ?? /* @__PURE__ */ e.jsx(ke, {}));
+}, Rt = new Se({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: !1,
       retry: 1
     }
   }
-}), J = {
-  "zh-CN": fe,
-  "en-US": B,
-  "de-DE": xe,
-  "es-ES": pe,
-  "fr-FR": ue,
-  "ar-AE": me,
-  "sv-SE": de
+}), ne = {
+  "zh-CN": ze,
+  "en-US": V,
+  "de-DE": we,
+  "es-ES": be,
+  "fr-FR": ye,
+  "ar-AE": ve,
+  "sv-SE": je
 };
-function Vt({
-  transformRouter: s = (c) => c,
-  transformSettingTabs: m = (c) => c,
-  transformLangConfig: j = (c) => c,
-  extraPrivateRoutes: v = [],
+function ni({
+  transformRouter: i = (h) => h,
+  transformSettingTabs: l = (h) => h,
+  transformLangConfig: v = (h) => h,
+  extraPrivateRoutes: y = [],
   extraPublicRoutes: w = [],
-  menuStyle: b = "dark",
-  transformHeaderItems: x = (c) => c,
-  renderLayout: L
+  menuStyle: z = "dark",
+  transformHeaderItems: b = (h) => h,
+  renderLayout: P
 }) {
-  const { i18n: c } = C(), [f, _] = A(J[c.language] || B);
-  N(() => {
-    _(J[c.language] || B);
-  }, [c.language]);
-  const y = (z) => z.map((h) => h.children === void 0 ? h : {
-    ...h,
-    children: y(h.children)
-  }), g = s(y(mt({
-    transformSettingTabs: m,
-    transformLangConfig: j,
-    extraPrivateRoutes: v,
+  const { i18n: h } = H(), [p, S] = k(ne[h.language] || V);
+  B(() => {
+    S(ne[h.language] || V);
+  }, [h.language]);
+  const _ = (j) => j.map((m) => m.children === void 0 ? m : {
+    ...m,
+    children: _(m.children)
+  }), A = i(_(zt({
+    transformSettingTabs: l,
+    transformLangConfig: v,
+    extraPrivateRoutes: y,
     extraPublicRoutes: w
-  }))), O = (z, h) => z.flatMap((i) => i.is_private ? [i] : "children" in i && i.children ? i.children : [i]).map((i, n) => {
-    const R = i.is_private ? /* @__PURE__ */ e.jsx(Ne, { element: /* @__PURE__ */ e.jsx(
-      jt,
+  }))), x = (j, m) => j.flatMap((s) => s.is_private ? [s] : "children" in s && s.children ? s.children : [s]).map((s, O) => {
+    const L = s.is_private ? /* @__PURE__ */ e.jsx(Ee, { element: /* @__PURE__ */ e.jsx(
+      $t,
       {
-        routes: g,
-        element: i.element,
-        transformLangConfig: j,
-        menuStyle: b,
-        transformHeaderItems: x,
-        renderLayout: L
+        routes: A,
+        element: s.element,
+        transformLangConfig: v,
+        menuStyle: z,
+        transformHeaderItems: b,
+        renderLayout: P
       }
-    ) }) : i.element;
-    if ("children" in i && i.children && i.children.length > 0)
-      return /* @__PURE__ */ e.jsx(T, { path: i.path, element: R, children: O(i.children, i) }, i.path ?? i.name ?? n);
-    const { path: S } = i;
-    return /* @__PURE__ */ e.jsx(T, { path: S, index: i.index, element: R }, S ?? i.name ?? `${(h == null ? void 0 : h.path) ?? ""}.${n}`);
+    ) }) : s.element;
+    if ("children" in s && s.children && s.children.length > 0)
+      return /* @__PURE__ */ e.jsx(G, { path: s.path, element: L, children: x(s.children, s) }, s.path ?? s.name ?? O);
+    const { path: $ } = s;
+    return /* @__PURE__ */ e.jsx(G, { path: $, index: s.index, element: L }, $ ?? s.name ?? `${(m == null ? void 0 : m.path) ?? ""}.${O}`);
   }).filter(Boolean);
-  return /* @__PURE__ */ e.jsx(je, { client: vt, children: /* @__PURE__ */ e.jsx(
-    Oe,
-    {
-      locale: f,
-      children: /* @__PURE__ */ e.jsx(qe, { children: /* @__PURE__ */ e.jsx(Qe, { children: /* @__PURE__ */ e.jsx(We, { children: /* @__PURE__ */ e.jsx(be, { basename: ee(), children: /* @__PURE__ */ e.jsx(_e, { children: O(g) }) }) }) }) })
-    }
-  ) });
+  return /* @__PURE__ */ e.jsx(_e, { client: Rt, children: /* @__PURE__ */ e.jsx(ct, { children: /* @__PURE__ */ e.jsx(De, { locale: p, children: /* @__PURE__ */ e.jsx(et, { children: /* @__PURE__ */ e.jsx(tt, { children: /* @__PURE__ */ e.jsx(it, { children: /* @__PURE__ */ e.jsx($e, { basename: oe(), children: /* @__PURE__ */ e.jsx(Re, { children: x(A) }) }) }) }) }) }) }) });
 }
-const Kt = {
-  ...X,
-  ...Z,
-  ...te,
-  ...M,
-  ...M
+const ai = {
+  ...ae,
+  ...se,
+  ...re,
+  ...E,
+  ...E
 };
 export {
-  Vt as A,
-  Ht as a,
-  Kt as b,
-  jt as c,
+  ni as A,
+  ii as a,
+  ai as b,
+  $t as c,
   o as w
 };

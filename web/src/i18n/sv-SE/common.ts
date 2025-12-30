@@ -66,6 +66,8 @@ export default {
   next: 'Nästa',
   enter: 'Ange',
   select: 'Välj',
+  light: 'Ljust läge',
+  dark: 'Mörkt läge',
   pagination: {
     total: '{{start}}-{{end}} av {{total}} objekt',
   },
