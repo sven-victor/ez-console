@@ -29,28 +29,28 @@ import (
 )
 
 type Controller interface {
-	RegisterRoutes(router *gin.RouterGroup)
+	RegisterRoutes(ctx context.Context, router *gin.RouterGroup)
 }
 
-type ControllerGenerator func(svc *service.Service) Controller
+type ControllerGenerator func(ctx context.Context, svc *service.Service) Controller
 
 var controllers = []ControllerGenerator{
-	func(svc *service.Service) Controller {
+	func(ctx context.Context, svc *service.Service) Controller {
 		return authorizationapi.NewController(svc)
 	},
-	func(svc *service.Service) Controller {
+	func(ctx context.Context, svc *service.Service) Controller {
 		return systemapi.NewController(svc)
 	},
-	func(svc *service.Service) Controller {
+	func(ctx context.Context, svc *service.Service) Controller {
 		return fileapi.NewController(svc)
 	},
-	func(svc *service.Service) Controller {
+	func(ctx context.Context, svc *service.Service) Controller {
 		return statisticsapi.NewController(svc)
 	},
-	func(svc *service.Service) Controller {
+	func(ctx context.Context, svc *service.Service) Controller {
 		return aiapi.NewController(svc)
 	},
-	func(svc *service.Service) Controller {
+	func(ctx context.Context, svc *service.Service) Controller {
 		return mcpapi.NewController(svc)
 	},
 }
@@ -61,7 +61,7 @@ func RegisterControllers(ctx context.Context, router *gin.Engine, svc *service.S
 	api.Use(middleware.AuthenticationMiddleware())
 
 	for _, controller := range controllers {
-		controller(svc).RegisterRoutes(api)
+		controller(ctx, svc).RegisterRoutes(ctx, api)
 	}
 }
 

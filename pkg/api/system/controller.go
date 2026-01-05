@@ -15,6 +15,8 @@
 package systemapi
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/service"
 )
@@ -43,7 +45,7 @@ func NewController(svc *service.Service) *Controller {
 	}
 }
 
-func (c *Controller) RegisterRoutes(router *gin.RouterGroup) {
+func (c *Controller) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	system := router.Group("/system")
 	// Register OAuth settings controller
 	c.OAuthSettingController.RegisterRoutes(system)

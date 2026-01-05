@@ -15,6 +15,8 @@
 package mcpapi
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/service"
 )
@@ -32,7 +34,7 @@ func NewController(svc *service.Service) *Controller {
 }
 
 // RegisterRoutes registers all MCP routes
-func (c *Controller) RegisterRoutes(router *gin.RouterGroup) {
+func (c *Controller) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	// Register MCP routes
 	c.MCPController.RegisterRoutes(router)
 }

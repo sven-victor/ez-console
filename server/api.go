@@ -15,6 +15,8 @@
 package server
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/api"
 	"github.com/sven-victor/ez-console/pkg/middleware"
@@ -22,14 +24,14 @@ import (
 )
 
 type Controller interface {
-	RegisterRoutes(router *gin.RouterGroup)
+	RegisterRoutes(ctx context.Context, router *gin.RouterGroup)
 }
 
 type AuthController struct {
 	Controller
 }
 
-type ControllerGenerator func(svc Service) Controller
+type ControllerGenerator func(ctx context.Context, svc Service) Controller
 
 var (
 	AuthenticationMiddleware    = middleware.AuthenticationMiddleware()
@@ -38,8 +40,8 @@ var (
 
 func RegisterControllers(controller ...ControllerGenerator) {
 	for _, c := range controller {
-		api.AddControllers(func(svc *service.Service) api.Controller {
-			return c(svc)
+		api.AddControllers(func(ctx context.Context, svc *service.Service) api.Controller {
+			return c(ctx, svc)
 		})
 	}
 }

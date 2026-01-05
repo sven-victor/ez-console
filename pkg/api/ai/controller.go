@@ -15,6 +15,8 @@
 package aiapi
 
 import (
+	"context"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/service"
 )
@@ -34,7 +36,7 @@ func NewController(svc *service.Service) *Controller {
 }
 
 // RegisterRoutes registers all AI routes
-func (c *Controller) RegisterRoutes(router *gin.RouterGroup) {
+func (c *Controller) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	ai := router.Group("/ai")
 
 	// Register AI model routes
