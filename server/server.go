@@ -175,6 +175,26 @@ func WithEngineOptions(options ...withEngineOption) WithServerOption {
 	}
 }
 
+func bindTracingEnv() {
+	viper.BindEnv("tracing.http.endpoint", "TRACING_HTTP_ENDPOINT")
+	viper.BindEnv("tracing.http.insecure", "TRACING_HTTP_INSECURE")
+	viper.BindEnv("tracing.http.timeout", "TRACING_HTTP_TIMEOUT")
+	viper.BindEnv("tracing.http.retry", "TRACING_HTTP_RETRY")
+	viper.BindEnv("tracing.http.compression", "TRACING_HTTP_COMPRESSION")
+	viper.BindEnv("tracing.http.retry", "TRACING_HTTP_RETRY")
+	viper.BindEnv("tracing.http.url_path", "TRACING_HTTP_URL_PATH")
+	viper.BindEnv("tracing.grpc.endpoint", "TRACING_GRPC_ENDPOINT")
+	viper.BindEnv("tracing.grpc.insecure", "TRACING_GRPC_INSECURE")
+	viper.BindEnv("tracing.grpc.timeout", "TRACING_GRPC_TIMEOUT")
+	viper.BindEnv("tracing.grpc.retry", "TRACING_GRPC_RETRY")
+	viper.BindEnv("tracing.grpc.compression", "TRACING_GRPC_COMPRESSION")
+	viper.BindEnv("tracing.grpc.reconnection_period", "TRACING_GRPC_RECONNECTION_PERIOD")
+	viper.BindEnv("tracing.grpc.service_config", "TRACING_GRPC_SERVICE_CONFIG")
+	viper.BindEnv("tracing.file.path", "TRACING_FILE_PATH")
+	viper.BindEnv("tracing.zipkin.endpoint", "TRACING_ZIPKIN_ENDPOINT")
+	viper.BindEnv("server.host", "SERVER_HOST")
+}
+
 func NewCommandServer(serviceName string, version string, description string, options ...WithServerOption) *CommandServer {
 	serverOption := &ServerOption{}
 	for _, option := range options {
@@ -200,6 +220,7 @@ func NewCommandServer(serviceName string, version string, description string, op
 	// initConfig reads in config file and ENV variables if set.
 	initConfig := func() {
 		viper.BindPFlags(rootCmd.Flags())
+		bindTracingEnv()
 		_, err := config.LoadConfig(serviceName, cfgFile)
 		if err != nil {
 			level.Error(log.New()).Log("msg", "Failed to load configuration", "err", err)
