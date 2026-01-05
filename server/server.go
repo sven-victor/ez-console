@@ -144,6 +144,8 @@ type Service interface {
 	FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error)
 	GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)
 
+	SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) error
+
 	// GeoIP Service
 	GetLocation(ctx context.Context, ip string, language string) (string, error)
 	MustGetLocation(ctx context.Context, ip string, language string) string

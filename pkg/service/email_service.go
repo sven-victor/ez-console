@@ -28,9 +28,14 @@ import (
 	"strings"
 
 	"github.com/go-kit/log/level"
+	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/safe"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // formatAddress format the name and address to RFC 2047
@@ -114,14 +119,41 @@ func (s *EmailService) SendEmailFromTemplate(ctx context.Context, to []string, s
 	return s.SendEmail(ctx, smtpSettings, to, subject, buf.String())
 }
 
-func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) error {
+func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) (err error) {
 	logger := log.GetContextLogger(ctx)
+	ctx, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(
+		ctx, "SEND Email",
+		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithAttributes(
+			attribute.String("messaging.system", "smtp"),
+			attribute.String("messaging.operation", "send"),
+			attribute.Bool("smtp.encrypted", smtpSettings.Encryption == "SSL/TLS" || smtpSettings.Encryption == "STARTTLS"),
+			attribute.String("peer.service", "smtp"),
+			attribute.String("net.peer.name", smtpSettings.Host),
+			attribute.Int("net.peer.port", smtpSettings.Port),
+		),
+	)
+	defer span.End()
+
+	defer func() {
+		if r := recover(); r != nil {
+			if err != nil {
+				level.Warn(logger).Log("msg", "Recover from panic", "error", err, "panic", fmt.Sprintf("%v", r))
+			} else {
+				err = errors.New(fmt.Sprintf("%v", r))
+			}
+		}
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+		}
+	}()
 	var auth smtp.Auth
 	password, err := smtpSettings.Password.UnsafeString()
 	if err != nil {
 		return err
 	}
-	if smtpSettings.Username != "" || password != "" {
+	if smtpSettings.Username != "" && password != "" {
 		auth = smtp.PlainAuth("", smtpSettings.Username, password, smtpSettings.Host)
 	}
 
@@ -138,6 +170,8 @@ func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSe
 		if errDial != nil {
 			return errors.New("Failed to dial TLS: " + errDial.Error())
 		}
+		defer conn.Close()
+		span.SetAttributes(attribute.String("net.peer.ip", conn.RemoteAddr().String()))
 		level.Debug(logger).Log("msg", "Creating SMTP client", "addr", addr)
 		client, err = smtp.NewClient(conn, smtpSettings.Host)
 		if err != nil {
@@ -199,7 +233,7 @@ func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSe
 	if errClose != nil {
 		return errors.New("Failed to close data writer: " + errClose.Error())
 	}
-
+	span.SetStatus(codes.Ok, "Email sent successfully")
 	return nil
 }
 
