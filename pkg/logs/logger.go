@@ -73,11 +73,20 @@ type logfmtXLog struct {
 	kvs            []interface{}
 	other          []logKvPair
 	otherKeyMaxLen int
+	raw            interface{}
 }
 
 type logfmtXLogger struct {
 	w io.Writer
 }
+
+type rawKeyName string
+
+func (rawKeyName) String() string {
+	return "raw"
+}
+
+var RawKeyName = rawKeyName("raw")
 
 func (l *logfmtXLogger) encodeKeyvals(ll *logfmtXLog) ([]byte, error) {
 	enc := logfmtXEncoderPool.Get().(*logfmtEncoder)
@@ -101,6 +110,9 @@ func (l *logfmtXLogger) encodeKeyvals(ll *logfmtXLog) ([]byte, error) {
 	}
 	for _, v := range ll.other {
 		enc.buf.WriteString(fmt.Sprintf("%-"+strconv.Itoa(ll.otherKeyMaxLen)+"s%v\n", fmt.Sprintf("%s:", v.key), v.val))
+	}
+	if ll.raw != nil {
+		enc.buf.WriteString(fmt.Sprintf("%v", ll.raw))
 	}
 	return enc.buf.Bytes(), nil
 }
@@ -128,6 +140,8 @@ func (l *logfmtXLogger) Log(keyvals ...interface{}) error {
 			} else {
 				ll.kvs = append(ll.kvs, k, v)
 			}
+		case rawKeyName:
+			ll.raw = v
 		default:
 			if k == log.CallerName {
 				ll.caller = v

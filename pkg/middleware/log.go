@@ -93,7 +93,7 @@ func Log(serviceName string) gin.HandlerFunc {
 			if r := recover(); r != nil {
 				span.SetStatus(codes.Error, fmt.Sprintf("%+v", r))
 				util.RespondWithErrorMessage(c, http.StatusInternalServerError, "E5000", "Server exception")
-				buf := bytes.NewBufferString(fmt.Sprintf("recover from panic situation: - \n%v\n", r))
+				buf := bytes.NewBufferString(fmt.Sprintf("%+v\n", r))
 				for i := 2; ; i++ {
 					_, file, line, ok := runtime.Caller(i)
 					if !ok {
@@ -101,7 +101,7 @@ func Log(serviceName string) gin.HandlerFunc {
 					}
 					buf.WriteString(fmt.Sprintf("    %s:%d\n", file, line))
 				}
-				level.Error(logger).Log("msg", buf.String())
+				level.Error(logger).Log("msg", fmt.Sprintf("recover from panic situation: - %+v", r), logs.RawKeyName, buf.String())
 			}
 			level.Info(logger).Log("msg", "HTTP response send.",
 				logs.TopicKey, "response",
