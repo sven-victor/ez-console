@@ -267,9 +267,11 @@ func initSettings(ctx context.Context, cfg *config.Config, svc *service.Service)
 // safeArgs return a safe args for trace
 func safeArgs() []string {
 	var args []string
-	for idx, arg := range os.Args {
+	for idx := 0; idx < len(os.Args); idx++ {
+		arg := os.Args[idx]
 		if arg == "--global.encrypt-key" && idx < len(os.Args)-1 {
-			args = append(args, "*************")
+			args = append(args, "--global.encrypt-key", "*************")
+			idx++
 		} else if strings.HasPrefix(arg, "--global.encrypt-key=") {
 			args = append(args, "--global.encrypt-key=*************")
 		} else {
