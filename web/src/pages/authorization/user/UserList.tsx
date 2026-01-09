@@ -494,7 +494,6 @@ const UserList: React.FC = () => {
           form={searchForm}
           layout="inline"
           onFinish={handleSearch}
-          style={{ marginBottom: 16 }}
         >
           <Row gutter={16} style={{ width: '100%' }}>
             <Col span={6}>

@@ -320,14 +320,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             {headerItems}
           </div>
         </Header>
-        <Content style={{ margin: '0 16px', height: 'calc(100vh - 170px)', overflow: 'auto' }}>
+        <Content style={{ margin: '0 16px', height: 'calc(100vh - 120px)', overflow: 'auto' }}>
           <div className={classNames("site-content", styles.content)}>
             {content}
           </div>
           {siteConfig?.attrs.ai_enabled && <AIChatButton />}
           {siteConfig?.attrs.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
         </Content>
-        <Footer style={{ textAlign: 'center' }}> ©{new Date().getFullYear()} {siteName}</Footer>
+        <Footer style={{ textAlign: 'center', padding: '15px 50px' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
       {(siteConfig?.attrs.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider />)}
     </Layout>

@@ -393,12 +393,12 @@ const zt = ({ transformSettingTabs: i, transformLangConfig: l, extraPrivateRoute
           ] }),
           /* @__PURE__ */ e.jsx("div", { style: { marginRight: "20px" }, children: f })
         ] }),
-        /* @__PURE__ */ e.jsxs(_t, { style: { margin: "0 16px", height: "calc(100vh - 170px)", overflow: "auto" }, children: [
+        /* @__PURE__ */ e.jsxs(_t, { style: { margin: "0 16px", height: "calc(100vh - 120px)", overflow: "auto" }, children: [
           /* @__PURE__ */ e.jsx("div", { className: N("site-content", p.content), children: u }),
           (a == null ? void 0 : a.attrs.ai_enabled) && /* @__PURE__ */ e.jsx(at, {}),
           (a == null ? void 0 : a.attrs.ai_enabled) && S === "classic" && (_ || A) && /* @__PURE__ */ e.jsx(st, {})
         ] }),
-        /* @__PURE__ */ e.jsxs(At, { style: { textAlign: "center" }, children: [
+        /* @__PURE__ */ e.jsxs(At, { style: { textAlign: "center", padding: "15px 50px" }, children: [
           " ©",
           (/* @__PURE__ */ new Date()).getFullYear(),
           " ",

@@ -301,16 +301,16 @@ const ServiceAccountList: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Form
           form={searchForm}
-          layout="horizontal"
+          layout="inline"
           onFinish={handleSearch}
           initialValues={{
             search: queryParams.search,
           }}
           style={{ marginBottom: 0 }}
         >
-          <Row gutter={16}>
+          <Row gutter={16} style={{ width: '100%' }}>
             <Col xs={24} sm={12} md={8} lg={6}>
-              <Form.Item name="search" label={tCommon('keyword', { defaultValue: 'Keyword' })}>
+              <Form.Item name="search">
                 <Input
                   placeholder={t('serviceAccount.searchPlaceholder', { defaultValue: 'Search by name or description' })}
                   allowClear

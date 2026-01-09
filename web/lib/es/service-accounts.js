@@ -257,14 +257,14 @@ const Ae = ({
       x,
       {
         form: k,
-        layout: "horizontal",
+        layout: "inline",
         onFinish: m,
         initialValues: {
           search: y.search
         },
         style: { marginBottom: 0 },
-        children: /* @__PURE__ */ e.jsxs(te, { gutter: 16, children: [
-          /* @__PURE__ */ e.jsx(G, { xs: 24, sm: 12, md: 8, lg: 6, children: /* @__PURE__ */ e.jsx(x.Item, { name: "search", label: c("keyword", { defaultValue: "Keyword" }), children: /* @__PURE__ */ e.jsx(
+        children: /* @__PURE__ */ e.jsxs(te, { gutter: 16, style: { width: "100%" }, children: [
+          /* @__PURE__ */ e.jsx(G, { xs: 24, sm: 12, md: 8, lg: 6, children: /* @__PURE__ */ e.jsx(x.Item, { name: "search", children: /* @__PURE__ */ e.jsx(
             ee,
             {
               placeholder: s("serviceAccount.searchPlaceholder", { defaultValue: "Search by name or description" }),
