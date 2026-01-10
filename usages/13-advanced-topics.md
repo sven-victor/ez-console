@@ -20,8 +20,11 @@ func customRoutes(engine *gin.Engine) {
 	})
 }
 
+const VERSION = "1.0.0"
+
 var rootCmd = consoleserver.NewCommandServer(
-	"my-app", 
+	"my-app",
+	VERSION,
 	"My Application",
 	consoleserver.WithEngineOptions(customRoutes),
 )
@@ -38,8 +41,11 @@ func rateLimitMiddleware(engine *gin.Engine) {
 	engine.Use(RateLimitMiddleware(100, time.Minute))
 }
 
+const VERSION = "1.0.0"
+
 var rootCmd = consoleserver.NewCommandServer(
 	"my-app",
+	VERSION,
 	"My Application",
 	consoleserver.WithEngineOptions(rateLimitMiddleware),
 )
@@ -133,7 +139,7 @@ func CustomAuthFunc(c *gin.Context) {
 }
 
 // Use custom auth
-func (c *APIController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *APIController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	api := middleware.WithAuthentication(
 		router.Group("/api"),
 		middleware.CustomAuthFunc,

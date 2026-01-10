@@ -41,7 +41,7 @@ EZ-Console implements a comprehensive auth system with:
 All routes under `/api` require authentication by default:
 
 ```go
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	// All these routes require authentication
 	products := router.Group("/products")
 	{
@@ -56,9 +56,12 @@ func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
 To create public routes (no authentication required):
 
 ```go
-import "github.com/sven-victor/ez-console/pkg/middleware"
+import (
+	"context"
+	"github.com/sven-victor/ez-console/pkg/middleware"
+)
 
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	// Public routes
 	public := middleware.WithoutAuthentication(router.Group("/products"))
 	{
@@ -176,9 +179,12 @@ func init() {
 ### Requiring Permissions
 
 ```go
-import "github.com/sven-victor/ez-console/pkg/middleware"
+import (
+	"context"
+	"github.com/sven-victor/ez-console/pkg/middleware"
+)
 
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	products := router.Group("/products")
 	{
 		// Anyone authenticated can list
@@ -501,9 +507,12 @@ Enable MFA through system settings:
 ### API Rate Limiting
 
 ```go
-import "github.com/sven-victor/ez-console/pkg/middleware"
+import (
+	"context"
+	"github.com/sven-victor/ez-console/pkg/middleware"
+)
 
-func (c *APIController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *APIController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	// Apply rate limiting
 	limited := router.Group("/api")
 	limited.Use(middleware.RateLimitMiddleware(100, time.Minute)) // 100 requests per minute

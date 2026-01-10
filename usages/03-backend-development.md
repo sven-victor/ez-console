@@ -36,10 +36,10 @@ func RegisterControllers(controller ...ControllerGenerator)
 **Type Definitions:**
 ```go
 type Controller interface {
-    RegisterRoutes(router *gin.RouterGroup)
+    RegisterRoutes(ctx context.Context, router *gin.RouterGroup)
 }
 
-type ControllerGenerator func(svc Service) Controller
+type ControllerGenerator func(ctx context.Context, svc Service) Controller
 ```
 
 **Usage Example:**
@@ -47,6 +47,7 @@ type ControllerGenerator func(svc Service) Controller
 package controller
 
 import (
+    "context"
     "github.com/gin-gonic/gin"
     "github.com/sven-victor/ez-console/server"
 )
@@ -61,7 +62,7 @@ func NewProductController() *ProductController {
     }
 }
 
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
     products := router.Group("/products")
     {
         products.GET("", c.ListProducts)
@@ -71,7 +72,7 @@ func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
 
 // Register the controller in init() function
 func init() {
-    server.RegisterControllers(func(svc server.Service) server.Controller {
+    server.RegisterControllers(func(ctx context.Context, svc server.Service) server.Controller {
         return NewProductController()
     })
 }
@@ -79,8 +80,9 @@ func init() {
 
 **Key Points:**
 - Call `server.RegisterControllers` in the `init()` function
-- The function accepts a `ControllerGenerator` that receives a `server.Service` interface
+- The function accepts a `ControllerGenerator` that receives `context.Context` and a `server.Service` interface
 - The generator function returns a `server.Controller` interface
+- The `RegisterRoutes` method must accept `context.Context` as the first parameter
 - Multiple controllers can be registered in a single call
 - The controller will be automatically instantiated when the server starts
 
@@ -96,15 +98,15 @@ func AddControllers(controller ...ControllerGenerator)
 **Type Definitions:**
 ```go
 type Controller interface {
-    RegisterRoutes(router *gin.RouterGroup)
+    RegisterRoutes(ctx context.Context, router *gin.RouterGroup)
 }
 
-type ControllerGenerator func(svc *service.Service) Controller
+type ControllerGenerator func(ctx context.Context, svc *service.Service) Controller
 ```
 
 **Difference from server.RegisterControllers:**
-- `api.AddControllers` accepts `func(svc *service.Service)` (concrete type)
-- `server.RegisterControllers` accepts `func(svc server.Service)` (interface type)
+- `api.AddControllers` accepts `func(ctx context.Context, svc *service.Service)` (concrete type)
+- `server.RegisterControllers` accepts `func(ctx context.Context, svc server.Service)` (interface type)
 - `server.RegisterControllers` internally calls `api.AddControllers` and handles type conversion
 
 **Internal Implementation:**
@@ -112,8 +114,8 @@ type ControllerGenerator func(svc *service.Service) Controller
 // In server/api.go
 func RegisterControllers(controller ...ControllerGenerator) {
     for _, c := range controller {
-        api.AddControllers(func(svc *service.Service) api.Controller {
-            return c(svc)
+        api.AddControllers(func(ctx context.Context, svc *service.Service) api.Controller {
+            return c(ctx, svc)
         })
     }
 }
@@ -177,6 +179,28 @@ FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes 
 GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)
 ```
 
+#### Service Account Management
+```go
+CreateServiceAccount(ctx context.Context, serviceAccount *model.ServiceAccount) error
+GetServiceAccountByID(ctx context.Context, id string) (*model.ServiceAccount, error)
+UpdateServiceAccount(ctx context.Context, id string, serviceAccount *model.ServiceAccount) error
+DeleteServiceAccount(ctx context.Context, id string) error
+UpdateServiceAccountStatus(ctx context.Context, id, status string) error
+GetServiceAccountList(ctx context.Context, page, pageSize int, search string) ([]model.ServiceAccount, int64, error)
+GetServiceAccountAccessKeys(ctx context.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error)
+CreateServiceAccountAccessKey(ctx context.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error)
+DeleteServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID string) error
+GetServiceAccountRoles(ctx context.Context, serviceAccountID string) ([]model.Role, error)
+AssignServiceAccountRoles(ctx context.Context, serviceAccountID string, roleIDs []string) error
+GetServiceAccountPolicy(ctx context.Context, serviceAccountID string) (model.PolicyDocument, error)
+SetServiceAccountPolicy(ctx context.Context, serviceAccountID string, policyDoc model.PolicyDocument) error
+```
+
+#### Email Service
+```go
+SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) error
+```
+
 #### GeoIP Service
 ```go
 GetLocation(ctx context.Context, ip string, language string) (string, error)
@@ -221,15 +245,15 @@ func (c *OrderController) CreateOrder(ctx *gin.Context) {
     var order *model.Order
     err := c.svc.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
         var err error
-        order, err = c.orderService.CreateOrder(ctx, req)
+        order, err = c.orderService.CreateOrder(ctx.Request.Context(), req)
         if err != nil {
             return err
         }
         
-        auditLog.ResourceID = order.ResourceID
         auditLog.ResourceType = "order"
         auditLog.Action = "create"
         auditLog.Details = map[string]interface{}{
+            "resource_id": order.ResourceID,
             "total_amount": order.TotalAmount,
             "items_count": len(order.Items),
         }
@@ -246,7 +270,7 @@ func (c *OrderController) CreateOrder(ctx *gin.Context) {
 
 func (c *OrderController) GetSettings(ctx *gin.Context) {
     // Use settings service
-    settings, err := c.svc.GetSettingsMap(ctx)
+    settings, err := c.svc.GetSettingsMap(ctx.Request.Context())
     if err != nil {
         util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get settings", err))
         return
@@ -255,7 +279,7 @@ func (c *OrderController) GetSettings(ctx *gin.Context) {
     util.RespondWithSuccess(ctx, http.StatusOK, settings)
 }
 
-func (c *OrderController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *OrderController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
     orders := router.Group("/orders")
     {
         orders.POST("", c.CreateOrder)
@@ -265,7 +289,7 @@ func (c *OrderController) RegisterRoutes(router *gin.RouterGroup) {
 
 // Register with server.Service
 func init() {
-    server.RegisterControllers(func(svc server.Service) server.Controller {
+    server.RegisterControllers(func(ctx context.Context, svc server.Service) server.Controller {
         return NewOrderController(svc)
     })
 }
@@ -274,19 +298,26 @@ func init() {
 **Example: Using Cache Service**
 
 ```go
+import (
+    "time"
+    "github.com/gin-gonic/gin"
+    "github.com/sven-victor/ez-console/server"
+    "github.com/sven-victor/ez-console/pkg/util"
+)
+
 func (c *ProductController) GetProductWithCache(ctx *gin.Context) {
     id := ctx.Param("id")
     cacheKey := "product:" + id
 
     // Try to get from cache first
-    cached, err := c.svc.GetCache(ctx, cacheKey)
+    cached, err := c.svc.GetCache(ctx.Request.Context(), cacheKey)
     if err == nil && cached != nil {
         util.RespondWithSuccess(ctx, http.StatusOK, cached.Value)
         return
     }
 
     // Get from database
-    product, err := c.productService.GetProduct(ctx, id)
+    product, err := c.productService.GetProduct(ctx.Request.Context(), id)
     if err != nil {
         util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get product", err))
         return
@@ -294,7 +325,7 @@ func (c *ProductController) GetProductWithCache(ctx *gin.Context) {
 
     // Store in cache (expires in 1 hour)
     expiredAt := time.Now().Add(1 * time.Hour)
-    c.svc.CreateCache(ctx, cacheKey, product.ToJSON(), expiredAt)
+    c.svc.CreateCache(ctx.Request.Context(), cacheKey, product.ToJSON(), expiredAt)
 
     util.RespondWithSuccess(ctx, http.StatusOK, product)
 }
@@ -310,6 +341,7 @@ Controllers handle HTTP requests and coordinate between the HTTP layer and busin
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -332,7 +364,7 @@ func NewProductController() *ProductController {
 }
 
 // RegisterRoutes registers all routes for this controller
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	products := router.Group("/products")
 	{
 		products.GET("", c.ListProducts)
@@ -345,8 +377,8 @@ func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
 
 // Register controller with framework
 func init() {
-	server.RegisterControllers(func(svc server.Service) server.Controller {
-		return NewTestController()
+	server.RegisterControllers(func(ctx context.Context, svc server.Service) server.Controller {
+		return NewProductController()
 	})
 }
 ```
@@ -364,7 +396,7 @@ func (c *ProductController) GetProduct(ctx *gin.Context) {
 		return
 	}
 
-	product, err := c.service.GetProduct(ctx, id)
+	product, err := c.service.GetProduct(ctx.Request.Context(), id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get product", err))
 		return
@@ -394,7 +426,7 @@ func (c *ProductController) ListProducts(ctx *gin.Context) {
 		return
 	}
 
-	products, total, err := c.service.ListProducts(ctx, req.Search, req.Category, req.Status, req.Current, req.PageSize)
+	products, total, err := c.service.ListProducts(ctx.Request.Context(), req.Search, req.Category, req.Status, req.Current, req.PageSize)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to list products", err))
 		return
@@ -424,7 +456,7 @@ func (c *ProductController) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	product, err := c.service.CreateProduct(ctx, req.Name, req.Description, req.Price, req.Category, req.Stock)
+	product, err := c.service.CreateProduct(ctx.Request.Context(), req.Name, req.Description, req.Price, req.Category, req.Stock)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to create product", err))
 		return
@@ -460,7 +492,7 @@ func (c *ProductController) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	product, err := c.service.UpdateProduct(ctx, id, req)
+	product, err := c.service.UpdateProduct(ctx.Request.Context(), id, req)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to update product", err))
 		return
@@ -481,7 +513,7 @@ func (c *ProductController) DeleteProduct(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.service.DeleteProduct(ctx, id); err != nil {
+	if err := c.service.DeleteProduct(ctx.Request.Context(), id); err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to delete product", err))
 		return
 	}
@@ -618,15 +650,30 @@ func (s *ProductService) UpdateProduct(ctx context.Context, id string, updates m
 #### Delete Operation (Soft Delete)
 
 ```go
+import (
+	"context"
+	"errors"
+	"github.com/sven-victor/ez-console/pkg/db"
+	"github.com/sven-victor/ez-console/pkg/model"
+	"gorm.io/gorm"
+)
+
 // DeleteProduct soft-deletes a product
 func (s *ProductService) DeleteProduct(ctx context.Context, id string) error {
-	result := db.Session(ctx).Where("resource_id = ?", id).Delete(&model.Product{})
-	if result.Error != nil {
-		return result.Error
+	// First check if the product exists
+	var product model.Product
+	if err := db.Session(ctx).Where("resource_id = ?", id).First(&product).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("product not found")
+		}
+		return err
 	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
+	
+	// Perform soft delete
+	if err := db.Session(ctx).Where("resource_id = ?", id).Delete(&model.Product{}).Error; err != nil {
+		return err
 	}
+	
 	return nil
 }
 ```
@@ -751,7 +798,7 @@ func (c *ProductController) CreateProduct(ctx *gin.Context) {
 ### Require Authentication
 
 ```go
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	// All routes require authentication by default
 	products := router.Group("/products")
 	{
@@ -766,7 +813,7 @@ func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
 ```go
 import "github.com/sven-victor/ez-console/pkg/middleware"
 
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	products := router.Group("/products")
 	{
 		products.GET("", c.ListProducts)
@@ -782,7 +829,7 @@ func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
 ```go
 import "github.com/sven-victor/ez-console/pkg/middleware"
 
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	// Public routes
 	public := middleware.WithoutAuthentication(router.Group("/products"))
 	{
@@ -816,7 +863,7 @@ func (c *ProductController) GetMyProducts(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user := userInterface.(model.User)
 
-	products, err := c.service.GetProductsByUser(ctx, userID.(string))
+	products, err := c.service.GetProductsByUser(ctx.Request.Context(), userID.(string))
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get products", err))
 		return
@@ -857,6 +904,13 @@ func (c *ProductController) AdminOnly(ctx *gin.Context) {
 ## Transaction Management
 
 ```go
+import (
+	"context"
+	"github.com/sven-victor/ez-console/pkg/db"
+	"github.com/sven-victor/ez-console/pkg/model"
+	"gorm.io/gorm"
+)
+
 func (s *ProductService) CreateOrderWithProducts(ctx context.Context, orderData OrderData) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Create order
@@ -906,21 +960,21 @@ func (c *ProductController) CreateProduct(ctx *gin.Context) {
 	}
 
 	// Using Service.StartAudit for automatic audit logging
-	svc := service.GetService(ctx) // Assuming you have access to service
+	// Note: In a real controller, you should have access to svc through the controller struct
 	var product *model.Product
 	
-	err := svc.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
+	err := c.svc.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
 		var err error
-		product, err = c.service.CreateProduct(ctx, req.Name, req.Description, req.Price, req.Category, req.Stock)
+		product, err = c.service.CreateProduct(ctx.Request.Context(), req.Name, req.Description, req.Price, req.Category, req.Stock)
 		if err != nil {
 			return err
 		}
 		
 		// Set audit log details
-		auditLog.ResourceID = product.ResourceID
 		auditLog.ResourceType = "product"
 		auditLog.Action = "create"
 		auditLog.Details = map[string]interface{}{
+			"resource_id": product.ResourceID,
 			"name": product.Name,
 			"price": product.Price,
 		}

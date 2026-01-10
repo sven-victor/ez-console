@@ -137,8 +137,11 @@ import (
     consoleserver "github.com/sven-victor/ez-console/server"
 )
 
+const VERSION = "1.0.0"
+
 var rootCmd = consoleserver.NewCommandServer(
-    "my-admin-app", 
+    "my-admin-app",
+    VERSION,
     "My Enterprise Management System",
 )
 
@@ -153,6 +156,7 @@ Create your first controller in `backend/controller/product.go`:
 package controller
 
 import (
+    "context"
     "net/http"
     "github.com/gin-gonic/gin"
     "github.com/sven-victor/ez-console/pkg/util"
@@ -175,14 +179,14 @@ func (c *ProductController) ListProducts(ctx *gin.Context) {
     util.RespondWithSuccess(ctx, http.StatusOK, products)
 }
 
-func (c *ProductController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *ProductController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
     products := router.Group("/products")
     products.GET("", c.ListProducts)
 }
 
 // Register controller on initialization
 func init() {
-    server.RegisterControllers(func(svc server.Service) server.Controller {
+    server.RegisterControllers(func(ctx context.Context, svc server.Service) server.Controller {
         return NewProductController(svc)
     })
 }
@@ -400,7 +404,7 @@ func (c *ProductController) CreateProduct(ctx *gin.Context) {
     // Use framework audit service
     var product *model.Product
     err := c.svc.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
-        product, err = c.productService.Create(ctx, req)
+        product, err = c.productService.Create(ctx.Request.Context(), req)
         auditLog.ResourceType = "product"
         auditLog.Action = "create"
         return err

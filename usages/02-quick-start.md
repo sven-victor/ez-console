@@ -56,7 +56,9 @@ import (
 	consoleserver "github.com/sven-victor/ez-console/server"
 )
 
-var rootCmd = consoleserver.NewCommandServer("my-console-app", "My Console Application")
+const VERSION = "1.0.0"
+
+var rootCmd = consoleserver.NewCommandServer("my-console-app", VERSION, "My Console Application")
 
 func main() {
 	rootCmd.Execute()
@@ -71,7 +73,9 @@ Create `backend/controller/hello.go`:
 package controller
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/api"
@@ -101,7 +105,7 @@ func (c *HelloController) Hello(ctx *gin.Context) {
 }
 
 // RegisterRoutes registers all routes for this controller
-func (c *HelloController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *HelloController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	router.GET("/hello", c.Hello)
 }
 
@@ -112,7 +116,7 @@ func NewHelloController() *HelloController {
 
 // Register the controller with the framework
 func init() {
-	api.AddControllers(func(svc *service.Service) api.Controller {
+	api.AddControllers(func(ctx context.Context, svc *service.Service) api.Controller {
 		return NewHelloController()
 	})
 }
