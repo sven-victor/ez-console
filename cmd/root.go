@@ -21,7 +21,7 @@ import (
 
 var cfgFile string
 
-const (
+var (
 	VERSION = "1.0.0"
 )
 

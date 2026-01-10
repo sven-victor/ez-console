@@ -6,6 +6,7 @@ FIRST_GOPATH := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 
 SWAG ?= $(FIRST_GOPATH)/bin/swag
 
+VERSION ?= 1.0.0
 
 $(SWAG):
 	go install github.com/swaggo/swag/cmd/swag@v1.16.4
@@ -44,7 +45,7 @@ clean-web-lib:
 
 dist/server:
 	go mod tidy
-	go build -o dist/server main.go
+	go build -ldflags "-s -w -X github.com/sven-victor/ez-console/cmd.VERSION=$(VERSION)" -o dist/server main.go
 
 clean:clean-web-lib
 	rm -rf dist/server
