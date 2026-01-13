@@ -492,6 +492,12 @@ func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[s
 				} else if roles, ok := userInfo[role].([]string); ok {
 					roleNames = roles
 					break
+				} else if roles, ok := userInfo[role].([]any); ok {
+					for _, role := range roles {
+						if role, ok := role.(string); ok {
+							roleNames = append(roleNames, role)
+						}
+					}
 				}
 			}
 		}
