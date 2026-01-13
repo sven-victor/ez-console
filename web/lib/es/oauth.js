@@ -1,25 +1,26 @@
 import { r as o } from "./client.js";
-async function n(a, r) {
+async function n(a, e) {
   return o("/api/oauth/callback", {
-    method: "GET",
-    params: {
-      ...a
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    ...r || {}
+    data: a,
+    ...e || {}
   });
 }
-async function i(a, r) {
-  const { provider: e, ...t } = a;
+async function i(a, e) {
+  const { provider: t, ...r } = a;
   return o(
-    `/api/oauth/login/${e}`,
+    `/api/oauth/login/${t}`,
     {
       method: "GET",
-      params: { ...t },
-      ...r || {}
+      params: { ...r },
+      ...e || {}
     }
   );
 }
-async function u(a) {
+async function p(a) {
   return o(
     "/api/oauth/providers",
     {
@@ -28,12 +29,12 @@ async function u(a) {
     }
   );
 }
-const p = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const c = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   getLoginUrl: i,
-  getProviders: u,
+  getProviders: p,
   handleCallback: n
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  p as o
+  c as o
 };

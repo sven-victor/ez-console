@@ -38,6 +38,7 @@ const (
 	SettingOAuthIconURL          SettingKey = "oauth_icon_url"          // OAuth icon URL
 	SettingOAuthDisplayName      SettingKey = "oauth_display_name"      // OAuth display name
 	SettingOAuthMFAEnabled       SettingKey = "oauth_mfa_enabled"       // Whether to enable MFA for OAuth authentication
+	SettingOAuthRoleMappingMode  SettingKey = "oauth_role_mapping_mode" // OAuth role mapping mode (disabled/auto/enforce)
 
 	SettingOAuthWellknownEndpoint SettingKey = "oauth_wellknown_endpoint" // OAuth wellknown endpoint
 	SettingOAuthJWKsURI           SettingKey = "oauth_jwks_uri"           // OAuth JWKs URL
@@ -67,6 +68,7 @@ var OAuthSettingKeys = []SettingKey{
 	SettingOAuthAvatarField,
 	SettingOAuthRoleField,
 	SettingOAuthMFAEnabled,
+	SettingOAuthRoleMappingMode,
 	SettingOAuthWellknownEndpoint,
 	SettingOAuthJWKsURI,
 	SettingOAuthIssuer,
@@ -87,6 +89,22 @@ const (
 	OAuthProviderCustom   OAuthProviderType = "custom"   // Custom
 
 	OAuthProviderAutoDiscover OAuthProviderType = "autoDiscover" // Auto Discover
+)
+
+// RoleMappingMode defines how to handle role mapping from OAuth2 provider
+type RoleMappingMode string
+
+const (
+	// RoleMappingModeDisabled ignores roles from OAuth2 provider and uses default role for new users
+	RoleMappingModeDisabled RoleMappingMode = "disabled"
+	
+	// RoleMappingModeAuto uses OAuth2 roles for new users or existing users without roles,
+	// but keeps existing roles for users who already have roles assigned
+	RoleMappingModeAuto RoleMappingMode = "auto"
+	
+	// RoleMappingModeEnforce forces update of user roles with OAuth2 roles whenever available,
+	// overwriting any existing role assignments
+	RoleMappingModeEnforce RoleMappingMode = "enforce"
 )
 
 // OAuthSettings OAuth settings request and response structure
@@ -110,6 +128,7 @@ type OAuthSettings struct {
 	IconURL          string            `json:"icon_url"`     // Provider icon URL
 	DisplayName      string            `json:"display_name"` // Provider display name
 	MFAEnabled       bool              `json:"mfa_enabled"`
+	RoleMappingMode  RoleMappingMode   `json:"role_mapping_mode"` // Role mapping mode
 
 	WellknownEndpoint string `json:"wellknown_endpoint"`
 	JWKsURI           string `json:"jwks_uri"`

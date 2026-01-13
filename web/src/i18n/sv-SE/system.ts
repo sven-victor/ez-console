@@ -221,6 +221,25 @@ export default {
           tooltip: 'Fältnamn för roll i OAuth-användarinformation (om leverantören returnerar rollinformation)',
         },
       },
+      roleMappingMode: {
+        label: 'Rollmappningsläge',
+        tooltip: 'Styr hur användarroller synkroniseras från OAuth2-leverantören',
+        infoTitle: 'Information om rollmappningsläge',
+        options: {
+          disabled: {
+            label: 'Inaktiverad',
+            description: 'Ignorerar rollinformation från OAuth2-leverantören. Nya användare tilldelas standardrollen och befintliga användare behåller sina nuvarande roller.',
+          },
+          auto: {
+            label: 'Automatisk (Rekommenderas)',
+            description: 'Använder OAuth2-roller för nya användare eller befintliga användare utan roller. Bevarar manuellt tilldelade roller för användare som redan har dem.',
+          },
+          enforce: {
+            label: 'Tvinga',
+            description: 'Skriver alltid över användarroller med OAuth2-roller när de är tillgängliga. Använd detta när OAuth2-leverantören är den auktoritativa källan för roller.',
+          },
+        },
+      },
     },
     ldap: {
       enabled: 'Aktivera LDAP-autentisering',

@@ -127,6 +127,7 @@ type ProviderConfig struct {
 	RoleField      string `yaml:"role_field" mapstructure:"role_field"`
 	AutoCreateUser bool   `yaml:"auto_create_user" mapstructure:"auto_create_user"`
 
+	RoleMappingMode   string `yaml:"role_mapping_mode" mapstructure:"role_mapping_mode"`
 	WellknownEndpoint string `yaml:"wellknown_endpoint" mapstructure:"wellknown_endpoint"`
 }
 

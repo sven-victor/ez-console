@@ -203,6 +203,10 @@ func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2Prov
 		for _, providerCfg := range cfg.OAuth.Providers {
 			if providerCfg.GetEnabled() {
 				if providerCfg.ClientID != "" && providerCfg.ClientSecret != "" {
+					roleMappingMode := model.RoleMappingModeAuto
+					if providerCfg.RoleMappingMode != "" {
+						roleMappingMode = model.RoleMappingMode(providerCfg.RoleMappingMode)
+					}
 					providers = append(providers, OAuth2ProviderConfig{
 						OAuthSettings: model.OAuthSettings{
 							ClientID:         providerCfg.ClientID,
@@ -220,6 +224,7 @@ func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2Prov
 							AvatarField:      providerCfg.AvatarField,
 							RoleField:        providerCfg.RoleField,
 							AutoCreateUser:   providerCfg.AutoCreateUser,
+							RoleMappingMode:  roleMappingMode,
 
 							WellknownEndpoint: providerCfg.WellknownEndpoint,
 						},
@@ -386,6 +391,49 @@ func (s *OAuthService) getUserInfo(accessToken, userInfoURL string) (map[string]
 	return userInfo, nil
 }
 
+// shouldApplyOAuthRoles determines whether OAuth roles should be applied based on role mapping mode
+func shouldApplyOAuthRoles(mode model.RoleMappingMode, existingUser bool, hasExistingRoles bool, hasOAuthRoles bool) bool {
+	switch mode {
+	case model.RoleMappingModeDisabled:
+		// Never use OAuth roles
+		return false
+	case model.RoleMappingModeAuto:
+		// Use OAuth roles only if user is new or has no existing roles
+		return hasOAuthRoles && (!existingUser || !hasExistingRoles)
+	case model.RoleMappingModeEnforce:
+		// Always use OAuth roles if available
+		return hasOAuthRoles
+	default:
+		// Default to auto mode
+		return hasOAuthRoles && (!existingUser || !hasExistingRoles)
+	}
+}
+
+// shouldUpdateRolesInDB determines whether roles should be updated in database for existing users
+// This is used to avoid unnecessary database operations
+func shouldUpdateRolesInDB(mode model.RoleMappingMode, existingUser bool, hasExistingRoles bool, hasOAuthRoles bool) bool {
+	if !existingUser {
+		// For new users, roles are always set during creation
+		return false
+	}
+
+	switch mode {
+	case model.RoleMappingModeDisabled:
+		// In disabled mode, only update if user has no roles and default role should be applied
+		// This will be handled by checking if user.Roles is empty after shouldApplyOAuthRoles
+		return !hasExistingRoles
+	case model.RoleMappingModeAuto:
+		// In auto mode, only update if user has no existing roles and OAuth roles are available
+		return !hasExistingRoles && hasOAuthRoles
+	case model.RoleMappingModeEnforce:
+		// In enforce mode, always update if OAuth roles are available
+		return hasOAuthRoles
+	default:
+		// Default to auto mode behavior
+		return !hasExistingRoles && hasOAuthRoles
+	}
+}
+
 func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*model.User, error) {
 	// Get OAuth user ID and Email
 	oauthID, ok := userInfo["id"].(string)
@@ -476,6 +524,7 @@ func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[s
 		}
 	}
 
+	// Extract role names from OAuth user info
 	var roleNames []string
 	{
 		if provider.RoleField != "" {
@@ -502,18 +551,47 @@ func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[s
 			}
 		}
 	}
-	if len(roleNames) == 0 && provider.DefaultRole != "" {
-		roleNames = []string{provider.DefaultRole}
+
+	// Determine default roles based on role mapping mode
+	var defaultRoleNames []string
+	if provider.RoleMappingMode == model.RoleMappingModeDisabled {
+		// In disabled mode, always use default role for new users
+		if provider.DefaultRole != "" {
+			defaultRoleNames = []string{provider.DefaultRole}
+		}
+	} else {
+		// In auto/enforce modes, use default role only if no OAuth roles found
+		if len(roleNames) == 0 && provider.DefaultRole != "" {
+			defaultRoleNames = []string{provider.DefaultRole}
+		}
 	}
 
-	var roles []model.Role
-	{
-		err := db.Session(ctx).Where("name IN ?", roleNames).Find(&roles).Error
+	// Parse OAuth roles from role names
+	var oauthRoles []model.Role
+	if len(roleNames) > 0 {
+		err := db.Session(ctx).Where("name IN ?", roleNames).Find(&oauthRoles).Error
 		if err != nil {
 			return nil, err
 		}
-		roles = w.Map(roleNames, func(roleName string) model.Role {
-			for _, role := range roles {
+		oauthRoles = w.Map(roleNames, func(roleName string) model.Role {
+			for _, role := range oauthRoles {
+				if role.Name == roleName {
+					return role
+				}
+			}
+			return model.Role{Name: roleName}
+		})
+	}
+
+	// Parse default roles
+	var defaultRoles []model.Role
+	if len(defaultRoleNames) > 0 {
+		err := db.Session(ctx).Where("name IN ?", defaultRoleNames).Find(&defaultRoles).Error
+		if err != nil {
+			return nil, err
+		}
+		defaultRoles = w.Map(defaultRoleNames, func(roleName string) model.Role {
+			for _, role := range defaultRoles {
 				if role.Name == roleName {
 					return role
 				}
@@ -530,11 +608,13 @@ func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[s
 		OAuthProvider: provider.Name,
 		OAuthID:       oauthID,
 		LastLogin:     time.Now(),
-		Roles:         roles,
 	}
+
 	var user model.User
+	var existingUser bool
+
 	// Check if the user exists (by OAuth ID)
-	err := db.Session(ctx).Where("oauth_provider = ? AND oauth_id = ?", provider.Name, user.OAuthID).
+	err := db.Session(ctx).Where("oauth_provider = ? AND oauth_id = ?", provider.Name, oauthUser.OAuthID).
 		Preload("Roles.Permissions").
 		First(&user).Error
 	if err != nil {
@@ -542,16 +622,26 @@ func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[s
 			return nil, err
 		}
 		// User does not exist, try to find by Email
-		err = db.Session(ctx).Where("email = ?", oauthUser.Email).First(&user).Error
+		err = db.Session(ctx).Where("email = ?", oauthUser.Email).
+			Preload("Roles.Permissions").
+			First(&user).Error
 		if err == nil {
-			// User found by Email, update OAuth information
+			// User found by Email, this is an existing user being linked to OAuth
+			existingUser = true
 			user.OAuthProvider = provider.Name
 			user.OAuthID = oauthUser.OAuthID
 			if oauthUser.Avatar != "" && user.Avatar == "" {
 				user.Avatar = oauthUser.Avatar
 			}
-			if len(oauthUser.Roles) > 0 {
-				user.Roles = oauthUser.Roles
+
+			// Apply role mapping based on mode
+			hasExistingRoles := len(user.Roles) > 0
+			hasOAuthRoles := len(oauthRoles) > 0
+			if shouldApplyOAuthRoles(provider.RoleMappingMode, existingUser, hasExistingRoles, hasOAuthRoles) {
+				user.Roles = oauthRoles
+			} else if !hasExistingRoles && len(defaultRoles) > 0 {
+				// If user has no existing roles and no OAuth roles to apply, use default
+				user.Roles = defaultRoles
 			}
 		} else {
 			if !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -561,11 +651,20 @@ func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[s
 				return nil, fmt.Errorf("it is not allowed to register new users through OAuth/OIDC. please add users to the system first: %s", oauthUser.Email)
 			}
 			// Create new user
+			existingUser = false
 			user = *oauthUser
 
 			// Set avatar
 			if user.Avatar == "" {
 				user.Avatar = util.GenerateAvatar(oauthUser.Username)
+			}
+
+			// Apply role mapping for new user
+			if shouldApplyOAuthRoles(provider.RoleMappingMode, existingUser, false, len(oauthRoles) > 0) {
+				user.Roles = oauthRoles
+			} else {
+				// For new users with disabled mode or no OAuth roles, use default
+				user.Roles = defaultRoles
 			}
 
 			// Generate random password (user cannot use password login, only through OAuth)
@@ -575,18 +674,41 @@ func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[s
 			}
 		}
 	} else {
-		if len(oauthUser.Roles) > 0 {
-			user.Roles = oauthUser.Roles
+		// User exists and was found by OAuth ID
+		existingUser = true
+		hasExistingRoles := len(user.Roles) > 0
+		hasOAuthRoles := len(oauthRoles) > 0
+
+		// Apply role mapping based on mode
+		if shouldApplyOAuthRoles(provider.RoleMappingMode, existingUser, hasExistingRoles, hasOAuthRoles) {
+			user.Roles = oauthRoles
+		} else if !hasExistingRoles && len(defaultRoles) > 0 {
+			// If user has no existing roles and no OAuth roles to apply, use default roles
+			// This handles the case where disabled mode or auto mode needs default roles
+			user.Roles = defaultRoles
 		}
+		// Otherwise, keep existing roles (or empty)
 	}
 	return &user, nil
 }
 
 // processOAuthUser processes OAuth user, finds or creates user
 func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*LoginResponse, error) {
+	logger := log.GetContextLogger(ctx)
 	user, err := s.convertUserInfoToUser(ctx, userInfo, provider)
 	if err != nil {
 		return nil, err
+	}
+
+	// Track user state before transaction
+	existingUserID := user.ID
+	var originalRoleCount int
+	if existingUserID > 0 {
+		// Load original role count for existing user
+		var loadedUser model.User
+		if err := db.Session(ctx).Preload("Roles").First(&loadedUser, existingUserID).Error; err == nil {
+			originalRoleCount = len(loadedUser.Roles)
+		}
 	}
 
 	// Start database transaction
@@ -597,8 +719,63 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 		// Update last login time
 		user.LastLogin = time.Now()
 		if user.ID > 0 {
+			// This is an existing user
+			hasExistingRoles := originalRoleCount > 0
+			hasOAuthRoles := false
+
+			// Count OAuth roles (roles that need to be applied)
+			for _, role := range user.Roles {
+				if role.Name != "" {
+					hasOAuthRoles = true
+					break
+				}
+			}
+
+			// Determine if we need to update roles in database
+			needsRoleUpdate := shouldUpdateRolesInDB(provider.RoleMappingMode, true, hasExistingRoles, hasOAuthRoles)
+
+			// Update user basic info
 			if err = tx.Select("OAuthProvider", "OAuthID", "Avatar", "LastLogin").Save(&user).Error; err != nil {
 				return fmt.Errorf("failed to update user: %w", err)
+			}
+
+			// Only update roles if necessary
+			if needsRoleUpdate && len(user.Roles) > 0 {
+				level.Info(logger).Log("msg", "Updating user roles", "user_id", user.ResourceID, "mode", provider.RoleMappingMode, "role_count", len(user.Roles))
+
+				// First, we need to ensure all roles exist in database
+				for idx, role := range user.Roles {
+					if role.ID == 0 {
+						// Role doesn't exist in database yet, try to find or create it
+						var existingRole model.Role
+						if err := tx.Where("name = ?", role.Name).First(&existingRole).Error; err != nil {
+							if errors.Is(err, gorm.ErrRecordNotFound) {
+								user.Roles[idx].Description = "Role created by OAuth/OIDC"
+								if err := tx.Create(&user.Roles[idx]).Error; err != nil {
+									return fmt.Errorf("failed to create role: %w", err)
+								}
+								level.Info(logger).Log("msg", "Created new role from OAuth", "role_name", role.Name)
+							} else {
+								return fmt.Errorf("failed to find role: %w", err)
+							}
+						} else {
+							user.Roles[idx] = existingRole
+						}
+					}
+				}
+
+				// Replace user's role associations
+				if err := tx.Model(&user).Association("Roles").Replace(user.Roles); err != nil {
+					return fmt.Errorf("failed to update user roles: %w", err)
+				}
+				middleware.DeleteUserCache(user.ResourceID)
+			} else {
+				level.Info(logger).Log("msg", "Skipping role update", "user_id", user.ResourceID, "mode", provider.RoleMappingMode, "needs_update", needsRoleUpdate)
+			}
+
+			// Reload user with updated roles and permissions
+			if err := tx.Preload("Roles.Permissions").First(&user, user.ID).Error; err != nil {
+				return fmt.Errorf("failed to get user info: %w", err)
 			}
 		} else {
 			if err := tx.Create(&user).Error; err != nil {

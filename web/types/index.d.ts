@@ -1311,6 +1311,8 @@ export declare interface OAuthSettings {
     provider: OAuthProviderType;
     redirect_uri: string;
     role_field: string;
+    /** Role mapping mode */
+    role_mapping_mode: RoleMappingMode;
     scope: string;
     token_endpoint: string;
     userinfo_endpoint: string;
@@ -1862,6 +1864,8 @@ export declare interface RoleAIToolPermissionRequest {
     toolset_id: string;
 }
 
+export declare type RoleMappingMode = "disabled" | "auto" | "enforce";
+
 export declare interface SecuritySettings {
     history_password_check: boolean;
     history_password_count: number;
@@ -2224,6 +2228,8 @@ export declare interface UpdateOAuthSettingsRequest {
     provider: OAuthProviderType;
     redirect_uri: string;
     role_field: string;
+    /** Role mapping mode */
+    role_mapping_mode: RoleMappingMode;
     scope: string;
     token_endpoint: string;
     userinfo_endpoint: string;

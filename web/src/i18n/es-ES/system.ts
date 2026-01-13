@@ -221,6 +221,25 @@ export default {
           tooltip: 'Nombre del campo para el rol en la información del usuario de OAuth (si el proveedor devuelve información de rol)',
         },
       },
+      roleMappingMode: {
+        label: 'Modo de mapeo de roles',
+        tooltip: 'Controla cómo se sincronizan los roles de usuario desde el proveedor OAuth2',
+        infoTitle: 'Información del modo de mapeo de roles',
+        options: {
+          disabled: {
+            label: 'Desactivado',
+            description: 'Ignora la información de roles del proveedor OAuth2. Los nuevos usuarios reciben el rol predeterminado y los usuarios existentes conservan sus roles actuales.',
+          },
+          auto: {
+            label: 'Automático (Recomendado)',
+            description: 'Utiliza roles de OAuth2 para nuevos usuarios o usuarios existentes sin roles. Conserva los roles asignados manualmente para usuarios que ya los tienen.',
+          },
+          enforce: {
+            label: 'Forzar',
+            description: 'Siempre sobrescribe los roles de usuario con roles de OAuth2 cuando están disponibles. Use esto cuando el proveedor OAuth2 sea la fuente autoritativa para roles.',
+          },
+        },
+      },
     },
     ldap: {
       enabled: 'Habilitar autenticación LDAP',

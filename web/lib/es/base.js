@@ -2,15 +2,15 @@ import { r as c } from "./client.js";
 import m from "i18next";
 import { initReactI18next as p } from "react-i18next";
 import { B as g } from "./vendor.js";
-const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const a = t instanceof Date ? t : new Date(t), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), l = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), n = String(a.getSeconds()).padStart(2, "0");
-  return e.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", l).replace("mm", i).replace("ss", n);
+const ae = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
+  const r = t instanceof Date ? t : new Date(t), o = r.getFullYear(), s = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), l = String(r.getHours()).padStart(2, "0"), i = String(r.getMinutes()).padStart(2, "0"), n = String(r.getSeconds()).padStart(2, "0");
+  return e.replace("YYYY", String(o)).replace("MM", s).replace("DD", a).replace("HH", l).replace("mm", i).replace("ss", n);
 }, se = (t, e) => {
   if (typeof t != "string")
     throw new Error("Color must be a string.");
-  const a = t.trim().toLowerCase();
-  if (a.startsWith("#")) {
-    let i = a.slice(1);
+  const r = t.trim().toLowerCase();
+  if (r.startsWith("#")) {
+    let i = r.slice(1);
     if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
     const n = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), u = parseInt(i.slice(4, 6), 16);
@@ -18,14 +18,14 @@ const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
       throw new Error("Invalid characters in HEX color value.");
     return `rgba(${n}, ${d}, ${u}, ${e})`;
   }
-  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, s = a.match(o);
+  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, s = r.match(o);
   if (s) {
     const i = parseInt(s[1], 10), n = parseInt(s[2], 10), d = parseInt(s[3], 10);
     if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
     return `rgba(${i}, ${n}, ${d}, ${e})`;
   }
-  const r = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = a.match(r);
+  const a = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = r.match(a);
   if (l) {
     const i = parseInt(l[1], 10), n = parseInt(l[2], 10), d = parseInt(l[3], 10);
     if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
@@ -38,8 +38,8 @@ const re = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
 }, oe = (t) => {
   if (!t)
     return "";
-  const [e, a] = t.split("@");
-  return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + a : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + a;
+  const [e, r] = t.split("@");
+  return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + r : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + r;
 }, ne = (t) => {
   const e = "/";
   return t ? e.endsWith("/") ? t.startsWith("/") ? e + t.substring(1) : e + t : t.startsWith("/") ? e + t : e + "/" + t : e;
@@ -53,21 +53,21 @@ async function h(t, e) {
     ...e || {}
   });
 }
-async function f(t, e, a) {
+async function f(t, e, r) {
   const o = new FormData();
   return e && o.append("file", e), Object.keys(t).forEach((s) => {
-    const r = t[s];
-    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((l) => o.append(s, l || "")) : o.append(s, JSON.stringify(r)) : o.append(s, r));
+    const a = t[s];
+    a != null && (typeof a == "object" && !(a instanceof File) ? a instanceof Array ? a.forEach((l) => o.append(s, l || "")) : o.append(s, JSON.stringify(a)) : o.append(s, a));
   }), c("/api/files", {
     method: "POST",
     data: o,
     requestType: "form",
-    ...a || {}
+    ...r || {}
   });
 }
 async function v(t, e) {
-  const { fileKey: a, ...o } = t;
-  return c(`/api/files/${a}`, {
+  const { fileKey: r, ...o } = t;
+  return c(`/api/files/${r}`, {
     method: "GET",
     params: { ...o },
     ...e || {}
@@ -371,7 +371,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, P = {
+}, k = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -818,7 +818,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, k = {
+}, P = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1030,6 +1030,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "Default Role",
         tooltip: "The default role assigned to users registered through OAuth",
         required: "Please enter a default role when auto create user is enabled"
+      },
+      roleMappingMode: {
+        label: "Role Mapping Mode",
+        tooltip: "Controls how user roles are synchronized from the OAuth2 provider",
+        infoTitle: "Role Mapping Mode Information",
+        options: {
+          disabled: {
+            label: "Disabled",
+            description: "Ignores role information from OAuth2 provider. New users are assigned the default role, and existing users retain their current roles."
+          },
+          auto: {
+            label: "Auto (Recommended)",
+            description: "Uses OAuth2 roles for new users or existing users without roles. Preserves manually assigned roles for users who already have them."
+          },
+          enforce: {
+            label: "Enforce",
+            description: "Always overwrites user roles with OAuth2 roles when available. Use this when the OAuth2 provider is the authoritative source for roles."
+          }
+        }
       },
       iconUrl: {
         label: "Icon URL",
@@ -1494,7 +1513,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, E = {
+}, z = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -1601,7 +1620,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, z = {
+}, E = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -2580,6 +2599,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         tooltip: "通过OAuth注册的用户默认被分配的角色",
         required: "启用自动创建用户时，请输入默认角色"
       },
+      roleMappingMode: {
+        label: "角色映射模式",
+        tooltip: "控制如何从OAuth2提供商同步用户角色",
+        infoTitle: "角色映射模式说明",
+        options: {
+          disabled: {
+            label: "关闭",
+            description: "忽略OAuth2提供商的角色信息。新用户分配默认角色，现有用户保持其当前角色不变。"
+          },
+          auto: {
+            label: "自动（推荐）",
+            description: "对于新用户或没有角色的现有用户使用OAuth2角色。对于已有角色的用户，保留其手动分配的角色。"
+          },
+          enforce: {
+            label: "强制",
+            description: "当OAuth2提供角色信息时，始终覆盖用户角色。适用于OAuth2提供商是角色权威来源的场景。"
+          }
+        }
+      },
       iconUrl: {
         label: "图标URL",
         tooltip: "OAuth提供商的图标URL，显示在登录页面",
@@ -3532,6 +3570,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
           label: "Rollenfeld",
           tooltip: "Feldname für Rolle in OAuth-Benutzerinformationen (wenn der Anbieter Rolleninformationen zurückgibt)"
         }
+      },
+      roleMappingMode: {
+        label: "Rollenzuordnungsmodus",
+        tooltip: "Steuert, wie Benutzerrollen vom OAuth2-Anbieter synchronisiert werden",
+        infoTitle: "Informationen zum Rollenzuordnungsmodus",
+        options: {
+          disabled: {
+            label: "Deaktiviert",
+            description: "Ignoriert Rolleninformationen vom OAuth2-Anbieter. Neue Benutzer erhalten die Standardrolle und bestehende Benutzer behalten ihre aktuellen Rollen."
+          },
+          auto: {
+            label: "Automatisch (Empfohlen)",
+            description: "Verwendet OAuth2-Rollen für neue Benutzer oder bestehende Benutzer ohne Rollen. Bewahrt manuell zugewiesene Rollen für Benutzer, die bereits welche haben."
+          },
+          enforce: {
+            label: "Erzwingen",
+            description: "Überschreibt Benutzerrollen immer mit OAuth2-Rollen, wenn verfügbar. Verwenden Sie dies, wenn der OAuth2-Anbieter die maßgebliche Quelle für Rollen ist."
+          }
+        }
       }
     },
     ldap: {
@@ -3793,7 +3850,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, V = {
+}, B = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -4223,7 +4280,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, B = {
+}, V = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -4428,6 +4485,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         roleField: {
           label: "Campo de rol",
           tooltip: "Nombre del campo para el rol en la información del usuario de OAuth (si el proveedor devuelve información de rol)"
+        }
+      },
+      roleMappingMode: {
+        label: "Modo de mapeo de roles",
+        tooltip: "Controla cómo se sincronizan los roles de usuario desde el proveedor OAuth2",
+        infoTitle: "Información del modo de mapeo de roles",
+        options: {
+          disabled: {
+            label: "Desactivado",
+            description: "Ignora la información de roles del proveedor OAuth2. Los nuevos usuarios reciben el rol predeterminado y los usuarios existentes conservan sus roles actuales."
+          },
+          auto: {
+            label: "Automático (Recomendado)",
+            description: "Utiliza roles de OAuth2 para nuevos usuarios o usuarios existentes sin roles. Conserva los roles asignados manualmente para usuarios que ya los tienen."
+          },
+          enforce: {
+            label: "Forzar",
+            description: "Siempre sobrescribe los roles de usuario con roles de OAuth2 cuando están disponibles. Use esto cuando el proveedor OAuth2 sea la fuente autoritativa para roles."
+          }
         }
       }
     },
@@ -5326,6 +5402,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
           label: "Champ de rôle",
           tooltip: "Nom du champ pour le rôle dans les informations utilisateur OAuth (si le fournisseur renvoie des informations de rôle)"
         }
+      },
+      roleMappingMode: {
+        label: "Mode de mappage des rôles",
+        tooltip: "Contrôle la manière dont les rôles des utilisateurs sont synchronisés depuis le fournisseur OAuth2",
+        infoTitle: "Informations sur le mode de mappage des rôles",
+        options: {
+          disabled: {
+            label: "Désactivé",
+            description: "Ignore les informations de rôle du fournisseur OAuth2. Les nouveaux utilisateurs reçoivent le rôle par défaut et les utilisateurs existants conservent leurs rôles actuels."
+          },
+          auto: {
+            label: "Automatique (Recommandé)",
+            description: "Utilise les rôles OAuth2 pour les nouveaux utilisateurs ou les utilisateurs existants sans rôles. Préserve les rôles attribués manuellement pour les utilisateurs qui en ont déjà."
+          },
+          enforce: {
+            label: "Forcer",
+            description: "Remplace toujours les rôles des utilisateurs par les rôles OAuth2 lorsqu'ils sont disponibles. Utilisez ceci lorsque le fournisseur OAuth2 est la source faisant autorité pour les rôles."
+          }
+        }
       }
     },
     ldap: {
@@ -6222,6 +6317,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         roleField: {
           label: "حقل الدور",
           tooltip: "اسم حقل الدور في معلومات مستخدم OAuth (إذا كان المزود يعيد معلومات الدور)"
+        }
+      },
+      roleMappingMode: {
+        label: "وضع تعيين الدور",
+        tooltip: "يتحكم في كيفية مزامنة أدوار المستخدمين من مزود OAuth2",
+        infoTitle: "معلومات وضع تعيين الدور",
+        options: {
+          disabled: {
+            label: "معطل",
+            description: "يتجاهل معلومات الدور من مزود OAuth2. يتم تعيين الدور الافتراضي للمستخدمين الجدد، ويحتفظ المستخدمون الحاليون بأدوارهم الحالية."
+          },
+          auto: {
+            label: "تلقائي (موصى به)",
+            description: "يستخدم أدوار OAuth2 للمستخدمين الجدد أو المستخدمين الحاليين بدون أدوار. يحافظ على الأدوار المعينة يدويًا للمستخدمين الذين لديهم أدوار بالفعل."
+          },
+          enforce: {
+            label: "فرض",
+            description: "يستبدل دائمًا أدوار المستخدمين بأدوار OAuth2 عند توفرها. استخدم هذا عندما يكون مزود OAuth2 هو المصدر الموثوق للأدوار."
+          }
         }
       }
     },
@@ -7120,6 +7234,25 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
           label: "Rollfält",
           tooltip: "Fältnamn för roll i OAuth-användarinformation (om leverantören returnerar rollinformation)"
         }
+      },
+      roleMappingMode: {
+        label: "Rollmappningsläge",
+        tooltip: "Styr hur användarroller synkroniseras från OAuth2-leverantören",
+        infoTitle: "Information om rollmappningsläge",
+        options: {
+          disabled: {
+            label: "Inaktiverad",
+            description: "Ignorerar rollinformation från OAuth2-leverantören. Nya användare tilldelas standardrollen och befintliga användare behåller sina nuvarande roller."
+          },
+          auto: {
+            label: "Automatisk (Rekommenderas)",
+            description: "Använder OAuth2-roller för nya användare eller befintliga användare utan roller. Bevarar manuellt tilldelade roller för användare som redan har dem."
+          },
+          enforce: {
+            label: "Tvinga",
+            description: "Skriver alltid över användarroller med OAuth2-roller när de är tillgängliga. Använd detta när OAuth2-leverantören är den auktoritativa källan för roller."
+          }
+        }
       }
     },
     ldap: {
@@ -7329,8 +7462,8 @@ m.use(g).use(p).init({
     "en-US": {
       translation: S,
       common: y,
-      authorization: P,
-      system: k,
+      authorization: k,
+      system: P,
       ai: w
     },
     "de-DE": {
@@ -7343,19 +7476,19 @@ m.use(g).use(p).init({
     "es-ES": {
       translation: D,
       common: O,
-      authorization: V,
-      system: B,
+      authorization: B,
+      system: V,
       ai: x
     },
     "fr-FR": {
-      translation: E,
+      translation: z,
       common: K,
       authorization: _,
       system: j,
       ai: G
     },
     "ar-AE": {
-      translation: z,
+      translation: E,
       common: W,
       authorization: H,
       system: J,
@@ -7382,20 +7515,20 @@ const de = {
   var l;
   if (!t)
     return !0;
-  const { field: a, operator: o, value: s } = t, r = ((l = e.config) == null ? void 0 : l[a]) ?? e[a];
-  if (r == null)
+  const { field: r, operator: o, value: s } = t, a = ((l = e.config) == null ? void 0 : l[r]) ?? e[r];
+  if (a == null)
     return !1;
   switch (o) {
     case "eq":
-      return r === s;
+      return a === s;
     case "ne":
-      return r !== s;
+      return a !== s;
     case "in":
-      return Array.isArray(s) ? s.includes(r) : (console.warn('VisibleCondition: "in" operator requires an array value'), !1);
+      return Array.isArray(s) ? s.includes(a) : (console.warn('VisibleCondition: "in" operator requires an array value'), !1);
     case "not_in":
-      return Array.isArray(s) ? !s.includes(r) : (console.warn('VisibleCondition: "not_in" operator requires an array value'), !1);
+      return Array.isArray(s) ? !s.includes(a) : (console.warn('VisibleCondition: "not_in" operator requires an array value'), !1);
     case "contains":
-      return typeof r != "string" ? !1 : typeof s != "string" ? (console.warn('VisibleCondition: "contains" operator requires a string value'), !1) : r.includes(s);
+      return typeof a != "string" ? !1 : typeof s != "string" ? (console.warn('VisibleCondition: "contains" operator requires a string value'), !1) : a.includes(s);
     default:
       return console.warn(`Unknown visibility operator: ${o}`), !0;
   }
@@ -7404,7 +7537,7 @@ export {
   de as P,
   le as b,
   ce as c,
-  re as f,
+  ae as f,
   ne as g,
   oe as m,
   se as t

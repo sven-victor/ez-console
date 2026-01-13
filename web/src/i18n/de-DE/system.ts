@@ -221,6 +221,25 @@ export default {
           tooltip: 'Feldname für Rolle in OAuth-Benutzerinformationen (wenn der Anbieter Rolleninformationen zurückgibt)',
         },
       },
+      roleMappingMode: {
+        label: 'Rollenzuordnungsmodus',
+        tooltip: 'Steuert, wie Benutzerrollen vom OAuth2-Anbieter synchronisiert werden',
+        infoTitle: 'Informationen zum Rollenzuordnungsmodus',
+        options: {
+          disabled: {
+            label: 'Deaktiviert',
+            description: 'Ignoriert Rolleninformationen vom OAuth2-Anbieter. Neue Benutzer erhalten die Standardrolle und bestehende Benutzer behalten ihre aktuellen Rollen.',
+          },
+          auto: {
+            label: 'Automatisch (Empfohlen)',
+            description: 'Verwendet OAuth2-Rollen für neue Benutzer oder bestehende Benutzer ohne Rollen. Bewahrt manuell zugewiesene Rollen für Benutzer, die bereits welche haben.',
+          },
+          enforce: {
+            label: 'Erzwingen',
+            description: 'Überschreibt Benutzerrollen immer mit OAuth2-Rollen, wenn verfügbar. Verwenden Sie dies, wenn der OAuth2-Anbieter die maßgebliche Quelle für Rollen ist.',
+          },
+        },
+      },
     },
     ldap: {
       enabled: 'LDAP-Authentifizierung aktivieren',

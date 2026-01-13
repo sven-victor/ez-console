@@ -868,6 +868,10 @@ definitions:
         type: string
       role_field:
         type: string
+      role_mapping_mode:
+        allOf:
+        - $ref: '#/definitions/model.RoleMappingMode'
+        description: Role mapping mode
       scope:
         type: string
       token_endpoint:
@@ -896,6 +900,7 @@ definitions:
     - provider
     - redirect_uri
     - role_field
+    - role_mapping_mode
     - scope
     - token_endpoint
     - userinfo_endpoint
@@ -1068,6 +1073,16 @@ definitions:
     - toolset_id
     - updated_at
     type: object
+  model.RoleMappingMode:
+    enum:
+    - disabled
+    - auto
+    - enforce
+    type: string
+    x-enum-varnames:
+    - RoleMappingModeDisabled
+    - RoleMappingModeAuto
+    - RoleMappingModeEnforce
   model.SMTPSettings:
     properties:
       enabled:
@@ -2182,6 +2197,10 @@ definitions:
         type: string
       role_field:
         type: string
+      role_mapping_mode:
+        allOf:
+        - $ref: '#/definitions/model.RoleMappingMode'
+        description: Role mapping mode
       scope:
         type: string
       token_endpoint:
@@ -2211,6 +2230,7 @@ definitions:
     - provider
     - redirect_uri
     - role_field
+    - role_mapping_mode
     - scope
     - token_endpoint
     - userinfo_endpoint
@@ -2279,10 +2299,8 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -2307,10 +2325,8 @@ definitions:
     - Second
     - Minute
     - Hour
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond

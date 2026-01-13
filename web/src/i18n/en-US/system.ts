@@ -227,6 +227,25 @@ export default {
         tooltip: 'The default role assigned to users registered through OAuth',
         required: 'Please enter a default role when auto create user is enabled',
       },
+      roleMappingMode: {
+        label: 'Role Mapping Mode',
+        tooltip: 'Controls how user roles are synchronized from the OAuth2 provider',
+        infoTitle: 'Role Mapping Mode Information',
+        options: {
+          disabled: {
+            label: 'Disabled',
+            description: 'Ignores role information from OAuth2 provider. New users are assigned the default role, and existing users retain their current roles.',
+          },
+          auto: {
+            label: 'Auto (Recommended)',
+            description: 'Uses OAuth2 roles for new users or existing users without roles. Preserves manually assigned roles for users who already have them.',
+          },
+          enforce: {
+            label: 'Enforce',
+            description: 'Always overwrites user roles with OAuth2 roles when available. Use this when the OAuth2 provider is the authoritative source for roles.',
+          },
+        },
+      },
       iconUrl: {
         label: 'Icon URL',
         tooltip: 'The icon URL of the OAuth provider displayed on the login page',

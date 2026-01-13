@@ -472,6 +472,41 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
           <Input disabled={!isEnabled || !autoCreateUser} />
         </Form.Item>
 
+        {/* Role Mapping Mode */}
+        <Form.Item
+          name="role_mapping_mode"
+          label={t('settings.oauth.roleMappingMode.label', { defaultValue: 'Role Mapping Mode' })}
+          tooltip={t('settings.oauth.roleMappingMode.tooltip', { defaultValue: 'Controls how user roles are synchronized from OAuth2 provider.' })}
+          initialValue="auto"
+        >
+          <Select disabled={!isEnabled}>
+            <Select.Option value="disabled">
+              {t('settings.oauth.roleMappingMode.options.disabled.label', { defaultValue: 'Disabled' })}
+            </Select.Option>
+            <Select.Option value="auto">
+              {t('settings.oauth.roleMappingMode.options.auto.label', { defaultValue: 'Auto' })}
+            </Select.Option>
+            <Select.Option value="enforce">
+              {t('settings.oauth.roleMappingMode.options.enforce.label', { defaultValue: 'Enforce' })}
+            </Select.Option>
+          </Select>
+        </Form.Item>
+
+        {/* Role Mapping Mode Description */}
+        <Alert
+          style={{ marginBottom: 16 }}
+          type="info"
+          showIcon
+          message={t('settings.oauth.roleMappingMode.infoTitle', { defaultValue: 'Role Mapping Mode Information' })}
+          description={
+            <div>
+              <p><strong>{t('settings.oauth.roleMappingMode.options.disabled.label', { defaultValue: 'Disabled' })}:</strong> {t('settings.oauth.roleMappingMode.options.disabled.description', { defaultValue: 'Ignores role information from OAuth2 provider. New users get the default role.' })}</p>
+              <p><strong>{t('settings.oauth.roleMappingMode.options.auto.label', { defaultValue: 'Auto' })}:</strong> {t('settings.oauth.roleMappingMode.options.auto.description', { defaultValue: 'Uses OAuth2 roles for new users or users without roles, but preserves existing role assignments.' })}</p>
+              <p><strong>{t('settings.oauth.roleMappingMode.options.enforce.label', { defaultValue: 'Enforce' })}:</strong> {t('settings.oauth.roleMappingMode.options.enforce.description', { defaultValue: 'Always overwrites user roles with OAuth2 roles when available.' })}</p>
+            </div>
+          }
+        />
+
         {/* MFA */}
         <Form.Item
           name="mfa_enabled"

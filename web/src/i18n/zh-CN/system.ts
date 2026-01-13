@@ -229,6 +229,25 @@ export default {
         tooltip: '通过OAuth注册的用户默认被分配的角色',
         required: '启用自动创建用户时，请输入默认角色',
       },
+      roleMappingMode: {
+        label: '角色映射模式',
+        tooltip: '控制如何从OAuth2提供商同步用户角色',
+        infoTitle: '角色映射模式说明',
+        options: {
+          disabled: {
+            label: '关闭',
+            description: '忽略OAuth2提供商的角色信息。新用户分配默认角色，现有用户保持其当前角色不变。',
+          },
+          auto: {
+            label: '自动（推荐）',
+            description: '对于新用户或没有角色的现有用户使用OAuth2角色。对于已有角色的用户，保留其手动分配的角色。',
+          },
+          enforce: {
+            label: '强制',
+            description: '当OAuth2提供角色信息时，始终覆盖用户角色。适用于OAuth2提供商是角色权威来源的场景。',
+          },
+        },
+      },
       iconUrl: {
         label: '图标URL',
         tooltip: 'OAuth提供商的图标URL，显示在登录页面',

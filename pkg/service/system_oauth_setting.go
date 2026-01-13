@@ -134,6 +134,7 @@ func (s *SettingService) InitDefaultOAuthSettings(ctx context.Context) error {
 		model.SettingOAuthAutoCreateUser:   {"false", "Whether to automatically create users"},
 		model.SettingOAuthDefaultRole:      {"user", "OAuth user default role"},
 		model.SettingOAuthMFAEnabled:       {"false", "Whether to enable MFA for OAuth authentication"},
+		model.SettingOAuthRoleMappingMode:  {"auto", "OAuth role mapping mode (disabled/auto/enforce)"},
 	}
 	// Check if each setting already exists, if not, create it
 	for key, setting := range defaultSettings {

@@ -5905,6 +5905,7 @@ const docTemplate = `{
                 "provider",
                 "redirect_uri",
                 "role_field",
+                "role_mapping_mode",
                 "scope",
                 "token_endpoint",
                 "userinfo_endpoint",
@@ -5964,6 +5965,14 @@ const docTemplate = `{
                 },
                 "role_field": {
                     "type": "string"
+                },
+                "role_mapping_mode": {
+                    "description": "Role mapping mode",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.RoleMappingMode"
+                        }
+                    ]
                 },
                 "scope": {
                     "type": "string"
@@ -6205,6 +6214,19 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.RoleMappingMode": {
+            "type": "string",
+            "enum": [
+                "disabled",
+                "auto",
+                "enforce"
+            ],
+            "x-enum-varnames": [
+                "RoleMappingModeDisabled",
+                "RoleMappingModeAuto",
+                "RoleMappingModeEnforce"
+            ]
         },
         "model.SMTPSettings": {
             "type": "object",
@@ -7737,6 +7759,7 @@ const docTemplate = `{
                 "provider",
                 "redirect_uri",
                 "role_field",
+                "role_mapping_mode",
                 "scope",
                 "token_endpoint",
                 "userinfo_endpoint",
@@ -7796,6 +7819,14 @@ const docTemplate = `{
                 },
                 "role_field": {
                     "type": "string"
+                },
+                "role_mapping_mode": {
+                    "description": "Role mapping mode",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.RoleMappingMode"
+                        }
+                    ]
                 },
                 "scope": {
                     "type": "string"
@@ -7900,10 +7931,8 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -7928,10 +7957,8 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
