@@ -571,15 +571,6 @@ declare global {
       page_size?: number;
     }
   
-    interface handleCallbackParams {
-      /** Code */
-      code: string;
-      /** State */
-      state: string;
-      /** Provider */
-      provider: string;
-    }
-  
     interface HealthResult {
       message: string;
       reason: string;
@@ -756,6 +747,12 @@ declare global {
     interface Navigation {
       name: string;
       path: string;
+    }
+  
+    interface OAuthCallbackRequest {
+      code: string;
+      provider: string;
+      state: string;
     }
   
     interface OAuthLoginURLResponse {

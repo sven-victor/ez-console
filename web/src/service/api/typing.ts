@@ -569,15 +569,6 @@ export interface getUserSessionsParams {
   page_size?: number;
 }
 
-export interface handleCallbackParams {
-  /** Code */
-  code: string;
-  /** State */
-  state: string;
-  /** Provider */
-  provider: string;
-}
-
 export interface HealthResult {
   message: string;
   reason: string;
@@ -754,6 +745,12 @@ export interface MessageData {
 export interface Navigation {
   name: string;
   path: string;
+}
+
+export interface OAuthCallbackRequest {
+  code: string;
+  provider: string;
+  state: string;
 }
 
 export interface OAuthLoginURLResponse {

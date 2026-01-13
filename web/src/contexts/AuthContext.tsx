@@ -19,6 +19,7 @@ import { message } from 'antd';
 import api from '@/service/api';
 import client from '@/service/client';
 import { useRequest } from 'ahooks';
+import { getURL } from '@/utils';
 
 // Auth context type
 export interface AuthContextType {
@@ -26,7 +27,7 @@ export interface AuthContextType {
   token: string | null;
   loading: boolean;
   login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
-  oauthLogin: (data: API.handleCallbackParams) => Promise<API.User | void>;
+  oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | void>;
   logout: () => void;
   updateUser: (user: API.User) => void;
   error?: Error;
@@ -128,9 +129,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const oauthLogin = useCallback(async (data: API.handleCallbackParams) => {
+  const oauthLogin = useCallback(async (data: API.OAuthCallbackRequest) => {
     try {
-      const response = await api.oauth.handleCallback(data);
+      const response = await api.oauth.handleCallback(data, { headers: { 'X-Base-Path': getURL() } });
       // Handle new API response format
       let token = '';
       let userData = null;

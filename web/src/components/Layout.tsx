@@ -142,7 +142,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   useEffect(() => {
     if (siteConfig) {
-      const navigation = siteConfig.navigation.filter(item => item.path !== siteConfig.home_page)
+      const navigation = siteConfig.navigation?.filter(item => item.path !== siteConfig.home_page) ?? []
       const newNavigation = [...(siteConfig.home_page ? [{
         name: 'home',
         path: siteConfig.home_page,
@@ -324,12 +324,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           <div className={classNames("site-content", styles.content)}>
             {content}
           </div>
-          {siteConfig?.attrs.ai_enabled && <AIChatButton />}
-          {siteConfig?.attrs.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
+          {siteConfig?.attrs?.ai_enabled && <AIChatButton />}
+          {siteConfig?.attrs?.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
         </Content>
         <Footer style={{ textAlign: 'center', padding: '15px 50px' }}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
-      {(siteConfig?.attrs.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider />)}
+      {(siteConfig?.attrs?.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider />)}
     </Layout>
   }
 

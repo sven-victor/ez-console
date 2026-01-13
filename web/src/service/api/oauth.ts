@@ -2,16 +2,17 @@
 /* eslint-disable */
 import { request } from "@/service/client";
 
-/** Handle the OAuth callback Handle the OAuth callback GET /api/oauth/callback */
+/** Handle the OAuth callback Handle the OAuth callback POST /api/oauth/callback */
 export async function handleCallback(
-  params: API.handleCallbackParams,
+  body: API.OAuthCallbackRequest,
   options?: { [key: string]: any }
 ) {
   return request<API.ResponseServiceLoginResponse>("/api/oauth/callback", {
-    method: "GET",
-    params: {
-      ...params,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
     },
+    data: body,
     ...(options || {}),
   });
 }

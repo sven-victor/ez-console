@@ -117,13 +117,11 @@ func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 //	@Tags			OAuth
 //	@Accept			json
 //	@Produce		json
-//	@Param			code		query		string	true	"Code"
-//	@Param			state		query		string	true	"State"
-//	@Param			provider	query		string	true	"Provider"
+//	@Param			request	body		service.OAuthCallbackRequest	true	"OAuth callback request"
 //	@Success		200			{object}	util.Response[service.LoginResponse]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/oauth/callback [get]
+//	@Router			/api/oauth/callback [post]
 func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 	// Get parameters from URL
 	code := ctx.Query("code")
@@ -131,8 +129,12 @@ func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 	provider := ctx.Query("provider")
 	// Check if it is a frontend redirect
 	if code != "" && state != "" && provider != "" {
+		basePath := ctx.GetHeader("X-Base-Path")
+		if basePath == "" {
+			basePath = "/"
+		}
 		// Redirect to the frontend callback page
-		redirectURI := fmt.Sprintf("/login?code=%s&state=%s&provider=%s", code, state, provider)
+		redirectURI := fmt.Sprintf("%s/login?code=%s&state=%s&provider=%s", basePath, code, state, provider)
 		ctx.Redirect(http.StatusTemporaryRedirect, redirectURI)
 		return
 	}

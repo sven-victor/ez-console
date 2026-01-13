@@ -1,4 +1,4 @@
-// Copyright 2025 Sven Victor
+// Copyright 2026 Sven Victor
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -2921,7 +2921,7 @@ const docTemplate = `{
             }
         },
         "/api/oauth/callback": {
-            "get": {
+            "post": {
                 "description": "Handle the OAuth callback",
                 "consumes": [
                     "application/json"
@@ -2936,25 +2936,13 @@ const docTemplate = `{
                 "operationId": "handleCallback",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Code",
-                        "name": "code",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "State",
-                        "name": "state",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Provider",
-                        "name": "provider",
-                        "in": "query",
-                        "required": true
+                        "description": "OAuth callback request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.OAuthCallbackRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -7019,6 +7007,25 @@ const docTemplate = `{
                 }
             }
         },
+        "service.OAuthCallbackRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "provider",
+                "state"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
         "service.OAuthLoginURLResponse": {
             "type": "object",
             "required": [
@@ -7897,12 +7904,12 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                60000000000,
-                3600000000000,
                 1,
                 1000,
                 1000000,
-                1000000000
+                1000000000,
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7925,12 +7932,12 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second"
+                "Second",
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {

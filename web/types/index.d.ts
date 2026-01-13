@@ -304,7 +304,7 @@ export declare const api: {
     getToolSetTypeDefinitions(options?: {
         [key: string]: any;
     }): Promise<API.ToolSetTypeDefinition[]>;
-    handleCallback(params: API.handleCallbackParams, options?: {
+    handleCallback(body: API.OAuthCallbackRequest, options?: {
         [key: string]: any;
     }): Promise<API.LoginResponse>;
     getLoginUrl(params: API.getLoginUrlParams, options?: {
@@ -566,7 +566,7 @@ declare interface AuthContextType {
     token: string | null;
     loading: boolean;
     login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
-    oauthLogin: (data: API.handleCallbackParams) => Promise<API.User | void>;
+    oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | void>;
     logout: () => void;
     updateUser: (user: API.User) => void;
     error?: Error;
@@ -1015,15 +1015,6 @@ export declare interface getUserSessionsParams {
     page_size?: number;
 }
 
-export declare interface handleCallbackParams {
-    /** Code */
-    code: string;
-    /** State */
-    state: string;
-    /** Provider */
-    provider: string;
-}
-
 export declare const HeaderDropdown: default_2.FC<HeaderDropdownProps>;
 
 export declare type HeaderDropdownProps = {
@@ -1280,6 +1271,12 @@ export declare interface Navigation {
 }
 
 export declare const NotFound: default_2.FC;
+
+export declare interface OAuthCallbackRequest {
+    code: string;
+    provider: string;
+    state: string;
+}
 
 export declare interface OAuthLoginURLResponse {
     state: string;

@@ -1641,6 +1641,19 @@ definitions:
     - name
     - path
     type: object
+  service.OAuthCallbackRequest:
+    properties:
+      code:
+        type: string
+      provider:
+        type: string
+      state:
+        type: string
+    required:
+    - code
+    - provider
+    - state
+    type: object
   service.OAuthLoginURLResponse:
     properties:
       state:
@@ -2270,12 +2283,12 @@ definitions:
     - 1000
     - 1000000
     - 1000000000
-    - 60000000000
-    - 3600000000000
     - 1
     - 1000
     - 1000000
     - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2298,12 +2311,12 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
+    - Minute
+    - Hour
   toolset.ToolSetType:
     enum:
     - utils
@@ -5347,27 +5360,18 @@ paths:
       tags:
       - System Settings/LDAP
   /api/oauth/callback:
-    get:
+    post:
       consumes:
       - application/json
       description: Handle the OAuth callback
       operationId: handleCallback
       parameters:
-      - description: Code
-        in: query
-        name: code
+      - description: OAuth callback request
+        in: body
+        name: request
         required: true
-        type: string
-      - description: State
-        in: query
-        name: state
-        required: true
-        type: string
-      - description: Provider
-        in: query
-        name: provider
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/service.OAuthCallbackRequest'
       produces:
       - application/json
       responses:
