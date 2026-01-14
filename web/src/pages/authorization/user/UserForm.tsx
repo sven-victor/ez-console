@@ -250,7 +250,7 @@ const UserForm: React.FC = () => {
               label={t('user.password', { defaultValue: 'Password' })}
               rules={[{ validator: validatePassword }]}
             >
-              <Input.Password visibilityToggle={false} autoComplete='new-password' placeholder={t('user.passwordPlaceholder', { defaultValue: 'Enter password' })} />
+              <Input.Password autoComplete='new-password' placeholder={t('user.passwordPlaceholder', { defaultValue: 'Enter password' })} />
             </Form.Item>
             <Form.Item
               name="confirm_password"
@@ -258,7 +258,7 @@ const UserForm: React.FC = () => {
               rules={[{ validator: validateConfirmPassword }]}
               dependencies={['password']}
             >
-              <Input.Password placeholder={t('user.confirmPasswordPlaceholder', { defaultValue: 'Confirm password' })} />
+              <Input.Password autoComplete="new-password" placeholder={t('user.confirmPasswordPlaceholder', { defaultValue: 'Confirm password' })} />
             </Form.Item>
           </>
         )}
