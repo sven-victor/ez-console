@@ -331,7 +331,7 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
             }
           ]}
         >
-          <Input.Password disabled={!isEnabled} autoComplete="off" visibilityToggle={false} placeholder={t('settings.oauth.clientSecret.unchanged', { defaultValue: 'Leave blank to keep unchanged' })} />
+          <Input.Password disabled={!isEnabled} autoComplete="new-password" visibilityToggle={false} placeholder={t('settings.oauth.clientSecret.unchanged', { defaultValue: 'Leave blank to keep unchanged' })} />
         </Form.Item>
 
         {/* Authentication Endpoint - Only show when custom provider */}

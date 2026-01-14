@@ -147,6 +147,7 @@ func (c *OAuthSettingController) UpdateOAuthSettings(ctx *gin.Context) {
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
+//	@Param			request	body		UpdateOAuthSettingsRequest	true	"Update OAuth settings request"
 //	@Success		200	{object}	util.Response[service.OAuthLoginURLResponse]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/oauth-settings/test [post]

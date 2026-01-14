@@ -145,11 +145,18 @@ export async function updateOauthSettings(
 }
 
 /** Test OAuth connection Test OAuth connection POST /api/system/oauth-settings/test */
-export async function testOauthConnection(options?: { [key: string]: any }) {
+export async function testOauthConnection(
+  body: API.UpdateOAuthSettingsRequest,
+  options?: { [key: string]: any }
+) {
   return request<API.ResponseServiceOAuthLoginURLResponse>(
     "/api/system/oauth-settings/test",
     {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
       ...(options || {}),
     }
   );

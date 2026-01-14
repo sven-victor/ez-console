@@ -2291,16 +2291,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -2317,16 +2307,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -5713,6 +5693,13 @@ paths:
       - application/json
       description: Test OAuth connection
       operationId: testOauthConnection
+      parameters:
+      - description: Update OAuth settings request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.UpdateOAuthSettingsRequest'
       produces:
       - application/json
       responses:
