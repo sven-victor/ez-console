@@ -31,7 +31,7 @@ async function m(t) {
     ...t || {}
   });
 }
-async function u(t, a) {
+async function c(t, a) {
   return e("/api/system/base-settings", {
     method: "PUT",
     headers: {
@@ -41,7 +41,7 @@ async function u(t, a) {
     ...a || {}
   });
 }
-async function c(t) {
+async function u(t) {
   return e("/api/system/health", {
     method: "GET",
     ...t || {}
@@ -101,12 +101,16 @@ async function l(t, a) {
     ...a || {}
   });
 }
-async function f(t) {
+async function f(t, a) {
   return e(
     "/api/system/oauth-settings/test",
     {
       method: "POST",
-      ...t || {}
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: t,
+      ...a || {}
     }
   );
 }
@@ -442,7 +446,7 @@ const N = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getToolSetTools: H,
   getToolSetTypeDefinitions: J,
   getUserOrganizations: U,
-  healthCheck: c,
+  healthCheck: u,
   importLdapUsers: g,
   listOrganizationUsers: j,
   listOrganizations: P,
@@ -458,7 +462,7 @@ const N = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateOrganization: z,
   updateSecuritySettings: b,
   updateSmtpSettings: v,
-  updateSystemBaseSettings: u,
+  updateSystemBaseSettings: c,
   updateToolSet: F,
   updateToolSetStatus: M,
   updateUserOrganizationRoles: q

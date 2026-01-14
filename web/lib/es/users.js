@@ -680,7 +680,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
                   name: "password",
                   label: a("user.password", { defaultValue: "Password" }),
                   rules: [{ validator: m }],
-                  children: /* @__PURE__ */ e.jsx(T.Password, { visibilityToggle: !1, autoComplete: "new-password", placeholder: a("user.passwordPlaceholder", { defaultValue: "Enter password" }) })
+                  children: /* @__PURE__ */ e.jsx(T.Password, { autoComplete: "new-password", placeholder: a("user.passwordPlaceholder", { defaultValue: "Enter password" }) })
                 }
               ),
               /* @__PURE__ */ e.jsx(
@@ -690,7 +690,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
                   label: a("user.confirmPassword", { defaultValue: "Confirm Password" }),
                   rules: [{ validator: z }],
                   dependencies: ["password"],
-                  children: /* @__PURE__ */ e.jsx(T.Password, { placeholder: a("user.confirmPasswordPlaceholder", { defaultValue: "Confirm password" }) })
+                  children: /* @__PURE__ */ e.jsx(T.Password, { autoComplete: "new-password", placeholder: a("user.confirmPasswordPlaceholder", { defaultValue: "Confirm password" }) })
                 }
               )
             ] }),

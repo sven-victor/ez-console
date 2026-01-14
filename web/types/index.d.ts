@@ -220,7 +220,7 @@ export declare const api: {
     updateOauthSettings(body: API.UpdateOAuthSettingsRequest, options?: {
         [key: string]: any;
     }): Promise<API.OAuthSettings>;
-    testOauthConnection(options?: {
+    testOauthConnection(body: API.UpdateOAuthSettingsRequest, options?: {
         [key: string]: any;
     }): Promise<API.OAuthLoginURLResponse>;
     testOauthCallback(options?: {
