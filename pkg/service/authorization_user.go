@@ -203,19 +203,23 @@ func (s *UserService) UserLoginFailed(ctx context.Context, user *model.User) err
 	dbConn := db.Session(ctx)
 	user.IncrementLoginAttempts()
 	if securitySettings.LoginFailureLock && securitySettings.LoginFailureAttempts > 0 && user.LoginAttempts >= securitySettings.LoginFailureAttempts {
-		user.Lock(time.Duration(securitySettings.LoginFailureLockoutMinutes) * time.Minute)
-	} else {
-		user.LockedUntil = time.Now().AddDate(100, 0, 0)
+		if securitySettings.LoginFailureLockoutMinutes > 0 {
+			user.Lock(time.Duration(securitySettings.LoginFailureLockoutMinutes) * time.Minute)
+		} else {
+			user.LockedUntil = time.Now().AddDate(100, 0, 0)
+		}
+
+		if user.Email != "" {
+			s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "User Locked", model.SettingSMTPUserLockedTemplate, map[string]any{
+				"Username": user.Username,
+				"UserID":   user.ResourceID,
+				"Email":    user.Email,
+				"Avatar":   user.Avatar,
+				"FullName": user.FullName,
+			})
+		}
 	}
-	if user.Email != "" {
-		s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "User Locked", model.SettingSMTPUserLockedTemplate, map[string]any{
-			"Username": user.Username,
-			"UserID":   user.ResourceID,
-			"Email":    user.Email,
-			"Avatar":   user.Avatar,
-			"FullName": user.FullName,
-		})
-	}
+
 	return dbConn.Transaction(func(tx *gorm.DB) error {
 		err = tx.Model(&user).Select("LoginAttempts", "LockedUntil").Updates(&user).Error
 		if err != nil {
