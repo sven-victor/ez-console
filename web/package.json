@@ -5,7 +5,7 @@
   "style": "lib/style.css",
   "types": "types/index.d.ts",
   "private": true,
-  "version": "1.9.0",
+  "version": "1.9.1",
   "type": "module",
   "scripts": {
     "dev": "vite",

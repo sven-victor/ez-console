@@ -121,7 +121,7 @@ const { Title: ke } = se, qe = ({ transformLangConfig: N }) => {
         style: { marginBottom: 20 }
       }
     ),
-    y && /* @__PURE__ */ e.jsx(
+    u === "mfa" && y && /* @__PURE__ */ e.jsx(
       U,
       {
         message: a(`login.mfaTips.${y}`, { defaultValue: "You have enabled MFA based on ${mfaType}, please enter the corresponding one-time password." }),

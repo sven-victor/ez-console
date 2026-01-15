@@ -177,10 +177,10 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
   }, de = (r) => {
     N.confirm({
       title: s("user.unlockTitle", { defaultValue: "Unlock User" }),
-      content: s("user.unlockConfirm", { defaultValue: "Are you sure you want to unlock this user?" }),
+      content: s("user.unlockConfirm", { defaultValue: "Are you sure you want to unlock this user?", username: r.username }),
       onOk: async () => {
         try {
-          await V.authorization.unlockUser({ id: r }), i.success(s("user.unlockSuccess", { defaultValue: "User unlocked successfully" })), z();
+          await V.authorization.unlockUser({ id: r.id }), i.success(s("user.unlockSuccess", { defaultValue: "User unlocked successfully" })), z();
         } catch (t) {
           i.error(s("user.unlockError", { defaultValue: "Failed to unlock user: {{error}}", error: t.message ?? String(t) }));
         }
@@ -291,7 +291,7 @@ const { Option: O } = D, Ce = ({ user: u, onClose: s, onSuccess: a }) => {
           icon: /* @__PURE__ */ e.jsx(xe, {}),
           tooltip: s("user.unlock", { defaultValue: "Unlock" }),
           hidden: t.status !== "locked",
-          onClick: async () => de(t.id)
+          onClick: async () => de(t)
         }, {
           key: "resetPassword",
           permission: "authorization:user:resetPassword",
