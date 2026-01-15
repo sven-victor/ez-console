@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Layout, Menu, Breadcrumb, Button, Spin, Space } from 'antd';
 import {
   UserOutlined,
@@ -81,6 +81,7 @@ const useStyle = createStyles(({ token, css }) => {
   }
 })
 export interface AppLayoutProps {
+  siderWidth?: number;
   routes: IRoute[];
   element?: React.ReactNode | null;
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
@@ -91,6 +92,7 @@ export interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({
   element,
+  siderWidth = 250,
   routes,
   transformLangConfig,
   menuStyle = 'dark',
@@ -247,6 +249,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     }
   }, [getBreadcrumbs, location.pathname])
 
+  const selectedMenuKeys = useMemo(() => {
+    const matches = matchRoutes(routes, location.pathname)
+    if (matches) {
+      for (const match of matches.reverse()) {
+        if (match.route.path && match.route.name) {
+          return match.route.path
+        }
+      }
+    }
+    return location.pathname
+  }, [location.pathname])
+
 
   const headerItems: React.ReactNode[] = [
     <HeaderDropdown
@@ -289,13 +303,13 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     const [collapsed, setCollapsed] = useState(false);
 
     return <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'row' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={setCollapsed} className={styles.menuSider} theme={isDarkMode ? 'light' : menuStyle} >
+      <Sider width={siderWidth} collapsible collapsed={collapsed} onCollapse={setCollapsed} className={styles.menuSider} theme={isDarkMode ? 'light' : menuStyle} >
         <div className="logo" style={{ margin: '8px', display: 'flex' }}>
           <div style={{ width: '100%', height: '100%', textAlign: 'center' }}>
             {siteIconUrl ? <img src={siteIconUrl} alt="logo" style={{ height: '32px', width: '32px', }} /> : <Spin size="large" tip="Loading..." />}
           </div>
         </div>
-        <Menu className={styles.menu} theme={isDarkMode ? 'light' : menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[location.pathname]}>
+        <Menu className={styles.menu} theme={isDarkMode ? 'light' : menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[selectedMenuKeys]}>
           {menuItems}
         </Menu>
       </Sider>
