@@ -296,13 +296,13 @@ const UserList: React.FC = () => {
     });
   };
 
-  const handleUnlock = (id: string) => {
+  const handleUnlock = (user: API.User) => {
     Modal.confirm({
       title: t('user.unlockTitle', { defaultValue: 'Unlock User' }),
-      content: t('user.unlockConfirm', { defaultValue: 'Are you sure you want to unlock this user?' }),
+      content: t('user.unlockConfirm', { defaultValue: 'Are you sure you want to unlock this user?', username: user.username }),
       onOk: async () => {
         try {
-          await api.authorization.unlockUser({ id });
+          await api.authorization.unlockUser({ id: user.id });
           message.success(t('user.unlockSuccess', { defaultValue: 'User unlocked successfully' }));
           fetchUsers();
         } catch (error) {
@@ -442,7 +442,7 @@ const UserList: React.FC = () => {
           icon: <UnlockOutlined />,
           tooltip: t('user.unlock', { defaultValue: 'Unlock' }),
           hidden: record.status !== 'locked',
-          onClick: async () => handleUnlock(record.id),
+          onClick: async () => handleUnlock(record),
         }, {
           key: 'resetPassword',
           permission: "authorization:user:resetPassword",
