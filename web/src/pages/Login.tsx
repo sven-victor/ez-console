@@ -258,7 +258,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
               style={{ marginBottom: 20 }}
             />
           )}
-          {mfaType && (
+          {pageType === 'mfa' && mfaType && (
             <Alert
               message={t(`login.mfaTips.${mfaType}`, { defaultValue: 'You have enabled MFA based on ${mfaType}, please enter the corresponding one-time password.' })}
               type="info"
