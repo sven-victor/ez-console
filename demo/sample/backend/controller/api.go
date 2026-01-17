@@ -15,10 +15,11 @@
 package controller
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sven-victor/ez-console/demo/backend/service"
+	"github.com/sven-victor/ez-console/demo/sample/backend/service"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-console/server"
 )
@@ -40,12 +41,12 @@ func NewTestController() *TestController {
 	return &TestController{service: service.NewTestService()}
 }
 
-func (c *TestController) RegisterRoutes(router *gin.RouterGroup) {
+func (c *TestController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	router.POST("/test", c.Test)
 }
 
 func init() {
-	server.RegisterControllers(func(svc server.Service) server.Controller {
+	server.RegisterControllers(func(ctx context.Context, svc server.Service) server.Controller {
 		return NewTestController()
 	})
 }

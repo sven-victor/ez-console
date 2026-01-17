@@ -15,12 +15,12 @@
 package main
 
 import (
-	_ "github.com/sven-victor/ez-console/demo/backend/controller"
+	_ "github.com/sven-victor/ez-console/demo/sample/backend/controller"
 
 	consoleserver "github.com/sven-victor/ez-console/server"
 )
 
-var rootCmd = consoleserver.NewCommandServer("my-console-app", "my-console-app")
+var rootCmd = consoleserver.NewCommandServer("my-console-app", "1.0.0", "My Console Application")
 
 func main() {
 	rootCmd.Execute()
