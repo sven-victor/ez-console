@@ -11,18 +11,18 @@ VERSION ?= 1.0.0
 $(SWAG):
 	go install github.com/swaggo/swag/cmd/swag@v1.16.4
 
-docs: $(SWAG)
-	$(SWAG) init -g main.go -o docs -pd --requiredByDefault --overridesFile overrides.swaggo
+openapi: $(SWAG)
+	$(SWAG) init -g main.go -o openapi -pd --requiredByDefault --overridesFile overrides.swaggo
 
-web/src/service/api:docs
-	cp docs/swagger.json web/swagger.json
+web/src/service/api:openapi
+	cp openapi/swagger.json web/swagger.json
 	cd web && pnpm run openapi2ts
 
 openapi2ts:web/src/service/api
 	
 
-clean-docs:
-	rm -rf docs
+clean-openapi:
+	rm -rf openapi
 
 clean-openapi2ts:
 	rm -rf web/src/service/api
