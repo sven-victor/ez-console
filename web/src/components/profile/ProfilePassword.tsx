@@ -20,8 +20,9 @@ import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
 import { ApiError } from '@/service/client';
+import classNames from 'classnames';
 
-const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({ onSuccess, token }) => {
+const ProfilePassword: React.FC<{ className?: string, onSuccess?: () => void, token?: string }> = ({ className, onSuccess, token }) => {
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();
@@ -52,11 +53,13 @@ const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({
       layout="vertical"
       onFinish={handleSubmit}
       style={{ maxWidth: 500, margin: '0 auto' }}
+      className={classNames('profile-password', className)}
     >
       <Form.Item
         name="old_password"
         label={t('user.oldPassword')}
         rules={[{ required: true, message: t('validation.oldPasswordRequired') }]}
+        className={classNames('profile-password-item', 'profile-password-item-old-password')}
       >
         <Input.Password />
       </Form.Item>
@@ -68,6 +71,7 @@ const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({
           { required: true, message: t('validation.newPasswordRequired') },
           { min: 8, message: t('validation.passwordMinLength') }
         ]}
+        className={classNames('profile-password-item', 'profile-password-item-new-password')}
       >
         <Input.Password />
       </Form.Item>
@@ -75,6 +79,7 @@ const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({
       <Form.Item
         name="confirm_password"
         label={t('user.confirmPassword')}
+        className={classNames('profile-password-item', 'profile-password-item-confirm-password')}
         rules={[
           { required: true, message: t('validation.confirmPasswordRequired') },
           ({ getFieldValue }) => ({
@@ -90,7 +95,7 @@ const ProfilePassword: React.FC<{ onSuccess?: () => void, token?: string }> = ({
         <Input.Password />
       </Form.Item>
 
-      <Form.Item>
+      <Form.Item className={classNames('profile-password-item', 'profile-password-item-submit')}>
         <Button type="primary" htmlType="submit" loading={loading}>
           {tCommon('save')}
         </Button>

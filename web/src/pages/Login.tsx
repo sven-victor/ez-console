@@ -28,6 +28,8 @@ import LanguageSwitch, { LanguageConfig } from '@/components/LanguageSwitch';
 import Loading from '@/components/Loading';
 import { useSite } from '@/contexts/SiteContext';
 import { clearCache } from 'ahooks';
+import classNames from 'classnames';
+import { createStyles } from 'antd-style';
 
 const { Title } = Typography;
 
@@ -35,7 +37,42 @@ interface LoginProps {
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
 }
 
+const useStyle = createStyles(({ token, css }) => {
+  return {
+    loginPageContainer: css`
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f2f5;
+    `,
+    loginPageCard: css`
+      width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    `,
+    languageSwitch: css`
+      position: absolute;
+      top: 0;
+      right: 0;
+    `,
+    loginPageTitle: css`
+      text-align: center;
+      margin-bottom: 20px;
+    `,
+    loginPageError: css`
+      margin-bottom: 20px;
+    `,
+    loginPageMfaAlert: css`
+      margin-bottom: 20px;
+    `,
+    loginPageProviders: css`
+      width: 100%;
+    `,
+  }
+})
 const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
+  const { styles } = useStyle();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -229,33 +266,23 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
 
 
   return (
-    <div>
-      <div style={{
-        height: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        background: '#f0f2f5'
-      }}>
-        <Card style={{ width: 400, borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-          <div style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-          }}>
+    <div className={'login-page'}>
+      <div className={classNames(styles.loginPageContainer, 'login-page-container')}>
+        <Card className={classNames(styles.loginPageCard, 'login-page-card')}>
+          <div className={classNames(styles.languageSwitch, 'language-switch')}>
             <LanguageSwitch transformLangConfig={transformLangConfig} />
           </div>
-          <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <Title level={2}>{siteName}</Title>
-            <p>{t('login.subtitle', { defaultValue: 'Enter your credentials to continue' })}</p>
+          <div className={classNames(styles.loginPageTitle, 'login-page-title')}>
+            <Title className='login-page-title-text' level={2}>{siteName}</Title>
+            <p className={'login-page-subtitle-text'}>{t('login.subtitle', { defaultValue: 'Enter your credentials to continue' })}</p>
           </div>
 
           {error && (
             <Alert
+              className={classNames(styles.loginPageError, 'login-page-error')}
               message={error}
               type="error"
               showIcon
-              style={{ marginBottom: 20 }}
             />
           )}
           {pageType === 'mfa' && mfaType && (
@@ -263,7 +290,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
               message={t(`login.mfaTips.${mfaType}`, { defaultValue: 'You have enabled MFA based on ${mfaType}, please enter the corresponding one-time password.' })}
               type="info"
               showIcon
-              style={{ marginBottom: 20 }}
+              className={classNames(styles.loginPageMfaAlert, 'login-page-mfa-alert')}
             />
           )}
           <Form
@@ -273,17 +300,18 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
             size="large"
             form={form}
             hidden={pageType === 'password_expired'}
+            className={'login-page-form'}
           >
             {/* TODO: fix MFA code input */}
             {pageType === 'mfa' && (
               <>
-                <Form.Item hidden={!user?.email || mfaType !== 'email'}>
+                <Form.Item hidden={!user?.email || mfaType !== 'email'} className={classNames('login-page-form-item', 'login-page-form-email')}>
                   <Input value={maskEmail(user?.email)} />
                 </Form.Item>
-                <Form.Item name="mfa_token" hidden={true}>
+                <Form.Item name="mfa_token" hidden={true} className={classNames('login-page-form-item', 'login-page-form-mfa-token')}>
                   <Input />
                 </Form.Item>
-                <Form.Item name="mfa_code" hidden={pageType !== 'mfa'}>
+                <Form.Item name="mfa_code" hidden={pageType !== 'mfa'} className={classNames('login-page-form-item', 'login-page-form-mfa-code')}>
                   <Input placeholder={t('login.mfa-code', { defaultValue: 'MFA Code' })} prefix={<KeyOutlined />} />
                 </Form.Item>
               </>
@@ -293,6 +321,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
                 <Form.Item
                   name="username"
                   rules={[{ required: true, message: t('login.usernameRequired', { defaultValue: 'Username is required' }) }]}
+                  className={classNames('login-page-form-item', 'login-page-form-username')}
                 >
                   <Input prefix={<UserOutlined />} placeholder={t('login.username', { defaultValue: 'Username' })} autoComplete="username" />
                 </Form.Item>
@@ -300,6 +329,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
                 <Form.Item
                   name="password"
                   rules={[{ required: true, message: t('login.passwordRequired', { defaultValue: 'Password is required' }) }]}
+                  className={classNames('login-page-form-item', 'login-page-form-password')}
                 >
                   <Input.Password
                     prefix={<LockOutlined />}
@@ -310,7 +340,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
               </>
             )}
 
-            <Form.Item>
+            <Form.Item className={classNames('login-page-form-item', 'login-page-form-submit')}>
               <Button
                 disabled={submitButtonDisabledCountdown > 0}
                 type="primary"
@@ -325,9 +355,9 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
 
           {providers.length > 0 && pageType !== 'password_expired' && (
             <>
-              <Divider>{t('login.or', { defaultValue: 'Or' })}</Divider>
+              <Divider className={classNames('login-page-divider', 'login-page-divider-or')}>{t('login.or', { defaultValue: 'Or' })}</Divider>
 
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space direction="vertical" className={classNames(styles.loginPageProviders, 'login-page-providers')}>
                 {providers.map(provider => (
                   <Button
                     key={provider.name}
@@ -343,7 +373,7 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
               </Space>
             </>
           )}
-          {pageType === 'password_expired' && <ProfilePassword onSuccess={() => {
+          {pageType === 'password_expired' && <ProfilePassword className={'login-page-password-expired'} onSuccess={() => {
             setPageType('login');
             form.setFieldValue('password', '')
             form.setFieldValue('mfa_code', '')
