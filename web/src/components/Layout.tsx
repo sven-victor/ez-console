@@ -24,7 +24,7 @@ import {
   MoonOutlined,
   SunOutlined,
 } from '@ant-design/icons';
-import { Link, Outlet, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate, matchRoutes, useRoutes } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { type IRoute } from '../routes';
 import LanguageSwitch, { type LanguageConfig } from './LanguageSwitch';
@@ -46,6 +46,11 @@ const { SubMenu } = Menu;
 
 const useStyle = createStyles(({ token, css }) => {
   return {
+    layout: css`
+      min-height: 100vh;
+      display: flex;
+      flex-direction: row;
+    `,
     header: css`
       padding: 0;
       display: flex;
@@ -53,10 +58,18 @@ const useStyle = createStyles(({ token, css }) => {
       background-color: ${token.colorBgContainer};
       border-block-end: 1px solid ${token.colorBorderSecondary};
     `,
-    content: css`
+    footer: css`
+      text-align: center;
+      padding: 15px 50px;
+    `,
+    contentContainer: css`
       padding: 24px;
-      min-height: calc(100vh - 190px);
       background-color: ${token.colorBgContainer};
+    `,
+    content: css`
+      margin: 0 16px;
+      height: calc(100vh - 120px);
+      overflow: auto;
     `,
     mainLayout: css`
       flex: 1;
@@ -66,6 +79,14 @@ const useStyle = createStyles(({ token, css }) => {
     breadcrumb: css`
       margin-left: 8px;
     `,
+    headerItems: css`
+      margin-right: 20px;
+    `,
+    userName: css`
+      height: 1em;
+      line-height: 1em;
+      margin-left: 5px;
+    `,
     themeSwitch: css`
       display: inline-flex;
     `,
@@ -74,6 +95,26 @@ const useStyle = createStyles(({ token, css }) => {
         display: flex;
         flex-direction: column;
       }
+    `,
+    menuToggleButton: css`
+      &&{
+        font-size: 16px;
+        width: 64px;
+        height: 64px;
+      }
+    `,
+    layoutLogo: css`
+      margin: 8px;
+      display: flex;
+    `,
+    layoutLogoContainer: css`
+      width: 100%;
+      height: 100%;
+      text-align: center;
+    `,
+    layoutLogoImage: css`
+      height: 32px;
+      width: 32px;
     `,
     menu: css`
       flex: 1 1 0%;
@@ -261,9 +302,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     return location.pathname
   }, [location.pathname])
 
-
   const headerItems: React.ReactNode[] = [
     <HeaderDropdown
+      className={"header-item navigation-dropdown"}
       key="navigation-dropdown"
       hidden={navigation.length <= 1} menu={{
         items: navigation.map(item => ({
@@ -274,17 +315,19 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       }}>
       <SwapOutlined />
     </HeaderDropdown>,
-    ...(siteConfig?.enable_multi_org ? [<OrganizationSwitcher key="org-switcher" />] : []),
+    ...(siteConfig?.enable_multi_org ? [<OrganizationSwitcher key="org-switcher" className="header-item org-switcher" />] : []),
     <HeaderDropdown
       key="user-dropdown"
+      className="header-item user-dropdown"
       menu={{ items: userMenu }}
     >
       {user?.avatar ? <Avatar src={user.avatar} /> : <Avatar icon={<UserOutlined />} />}
-      <span style={{ height: '1em', lineHeight: '1em', marginLeft: '5px' }}>{user?.full_name || user?.username}</span>
+      <span className={classNames("header-user-name", styles.userName)}>{user?.full_name || user?.username}</span>
     </HeaderDropdown>,
-    <LanguageSwitch key="language-switch" transformLangConfig={transformLangConfig} />,
+    <LanguageSwitch key="language-switch" className="header-item language-switch" transformLangConfig={transformLangConfig} />,
     <HeaderDropdown
       key="theme-switch"
+      className="header-item theme-switch"
       menu={{
         items: [
           { key: 'light', label: <span><SunOutlined /> {tCommon('light', { defaultValue: 'Light Mode' })}</span> },
@@ -302,14 +345,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
     const [collapsed, setCollapsed] = useState(false);
 
-    return <Layout style={{ minHeight: '100vh', display: 'flex', flexDirection: 'row' }}>
-      <Sider width={siderWidth} collapsible collapsed={collapsed} onCollapse={setCollapsed} className={styles.menuSider} theme={isDarkMode ? 'light' : menuStyle} >
-        <div className="logo" style={{ margin: '8px', display: 'flex' }}>
-          <div style={{ width: '100%', height: '100%', textAlign: 'center' }}>
-            {siteIconUrl ? <img src={siteIconUrl} alt="logo" style={{ height: '32px', width: '32px', }} /> : <Spin size="large" tip="Loading..." />}
+    return <Layout className={classNames("main-layout", styles.layout)}>
+      <Sider width={siderWidth} collapsible collapsed={collapsed} onCollapse={setCollapsed} className={classNames(styles.menuSider, 'layout-menu-sider')} theme={isDarkMode ? 'light' : menuStyle} >
+        <div className={classNames("logo", styles.layoutLogo)}>
+          <div className={classNames("layout-logo-container", styles.layoutLogoContainer)}>
+            {siteIconUrl ? <img src={siteIconUrl} alt="logo" className={styles.layoutLogoImage} /> : <Spin size="large" tip="Loading..." />}
           </div>
         </div>
-        <Menu className={styles.menu} theme={isDarkMode ? 'light' : menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[selectedMenuKeys]}>
+        <Menu className={classNames("layout-menu", styles.menu)} theme={isDarkMode ? 'light' : menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[selectedMenuKeys]}>
           {menuItems}
         </Menu>
       </Sider>
@@ -320,7 +363,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: '16px', width: 64, height: 64 }}
+              // style={{ fontSize: '16px', width: 64, height: 64 }}
+              className={classNames("layout-menu-toggle", styles.menuToggleButton)}
             />
             <Breadcrumb className={classNames("site-breadcrumb", styles.breadcrumb)} itemRender={(route) => {
               const path = route.href || route.path
@@ -330,18 +374,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({
               return <span>{route.title}</span>
             }} items={breadcrumbs} />
           </Space>
-          <div style={{ marginRight: '20px' }}>
+          <div className={classNames("header-items", styles.headerItems)} >
             {headerItems}
           </div>
         </Header>
-        <Content style={{ margin: '0 16px', height: 'calc(100vh - 120px)', overflow: 'auto' }}>
-          <div className={classNames("site-content", styles.content)}>
+        <Content className={classNames("site-content", styles.content)}>
+          <div className={classNames("site-content-container", styles.contentContainer)}>
             {content}
           </div>
           {siteConfig?.attrs?.ai_enabled && <AIChatButton />}
           {siteConfig?.attrs?.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
         </Content>
-        <Footer style={{ textAlign: 'center', padding: '15px 50px' }}> ©{new Date().getFullYear()} {siteName}</Footer>
+        <Footer className={classNames("site-footer", styles.footer)}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
       {(siteConfig?.attrs?.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider />)}
     </Layout>

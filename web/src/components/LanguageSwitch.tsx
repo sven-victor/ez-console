@@ -62,10 +62,12 @@ export interface LanguageConfig {
 }
 export interface LanguageSwitchProps {
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+  className?: string;
 }
 
 const LanguageSwitch: React.FC<LanguageSwitchProps> = ({
   transformLangConfig = (langs) => langs,
+  className,
 }) => {
   const { i18n } = useTranslation();
   const { styles } = useStyles();
@@ -91,6 +93,7 @@ const LanguageSwitch: React.FC<LanguageSwitchProps> = ({
     })),
   };
   return <HeaderDropdown
+    className={className}
     menu={langMenu}
   >
     <LanguageSwitchIcon />

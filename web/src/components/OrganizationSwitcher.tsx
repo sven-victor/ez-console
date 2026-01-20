@@ -21,7 +21,8 @@ import { useAuth } from '@/hooks/useAuth';
 import HeaderDropdown from './HeaderDropdown';
 import { useSite } from '@/contexts/SiteContext';
 
-const OrganizationSwitcher: React.FC = () => {
+
+const OrganizationSwitcher: React.FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation('common');
   const { user } = useAuth();
   const { currentOrgId, setCurrentOrgId } = useSite();
@@ -57,6 +58,7 @@ const OrganizationSwitcher: React.FC = () => {
 
   return (
     <HeaderDropdown
+      className={className}
       menu={{
         items: menuItems,
         selectedKeys: currentOrgId ? [currentOrgId] : [''],

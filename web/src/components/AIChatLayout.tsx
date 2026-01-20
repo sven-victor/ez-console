@@ -59,6 +59,7 @@ export const AIChatModal: React.FC = () => {
   }, [setLoaded]);
   return (
     <Modal
+      className="ai-chat-modal"
       width={1200}
       open={chatVisible}
       closable={false}
@@ -69,8 +70,6 @@ export const AIChatModal: React.FC = () => {
     </Modal>
   )
 }
-
-
 
 export const AIChatSider: React.FC = () => {
   const { styles } = useStyle();
@@ -92,38 +91,34 @@ export const AIChatSider: React.FC = () => {
     setSidebarWidth(newWidth);
   };
   return (
-    <>
+    <div
+      style={{
+        width: `${sidebarWidth}px`,
+        display: visible ? 'flex' : 'none',
+        overflow: 'hidden',
+        flexShrink: 0,
+      }}
+      className={classNames("ai-sidebar-layout", layout === 'float-sidebar' ? styles.floatSiderLayout : styles.siderLayout)}
+    >
+      <ResizeDivider
+        onResize={handleSidebarResize}
+        minWidth={300}
+        maxWidth={window.innerWidth * 0.5}
+      />
       <div
-
         style={{
-          width: `${sidebarWidth}px`,
-          display: visible ? 'flex' : 'none',
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#ffffff',
           overflow: 'hidden',
-          flexShrink: 0,
+          borderRadius: layout === 'float-sidebar' ? '12px' : '0',
         }}
-        className={classNames("ai-sidebar-layout", layout === 'float-sidebar' ? styles.floatSiderLayout : styles.siderLayout)}
       >
-        <ResizeDivider
-          onResize={handleSidebarResize}
-          minWidth={300}
-          maxWidth={window.innerWidth * 0.5}
-        />
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            backgroundColor: '#ffffff',
-            overflow: 'hidden',
-            borderRadius: layout === 'float-sidebar' ? '12px' : '0',
-          }}
-        >
-          <div>
-
-            {withSuspense(AIChatDialog)}
-          </div>
+        <div>
+          {withSuspense(AIChatDialog)}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 
@@ -138,9 +133,11 @@ export const AIChatButton: React.FC = () => {
         title={t('chat.openAssistant', { defaultValue: 'Open AI Assistant' })}
         placement="left"
         style={{ display: visible ? 'none' : 'block' }}
+        className="ai-chat-tooltip"
       >
         <FloatButton
           icon={<RobotOutlined />}
+          className="ai-chat-float-button"
           type="primary"
           onClick={() => setVisible(true)}
           style={{
