@@ -490,6 +490,7 @@ export declare const apiPut: <T>(url: string, data?: any, config?: AxiosRequestC
 export declare const AppLayout: default_2.FC<AppLayoutProps>;
 
 export declare interface AppLayoutProps {
+    siderWidth?: number;
     routes: IRoute[];
     element?: default_2.ReactNode | null;
     transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
@@ -1091,6 +1092,7 @@ export declare const LanguageSwitch: default_2.FC<LanguageSwitchProps>;
 
 export declare interface LanguageSwitchProps {
     transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
+    className?: string;
 }
 
 export declare interface LDAPSettings {

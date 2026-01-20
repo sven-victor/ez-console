@@ -37,7 +37,7 @@ interface LoginProps {
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
 }
 
-const useStyle = createStyles(({ token, css }) => {
+const useStyle = createStyles(({ css }) => {
   return {
     loginPageContainer: css`
       height: 100vh;

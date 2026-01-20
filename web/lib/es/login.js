@@ -1,211 +1,237 @@
 import { j as e } from "./vendor.js";
-import { useState as n, useRef as oe, useEffect as V } from "react";
-import { Form as d, Result as ae, Card as ne, Typography as se, Alert as U, Input as g, Button as q, Divider as ie, Space as le, Avatar as de, message as C } from "antd";
-import { KeyOutlined as ue, UserOutlined as ce, LockOutlined as me, GithubOutlined as fe } from "@ant-design/icons";
-import { useNavigate as ge, useLocation as he, useSearchParams as pe } from "react-router-dom";
-import { a as xe, c as we } from "./contexts.js";
-import { useTranslation as je } from "react-i18next";
-import { a as M } from "./index.js";
-import { A as $ } from "./client.js";
-import { L as D, a as ye, i as _e } from "./components.js";
-import { m as be, g as Ve } from "./base.js";
+import { useState as n, useRef as ie, useEffect as L } from "react";
+import { Form as m, Result as ne, Card as se, Typography as le, Alert as M, Input as x, Button as B, Divider as de, Space as ge, Avatar as me, message as $ } from "antd";
+import { KeyOutlined as ce, UserOutlined as ue, LockOutlined as fe, GithubOutlined as pe } from "@ant-design/icons";
+import { useNavigate as he, useLocation as xe, useSearchParams as we } from "react-router-dom";
+import { a as je, c as ye } from "./contexts.js";
+import { useTranslation as Pe } from "react-i18next";
+import { a as D } from "./index.js";
+import { A as z } from "./client.js";
+import { L as G, a as be, i as _e } from "./components.js";
+import { m as Ne, g as Ve } from "./base.js";
 import { clearCache as Le } from "ahooks";
-const { Title: ke } = se, qe = ({ transformLangConfig: N }) => {
-  const f = ge(), z = he(), [s] = pe(), { login: L, oauthLogin: k, user: A } = xe(), { t: a, i18n: w } = je(), [T, i] = n(null), [j, v] = n({}), [u, h] = n("login"), [G, K] = n(null), [y, W] = n(null), [c, X] = n(null), [p] = d.useForm(), I = oe(!1), [Y, P] = n(!1), [F, O] = n([]), [_, b] = n(0), { siteConfig: o, loading: H, error: x } = we(), [J, E] = n("Loading..."), S = async (t) => {
-    const l = async (r) => "username" in r ? await L({ username: r.username, password: r.password }) : "mfa_token" in r ? await L({ mfa_token: r.mfa_token, mfa_code: r.mfa_code }) : await k({ code: r.code, state: r.state, provider: r.provider });
+import i from "classnames";
+import { createStyles as ke } from "antd-style";
+const { Title: ve } = le, Ae = ke(({ css: s }) => ({
+  loginPageContainer: s`
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #f0f2f5;
+    `,
+  loginPageCard: s`
+      width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    `,
+  languageSwitch: s`
+      position: absolute;
+      top: 0;
+      right: 0;
+    `,
+  loginPageTitle: s`
+      text-align: center;
+      margin-bottom: 20px;
+    `,
+  loginPageError: s`
+      margin-bottom: 20px;
+    `,
+  loginPageMfaAlert: s`
+      margin-bottom: 20px;
+    `,
+  loginPageProviders: s`
+      width: 100%;
+    `
+})), ze = ({ transformLangConfig: s }) => {
+  const { styles: c } = Ae(), h = he(), K = xe(), [l] = we(), { login: k, oauthLogin: v, user: A } = je(), { t, i18n: P } = Pe(), [T, d] = n(null), [b, F] = n({}), [u, w] = n("login"), [W, X] = n(null), [_, Y] = n(null), [f, H] = n(null), [j] = m.useForm(), I = ie(!1), [J, E] = n(!1), [O, S] = n([]), [N, V] = n(0), { siteConfig: o, loading: Q, error: y } = ye(), [Z, C] = n("Loading..."), R = async (r) => {
+    const g = async (a) => "username" in a ? await k({ username: a.username, password: a.password }) : "mfa_token" in a ? await k({ mfa_token: a.mfa_token, mfa_code: a.mfa_code }) : await v({ code: a.code, state: a.state, provider: a.provider });
     try {
-      P(!0);
-      const r = await l(t);
-      if (Le(), await new Promise((m) => setTimeout(m, 100)), r && r.mfa_enforced && !r.mfa_enabled && z.pathname !== "/profile")
-        f("/profile#mfa");
+      E(!0);
+      const a = await g(r);
+      if (Le(), await new Promise((p) => setTimeout(p, 100)), a && a.mfa_enforced && !a.mfa_enabled && K.pathname !== "/profile")
+        h("/profile#mfa");
       else {
-        const m = s.get("redirect");
-        m ? window.location.href = m : o != null && o.home_page ? window.location.href = o.home_page : f("/");
+        const p = l.get("redirect");
+        p ? window.location.href = p : o != null && o.home_page ? window.location.href = o.home_page : h("/");
       }
-    } catch (r) {
-      if (r.password_expired)
-        h("password_expired"), K(r.token), i(null);
-      else if (r.needsMFA)
-        i(null), h("mfa"), f("/login", { replace: !0 }), W(r.mfaType), X(r.user), p.setFieldValue("mfa_token", r.mfaToken);
-      else if ("username" in t || "mfa_token" in t)
-        if (r instanceof $ ? i(a("login.error", { defaultValue: "Login failed: {{error}}", error: a(`login.${r}`, { defaultValue: r.message }) })) : i(typeof r == "string" ? r : a("login.error", { defaultValue: "Login failed" })), "mfa_token" in t) {
-          b(30);
-          const m = setInterval(() => {
-            b((R) => R >= 1 ? R - 1 : 0);
+    } catch (a) {
+      if (a.password_expired)
+        w("password_expired"), X(a.token), d(null);
+      else if (a.needsMFA)
+        d(null), w("mfa"), h("/login", { replace: !0 }), Y(a.mfaType), H(a.user), j.setFieldValue("mfa_token", a.mfaToken);
+      else if ("username" in r || "mfa_token" in r)
+        if (a instanceof z ? d(t("login.error", { defaultValue: "Login failed: {{error}}", error: t(`login.${a}`, { defaultValue: a.message }) })) : d(typeof a == "string" ? a : t("login.error", { defaultValue: "Login failed" })), "mfa_token" in r) {
+          V(30);
+          const p = setInterval(() => {
+            V((q) => q >= 1 ? q - 1 : 0);
           }, 1e3);
           setTimeout(() => {
-            clearInterval(m), b(0);
+            clearInterval(p), V(0);
           }, 3e4);
-        } else "username" in t && h("login");
+        } else "username" in r && w("login");
       else
-        r instanceof $ ? i(a("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: a(`login.${r.code}`, { defaultValue: r.message }) })) : i(typeof r == "string" ? r : a("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: r })), f("/login", { replace: !0 }), B();
+        a instanceof z ? d(t("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: t(`login.${a.code}`, { defaultValue: a.message }) })) : d(typeof a == "string" ? a : t("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: a })), h("/login", { replace: !0 }), U();
     } finally {
-      P(!1);
+      E(!1);
     }
-  }, B = async () => {
+  }, U = async () => {
     try {
-      O(await M.oauth.getProviders() || []);
-    } catch (t) {
-      C.error(a("login.fetchOAuthProvidersError", { defaultValue: "Failed to fetch OAuth providers: {{error}}", error: t.message || t.toString() })), O([]);
+      S(await D.oauth.getProviders() || []);
+    } catch (r) {
+      $.error(t("login.fetchOAuthProvidersError", { defaultValue: "Failed to fetch OAuth providers: {{error}}", error: r.message || r.toString() })), S([]);
     }
   };
-  V(() => {
+  L(() => {
     if (!I.current) {
       I.current = !0;
-      const t = s.get("code"), l = s.get("state"), r = s.get("provider");
-      t && l && r ? S({ code: t, state: l, provider: r }) : B();
+      const r = l.get("code"), g = l.get("state"), a = l.get("provider");
+      r && g && a ? R({ code: r, state: g, provider: a }) : U();
     }
-  }, [s, k]), V(() => {
-    w.language && E((o == null ? void 0 : o.name_i18n[w.language]) || (o == null ? void 0 : o.name) || "");
-  }, [o, w.language]);
-  const Q = async (t) => {
+  }, [l, v]), L(() => {
+    P.language && C((o == null ? void 0 : o.name_i18n[P.language]) || (o == null ? void 0 : o.name) || "");
+  }, [o, P.language]);
+  const ee = async (r) => {
     try {
-      v({ ...j, [t]: !0 });
-      const { url: l } = await M.oauth.getLoginUrl({ provider: t }, { headers: { "X-Base-Path": Ve() } });
-      window.location.href = l;
-    } catch (l) {
-      C.error(a("login.oauthError", { defaultValue: "OAuth login failed" })), console.error("OAuth login error:", l);
+      F({ ...b, [r]: !0 });
+      const { url: g } = await D.oauth.getLoginUrl({ provider: r }, { headers: { "X-Base-Path": Ve() } });
+      window.location.href = g;
+    } catch (g) {
+      $.error(t("login.oauthError", { defaultValue: "OAuth login failed" })), console.error("OAuth login error:", g);
     } finally {
-      v({ ...j, [t]: !1 });
+      F({ ...b, [r]: !1 });
     }
-  }, Z = (t) => {
-    switch (t.toLowerCase()) {
+  }, ae = (r) => {
+    switch (r.toLowerCase()) {
       case "github":
-        return /* @__PURE__ */ e.jsx(fe, {});
+        return /* @__PURE__ */ e.jsx(pe, {});
       default:
         return null;
     }
-  }, ee = s.get("code"), re = s.get("state"), te = s.get("provider");
-  if (V(() => {
-    var t;
-    o && (E(o.name), window.document.title = o.name, (t = document.getElementById("site-icon")) == null || t.setAttribute("href", o.logo || ""));
-  }, [o]), H)
-    return /* @__PURE__ */ e.jsx(D, {});
+  }, re = l.get("code"), oe = l.get("state"), te = l.get("provider");
+  if (L(() => {
+    var r;
+    o && (C(o.name), window.document.title = o.name, (r = document.getElementById("site-icon")) == null || r.setAttribute("href", o.logo || ""));
+  }, [o]), Q)
+    return /* @__PURE__ */ e.jsx(G, {});
   if (!o)
     return /* @__PURE__ */ e.jsx(
-      ae,
+      ne,
       {
         status: "500",
         title: "500",
-        subTitle: a("login.fetchSiteConfigError", { defaultValue: "Failed to fetch site config: {{error}}", error: (x == null ? void 0 : x.message) || x })
+        subTitle: t("login.fetchSiteConfigError", { defaultValue: "Failed to fetch site config: {{error}}", error: (y == null ? void 0 : y.message) || y })
       }
     );
-  if (ee && re && te)
-    return /* @__PURE__ */ e.jsx(D, {});
+  if (re && oe && te)
+    return /* @__PURE__ */ e.jsx(G, {});
   if (A && A.status === "active") {
-    const t = s.get("redirect");
-    t ? window.location.href = t : o != null && o.home_page ? window.location.href = o.home_page : f("/");
+    const r = l.get("redirect");
+    r ? window.location.href = r : o != null && o.home_page ? window.location.href = o.home_page : h("/");
   }
-  return /* @__PURE__ */ e.jsx("div", { children: /* @__PURE__ */ e.jsx("div", { style: {
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "#f0f2f5"
-  }, children: /* @__PURE__ */ e.jsxs(ne, { style: { width: 400, borderRadius: 8, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }, children: [
-    /* @__PURE__ */ e.jsx("div", { style: {
-      position: "absolute",
-      top: 0,
-      right: 0
-    }, children: /* @__PURE__ */ e.jsx(ye, { transformLangConfig: N }) }),
-    /* @__PURE__ */ e.jsxs("div", { style: { textAlign: "center", marginBottom: 20 }, children: [
-      /* @__PURE__ */ e.jsx(ke, { level: 2, children: J }),
-      /* @__PURE__ */ e.jsx("p", { children: a("login.subtitle", { defaultValue: "Enter your credentials to continue" }) })
+  return /* @__PURE__ */ e.jsx("div", { className: "login-page", children: /* @__PURE__ */ e.jsx("div", { className: i(c.loginPageContainer, "login-page-container"), children: /* @__PURE__ */ e.jsxs(se, { className: i(c.loginPageCard, "login-page-card"), children: [
+    /* @__PURE__ */ e.jsx("div", { className: i(c.languageSwitch, "language-switch"), children: /* @__PURE__ */ e.jsx(be, { transformLangConfig: s }) }),
+    /* @__PURE__ */ e.jsxs("div", { className: i(c.loginPageTitle, "login-page-title"), children: [
+      /* @__PURE__ */ e.jsx(ve, { className: "login-page-title-text", level: 2, children: Z }),
+      /* @__PURE__ */ e.jsx("p", { className: "login-page-subtitle-text", children: t("login.subtitle", { defaultValue: "Enter your credentials to continue" }) })
     ] }),
     T && /* @__PURE__ */ e.jsx(
-      U,
+      M,
       {
+        className: i(c.loginPageError, "login-page-error"),
         message: T,
         type: "error",
-        showIcon: !0,
-        style: { marginBottom: 20 }
+        showIcon: !0
       }
     ),
-    u === "mfa" && y && /* @__PURE__ */ e.jsx(
-      U,
+    u === "mfa" && _ && /* @__PURE__ */ e.jsx(
+      M,
       {
-        message: a(`login.mfaTips.${y}`, { defaultValue: "You have enabled MFA based on ${mfaType}, please enter the corresponding one-time password." }),
+        message: t(`login.mfaTips.${_}`, { defaultValue: "You have enabled MFA based on ${mfaType}, please enter the corresponding one-time password." }),
         type: "info",
         showIcon: !0,
-        style: { marginBottom: 20 }
+        className: i(c.loginPageMfaAlert, "login-page-mfa-alert")
       }
     ),
     /* @__PURE__ */ e.jsxs(
-      d,
+      m,
       {
         name: "login",
         initialValues: { remember: !0 },
-        onFinish: S,
+        onFinish: R,
         size: "large",
-        form: p,
+        form: j,
         hidden: u === "password_expired",
+        className: "login-page-form",
         children: [
           u === "mfa" && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-            /* @__PURE__ */ e.jsx(d.Item, { hidden: !(c != null && c.email) || y !== "email", children: /* @__PURE__ */ e.jsx(g, { value: be(c == null ? void 0 : c.email) }) }),
-            /* @__PURE__ */ e.jsx(d.Item, { name: "mfa_token", hidden: !0, children: /* @__PURE__ */ e.jsx(g, {}) }),
-            /* @__PURE__ */ e.jsx(d.Item, { name: "mfa_code", hidden: u !== "mfa", children: /* @__PURE__ */ e.jsx(g, { placeholder: a("login.mfa-code", { defaultValue: "MFA Code" }), prefix: /* @__PURE__ */ e.jsx(ue, {}) }) })
+            /* @__PURE__ */ e.jsx(m.Item, { hidden: !(f != null && f.email) || _ !== "email", className: i("login-page-form-item", "login-page-form-email"), children: /* @__PURE__ */ e.jsx(x, { value: Ne(f == null ? void 0 : f.email) }) }),
+            /* @__PURE__ */ e.jsx(m.Item, { name: "mfa_token", hidden: !0, className: i("login-page-form-item", "login-page-form-mfa-token"), children: /* @__PURE__ */ e.jsx(x, {}) }),
+            /* @__PURE__ */ e.jsx(m.Item, { name: "mfa_code", hidden: u !== "mfa", className: i("login-page-form-item", "login-page-form-mfa-code"), children: /* @__PURE__ */ e.jsx(x, { placeholder: t("login.mfa-code", { defaultValue: "MFA Code" }), prefix: /* @__PURE__ */ e.jsx(ce, {}) }) })
           ] }),
           u === "login" && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
             /* @__PURE__ */ e.jsx(
-              d.Item,
+              m.Item,
               {
                 name: "username",
-                rules: [{ required: !0, message: a("login.usernameRequired", { defaultValue: "Username is required" }) }],
-                children: /* @__PURE__ */ e.jsx(g, { prefix: /* @__PURE__ */ e.jsx(ce, {}), placeholder: a("login.username", { defaultValue: "Username" }), autoComplete: "username" })
+                rules: [{ required: !0, message: t("login.usernameRequired", { defaultValue: "Username is required" }) }],
+                className: i("login-page-form-item", "login-page-form-username"),
+                children: /* @__PURE__ */ e.jsx(x, { prefix: /* @__PURE__ */ e.jsx(ue, {}), placeholder: t("login.username", { defaultValue: "Username" }), autoComplete: "username" })
               }
             ),
             /* @__PURE__ */ e.jsx(
-              d.Item,
+              m.Item,
               {
                 name: "password",
-                rules: [{ required: !0, message: a("login.passwordRequired", { defaultValue: "Password is required" }) }],
+                rules: [{ required: !0, message: t("login.passwordRequired", { defaultValue: "Password is required" }) }],
+                className: i("login-page-form-item", "login-page-form-password"),
                 children: /* @__PURE__ */ e.jsx(
-                  g.Password,
+                  x.Password,
                   {
-                    prefix: /* @__PURE__ */ e.jsx(me, {}),
-                    placeholder: a("login.password", { defaultValue: "Password" }),
+                    prefix: /* @__PURE__ */ e.jsx(fe, {}),
+                    placeholder: t("login.password", { defaultValue: "Password" }),
                     autoComplete: "current-password"
                   }
                 )
               }
             )
           ] }),
-          /* @__PURE__ */ e.jsx(d.Item, { children: /* @__PURE__ */ e.jsx(
-            q,
+          /* @__PURE__ */ e.jsx(m.Item, { className: i("login-page-form-item", "login-page-form-submit"), children: /* @__PURE__ */ e.jsx(
+            B,
             {
-              disabled: _ > 0,
+              disabled: N > 0,
               type: "primary",
               htmlType: "submit",
-              loading: Y,
+              loading: J,
               block: !0,
-              children: _ > 0 ? /* @__PURE__ */ e.jsxs("span", { style: { marginLeft: 8 }, children: [
-                _,
+              children: N > 0 ? /* @__PURE__ */ e.jsxs("span", { style: { marginLeft: 8 }, children: [
+                N,
                 "s"
-              ] }) : a("login.login", { defaultValue: "Login" })
+              ] }) : t("login.login", { defaultValue: "Login" })
             }
           ) })
         ]
       }
     ),
-    F.length > 0 && u !== "password_expired" && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-      /* @__PURE__ */ e.jsx(ie, { children: a("login.or", { defaultValue: "Or" }) }),
-      /* @__PURE__ */ e.jsx(le, { direction: "vertical", style: { width: "100%" }, children: F.map((t) => /* @__PURE__ */ e.jsx(
-        q,
+    O.length > 0 && u !== "password_expired" && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
+      /* @__PURE__ */ e.jsx(de, { className: i("login-page-divider", "login-page-divider-or"), children: t("login.or", { defaultValue: "Or" }) }),
+      /* @__PURE__ */ e.jsx(ge, { direction: "vertical", className: i(c.loginPageProviders, "login-page-providers"), children: O.map((r) => /* @__PURE__ */ e.jsx(
+        B,
         {
-          icon: Z(t.name),
-          onClick: () => Q(t.name),
-          loading: j[t.name],
+          icon: ae(r.name),
+          onClick: () => ee(r.name),
+          loading: b[r.name],
           block: !0,
-          children: t.icon_url ? /* @__PURE__ */ e.jsx(de, { src: t.icon_url }) : a("login.continueWith", { defaultValue: "Continue with {{provider}}", provider: t.display_name })
+          children: r.icon_url ? /* @__PURE__ */ e.jsx(me, { src: r.icon_url }) : t("login.continueWith", { defaultValue: "Continue with {{provider}}", provider: r.display_name })
         },
-        t.name
+        r.name
       )) })
     ] }),
-    u === "password_expired" && /* @__PURE__ */ e.jsx(_e, { onSuccess: () => {
-      h("login"), p.setFieldValue("password", ""), p.setFieldValue("mfa_code", "");
-    }, token: G || void 0 })
+    u === "password_expired" && /* @__PURE__ */ e.jsx(_e, { className: "login-page-password-expired", onSuccess: () => {
+      w("login"), j.setFieldValue("password", ""), j.setFieldValue("mfa_code", "");
+    }, token: W || void 0 })
   ] }) }) });
 };
 export {
-  qe as default
+  ze as default
 };
