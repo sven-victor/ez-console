@@ -129,7 +129,7 @@ func (s *AIChatService) GetChatMessages(ctx context.Context, organizationID, use
 
 // UpdateChatMessage updates a chat message
 func (s *AIChatService) UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error {
-	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND session_id = ? AND tool_call_id = ?", organizationID, userID, sessionID, toolCallID).Update("result", result).Error; err != nil {
+	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND session_id = ? AND tool_call_id = ?", organizationID, userID, sessionID, toolCallID).Update("content", result).Error; err != nil {
 		return fmt.Errorf("failed to update chat tool call result: %w", err)
 	}
 
