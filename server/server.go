@@ -91,7 +91,6 @@ func initFlags(rootCmd *cobra.Command) {
 
 type CommandServer struct {
 	*cobra.Command
-	service *service.Service
 }
 
 type Service interface {
@@ -149,10 +148,6 @@ type Service interface {
 	// GeoIP Service
 	GetLocation(ctx context.Context, ip string, language string) (string, error)
 	MustGetLocation(ctx context.Context, ip string, language string) string
-}
-
-func (c *CommandServer) GetService() Service {
-	return c.service
 }
 
 type ServerOption struct {
