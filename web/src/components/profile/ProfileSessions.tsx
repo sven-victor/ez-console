@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Table, Button, Tag, Popconfirm, message, Space, Card, Typography, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { GlobalOutlined, ClockCircleOutlined, LaptopOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { useRequest } from 'ahooks';
 
 const { Text } = Typography;
 
@@ -26,60 +27,54 @@ const { Text } = Typography;
 const ProfileSessions: React.FC = () => {
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
-  const [sessions, setSessions] = useState<API.SessionInfo[]>([]);
-  const [loading, setLoading] = useState(false);
   const [terminatingId, setTerminatingId] = useState<string | null>(null);
   const [terminatingAll, setTerminatingAll] = useState(false);
 
-  const fetchSessions = async () => {
-    try {
-      setLoading(true);
-      // Use actual API to get session list
-      const data = await api.authorization.getUserSessions({});
-      setSessions(data);
-    } catch (error) {
+  const { data: sessions = [], loading, run: fetchSessions } = useRequest(() => {
+    return api.authorization.getUserSessions({});
+  }, {
+    onError: (error) => {
       message.error(t('session.getSessionsFailed', { error: error, defaultValue: 'Failed to get session list: {{error}}' }));
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+  });
 
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-
-  const handleTerminateSession = async (sessionId: string) => {
-    try {
-      setTerminatingId(sessionId);
-      // Call actual API to terminate session
-      await api.authorization.terminateSession({ id: sessionId });
-
-      // Update local status
-      setSessions(sessions.filter(session => session.id !== sessionId));
+  const { run: handleTerminateSession } = useRequest((sessionId: string) => {
+    return api.authorization.terminateSession({ id: sessionId });
+  }, {
+    onSuccess: () => {
       message.success(t('session.terminateSuccess', { defaultValue: 'Session terminated successfully' }));
-    } catch (error) {
+      fetchSessions();
+    },
+    onError: (error) => {
       message.error(t('session.terminateFailed', { error: error, defaultValue: 'Failed to terminate session: {{error}}' }));
-    } finally {
+    },
+    onFinally: () => {
       setTerminatingId(null);
-    }
-  };
+    },
+    onBefore: ([sessionId]) => {
+      setTerminatingId(sessionId);
+    },
+    manual: true,
+  });
 
-  const handleTerminateOtherSessions = async () => {
-    try {
-      setTerminatingAll(true);
-      // Call actual API to terminate all other sessions
-      await api.authorization.terminateOtherSessions();
-
-      // Update local status, only keep current session
-      setSessions(sessions.filter(session => session.is_current));
+  const { run: handleTerminateOtherSessions } = useRequest(() => {
+    return api.authorization.terminateOtherSessions();
+  }, {
+    onSuccess: () => {
       message.success(t('session.terminateAllSuccess', { defaultValue: 'All other sessions terminated successfully' }));
-    } catch (error) {
+      fetchSessions();
+    },
+    onError: (error) => {
       message.error(t('session.terminateAllFailed', { error: error, defaultValue: 'Failed to terminate all other sessions: {{error}}' }));
-    } finally {
+    },
+    onFinally: () => {
       setTerminatingAll(false);
-    }
-  };
-
+    },
+    onBefore: () => {
+      setTerminatingAll(true);
+    },
+    manual: true,
+  });
   const columns = [
     {
       title: t('session.device'),
@@ -161,25 +156,29 @@ const ProfileSessions: React.FC = () => {
   return (
     <Card
       title={t('session.title')}
+      loading={loading}
       extra={
-        sessions.length > 1 && (
-          <Popconfirm
-            title={t('session.confirmTerminateAll')}
-            onConfirm={handleTerminateOtherSessions}
-            okText={tCommon('confirm')}
-            cancelText={tCommon('cancel')}
-          >
-            <Button
-              danger
-              loading={terminatingAll}
+        <Space>
+          {sessions.length > 1 && (
+            <Popconfirm
+              title={t('session.confirmTerminateAll')}
+              onConfirm={handleTerminateOtherSessions}
+              okText={tCommon('confirm')}
+              cancelText={tCommon('cancel')}
             >
-              {t('session.terminateOthers')}
-            </Button>
-          </Popconfirm>
-        )
+              <Button
+                danger
+                loading={terminatingAll}
+              >
+                {t('session.terminateOthers')}
+              </Button>
+            </Popconfirm>
+          )}
+          <Button onClick={() => fetchSessions()} loading={loading}>{tCommon('refresh')}</Button>
+        </Space>
       }
     >
-      {sessions.length === 0 ? (
+      {!loading && sessions.length === 0 ? (
         <Empty description={t('session.noSessions')} />
       ) : (
         <Table
