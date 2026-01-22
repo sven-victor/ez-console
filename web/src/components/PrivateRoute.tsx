@@ -22,6 +22,7 @@ import { getURL } from '@/utils';
 import Loading from './Loading';
 import { Result } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { ApiError } from '@/service/client';
 
 export interface PrivateRouteProps {
   element: React.ReactElement;
@@ -54,6 +55,10 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({
 
 
   if (fetchCurrentUserError) {
+    const error = fetchCurrentUserError as ApiError;
+    if (error.code === "E4011") {
+      return <Loading />
+    }
     return <Result
       status="500"
       title="500"
