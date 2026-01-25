@@ -125,14 +125,16 @@ func (c *SettingController) UpdateSystemBaseSettings(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("System Settings", "Manage system parameters", []model.Permission{
 		{
-			Code:        "system:settings:view",
-			Name:        "View settings",
-			Description: "View system settings",
+			Code:             "system:settings:view",
+			Name:             "View settings",
+			Description:      "View system settings",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:        "system:settings:update",
-			Name:        "Update settings",
-			Description: "Update system settings",
+			Code:             "system:settings:update",
+			Name:             "Update settings",
+			Description:      "Update system settings",
+			DefaultRoleNames: []string{"operator"},
 		},
 	})
 }

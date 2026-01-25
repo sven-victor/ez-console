@@ -543,22 +543,25 @@ func (c *ToolSetController) GetToolSetTypeDefinitions(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("Toolset Management", "Manage toolset creation, editing, deletion, and status updates", []model.Permission{
 		{
-			Code:          "system:toolsets:view",
-			Name:          "View toolsets",
-			Description:   "View toolset list and details",
-			OrgPermission: true,
+			Code:             "system:toolsets:view",
+			Name:             "View toolsets",
+			Description:      "View toolset list and details",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:          "system:toolsets:create",
-			Name:          "Create toolsets",
-			Description:   "Create new toolsets",
-			OrgPermission: true,
+			Code:             "system:toolsets:create",
+			Name:             "Create toolsets",
+			Description:      "Create new toolsets",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:          "system:toolsets:update",
-			Name:          "Update toolsets",
-			Description:   "Update toolset information",
-			OrgPermission: true,
+			Code:             "system:toolsets:update",
+			Name:             "Update toolsets",
+			Description:      "Update toolset information",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:          "system:toolsets:delete",
@@ -567,10 +570,11 @@ func init() {
 			OrgPermission: true,
 		},
 		{
-			Code:          "system:toolsets:test",
-			Name:          "Test toolsets",
-			Description:   "Test toolset connection",
-			OrgPermission: true,
+			Code:             "system:toolsets:test",
+			Name:             "Test toolsets",
+			Description:      "Test toolset connection",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 	})
 }

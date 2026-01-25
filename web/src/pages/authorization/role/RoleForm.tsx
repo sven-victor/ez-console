@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
+  Alert,
   Card,
   Form,
   Input,
@@ -154,6 +155,7 @@ const RoleForm: React.FC = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined);
   const [pageLoading, setPageLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [isSystemRole, setIsSystemRole] = useState(false);
 
   useEffect(() => {
     aiToolSelectionsRef.current = aiToolSelections;
@@ -249,6 +251,7 @@ const RoleForm: React.FC = () => {
       setPageLoading(true);
       try {
         const detailedRole = await api.authorization.getRole({ id: roleId });
+        setIsSystemRole(detailedRole.role_type === 'system');
         const permissions = detailedRole.permissions?.map((p: API.Permission) => p.id) || [];
         setCheckedKeys(permissions);
         form.setFieldsValue({ permissions });
@@ -438,6 +441,7 @@ const RoleForm: React.FC = () => {
     } catch (error) {
       message.error(
         t('role.saveError', {
+          error: error instanceof Error ? error.message : 'Unknown error',
           defaultValue: 'Failed to save role.',
           action: isEditMode
             ? tCommon('update', { defaultValue: 'Update' })
@@ -449,18 +453,31 @@ const RoleForm: React.FC = () => {
     }
   };
 
+  const readOnly = isEditMode && isSystemRole;
+
   return (
     <Card
       title={
-        isEditMode
-          ? t('role.editTitle', { defaultValue: 'Edit Role' })
-          : t('role.createTitle', { defaultValue: 'Create Role' })
+        readOnly
+          ? t('role.viewTitle', { defaultValue: 'View Role' })
+          : isEditMode
+            ? t('role.editTitle', { defaultValue: 'Edit Role' })
+            : t('role.createTitle', { defaultValue: 'Create Role' })
       }
       loading={pageLoading}
     >
+      {readOnly && (
+        <Alert
+          type="info"
+          message={t('role.systemRoleCannotModify', { defaultValue: 'System roles cannot be modified.' })}
+          style={{ marginBottom: 16 }}
+          showIcon
+        />
+      )}
       <Form
         form={form}
         layout="vertical"
+        disabled={readOnly}
         initialValues={{
           policy_document: defaultPolicyDocument,
           permissions: [],
@@ -684,6 +701,7 @@ const RoleForm: React.FC = () => {
                           );
                         }}
                         checkable
+                        disabled={readOnly}
                         expandedKeys={expandedKeys}
                         autoExpandParent={autoExpandParent}
                         onExpand={onExpand}

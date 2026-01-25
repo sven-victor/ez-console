@@ -18,6 +18,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
@@ -34,6 +35,10 @@ func RegisterPermission(groupName string, description string, permissions []mode
 					// Update existing permission, preserve OrgPermission if already set
 					if !existing.OrgPermission {
 						existing.OrgPermission = permission.OrgPermission
+					}
+					// Overwrite DefaultRoleNames when incoming has any
+					if len(permission.DefaultRoleNames) > 0 {
+						existing.DefaultRoleNames = permission.DefaultRoleNames
 					}
 				} else {
 					g.Permissions = append(g.Permissions, permission)
@@ -106,11 +111,27 @@ func RequirePermission(code string) gin.HandlerFunc {
 		// If this is an organization-scoped permission, check organization context
 		orgID, _ := c.Get("organization_id")
 		if permission.OrgPermission {
+
 			if orgID == nil || orgID.(string) == "" {
 				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization context required for this permission"))
 				return
 			}
 			orgIDStr := orgID.(string)
+			// check if org is enabled
+			var org model.Organization
+
+			if err := db.Session(c.Request.Context()).Model(&model.Organization{}).Where("resource_id = ?", orgIDStr).First(&org).Error; err != nil {
+				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization not found", err))
+				return
+			}
+			if org.ResourceID == "" {
+				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization not found"))
+				return
+			}
+			if org.Status == model.OrganizationStatusDisabled {
+				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization is disabled"))
+				return
+			}
 
 			// For org permissions, check both global roles (can manage all orgs) and org-scoped roles for this organization
 			var validRoles []model.Role

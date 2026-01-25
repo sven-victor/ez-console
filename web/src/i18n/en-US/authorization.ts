@@ -235,7 +235,7 @@ export default {
     createTitle: 'Create Role',
     editTitle: 'Edit Role',
     saveSuccess: 'Role {{action}}d successfully',
-    saveError: 'Failed to {{action}} role',
+    saveError: 'Failed to {{action}} role: {{error}}',
     permissionRequired: 'Please select at least one permission',
     invalidJsonFormat: 'Invalid JSON format',
     organization: 'Organization',
@@ -257,6 +257,10 @@ export default {
     aiToolsetNoTools: 'No tools available in this toolset.',
     aiToolsetsEmpty: 'No AI toolsets available for this organization.',
     aiPermissionsGlobalInfo: 'AI tool permissions are only available for organization roles.',
+    typeSystem: 'System',
+    typeUser: 'User',
+    systemRoleCannotModify: 'System roles cannot be modified.',
+    viewTitle: 'View Role',
   },
   permission: {
     title: {

@@ -581,21 +581,24 @@ func (c *OrganizationController) RemoveUserFromOrganization(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("System Settings", "Manage system parameters", []model.Permission{
 		{
-			Code:          "system:organization:view",
-			Name:          "View organizations",
-			Description:   "View organization list and details",
-			OrgPermission: true,
+			Code:             "system:organization:view",
+			Name:             "View organizations",
+			Description:      "View organization list and details",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:        "system:organization:create",
-			Name:        "Create organization",
-			Description: "Create new organizations",
+			Code:             "system:organization:create",
+			Name:             "Create organization",
+			Description:      "Create new organizations",
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:          "system:organization:update",
-			Name:          "Update organization",
-			Description:   "Update organization information",
-			OrgPermission: true,
+			Code:             "system:organization:update",
+			Name:             "Update organization",
+			Description:      "Update organization information",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:        "system:organization:delete",

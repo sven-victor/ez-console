@@ -165,14 +165,16 @@ func (c *SecuritySettingController) CheckPasswordComplexity(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("Security Settings", "Manage system security parameters", []model.Permission{
 		{
-			Code:        "system:security:view",
-			Name:        "View security settings",
-			Description: "View system security settings",
+			Code:             "system:security:view",
+			Name:             "View security settings",
+			Description:      "View system security settings",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:        "system:security:update",
-			Name:        "Update security settings",
-			Description: "Update system security settings",
+			Code:             "system:security:update",
+			Name:             "Update security settings",
+			Description:      "Update system security settings",
+			DefaultRoleNames: []string{"operator"},
 		},
 	})
 }

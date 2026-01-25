@@ -149,32 +149,36 @@ func init() {
 	// Register permissions
 	middleware.RegisterPermission("Product Management", "Manage products", []model.Permission{
 		{
-			Code:        "product:list",
-			Name:        "List Products",
-			Description: "View product list",
-			Module:      "product",
+			Code:             "product:list",
+			Name:             "List Products",
+			Description:      "View product list",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:        "product:create",
-			Name:        "Create Product",
-			Description: "Create new products",
-			Module:      "product",
+			Code:             "product:create",
+			Name:             "Create Product",
+			Description:      "Create new products",
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:        "product:update",
-			Name:        "Update Product",
-			Description: "Update existing products",
-			Module:      "product",
+			Code:             "product:update",
+			Name:             "Update Product",
+			Description:      "Update existing products",
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:        "product:delete",
 			Name:        "Delete Product",
 			Description: "Delete products",
-			Module:      "product",
 		},
 	})
 }
 ```
+
+**Permission attributes:**
+
+- **Code**, **Name**, **Description**: Required. **OrgPermission**: `true` if the permission is organization-scoped.
+- **DefaultRoleNames**: Optional list of role names. On startup, each such permission is automatically assigned to those roles. If the role does not exist, it is created (as a system role). For **OrgPermission** permissions, assignment applies to both global roles and organization-scoped roles (one per organization); otherwise only global roles are used. Omit or leave empty for admin-only permissions.
 
 ### Requiring Permissions
 
@@ -227,6 +231,15 @@ func (c *ProductController) ComplexOperation(ctx *gin.Context) {
 	// Proceed with operation
 }
 ```
+
+### Role Types (system vs user)
+
+Roles have a **role_type** attribute:
+
+- **`system`**: Created by seed data or by default-role assignment on startup. System roles cannot be modified, deleted, or have their permissions or policy changed via the API. Built-in global roles `admin`, `operator`, and `viewer` are system roles. Any role auto-created because of **DefaultRoleNames** (when it did not exist) is also a system role.
+- **`user`**: Created by users through the role API. User roles can be fully managed (update, delete, assign permissions, set policy).
+
+The API returns `role_type` in role responses. Update, delete, permission assignment, and policy updates for system roles return an error (e.g. `"system roles cannot be modified"` or `"system roles cannot be deleted"`).
 
 ### Admin Role
 
@@ -322,14 +335,18 @@ for _, role := range roles {
 ```go
 middleware.RegisterPermission("Product Management", "Manage products", []model.Permission{
 	{
-		Code:          "product:list",
-		Name:          "List Products",
-		Description:   "View product list",
-		Module:        "product",
-		OrgPermission: true,  // This is an organization-scoped permission
+		Code:             "product:list",
+		Name:             "List Products",
+		Description:      "View product list",
+		OrgPermission:    true,  // Organization-scoped permission
+		DefaultRoleNames: []string{"operator", "viewer"},
 	},
 })
 ```
+
+When **OrgPermission** is `true` and **DefaultRoleNames** is set, the permission is assigned on startup to both the global roles with those names and to organization-scoped roles with the same names (one per organization). Roles are created automatically if they do not exist.
+
+**Organization creation:** When a new organization is created via the API, the system automatically creates the same default org-scoped roles (e.g. `operator`, `viewer`) for that organization and assigns the corresponding org-scoped permissions. This keeps every organization consistent with the default org and the startup behavior.
 
 ### Using Organization Context
 

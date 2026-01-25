@@ -3,7 +3,7 @@
     "info": {
         "title": "EZ Console API",
         "contact": {},
-        "version": "v1.4.0"
+        "version": "v1.9.2"
     },
     "paths": {
         "/api/ai/chat/sessions": {
@@ -6116,6 +6116,7 @@
                 "organization_id",
                 "permissions",
                 "policy_document",
+                "role_type",
                 "updated_at"
             ],
             "properties": {
@@ -6158,6 +6159,10 @@
                             "$ref": "#/definitions/model.PolicyDocument"
                         }
                     ]
+                },
+                "role_type": {
+                    "description": "RoleType: \"system\" = created by seed/default-role assignment, not user-manageable; \"user\" = user-created",
+                    "type": "string"
                 },
                 "updated_at": {
                     "type": "string"
@@ -7919,10 +7924,14 @@
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
-                1000000000
+                1000000000,
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -7941,10 +7950,14 @@
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second"
+                "Second",
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {

@@ -64,6 +64,16 @@ const RoleList: React.FC = () => {
       key: 'description',
     },
     {
+      title: t('role.roleType', { defaultValue: 'Role Type' }),
+      key: 'role_type',
+      render: (_: unknown, record: API.Role) =>
+        record.role_type === 'system' ? (
+          <Tag color="orange">{t('role.typeSystem', { defaultValue: 'System' })}</Tag>
+        ) : (
+          <Tag color="default">{t('role.typeUser', { defaultValue: 'User' })}</Tag>
+        ),
+    },
+    {
       title: t('role.organization', { defaultValue: 'Organization' }),
       key: 'organization',
       hidden: !siteConfig?.enable_multi_org,
@@ -100,38 +110,51 @@ const RoleList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      render: (_: any, record: API.Role) => (
-        <Space size="small">
-          <PermissionGuard permission="authorization:role:update">
-            <Tooltip title={t('role.edit', { defaultValue: 'Edit Role' })}>
-              <Button
-                type="text"
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => handleEdit(record.id)}
-              />
-            </Tooltip>
-          </PermissionGuard>
-
-          <PermissionGuard permission="authorization:role:delete">
-            <Tooltip title={t('role.delete', { defaultValue: 'Delete Role' })}>
-              <Popconfirm
-                title={t('role.deleteConfirm', { defaultValue: 'Are you sure you want to delete this role?' })}
-                onConfirm={() => handleDelete(record.id)}
-                okText={tCommon('confirm', { defaultValue: 'Confirm' })}
-                cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
-              >
-                <Button
-                  type="text"
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                />
-              </Popconfirm>
-            </Tooltip>
-          </PermissionGuard>
-        </Space>
-      ),
+      render: (_: any, record: API.Role) => {
+        const isSystemRole = record.role_type === 'system';
+        return (
+          <Space size="small">
+            {!isSystemRole && (
+              <>
+                <PermissionGuard permission="authorization:role:update">
+                  <Tooltip title={t('role.edit', { defaultValue: 'Edit Role' })}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(record.id)}
+                    />
+                  </Tooltip>
+                </PermissionGuard>
+                <PermissionGuard permission="authorization:role:delete">
+                  <Tooltip title={t('role.delete', { defaultValue: 'Delete Role' })}>
+                    <Popconfirm
+                      title={t('role.deleteConfirm', { defaultValue: 'Are you sure you want to delete this role?' })}
+                      onConfirm={() => handleDelete(record.id)}
+                      okText={tCommon('confirm', { defaultValue: 'Confirm' })}
+                      cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
+                    >
+                      <Button
+                        type="text"
+                        size="small"
+                        danger
+                        icon={<DeleteOutlined />}
+                      />
+                    </Popconfirm>
+                  </Tooltip>
+                </PermissionGuard>
+              </>
+            )}
+            {isSystemRole && (
+              <Tooltip title={t('role.systemRoleCannotModify', { defaultValue: 'System roles cannot be modified.' })}>
+                <span>
+                  <Button type="text" size="small" icon={<LockOutlined />} disabled />
+                </span>
+              </Tooltip>
+            )}
+          </Space>
+        );
+      },
     },
   ];
   return (

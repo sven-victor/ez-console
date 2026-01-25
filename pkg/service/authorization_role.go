@@ -21,6 +21,7 @@ import (
 	"net/http"
 
 	"github.com/sven-victor/ez-console/pkg/db"
+	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"gorm.io/gorm"
@@ -242,8 +243,13 @@ func (s *RoleService) ListRoles(ctx context.Context, current, pageSize int, sear
 	var total int64
 	query := db.Session(ctx).Model(&model.Role{})
 
-	// Filter by organization if provided
-	if organizationID != nil {
+	enableMultiOrg, err := middleware.GetSettingService().GetBoolSetting(ctx, model.SettingSystemEnableMultiOrg, false)
+	if err != nil {
+		return nil, 0, err
+	}
+	if !enableMultiOrg {
+		query = query.Where("organization_id IS NULL")
+	} else if organizationID != nil {
 		query = query.Where("organization_id = ?", *organizationID)
 	} else {
 		// If not filtering by org, show global roles by default
@@ -341,12 +347,13 @@ func (s *RoleService) CreateRole(ctx context.Context, name, description string, 
 		}
 	}
 
-	// Create role
+	// Create role (user-created, always RoleTypeUser)
 	role := model.Role{
 		Name:           name,
 		Description:    description,
 		OrganizationID: organizationID,
 		PolicyDocument: policyDocument,
+		RoleType:       model.RoleTypeUser,
 	}
 	if organizationID == nil {
 		// Only validate policy document for global roles
@@ -415,6 +422,13 @@ func (s *RoleService) UpdateRole(ctx context.Context, id, name, description stri
 			}
 		}
 		return nil, err
+	}
+	if role.RoleType == model.RoleTypeSystem {
+		return nil, util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("system roles cannot be modified"),
+		}
 	}
 
 	if organizationID != nil && *organizationID == "" {
@@ -543,6 +557,24 @@ func (s *RoleService) UpdateRole(ctx context.Context, id, name, description stri
 
 // DeleteRole deletes a role
 func (s *RoleService) DeleteRole(ctx context.Context, id string) error {
+	var role model.Role
+	if err := db.Session(ctx).Where("resource_id = ?", id).First(&role).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return util.ErrorResponse{
+				HTTPCode: http.StatusNotFound,
+				Code:     "E4004",
+				Err:      errors.New("role not found"),
+			}
+		}
+		return err
+	}
+	if role.RoleType == model.RoleTypeSystem {
+		return util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("system roles cannot be deleted"),
+		}
+	}
 	// Check if the role is used by users
 	var count int64
 	if err := db.Session(ctx).Model(&model.User{}).Joins("JOIN t_user_roles ON t_user_roles.user_id = t_user.resource_id").
@@ -577,6 +609,13 @@ func (s *RoleService) AssignPermissions(ctx context.Context, roleID string, perm
 		}
 		return err
 	}
+	if role.RoleType == model.RoleTypeSystem {
+		return util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("system roles cannot be modified"),
+		}
+	}
 
 	// Validate permission assignment based on role type
 	if err := s.validatePermissionAssignment(ctx, role.OrganizationID, permissionIDs); err != nil {
@@ -607,6 +646,13 @@ func (s *RoleService) SetRolePolicy(ctx context.Context, roleID string, policyDo
 			}
 		}
 		return nil, err
+	}
+	if role.RoleType == model.RoleTypeSystem {
+		return nil, util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("system roles cannot be modified"),
+		}
 	}
 	if !policyDocument.IsValid() {
 		return nil, util.ErrorResponse{

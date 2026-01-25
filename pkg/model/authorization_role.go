@@ -14,6 +14,11 @@
 
 package model
 
+const (
+	RoleTypeSystem = "system" // System-created roles (seed or default-role assignment); cannot be managed by users
+	RoleTypeUser   = "user"   // User-created roles; can be edited and deleted
+)
+
 // Role represents a role in the system, used for RBAC permission control
 type Role struct {
 	Base
@@ -29,6 +34,8 @@ type Role struct {
 	// Role names must be unique within the same organization (or among global roles if OrganizationID is nil)
 	OrganizationID *string       `gorm:"size:36;index:idx_role_name_org" json:"organization_id,omitempty"`
 	Organization   *Organization `gorm:"foreignKey:OrganizationID;references:ResourceID" json:"organization,omitempty"`
+	// RoleType: "system" = created by seed/default-role assignment, not user-manageable; "user" = user-created
+	RoleType string `gorm:"size:20;not null;default:user" json:"role_type"`
 }
 
 type PermissionGroup struct {
@@ -55,6 +62,10 @@ type Permission struct {
 	Roles       []Role `gorm:"many2many:role_permissions;" json:"-"`
 	// OrgPermission indicates if this permission is organization-scoped
 	OrgPermission bool `gorm:"default:false" json:"org_permission"`
+	// DefaultRoleNames: role names to which this permission is auto-assigned on startup.
+	// For OrgPermission, assigned to both global and org-scoped roles with that name; otherwise global only.
+	// Not persisted; used only at registration and during SeedDB.
+	DefaultRoleNames []string `gorm:"-" json:"-"`
 }
 
 // HasPermission checks if the role has the specified permission code (based on RBAC)

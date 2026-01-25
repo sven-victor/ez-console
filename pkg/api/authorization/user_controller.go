@@ -1086,34 +1086,40 @@ func (c *UserController) GetLdapUsers(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("User Management", "Manage user creation, editing, deletion, and permission assignment", []model.Permission{
 		{
-			Code:        "authorization:user:list",
-			Name:        "List users",
-			Description: "List users",
+			Code:            "authorization:user:list",
+			Name:            "List users",
+			Description:     "List users",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:        "authorization:user:view",
-			Name:        "View users",
-			Description: "View details",
+			Code:            "authorization:user:view",
+			Name:            "View users",
+			Description:     "View details",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:        "authorization:user:create",
-			Name:        "Create users",
-			Description: "Create new users",
+			Code:            "authorization:user:create",
+			Name:            "Create users",
+			Description:     "Create new users",
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:        "authorization:user:update",
-			Name:        "Update users",
-			Description: "Update user information",
+			Code:            "authorization:user:update",
+			Name:            "Update users",
+			Description:     "Update user information",
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:        "authorization:user:reset-password",
-			Name:        "Reset User Password",
-			Description: "Reset user password",
+			Code:            "authorization:user:reset-password",
+			Name:            "Reset User Password",
+			Description:     "Reset user password",
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:        "authorization:user:assign-roles",
-			Name:        "Assign roles to users",
-			Description: "Assign roles to users",
+			Code:            "authorization:user:assign-roles",
+			Name:            "Assign roles to users",
+			Description:     "Assign roles to users",
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:        "authorization:user:delete",
@@ -1121,9 +1127,10 @@ func init() {
 			Description: "Delete users",
 		},
 		{
-			Code:        "authorization:user:view_audit_logs",
-			Name:        "View User Audit Logs",
-			Description: "View user audit logs",
+			Code:            "authorization:user:view_audit_logs",
+			Name:            "View User Audit Logs",
+			Description:     "View user audit logs",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 	})
 }

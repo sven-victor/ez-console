@@ -72,9 +72,10 @@ func (c *StatisticsController) GetStatistics(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("Statistics", "View statistics", []model.Permission{
 		{
-			Code:        "statistics:view",
-			Name:        "View statistics",
-			Description: "View statistics",
+			Code:             "statistics:view",
+			Name:             "View statistics",
+			Description:      "View statistics",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 	})
 }

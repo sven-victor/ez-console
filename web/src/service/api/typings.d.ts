@@ -1269,6 +1269,8 @@ declare global {
       permissions: Permission[];
       /** Permission configuration based on IAM-style policies, stored in JSON format */
       policy_document: PolicyDocument;
+      /** RoleType: "system" = created by seed/default-role assignment, not user-manageable; "user" = user-created */
+      role_type: string;
       updated_at: string;
     }
   

@@ -67,9 +67,15 @@ func (s *OrganizationService) GetOrganization(ctx context.Context, id string) (*
 	return &org, nil
 }
 
-// CreateOrganization creates a new organization
+// CreateOrganization creates a new organization and automatically creates default
+// org-scoped roles (operator, viewer, etc.) per permission config with DefaultRoleNames + OrgPermission.
 func (s *OrganizationService) CreateOrganization(ctx context.Context, org *model.Organization) error {
-	return db.Session(ctx).Create(org).Error
+	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(org).Error; err != nil {
+			return err
+		}
+		return db.EnsureDefaultRolesForOrganization(ctx, tx, org.ResourceID, middleware.GetPermissions())
+	})
 }
 
 // UpdateOrganization updates an organization

@@ -533,22 +533,25 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("Role Management", "Manage role creation, editing, deletion, and permission assignment", []model.Permission{
 		{
-			Code:          "authorization:role:view",
-			Name:          "View roles",
-			Description:   "View role list and details",
-			OrgPermission: true,
+			Code:             "authorization:role:view",
+			Name:             "View roles",
+			Description:      "View role list and details",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:          "authorization:role:create",
-			Name:          "Create roles",
-			Description:   "Create new roles",
-			OrgPermission: true,
+			Code:             "authorization:role:create",
+			Name:             "Create roles",
+			Description:      "Create new roles",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:          "authorization:role:update",
-			Name:          "Update roles",
-			Description:   "Update role information",
-			OrgPermission: true,
+			Code:             "authorization:role:update",
+			Name:             "Update roles",
+			Description:      "Update role information",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:          "authorization:role:delete",

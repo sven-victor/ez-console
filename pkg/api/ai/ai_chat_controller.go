@@ -51,7 +51,7 @@ func (c *AIChatController) RegisterRoutes(router *gin.RouterGroup) {
 		chat.GET("/sessions/:sessionId", c.GetChatSession)
 		chat.DELETE("/sessions/:sessionId", c.DeleteChatSession)
 		chat.POST("/sessions/:sessionId", middleware.RequirePermission("ai:chat:create"), c.StreamChat)
-		chat.PUT("/sessions/:sessionId/title", c.GenerateChatSessionTitle)
+		chat.PUT("/sessions/:sessionId/title", middleware.RequirePermission("ai:chat:create"), c.GenerateChatSessionTitle)
 	}
 }
 
@@ -549,10 +549,11 @@ func (c *AIChatController) GenerateChatSessionTitle(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("AI Chat", "AI Chat", []model.Permission{
 		{
-			Code:          "ai:chat:create",
-			Name:          "Create AI chat",
-			Description:   "Create a new AI chat",
-			OrgPermission: true,
+			Code:             "ai:chat:create",
+			Name:             "Create AI chat",
+			Description:      "Create a new AI chat",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 	})
 }

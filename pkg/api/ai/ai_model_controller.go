@@ -453,22 +453,25 @@ func (c *AIModelController) GetAITypeDefinitions(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("AI Model Management", "Manage AI models", []model.Permission{
 		{
-			Code:          "ai:models:view",
-			Name:          "View AI models",
-			Description:   "View AI model list and details",
-			OrgPermission: true,
+			Code:             "ai:models:view",
+			Name:             "View AI models",
+			Description:      "View AI model list and details",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:          "ai:models:create",
-			Name:          "Create AI models",
-			Description:   "Create new AI models",
-			OrgPermission: true,
+			Code:             "ai:models:create",
+			Name:             "Create AI models",
+			Description:      "Create new AI models",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:          "ai:models:update",
-			Name:          "Update AI models",
-			Description:   "Update AI model information",
-			OrgPermission: true,
+			Code:             "ai:models:update",
+			Name:             "Update AI models",
+			Description:      "Update AI model information",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:          "ai:models:delete",
@@ -477,10 +480,11 @@ func init() {
 			OrgPermission: true,
 		},
 		{
-			Code:          "ai:models:test",
-			Name:          "Test AI models",
-			Description:   "Test AI model connection",
-			OrgPermission: true,
+			Code:             "ai:models:test",
+			Name:             "Test AI models",
+			Description:      "Test AI model connection",
+			OrgPermission:    true,
+			DefaultRoleNames: []string{"operator"},
 		},
 	})
 }

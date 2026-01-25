@@ -160,13 +160,16 @@ func (c *SystemController) HealthCheck(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("System Management", "Manage system information and health check", []model.Permission{
 		{
-			Code:        "system:view",
-			Name:        "View system information",
-			Description: "View system information and status",
-		}, {
-			Code:        "system:audit_log:view",
-			Name:        "View audit logs",
-			Description: "View audit logs",
+			Code:             "system:view",
+			Name:             "View system information",
+			Description:      "View system information and status",
+			DefaultRoleNames: []string{"operator", "viewer"},
+		},
+		{
+			Code:             "system:audit_log:view",
+			Name:             "View audit logs",
+			Description:      "View audit logs",
+			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 	})
 }

@@ -16,6 +16,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/go-kit/log/level"
@@ -23,6 +24,8 @@ import (
 	"github.com/sven-victor/ez-utils/log"
 	"gorm.io/gorm"
 )
+
+const defaultRoleDescPrefix = "System role: "
 
 var migrateModels = []interface{}{
 	&model.User{},
@@ -86,27 +89,6 @@ func SeedDB(ctx context.Context, permissions []*model.PermissionGroup) error {
 			return err
 		}
 
-		// Check if roles need to be initialized
-		var roleCount int64
-		tx.Model(&model.Role{}).Count(&roleCount)
-		if roleCount == 0 {
-			if err := seedRoles(ctx, tx); err != nil {
-				return fmt.Errorf("Failed to initialize roles: %w", err)
-			}
-		} else {
-			var allPermissions []model.Permission
-			if err := tx.Find(&allPermissions).Error; err != nil {
-				return fmt.Errorf("Failed to get all permissions: %w", err)
-			}
-			var adminRole model.Role
-			if err := tx.Where("name = 'admin' AND (organization_id IS NULL OR organization_id = '')").First(&adminRole).Error; err != nil {
-				return fmt.Errorf("Failed to get admin role: %w", err)
-			}
-			if err := tx.Model(&adminRole).Association("Permissions").Replace(allPermissions); err != nil {
-				return fmt.Errorf("Failed to replace admin role permissions: %w", err)
-			}
-		}
-
 		// Check if users need to be initialized
 		var userCount int64
 		if err := tx.Model(&model.User{}).Count(&userCount).Error; err != nil {
@@ -122,12 +104,119 @@ func SeedDB(ctx context.Context, permissions []*model.PermissionGroup) error {
 	})
 }
 
+type RolesSetup struct {
+	roles         []*model.Role
+	orgs          []*model.Organization
+	adminRole     *model.Role
+	orgAdminRoles map[string]*model.Role
+}
+
+func (r *RolesSetup) GetRoles() []*model.Role {
+	var roles []*model.Role
+	roles = append(roles, r.adminRole)
+	for _, orgAdminRole := range r.orgAdminRoles {
+		roles = append(roles, orgAdminRole)
+	}
+	roles = append(roles, r.roles...)
+	return roles
+}
+
+func (r *RolesSetup) GetRole(orgID *string, name string) *model.Role {
+	for _, role := range r.roles {
+		if orgID != nil {
+			if role.OrganizationID == orgID && role.Name == name {
+				return role
+			}
+		} else {
+			if (role.OrganizationID == nil || *role.OrganizationID == "") && role.Name == name {
+				return role
+			}
+		}
+	}
+	return nil
+}
+
+func (r *RolesSetup) AddPermission(permission model.Permission) {
+	if permission.OrgPermission {
+		for _, org := range r.orgs {
+			r.adminRole.Permissions = append(r.adminRole.Permissions, permission)
+			orgAdminRole, ok := r.orgAdminRoles[org.ResourceID]
+			if !ok {
+				orgAdminRole = &model.Role{
+					Name:           "admin",
+					Description:    defaultRoleDescPrefix + "admin",
+					Permissions:    []model.Permission{permission},
+					RoleType:       model.RoleTypeSystem,
+					OrganizationID: &org.ResourceID,
+				}
+				r.orgAdminRoles[org.ResourceID] = orgAdminRole
+			} else {
+				orgAdminRole.Permissions = append(orgAdminRole.Permissions, permission)
+			}
+
+			for _, roleName := range permission.DefaultRoleNames {
+				if roleName == "admin" {
+					continue
+				}
+				role := r.GetRole(&org.ResourceID, roleName)
+				if role == nil {
+					role = &model.Role{
+						Name:           roleName,
+						Description:    defaultRoleDescPrefix + roleName,
+						Permissions:    []model.Permission{permission},
+						RoleType:       model.RoleTypeSystem,
+						OrganizationID: &org.ResourceID,
+					}
+					r.roles = append(r.roles, role)
+				} else {
+					role.Permissions = append(role.Permissions, permission)
+				}
+			}
+		}
+	}
+
+	for _, roleName := range permission.DefaultRoleNames {
+		if roleName == "admin" {
+			continue
+		}
+		role := r.GetRole(nil, roleName)
+		if role == nil {
+			role = &model.Role{
+				Name:        roleName,
+				Description: defaultRoleDescPrefix + roleName,
+				Permissions: []model.Permission{permission},
+				RoleType:    model.RoleTypeSystem,
+			}
+			r.roles = append(r.roles, role)
+		} else {
+			role.Permissions = append(role.Permissions, permission)
+		}
+	}
+	r.adminRole.Permissions = append(r.adminRole.Permissions, permission)
+}
+
 // seedPermissions creates initial permissions
 func seedPermissions(ctx context.Context, tx *gorm.DB, permissions []*model.PermissionGroup) error {
 	var originalPermissions []model.Permission
 	if err := tx.Model(&model.Permission{}).Find(&originalPermissions).Error; err != nil {
 		return err
 	}
+
+	var orgs []*model.Organization
+	if err := tx.Find(&orgs).Error; err != nil {
+		return err
+	}
+	roleSetup := RolesSetup{
+		roles: make([]*model.Role, 0),
+		orgs:  orgs,
+		adminRole: &model.Role{
+			Name:        "admin",
+			Description: "System administrator, with all permissions",
+			RoleType:    model.RoleTypeSystem,
+		},
+		orgAdminRoles: make(map[string]*model.Role),
+	}
+
 	if len(originalPermissions) == 0 {
 		logger := log.GetContextLogger(ctx)
 		level.Info(logger).Log("msg", "Creating basic permissions...")
@@ -137,6 +226,9 @@ func seedPermissions(ctx context.Context, tx *gorm.DB, permissions []*model.Perm
 		}
 		if err := tx.Create(&newPermissions).Error; err != nil {
 			return err
+		}
+		for _, permission := range newPermissions {
+			roleSetup.AddPermission(permission)
 		}
 	} else {
 		for _, permissionGroup := range permissions {
@@ -153,62 +245,135 @@ func seedPermissions(ctx context.Context, tx *gorm.DB, permissions []*model.Perm
 								return err
 							}
 						}
+						originalPermission.DefaultRoleNames = permission.DefaultRoleNames
+						originalPermission.Description = permission.Description
+						originalPermission.Name = permission.Name
+						originalPermission.OrgPermission = permission.OrgPermission
+						roleSetup.AddPermission(originalPermission)
 						continue loop
 					}
 				}
 				if err := tx.Create(&permission).Error; err != nil {
 					return err
 				}
+				roleSetup.AddPermission(permission)
 			}
+		}
+	}
+
+	for _, role := range roleSetup.GetRoles() {
+		var dbRole model.Role
+		if role.OrganizationID != nil && *role.OrganizationID != "" {
+			if err := tx.Where("name = ? and organization_id = ?", role.Name, *role.OrganizationID).First(&dbRole).Error; err != nil {
+				if !errors.Is(err, gorm.ErrRecordNotFound) {
+					return fmt.Errorf("failed to get role: %w", err)
+				}
+				if err := tx.Create(&role).Error; err != nil {
+					return err
+				}
+				dbRole = *role
+			}
+		} else {
+			if err := tx.Where("name = ? and (organization_id is null or organization_id = '')", role.Name).First(&dbRole).Error; err != nil {
+				if !errors.Is(err, gorm.ErrRecordNotFound) {
+					return fmt.Errorf("failed to get role: %w", err)
+				}
+				if err := tx.Create(&role).Error; err != nil {
+					return err
+				}
+				dbRole = *role
+			}
+		}
+		if err := tx.Model(&dbRole).Association("Permissions").Replace(role.Permissions); err != nil {
+			return fmt.Errorf("failed to replace role permissions: %w", err)
+		}
+		if err := tx.Model(&dbRole).Updates(map[string]interface{}{
+			"Description":    role.Description,
+			"Name":           role.Name,
+			"Permissions":    role.Permissions,
+			"RoleType":       model.RoleTypeSystem,
+			"OrganizationID": role.OrganizationID,
+		}).Error; err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-// seedRoles creates initial roles
-func seedRoles(ctx context.Context, tx *gorm.DB) error {
-	logger := log.GetContextLogger(ctx)
-	level.Info(logger).Log("msg", "Creating basic roles...")
+type OrgRoleSetup struct {
+	roles     []*model.Role
+	orgID     string
+	adminRole *model.Role
+}
 
-	// Get all permissions
-	var allPermissions []model.Permission
-	if err := tx.Find(&allPermissions).Error; err != nil {
-		return err
+func (o OrgRoleSetup) GetRoles() []*model.Role {
+	roles := make([]*model.Role, len(o.roles)+1)
+	copy(roles[:len(o.roles)], o.roles)
+	roles[len(roles)-1] = o.adminRole
+	return roles
+}
+
+func (o *OrgRoleSetup) AddPermission(p model.Permission) {
+	for _, roleName := range p.DefaultRoleNames {
+		if roleName == "admin" {
+			continue
+		}
+		role := o.GetRole(roleName)
+		if role == nil {
+			role = &model.Role{
+				Name:           roleName,
+				Description:    defaultRoleDescPrefix + roleName,
+				RoleType:       model.RoleTypeSystem,
+				OrganizationID: &o.orgID,
+				Permissions:    []model.Permission{p},
+			}
+			o.roles = append(o.roles, role)
+		} else {
+			role.Permissions = append(role.Permissions, p)
+		}
+	}
+	o.adminRole.Permissions = append(o.adminRole.Permissions, p)
+}
+
+func (o OrgRoleSetup) GetRole(name string) *model.Role {
+	for _, role := range o.roles {
+		if role.Name == name {
+			return role
+		}
+	}
+	return nil
+}
+
+// EnsureDefaultRolesForOrganization creates default org-scoped roles for the given organization
+// based on permissions with DefaultRoleNames and OrgPermission. Uses the same role names and
+// permission assignment as startup; call this when creating a new organization so it has
+// operator/viewer etc. like the default org. Must be called within a transaction.
+func EnsureDefaultRolesForOrganization(ctx context.Context, tx *gorm.DB, orgID string, groups []*model.PermissionGroup) error {
+	orgRoleSetup := OrgRoleSetup{
+		roles: make([]*model.Role, 0),
+		orgID: orgID,
+		adminRole: &model.Role{
+			Name:           "admin",
+			Description:    defaultRoleDescPrefix + "admin",
+			RoleType:       model.RoleTypeSystem,
+			OrganizationID: &orgID,
+			Permissions:    make([]model.Permission, 0),
+		},
 	}
 
-	// Create administrator role
-	adminRole := model.Role{
-		Name:        "admin",
-		Description: "System administrator, with all permissions",
-		Permissions: allPermissions,
+	for _, g := range groups {
+		for _, p := range g.Permissions {
+			if !p.OrgPermission {
+				continue
+			}
+			orgRoleSetup.AddPermission(p)
+		}
 	}
-
-	// Get user view permission
-	var userViewPermission []model.Permission
-	if err := tx.Where("code = ?", "authorization:user:view").Find(&userViewPermission).Error; err != nil {
-		return err
+	for _, role := range orgRoleSetup.GetRoles() {
+		if err := tx.Create(&role).Error; err != nil {
+			return err
+		}
 	}
-
-	// Create operator role
-	operatorRole := model.Role{
-		Name:        "operator",
-		Description: "System operator, can view users",
-		Permissions: userViewPermission,
-	}
-
-	// Create viewer role
-	viewerRole := model.Role{
-		Name:        "viewer",
-		Description: "System viewer, only has view permissions",
-		Permissions: userViewPermission,
-	}
-
-	// Save roles to database
-	roles := []model.Role{adminRole, operatorRole, viewerRole}
-	if err := tx.Create(&roles).Error; err != nil {
-		return err
-	}
-
 	return nil
 }
 
