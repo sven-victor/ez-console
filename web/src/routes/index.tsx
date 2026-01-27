@@ -111,6 +111,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
           name: undefined,
           index: true,
         },
+        ...extraPrivateRoutes,
         {
           name: 'authorization',
           icon: <UserOutlined />,
@@ -198,7 +199,6 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
             },
           ]
         },
-        ...extraPrivateRoutes,
         // System management menu
         {
           name: 'system',
