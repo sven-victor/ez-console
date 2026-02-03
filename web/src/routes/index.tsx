@@ -115,14 +115,18 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         {
           name: 'authorization',
           icon: <UserOutlined />,
-          permissions: ['authorization:user:view', 'authorization:user:create', 'authorization:user:update', 'authorization:user:delete', 'authorization:service_account:view', 'authorization:service_account:create', 'authorization:service_account:update', 'authorization:service_account:delete', 'authorization:role:view'],
+          permissions: [
+            'authorization:user:list',
+            'authorization:service_account:list',
+            'authorization:role:list',
+          ],
           children: [
             // Role management
             {
               path: '/authorization/roles',
               name: 'roles',
               icon: <SolutionOutlined />,
-              permissions: ['authorization:role:view', 'authorization:role:create', 'authorization:role:update', 'authorization:role:delete'],
+              permissions: ['authorization:role:list',],
               children: [
                 {
                   element: withSuspense(RoleList),
@@ -149,7 +153,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
               path: '/authorization/users',
               name: 'users',
               icon: <UserOutlined />,
-              permissions: ['authorization:user:view', 'authorization:user:list', 'authorization:user:create', 'authorization:user:update', 'authorization:user:delete'],
+              permissions: ['authorization:user:list'],
               children: [
                 {
                   element: withSuspense(UserList),
@@ -182,7 +186,9 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
               path: '/authorization/service-accounts',
               name: 'serviceAccounts',
               icon: <UserOutlined />,
-              permissions: ['authorization:service_account:view'],
+              permissions: [
+                'authorization:service_account:list',
+              ],
               children: [
                 {
                   element: withSuspense(ServiceAccountList),
