@@ -87,7 +87,7 @@ func (e ErrorResponse) String() string {
 
 type Response[T any] struct {
 	Code    string `json:"code"`
-	Data    T      `json:"data,omitempty"`
+	Data    T      `json:"data"`
 	Err     string `json:"err,omitempty"`
 	TraceID string `json:"trace_id,omitempty"`
 }
