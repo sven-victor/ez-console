@@ -705,6 +705,7 @@ export declare interface CreateServiceAccountAccessKeyResponse {
 export declare interface CreateServiceAccountRequest {
     description: string;
     name: string;
+    organization_id?: string;
 }
 
 export declare interface CreateToolSetRequest {
@@ -978,6 +979,8 @@ export declare interface getServiceAccountsParams {
     page_size?: number;
     /** Search keyword */
     search?: string;
+    /** Filter by organization ID (empty for global service accounts) */
+    organization_id?: string;
 }
 
 export declare interface getToolSetParams {
@@ -1847,6 +1850,8 @@ export declare interface Role {
     permissions: Permission[];
     /** Permission configuration based on IAM-style policies, stored in JSON format */
     policy_document: PolicyDocument;
+    /** RoleType: "system" = created by seed/default-role assignment, not user-manageable; "user" = user-created */
+    role_type: string;
     updated_at: string;
 }
 
@@ -1894,6 +1899,9 @@ export declare interface ServiceAccount {
     id: string;
     last_access: string;
     name: string;
+    organization: Organization;
+    /** OrganizationID is the organization this service account belongs to. If empty, the service account is global. */
+    organization_id: string;
     policy_document: PolicyDocument;
     /** Associations */
     roles: Role[];
@@ -2379,7 +2387,7 @@ export declare const useAuth: () => AuthContextType;
  * Permission Hook, used to check if the user has specific permissions
  *
  * Usage example:
- * const { hasPermission, hasAllPermissions, hasAnyPermission } = usePermission();
+ * const { hasPermission, hasAllPermissions, hasAnyPermission,hasGlobalPermission } = usePermission();
  *
  * if (hasPermission('authorization:user:create')) {
  *   // User has permission to create users
@@ -2389,6 +2397,7 @@ export declare const usePermission: () => {
     hasPermission: (permission: string) => boolean;
     hasAllPermissions: (permissions: string[]) => boolean;
     hasAnyPermission: (permissions: string[]) => boolean;
+    hasGlobalPermission: (permission: string) => boolean;
     isAdmin: boolean;
     loading: boolean;
 };

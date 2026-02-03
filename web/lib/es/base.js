@@ -590,7 +590,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     createTitle: "Create Role",
     editTitle: "Edit Role",
     saveSuccess: "Role {{action}}d successfully",
-    saveError: "Failed to {{action}} role",
+    saveError: "Failed to {{action}} role: {{error}}",
     permissionRequired: "Please select at least one permission",
     invalidJsonFormat: "Invalid JSON format",
     organization: "Organization",
@@ -611,7 +611,11 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     loadAiToolsetsError: "Failed to load AI toolsets.",
     aiToolsetNoTools: "No tools available in this toolset.",
     aiToolsetsEmpty: "No AI toolsets available for this organization.",
-    aiPermissionsGlobalInfo: "AI tool permissions are only available for organization roles."
+    aiPermissionsGlobalInfo: "AI tool permissions are only available for organization roles.",
+    typeSystem: "System",
+    typeUser: "User",
+    systemRoleCannotModify: "System roles cannot be modified.",
+    viewTitle: "View Role"
   },
   permission: {
     title: {
@@ -2128,7 +2132,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     createTitle: "创建角色",
     editTitle: "编辑角色",
     saveSuccess: "角色{{action}}成功",
-    saveError: "{{action}}角色失败",
+    saveError: "{{action}}角色失败: {{error}}",
     permissionRequired: "请至少选择一个权限",
     insertTemplate: "插入模板",
     organization: "组织",
@@ -2149,6 +2153,10 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     aiToolsetNoTools: "该工具集中没有可用工具。",
     aiToolsetsEmpty: "该组织暂无可用的 AI 工具集。",
     aiPermissionsGlobalInfo: "AI 工具权限仅适用于组织角色。",
+    typeSystem: "系统",
+    typeUser: "用户",
+    systemRoleCannotModify: "系统角色不可修改。",
+    viewTitle: "查看角色",
     allowAll: "允许所有",
     denyAll: "拒绝所有",
     allowWithAction: "允许特定操作",
@@ -3850,7 +3858,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, B = {
+}, V = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -4280,7 +4288,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, V = {
+}, B = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -7476,8 +7484,8 @@ m.use(g).use(p).init({
     "es-ES": {
       translation: D,
       common: O,
-      authorization: B,
-      system: V,
+      authorization: V,
+      system: B,
       ai: x
     },
     "fr-FR": {
