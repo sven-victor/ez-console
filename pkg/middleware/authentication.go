@@ -270,6 +270,21 @@ func GetRolesFromContext(c context.Context) []model.Role {
 	return c.Value("roles").([]model.Role)
 }
 
+func HasGlobalRolePermission(ctx context.Context, permissionCode string) bool {
+	roles := GetRolesFromContext(ctx)
+	if roles == nil {
+		return false
+	}
+	for _, role := range roles {
+		if role.OrganizationID == nil || *role.OrganizationID == "" {
+			if role.HasPermission(permissionCode) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 	cfg := config.GetConfig()
 	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(c.Request.Context(), "JWT Authentication")

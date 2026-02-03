@@ -76,6 +76,102 @@ func GetPermissions() []*model.PermissionGroup {
 	return permissionGroups
 }
 
+func HasPermission(c *gin.Context, code string) error {
+	roleInterface, exists := c.Get("roles")
+	if !exists {
+		return util.NewErrorMessage("E4012", "Unauthorized")
+	}
+	roles, ok := roleInterface.([]model.Role)
+	if !ok {
+		return util.NewErrorMessage("E4012", "Invalid role information")
+	}
+	// If it is an administrator, allow directly
+	for _, role := range roles {
+		if role.Name == "admin" && (role.OrganizationID == nil || *role.OrganizationID == "") {
+			return nil
+		}
+	}
+	// Get permission definition
+	permission := GetPermission(code)
+	if permission == nil {
+		return util.NewErrorMessage("E4031", "Permission not found")
+	}
+
+	// If this is an organization-scoped permission, check organization context
+	orgID, _ := c.Get("organization_id")
+	if permission.OrgPermission {
+		if orgID == nil || orgID.(string) == "" {
+			return util.NewErrorMessage("E4031", "Organization context required for this permission")
+		}
+		orgIDStr := orgID.(string)
+		// check if org is enabled
+		var org model.Organization
+
+		if err := db.Session(c.Request.Context()).Model(&model.Organization{}).Where("resource_id = ?", orgIDStr).First(&org).Error; err != nil {
+			return util.NewErrorMessage("E4031", "Organization not found", err)
+		}
+		if org.ResourceID == "" {
+			return util.NewErrorMessage("E4031", "Organization not found")
+		}
+		if org.Status == model.OrganizationStatusDisabled {
+			return util.NewErrorMessage("E4031", "Organization is disabled")
+		}
+
+		// For org permissions, check both global roles (can manage all orgs) and org-scoped roles for this organization
+		var validRoles []model.Role
+		for _, role := range roles {
+			// Global roles can manage all organizations' resources
+			if role.OrganizationID == nil {
+				validRoles = append(validRoles, role)
+			} else if *role.OrganizationID == orgIDStr {
+				// Org-scoped roles can only manage their own organization's resources
+				validRoles = append(validRoles, role)
+			}
+		}
+		roles = validRoles
+	} else {
+		// For non-org permissions, only check global roles
+		var globalRoles []model.Role
+		for _, role := range roles {
+			if role.OrganizationID == nil {
+				globalRoles = append(globalRoles, role)
+			}
+		}
+		roles = globalRoles
+	}
+
+	// Non-administrators need to check specific permissions
+	// First load complete role information, including permissions
+	// Create context information for conditional judgment of policy documents
+	context := map[string]interface{}{
+		"http.path":   c.Request.URL.Path,
+		"http.uri":    c.Request.URL.RequestURI(),
+		"http.method": c.Request.Method,
+		"http.ip":     c.ClientIP(),
+	}
+	if orgID != nil {
+		context["org.id"] = orgID
+	}
+	for _, param := range c.Params {
+		context[param.Key] = param.Value
+	}
+	// 1. First check the policy document
+	for _, role := range roles {
+		// Check if the policy document allows this operation
+		if isMatch, isAllow := role.HasPolicyPermission(code, "*", context); isMatch {
+			if isAllow {
+				return nil
+			}
+			return util.NewErrorMessage("E4031", "No permission to perform this operation")
+		}
+		if role.HasPermission(code) {
+			return nil
+		}
+	}
+
+	return util.NewErrorMessage("E4031", "No permission to perform this operation")
+}
+
 // RequirePermission permission check middleware
 func RequirePermission(code string) gin.HandlerFunc {
 	if GetPermission(code) == nil {
@@ -83,111 +179,11 @@ func RequirePermission(code string) gin.HandlerFunc {
 	}
 	return func(c *gin.Context) {
 		c.Set("permission_code", code)
-		// Get permission information
-		roleInterface, exists := c.Get("roles")
-		if !exists {
-			util.RespondWithError(c, util.NewErrorMessage("E4012", "Unauthorized"))
+		if err := HasPermission(c, code); err != nil {
+			util.RespondWithError(c, err)
 			return
 		}
-		roles, ok := roleInterface.([]model.Role)
-		if !ok {
-			util.RespondWithError(c, util.NewErrorMessage("E4012", "Invalid role information"))
-			return
-		}
-		// If it is an administrator, allow directly
-		for _, role := range roles {
-			if role.Name == "admin" && (role.OrganizationID == nil || *role.OrganizationID == "") {
-				c.Next()
-				return
-			}
-		}
-		// Get permission definition
-		permission := GetPermission(code)
-		if permission == nil {
-			util.RespondWithError(c, util.NewErrorMessage("E4031", "Permission not found"))
-			return
-		}
-
-		// If this is an organization-scoped permission, check organization context
-		orgID, _ := c.Get("organization_id")
-		if permission.OrgPermission {
-
-			if orgID == nil || orgID.(string) == "" {
-				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization context required for this permission"))
-				return
-			}
-			orgIDStr := orgID.(string)
-			// check if org is enabled
-			var org model.Organization
-
-			if err := db.Session(c.Request.Context()).Model(&model.Organization{}).Where("resource_id = ?", orgIDStr).First(&org).Error; err != nil {
-				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization not found", err))
-				return
-			}
-			if org.ResourceID == "" {
-				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization not found"))
-				return
-			}
-			if org.Status == model.OrganizationStatusDisabled {
-				util.RespondWithError(c, util.NewErrorMessage("E4031", "Organization is disabled"))
-				return
-			}
-
-			// For org permissions, check both global roles (can manage all orgs) and org-scoped roles for this organization
-			var validRoles []model.Role
-			for _, role := range roles {
-				// Global roles can manage all organizations' resources
-				if role.OrganizationID == nil {
-					validRoles = append(validRoles, role)
-				} else if *role.OrganizationID == orgIDStr {
-					// Org-scoped roles can only manage their own organization's resources
-					validRoles = append(validRoles, role)
-				}
-			}
-			roles = validRoles
-		} else {
-			// For non-org permissions, only check global roles
-			var globalRoles []model.Role
-			for _, role := range roles {
-				if role.OrganizationID == nil {
-					globalRoles = append(globalRoles, role)
-				}
-			}
-			roles = globalRoles
-		}
-
-		// Non-administrators need to check specific permissions
-		// First load complete role information, including permissions
-		// Create context information for conditional judgment of policy documents
-		context := map[string]interface{}{
-			"http.path":   c.Request.URL.Path,
-			"http.uri":    c.Request.URL.RequestURI(),
-			"http.method": c.Request.Method,
-			"http.ip":     c.ClientIP(),
-		}
-		if orgID != nil {
-			context["org.id"] = orgID
-		}
-		for _, param := range c.Params {
-			context[param.Key] = param.Value
-		}
-		// 1. First check the policy document
-		for _, role := range roles {
-			// Check if the policy document allows this operation
-			if isMatch, isAllow := role.HasPolicyPermission(code, "*", context); isMatch {
-				if isAllow {
-					c.Next()
-					return
-				}
-				util.RespondWithError(c, util.NewErrorMessage("E4031", "No permission to perform this operation"))
-				return
-			}
-			if role.HasPermission(code) {
-				c.Next()
-				return
-			}
-		}
-
-		util.RespondWithError(c, util.NewErrorMessage("E4031", "No permission to perform this operation"))
+		c.Next()
+		return
 	}
 }
