@@ -73,23 +73,7 @@ func (c *RoleController) ListRoles(ctx *gin.Context) {
 	currentOrgID := ctx.GetString("organization_id")
 	var orgID *string
 
-	roles := middleware.GetRolesFromContext(ctx)
-	if roles == nil {
-		util.RespondWithError(ctx, util.NewErrorMessage("E4031", "No roles found"))
-		return
-	}
-
-	var hasGlobalRolePermission bool
-
-	for _, role := range roles {
-		if role.OrganizationID == nil || *role.OrganizationID == "" {
-			if role.HasPermission("authorization:role:view") {
-				hasGlobalRolePermission = true
-				break
-			}
-		}
-	}
-	if hasGlobalRolePermission {
+	if middleware.HasGlobalRolePermission(ctx, "authorization:role:view") {
 		if searchOrgID != "" {
 			orgID = &searchOrgID
 		} else {
@@ -200,20 +184,7 @@ func (c *RoleController) CreateRole(ctx *gin.Context) {
 		func(auditLog *model.AuditLog) error {
 
 			if req.OrganizationID == nil || *req.OrganizationID == "" {
-				hasGlobalRolePermission := false
-				roles := middleware.GetRolesFromContext(ctx)
-				if roles == nil {
-					return util.NewErrorMessage("E4031", "No roles found")
-				}
-				for _, role := range roles {
-					if role.OrganizationID == nil || *role.OrganizationID == "" {
-						if role.HasPermission("authorization:role:create") {
-							hasGlobalRolePermission = true
-							break
-						}
-					}
-				}
-				if !hasGlobalRolePermission {
+				if !middleware.HasGlobalRolePermission(ctx, "authorization:role:create") {
 					return util.NewErrorMessage("E4031", "No global role permission found")
 				}
 				req.OrganizationID = nil
@@ -282,25 +253,6 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 		ctx,
 		id,
 		func(auditLog *model.AuditLog) error {
-			if req.OrganizationID == nil || *req.OrganizationID == "" {
-				hasGlobalRolePermission := false
-				roles := middleware.GetRolesFromContext(ctx)
-				if roles == nil {
-					return util.NewErrorMessage("E4031", "No roles found")
-				}
-				for _, role := range roles {
-					if role.OrganizationID == nil || *role.OrganizationID == "" {
-						if role.HasPermission("authorization:role:create") {
-							hasGlobalRolePermission = true
-							break
-						}
-					}
-				}
-				if !hasGlobalRolePermission {
-					return util.NewErrorMessage("E4031", "No global role permission found")
-				}
-				req.OrganizationID = nil
-			}
 			aiAssignments := toRoleAIToolAssignments(req.AIToolPermissions)
 			role, err := c.service.RoleService.UpdateRole(ctx, id, req.Name, req.Description, req.OrganizationID, req.PermissionIDs, req.PolicyDocument, aiAssignments)
 			if err != nil {

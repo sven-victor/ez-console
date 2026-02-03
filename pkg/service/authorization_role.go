@@ -299,6 +299,16 @@ func (s *RoleService) GetRole(ctx context.Context, id string) (*model.Role, erro
 		}
 		return nil, err
 	}
+
+	if role.OrganizationID == nil || *role.OrganizationID == "" {
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:role:view") {
+			return nil, util.ErrorResponse{
+				HTTPCode: http.StatusForbidden,
+				Code:     "E4031",
+				Err:      errors.New("no global role permission found"),
+			}
+		}
+	}
 	return &role, nil
 }
 
@@ -422,6 +432,16 @@ func (s *RoleService) UpdateRole(ctx context.Context, id, name, description stri
 			}
 		}
 		return nil, err
+	}
+
+	if role.OrganizationID == nil || *role.OrganizationID == "" {
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:role:update") {
+			return nil, util.ErrorResponse{
+				HTTPCode: http.StatusForbidden,
+				Code:     "E4031",
+				Err:      errors.New("no global role permission found"),
+			}
+		}
 	}
 	if role.RoleType == model.RoleTypeSystem {
 		return nil, util.ErrorResponse{
@@ -575,6 +595,15 @@ func (s *RoleService) DeleteRole(ctx context.Context, id string) error {
 			Err:      errors.New("system roles cannot be deleted"),
 		}
 	}
+	if role.OrganizationID == nil || *role.OrganizationID == "" {
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:role:delete") {
+			return util.ErrorResponse{
+				HTTPCode: http.StatusForbidden,
+				Code:     "E4031",
+				Err:      errors.New("no global role permission found"),
+			}
+		}
+	}
 	// Check if the role is used by users
 	var count int64
 	if err := db.Session(ctx).Model(&model.User{}).Joins("JOIN t_user_roles ON t_user_roles.user_id = t_user.resource_id").
@@ -617,6 +646,16 @@ func (s *RoleService) AssignPermissions(ctx context.Context, roleID string, perm
 		}
 	}
 
+	if role.OrganizationID == nil || *role.OrganizationID == "" {
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:role:update") {
+			return util.ErrorResponse{
+				HTTPCode: http.StatusForbidden,
+				Code:     "E4031",
+				Err:      errors.New("no global role permission found"),
+			}
+		}
+	}
+
 	// Validate permission assignment based on role type
 	if err := s.validatePermissionAssignment(ctx, role.OrganizationID, permissionIDs); err != nil {
 		return err
@@ -646,6 +685,15 @@ func (s *RoleService) SetRolePolicy(ctx context.Context, roleID string, policyDo
 			}
 		}
 		return nil, err
+	}
+	if role.OrganizationID == nil || *role.OrganizationID == "" {
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:role:update") {
+			return nil, util.ErrorResponse{
+				HTTPCode: http.StatusForbidden,
+				Code:     "E4031",
+				Err:      errors.New("no global role permission found"),
+			}
+		}
 	}
 	if role.RoleType == model.RoleTypeSystem {
 		return nil, util.ErrorResponse{
@@ -687,6 +735,16 @@ func (s *RoleService) GetRolePolicy(ctx context.Context, roleID string) (model.P
 			}
 		}
 		return model.PolicyDocument{}, err
+	}
+
+	if role.OrganizationID == nil || *role.OrganizationID == "" {
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:role:view") {
+			return model.PolicyDocument{}, util.ErrorResponse{
+				HTTPCode: http.StatusForbidden,
+				Code:     "E4031",
+				Err:      errors.New("no global role permission found"),
+			}
+		}
 	}
 
 	return role.PolicyDocument, nil
