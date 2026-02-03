@@ -284,6 +284,7 @@ export interface CreateServiceAccountAccessKeyResponse {
 export interface CreateServiceAccountRequest {
   description: string;
   name: string;
+  organization_id?: string;
 }
 
 export interface CreateToolSetRequest {
@@ -531,6 +532,8 @@ export interface getServiceAccountsParams {
   page_size?: number;
   /** Search keyword */
   search?: string;
+  /** Filter by organization ID (empty for global service accounts) */
+  organization_id?: string;
 }
 
 export interface getToolSetParams {
@@ -1316,6 +1319,9 @@ export interface ServiceAccount {
   id: string;
   last_access: string;
   name: string;
+  organization: Organization;
+  /** OrganizationID is the organization this service account belongs to. If empty, the service account is global. */
+  organization_id: string;
   policy_document: PolicyDocument;
   /** Associations */
   roles: Role[];

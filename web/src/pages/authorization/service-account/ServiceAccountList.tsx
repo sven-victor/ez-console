@@ -29,6 +29,7 @@ import {
   message,
   Popconfirm,
   Badge,
+  Select,
 } from 'antd';
 import {
   SearchOutlined,
@@ -41,6 +42,7 @@ import {
   LockOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';
@@ -48,6 +50,8 @@ import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { PAGINATION } from '@/constants';
 import { useTranslation } from 'react-i18next';
+import { useSite } from '@/contexts/SiteContext';
+import { useAuth } from '@/hooks/useAuth';
 import ServiceAccountForm from './ServiceAccountForm';
 
 // Service Account List Page
@@ -56,6 +60,10 @@ const ServiceAccountList: React.FC = () => {
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
   const [searchForm] = Form.useForm();
+  const { siteConfig } = useSite();
+  const { user } = useAuth();
+  const organizations = user?.organizations || [];
+  const enableMultiOrg = siteConfig?.enable_multi_org ?? false;
 
   // Data State
   const [loading, setLoading] = useState(false);
@@ -67,10 +75,16 @@ const ServiceAccountList: React.FC = () => {
   const [editingServiceAccountId, setEditingServiceAccountId] = useState<string | null>(null);
 
   // Query Parameters
-  const [queryParams, setQueryParams] = useState({
+  const [queryParams, setQueryParams] = useState<{
+    current: number;
+    page_size: number;
+    search?: string;
+    organization_id?: string;
+  }>({
     current: PAGINATION.DEFAULT_CURRENT,
     page_size: PAGINATION.DEFAULT_PAGE_SIZE,
     search: undefined,
+    organization_id: undefined,
   });
 
   // Load service account list
@@ -97,8 +111,9 @@ const ServiceAccountList: React.FC = () => {
   const handleSearch = (values: any) => {
     setQueryParams({
       ...queryParams,
-      current: PAGINATION.DEFAULT_CURRENT, // Reset to the first page
+      current: PAGINATION.DEFAULT_CURRENT,
       search: values.search,
+      organization_id: values.organization_id || undefined,
     });
   };
 
@@ -109,6 +124,7 @@ const ServiceAccountList: React.FC = () => {
       current: PAGINATION.DEFAULT_CURRENT,
       page_size: PAGINATION.DEFAULT_PAGE_SIZE,
       search: undefined,
+      organization_id: undefined,
     });
   };
 
@@ -188,6 +204,28 @@ const ServiceAccountList: React.FC = () => {
         </Tooltip>
       ),
     },
+    ...(enableMultiOrg
+      ? [
+          {
+            title: t('serviceAccount.organization', { defaultValue: 'Organization' }),
+            key: 'organization',
+            render: (_: unknown, record: API.ServiceAccount) => {
+              if (record.organization_id) {
+                return (
+                  <Tag icon={<TeamOutlined />} color="blue">
+                    {record.organization?.name || record.organization_id}
+                  </Tag>
+                );
+              }
+              return (
+                <Tag color="default">
+                  {t('serviceAccount.global', { defaultValue: 'Global' })}
+                </Tag>
+              );
+            },
+          },
+        ]
+      : []),
     {
       title: t('serviceAccount.status', { defaultValue: 'Status' }),
       dataIndex: 'status',
@@ -305,6 +343,7 @@ const ServiceAccountList: React.FC = () => {
           onFinish={handleSearch}
           initialValues={{
             search: queryParams.search,
+            organization_id: queryParams.organization_id,
           }}
           style={{ marginBottom: 0 }}
         >
@@ -318,6 +357,21 @@ const ServiceAccountList: React.FC = () => {
                 />
               </Form.Item>
             </Col>
+            {enableMultiOrg && (
+              <Col xs={24} sm={12} md={8} lg={6}>
+                <Form.Item name="organization_id">
+                  <Select
+                    placeholder={t('serviceAccount.filterByOrg', { defaultValue: 'All organizations' })}
+                    allowClear
+                    style={{ minWidth: 160 }}
+                    options={[
+                      { value: '', label: t('serviceAccount.global', { defaultValue: 'Global' }) },
+                      ...organizations.map((org) => ({ value: org.id, label: org.name })),
+                    ]}
+                  />
+                </Form.Item>
+              </Col>
+            )}
             <Col xs={24} sm={12} md={8} lg={6} style={{ display: 'flex', alignItems: 'flex-end' }}>
               <Form.Item>
                 <Space>
@@ -384,6 +438,8 @@ const ServiceAccountList: React.FC = () => {
         serviceAccountID={editingServiceAccountId}
         onClose={closeModal}
         open={modalVisible}
+        enableMultiOrg={enableMultiOrg}
+        organizations={organizations}
         onSuccess={() => {
           fetchServiceAccounts();
         }}

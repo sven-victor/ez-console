@@ -15,17 +15,21 @@
  */
 
 import { useRequest } from "ahooks";
-import { Modal, Space, Button, Input, Form, message } from "antd";
+import { Modal, Space, Button, Input, Form, message, Radio, Select } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import api from '@/service/api';
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
+import { useSite } from "@/contexts/SiteContext";
+import usePermission from "@/hooks/usePermission";
 
 interface ServiceAccountFormProps {
   serviceAccountID?: string | null;
   onClose: () => void;
   open?: boolean;
   onSuccess?: () => void;
+  enableMultiOrg?: boolean;
+  organizations?: API.Organization[];
 }
 
 const ServiceAccountForm = ({
@@ -33,17 +37,32 @@ const ServiceAccountForm = ({
   onClose,
   open = false,
   onSuccess,
+  enableMultiOrg = false,
+  organizations = [],
 }: ServiceAccountFormProps) => {
+  const { hasGlobalPermission } = usePermission();
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
+  const { currentOrgId } = useSite();
   const [form] = Form.useForm();
   const [loadingServiceAccount, setLoadingServiceAccount] = useState(false);
+  const [scopeType, setScopeType] = useState<'global' | 'organization'>('global');
+  const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined);
+  const [loadedOrgName, setLoadedOrgName] = useState<string | null>(null);
 
   const { run: saveServiceAccount, loading } = useRequest((values: any) => {
     if (serviceAccountID) {
-      return api.authorization.updateServiceAccount({ id: serviceAccountID }, values);
+      const { organization_id: _omit, ...updatePayload } = values;
+      return api.authorization.updateServiceAccount({ id: serviceAccountID }, updatePayload);
     }
-    return api.authorization.createServiceAccount(values);
+    const createPayload: API.CreateServiceAccountRequest = {
+      name: values.name,
+      description: values.description,
+    };
+    if (scopeType === 'organization' && selectedOrgId) {
+      createPayload.organization_id = selectedOrgId;
+    }
+    return api.authorization.createServiceAccount(createPayload);
   }, {
     onSuccess: () => {
       message.success(t('serviceAccount.saveSuccess', { defaultValue: 'Service account saved successfully.' }));
@@ -61,9 +80,14 @@ const ServiceAccountForm = ({
       setLoadingServiceAccount(true);
       try {
         const res = await api.authorization.getServiceAccountById({ id });
+        const orgId = res.organization_id || '';
+        setScopeType(orgId ? 'organization' : 'global');
+        setSelectedOrgId(orgId || undefined);
+        setLoadedOrgName(orgId ? (res.organization?.name ?? orgId) : null);
         form.setFieldsValue({
           name: res.name,
           description: res.description,
+          organization_id: orgId || undefined,
         });
       } catch (error) {
         message.error(t('serviceAccount.loadError', { defaultValue: 'Failed to load service account.' }));
@@ -73,11 +97,20 @@ const ServiceAccountForm = ({
     }
     if (open) {
       form.resetFields();
+      const defaultOrgId = currentOrgId || (organizations.length > 0 ? organizations[0].id : '');
+      const defaultScope = enableMultiOrg && defaultOrgId ? 'organization' : 'global';
+      setScopeType(defaultScope);
+      setSelectedOrgId(defaultScope === 'organization' ? defaultOrgId : undefined);
       if (serviceAccountID) {
         loadServiceAccount(serviceAccountID);
+      } else {
+        setLoadedOrgName(null);
+        form.setFieldsValue({
+          organization_id: defaultScope === 'organization' ? defaultOrgId : undefined,
+        });
       }
     }
-  }, [serviceAccountID, open]);
+  }, [serviceAccountID, open, enableMultiOrg, organizations, currentOrgId]);
 
   return <Modal
     title={serviceAccountID ? t('serviceAccount.edit', { defaultValue: 'Edit Service Account' }) : t('serviceAccount.create', { defaultValue: 'Create Service Account' })}
@@ -109,6 +142,45 @@ const ServiceAccountForm = ({
       layout="vertical"
       onFinish={saveServiceAccount}
     >
+      {enableMultiOrg && !serviceAccountID && (
+        <>
+          <Form.Item label={t('serviceAccount.scope', { defaultValue: 'Scope' })}>
+            <Radio.Group
+              value={scopeType}
+              onChange={(e) => {
+                const v = e.target.value as 'global' | 'organization';
+                setScopeType(v);
+                const orgId = v === 'organization' ? (currentOrgId || organizations[0]?.id) : undefined;
+                setSelectedOrgId(orgId);
+                form.setFieldsValue({ organization_id: orgId });
+              }}
+              disabled={!hasGlobalPermission('authorization:service_account:create')}
+            >
+              <Radio value="global">{t('serviceAccount.global', { defaultValue: 'Global' })}</Radio>
+              <Radio value="organization">{t('serviceAccount.organizationScoped', { defaultValue: 'Organization' })}</Radio>
+            </Radio.Group>
+          </Form.Item>
+          {scopeType === 'organization' && (
+            <Form.Item
+              name="organization_id"
+              label={t('serviceAccount.organization', { defaultValue: 'Organization' })}
+              rules={[{ required: true, message: t('serviceAccount.organizationRequired', { defaultValue: 'Please select an organization.' }) }]}
+            >
+              <Select
+                placeholder={t('serviceAccount.selectOrganization', { defaultValue: 'Select organization' })}
+                options={organizations.map((org) => ({ value: org.id, label: org.name }))}
+                value={selectedOrgId}
+                onChange={(v) => setSelectedOrgId(v)}
+              />
+            </Form.Item>
+          )}
+        </>
+      )}
+      {enableMultiOrg && serviceAccountID && (
+        <Form.Item label={t('serviceAccount.organization', { defaultValue: 'Organization' })}>
+          <span>{loadedOrgName ?? t('serviceAccount.global', { defaultValue: 'Global' })}</span>
+        </Form.Item>
+      )}
       <Form.Item
         label={t('serviceAccount.name', { defaultValue: 'Name' })}
         name="name"

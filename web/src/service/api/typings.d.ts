@@ -286,6 +286,7 @@ declare global {
     interface CreateServiceAccountRequest {
       description: string;
       name: string;
+      organization_id?: string;
     }
   
     interface CreateToolSetRequest {
@@ -533,6 +534,8 @@ declare global {
       page_size?: number;
       /** Search keyword */
       search?: string;
+      /** Filter by organization ID (empty for global service accounts) */
+      organization_id?: string;
     }
   
     interface getToolSetParams {
@@ -1318,6 +1321,9 @@ declare global {
       id: string;
       last_access: string;
       name: string;
+      organization: Organization;
+      /** OrganizationID is the organization this service account belongs to. If empty, the service account is global. */
+      organization_id: string;
       policy_document: PolicyDocument;
       /** Associations */
       roles: Role[];

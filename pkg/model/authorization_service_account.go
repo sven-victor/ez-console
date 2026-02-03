@@ -33,6 +33,10 @@ type ServiceAccount struct {
 	Status      string     `json:"status" gorm:"size:20;default:'active'"`
 	LastAccess  *time.Time `json:"last_access" gorm:"default:null"`
 
+	// OrganizationID is the organization this service account belongs to. If empty, the service account is global.
+	OrganizationID *string       `gorm:"size:36;index" json:"organization_id,omitempty"`
+	Organization   *Organization `gorm:"foreignKey:OrganizationID;references:ResourceID" json:"organization,omitempty"`
+
 	// Associations
 	Roles          []Role                    `json:"roles,omitempty" gorm:"many2many:service_account_roles;"`
 	AccessKeys     []ServiceAccountAccessKey `json:"access_keys,omitempty" gorm:"foreignKey:ServiceAccountID;references:ResourceID"`

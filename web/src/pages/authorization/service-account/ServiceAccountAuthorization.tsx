@@ -33,18 +33,24 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
   const { id: serviceAccountId } = serviceAccount || {};
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
-  const [availableRoles, setAvailableRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id'>[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id'>[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id' | 'role_type'>[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id' | 'role_type'>[]>([]);
 
   useEffect(() => {
     setSelectedRoles(serviceAccount?.roles || []);
   }, [serviceAccount]);
   const [searchKeywords, setSearchKeywords] = useState<string | undefined>(undefined);
+  const orgId = serviceAccount?.organization_id;
   const { loading: rolesLoading } = useRequest(async () => {
-    return api.authorization.listRoles({ current: 1, page_size: 20, search: searchKeywords })
+    return api.authorization.listRoles({
+      current: 1,
+      page_size: 20,
+      search: searchKeywords,
+      ...(orgId ? { organization_id: orgId } : {}),
+    });
   }, {
     onSuccess: (data) => {
-      const roles: Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id'>[] = data.data;
+      const roles: Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id' | 'role_type'>[] = data.data;
       selectedRoles.forEach(role => {
         const roleData = roles.find(r => r.id === role.id);
         if (!roleData) {
@@ -58,7 +64,7 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
       message.error(t('serviceAccount.loadRolesError', { defaultValue: 'Failed to load roles.' }));
     },
     debounceWait: 300,
-    refreshDeps: [searchKeywords],
+    refreshDeps: [searchKeywords, orgId],
   });
   // Submit role assignment
   const { run: assignRoles, loading: submitting } = useRequest(async () => {

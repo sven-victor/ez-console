@@ -1672,6 +1672,12 @@ const docTemplate = `{
                         "description": "Search keyword",
                         "name": "search",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by organization ID (empty for global service accounts)",
+                        "name": "organization_id",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -5117,6 +5123,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "organization_id": {
+                    "type": "string"
                 }
             }
         },
@@ -6417,6 +6426,8 @@ const docTemplate = `{
                 "id",
                 "last_access",
                 "name",
+                "organization",
+                "organization_id",
                 "policy_document",
                 "roles",
                 "status",
@@ -6442,6 +6453,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "organization": {
+                    "$ref": "#/definitions/model.Organization"
+                },
+                "organization_id": {
+                    "description": "OrganizationID is the organization this service account belongs to. If empty, the service account is global.",
                     "type": "string"
                 },
                 "policy_document": {
@@ -7939,16 +7957,18 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
                 1,
                 1000,
                 1000000,
@@ -7965,16 +7985,18 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

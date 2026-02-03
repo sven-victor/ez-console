@@ -72,76 +72,89 @@ func init() {
 			Code:             "authorization:service_account:list",
 			Name:             "List service accounts",
 			Description:      "List service accounts",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
 			Code:             "authorization:service_account:view",
 			Name:             "View service accounts",
 			Description:      "View service account list and details",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
 			Code:             "authorization:service_account:create",
 			Name:             "Create service accounts",
 			Description:      "Create new service accounts",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:             "authorization:service_account:update",
 			Name:             "Update service accounts",
 			Description:      "Update service account information",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:        "authorization:service_account:delete",
-			Name:        "Delete service accounts",
-			Description: "Delete service accounts",
+			Code:          "authorization:service_account:delete",
+			Name:          "Delete service accounts",
+			Description:   "Delete service accounts",
+			OrgPermission: true,
 		},
 		{
 			Code:             "authorization:service_account:access_key:list",
 			Name:             "List service account access keys",
 			Description:      "List service account access keys",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
 			Code:             "authorization:service_account:access_key:create",
 			Name:             "Create service account access keys",
 			Description:      "Create new service account access keys",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:             "authorization:service_account:access_key:update",
 			Name:             "Update service account access keys",
 			Description:      "Update service account access keys",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:        "authorization:service_account:access_key:delete",
-			Name:        "Delete service account access keys",
-			Description: "Delete service account access keys",
+			Code:          "authorization:service_account:access_key:delete",
+			Name:          "Delete service account access keys",
+			Description:   "Delete service account access keys",
+			OrgPermission: true,
 		},
 		{
 			Code:             "authorization:service_account:role:list",
 			Name:             "List service account roles",
 			Description:      "List service account roles",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
 			Code:             "authorization:service_account:role:assign",
 			Name:             "Assign service account roles",
 			Description:      "Assign roles to service accounts",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
 			Code:             "authorization:service_account:policy:view",
 			Name:             "Get service account policy",
 			Description:      "Get service account policy",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
 			Code:             "authorization:service_account:policy:update",
 			Name:             "Update service account policy",
 			Description:      "Update service account policy",
+			OrgPermission:    true,
 			DefaultRoleNames: []string{"operator"},
 		},
 	})
@@ -155,20 +168,41 @@ func init() {
 //	@Tags			Authorization/ServiceAccount
 //	@Accept			json
 //	@Produce		json
-//	@Param			current		query		int		false	"Current page number"		default(1)
-//	@Param			page_size	query		int		false	"Number of items per page"	default(10)
-//	@Param			search		query		string	false	"Search keyword"
-//	@Success		200			{object}	util.PaginationResponse[model.ServiceAccount]
-//	@Failure		500			{object}	util.ErrorResponse
+//	@Param			current			query		int		false	"Current page number"		default(1)
+//	@Param			page_size		query		int		false	"Number of items per page"	default(10)
+//	@Param			search			query		string	false	"Search keyword"
+//	@Param			organization_id	query		string	false	"Filter by organization ID (empty for global service accounts)"
+//	@Success		200				{object}	util.PaginationResponse[model.ServiceAccount]
+//	@Failure		500				{object}	util.ErrorResponse
 //	@Router			/api/authorization/service-accounts [get]
 func (c *ServiceAccountController) GetServiceAccounts(ctx *gin.Context) {
 	// Get pagination parameters
 	page, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
+	searchOrgID := ctx.Query("organization_id")
+	currentOrgID := ctx.GetString("organization_id")
+	var orgID *string
+
+	if middleware.HasGlobalRolePermission(ctx, "authorization:service_account:list") {
+		if searchOrgID != "" {
+			orgID = &searchOrgID
+		} else {
+			orgID = nil
+		}
+	} else if currentOrgID != "" {
+		if searchOrgID != "" && searchOrgID != currentOrgID {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Invalid organization ID"))
+			return
+		}
+		orgID = &currentOrgID
+	} else {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4031", "No permission to list service accounts"))
+		return
+	}
 
 	// Call service layer to get data
-	serviceAccounts, total, err := c.service.GetServiceAccountList(ctx, page, pageSize, search)
+	serviceAccounts, total, err := c.service.GetServiceAccountList(ctx, page, pageSize, search, orgID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -203,15 +237,23 @@ func (c *ServiceAccountController) GetServiceAccountByID(ctx *gin.Context) {
 		return
 	}
 
+	if serviceAccount.OrganizationID == nil || *serviceAccount.OrganizationID == "" {
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:service_account:view") {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "No global permission to view service accounts"))
+			return
+		}
+	}
+
 	util.RespondWithSuccess(ctx, http.StatusOK, serviceAccount)
 }
 
 type CreateServiceAccountRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description"`
+	Name           string  `json:"name" binding:"required"`
+	Description    string  `json:"description"`
+	OrganizationID *string `json:"organization_id,omitempty" validate:"optional"`
 }
 
-// CreateServiceAccount Create service account
+// CreateServiceAccount Create service account (global or organization-scoped)
 //
 //	@Summary		Create service account
 //	@Description	Create service account
@@ -231,11 +273,27 @@ func (c *ServiceAccountController) CreateServiceAccount(ctx *gin.Context) {
 		return
 	}
 
-	// Create service account
+	currentOrgID := ctx.GetString("organization_id")
+	if req.OrganizationID == nil || *req.OrganizationID == "" {
+		// Global service account: require global permission
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:service_account:create") {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "No global permission to create service accounts"))
+			return
+		}
+		req.OrganizationID = nil
+	} else {
+		// Organization service account: require org permission and same org
+		if currentOrgID != *req.OrganizationID {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Cannot create service account for another organization"))
+			return
+		}
+	}
+
 	serviceAccount := &model.ServiceAccount{
-		Name:        req.Name,
-		Description: req.Description,
-		Status:      "active",
+		Name:           req.Name,
+		Description:    req.Description,
+		Status:         "active",
+		OrganizationID: req.OrganizationID,
 	}
 
 	err := c.service.CreateServiceAccount(ctx, serviceAccount)
