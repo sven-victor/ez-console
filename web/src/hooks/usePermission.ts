@@ -22,7 +22,7 @@ import { useSite } from '@/contexts/SiteContext';
  * Permission Hook, used to check if the user has specific permissions
  *
  * Usage example:
- * const { hasPermission, hasAllPermissions, hasAnyPermission } = usePermission();
+ * const { hasPermission, hasAllPermissions, hasAnyPermission,hasGlobalPermission } = usePermission();
  *
  * if (hasPermission('authorization:user:create')) {
  *   // User has permission to create users
@@ -64,10 +64,25 @@ export const usePermission = () => {
     return permissions.some(perm => hasPermission(perm));
   };
 
+  const hasGlobalPermission = (permission: string): boolean => {
+    if (!roles) return false;
+
+    // Check if the user has the admin role
+    if (isAdminUser()) return true;
+
+    // If not admin, check if the role has the permission
+    return roles.some(role => {
+      if (role.organization_id) return false;
+      if (!role.permissions) return false;
+      return role.permissions.some(perm => perm.code === permission);
+    });
+  };
+
   return {
     hasPermission,
     hasAllPermissions,
     hasAnyPermission,
+    hasGlobalPermission,
     isAdmin: isAdminUser(),
     loading: !user
   };

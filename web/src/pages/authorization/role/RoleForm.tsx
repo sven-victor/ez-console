@@ -40,6 +40,7 @@ import { createStyles } from 'antd-style';
 import api from '@/service/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useSite } from '@/contexts/SiteContext';
+import usePermission from '@/hooks/usePermission';
 
 const { TextArea } = Input;
 
@@ -132,6 +133,7 @@ const defaultPolicyDocument = JSON.stringify({ Statement: [] }, null, 2);
 
 const RoleForm: React.FC = () => {
   const { styles } = useStyle();
+  const { hasGlobalPermission } = usePermission();
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
@@ -539,7 +541,7 @@ const RoleForm: React.FC = () => {
                     }
                   >
                     <Radio.Group
-                      disabled={isEditMode}
+                      disabled={isEditMode || !hasGlobalPermission('authorization:role:create')}
                       onChange={(e) => {
                         const newRoleType = e.target.value;
                         setRoleType(newRoleType);
