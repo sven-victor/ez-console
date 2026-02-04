@@ -28,6 +28,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
+	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/log"
 )
@@ -65,7 +66,9 @@ type CreateChatSessionRequest struct {
 
 // SendMessageRequest represents the request to send a message
 type SendMessageRequest struct {
-	Content string `json:"content" binding:"required"`
+	Content  string   `json:"content" binding:"required"`
+	Domains  []string `json:"domains"`   // optional: load skills for these domains (plus core) as system context
+	SkillIDs []string `json:"skill_ids"` // optional: load these specific skills by id
 }
 
 // GenerateChatSessionTitleRequest represents the request to generate or update a chat session title
@@ -442,6 +445,24 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				return
 			}
 		}),
+	}
+
+	var skillLoaderToolSet toolset.ToolSet
+	// Progressive skill loading: when domains/skillIDs are set, inject metadata only and add skill_loader toolset so the model can load content on demand
+	if len(req.Domains) > 0 || len(req.SkillIDs) > 0 {
+		metadataContent, skillIDs, err := c.service.SkillService.LoadSkillsMetadataForChat(ctx, req.Domains, req.SkillIDs)
+		if err != nil {
+			level.Error(logger).Log("msg", "Failed to load skills metadata", "error", err)
+			return
+		}
+		if metadataContent != "" {
+			chatMessages = append([]ai.ChatMessage{{
+				Role:    model.AIChatMessageRoleSystem,
+				Content: metadataContent,
+			}}, chatMessages...)
+			skillLoaderToolSet = service.NewSkillLoaderToolSet(ctx, c.service.SkillService, skillIDs)
+			options = append(options, ai.WithChatToolSetsFactory(toolset.NewStaticToolSetsFactory(toolset.ToolSets{"skill_loader": skillLoaderToolSet})))
+		}
 	}
 
 	// Create streaming chat completion

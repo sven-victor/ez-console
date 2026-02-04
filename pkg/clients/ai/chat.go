@@ -73,7 +73,11 @@ type ChatStream interface {
 func WithChatToolSets(toolSets toolset.ToolSets) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		if toolSets != nil {
-			options.ToolSetsFactory = toolset.NewStaticToolSetsFactory(toolSets)
+			if options.ToolSetsFactory == nil {
+				options.ToolSetsFactory = toolset.NewStaticToolSetsFactory(toolSets)
+			} else {
+				options.ToolSetsFactory = toolset.NewToolSetsFactoryChain(options.ToolSetsFactory, toolset.NewStaticToolSetsFactory(toolSets))
+			}
 		}
 	}
 }
@@ -81,9 +85,11 @@ func WithChatToolSets(toolSets toolset.ToolSets) WithChatOptions {
 func WithChatToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		if factory != nil {
-			options.ToolSetsFactory = toolset.NewCachedToolSetsFactory(factory)
-		} else {
-			options.ToolSetsFactory = toolset.NewStaticToolSetsFactory(nil)
+			if options.ToolSetsFactory == nil {
+				options.ToolSetsFactory = toolset.NewCachedToolSetsFactory(factory)
+			} else {
+				options.ToolSetsFactory = toolset.NewToolSetsFactoryChain(options.ToolSetsFactory, toolset.NewCachedToolSetsFactory(factory))
+			}
 		}
 	}
 }

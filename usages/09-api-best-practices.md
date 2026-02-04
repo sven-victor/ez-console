@@ -422,6 +422,35 @@ func (c *ProductController) ListProducts(ctx *gin.Context) {
 }
 ```
 
+## Frontend-Backend API Workflow (OpenAPI/Swag)
+
+The project uses **Swag/OpenAPI** for frontend-backend collaboration: the **backend API is the source of truth**. API routes and documentation are defined in Go via Swag comments under `pkg/api/`. From that, the OpenAPI spec is generated and then used to generate the frontend API client code.
+
+### Workflow Summary
+
+1. **Define or change APIs in the backend**  
+   Implement or update handlers in `pkg/api/` and add/update Swag comments (e.g. `@Summary`, `@Router`, `@Param`, `@Success`, `@Failure`) as shown in the Documentation section above.
+
+2. **Regenerate OpenAPI spec and frontend client**  
+   After backend changes, run:
+   ```bash
+   make clean-openapi clean-openapi2ts openapi2ts
+   ```
+   This:
+   - Removes the previous `openapi/` directory and `web/src/service/api/` generated code.
+   - Runs `swag init` to generate `openapi/swagger.json` from the Go entrypoint and `pkg/api/` (see `Makefile`).
+   - Copies `openapi/swagger.json` to `web/swagger.json`.
+   - Runs the OpenAPI-to-TypeScript script in `web/` (e.g. `pnpm run openapi2ts`), which uses `web/scripts/openapi.js` and `@umijs/openapi` to generate request functions and types under `web/src/service/api/`.
+
+3. **Use generated code in the frontend**  
+   Import and use the generated API functions and types from `web/src/service/api/` (and related typings). Do not hand-edit these generated files; any API change should be made in the backend and then the above command re-run.
+
+### Key Files
+
+- **Backend API and Swag comments**: `pkg/api/` (e.g. controllers with `@Summary`, `@Router`, etc.).
+- **OpenAPI generation**: `Makefile` targets `openapi`, `openapi2ts`, `clean-openapi`, `clean-openapi2ts`.
+- **Frontend codegen**: `web/scripts/openapi.js` — reads `web/swagger.json`, outputs `web/src/service/api/` (split by path, typings, and optional hooks for customizations like SSE or type exports).
+
 ## Testing
 
 ### Test All Endpoints

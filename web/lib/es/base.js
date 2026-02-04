@@ -1,91 +1,91 @@
-import { r as c } from "./client.js";
-import m from "i18next";
-import { initReactI18next as p } from "react-i18next";
-import { B as g } from "./vendor.js";
-const ae = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const r = t instanceof Date ? t : new Date(t), o = r.getFullYear(), s = String(r.getMonth() + 1).padStart(2, "0"), a = String(r.getDate()).padStart(2, "0"), l = String(r.getHours()).padStart(2, "0"), i = String(r.getMinutes()).padStart(2, "0"), n = String(r.getSeconds()).padStart(2, "0");
-  return e.replace("YYYY", String(o)).replace("MM", s).replace("DD", a).replace("HH", l).replace("mm", i).replace("ss", n);
-}, se = (t, e) => {
-  if (typeof t != "string")
+import { r as p } from "./client.js";
+import f from "i18next";
+import { initReactI18next as v } from "react-i18next";
+import { B as b } from "./vendor.js";
+const le = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
+  const a = e instanceof Date ? e : new Date(e), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), n = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
+  return t.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", n).replace("mm", i).replace("ss", l);
+}, de = (e, t) => {
+  if (typeof e != "string")
     throw new Error("Color must be a string.");
-  const r = t.trim().toLowerCase();
-  if (r.startsWith("#")) {
-    let i = r.slice(1);
+  const a = e.trim().toLowerCase();
+  if (a.startsWith("#")) {
+    let i = a.slice(1);
     if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const n = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), u = parseInt(i.slice(4, 6), 16);
-    if (isNaN(n) || isNaN(d) || isNaN(u))
+    const l = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), c = parseInt(i.slice(4, 6), 16);
+    if (isNaN(l) || isNaN(d) || isNaN(c))
       throw new Error("Invalid characters in HEX color value.");
-    return `rgba(${n}, ${d}, ${u}, ${e})`;
+    return `rgba(${l}, ${d}, ${c}, ${t})`;
   }
-  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, s = r.match(o);
+  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, s = a.match(o);
   if (s) {
-    const i = parseInt(s[1], 10), n = parseInt(s[2], 10), d = parseInt(s[3], 10);
-    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
+    const i = parseInt(s[1], 10), l = parseInt(s[2], 10), d = parseInt(s[3], 10);
+    if (i < 0 || i > 255 || l < 0 || l > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${i}, ${n}, ${d}, ${e})`;
+    return `rgba(${i}, ${l}, ${d}, ${t})`;
   }
-  const a = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = r.match(a);
-  if (l) {
-    const i = parseInt(l[1], 10), n = parseInt(l[2], 10), d = parseInt(l[3], 10);
-    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
+  const r = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, n = a.match(r);
+  if (n) {
+    const i = parseInt(n[1], 10), l = parseInt(n[2], 10), d = parseInt(n[3], 10);
+    if (i < 0 || i > 255 || l < 0 || l > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${i}, ${n}, ${d}, ${e})`;
+    return `rgba(${i}, ${l}, ${d}, ${t})`;
   }
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, oe = (t) => {
-  if (!t)
+}, ce = (e) => {
+  if (!e)
     return "";
-  const [e, r] = t.split("@");
-  return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + r : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + r;
-}, ne = (t) => {
-  const e = "/";
-  return t ? e.endsWith("/") ? t.startsWith("/") ? e + t.substring(1) : e + t : t.startsWith("/") ? e + t : e + "/" + t : e;
+  const [t, a] = e.split("@");
+  return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
+}, ue = (e) => {
+  const t = "/";
+  return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
 };
-async function h(t, e) {
-  return c("/api/files", {
+async function A(e, t) {
+  return p("/api/files", {
     method: "GET",
     params: {
-      ...t
+      ...e
     },
-    ...e || {}
-  });
-}
-async function f(t, e, r) {
-  const o = new FormData();
-  return e && o.append("file", e), Object.keys(t).forEach((s) => {
-    const a = t[s];
-    a != null && (typeof a == "object" && !(a instanceof File) ? a instanceof Array ? a.forEach((l) => o.append(s, l || "")) : o.append(s, JSON.stringify(a)) : o.append(s, a));
-  }), c("/api/files", {
-    method: "POST",
-    data: o,
-    requestType: "form",
-    ...r || {}
-  });
-}
-async function v(t, e) {
-  const { fileKey: r, ...o } = t;
-  return c(`/api/files/${r}`, {
-    method: "GET",
-    params: { ...o },
-    ...e || {}
-  });
-}
-async function b(t) {
-  return c("/api/statistics", {
-    method: "GET",
     ...t || {}
   });
 }
-const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+async function S(e, t, a) {
+  const o = new FormData();
+  return t && o.append("file", t), Object.keys(e).forEach((s) => {
+    const r = e[s];
+    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((n) => o.append(s, n || "")) : o.append(s, JSON.stringify(r)) : o.append(s, r));
+  }), p("/api/files", {
+    method: "POST",
+    data: o,
+    requestType: "form",
+    ...a || {}
+  });
+}
+async function k(e, t) {
+  const { fileKey: a, ...o } = e;
+  return p(`/api/files/${a}`, {
+    method: "GET",
+    params: { ...o },
+    ...t || {}
+  });
+}
+async function y(e) {
+  return p("/api/statistics", {
+    method: "GET",
+    ...e || {}
+  });
+}
+const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: v,
-  getStatistics: b,
-  listFiles: h,
-  uploadFile: f
-}, Symbol.toStringTag, { value: "Module" })), A = {
+  downloadFile: k,
+  getStatistics: y,
+  listFiles: A,
+  uploadFile: S
+}, Symbol.toStringTag, { value: "Module" })), P = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -196,7 +196,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, S = {
+}, w = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -303,7 +303,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, y = {
+}, R = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -356,6 +356,9 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   enter: "Enter",
   select: "Select",
   view: "View",
+  selectFile: "Select file",
+  optional: "Optional",
+  preview: "Preview",
   light: "Light Mode",
   dark: "Dark Mode",
   pagination: {
@@ -371,7 +374,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, k = {
+}, D = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -590,7 +593,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     createTitle: "Create Role",
     editTitle: "Edit Role",
     saveSuccess: "Role {{action}}d successfully",
-    saveError: "Failed to {{action}} role",
+    saveError: "Failed to {{action}} role: {{error}}",
     permissionRequired: "Please select at least one permission",
     invalidJsonFormat: "Invalid JSON format",
     organization: "Organization",
@@ -611,7 +614,11 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     loadAiToolsetsError: "Failed to load AI toolsets.",
     aiToolsetNoTools: "No tools available in this toolset.",
     aiToolsetsEmpty: "No AI toolsets available for this organization.",
-    aiPermissionsGlobalInfo: "AI tool permissions are only available for organization roles."
+    aiPermissionsGlobalInfo: "AI tool permissions are only available for organization roles.",
+    typeSystem: "System",
+    typeUser: "User",
+    systemRoleCannotModify: "System roles cannot be modified.",
+    viewTitle: "View Role"
   },
   permission: {
     title: {
@@ -818,7 +825,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, P = {
+}, T = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -829,8 +836,77 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "SMTP Settings",
       base: "Base Settings",
       toolSets: "Tool Sets Settings",
+      skills: "Skills",
       aiModels: "AI Models Settings",
       organizations: "Organization Management"
+    },
+    skills: {
+      title: "AI Agent Skills",
+      name: "Name",
+      description: "Description",
+      category: "Category",
+      domain: "Domain",
+      create: "Create skill",
+      createSkill: "Create skill",
+      editSkill: "Edit skill",
+      upload: "Upload",
+      editFiles: "Edit files",
+      fetchFailed: "Failed to fetch skills",
+      createSuccess: "Skill created",
+      createFailed: "Failed to create skill",
+      updateSuccess: "Skill updated",
+      updateFailed: "Failed to update skill",
+      deleteSuccess: "Skill deleted",
+      deleteFailed: "Failed to delete skill",
+      uploadSuccess: "Skill uploaded",
+      uploadFailed: "Upload failed",
+      previewFailed: "Failed to load preview",
+      selectFile: "Please select a file",
+      file: "File (.md or .zip)",
+      initialContent: "Initial SKILL.md content (optional)",
+      editor: {
+        backToSkills: "Back to Skills",
+        skill: "Skill",
+        file: "File",
+        folder: "Folder",
+        save: "Save",
+        saved: "Saved",
+        delete: "Delete",
+        deleted: "Deleted",
+        rename: "Rename",
+        renamed: "Renamed",
+        open: "Open",
+        newFile: "New file",
+        newFolder: "New folder",
+        loading: "Loading...",
+        selectFileToEdit: "Select a file to edit",
+        failedToLoadFile: "Failed to load file",
+        failedToSave: "Failed to save",
+        failedToDelete: "Failed to delete",
+        failedToRename: "Failed to rename",
+        failedToMove: "Failed to move",
+        moved: "Moved",
+        nameRequired: "Name is required",
+        fileNameExtension: "File name must end with .md or .txt",
+        onlyMdTxtAllowed: "Only .md and .txt files are allowed",
+        fileCreated: "File created",
+        folderCreated: "Folder created",
+        failedToCreateFile: "Failed to create file",
+        failedToCreateFolder: "Failed to create folder",
+        deleteConfirm: "Delete?",
+        deleteConfirmContent: "Delete {{path}}?",
+        deleteConfirmContentDir: "Delete {{path}}? This will remove the folder and all its contents.",
+        newFileTitle: "New file",
+        newFolderTitle: "New folder",
+        folderName: "Folder name",
+        fileName: "File name",
+        create: "Create",
+        renameTitle: "Rename",
+        previewTitle: "Skill Preview",
+        placeholderNewFile: "filename.md or filename.txt",
+        placeholderFolder: "folder-name",
+        placeholderFileName: "name.md"
+      }
     },
     days: "days",
     minutes: "minutes",
@@ -1246,7 +1322,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, w = {
+}, E = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1297,9 +1373,12 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     regenerateTitle: "Regenerate Title",
     generatingTitle: "Generating title...",
     titleGenerated: "Title generated successfully",
-    titleGenerationFailed: "Failed to generate title"
+    titleGenerationFailed: "Failed to generate title",
+    skill: "Skill",
+    skillsPlaceholder: "Skills (optional)",
+    skillDomain: "Skill domain"
   }
-}, R = {
+}, z = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1406,7 +1485,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, D = {
+}, F = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -1513,7 +1592,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, z = {
+}, C = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -1620,7 +1699,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, E = {
+}, L = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -1727,7 +1806,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, T = {
+}, q = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -1834,7 +1913,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, L = {
+}, U = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -1894,6 +1973,9 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   enter: "请输入",
   select: "请选择",
   view: "查看",
+  selectFile: "选择文件",
+  optional: "可选",
+  preview: "预览",
   light: "浅色模式",
   dark: "深色模式",
   pagination: {
@@ -1909,7 +1991,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, C = {
+}, I = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2128,7 +2210,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     createTitle: "创建角色",
     editTitle: "编辑角色",
     saveSuccess: "角色{{action}}成功",
-    saveError: "{{action}}角色失败",
+    saveError: "{{action}}角色失败: {{error}}",
     permissionRequired: "请至少选择一个权限",
     insertTemplate: "插入模板",
     organization: "组织",
@@ -2149,6 +2231,10 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     aiToolsetNoTools: "该工具集中没有可用工具。",
     aiToolsetsEmpty: "该组织暂无可用的 AI 工具集。",
     aiPermissionsGlobalInfo: "AI 工具权限仅适用于组织角色。",
+    typeSystem: "系统",
+    typeUser: "用户",
+    systemRoleCannotModify: "系统角色不可修改。",
+    viewTitle: "查看角色",
     allowAll: "允许所有",
     denyAll: "拒绝所有",
     allowWithAction: "允许特定操作",
@@ -2384,7 +2470,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, q = {
+}, M = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -2395,8 +2481,77 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "SMTP设置",
       base: "基础设置",
       toolSets: "工具集设置",
+      skills: "技能",
       aiModels: "AI模型设置",
       organizations: "组织管理"
+    },
+    skills: {
+      title: "AI Agent 技能",
+      name: "名称",
+      description: "描述",
+      category: "分类",
+      domain: "领域",
+      create: "创建技能",
+      createSkill: "创建技能",
+      editSkill: "编辑技能",
+      upload: "上传",
+      editFiles: "编辑文件",
+      fetchFailed: "获取技能列表失败",
+      createSuccess: "技能已创建",
+      createFailed: "创建技能失败",
+      updateSuccess: "技能已更新",
+      updateFailed: "更新技能失败",
+      deleteSuccess: "技能已删除",
+      deleteFailed: "删除技能失败",
+      uploadSuccess: "技能已上传",
+      uploadFailed: "上传失败",
+      previewFailed: "加载预览失败",
+      selectFile: "请选择文件",
+      file: "文件 (.md 或 .zip)",
+      initialContent: "初始 SKILL.md 内容（可选）",
+      editor: {
+        backToSkills: "返回技能列表",
+        skill: "技能",
+        file: "文件",
+        folder: "文件夹",
+        save: "保存",
+        saved: "已保存",
+        delete: "删除",
+        deleted: "已删除",
+        rename: "重命名",
+        renamed: "已重命名",
+        open: "打开",
+        newFile: "新建文件",
+        newFolder: "新建文件夹",
+        loading: "加载中...",
+        selectFileToEdit: "请选择要编辑的文件",
+        failedToLoadFile: "加载文件失败",
+        failedToSave: "保存失败",
+        failedToDelete: "删除失败",
+        failedToRename: "重命名失败",
+        failedToMove: "移动失败",
+        moved: "已移动",
+        nameRequired: "请输入名称",
+        fileNameExtension: "文件名须以 .md 或 .txt 结尾",
+        onlyMdTxtAllowed: "仅支持 .md 和 .txt 文件",
+        fileCreated: "文件已创建",
+        folderCreated: "文件夹已创建",
+        failedToCreateFile: "创建文件失败",
+        failedToCreateFolder: "创建文件夹失败",
+        deleteConfirm: "确认删除？",
+        deleteConfirmContent: "删除 {{path}}？",
+        deleteConfirmContentDir: "删除 {{path}}？将删除该文件夹及其下所有内容。",
+        newFileTitle: "新建文件",
+        newFolderTitle: "新建文件夹",
+        folderName: "文件夹名",
+        fileName: "文件名",
+        create: "创建",
+        renameTitle: "重命名",
+        previewTitle: "技能预览",
+        placeholderNewFile: "filename.md 或 filename.txt",
+        placeholderFolder: "folder-name",
+        placeholderFileName: "name.md"
+      }
     },
     days: "天",
     minutes: "分钟",
@@ -2814,7 +2969,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, F = {
+}, N = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -2865,9 +3020,12 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     regenerateTitle: "重新生成标题",
     generatingTitle: "正在生成标题...",
     titleGenerated: "标题生成成功",
-    titleGenerationFailed: "生成标题失败"
+    titleGenerationFailed: "生成标题失败",
+    skill: "技能",
+    skillsPlaceholder: "技能（可选）",
+    skillDomain: "技能域"
   }
-}, U = {
+}, O = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -2919,6 +3077,9 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Weiter",
   enter: "Eingeben",
   select: "Auswählen",
+  selectFile: "Datei auswählen",
+  optional: "Optional",
+  preview: "Vorschau",
   light: "Heller Modus",
   dark: "Dunkler Modus",
   pagination: {
@@ -2934,7 +3095,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, I = {
+}, V = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -3364,7 +3525,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, M = {
+}, B = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -3375,7 +3536,77 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "SMTP-Einstellungen",
       base: "Grundinställningar",
       toolSets: "Tool Sets Einstellungen",
-      aiModels: "AI Models Einstellungen"
+      skills: "Fähigkeiten",
+      aiModels: "AI Models Einstellungen",
+      organizations: "Organisationsverwaltung"
+    },
+    skills: {
+      title: "AI Agent Fähigkeiten",
+      name: "Name",
+      description: "Beschreibung",
+      category: "Kategorie",
+      domain: "Bereich",
+      create: "Fähigkeit erstellen",
+      createSkill: "Fähigkeit erstellen",
+      editSkill: "Fähigkeit bearbeiten",
+      upload: "Hochladen",
+      editFiles: "Dateien bearbeiten",
+      fetchFailed: "Fähigkeiten konnten nicht geladen werden",
+      createSuccess: "Fähigkeit erstellt",
+      createFailed: "Fähigkeit konnte nicht erstellt werden",
+      updateSuccess: "Fähigkeit aktualisiert",
+      updateFailed: "Fähigkeit konnte nicht aktualisiert werden",
+      deleteSuccess: "Fähigkeit gelöscht",
+      deleteFailed: "Fähigkeit konnte nicht gelöscht werden",
+      uploadSuccess: "Fähigkeit hochgeladen",
+      uploadFailed: "Hochladen fehlgeschlagen",
+      previewFailed: "Vorschau konnte nicht geladen werden",
+      selectFile: "Bitte wählen Sie eine Datei",
+      file: "Datei (.md oder .zip)",
+      initialContent: "Initialer SKILL.md-Inhalt (optional)",
+      editor: {
+        backToSkills: "Zurück zu Fähigkeiten",
+        skill: "Fähigkeit",
+        file: "Datei",
+        folder: "Ordner",
+        save: "Speichern",
+        saved: "Gespeichert",
+        delete: "Löschen",
+        deleted: "Gelöscht",
+        rename: "Umbenennen",
+        renamed: "Umbenannt",
+        open: "Öffnen",
+        newFile: "Neue Datei",
+        newFolder: "Neuer Ordner",
+        loading: "Wird geladen...",
+        selectFileToEdit: "Wählen Sie eine Datei zum Bearbeiten",
+        failedToLoadFile: "Datei konnte nicht geladen werden",
+        failedToSave: "Speichern fehlgeschlagen",
+        failedToDelete: "Löschen fehlgeschlagen",
+        failedToRename: "Umbenennen fehlgeschlagen",
+        failedToMove: "Verschieben fehlgeschlagen",
+        moved: "Verschoben",
+        nameRequired: "Name ist erforderlich",
+        fileNameExtension: "Dateiname muss mit .md oder .txt enden",
+        onlyMdTxtAllowed: "Nur .md- und .txt-Dateien sind erlaubt",
+        fileCreated: "Datei erstellt",
+        folderCreated: "Ordner erstellt",
+        failedToCreateFile: "Datei konnte nicht erstellt werden",
+        failedToCreateFolder: "Ordner konnte nicht erstellt werden",
+        deleteConfirm: "Löschen?",
+        deleteConfirmContent: "{{path}} löschen?",
+        deleteConfirmContentDir: "{{path}} löschen? Der Ordner und alle Inhalte werden entfernt.",
+        newFileTitle: "Neue Datei",
+        newFolderTitle: "Neuer Ordner",
+        folderName: "Ordnername",
+        fileName: "Dateiname",
+        create: "Erstellen",
+        renameTitle: "Umbenennen",
+        previewTitle: "Fähigkeitsvorschau",
+        placeholderNewFile: "filename.md oder filename.txt",
+        placeholderFolder: "ordner-name",
+        placeholderFileName: "name.md"
+      }
     },
     days: "Tage",
     minutes: "Minuten",
@@ -3744,7 +3975,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, N = {
+}, x = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -3782,8 +4013,13 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "Standard-KI-Modell erfolgreich festgelegt",
     setDefaultFailed: "Standard-KI-Modell konnte nicht festgelegt werden",
     deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?"
+  },
+  chat: {
+    skill: "Fähigkeit",
+    skillsPlaceholder: "Fähigkeiten (optional)",
+    skillDomain: "Fähigkeitsbereich"
   }
-}, O = {
+}, K = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -3835,6 +4071,9 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Siguiente",
   enter: "Ingresar",
   select: "Seleccionar",
+  selectFile: "Seleccionar archivo",
+  optional: "Opcional",
+  preview: "Vista previa",
   light: "Modo Claro",
   dark: "Modo Oscuro",
   pagination: {
@@ -3850,7 +4089,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, B = {
+}, _ = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -4280,7 +4519,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, V = {
+}, j = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -4291,7 +4530,77 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "Ajustes de SMTP",
       base: "Ajustes de base",
       toolSets: "Ajustes de conjuntos de herramientas",
-      aiModels: "Ajustes de modelos AI"
+      skills: "Habilidades",
+      aiModels: "Ajustes de modelos AI",
+      organizations: "Gestión de organizaciones"
+    },
+    skills: {
+      title: "Habilidades de agente AI",
+      name: "Nombre",
+      description: "Descripción",
+      category: "Categoría",
+      domain: "Dominio",
+      create: "Crear habilidad",
+      createSkill: "Crear habilidad",
+      editSkill: "Editar habilidad",
+      upload: "Subir",
+      editFiles: "Editar archivos",
+      fetchFailed: "Error al obtener habilidades",
+      createSuccess: "Habilidad creada",
+      createFailed: "Error al crear habilidad",
+      updateSuccess: "Habilidad actualizada",
+      updateFailed: "Error al actualizar habilidad",
+      deleteSuccess: "Habilidad eliminada",
+      deleteFailed: "Error al eliminar habilidad",
+      uploadSuccess: "Habilidad subida",
+      uploadFailed: "Error al subir",
+      previewFailed: "Error al cargar la vista previa",
+      selectFile: "Por favor seleccione un archivo",
+      file: "Archivo (.md o .zip)",
+      initialContent: "Contenido inicial de SKILL.md (opcional)",
+      editor: {
+        backToSkills: "Volver a habilidades",
+        skill: "Habilidad",
+        file: "Archivo",
+        folder: "Carpeta",
+        save: "Guardar",
+        saved: "Guardado",
+        delete: "Eliminar",
+        deleted: "Eliminado",
+        rename: "Renombrar",
+        renamed: "Renombrado",
+        open: "Abrir",
+        newFile: "Nuevo archivo",
+        newFolder: "Nueva carpeta",
+        loading: "Cargando...",
+        selectFileToEdit: "Seleccione un archivo para editar",
+        failedToLoadFile: "Error al cargar el archivo",
+        failedToSave: "Error al guardar",
+        failedToDelete: "Error al eliminar",
+        failedToRename: "Error al renombrar",
+        failedToMove: "Error al mover",
+        moved: "Movido",
+        nameRequired: "El nombre es obligatorio",
+        fileNameExtension: "El nombre del archivo debe terminar en .md o .txt",
+        onlyMdTxtAllowed: "Solo se permiten archivos .md y .txt",
+        fileCreated: "Archivo creado",
+        folderCreated: "Carpeta creada",
+        failedToCreateFile: "Error al crear el archivo",
+        failedToCreateFolder: "Error al crear la carpeta",
+        deleteConfirm: "¿Eliminar?",
+        deleteConfirmContent: "¿Eliminar {{path}}?",
+        deleteConfirmContentDir: "¿Eliminar {{path}}? Se eliminará la carpeta y todo su contenido.",
+        newFileTitle: "Nuevo archivo",
+        newFolderTitle: "Nueva carpeta",
+        folderName: "Nombre de carpeta",
+        fileName: "Nombre de archivo",
+        create: "Crear",
+        renameTitle: "Renombrar",
+        previewTitle: "Vista previa de habilidad",
+        placeholderNewFile: "filename.md o filename.txt",
+        placeholderFolder: "folder-name",
+        placeholderFileName: "name.md"
+      }
     },
     days: "días",
     minutes: "minutos",
@@ -4660,7 +4969,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, x = {
+}, G = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -4698,8 +5007,13 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "Modelo de IA predeterminado establecido exitosamente",
     setDefaultFailed: "Error al establecer modelo de IA predeterminado",
     deleteConfirm: "¿Está seguro de que desea eliminar este modelo de IA?"
+  },
+  chat: {
+    skill: "Habilidad",
+    skillsPlaceholder: "Habilidades (opcional)",
+    skillDomain: "Dominio de habilidad"
   }
-}, K = {
+}, W = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -4751,6 +5065,9 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Suivant",
   enter: "Entrer",
   select: "Sélectionner",
+  selectFile: "Sélectionner un fichier",
+  optional: "Optionnel",
+  preview: "Aperçu",
   light: "Mode Clair",
   dark: "Mode Sombre",
   pagination: {
@@ -4766,7 +5083,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, _ = {
+}, H = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -5196,7 +5513,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, j = {
+}, J = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -5207,7 +5524,77 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "Paramètres SMTP",
       base: "Paramètres de base",
       toolSets: "Paramètres d'ensembles d'outils",
-      aiModels: "Paramètres de modèles AI"
+      skills: "Compétences",
+      aiModels: "Paramètres de modèles AI",
+      organizations: "Gestion des organisations"
+    },
+    skills: {
+      title: "Compétences d'agent AI",
+      name: "Nom",
+      description: "Description",
+      category: "Catégorie",
+      domain: "Domaine",
+      create: "Créer une compétence",
+      createSkill: "Créer une compétence",
+      editSkill: "Modifier la compétence",
+      upload: "Téléverser",
+      editFiles: "Modifier les fichiers",
+      fetchFailed: "Échec de la récupération des compétences",
+      createSuccess: "Compétence créée",
+      createFailed: "Échec de la création de la compétence",
+      updateSuccess: "Compétence mise à jour",
+      updateFailed: "Échec de la mise à jour de la compétence",
+      deleteSuccess: "Compétence supprimée",
+      deleteFailed: "Échec de la suppression de la compétence",
+      uploadSuccess: "Compétence téléversée",
+      uploadFailed: "Échec du téléversement",
+      previewFailed: "Échec du chargement de l'aperçu",
+      selectFile: "Veuillez sélectionner un fichier",
+      file: "Fichier (.md ou .zip)",
+      initialContent: "Contenu initial SKILL.md (optionnel)",
+      editor: {
+        backToSkills: "Retour aux compétences",
+        skill: "Compétence",
+        file: "Fichier",
+        folder: "Dossier",
+        save: "Enregistrer",
+        saved: "Enregistré",
+        delete: "Supprimer",
+        deleted: "Supprimé",
+        rename: "Renommer",
+        renamed: "Renommé",
+        open: "Ouvrir",
+        newFile: "Nouveau fichier",
+        newFolder: "Nouveau dossier",
+        loading: "Chargement...",
+        selectFileToEdit: "Sélectionnez un fichier à modifier",
+        failedToLoadFile: "Échec du chargement du fichier",
+        failedToSave: "Échec de l'enregistrement",
+        failedToDelete: "Échec de la suppression",
+        failedToRename: "Échec du renommage",
+        failedToMove: "Échec du déplacement",
+        moved: "Déplacé",
+        nameRequired: "Le nom est requis",
+        fileNameExtension: "Le nom du fichier doit se terminer par .md ou .txt",
+        onlyMdTxtAllowed: "Seuls les fichiers .md et .txt sont autorisés",
+        fileCreated: "Fichier créé",
+        folderCreated: "Dossier créé",
+        failedToCreateFile: "Échec de la création du fichier",
+        failedToCreateFolder: "Échec de la création du dossier",
+        deleteConfirm: "Supprimer ?",
+        deleteConfirmContent: "Supprimer {{path}} ?",
+        deleteConfirmContentDir: "Supprimer {{path}} ? Le dossier et tout son contenu seront supprimés.",
+        newFileTitle: "Nouveau fichier",
+        newFolderTitle: "Nouveau dossier",
+        folderName: "Nom du dossier",
+        fileName: "Nom du fichier",
+        create: "Créer",
+        renameTitle: "Renommer",
+        previewTitle: "Aperçu de la compétence",
+        placeholderNewFile: "filename.md ou filename.txt",
+        placeholderFolder: "folder-name",
+        placeholderFileName: "name.md"
+      }
     },
     days: "jours",
     minutes: "minutes",
@@ -5576,7 +5963,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, G = {
+}, Z = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -5614,8 +6001,13 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "Modèle IA par défaut défini avec succès",
     setDefaultFailed: "Échec de la définition du modèle IA par défaut",
     deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce modèle IA ?"
+  },
+  chat: {
+    skill: "Compétence",
+    skillsPlaceholder: "Compétences (optionnel)",
+    skillDomain: "Domaine de compétence"
   }
-}, W = {
+}, Q = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -5667,6 +6059,9 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "التالي",
   enter: "أدخل",
   select: "اختر",
+  selectFile: "اختر ملفاً",
+  optional: "اختياري",
+  preview: "معاينة",
   light: "الوضع الفاتح",
   dark: "الوضع الداكن",
   pagination: {
@@ -5682,7 +6077,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, H = {
+}, Y = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -6112,7 +6507,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, J = {
+}, $ = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -6123,7 +6518,77 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "إعدادات SMTP",
       base: "إعدادات الأساسية",
       toolSets: "إعدادات مجموعات الأدوات",
-      aiModels: "إعدادات مودلات AI"
+      skills: "المهارات",
+      aiModels: "إعدادات مودلات AI",
+      organizations: "إدارة المنظمات"
+    },
+    skills: {
+      title: "مهارات وكيل AI",
+      name: "الاسم",
+      description: "الوصف",
+      category: "الفئة",
+      domain: "المجال",
+      create: "إنشاء مهارة",
+      createSkill: "إنشاء مهارة",
+      editSkill: "تحرير المهارة",
+      upload: "رفع",
+      editFiles: "تحرير الملفات",
+      fetchFailed: "فشل جلب المهارات",
+      createSuccess: "تم إنشاء المهارة",
+      createFailed: "فشل إنشاء المهارة",
+      updateSuccess: "تم تحديث المهارة",
+      updateFailed: "فشل تحديث المهارة",
+      deleteSuccess: "تم حذف المهارة",
+      deleteFailed: "فشل حذف المهارة",
+      uploadSuccess: "تم رفع المهارة",
+      uploadFailed: "فشل الرفع",
+      previewFailed: "فشل تحميل المعاينة",
+      selectFile: "يرجى اختيار ملف",
+      file: "ملف (.md أو .zip)",
+      initialContent: "محتوى SKILL.md الأولي (اختياري)",
+      editor: {
+        backToSkills: "العودة إلى المهارات",
+        skill: "مهارة",
+        file: "ملف",
+        folder: "مجلد",
+        save: "حفظ",
+        saved: "تم الحفظ",
+        delete: "حذف",
+        deleted: "تم الحذف",
+        rename: "إعادة تسمية",
+        renamed: "تمت إعادة التسمية",
+        open: "فتح",
+        newFile: "ملف جديد",
+        newFolder: "مجلد جديد",
+        loading: "جار التحميل...",
+        selectFileToEdit: "اختر ملفاً للتحرير",
+        failedToLoadFile: "فشل تحميل الملف",
+        failedToSave: "فشل الحفظ",
+        failedToDelete: "فشل الحذف",
+        failedToRename: "فشل إعادة التسمية",
+        failedToMove: "فشل النقل",
+        moved: "تم النقل",
+        nameRequired: "الاسم مطلوب",
+        fileNameExtension: "يجب أن ينتهي اسم الملف بـ .md أو .txt",
+        onlyMdTxtAllowed: "الملفات المسموح بها فقط .md و .txt",
+        fileCreated: "تم إنشاء الملف",
+        folderCreated: "تم إنشاء المجلد",
+        failedToCreateFile: "فشل إنشاء الملف",
+        failedToCreateFolder: "فشل إنشاء المجلد",
+        deleteConfirm: "حذف؟",
+        deleteConfirmContent: "حذف {{path}}؟",
+        deleteConfirmContentDir: "حذف {{path}}؟ سيتم إزالة المجلد وجميع محتوياته.",
+        newFileTitle: "ملف جديد",
+        newFolderTitle: "مجلد جديد",
+        folderName: "اسم المجلد",
+        fileName: "اسم الملف",
+        create: "إنشاء",
+        renameTitle: "إعادة تسمية",
+        previewTitle: "معاينة المهارة",
+        placeholderNewFile: "filename.md أو filename.txt",
+        placeholderFolder: "folder-name",
+        placeholderFileName: "name.md"
+      }
     },
     days: "أيام",
     minutes: "دقائق",
@@ -6492,7 +6957,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, Z = {
+}, X = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -6530,8 +6995,13 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "تم تعيين النموذج الذكي الافتراضي بنجاح",
     setDefaultFailed: "فشل في تعيين النموذج الذكي الافتراضي",
     deleteConfirm: "هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟"
+  },
+  chat: {
+    skill: "المهارة",
+    skillsPlaceholder: "المهارات (اختياري)",
+    skillDomain: "مجال المهارة"
   }
-}, Q = {
+}, ee = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -6583,6 +7053,9 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   next: "Nästa",
   enter: "Ange",
   select: "Välj",
+  selectFile: "Välj fil",
+  optional: "Valfritt",
+  preview: "Förhandsgranska",
   light: "Ljust läge",
   dark: "Mörkt läge",
   pagination: {
@@ -6598,7 +7071,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, Y = {
+}, te = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -7028,7 +7501,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policyhantering"
     }
   }
-}, $ = {
+}, ie = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -7039,7 +7512,77 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       smtp: "SMTP-inställningar",
       base: "Grundinställningar",
       toolSets: "Verktygssättinställningar",
-      aiModels: "AI-modellinställningar"
+      skills: "Färdigheter",
+      aiModels: "AI-modellinställningar",
+      organizations: "Organisationshantering"
+    },
+    skills: {
+      title: "AI Agent-färdigheter",
+      name: "Namn",
+      description: "Beskrivning",
+      category: "Kategori",
+      domain: "Domän",
+      create: "Skapa färdighet",
+      createSkill: "Skapa färdighet",
+      editSkill: "Redigera färdighet",
+      upload: "Ladda upp",
+      editFiles: "Redigera filer",
+      fetchFailed: "Kunde inte hämta färdigheter",
+      createSuccess: "Färdighet skapad",
+      createFailed: "Kunde inte skapa färdighet",
+      updateSuccess: "Färdighet uppdaterad",
+      updateFailed: "Kunde inte uppdatera färdighet",
+      deleteSuccess: "Färdighet borttagen",
+      deleteFailed: "Kunde inte ta bort färdighet",
+      uploadSuccess: "Färdighet uppladdad",
+      uploadFailed: "Uppladdning misslyckades",
+      previewFailed: "Kunde inte ladda förhandsgranskning",
+      selectFile: "Välj en fil",
+      file: "Fil (.md eller .zip)",
+      initialContent: "Initialt SKILL.md-innehåll (valfritt)",
+      editor: {
+        backToSkills: "Tillbaka till färdigheter",
+        skill: "Färdighet",
+        file: "Fil",
+        folder: "Mapp",
+        save: "Spara",
+        saved: "Sparad",
+        delete: "Ta bort",
+        deleted: "Borttagen",
+        rename: "Byt namn",
+        renamed: "Omdöpt",
+        open: "Öppna",
+        newFile: "Ny fil",
+        newFolder: "Ny mapp",
+        loading: "Laddar...",
+        selectFileToEdit: "Välj en fil att redigera",
+        failedToLoadFile: "Kunde inte ladda filen",
+        failedToSave: "Kunde inte spara",
+        failedToDelete: "Kunde inte ta bort",
+        failedToRename: "Kunde inte byta namn",
+        failedToMove: "Kunde inte flytta",
+        moved: "Flyttad",
+        nameRequired: "Namn krävs",
+        fileNameExtension: "Filnamnet måste sluta med .md eller .txt",
+        onlyMdTxtAllowed: "Endast .md- och .txt-filer är tillåtna",
+        fileCreated: "Fil skapad",
+        folderCreated: "Mapp skapad",
+        failedToCreateFile: "Kunde inte skapa fil",
+        failedToCreateFolder: "Kunde inte skapa mapp",
+        deleteConfirm: "Ta bort?",
+        deleteConfirmContent: "Ta bort {{path}}?",
+        deleteConfirmContentDir: "Ta bort {{path}}? Mappen och allt innehåll kommer att tas bort.",
+        newFileTitle: "Ny fil",
+        newFolderTitle: "Ny mapp",
+        folderName: "Mappnamn",
+        fileName: "Filnamn",
+        create: "Skapa",
+        renameTitle: "Byt namn",
+        previewTitle: "Förhandsgranskning av färdighet",
+        placeholderNewFile: "filename.md eller filename.txt",
+        placeholderFolder: "folder-name",
+        placeholderFileName: "name.md"
+      }
     },
     days: "dagar",
     minutes: "minuter",
@@ -7408,7 +7951,7 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, X = {
+}, ae = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -7446,60 +7989,65 @@ const le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultSuccess: "Standard AI-modell angiven framgångsrikt",
     setDefaultFailed: "Misslyckades med att ange standard AI-modell",
     deleteConfirm: "Är du säker på att du vill ta bort denna AI-modell?"
+  },
+  chat: {
+    skill: "Färdighet",
+    skillsPlaceholder: "Färdigheter (valfritt)",
+    skillDomain: "Färdighetsdomän"
   }
 };
-m.use(g).use(p).init({
+f.use(b).use(v).init({
   ns: ["common", "authorization", "system", "ai"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: A,
-      common: L,
-      authorization: C,
-      system: q,
-      ai: F
-    },
-    "en-US": {
-      translation: S,
-      common: y,
-      authorization: k,
-      system: P,
-      ai: w
-    },
-    "de-DE": {
-      translation: R,
+      translation: P,
       common: U,
       authorization: I,
       system: M,
       ai: N
     },
-    "es-ES": {
-      translation: D,
+    "en-US": {
+      translation: w,
+      common: R,
+      authorization: D,
+      system: T,
+      ai: E
+    },
+    "de-DE": {
+      translation: z,
       common: O,
-      authorization: B,
-      system: V,
+      authorization: V,
+      system: B,
       ai: x
     },
-    "fr-FR": {
-      translation: z,
+    "es-ES": {
+      translation: F,
       common: K,
       authorization: _,
       system: j,
       ai: G
     },
-    "ar-AE": {
-      translation: E,
+    "fr-FR": {
+      translation: C,
       common: W,
       authorization: H,
       system: J,
       ai: Z
     },
-    "sv-SE": {
-      translation: T,
+    "ar-AE": {
+      translation: L,
       common: Q,
       authorization: Y,
       system: $,
       ai: X
+    },
+    "sv-SE": {
+      translation: q,
+      common: ee,
+      authorization: te,
+      system: ie,
+      ai: ae
     }
   },
   fallbackLng: "en-US",
@@ -7508,37 +8056,92 @@ m.use(g).use(p).init({
     escapeValue: !1
   }
 });
-const de = {
+const pe = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
-}, ce = (t, e) => {
-  var l;
-  if (!t)
+}, ge = (e, t) => {
+  var n;
+  if (!e)
     return !0;
-  const { field: r, operator: o, value: s } = t, a = ((l = e.config) == null ? void 0 : l[r]) ?? e[r];
-  if (a == null)
+  const { field: a, operator: o, value: s } = e, r = ((n = t.config) == null ? void 0 : n[a]) ?? t[a];
+  if (r == null)
     return !1;
   switch (o) {
     case "eq":
-      return a === s;
+      return r === s;
     case "ne":
-      return a !== s;
+      return r !== s;
     case "in":
-      return Array.isArray(s) ? s.includes(a) : (console.warn('VisibleCondition: "in" operator requires an array value'), !1);
+      return Array.isArray(s) ? s.includes(r) : (console.warn('VisibleCondition: "in" operator requires an array value'), !1);
     case "not_in":
-      return Array.isArray(s) ? !s.includes(a) : (console.warn('VisibleCondition: "not_in" operator requires an array value'), !1);
+      return Array.isArray(s) ? !s.includes(r) : (console.warn('VisibleCondition: "not_in" operator requires an array value'), !1);
     case "contains":
-      return typeof a != "string" ? !1 : typeof s != "string" ? (console.warn('VisibleCondition: "contains" operator requires a string value'), !1) : a.includes(s);
+      return typeof r != "string" ? !1 : typeof s != "string" ? (console.warn('VisibleCondition: "contains" operator requires a string value'), !1) : r.includes(s);
     default:
       return console.warn(`Unknown visibility operator: ${o}`), !0;
   }
 };
+function h(e) {
+  const t = {}, a = e.split(/\r?\n/);
+  for (const o of a) {
+    const s = o.trim();
+    if (!s) continue;
+    const r = s.indexOf(":");
+    if (r <= 0) continue;
+    const n = s.slice(0, r).trim(), i = s.slice(r + 1).trim(), l = i.startsWith('"') && i.endsWith('"') || i.startsWith("'") && i.endsWith("'") ? i.slice(1, -1) : i;
+    t[n] = l;
+  }
+  return t;
+}
+function m(e) {
+  return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
+}
+function he(e) {
+  if (!e || !e.trim()) return e;
+  const t = e.trimStart();
+  if (!t.startsWith("---")) return e;
+  const a = t.slice(3), o = a.indexOf(`
+---`);
+  if (o === -1) return e;
+  const s = a.slice(0, o).trim(), r = a.slice(o + 4).trimStart(), n = h(s), i = Object.keys(n);
+  if (i.length === 0) return e;
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
+`);
+  return l + `
+` + d + `
+` + c + `
+
+` + r;
+}
+function fe(e) {
+  if (!e || !e.trim()) return e;
+  let t = e;
+  const a = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
+  let o = t.match(a);
+  for (; o; ) {
+    const s = o[1].trim(), r = t.slice((o.index ?? 0) + o[0].length), n = h(s), i = Object.keys(n);
+    if (i.length > 0) {
+      const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
+`), g = l + `
+` + d + `
+` + c;
+      t = t.slice(0, o.index) + g + `
+
+` + r;
+    } else
+      t = t.slice(0, o.index) + r;
+    o = t.match(a);
+  }
+  return t;
+}
 export {
-  de as P,
-  le as b,
-  ce as c,
-  ae as f,
-  ne as g,
-  oe as m,
-  se as t
+  pe as P,
+  he as a,
+  me as b,
+  ge as c,
+  le as f,
+  ue as g,
+  ce as m,
+  fe as s,
+  de as t
 };

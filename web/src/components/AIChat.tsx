@@ -35,16 +35,19 @@ import {
 } from '@ant-design/x';
 import { AbstractChatProvider, TransformMessage, useXChat, XRequest, XRequestOptions } from '@ant-design/x-sdk';
 import { useXConversations, type MessageInfo } from '@ant-design/x-sdk';
-import { ComponentProps, XMarkdown } from '@ant-design/x-markdown';
+import { type ComponentProps, XMarkdown } from '@ant-design/x-markdown';
 
 import { useRequest } from 'ahooks';
-import { Button, Dropdown, Radio, Space, Spin, message } from 'antd';
+import { Button, Dropdown, Radio, Select, Space, Spin, Tag, message } from 'antd';
 import { createStyles } from 'antd-style';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { theme } from 'antd';
 import { useAI } from '@/contexts/AIContext';
+import { BaseOptionType } from 'antd/es/select';
+import { isArray } from 'lodash-es';
+import classNames from 'classnames';
 
 const useStyle = createStyles(({ token, css }) => {
   return {
@@ -163,6 +166,12 @@ const useStyle = createStyles(({ token, css }) => {
     placeholder: css`
       padding-top: 32px;
     `,
+
+    skillsSelect: css`
+      width: 100%;
+      max-width: min(95%, 700px);
+      margin: 0 20px;
+    `,
     sender: css`
       width: 100%;
       max-width: min(90%, 700px);
@@ -188,6 +197,8 @@ interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'
 interface ChatStreamInput {
   content: string;
   sessionId: string;
+  domains?: string[];
+  skill_ids?: string[];
 }
 
 interface ChatStreamOutput {
@@ -320,6 +331,11 @@ const ChatContext = React.createContext<{
   setMessage?: ReturnType<typeof useXChat<ChatStreamMessage, ChatStreamMessage, ChatStreamInput, ChatStreamOutput>>['setMessage'];
 }>({});
 
+interface SelectedSkillOption {
+  type: 'domain' | 'skill';
+  value: string;
+}
+
 const AIChat: React.FC = () => {
   const {
     layout,
@@ -367,6 +383,25 @@ const AIChat: React.FC = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const [inputValue, setInputValue] = useState('');
+  const [selectedSkills, setSelectedSkills] = useState<SelectedSkillOption[]>([]);
+
+  const { data: domainsData } = useRequest(() => api.system.listSkillDomains());
+  const domainOptions = ((domainsData as string[]) ?? []).map((d) => {
+    return {
+      skillType: 'domain',
+      value: d,
+      label: <><Tag>{t('chat.skillDomain', { defaultValue: 'Skill domain' })}</Tag>{d}</>
+    };
+  });
+  const { data: skillsListData } = useRequest(() =>
+    api.system.listSkills({ current: 1, page_size: 500 })
+  );
+  const skillsList = (skillsListData as any)?.data ?? [];
+  const skillOptions = skillsList.map((s: { id: string; name: string; domain?: string }) => ({
+    skillType: 'skill',
+    value: s.id,
+    label: <><Tag>{t('chat.skill', { defaultValue: 'Skill' })}</Tag>{s.name}</>,
+  }));
 
   // Message buffer to be sent
   const [messageBuffer, setMessageBuffer] = useState<{ message: string, sessionId: string }>();
@@ -407,6 +442,8 @@ const AIChat: React.FC = () => {
     }
     onRequest({
       content: val,
+      domains: selectedSkills.filter((s) => s.type === 'domain').map((s) => s.value),
+      skill_ids: selectedSkills.filter((s) => s.type === 'skill').map((s) => s.value),
     });
   };
 
@@ -675,18 +712,40 @@ const AIChat: React.FC = () => {
   );
   const chatSender = (
     <>
-      <Sender
-        value={inputValue}
-        onSubmit={async () => {
-          onSubmit(inputValue.trim());
-          setInputValue('');
-        }}
-        onChange={setInputValue}
-        onCancel={() => { abort() }}
-        loading={isRequesting}
-        className={styles.sender}
-        placeholder={t('chat.inputPlaceholder')}
-      />
+      <Space direction="vertical" style={{ width: '100%', maxWidth: 700, margin: '0 auto' }}>
+        <Select<string[], (BaseOptionType & { skillType: 'domain' | 'skill' }) >
+          mode="multiple"
+          allowClear
+          placeholder={t('chat.skillsPlaceholder', { defaultValue: 'Skills (optional)' })}
+          value={selectedSkills.map((s) => s.value)}
+          onChange={(_, option) => {
+            if (isArray(option)) {
+              setSelectedSkills(option.map((o) => ({ type: o.skillType, value: o.value })));
+            } else if (option) {
+              setSelectedSkills([{ type: option.skillType, value: option.value }]);
+            } else {
+              setSelectedSkills([]);
+            }
+          }}
+          options={[
+            ...(domainOptions),
+            ...(skillOptions),
+          ]}
+          className={classNames(styles.skillsSelect, 'chat-skills-select')}
+        />
+        <Sender
+          value={inputValue}
+          onSubmit={async () => {
+            onSubmit(inputValue.trim());
+            setInputValue('');
+          }}
+          onChange={setInputValue}
+          onCancel={() => { abort() }}
+          loading={isRequesting}
+          className={classNames(styles.sender, 'chat-sender')}
+          placeholder={t('chat.inputPlaceholder')}
+        />
+      </Space>
     </>
   );
 

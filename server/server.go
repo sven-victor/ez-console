@@ -65,6 +65,7 @@ func initFlags(rootCmd *cobra.Command) {
 	serverFlagSet.String("server.write_timeout", "10s", "server write timeout")
 	serverFlagSet.String("server.shutdown_timeout", "10s", "server shutdown timeout")
 	serverFlagSet.String("server.file_upload_path", "./uploads", "server file upload path")
+	serverFlagSet.String("server.skills_path", "./data/skills", "server skills storage path")
 	serverFlagSet.String("server.geoip_db_path", "", "GeoIP database path")
 	rootCmd.Flags().AddFlagSet(serverFlagSet)
 

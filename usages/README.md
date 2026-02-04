@@ -12,13 +12,14 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 6. [Database & Models](./06-database-models.md) - Working with GORM and data models
 7. [Authentication & Authorization](./07-auth-system.md) - Implementing security
 8. [Middleware](./08-middleware.md) - Using and creating middleware
-9. [API Best Practices](./09-api-best-practices.md) - RESTful API design patterns
+9. [API Best Practices](./09-api-best-practices.md) - RESTful API design, OpenAPI/Swag workflow, and frontend codegen
 10. [Frontend Components](./10-frontend-components.md) - Using built-in React components
 11. [Internationalization](./11-i18n.md) - Multi-language support
 12. [Deployment](./12-deployment.md) - Deploying to production
 13. [Advanced Topics](./13-advanced-topics.md) - Advanced features and customization
 14. [Troubleshooting](./14-troubleshooting.md) - Common issues and solutions
 15. [AI and Toolsets](./15-ai-and-toolsets.md) - AI model integration and custom toolsets
+16. [Skills](./16-skills.md) - AI Agent Skills management and chat integration
 
 ## Framework Features
 
@@ -44,7 +45,7 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 ## Quick Links
 
 - **Source Code**: Check the `/examples` directory for working examples
-- **API Documentation**: Available at `/swagger` endpoint when server is running
+- **API Documentation**: Available at `/swagger` when the server is running. The API contract is defined in the backend (Swag comments in `pkg/api/`); run `make clean-openapi clean-openapi2ts openapi2ts` to regenerate the OpenAPI spec and frontend API client (see [API Best Practices](./09-api-best-practices.md)).
 - **Configuration Reference**: See [Configuration Guide](./05-configuration.md)
 
 ## Getting Help

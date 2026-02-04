@@ -66,5 +66,8 @@ export default {
     generatingTitle: '正在生成标题...',
     titleGenerated: '标题生成成功',
     titleGenerationFailed: '生成标题失败',
+    skill: '技能',
+    skillsPlaceholder: '技能（可选）',
+    skillDomain: '技能域',
   },
 };

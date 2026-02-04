@@ -53,4 +53,9 @@ export default {
     setDefaultFailed: 'Misslyckades med att ange standard AI-modell',
     deleteConfirm: 'Är du säker på att du vill ta bort denna AI-modell?',
   },
+  chat: {
+    skill: 'Färdighet',
+    skillsPlaceholder: 'Färdigheter (valfritt)',
+    skillDomain: 'Färdighetsdomän',
+  },
 };

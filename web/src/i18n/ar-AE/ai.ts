@@ -53,4 +53,9 @@ export default {
     setDefaultFailed: 'فشل في تعيين النموذج الذكي الافتراضي',
     deleteConfirm: 'هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟',
   },
+  chat: {
+    skill: 'المهارة',
+    skillsPlaceholder: 'المهارات (اختياري)',
+    skillDomain: 'مجال المهارة',
+  },
 };

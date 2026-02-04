@@ -76,6 +76,19 @@ generateService({
     console.log('✅ Successfully transformed ai.ts');
     console.log('✅ Created ai.ts with exported types');
   }
+  // Fix getSkillFile: backend returns raw text, not JSON; add responseType and cast so TS accepts
+  const systemPath = path.join(baseApiPath, 'system.ts');
+  if (fs.existsSync(systemPath)) {
+    let systemContent = fs.readFileSync(systemPath, 'utf-8');
+    const oldGetSkillFile =
+      'return request<string>(`/api/system/skills/${param0}/files/${param1}`, {\n    method: "GET",\n    params: { ...queryParams },\n    ...(options || {}),\n  });';
+    const newGetSkillFile =
+      'return request(`/api/system/skills/${param0}/files/${param1}`, {\n    method: "GET",\n    params: { ...queryParams },\n    responseType: "text",\n    ...(options || {}),\n  }) as Promise<any>;';
+    if (systemContent.includes(oldGetSkillFile)) {
+      systemContent = systemContent.replace(oldGetSkillFile, newGetSkillFile);
+      fs.writeFileSync(systemPath, systemContent, 'utf-8');
+    }
+  }
 }).then(()=>{
   try {
     const dir = readdirSync(baseApiPath);

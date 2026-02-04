@@ -53,4 +53,9 @@ export default {
     setDefaultFailed: 'Échec de la définition du modèle IA par défaut',
     deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce modèle IA ?',
   },
+  chat: {
+    skill: 'Compétence',
+    skillsPlaceholder: 'Compétences (optionnel)',
+    skillDomain: 'Domaine de compétence',
+  },
 };

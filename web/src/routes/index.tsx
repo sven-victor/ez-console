@@ -40,6 +40,8 @@ const RoleForm = lazy(() => import('@/pages/authorization/role/RoleForm'));
 // System management pages
 const SystemSettings = lazy(() => import('@/pages/system/settings/SystemSettings/index'));
 const OrganizationDetail = lazy(() => import('@/pages/system/settings/SystemSettings/OrganizationDetail'));
+const SkillEditor = lazy(() => import('@/pages/system/settings/SystemSettings/SkillEditor'));
+const SkillPreview = lazy(() => import('@/pages/system/settings/SystemSettings/SkillPreview'));
 const OAuthTestCallback = lazy(() => import('@/pages/system/settings/SystemSettings/OAuthTestCallback'));
 const AuditLogs = lazy(() => import('@/pages/system/audit/AuditLogs'));
 
@@ -209,14 +211,14 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         {
           name: 'system',
           icon: <SettingOutlined />,
-          permissions: ['system:settings:view', 'system:settings:update', 'system:audit:view', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view'],
+          permissions: ['system:settings:view', 'system:settings:update', 'system:audit:view', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view', 'system:skills:view'],
           children: [
             // System settings
             {
               path: '/system/settings',
               icon: <SafetyOutlined />,
               name: 'settings',
-              permissions: ['system:settings:view', 'system:settings:update', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view'],
+              permissions: ['system:settings:view', 'system:settings:update', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view', 'system:skills:view'],
               children: [
                 {
                   path: '/system/settings',
@@ -227,6 +229,18 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                   path: '/system/settings/organizations/:id',
                   permissions: ['system:organization:view'],
                   element: withSuspense(OrganizationDetail),
+                  index: true,
+                },
+                {
+                  path: '/system/settings/skills/:id/edit',
+                  permissions: ['system:skills:edit_files'],
+                  element: withSuspense(SkillEditor),
+                  index: true,
+                },
+                {
+                  path: '/system/settings/skills/:id/preview',
+                  permissions: ['system:skills:view'],
+                  element: withSuspense(SkillPreview),
                   index: true,
                 }
               ],

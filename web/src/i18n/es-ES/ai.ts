@@ -53,4 +53,9 @@ export default {
     setDefaultFailed: 'Error al establecer modelo de IA predeterminado',
     deleteConfirm: '¿Está seguro de que desea eliminar este modelo de IA?',
   },
+  chat: {
+    skill: 'Habilidad',
+    skillsPlaceholder: 'Habilidades (opcional)',
+    skillDomain: 'Dominio de habilidad',
+  },
 };

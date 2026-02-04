@@ -53,4 +53,9 @@ export default {
     setDefaultFailed: 'Standard-KI-Modell konnte nicht festgelegt werden',
     deleteConfirm: 'Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?',
   },
+  chat: {
+    skill: 'Fähigkeit',
+    skillsPlaceholder: 'Fähigkeiten (optional)',
+    skillDomain: 'Fähigkeitsbereich',
+  },
 };

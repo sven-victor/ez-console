@@ -66,5 +66,8 @@ export default {
     generatingTitle: 'Generating title...',
     titleGenerated: 'Title generated successfully',
     titleGenerationFailed: 'Failed to generate title',
+    skill: 'Skill',
+    skillsPlaceholder: 'Skills (optional)',
+    skillDomain: 'Skill domain',
   },
 };

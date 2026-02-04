@@ -133,8 +133,21 @@ definitions:
     properties:
       content:
         type: string
+      domains:
+        description: 'optional: load skills for these domains (plus core) as system
+          context'
+        items:
+          type: string
+        type: array
+      skill_ids:
+        description: 'optional: load these specific skills by id'
+        items:
+          type: string
+        type: array
     required:
     - content
+    - domains
+    - skill_ids
     type: object
   aiapi.UpdateAIModelRequest:
     properties:
@@ -1291,6 +1304,31 @@ definitions:
     - status
     - updated_at
     type: object
+  model.Skill:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - category
+    - created_at
+    - description
+    - domain
+    - id
+    - name
+    - updated_at
+    type: object
   model.StatementEntry:
     properties:
       Action:
@@ -1830,6 +1868,24 @@ definitions:
     - name_i18n
     - navigation
     type: object
+  service.SkillTreeNode:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/service.SkillTreeNode'
+        type: array
+      is_dir:
+        type: boolean
+      name:
+        type: string
+      path:
+        type: string
+    required:
+    - children
+    - is_dir
+    - name
+    - path
+    type: object
   service.SystemInfo:
     properties:
       cpu_cores:
@@ -1950,6 +2006,33 @@ definitions:
     required:
     - name
     - status
+    type: object
+  systemapi.CreateSkillDirRequest:
+    properties:
+      path:
+        type: string
+    required:
+    - path
+    type: object
+  systemapi.CreateSkillRequest:
+    properties:
+      category:
+        type: string
+      content:
+        description: optional initial SKILL.md content
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      name:
+        type: string
+    required:
+    - category
+    - content
+    - description
+    - domain
+    - name
     type: object
   systemapi.CreateToolSetRequest:
     properties:
@@ -2098,6 +2181,23 @@ definitions:
     - user_attr
     - user_filter
     - username
+    type: object
+  systemapi.MoveSkillPathRequest:
+    properties:
+      from_path:
+        type: string
+      to_path:
+        type: string
+    required:
+    - from_path
+    - to_path
+    type: object
+  systemapi.PreviewSkillResponse:
+    properties:
+      content:
+        type: string
+    required:
+    - content
     type: object
   systemapi.SMTPTestResponse:
     properties:
@@ -2264,6 +2364,22 @@ definitions:
     - name
     - status
     type: object
+  systemapi.UpdateSkillRequest:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      name:
+        type: string
+    required:
+    - category
+    - description
+    - domain
+    - name
+    type: object
   systemapi.UpdateToolSetRequest:
     properties:
       config:
@@ -2318,22 +2434,10 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
     - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -2687,6 +2791,30 @@ definitions:
     - total
     - trace_id
     type: object
+  util.PaginationResponse-model_Skill:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.Skill'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+      trace_id:
+        type: string
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    - trace_id
+    type: object
   util.PaginationResponse-model_ToolSet:
     properties:
       code:
@@ -2903,6 +3031,24 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-array_service_SkillTreeNode:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/service.SkillTreeNode'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-array_service_ToolSetTypeDefinition:
     properties:
       code:
@@ -2910,6 +3056,24 @@ definitions:
       data:
         items:
           $ref: '#/definitions/service.ToolSetTypeDefinition'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-array_string:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          type: string
         type: array
       err:
         type: string
@@ -3163,6 +3327,22 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-model_Skill:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.Skill'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-model_SystemSettings:
     properties:
       code:
@@ -3391,6 +3571,22 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-systemapi_PreviewSkillResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/systemapi.PreviewSkillResponse'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-systemapi_SMTPTestResponse:
     properties:
       code:
@@ -3457,7 +3653,7 @@ definitions:
 info:
   contact: {}
   title: EZ Console API
-  version: v1.9.2
+  version: v1.10.0
 paths:
   /api/ai/chat/sessions:
     get:
@@ -6215,6 +6411,474 @@ paths:
       summary: Get site config
       tags:
       - System/Site
+  /api/system/skills:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of skills with optional search and filters
+      operationId: listSkills
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      - description: Filter by domain
+        in: query
+        name: domain
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_Skill'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List skills
+      tags:
+      - System Settings/Skills
+    post:
+      consumes:
+      - application/json
+      description: Create a new skill with optional initial content
+      operationId: createSkill
+      parameters:
+      - description: Skill data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.CreateSkillRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/util.Response-model_Skill'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create skill
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a skill and its files
+      operationId: deleteSkill
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete skill
+      tags:
+      - System Settings/Skills
+    get:
+      consumes:
+      - application/json
+      description: Get a skill by ID
+      operationId: getSkill
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Skill'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get skill
+      tags:
+      - System Settings/Skills
+    put:
+      consumes:
+      - application/json
+      description: Update skill name, description, category, and domain
+      operationId: updateSkill
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Skill data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.UpdateSkillRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Skill'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update skill
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}/dirs:
+    post:
+      consumes:
+      - application/json
+      description: Create a subdirectory at the given path
+      operationId: createSkillDir
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Directory path
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.CreateSkillDirRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create skill directory
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}/files:
+    get:
+      consumes:
+      - application/json
+      description: Get the full file tree (directories and .md/.txt files) for a skill
+      operationId: listSkillFilesTree
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_service_SkillTreeNode'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List skill file tree
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}/files/{path}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a file or directory; directories are removed recursively
+      operationId: deleteSkillPath
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: File or directory path
+        in: path
+        name: path
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete skill path
+      tags:
+      - System Settings/Skills
+    get:
+      consumes:
+      - application/json
+      description: Get the content of a file under the skill (.md or .txt)
+      operationId: getSkillFile
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: File path (e.g. SKILL.md or docs/readme.md)
+        in: path
+        name: path
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: File content
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get skill file content
+      tags:
+      - System Settings/Skills
+    put:
+      consumes:
+      - application/octet-stream
+      description: 'Create or update a file under the skill (body: raw file content)'
+      operationId: putSkillFile
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: File path
+        in: path
+        name: path
+        required: true
+        type: string
+      - description: File content
+        in: body
+        name: body
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Put skill file
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}/move-path:
+    put:
+      consumes:
+      - application/json
+      description: Move or rename a file or directory (target must not exist)
+      operationId: moveSkillPath
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: From and to paths
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.MoveSkillPathRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Move skill path
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}/preview:
+    get:
+      consumes:
+      - application/json
+      description: Get concatenated skill content (SKILL.md and other .md files) for
+        preview
+      operationId: previewSkill
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-systemapi_PreviewSkillResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Preview skill
+      tags:
+      - System Settings/Skills
+  /api/system/skills/domains:
+    get:
+      consumes:
+      - application/json
+      description: Get the list of registered skill domains
+      operationId: listSkillDomains
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_string'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List skill domains
+      tags:
+      - System Settings/Skills
+  /api/system/skills/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a skill from an uploaded .md or .zip file (parses SKILL.md
+        frontmatter)
+      operationId: uploadSkill
+      parameters:
+      - description: Skill file (.md or .zip)
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Category
+        in: formData
+        name: category
+        type: string
+      - description: Domain
+        in: formData
+        name: domain
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/util.Response-model_Skill'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Upload skill
+      tags:
+      - System Settings/Skills
   /api/system/smtp-settings:
     get:
       consumes:

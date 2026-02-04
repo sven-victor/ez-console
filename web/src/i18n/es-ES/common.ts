@@ -66,6 +66,9 @@ export default {
   next: 'Siguiente',
   enter: 'Ingresar',
   select: 'Seleccionar',
+  selectFile: 'Seleccionar archivo',
+  optional: 'Opcional',
+  preview: 'Vista previa',
   light: 'Modo Claro',
   dark: 'Modo Oscuro',
   pagination: {

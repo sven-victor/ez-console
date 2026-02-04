@@ -74,6 +74,9 @@ export default {
   enter: '请输入',
   select: '请选择',
   view: '查看',
+  selectFile: '选择文件',
+  optional: '可选',
+  preview: '预览',
   light: '浅色模式',
   dark: '深色模式',
   pagination: {

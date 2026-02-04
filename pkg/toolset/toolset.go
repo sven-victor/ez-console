@@ -121,8 +121,29 @@ func GetRegisteredToolSets() map[ToolSetType]ToolSetFactory {
 	return toolSets
 }
 
-func NewStaticToolSetsFactory(toolSets ToolSets) func(ctx context.Context) (ToolSets, error) {
+type ToolSetsFactory func(ctx context.Context) (ToolSets, error)
+
+func NewStaticToolSetsFactory(toolSets ToolSets) ToolSetsFactory {
 	return func(ctx context.Context) (ToolSets, error) {
+		return toolSets, nil
+	}
+}
+
+func NewToolSetsFactoryChain(base ToolSetsFactory, factories ...ToolSetsFactory) ToolSetsFactory {
+	return func(ctx context.Context) (ToolSets, error) {
+		toolSets, err := base(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, factory := range factories {
+			factoryToolSets, err := factory(ctx)
+			if err != nil {
+				return nil, err
+			}
+			for k, v := range factoryToolSets {
+				toolSets[k] = v
+			}
+		}
 		return toolSets, nil
 	}
 }

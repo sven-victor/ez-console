@@ -413,6 +413,258 @@ export async function getSiteConfig(options?: { [key: string]: any }) {
   });
 }
 
+/** List skills Get a paginated list of skills with optional search and filters GET /api/system/skills */
+export async function listSkills(
+  params: API.listSkillsParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.PaginationResponseModelSkill>("/api/system/skills", {
+    method: "GET",
+    params: {
+      // current has a default value: 1
+      current: "1",
+      // page_size has a default value: 10
+      page_size: "10",
+
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/** Create skill Create a new skill with optional initial content POST /api/system/skills */
+export async function createSkill(
+  body: API.CreateSkillRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelSkill>("/api/system/skills", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** Get skill Get a skill by ID GET /api/system/skills/${param0} */
+export async function getSkill(
+  params: API.getSkillParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelSkill>(`/api/system/skills/${param0}`, {
+    method: "GET",
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
+/** Update skill Update skill name, description, category, and domain PUT /api/system/skills/${param0} */
+export async function updateSkill(
+  params: API.updateSkillParams,
+  body: API.UpdateSkillRequest,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelSkill>(`/api/system/skills/${param0}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    params: { ...queryParams },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** Delete skill Delete a skill and its files DELETE /api/system/skills/${param0} */
+export async function deleteSkill(
+  params: API.deleteSkillParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(`/api/system/skills/${param0}`, {
+    method: "DELETE",
+    params: { ...queryParams },
+    ...(options || {}),
+  });
+}
+
+/** Create skill directory Create a subdirectory at the given path POST /api/system/skills/${param0}/dirs */
+export async function createSkillDir(
+  params: API.createSkillDirParams,
+  body: API.CreateSkillDirRequest,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/system/skills/${param0}/dirs`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** List skill file tree Get the full file tree (directories and .md/.txt files) for a skill GET /api/system/skills/${param0}/files */
+export async function listSkillFilesTree(
+  params: API.listSkillFilesTreeParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseArrayServiceSkillTreeNode>(
+    `/api/system/skills/${param0}/files`,
+    {
+      method: "GET",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Get skill file content Get the content of a file under the skill (.md or .txt) GET /api/system/skills/${param0}/files/${param1} */
+export async function getSkillFile(
+  params: API.getSkillFileParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, path: param1, ...queryParams } = params;
+  return request(`/api/system/skills/${param0}/files/${param1}`, {
+    method: "GET",
+    params: { ...queryParams },
+    responseType: "text",
+    ...(options || {}),
+  }) as Promise<any>;
+}
+
+/** Put skill file Create or update a file under the skill (body: raw file content) PUT /api/system/skills/${param0}/files/${param1} */
+export async function putSkillFile(
+  params: API.putSkillFileParams,
+  body: string,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, path: param1, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/system/skills/${param0}/files/${param1}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/octet-stream",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Delete skill path Delete a file or directory; directories are removed recursively DELETE /api/system/skills/${param0}/files/${param1} */
+export async function deleteSkillPath(
+  params: API.deleteSkillPathParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, path: param1, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/system/skills/${param0}/files/${param1}`,
+    {
+      method: "DELETE",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Move skill path Move or rename a file or directory (target must not exist) PUT /api/system/skills/${param0}/move-path */
+export async function moveSkillPath(
+  params: API.moveSkillPathParams,
+  body: API.MoveSkillPathRequest,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/system/skills/${param0}/move-path`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Preview skill Get concatenated skill content (SKILL.md and other .md files) for preview GET /api/system/skills/${param0}/preview */
+export async function previewSkill(
+  params: API.previewSkillParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseSystemapiPreviewSkillResponse>(
+    `/api/system/skills/${param0}/preview`,
+    {
+      method: "GET",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
+/** List skill domains Get the list of registered skill domains GET /api/system/skills/domains */
+export async function listSkillDomains(options?: { [key: string]: any }) {
+  return request<API.ResponseArrayString>("/api/system/skills/domains", {
+    method: "GET",
+    ...(options || {}),
+  });
+}
+
+/** Upload skill Create a skill from an uploaded .md or .zip file (parses SKILL.md frontmatter) POST /api/system/skills/upload */
+export async function uploadSkill(
+  body: {
+    /** Category */
+    category?: string;
+    /** Domain */
+    domain?: string;
+  },
+  file?: File,
+  options?: { [key: string]: any }
+) {
+  const formData = new FormData();
+
+  if (file) {
+    formData.append("file", file);
+  }
+
+  Object.keys(body).forEach((ele) => {
+    const item = (body as any)[ele];
+
+    if (item !== undefined && item !== null) {
+      if (typeof item === "object" && !(item instanceof File)) {
+        if (item instanceof Array) {
+          item.forEach((f) => formData.append(ele, f || ""));
+        } else {
+          formData.append(ele, JSON.stringify(item));
+        }
+      } else {
+        formData.append(ele, item);
+      }
+    }
+  });
+
+  return request<API.ResponseModelSkill>("/api/system/skills/upload", {
+    method: "POST",
+    data: formData,
+    requestType: "form",
+    ...(options || {}),
+  });
+}
+
 /** Get SMTP settings Retrieves the current SMTP settings. GET /api/system/smtp-settings */
 export async function getSmtpSettings(options?: { [key: string]: any }) {
   return request<API.ResponseModelSMTPSettings>("/api/system/smtp-settings", {

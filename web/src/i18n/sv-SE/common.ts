@@ -66,6 +66,9 @@ export default {
   next: 'Nästa',
   enter: 'Ange',
   select: 'Välj',
+  selectFile: 'Välj fil',
+  optional: 'Valfritt',
+  preview: 'Förhandsgranska',
   light: 'Ljust läge',
   dark: 'Mörkt läge',
   pagination: {

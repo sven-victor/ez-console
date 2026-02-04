@@ -287,6 +287,24 @@ export interface CreateServiceAccountRequest {
   organization_id?: string;
 }
 
+export interface createSkillDirParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface CreateSkillDirRequest {
+  path: string;
+}
+
+export interface CreateSkillRequest {
+  category: string;
+  /** optional initial SKILL.md content */
+  content: string;
+  description: string;
+  domain: string;
+  name: string;
+}
+
 export interface CreateToolSetRequest {
   config?: Record<string, any>;
   description?: string;
@@ -369,6 +387,18 @@ export interface deleteServiceAccountAccessKeyParams {
 export interface deleteServiceAccountParams {
   /** Service account ID */
   id: string;
+}
+
+export interface deleteSkillParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface deleteSkillPathParams {
+  /** Skill ID */
+  id: string;
+  /** File or directory path */
+  path: string;
 }
 
 export interface deleteToolSetParams {
@@ -536,6 +566,18 @@ export interface getServiceAccountsParams {
   organization_id?: string;
 }
 
+export interface getSkillFileParams {
+  /** Skill ID */
+  id: string;
+  /** File path (e.g. SKILL.md or docs/readme.md) */
+  path: string;
+}
+
+export interface getSkillParams {
+  /** Skill ID */
+  id: string;
+}
+
 export interface getToolSetParams {
   /** Toolset ID */
   id: string;
@@ -693,6 +735,24 @@ export interface listRolesParams {
   organization_id?: string;
 }
 
+export interface listSkillFilesTreeParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface listSkillsParams {
+  /** Page number */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+  /** Search keyword */
+  search?: string;
+  /** Filter by category */
+  category?: string;
+  /** Filter by domain */
+  domain?: string;
+}
+
 export interface listToolSetsParams {
   /** Current page number */
   current?: number;
@@ -743,6 +803,16 @@ export interface MenuConfig {
 
 export interface MessageData {
   message: string;
+}
+
+export interface moveSkillPathParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface MoveSkillPathRequest {
+  from_path: string;
+  to_path: string;
 }
 
 export interface Navigation {
@@ -901,6 +971,15 @@ export interface PaginationResponseModelServiceAccount {
   trace_id: string;
 }
 
+export interface PaginationResponseModelSkill {
+  code: string;
+  current: number;
+  data: Skill[];
+  page_size: number;
+  total: number;
+  trace_id: string;
+}
+
 export interface PaginationResponseModelToolSet {
   code: string;
   current: number;
@@ -949,6 +1028,22 @@ export interface PermissionGroup {
 
 export interface PolicyDocument {
   Statement: StatementEntry[];
+}
+
+export interface previewSkillParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface PreviewSkillResponse {
+  content: string;
+}
+
+export interface putSkillFileParams {
+  /** Skill ID */
+  id: string;
+  /** File path */
+  path: string;
 }
 
 export interface removeUserFromOrganizationParams {
@@ -1027,9 +1122,23 @@ export interface ResponseArrayServiceSessionInfo {
   trace_id: string;
 }
 
+export interface ResponseArrayServiceSkillTreeNode {
+  code: string;
+  data: SkillTreeNode[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayServiceToolSetTypeDefinition {
   code: string;
   data: ToolSetTypeDefinition[];
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseArrayString {
+  code: string;
+  data: string[];
   err: string;
   trace_id: string;
 }
@@ -1128,6 +1237,13 @@ export interface ResponseModelServiceAccount {
 export interface ResponseModelServiceAccountAccessKey {
   code: string;
   data: ServiceAccountAccessKey;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelSkill {
+  code: string;
+  data: Skill;
   err: string;
   trace_id: string;
 }
@@ -1237,6 +1353,13 @@ export interface ResponseSystemapiLDAPSettings {
   trace_id: string;
 }
 
+export interface ResponseSystemapiPreviewSkillResponse {
+  code: string;
+  data: PreviewSkillResponse;
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseSystemapiSMTPTestResponse {
   code: string;
   data: SMTPTestResponse;
@@ -1310,6 +1433,10 @@ export interface SecuritySettings {
 
 export interface SendMessageRequest {
   content: string;
+  /** optional: load skills for these domains (plus core) as system context */
+  domains: string[];
+  /** optional: load these specific skills by id */
+  skill_ids: string[];
 }
 
 export interface ServiceAccount {
@@ -1386,6 +1513,23 @@ export interface SiteConfig {
   name: string;
   name_i18n: Record<string, any>;
   navigation: Navigation[];
+}
+
+export interface Skill {
+  category: string;
+  created_at: string;
+  description: string;
+  domain: string;
+  id: string;
+  name: string;
+  updated_at: string;
+}
+
+export interface SkillTreeNode {
+  children: SkillTreeNode[];
+  is_dir: boolean;
+  name: string;
+  path: string;
 }
 
 export interface SMTPSettings {
@@ -1672,6 +1816,18 @@ export interface updateServiceAccountStatusParams {
 
 export interface UpdateServiceAccountStatusRequest {
   status: "active" | "disabled";
+}
+
+export interface updateSkillParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface UpdateSkillRequest {
+  category: string;
+  description: string;
+  domain: string;
+  name: string;
 }
 
 export interface updateToolSetParams {

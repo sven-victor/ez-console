@@ -1,54 +1,56 @@
-import { c as i, A as p, b as u, w as n } from "./es/index.js";
-import { useTranslation as d } from "react-i18next";
+import { c as i, A as p, b as n, w as d } from "./es/index.js";
+import { useTranslation as m } from "react-i18next";
 import "./es/base.js";
-import { b as A, h as l, e as c, A as x, c as h, D as g, H as I, d as b, a as C, L, f as P, P as S, T as w, g as D } from "./es/components.js";
-import { default as y } from "./es/ai-chat.js";
-import { A as G, a as T, b as B } from "./es/ai-chat-layout.js";
+import { b as A, h as l, e as c, A as x, c as h, D as g, H as C, d as I, a as b, L as w, C as L, M as P, f as S, P as D, T as M, g as v } from "./es/components.js";
+import { default as E } from "./es/ai-chat.js";
+import { A as T, a as k, b as B } from "./es/ai-chat-layout.js";
 import { default as H } from "./es/forbidden.js";
 import { default as U } from "./es/not_found.js";
-import { u as M, a as R, b as Z, c as j } from "./es/contexts.js";
-import { A as z, d as J, a as K, e as O, f as Q, c as V, g as W, r as X } from "./es/client.js";
+import { u as R, a as V, b as Z, c as j } from "./es/contexts.js";
+import { A as J, d as K, a as O, e as Q, f as W, c as X, g as Y, r as _ } from "./es/client.js";
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";
-import { default as _ } from "i18next";
+import { default as aa } from "i18next";
 export {
-  y as AIChat,
-  G as AIChatButton,
-  T as AIChatModal,
+  E as AIChat,
+  T as AIChatButton,
+  k as AIChatModal,
   B as AIChatSider,
   A as Actions,
   l as AdminGuard,
   c as AllLangUIConfig,
-  z as ApiError,
+  J as ApiError,
   i as AppLayout,
   x as Avatar,
   h as AvatarUpload,
   g as DynamicIcon,
   p as EZApp,
   H as Forbidden,
-  I as HeaderDropdown,
-  b as LabelCreater,
-  C as LanguageSwitch,
-  L as Loading,
+  C as HeaderDropdown,
+  I as LabelCreater,
+  b as LanguageSwitch,
+  w as Loading,
+  L as MarkdownCode,
+  P as MarkdownViewer,
   U as NotFound,
-  P as PermissionGuard,
-  S as PrivateRoute,
-  w as Table,
-  u as api,
-  J as apiDelete,
-  K as apiGet,
-  O as apiPost,
-  Q as apiPut,
-  V as client,
-  W as fetchSSE,
-  D as getIconByName,
-  _ as i18n,
-  X as request,
-  M as useAI,
-  R as useAuth,
+  S as PermissionGuard,
+  D as PrivateRoute,
+  M as Table,
+  n as api,
+  K as apiDelete,
+  O as apiGet,
+  Q as apiPost,
+  W as apiPut,
+  X as client,
+  Y as fetchSSE,
+  v as getIconByName,
+  aa as i18n,
+  _ as request,
+  R as useAI,
+  V as useAuth,
   Z as usePermission,
   j as useSite,
-  d as useTranslation,
-  n as withSuspense
+  m as useTranslation,
+  d as withSuspense
 };

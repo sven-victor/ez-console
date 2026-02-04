@@ -29,7 +29,7 @@ web/
 │   ├── components/      # Reusable components
 │   ├── contexts/        # React contexts
 │   ├── hooks/           # Custom hooks
-│   ├── service/         # API services
+│   ├── service/         # API services; `service/api/` is generated from OpenAPI (see [API Best Practices](./09-api-best-practices.md#frontend-backend-api-workflow-openapiswag))
 │   ├── types/           # TypeScript types
 │   ├── utils/           # Utility functions
 │   ├── App.tsx          # Main app component

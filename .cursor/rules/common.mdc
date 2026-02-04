@@ -46,3 +46,15 @@ This is a backend management system. The backend service is written in Golang, u
   "data": {} // Returned data
 }
 ```
+
+## Frontend-Backend API Workflow (OpenAPI/Swag)
+
+- Frontend-backend collaboration is **OpenAPI/Swag-driven**: the **backend is the source of truth** for the API contract.
+- API documentation and route definitions live in the backend (Swag comments in Go under `pkg/api/`). The OpenAPI spec is generated from this code.
+- After adding or changing backend APIs or Swag comments, regenerate the OpenAPI spec and the frontend API client by running:
+  ```bash
+  make clean-openapi clean-openapi2ts openapi2ts
+  ```
+  This will: (1) remove old `openapi/` and `web/src/service/api/` artifacts, (2) run `swag init` to produce `openapi/swagger.json`, (3) copy it to `web/swagger.json`, (4) run the OpenAPI-to-TypeScript script (`web/scripts/openapi.js`, using `@umijs/openapi`) to regenerate `web/src/service/api/` (request functions and types).
+- Do **not** hand-edit generated files under `web/src/service/api/`; change the backend API and/or Swag docs, then re-run the command above.
+- For details and best practices, see `usages/09-api-best-practices.md` and `web/scripts/openapi.js`.

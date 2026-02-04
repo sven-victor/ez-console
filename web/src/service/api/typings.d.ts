@@ -289,6 +289,24 @@ declare global {
       organization_id?: string;
     }
   
+    interface createSkillDirParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface CreateSkillDirRequest {
+      path: string;
+    }
+  
+    interface CreateSkillRequest {
+      category: string;
+      /** optional initial SKILL.md content */
+      content: string;
+      description: string;
+      domain: string;
+      name: string;
+    }
+  
     interface CreateToolSetRequest {
       config?: Record<string, any>;
       description?: string;
@@ -371,6 +389,18 @@ declare global {
     interface deleteServiceAccountParams {
       /** Service account ID */
       id: string;
+    }
+  
+    interface deleteSkillParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface deleteSkillPathParams {
+      /** Skill ID */
+      id: string;
+      /** File or directory path */
+      path: string;
     }
   
     interface deleteToolSetParams {
@@ -538,6 +568,18 @@ declare global {
       organization_id?: string;
     }
   
+    interface getSkillFileParams {
+      /** Skill ID */
+      id: string;
+      /** File path (e.g. SKILL.md or docs/readme.md) */
+      path: string;
+    }
+  
+    interface getSkillParams {
+      /** Skill ID */
+      id: string;
+    }
+  
     interface getToolSetParams {
       /** Toolset ID */
       id: string;
@@ -695,6 +737,24 @@ declare global {
       organization_id?: string;
     }
   
+    interface listSkillFilesTreeParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface listSkillsParams {
+      /** Page number */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+      /** Search keyword */
+      search?: string;
+      /** Filter by category */
+      category?: string;
+      /** Filter by domain */
+      domain?: string;
+    }
+  
     interface listToolSetsParams {
       /** Current page number */
       current?: number;
@@ -745,6 +805,16 @@ declare global {
   
     interface MessageData {
       message: string;
+    }
+  
+    interface moveSkillPathParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface MoveSkillPathRequest {
+      from_path: string;
+      to_path: string;
     }
   
     interface Navigation {
@@ -903,6 +973,15 @@ declare global {
       trace_id: string;
     }
   
+    interface PaginationResponseModelSkill {
+      code: string;
+      current: number;
+      data: Skill[];
+      page_size: number;
+      total: number;
+      trace_id: string;
+    }
+  
     interface PaginationResponseModelToolSet {
       code: string;
       current: number;
@@ -951,6 +1030,22 @@ declare global {
   
     interface PolicyDocument {
       Statement: StatementEntry[];
+    }
+  
+    interface previewSkillParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface PreviewSkillResponse {
+      content: string;
+    }
+  
+    interface putSkillFileParams {
+      /** Skill ID */
+      id: string;
+      /** File path */
+      path: string;
     }
   
     interface removeUserFromOrganizationParams {
@@ -1029,9 +1124,23 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArrayServiceSkillTreeNode {
+      code: string;
+      data: SkillTreeNode[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayServiceToolSetTypeDefinition {
       code: string;
       data: ToolSetTypeDefinition[];
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseArrayString {
+      code: string;
+      data: string[];
       err: string;
       trace_id: string;
     }
@@ -1130,6 +1239,13 @@ declare global {
     interface ResponseModelServiceAccountAccessKey {
       code: string;
       data: ServiceAccountAccessKey;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelSkill {
+      code: string;
+      data: Skill;
       err: string;
       trace_id: string;
     }
@@ -1239,6 +1355,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseSystemapiPreviewSkillResponse {
+      code: string;
+      data: PreviewSkillResponse;
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseSystemapiSMTPTestResponse {
       code: string;
       data: SMTPTestResponse;
@@ -1312,6 +1435,10 @@ declare global {
   
     interface SendMessageRequest {
       content: string;
+      /** optional: load skills for these domains (plus core) as system context */
+      domains: string[];
+      /** optional: load these specific skills by id */
+      skill_ids: string[];
     }
   
     interface ServiceAccount {
@@ -1388,6 +1515,23 @@ declare global {
       name: string;
       name_i18n: Record<string, any>;
       navigation: Navigation[];
+    }
+  
+    interface Skill {
+      category: string;
+      created_at: string;
+      description: string;
+      domain: string;
+      id: string;
+      name: string;
+      updated_at: string;
+    }
+  
+    interface SkillTreeNode {
+      children: SkillTreeNode[];
+      is_dir: boolean;
+      name: string;
+      path: string;
     }
   
     interface SMTPSettings {
@@ -1674,6 +1818,18 @@ declare global {
   
     interface UpdateServiceAccountStatusRequest {
       status: "active" | "disabled";
+    }
+  
+    interface updateSkillParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface UpdateSkillRequest {
+      category: string;
+      description: string;
+      domain: string;
+      name: string;
     }
   
     interface updateToolSetParams {

@@ -44,6 +44,7 @@ var migrateModels = []interface{}{
 	&model.RoleAIToolPermission{},
 	&model.AIChatSession{},
 	&model.AIChatMessage{},
+	&model.Skill{},
 }
 
 func RegisterModels(models ...interface{}) {

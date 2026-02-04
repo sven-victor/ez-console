@@ -66,6 +66,9 @@ export default {
   next: 'Weiter',
   enter: 'Eingeben',
   select: 'Auswählen',
+  selectFile: 'Datei auswählen',
+  optional: 'Optional',
+  preview: 'Vorschau',
   light: 'Heller Modus',
   dark: 'Dunkler Modus',
   pagination: {

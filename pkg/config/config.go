@@ -67,6 +67,7 @@ type ServerConfig struct {
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" mapstructure:"shutdown_timeout"`
 	MaxUploadSize   int64         `yaml:"max_upload_size" mapstructure:"max_upload_size"`
 	FileUploadPath  string        `yaml:"file_upload_path" mapstructure:"file_upload_path"`
+	SkillsPath      string        `yaml:"skills_path" mapstructure:"skills_path"`
 	GeoIPDBPath     string        `yaml:"geoip_db_path" mapstructure:"geoip_db_path"`
 }
 

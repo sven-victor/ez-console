@@ -29,6 +29,7 @@ type Controller struct {
 	*LDAPSettingController
 	*SMTPSettingController
 	*ToolSetController
+	*SkillController
 	*OrganizationController
 }
 
@@ -41,6 +42,7 @@ func NewController(svc *service.Service) *Controller {
 		LDAPSettingController:     NewLDAPSettingController(svc),
 		SMTPSettingController:     NewSMTPSettingController(svc),
 		ToolSetController:         NewToolSetController(svc),
+		SkillController:           NewSkillController(svc),
 		OrganizationController:    NewOrganizationController(svc),
 	}
 }
@@ -61,6 +63,8 @@ func (c *Controller) RegisterRoutes(ctx context.Context, router *gin.RouterGroup
 	c.SMTPSettingController.RegisterRoutes(system)
 	// Register toolset controller
 	c.ToolSetController.RegisterRoutes(system)
+	// Register skill controller
+	c.SkillController.RegisterRoutes(system)
 	// Register organization controller
 	c.OrganizationController.RegisterRoutes(system)
 }

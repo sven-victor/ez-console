@@ -3,6 +3,7 @@ import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
 import { AxiosResponse } from 'axios';
 import { ButtonProps } from 'antd';
+import { ComponentProps } from '@ant-design/x-markdown';
 import { ComponentType } from 'react';
 import { default as default_2 } from 'react';
 import { DropDownProps } from 'antd/es/dropdown';
@@ -15,6 +16,7 @@ import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
+import { XMarkdown } from '@ant-design/x-markdown';
 
 export declare type AccessType = "public" | "private" | "owner";
 
@@ -268,6 +270,51 @@ export declare const api: {
     getSiteConfig(options?: {
         [key: string]: any;
     }): Promise<API.SiteConfig>;
+    listSkills(params: API.listSkillsParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseModelSkill>;
+    createSkill(body: API.CreateSkillRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.Skill>;
+    getSkill(params: API.getSkillParams, options?: {
+        [key: string]: any;
+    }): Promise<API.Skill>;
+    updateSkill(params: API.updateSkillParams, body: API.UpdateSkillRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.Skill>;
+    deleteSkill(params: API.deleteSkillParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    createSkillDir(params: API.createSkillDirParams, body: API.CreateSkillDirRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    listSkillFilesTree(params: API.listSkillFilesTreeParams, options?: {
+        [key: string]: any;
+    }): Promise<API.SkillTreeNode[]>;
+    getSkillFile(params: API.getSkillFileParams, options?: {
+        [key: string]: any;
+    }): Promise<any>;
+    putSkillFile(params: API.putSkillFileParams, body: string, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    deleteSkillPath(params: API.deleteSkillPathParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    moveSkillPath(params: API.moveSkillPathParams, body: API.MoveSkillPathRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    previewSkill(params: API.previewSkillParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PreviewSkillResponse>;
+    listSkillDomains(options?: {
+        [key: string]: any;
+    }): Promise<string[]>;
+    uploadSkill(body: {
+        category?: string;
+        domain?: string;
+    }, file?: File, options?: {
+        [key: string]: any;
+    }): Promise<API.Skill>;
     getSmtpSettings(options?: {
         [key: string]: any;
     }): Promise<API.SMTPSettings>;
@@ -705,6 +752,25 @@ export declare interface CreateServiceAccountAccessKeyResponse {
 export declare interface CreateServiceAccountRequest {
     description: string;
     name: string;
+    organization_id?: string;
+}
+
+export declare interface createSkillDirParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface CreateSkillDirRequest {
+    path: string;
+}
+
+export declare interface CreateSkillRequest {
+    category: string;
+    /** optional initial SKILL.md content */
+    content: string;
+    description: string;
+    domain: string;
+    name: string;
 }
 
 export declare interface CreateToolSetRequest {
@@ -789,6 +855,18 @@ export declare interface deleteServiceAccountAccessKeyParams {
 export declare interface deleteServiceAccountParams {
     /** Service account ID */
     id: string;
+}
+
+export declare interface deleteSkillParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface deleteSkillPathParams {
+    /** Skill ID */
+    id: string;
+    /** File or directory path */
+    path: string;
 }
 
 export declare interface deleteToolSetParams {
@@ -978,6 +1056,20 @@ export declare interface getServiceAccountsParams {
     page_size?: number;
     /** Search keyword */
     search?: string;
+    /** Filter by organization ID (empty for global service accounts) */
+    organization_id?: string;
+}
+
+export declare interface getSkillFileParams {
+    /** Skill ID */
+    id: string;
+    /** File path (e.g. SKILL.md or docs/readme.md) */
+    path: string;
+}
+
+export declare interface getSkillParams {
+    /** Skill ID */
+    id: string;
 }
 
 export declare interface getToolSetParams {
@@ -1213,6 +1305,24 @@ export declare interface listRolesParams {
     organization_id?: string;
 }
 
+export declare interface listSkillFilesTreeParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface listSkillsParams {
+    /** Page number */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+    /** Search keyword */
+    search?: string;
+    /** Filter by category */
+    category?: string;
+    /** Filter by domain */
+    domain?: string;
+}
+
 export declare interface listToolSetsParams {
     /** Current page number */
     current?: number;
@@ -1256,6 +1366,19 @@ export declare interface LoginResponse {
     user: User;
 }
 
+export declare const MarkdownCode: default_2.FC<ComponentProps>;
+
+export declare const MarkdownViewer: default_2.FC<MarkdownViewerProps>;
+
+export declare interface MarkdownViewerProps {
+    content: string;
+    className?: string;
+    style?: default_2.CSSProperties;
+    components?: default_2.ComponentProps<typeof XMarkdown>['components'];
+    paragraphTag?: keyof JSX.IntrinsicElements;
+    rootClassName?: string;
+}
+
 export declare interface MenuConfig {
     hide: boolean;
     icon: string;
@@ -1265,6 +1388,16 @@ export declare interface MenuConfig {
 
 export declare interface MessageData {
     message: string;
+}
+
+export declare interface moveSkillPathParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface MoveSkillPathRequest {
+    from_path: string;
+    to_path: string;
 }
 
 export declare interface Navigation {
@@ -1419,6 +1552,15 @@ export declare interface PaginationResponseModelServiceAccount {
     trace_id: string;
 }
 
+export declare interface PaginationResponseModelSkill {
+    code: string;
+    current: number;
+    data: Skill[];
+    page_size: number;
+    total: number;
+    trace_id: string;
+}
+
 export declare interface PaginationResponseModelToolSet {
     code: string;
     current: number;
@@ -1488,6 +1630,15 @@ export declare interface PolicyDocument {
     Statement: StatementEntry[];
 }
 
+export declare interface previewSkillParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface PreviewSkillResponse {
+    content: string;
+}
+
 /**
  * Private route component - protect routes that need authentication
  *
@@ -1503,6 +1654,13 @@ export declare interface PrivateRouteProps {
     element: default_2.ReactElement;
     requiredPermission?: string;
     requiredPermissions?: string[];
+}
+
+export declare interface putSkillFileParams {
+    /** Skill ID */
+    id: string;
+    /** File path */
+    path: string;
 }
 
 export declare interface removeUserFromOrganizationParams {
@@ -1600,9 +1758,23 @@ export declare interface ResponseArrayServiceSessionInfo {
     trace_id: string;
 }
 
+export declare interface ResponseArrayServiceSkillTreeNode {
+    code: string;
+    data: SkillTreeNode[];
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayServiceToolSetTypeDefinition {
     code: string;
     data: ToolSetTypeDefinition[];
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseArrayString {
+    code: string;
+    data: string[];
     err: string;
     trace_id: string;
 }
@@ -1701,6 +1873,13 @@ export declare interface ResponseModelServiceAccount {
 export declare interface ResponseModelServiceAccountAccessKey {
     code: string;
     data: ServiceAccountAccessKey;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelSkill {
+    code: string;
+    data: Skill;
     err: string;
     trace_id: string;
 }
@@ -1810,6 +1989,13 @@ export declare interface ResponseSystemapiLDAPSettings {
     trace_id: string;
 }
 
+export declare interface ResponseSystemapiPreviewSkillResponse {
+    code: string;
+    data: PreviewSkillResponse;
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseSystemapiSMTPTestResponse {
     code: string;
     data: SMTPTestResponse;
@@ -1847,6 +2033,8 @@ export declare interface Role {
     permissions: Permission[];
     /** Permission configuration based on IAM-style policies, stored in JSON format */
     policy_document: PolicyDocument;
+    /** RoleType: "system" = created by seed/default-role assignment, not user-manageable; "user" = user-created */
+    role_type: string;
     updated_at: string;
 }
 
@@ -1885,6 +2073,10 @@ export declare interface SecuritySettings {
 
 export declare interface SendMessageRequest {
     content: string;
+    /** optional: load skills for these domains (plus core) as system context */
+    domains: string[];
+    /** optional: load these specific skills by id */
+    skill_ids: string[];
 }
 
 export declare interface ServiceAccount {
@@ -1894,6 +2086,9 @@ export declare interface ServiceAccount {
     id: string;
     last_access: string;
     name: string;
+    organization: Organization;
+    /** OrganizationID is the organization this service account belongs to. If empty, the service account is global. */
+    organization_id: string;
     policy_document: PolicyDocument;
     /** Associations */
     roles: Role[];
@@ -1969,6 +2164,23 @@ declare interface SiteContextType {
     setCurrentOrgId: (orgId: string) => void;
     clearCurrentOrgId: () => void;
     error?: Error;
+}
+
+export declare interface Skill {
+    category: string;
+    created_at: string;
+    description: string;
+    domain: string;
+    id: string;
+    name: string;
+    updated_at: string;
+}
+
+export declare interface SkillTreeNode {
+    children: SkillTreeNode[];
+    is_dir: boolean;
+    name: string;
+    path: string;
 }
 
 export declare interface SMTPSettings {
@@ -2297,6 +2509,18 @@ export declare interface UpdateServiceAccountStatusRequest {
     status: "active" | "disabled";
 }
 
+export declare interface updateSkillParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface UpdateSkillRequest {
+    category: string;
+    description: string;
+    domain: string;
+    name: string;
+}
+
 export declare interface updateToolSetParams {
     /** Toolset ID */
     id: string;
@@ -2379,7 +2603,7 @@ export declare const useAuth: () => AuthContextType;
  * Permission Hook, used to check if the user has specific permissions
  *
  * Usage example:
- * const { hasPermission, hasAllPermissions, hasAnyPermission } = usePermission();
+ * const { hasPermission, hasAllPermissions, hasAnyPermission,hasGlobalPermission } = usePermission();
  *
  * if (hasPermission('authorization:user:create')) {
  *   // User has permission to create users
@@ -2389,6 +2613,7 @@ export declare const usePermission: () => {
     hasPermission: (permission: string) => boolean;
     hasAllPermissions: (permissions: string[]) => boolean;
     hasAnyPermission: (permissions: string[]) => boolean;
+    hasGlobalPermission: (permission: string) => boolean;
     isAdmin: boolean;
     loading: boolean;
 };

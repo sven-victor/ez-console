@@ -66,6 +66,9 @@ export default {
   next: 'التالي',
   enter: 'أدخل',
   select: 'اختر',
+  selectFile: 'اختر ملفاً',
+  optional: 'اختياري',
+  preview: 'معاينة',
   light: 'الوضع الفاتح',
   dark: 'الوضع الداكن',
   pagination: {

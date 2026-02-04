@@ -24,6 +24,7 @@ import SMTPSettingsForm from './SMTPSettingsForm';
 import BaseSettingsForm from './BaseSettings';
 import AIModelSettings from './AIModelSettings';
 import ToolSetSettings from './ToolSetSettings';
+import SkillSettings from './SkillSettings';
 import OrganizationSettings from './OrganizationSettings';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSite } from '@/contexts/SiteContext';
@@ -93,6 +94,12 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
       children: <ToolSetSettings />,
       hidden: !hasPermission('system:toolsets:view'),
     },
+    {
+      key: 'skills',
+      label: t('settings.tabs.skills', { defaultValue: 'Skills' }),
+      children: <SkillSettings />,
+      hidden: !hasPermission('system:skills:view'),
+    },
     // Only show organization tab if multi-org is enabled
     ...(enableMultiOrg ? [{
       key: 'organizations',
@@ -102,7 +109,6 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
     }] : []),
   ];
 
-  console.log(items, hasPermission('system:settings:update'))
   return (
     <Card title={t('settings.title', { defaultValue: 'System Settings' })}>
       <Tabs

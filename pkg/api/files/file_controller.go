@@ -154,7 +154,7 @@ func (c *FileController) ListFiles(ctx *gin.Context) {
 	search := ctx.Query("search")
 	fileType := ctx.Query("file_type")
 	accessType := ctx.Query("access")
-	files, err := c.service.ListFiles(ctx, current, pageSize, fileType, accessType, search)
+	files, err := c.service.FileService.ListFiles(ctx, current, pageSize, fileType, accessType, search)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
