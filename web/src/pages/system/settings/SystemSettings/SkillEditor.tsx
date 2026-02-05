@@ -15,6 +15,20 @@ import api from '@/service/api';
 import type { SkillTreeNode } from '@/service/api/typing';
 import MarkdownViewer from '@/components/MarkdownViewer';
 import { markdownWithMetadataAsTable } from '@/utils/skillPreview';
+import { createStyles } from 'antd-style';
+
+const useStyles = createStyles(({ css }) => {
+  return {
+    fileTree: css`
+    .ant-tree-node-content-wrapper{
+      padding-inline: 0px;
+    }
+    .ant-tree-draggable-icon{
+      display: none;
+    }
+    `,
+  }
+})
 
 const { TextArea } = Input;
 
@@ -36,6 +50,7 @@ function parentPath(path: string): string {
 }
 
 const SkillEditor: React.FC = () => {
+  const { styles } = useStyles();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('system');
@@ -314,7 +329,9 @@ const SkillEditor: React.FC = () => {
         </Button>
       }
       style={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 160px)' }}
-      bodyStyle={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}
+      styles={{
+        body: { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }
+      }}
     >
       <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
         <div style={{ width: 260, border: '1px solid #d9d9d9', borderRadius: 8, padding: 8, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
@@ -334,6 +351,7 @@ const SkillEditor: React.FC = () => {
                 onSelect={onTreeSelect}
                 onRightClick={onTreeRightClick}
                 onDrop={handleDrop}
+                className={styles.fileTree}
                 treeData={treeDataNodes}
               />
             </div>
