@@ -381,10 +381,7 @@ func (s *SkillService) Create(ctx context.Context, skill *model.Skill, initialCo
 		return nil, err
 	}
 
-	fs, err := getSkillsRootFs()
-	if err != nil {
-		return nil, fmt.Errorf("failed to get skills dir: %w", err)
-	}
+	fs := s.getSkillsRootFs()
 	if err := fs.MkdirAll(skill.ResourceID, 0o755); err != nil {
 		_ = db.Session(ctx).Delete(skill)
 		return nil, fmt.Errorf("failed to create skill directory: %w", err)
@@ -446,10 +443,7 @@ func (s *SkillService) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-	fs, err := getSkillsRootFs()
-	if err != nil {
-		return fmt.Errorf("failed to get skills dir: %w", err)
-	}
+	fs := s.getSkillsRootFs()
 	if err := fs.RemoveAll(skill.ResourceID); err != nil {
 		return fmt.Errorf("failed to remove skill directory: %w", err)
 	}
@@ -465,24 +459,13 @@ func (s *SkillService) getSkillFs(ctx context.Context, skillID string) (*model.S
 	if err != nil {
 		return nil, nil, err
 	}
-	fs, err := getSkillsRootFs()
-	if err != nil {
-		return nil, nil, err
-	}
+	fs := s.getSkillsRootFs()
 	return skill, afero.NewBasePathFs(fs, skill.ResourceID), nil
 }
 
 // getSkillsRootFs returns the root afero.Fs for skills storage (from config or default under file_upload_path)
-func getSkillsRootFs() (afero.Fs, error) {
-	cfg := config.GetConfig()
-	root := cfg.Server.SkillsPath
-	if root == "" && cfg.Server.FileUploadPath != "" {
-		root = cfg.Server.FileUploadPath + "/skills"
-	}
-	if root == "" {
-		return nil, fmt.Errorf("skills dir is not set (set server.skills_path or server.file_upload_path)")
-	}
-	return afero.NewBasePathFs(afero.NewOsFs(), root), nil
+func (s *SkillService) getSkillsRootFs() afero.Fs {
+	return config.GetConfig().Server.SkillsPath
 }
 
 // GetSkillContent reads SKILL.md (or SKILLS.md) and optionally other .md files, returns combined markdown

@@ -68,3 +68,5 @@ __debug_bin*
 /local/
 
 /pkg/api/api_local.go
+
+/skills/

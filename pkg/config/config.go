@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strconv"
 	"time"
@@ -66,8 +67,8 @@ type ServerConfig struct {
 	WriteTimeout    time.Duration `yaml:"write_timeout" mapstructure:"write_timeout"`
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" mapstructure:"shutdown_timeout"`
 	MaxUploadSize   int64         `yaml:"max_upload_size" mapstructure:"max_upload_size"`
-	FileUploadPath  string        `yaml:"file_upload_path" mapstructure:"file_upload_path"`
-	SkillsPath      string        `yaml:"skills_path" mapstructure:"skills_path"`
+	FileUploadPath  afero.Afero   `yaml:"file_upload_path" mapstructure:"file_upload_path"`
+	SkillsPath      afero.Afero   `yaml:"skills_path" mapstructure:"skills_path"`
 	GeoIPDBPath     string        `yaml:"geoip_db_path" mapstructure:"geoip_db_path"`
 }
 
@@ -76,10 +77,7 @@ type UploadConfig struct {
 }
 
 func (c *Config) GetUploadDir() (afero.Fs, error) {
-	if c.Server.FileUploadPath == "" {
-		return nil, fmt.Errorf("upload dir is not set")
-	}
-	return afero.NewBasePathFs(afero.NewOsFs(), c.Server.FileUploadPath), nil
+	return c.Server.FileUploadPath, nil
 }
 
 // JWTConfig JWT configuration
@@ -399,6 +397,7 @@ func LoadConfig(appName, configPath string) (*Config, error) {
 		StringToNumberHookFunc(),
 		safe.SafeStringHookFunc(),
 		StringToBoolHookFunc(),
+		aferoUnmarshallerHookFunc,
 	))); err != nil {
 		return nil, fmt.Errorf("failed to parse config file: %w", err)
 	}
@@ -420,4 +419,24 @@ func jwtConfigUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (an
 		return nil, fmt.Errorf("unsupported type: %T", data)
 	}
 	return data, nil
+}
+
+func aferoUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (any, error) {
+	if (t != reflect.TypeOf(afero.Afero{})) {
+		return data, nil
+	}
+	if data, ok := data.(string); ok {
+		absPath, err := filepath.Abs(data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get absolute path: %w", err)
+		}
+		if _, err := os.Stat(absPath); os.IsNotExist(err) {
+			err := os.MkdirAll(absPath, 0755)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create directory: %w", err)
+			}
+		}
+		return afero.Afero{Fs: afero.NewBasePathFs(afero.NewOsFs(), absPath)}, nil
+	}
+	return nil, fmt.Errorf("unsupported type: %T", data)
 }
