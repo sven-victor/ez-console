@@ -31,6 +31,7 @@ import LanguageSwitch, { type LanguageConfig } from './LanguageSwitch';
 import HeaderDropdown from './HeaderDropdown';
 import Avatar from './Avatar';
 import OrganizationSwitcher from './OrganizationSwitcher';
+import TaskListDropdown from './TaskListDropdown';
 import { useTranslation } from 'react-i18next';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
@@ -316,6 +317,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <SwapOutlined />
     </HeaderDropdown>,
     ...(siteConfig?.enable_multi_org ? [<OrganizationSwitcher key="org-switcher" className="header-item org-switcher" />] : []),
+    ...(hasPermission('task:list') ? [<TaskListDropdown key="task-dropdown" className="header-item task-dropdown" />] : []),
     <HeaderDropdown
       key="user-dropdown"
       className="header-item user-dropdown"

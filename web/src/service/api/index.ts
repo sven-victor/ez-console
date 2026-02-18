@@ -7,10 +7,14 @@ import * as authorization from "./authorization";
 import * as base from "./base";
 import * as system from "./system";
 import * as oauth from "./oauth";
+import * as tasks from "./tasks";
+import * as userTasks from "./userTasks";
 export default {
   ai,
   authorization,
   base,
   system,
   oauth,
+  tasks,
+  userTasks,
 };

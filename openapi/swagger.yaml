@@ -794,9 +794,11 @@ definitions:
   model.FileType:
     enum:
     - image
+    - export
     type: string
     x-enum-varnames:
     - FileTypeImage
+    - FileTypeExport
   model.LDAPTestMessage:
     properties:
       message:
@@ -1379,6 +1381,81 @@ definitions:
     - name
     - name_i18n
     type: object
+  model.Task:
+    properties:
+      artifact_file_key:
+        type: string
+      artifact_file_name:
+        type: string
+      created_at:
+        type: string
+      creator_id:
+        type: string
+      error:
+        type: string
+      finished_at:
+        type: string
+      id:
+        type: string
+      max_retries:
+        type: integer
+      payload:
+        description: optional JSON payload for task input
+        type: string
+      progress:
+        description: 0-100
+        type: integer
+      result:
+        type: string
+      retry_count:
+        type: integer
+      started_at:
+        type: string
+      status:
+        $ref: '#/definitions/model.TaskStatus'
+      type:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - artifact_file_key
+    - artifact_file_name
+    - created_at
+    - creator_id
+    - error
+    - finished_at
+    - id
+    - max_retries
+    - payload
+    - progress
+    - result
+    - retry_count
+    - started_at
+    - status
+    - type
+    - updated_at
+    type: object
+  model.TaskSettings:
+    properties:
+      max_concurrent:
+        type: integer
+    required:
+    - max_concurrent
+    type: object
+  model.TaskStatus:
+    enum:
+    - pending
+    - running
+    - success
+    - failed
+    - cancelled
+    type: string
+    x-enum-varnames:
+    - TaskStatusPending
+    - TaskStatusRunning
+    - TaskStatusSuccess
+    - TaskStatusFailed
+    - TaskStatusCancelled
   model.ToolDefinition:
     properties:
       description:
@@ -2815,6 +2892,30 @@ definitions:
     - total
     - trace_id
     type: object
+  util.PaginationResponse-model_Task:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.Task'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+      trace_id:
+        type: string
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    - trace_id
+    type: object
   util.PaginationResponse-model_ToolSet:
     properties:
       code:
@@ -2966,6 +3067,24 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.ServiceAccountAccessKey'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-array_model_Task:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.Task'
         type: array
       err:
         type: string
@@ -3359,6 +3478,38 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-model_Task:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.Task'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-model_TaskSettings:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.TaskSettings'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-model_ToolSet:
     properties:
       code:
@@ -3653,7 +3804,7 @@ definitions:
 info:
   contact: {}
   title: EZ Console API
-  version: v1.10.0
+  version: v1.10.1
 paths:
   /api/ai/chat/sessions:
     get:
@@ -6968,6 +7119,52 @@ paths:
       summary: Test SMTP connection
       tags:
       - System Settings/SMTP
+  /api/system/task-settings:
+    get:
+      consumes:
+      - application/json
+      description: Get task-related system settings (e.g. max concurrent tasks)
+      operationId: getTaskSettings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_TaskSettings'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get task settings
+      tags:
+      - System Settings/Task
+    put:
+      consumes:
+      - application/json
+      description: Update task-related system settings
+      operationId: updateTaskSettings
+      parameters:
+      - description: Task settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.TaskSettings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update task settings
+      tags:
+      - System Settings/Task
   /api/system/toolsets:
     get:
       consumes:
@@ -7261,4 +7458,166 @@ paths:
       summary: Get toolset type definitions
       tags:
       - ToolSets
+  /api/tasks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tasks. Admin sees all; others see only their own.
+      operationId: listTasks
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_Task'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get task list
+      tags:
+      - Task Management
+  /api/tasks/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a task. Admin or creator only.
+      operationId: deleteTask
+      parameters:
+      - description: Task ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Delete task
+      tags:
+      - Task Management
+    get:
+      consumes:
+      - application/json
+      description: Get a task by ID. Admin or creator only.
+      operationId: getTask
+      parameters:
+      - description: Task ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Task'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get task by ID
+      tags:
+      - Task Management
+  /api/tasks/{id}/cancel:
+    post:
+      consumes:
+      - application/json
+      description: Cancel a running or pending task
+      operationId: cancelTask
+      parameters:
+      - description: Task ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Cancel task
+      tags:
+      - Task Management
+  /api/tasks/{id}/retry:
+    post:
+      consumes:
+      - application/json
+      description: Retry a failed or cancelled task
+      operationId: retryTask
+      parameters:
+      - description: Task ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Retry task
+      tags:
+      - Task Management
+  /api/userTasks:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of tasks for the current user.
+      operationId: listUserTasks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_model_Task'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get user task list
+      tags:
+      - Task Management
 swagger: "2.0"

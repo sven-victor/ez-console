@@ -31,7 +31,8 @@ const (
 type FileType string
 
 const (
-	FileTypeImage FileType = "image"
+	FileTypeImage  FileType = "image"
+	FileTypeExport FileType = "export"
 )
 
 type File struct {

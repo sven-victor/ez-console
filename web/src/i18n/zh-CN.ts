@@ -84,6 +84,7 @@ export default {
       serviceAccounts: '服务账户',
       authorization: '授权管理',
     },
+    tasks: '任务',
     system: {
       system: '系统管理',
       settings: '系统设置',
@@ -108,6 +109,8 @@ export default {
     dashboard: '仪表盘',
     profile: '个人中心',
     "authorization.serviceAccounts": '服务账户',
+    tasks: '任务',
+    "tasks.taskList": '任务列表',
   },
   error: {
     notFound: '抱歉，您访问的页面不存在。',

@@ -23,6 +23,7 @@ import enUSCommon from './en-US/common';
 import enUSAuthorization from './en-US/authorization';
 import enUSSystem from './en-US/system';
 import enUSAi from './en-US/ai';
+import enUSTask from './en-US/task';
 import deDE from './de-DE';
 import esES from './es-ES';
 import frFR from './fr-FR';
@@ -33,6 +34,7 @@ import zhCNCommon from './zh-CN/common';
 import zhCNAuthorization from './zh-CN/authorization';
 import zhCNSystem from './zh-CN/system';
 import zhCNAi from './zh-CN/ai';
+import zhCNTask from './zh-CN/task';
 
 import deDECommon from './de-DE/common';
 import deDEAuthorization from './de-DE/authorization';
@@ -64,7 +66,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    ns: ['common', 'authorization', 'system', 'ai'],
+    ns: ['common', 'authorization', 'system', 'ai', 'task'],
     defaultNS: 'translation',
     resources: {
       'zh-CN': {
@@ -73,6 +75,7 @@ i18n
         authorization: zhCNAuthorization,
         system: zhCNSystem,
         ai: zhCNAi,
+        task: zhCNTask,
       },
       'en-US': {
         translation: enUS,
@@ -80,6 +83,7 @@ i18n
         authorization: enUSAuthorization,
         system: enUSSystem,
         ai: enUSAi,
+        task: enUSTask,
       },
       'de-DE': {
         translation: deDE,
@@ -87,6 +91,7 @@ i18n
         authorization: deDEAuthorization,
         system: deDESystem,
         ai: deDEAi,
+        task: enUSTask,
       },
       'es-ES': {
         translation: esES,
@@ -94,6 +99,7 @@ i18n
         authorization: esESAuthorization,
         system: esESSystem,
         ai: esESAi,
+        task: enUSTask,
       },
       'fr-FR': {
         translation: frFR,
@@ -101,6 +107,7 @@ i18n
         authorization: frFRAuthorization,
         system: frFRSystem,
         ai: frFRAi,
+        task: enUSTask,
       },
       'ar-AE': {
         translation: arAE,
@@ -108,6 +115,7 @@ i18n
         authorization: arAEAuthorization,
         system: arAESystem,
         ai: arAEAi,
+        task: enUSTask,
       },
       'sv-SE': {
         translation: svSE,
@@ -115,6 +123,7 @@ i18n
         authorization: svSEAuthorization,
         system: svSESystem,
         ai: svSEAi,
+        task: enUSTask,
       },
     },
     fallbackLng: 'en-US',

@@ -49,6 +49,10 @@ const AuditLogs = lazy(() => import('@/pages/system/audit/AuditLogs'));
 const ServiceAccountList = lazy(() => import('@/pages/authorization/service-account/ServiceAccountList'));
 const ServiceAccountDetail = lazy(() => import('@/pages/authorization/service-account/ServiceAccountDetail'));
 
+// Task pages
+const TaskList = lazy(() => import('@/pages/task/TaskList'));
+const TaskDetail = lazy(() => import('@/pages/task/TaskDetail'));
+
 // Wrap lazy loaded components
 export function withSuspense<
   T extends React.ComponentType<any>
@@ -114,6 +118,24 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
           index: true,
         },
         ...extraPrivateRoutes,
+        {
+          path: '/tasks',
+          permissions: ['task:list'],
+          children: [
+            {
+              path: '/tasks',
+              element: withSuspense(TaskList),
+              permissions: ['task:list'],
+              index: true,
+            },
+            {
+              path: '/tasks/:id',
+              element: withSuspense(TaskDetail),
+              permissions: ['task:view'],
+              index: true,
+            },
+          ],
+        },
         {
           name: 'authorization',
           icon: <UserOutlined />,

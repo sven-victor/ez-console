@@ -15,6 +15,7 @@
 package filesapi
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -126,8 +127,81 @@ func (c *FileController) DownloadFile(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "file key is required"))
 		return
 	}
+	file, err := c.service.GetFileInfo(ctx, fileKey)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	method := ctx.Query("method")
+	signature := ctx.Query("signature")
+	expires, _ := strconv.ParseInt(ctx.Query("expires"), 10, 64)
+	if signature != "" && expires > 0 {
+		if !c.service.VerifyDownloadURL(fileKey, signature, expires) {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Access denied"))
+			return
+		}
+		switch method {
+		default:
+			ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%s", file.Name))
+		case "download":
+			ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
+		}
+		err := c.service.DownloadFile(ctx, file.Path)
+		if err != nil {
+			util.RespondWithError(ctx, util.NewError("E5001", err))
+		}
+		return
+	}
+accessMode:
+	switch file.Access {
+	case model.AccessTypePublic:
+	case model.AccessTypePrivate, model.AccessTypeOwner:
+		context := map[string]interface{}{
+			"http.path":   ctx.Request.URL.Path,
+			"http.uri":    ctx.Request.URL.RequestURI(),
+			"http.method": ctx.Request.Method,
+			"http.ip":     ctx.ClientIP(),
+		}
+		for _, param := range ctx.Params {
+			context[param.Key] = param.Value
+		}
+		roles := middleware.GetRolesFromContext(ctx)
+		for _, role := range roles {
+			// Check if the policy document allows this operation
+			if isMatch, isAllow := role.HasPolicyPermission("*", "*", context); isMatch {
+				if isAllow {
+					break accessMode
+				}
+				util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Access denied"))
+				return
+			}
+		}
+		user := middleware.GetUserFromContext(ctx)
+		if user == nil {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Access denied"))
+			return
+		}
 
-	err := c.service.DownloadFile(ctx, fileKey)
+		if file.Access == model.AccessTypeOwner && user.ResourceID != file.Owner {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Access denied"))
+			return
+		}
+	}
+	switch method {
+	default:
+		ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%s", file.Name))
+	case "download":
+		ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
+	case "sign":
+		signature, expires, err := c.service.SignDownloadURL(fileKey)
+		if err != nil {
+			util.RespondWithError(ctx, util.NewError("E5001", err))
+			return
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"signature": signature, "expires": expires})
+		return
+	}
+	err = c.service.DownloadFile(ctx, file.Path)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

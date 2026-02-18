@@ -172,6 +172,11 @@ export interface AuditLogDetail {
   request: any;
 }
 
+export interface cancelTaskParams {
+  /** Task ID (UUID) */
+  id: string;
+}
+
 export interface ChangePasswordRequest {
   new_password: string;
   old_password: string;
@@ -312,6 +317,11 @@ export interface CreateToolSetRequest {
   type: ToolSetType;
 }
 
+export interface CreateUserExportTaskRequest {
+  keywords?: string;
+  status?: string;
+}
+
 export interface CreateUserRequest {
   avatar?: string;
   email: string;
@@ -401,6 +411,11 @@ export interface deleteSkillPathParams {
   path: string;
 }
 
+export interface deleteTaskParams {
+  /** Task ID (UUID) */
+  id: string;
+}
+
 export interface deleteToolSetParams {
   /** Toolset ID */
   id: string;
@@ -416,15 +431,7 @@ export interface downloadFileParams {
   fileKey: string;
 }
 
-export type Duration =
-  | -9223372036854776000
-  | 9223372036854776000
-  | 1
-  | 1000
-  | 1000000
-  | 1000000000
-  | 60000000000
-  | 3600000000000;
+export type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
 
 export interface EnableMFAResponse {
   qr_code: string;
@@ -461,7 +468,7 @@ export interface File {
   updated_at: string;
 }
 
-export type FileType = "image";
+export type FileType = "image" | "export";
 
 export interface FunctionCall {
   /** call function with arguments in JSON format */
@@ -575,6 +582,11 @@ export interface getSkillFileParams {
 
 export interface getSkillParams {
   /** Skill ID */
+  id: string;
+}
+
+export interface getTaskParams {
+  /** Task ID (UUID) */
   id: string;
 }
 
@@ -751,6 +763,15 @@ export interface listSkillsParams {
   category?: string;
   /** Filter by domain */
   domain?: string;
+}
+
+export interface listTasksParams {
+  /** Current page number */
+  current?: number;
+  /** Number of items per page */
+  page_size?: number;
+  /** Search keyword */
+  search?: string;
 }
 
 export interface listToolSetsParams {
@@ -980,6 +1001,15 @@ export interface PaginationResponseModelSkill {
   trace_id: string;
 }
 
+export interface PaginationResponseModelTask {
+  code: string;
+  current: number;
+  data: Task[];
+  page_size: number;
+  total: number;
+  trace_id: string;
+}
+
 export interface PaginationResponseModelToolSet {
   code: string;
   current: number;
@@ -1097,6 +1127,13 @@ export interface ResponseArrayModelPermissionGroup {
 export interface ResponseArrayModelServiceAccountAccessKey {
   code: string;
   data: ServiceAccountAccessKey[];
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseArrayModelTask {
+  code: string;
+  data: Task[];
   err: string;
   trace_id: string;
 }
@@ -1262,6 +1299,20 @@ export interface ResponseModelSystemSettings {
   trace_id: string;
 }
 
+export interface ResponseModelTask {
+  code: string;
+  data: Task;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelTaskSettings {
+  code: string;
+  data: TaskSettings;
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseModelToolSet {
   code: string;
   data: ToolSet;
@@ -1376,6 +1427,11 @@ export interface ResponseUtilMessageData {
 
 export interface restoreUserParams {
   /** User ID */
+  id: string;
+}
+
+export interface retryTaskParams {
+  /** Task ID (UUID) */
   id: string;
 }
 
@@ -1599,6 +1655,33 @@ export interface SystemSettings {
   name: string;
   name_i18n: Record<string, any>;
 }
+
+export interface Task {
+  artifact_file_key: string;
+  artifact_file_name: string;
+  created_at: string;
+  creator_id: string;
+  error: string;
+  finished_at: string;
+  id: string;
+  max_retries: number;
+  /** optional JSON payload for task input */
+  payload: string;
+  /** 0-100 */
+  progress: number;
+  result: string;
+  retry_count: number;
+  started_at: string;
+  status: TaskStatus;
+  type: string;
+  updated_at: string;
+}
+
+export interface TaskSettings {
+  max_concurrent: number;
+}
+
+export type TaskStatus = "pending" | "running" | "success" | "failed" | "cancelled";
 
 export interface terminateSessionParams {
   /** Session ID */

@@ -174,6 +174,11 @@ declare global {
       request: any;
     }
   
+    interface cancelTaskParams {
+      /** Task ID (UUID) */
+      id: string;
+    }
+  
     interface ChangePasswordRequest {
       new_password: string;
       old_password: string;
@@ -314,6 +319,11 @@ declare global {
       type: ToolSetType;
     }
   
+    interface CreateUserExportTaskRequest {
+      keywords?: string;
+      status?: string;
+    }
+  
     interface CreateUserRequest {
       avatar?: string;
       email: string;
@@ -403,6 +413,11 @@ declare global {
       path: string;
     }
   
+    interface deleteTaskParams {
+      /** Task ID (UUID) */
+      id: string;
+    }
+  
     interface deleteToolSetParams {
       /** Toolset ID */
       id: string;
@@ -418,15 +433,7 @@ declare global {
       fileKey: string;
     }
   
-    type Duration =
-      | -9223372036854776000
-      | 9223372036854776000
-      | 1
-      | 1000
-      | 1000000
-      | 1000000000
-      | 60000000000
-      | 3600000000000;
+    type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
   
     interface EnableMFAResponse {
       qr_code: string;
@@ -463,7 +470,7 @@ declare global {
       updated_at: string;
     }
   
-    type FileType = "image";
+    type FileType = "image" | "export";
   
     interface FunctionCall {
       /** call function with arguments in JSON format */
@@ -577,6 +584,11 @@ declare global {
   
     interface getSkillParams {
       /** Skill ID */
+      id: string;
+    }
+  
+    interface getTaskParams {
+      /** Task ID (UUID) */
       id: string;
     }
   
@@ -753,6 +765,15 @@ declare global {
       category?: string;
       /** Filter by domain */
       domain?: string;
+    }
+  
+    interface listTasksParams {
+      /** Current page number */
+      current?: number;
+      /** Number of items per page */
+      page_size?: number;
+      /** Search keyword */
+      search?: string;
     }
   
     interface listToolSetsParams {
@@ -982,6 +1003,15 @@ declare global {
       trace_id: string;
     }
   
+    interface PaginationResponseModelTask {
+      code: string;
+      current: number;
+      data: Task[];
+      page_size: number;
+      total: number;
+      trace_id: string;
+    }
+  
     interface PaginationResponseModelToolSet {
       code: string;
       current: number;
@@ -1099,6 +1129,13 @@ declare global {
     interface ResponseArrayModelServiceAccountAccessKey {
       code: string;
       data: ServiceAccountAccessKey[];
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseArrayModelTask {
+      code: string;
+      data: Task[];
       err: string;
       trace_id: string;
     }
@@ -1264,6 +1301,20 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseModelTask {
+      code: string;
+      data: Task;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelTaskSettings {
+      code: string;
+      data: TaskSettings;
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseModelToolSet {
       code: string;
       data: ToolSet;
@@ -1378,6 +1429,11 @@ declare global {
   
     interface restoreUserParams {
       /** User ID */
+      id: string;
+    }
+  
+    interface retryTaskParams {
+      /** Task ID (UUID) */
       id: string;
     }
   
@@ -1601,6 +1657,33 @@ declare global {
       name: string;
       name_i18n: Record<string, any>;
     }
+  
+    interface Task {
+      artifact_file_key: string;
+      artifact_file_name: string;
+      created_at: string;
+      creator_id: string;
+      error: string;
+      finished_at: string;
+      id: string;
+      max_retries: number;
+      /** optional JSON payload for task input */
+      payload: string;
+      /** 0-100 */
+      progress: number;
+      result: string;
+      retry_count: number;
+      started_at: string;
+      status: TaskStatus;
+      type: string;
+      updated_at: string;
+    }
+  
+    interface TaskSettings {
+      max_concurrent: number;
+    }
+  
+    type TaskStatus = "pending" | "running" | "success" | "failed" | "cancelled";
   
     interface terminateSessionParams {
       /** Session ID */

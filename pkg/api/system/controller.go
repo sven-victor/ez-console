@@ -25,6 +25,7 @@ type Controller struct {
 	*OAuthSettingController
 	*SettingController
 	*SecuritySettingController
+	*TaskSettingController
 	*SystemController
 	*LDAPSettingController
 	*SMTPSettingController
@@ -38,6 +39,7 @@ func NewController(svc *service.Service) *Controller {
 		OAuthSettingController:    NewOAuthSettingController(svc),
 		SettingController:         NewSettingController(svc),
 		SecuritySettingController: NewSecuritySettingController(svc),
+		TaskSettingController:     NewTaskSettingController(svc),
 		SystemController:          NewSystemController(svc),
 		LDAPSettingController:     NewLDAPSettingController(svc),
 		SMTPSettingController:     NewSMTPSettingController(svc),
@@ -55,6 +57,8 @@ func (c *Controller) RegisterRoutes(ctx context.Context, router *gin.RouterGroup
 	c.SettingController.RegisterRoutes(system)
 	// Register security settings controller
 	c.SecuritySettingController.RegisterRoutes(system)
+	// Register task settings controller
+	c.TaskSettingController.RegisterRoutes(system)
 	// Register system controller
 	c.SystemController.RegisterRoutes(system)
 	// Register LDAP settings controller

@@ -28,6 +28,11 @@ export default {
       skills: 'Skills',
       aiModels: 'AI Models Settings',
       organizations: 'Organization Management',
+      task: 'Task Settings',
+    },
+    task: {
+      maxConcurrent: 'Max concurrent tasks',
+      maxConcurrentTooltip: 'Maximum number of tasks that can run at the same time.',
     },
     skills: {
       title: 'AI Agent Skills',

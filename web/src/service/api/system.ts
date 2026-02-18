@@ -706,6 +706,29 @@ export async function testSmtpConnection(
   );
 }
 
+/** Get task settings Get task-related system settings (e.g. max concurrent tasks) GET /api/system/task-settings */
+export async function getTaskSettings(options?: { [key: string]: any }) {
+  return request<API.ResponseModelTaskSettings>("/api/system/task-settings", {
+    method: "GET",
+    ...(options || {}),
+  });
+}
+
+/** Update task settings Update task-related system settings PUT /api/system/task-settings */
+export async function updateTaskSettings(
+  body: API.TaskSettings,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseUtilMessageData>("/api/system/task-settings", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** List toolsets List toolsets with pagination and search GET /api/system/toolsets */
 export async function listToolSets(
   params: API.listToolSetsParams,

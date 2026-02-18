@@ -24,6 +24,7 @@ import (
 	mcpapi "github.com/sven-victor/ez-console/pkg/api/mcp"
 	statisticsapi "github.com/sven-victor/ez-console/pkg/api/statistics"
 	systemapi "github.com/sven-victor/ez-console/pkg/api/system"
+	taskapi "github.com/sven-victor/ez-console/pkg/api/task"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/service"
 )
@@ -52,6 +53,9 @@ var controllers = []ControllerGenerator{
 	},
 	func(ctx context.Context, svc *service.Service) Controller {
 		return mcpapi.NewController(svc)
+	},
+	func(ctx context.Context, svc *service.Service) Controller {
+		return taskapi.NewTaskController(svc)
 	},
 }
 

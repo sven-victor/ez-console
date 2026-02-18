@@ -85,6 +85,7 @@ export default {
       serviceAccounts: 'Service Account',
       authorization: 'Authorization Management',
     },
+    tasks: 'Tasks',
     settings: 'Setting',
     dashboard: 'Dashboard',
     system: {
@@ -105,6 +106,8 @@ export default {
     "system.settings": 'System Settings',
     "system.audit": 'Audit Log',
     "authorization.serviceAccounts": 'Service Account',
+    tasks: 'Tasks',
+    "tasks.taskList": 'Task List',
   },
   error: {
     notFound: 'Sorry, the page you visited does not exist.',

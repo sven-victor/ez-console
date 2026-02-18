@@ -25,6 +25,7 @@ import BaseSettingsForm from './BaseSettings';
 import AIModelSettings from './AIModelSettings';
 import ToolSetSettings from './ToolSetSettings';
 import SkillSettings from './SkillSettings';
+import TaskSettingsForm from './TaskSettingsForm';
 import OrganizationSettings from './OrganizationSettings';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSite } from '@/contexts/SiteContext';
@@ -99,6 +100,12 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
       label: t('settings.tabs.skills', { defaultValue: 'Skills' }),
       children: <SkillSettings />,
       hidden: !hasPermission('system:skills:view'),
+    },
+    {
+      key: 'task',
+      label: t('settings.tabs.task', { defaultValue: 'Task Settings' }),
+      children: <TaskSettingsForm />,
+      hidden: !hasPermission('system:settings:update'),
     },
     // Only show organization tab if multi-org is enabled
     ...(enableMultiOrg ? [{

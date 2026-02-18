@@ -281,6 +281,11 @@ func initSettings(ctx context.Context, cfg *config.Config, svc *service.Service)
 	if err := svc.InitDefaultLDAPSettings(ctx); err != nil {
 		level.Error(logger).Log("msg", "Init default ldap settings failed", "error", err)
 	}
+
+	// Initialize default task settings
+	if err := svc.InitDefaultTaskSettings(ctx); err != nil {
+		level.Error(logger).Log("msg", "Init default task settings failed", "error", err)
+	}
 }
 
 // safeArgs return a safe args for trace
@@ -355,6 +360,7 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	svc := service.NewService(ctx)
 
 	initSettings(ctx, cfg, svc)
+	svc.TaskService.Start(context.Background())
 
 	// Setup API routes
 	api.RegisterControllers(ctx, engine, svc)

@@ -43,6 +43,7 @@ type Service struct {
 	*AIChatService
 	*OrganizationService
 	*SkillService
+	*TaskService
 }
 
 type BaseService struct {
@@ -99,6 +100,7 @@ func NewService(ctx context.Context) *Service {
 		AIChatService:         aiChatService,
 		OrganizationService:   NewOrganizationService(),
 		SkillService:          NewSkillService(),
+		TaskService:           NewTaskService(settingService),
 	}
 	s.FileService = NewFileService(baseService)
 	return s

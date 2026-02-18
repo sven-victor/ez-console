@@ -16,11 +16,17 @@ package service
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +45,8 @@ const (
 
 // FileService handles file-related business logic
 type FileService struct {
-	baseService *BaseService
+	baseService     *BaseService
+	signatureSecret string
 }
 
 // NewFileService creates a file service instance
@@ -48,7 +55,12 @@ func NewFileService(s *BaseService) *FileService {
 	if err := os.MkdirAll(uploadDir, 0755); err != nil {
 		panic(fmt.Sprintf("Failed to create upload directory: %v", err))
 	}
-	return &FileService{baseService: s}
+	priv := make([]byte, 32)
+	_, err := rand.Read(priv)
+	if err != nil {
+		panic(fmt.Sprintf("Failed to generate signature secret: %v", err))
+	}
+	return &FileService{baseService: s, signatureSecret: base64.StdEncoding.EncodeToString(priv)}
 }
 
 // UploadFile handles file uploads
@@ -60,6 +72,14 @@ func (s *FileService) UploadFile(ctx context.Context, filename, contentType stri
 			Code:     "E4031",
 			Err:      fmt.Errorf("Access denied"),
 		}
+	}
+	return s.UploadFileWithOwner(ctx, user.ResourceID, filename, contentType, accessType, fileType, f)
+}
+
+// UploadFileWithOwner uploads a file with the given owner ID (e.g. for task artifact).
+func (s *FileService) UploadFileWithOwner(ctx context.Context, ownerID, filename, contentType string, accessType model.AccessType, fileType model.FileType, f io.Reader) (*model.File, error) {
+	if ownerID == "" {
+		ownerID = "system"
 	}
 	cfg := config.GetConfig()
 	uploadDir, err := cfg.GetUploadDir()
@@ -94,7 +114,7 @@ func (s *FileService) UploadFile(ctx context.Context, filename, contentType stri
 		MimiType: contentType,
 		Path:     filePath,
 		Access:   accessType,
-		Owner:    user.ResourceID,
+		Owner:    ownerID,
 		Type:     fileType,
 	}
 	if err = db.Session(ctx).Create(&file).Error; err != nil {
@@ -103,61 +123,40 @@ func (s *FileService) UploadFile(ctx context.Context, filename, contentType stri
 	return &file, nil
 }
 
+func (s *FileService) SignDownloadURL(fileKey string) (string, int64, error) {
+	expires := time.Now().Add(10 * time.Minute).Unix()
+
+	data := fileKey + ":" + strconv.FormatInt(expires, 10)
+	h := hmac.New(sha256.New, []byte(s.signatureSecret))
+	h.Write([]byte(data))
+	signature := hex.EncodeToString(h.Sum(nil))
+	return signature, expires, nil
+}
+
+func (s *FileService) VerifyDownloadURL(fileKey string, signature string, expires int64) bool {
+	data := fileKey + ":" + strconv.FormatInt(expires, 10)
+	h := hmac.New(sha256.New, []byte(s.signatureSecret))
+	h.Write([]byte(data))
+	expected := hex.EncodeToString(h.Sum(nil))
+	return hmac.Equal([]byte(expected), []byte(signature))
+}
+
 // DownloadFile handles file downloads
-func (s *FileService) DownloadFile(c *gin.Context, fileKey string) error {
+func (s *FileService) GetFileInfo(c *gin.Context, fileKey string) (*model.File, error) {
+	var file model.File
+	if err := db.Session(c).Where("resource_id = ?", fileKey).First(&file).Error; err != nil {
+		return nil, fmt.Errorf("failed to get file: %v", err)
+	}
+	return &file, nil
+}
+
+// DownloadFile handles file downloads
+func (s *FileService) DownloadFile(c *gin.Context, path string) error {
 	uploadDir, err := config.GetConfig().GetUploadDir()
 	if err != nil {
 		return fmt.Errorf("failed to get upload dir: %v", err)
 	}
-	var file model.File
-	if err := db.Session(c.Request.Context()).Where("resource_id = ?", fileKey).First(&file).Error; err != nil {
-		return fmt.Errorf("failed to get file: %v", err)
-	}
-accessMode:
-	switch file.Access {
-	case model.AccessTypePublic:
-	case model.AccessTypePrivate, model.AccessTypeOwner:
-		context := map[string]interface{}{
-			"http.path":   c.Request.URL.Path,
-			"http.uri":    c.Request.URL.RequestURI(),
-			"http.method": c.Request.Method,
-			"http.ip":     c.ClientIP(),
-		}
-		for _, param := range c.Params {
-			context[param.Key] = param.Value
-		}
-		roles := middleware.GetRolesFromContext(c)
-		for _, role := range roles {
-			// Check if the policy document allows this operation
-			if isMatch, isAllow := role.HasPolicyPermission("*", "*", context); isMatch {
-				if isAllow {
-					break accessMode
-				}
-				return util.ErrorResponse{
-					HTTPCode: http.StatusForbidden,
-					Code:     "E4031",
-					Err:      fmt.Errorf("Access denied"),
-				}
-			}
-		}
-		user := middleware.GetUserFromContext(c)
-		if user == nil {
-			return util.ErrorResponse{
-				HTTPCode: http.StatusForbidden,
-				Code:     "E4031",
-				Err:      fmt.Errorf("Access denied"),
-			}
-		}
-
-		if file.Access == model.AccessTypeOwner && user.ResourceID != file.Owner {
-			return util.ErrorResponse{
-				HTTPCode: http.StatusForbidden,
-				Code:     "E4031",
-				Err:      fmt.Errorf("Access denied"),
-			}
-		}
-	}
-	c.FileFromFS(file.Path, afero.NewHttpFs(uploadDir))
+	c.FileFromFS(path, afero.NewHttpFs(uploadDir))
 	return nil
 }
 
