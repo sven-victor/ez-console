@@ -324,6 +324,12 @@ export declare const api: {
     testSmtpConnection(body: API.SMTPTestRequest, options?: {
         [key: string]: any;
     }): Promise<API.SMTPTestResponse>;
+    getTaskSettings(options?: {
+        [key: string]: any;
+    }): Promise<API.TaskSettings>;
+    updateTaskSettings(body: API.TaskSettings, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
     listToolSets(params: API.listToolSetsParams, options?: {
         [key: string]: any;
     }): Promise<API.PaginationResponseModelToolSet>;
@@ -519,6 +525,9 @@ export declare const api: {
     unlockUser(params: API.unlockUserParams, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
+    createUserExportTask(body: API.CreateUserExportTaskRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.Task>;
 };
 
 export declare const apiDelete: <T>(url: string, config?: AxiosRequestConfig) => Promise<T>;
@@ -636,6 +645,11 @@ export declare interface AvatarUploadProps extends Omit<UploadProps, 'onChange'>
 
 declare interface BlobRequestConfig extends Omit<RequestConfig, 'responseType'> {
     responseType: 'blob';
+}
+
+export declare interface cancelTaskParams {
+    /** Task ID (UUID) */
+    id: string;
 }
 
 export declare interface ChangePasswordRequest {
@@ -780,6 +794,11 @@ export declare interface CreateToolSetRequest {
     type: ToolSetType;
 }
 
+export declare interface CreateUserExportTaskRequest {
+    keywords?: string;
+    status?: string;
+}
+
 export declare interface CreateUserRequest {
     avatar?: string;
     email: string;
@@ -869,6 +888,11 @@ export declare interface deleteSkillPathParams {
     path: string;
 }
 
+export declare interface deleteTaskParams {
+    /** Task ID (UUID) */
+    id: string;
+}
+
 export declare interface deleteToolSetParams {
     /** Toolset ID */
     id: string;
@@ -884,7 +908,7 @@ export declare interface downloadFileParams {
     fileKey: string;
 }
 
-export declare type Duration = -9223372036854776000 | 9223372036854776000 | 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+export declare type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
 
 export declare const DynamicIcon: ({ iconName }: DynamicIconProps) => JSX_2.Element | null;
 
@@ -936,7 +960,7 @@ declare interface File_2 {
 }
 export { File_2 as File }
 
-export declare type FileType = "image";
+export declare type FileType = "image" | "export";
 
 export declare const Forbidden: default_2.FC;
 
@@ -1069,6 +1093,11 @@ export declare interface getSkillFileParams {
 
 export declare interface getSkillParams {
     /** Skill ID */
+    id: string;
+}
+
+export declare interface getTaskParams {
+    /** Task ID (UUID) */
     id: string;
 }
 
@@ -1323,6 +1352,15 @@ export declare interface listSkillsParams {
     domain?: string;
 }
 
+export declare interface listTasksParams {
+    /** Current page number */
+    current?: number;
+    /** Number of items per page */
+    page_size?: number;
+    /** Search keyword */
+    search?: string;
+}
+
 export declare interface listToolSetsParams {
     /** Current page number */
     current?: number;
@@ -1561,6 +1599,15 @@ export declare interface PaginationResponseModelSkill {
     trace_id: string;
 }
 
+export declare interface PaginationResponseModelTask {
+    code: string;
+    current: number;
+    data: Task[];
+    page_size: number;
+    total: number;
+    trace_id: string;
+}
+
 export declare interface PaginationResponseModelToolSet {
     code: string;
     current: number;
@@ -1737,6 +1784,13 @@ export declare interface ResponseArrayModelServiceAccountAccessKey {
     trace_id: string;
 }
 
+export declare interface ResponseArrayModelTask {
+    code: string;
+    data: Task[];
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayModelUser {
     code: string;
     data: User[];
@@ -1898,6 +1952,20 @@ export declare interface ResponseModelSystemSettings {
     trace_id: string;
 }
 
+export declare interface ResponseModelTask {
+    code: string;
+    data: Task;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelTaskSettings {
+    code: string;
+    data: TaskSettings;
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseModelToolSet {
     code: string;
     data: ToolSet;
@@ -2018,6 +2086,11 @@ export declare interface restoreUserParams {
 declare type Result<T extends {
     data: any;
 }> = T extends ListResult ? T : T["data"];
+
+export declare interface retryTaskParams {
+    /** Task ID (UUID) */
+    id: string;
+}
 
 export declare interface Role {
     /** AIToolPermissions stores the AI tool permissions assigned to the role. */
@@ -2163,7 +2236,11 @@ declare interface SiteContextType {
     currentOrgId: string | null;
     setCurrentOrgId: (orgId: string) => void;
     clearCurrentOrgId: () => void;
+    tasks?: API.Task[];
     error?: Error;
+    addTask: (task: API.Task) => void;
+    tasksDropdownOpen: boolean;
+    setTasksDropdownOpen: (open: boolean) => void;
 }
 
 export declare interface Skill {
@@ -2286,6 +2363,33 @@ declare interface TableRef<T extends API.Entity> extends TableProps_2<T> {
 export declare interface TableRefProps<T extends API.Entity> extends TableProps<T> {
     ref?: default_2.LegacyRef<TableRef<T>>;
 }
+
+export declare interface Task {
+    artifact_file_key: string;
+    artifact_file_name: string;
+    created_at: string;
+    creator_id: string;
+    error: string;
+    finished_at: string;
+    id: string;
+    max_retries: number;
+    /** optional JSON payload for task input */
+    payload: string;
+    /** 0-100 */
+    progress: number;
+    result: string;
+    retry_count: number;
+    started_at: string;
+    status: TaskStatus;
+    type: string;
+    updated_at: string;
+}
+
+export declare interface TaskSettings {
+    max_concurrent: number;
+}
+
+export declare type TaskStatus = "pending" | "running" | "success" | "failed" | "cancelled";
 
 export declare interface terminateSessionParams {
     /** Session ID */

@@ -7,7 +7,7 @@ import { a as je, c as ye } from "./contexts.js";
 import { useTranslation as Pe } from "react-i18next";
 import { a as D } from "./index.js";
 import { A as z } from "./client.js";
-import { L as G, a as be, i as _e } from "./components.js";
+import { L as G, a as be, j as _e } from "./components.js";
 import { m as Ne, g as Ve } from "./base.js";
 import { clearCache as Le } from "ahooks";
 import i from "classnames";

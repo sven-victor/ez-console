@@ -2,20 +2,20 @@ import { j as e } from "./vendor.js";
 import { useState as h, useEffect as p } from "react";
 import { Card as b, Tabs as g, message as j } from "antd";
 import { useTranslation as l } from "react-i18next";
-import { j as x, i as y, k as P, l as V, U as k } from "./components.js";
+import { k as x, j as y, l as P, m as V, U as k } from "./components.js";
 import { f as w } from "./contexts.js";
 import { a as A } from "./index.js";
 import { useNavigate as L, useLocation as S } from "react-router-dom";
 const _ = () => {
-  const { t: a } = l("authorization"), { t: n } = l("common"), { user: s, updateUser: c } = w(), [f, i] = h(!1), u = L(), r = S(), d = r.hash.replace("#", "") || "basic", o = async () => {
+  const { t: a } = l("authorization"), { t: n } = l("common"), { user: s, updateUser: c } = w(), [f, r] = h(!1), u = L(), i = S(), d = i.hash.replace("#", "") || "basic", o = async () => {
     try {
-      i(!0);
+      r(!0);
       const t = await A.authorization.getCurrentUser();
       c(t);
     } catch (t) {
       j.error(n("fetchFailed", { defaultValue: "Failed to fetch data" })), console.error("Failed to fetch user profile:", t);
     } finally {
-      i(!1);
+      r(!1);
     }
   };
   p(() => {
@@ -59,7 +59,7 @@ const _ = () => {
         {
           defaultActiveKey: d,
           onChange: (t) => {
-            u(`${r.pathname}#${t}`);
+            u(`${i.pathname}#${t}`);
           },
           items: m,
           destroyInactiveTabPane: !0

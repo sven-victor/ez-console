@@ -1,11 +1,11 @@
-import { r as p } from "./client.js";
-import f from "i18next";
-import { initReactI18next as v } from "react-i18next";
-import { B as b } from "./vendor.js";
-const le = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
+import { r as g } from "./client.js";
+import v from "i18next";
+import { initReactI18next as b } from "react-i18next";
+import { B as A } from "./vendor.js";
+const ce = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = e instanceof Date ? e : new Date(e), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), n = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
   return t.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", n).replace("mm", i).replace("ss", l);
-}, de = (e, t) => {
+}, ue = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
   const a = e.trim().toLowerCase();
@@ -35,17 +35,17 @@ const le = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, ce = (e) => {
+}, me = (e) => {
   if (!e)
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, ue = (e) => {
+}, pe = (e) => {
   const t = "/";
   return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
 };
-async function A(e, t) {
-  return p("/api/files", {
+async function S(e, t) {
+  return g("/api/files", {
     method: "GET",
     params: {
       ...e
@@ -53,39 +53,39 @@ async function A(e, t) {
     ...t || {}
   });
 }
-async function S(e, t, a) {
+async function k(e, t, a) {
   const o = new FormData();
   return t && o.append("file", t), Object.keys(e).forEach((s) => {
     const r = e[s];
     r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((n) => o.append(s, n || "")) : o.append(s, JSON.stringify(r)) : o.append(s, r));
-  }), p("/api/files", {
+  }), g("/api/files", {
     method: "POST",
     data: o,
     requestType: "form",
     ...a || {}
   });
 }
-async function k(e, t) {
+async function y(e, t) {
   const { fileKey: a, ...o } = e;
-  return p(`/api/files/${a}`, {
+  return g(`/api/files/${a}`, {
     method: "GET",
     params: { ...o },
     ...t || {}
   });
 }
-async function y(e) {
-  return p("/api/statistics", {
+async function P(e) {
+  return g("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: k,
-  getStatistics: y,
-  listFiles: A,
-  uploadFile: S
-}, Symbol.toStringTag, { value: "Module" })), P = {
+  downloadFile: y,
+  getStatistics: P,
+  listFiles: S,
+  uploadFile: k
+}, Symbol.toStringTag, { value: "Module" })), w = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -155,6 +155,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       serviceAccounts: "服务账户",
       authorization: "授权管理"
     },
+    tasks: "任务",
     system: {
       system: "系统管理",
       settings: "系统设置",
@@ -178,7 +179,9 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "设置",
     dashboard: "仪表盘",
     profile: "个人中心",
-    "authorization.serviceAccounts": "服务账户"
+    "authorization.serviceAccounts": "服务账户",
+    tasks: "任务",
+    "tasks.taskList": "任务列表"
   },
   error: {
     notFound: "抱歉，您访问的页面不存在。",
@@ -196,7 +199,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, w = {
+}, R = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -266,6 +269,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       serviceAccounts: "Service Account",
       authorization: "Authorization Management"
     },
+    tasks: "Tasks",
     settings: "Setting",
     dashboard: "Dashboard",
     system: {
@@ -285,7 +289,9 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system: "System",
     "system.settings": "System Settings",
     "system.audit": "Audit Log",
-    "authorization.serviceAccounts": "Service Account"
+    "authorization.serviceAccounts": "Service Account",
+    tasks: "Tasks",
+    "tasks.taskList": "Task List"
   },
   error: {
     notFound: "Sorry, the page you visited does not exist.",
@@ -303,7 +309,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, R = {
+}, D = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -374,7 +380,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, D = {
+}, T = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -480,7 +486,11 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Unlock User",
     unlockSuccess: "User unlocked successfully",
     unlockError: "Failed to unlock user: {{error}}",
-    ldapUserNotBound: "LDAP user is not bound to a local user, please bind."
+    ldapUserNotBound: "LDAP user is not bound to a local user, please bind.",
+    export: "Export",
+    exportTaskCreated: "Export task created. You can view progress and download the file from the task list.",
+    exportTaskCreatedShort: "Export task created.",
+    exportError: "Failed to create export task: {{error}}"
   },
   profile: {
     title: "Profile Center",
@@ -825,7 +835,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, T = {
+}, E = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -838,7 +848,12 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolSets: "Tool Sets Settings",
       skills: "Skills",
       aiModels: "AI Models Settings",
-      organizations: "Organization Management"
+      organizations: "Organization Management",
+      task: "Task Settings"
+    },
+    task: {
+      maxConcurrent: "Max concurrent tasks",
+      maxConcurrentTooltip: "Maximum number of tasks that can run at the same time."
     },
     skills: {
       title: "AI Agent Skills",
@@ -1322,7 +1337,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, E = {
+}, z = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1378,7 +1393,49 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Skills (optional)",
     skillDomain: "Skill domain"
   }
-}, z = {
+}, u = {
+  listTitle: "Task List",
+  detailTitle: "Task Detail",
+  typeLabel: "Type",
+  type: {
+    user_export: "User Export"
+  },
+  statusLabel: "Status",
+  progress: "Progress",
+  creatorId: "Creator",
+  createdAt: "Created At",
+  startedAt: "Started At",
+  finishedAt: "Finished At",
+  error: "Error",
+  result: "Result",
+  view: "View",
+  cancel: "Cancel",
+  retry: "Retry",
+  delete: "Delete",
+  download: "Download",
+  downloadArtifact: "Download artifact",
+  cancelConfirm: "Cancel this task?",
+  deleteConfirm: "Delete this task?",
+  cancelSuccess: "Task cancelled.",
+  cancelFailed: "Failed to cancel task.",
+  retrySuccess: "Task retry requested.",
+  retryFailed: "Failed to retry task.",
+  deleteSuccess: "Task deleted.",
+  deleteFailed: "Failed to delete task.",
+  notFound: "Task not found.",
+  backToList: "Back to list",
+  searchPlaceholder: "Search by type or ID",
+  tasks: "Tasks",
+  more: "More",
+  noTasks: "No tasks",
+  status: {
+    pending: "Pending",
+    running: "Running",
+    success: "Success",
+    failed: "Failed",
+    cancelled: "Cancelled"
+  }
+}, F = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1485,7 +1542,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, F = {
+}, C = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -1592,7 +1649,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, C = {
+}, L = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -1699,7 +1756,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, L = {
+}, q = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -1806,7 +1863,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, q = {
+}, U = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -1913,7 +1970,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, U = {
+}, I = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -1991,7 +2048,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, I = {
+}, M = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2097,7 +2154,11 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "解锁用户",
     unlockSuccess: "用户解锁成功",
     unlockError: "解锁用户失败：{{error}}",
-    ldapUserNotBound: "LDAP 用户未绑定到本地用户，请绑定。"
+    ldapUserNotBound: "LDAP 用户未绑定到本地用户，请绑定。",
+    export: "导出",
+    exportTaskCreated: "导出任务已创建。您可以在任务列表中查看进度并下载文件。",
+    exportTaskCreatedShort: "导出任务已创建。",
+    exportError: "创建导出任务失败：{{error}}"
   },
   profile: {
     title: "个人中心",
@@ -2470,7 +2531,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, M = {
+}, N = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -2483,7 +2544,12 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolSets: "工具集设置",
       skills: "技能",
       aiModels: "AI模型设置",
-      organizations: "组织管理"
+      organizations: "组织管理",
+      task: "任务设置"
+    },
+    task: {
+      maxConcurrent: "最大并发任务数",
+      maxConcurrentTooltip: "允许同时运行的最大任务数量。"
     },
     skills: {
       title: "AI Agent 技能",
@@ -2969,7 +3035,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, N = {
+}, O = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3025,7 +3091,49 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, O = {
+}, V = {
+  listTitle: "任务列表",
+  detailTitle: "任务详情",
+  typeLabel: "类型",
+  type: {
+    user_export: "用户导出"
+  },
+  statusLabel: "状态",
+  progress: "进度",
+  creatorId: "创建人",
+  createdAt: "创建时间",
+  startedAt: "开始时间",
+  finishedAt: "完成时间",
+  error: "错误信息",
+  result: "结果",
+  view: "查看",
+  cancel: "取消",
+  retry: "重试",
+  delete: "删除",
+  download: "下载",
+  downloadArtifact: "下载成品",
+  cancelConfirm: "确定要取消此任务吗？",
+  deleteConfirm: "确定要删除此任务吗？",
+  cancelSuccess: "任务已取消。",
+  cancelFailed: "取消任务失败。",
+  retrySuccess: "已请求重试任务。",
+  retryFailed: "重试任务失败。",
+  deleteSuccess: "任务已删除。",
+  deleteFailed: "删除任务失败。",
+  notFound: "任务不存在。",
+  backToList: "返回列表",
+  searchPlaceholder: "按类型或 ID 搜索",
+  tasks: "任务",
+  more: "更多",
+  noTasks: "暂无任务",
+  status: {
+    pending: "等待中",
+    running: "运行中",
+    success: "成功",
+    failed: "失败",
+    cancelled: "已取消"
+  }
+}, B = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3095,7 +3203,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, V = {
+}, x = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -3525,7 +3633,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, B = {
+}, K = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -3975,7 +4083,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, x = {
+}, _ = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -4019,7 +4127,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Fähigkeiten (optional)",
     skillDomain: "Fähigkeitsbereich"
   }
-}, K = {
+}, j = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -4089,7 +4197,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, _ = {
+}, G = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -4519,7 +4627,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, j = {
+}, W = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -4969,7 +5077,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, G = {
+}, H = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -5013,7 +5121,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Habilidades (opcional)",
     skillDomain: "Dominio de habilidad"
   }
-}, W = {
+}, J = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -5083,7 +5191,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, H = {
+}, Z = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -5513,7 +5621,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, J = {
+}, Q = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -5963,7 +6071,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, Z = {
+}, Y = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -6007,7 +6115,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Compétences (optionnel)",
     skillDomain: "Domaine de compétence"
   }
-}, Q = {
+}, $ = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -6077,7 +6185,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, Y = {
+}, X = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -6507,7 +6615,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, $ = {
+}, ee = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -6957,7 +7065,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, X = {
+}, te = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -7001,7 +7109,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "المهارات (اختياري)",
     skillDomain: "مجال المهارة"
   }
-}, ee = {
+}, ie = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -7071,7 +7179,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, te = {
+}, ae = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -7501,7 +7609,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policyhantering"
     }
   }
-}, ie = {
+}, re = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -7951,7 +8059,7 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, ae = {
+}, se = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -7996,58 +8104,65 @@ const me = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillDomain: "Färdighetsdomän"
   }
 };
-f.use(b).use(v).init({
-  ns: ["common", "authorization", "system", "ai"],
+v.use(A).use(b).init({
+  ns: ["common", "authorization", "system", "ai", "task"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: P,
-      common: U,
-      authorization: I,
-      system: M,
-      ai: N
+      translation: w,
+      common: I,
+      authorization: M,
+      system: N,
+      ai: O,
+      task: V
     },
     "en-US": {
-      translation: w,
-      common: R,
-      authorization: D,
-      system: T,
-      ai: E
+      translation: R,
+      common: D,
+      authorization: T,
+      system: E,
+      ai: z,
+      task: u
     },
     "de-DE": {
-      translation: z,
-      common: O,
-      authorization: V,
-      system: B,
-      ai: x
+      translation: F,
+      common: B,
+      authorization: x,
+      system: K,
+      ai: _,
+      task: u
     },
     "es-ES": {
-      translation: F,
-      common: K,
-      authorization: _,
-      system: j,
-      ai: G
+      translation: C,
+      common: j,
+      authorization: G,
+      system: W,
+      ai: H,
+      task: u
     },
     "fr-FR": {
-      translation: C,
-      common: W,
-      authorization: H,
-      system: J,
-      ai: Z
+      translation: L,
+      common: J,
+      authorization: Z,
+      system: Q,
+      ai: Y,
+      task: u
     },
     "ar-AE": {
-      translation: L,
-      common: Q,
-      authorization: Y,
-      system: $,
-      ai: X
+      translation: q,
+      common: $,
+      authorization: X,
+      system: ee,
+      ai: te,
+      task: u
     },
     "sv-SE": {
-      translation: q,
-      common: ee,
-      authorization: te,
-      system: ie,
-      ai: ae
+      translation: U,
+      common: ie,
+      authorization: ae,
+      system: re,
+      ai: se,
+      task: u
     }
   },
   fallbackLng: "en-US",
@@ -8056,10 +8171,10 @@ f.use(b).use(v).init({
     escapeValue: !1
   }
 });
-const pe = {
+const he = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
-}, ge = (e, t) => {
+}, fe = (e, t) => {
   var n;
   if (!e)
     return !0;
@@ -8081,7 +8196,7 @@ const pe = {
       return console.warn(`Unknown visibility operator: ${o}`), !0;
   }
 };
-function h(e) {
+function f(e) {
   const t = {}, a = e.split(/\r?\n/);
   for (const o of a) {
     const s = o.trim();
@@ -8093,19 +8208,19 @@ function h(e) {
   }
   return t;
 }
-function m(e) {
+function p(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function he(e) {
+function ve(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
   const a = t.slice(3), o = a.indexOf(`
 ---`);
   if (o === -1) return e;
-  const s = a.slice(0, o).trim(), r = a.slice(o + 4).trimStart(), n = h(s), i = Object.keys(n);
+  const s = a.slice(0, o).trim(), r = a.slice(o + 4).trimStart(), n = f(s), i = Object.keys(n);
   if (i.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(n[m] ?? "") + " |").join(`
 `);
   return l + `
 ` + d + `
@@ -8113,19 +8228,19 @@ function he(e) {
 
 ` + r;
 }
-function fe(e) {
+function be(e) {
   if (!e || !e.trim()) return e;
   let t = e;
   const a = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
   let o = t.match(a);
   for (; o; ) {
-    const s = o[1].trim(), r = t.slice((o.index ?? 0) + o[0].length), n = h(s), i = Object.keys(n);
+    const s = o[1].trim(), r = t.slice((o.index ?? 0) + o[0].length), n = f(s), i = Object.keys(n);
     if (i.length > 0) {
-      const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
-`), g = l + `
+      const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(n[m] ?? "") + " |").join(`
+`), h = l + `
 ` + d + `
 ` + c;
-      t = t.slice(0, o.index) + g + `
+      t = t.slice(0, o.index) + h + `
 
 ` + r;
     } else
@@ -8135,13 +8250,13 @@ function fe(e) {
   return t;
 }
 export {
-  pe as P,
-  he as a,
-  me as b,
-  ge as c,
-  le as f,
-  ue as g,
-  ce as m,
-  fe as s,
-  de as t
+  he as P,
+  ve as a,
+  ge as b,
+  fe as c,
+  ce as f,
+  pe as g,
+  me as m,
+  be as s,
+  ue as t
 };

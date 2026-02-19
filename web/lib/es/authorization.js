@@ -282,7 +282,7 @@ async function G(a, t) {
     }
   );
 }
-async function R(a, t) {
+async function k(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}`,
@@ -293,7 +293,7 @@ async function R(a, t) {
     }
   );
 }
-async function _(a, t, e) {
+async function R(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/service-accounts/${n}`,
@@ -308,7 +308,7 @@ async function _(a, t, e) {
     }
   );
 }
-async function k(a, t) {
+async function _(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}`,
@@ -397,7 +397,7 @@ async function M(a, t, e) {
     }
   );
 }
-async function I(a, t) {
+async function x(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}/roles`,
@@ -408,7 +408,7 @@ async function I(a, t) {
     }
   );
 }
-async function x(a, t, e) {
+async function I(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/service-accounts/${n}/roles`,
@@ -576,18 +576,29 @@ async function aa(a, t) {
     }
   );
 }
-const ea = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+async function ta(a, t) {
+  return r("/api/authorization/users/export", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: a,
+    ...t || {}
+  });
+}
+const na = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   assignPermissions: C,
   assignRoles: Y,
-  assignServiceAccountRoles: x,
+  assignServiceAccountRoles: I,
   changePassword: f,
   createRole: E,
   createServiceAccount: G,
   createServiceAccountAccessKey: L,
   createUser: H,
+  createUserExportTask: ta,
   deleteRole: U,
-  deleteServiceAccount: k,
+  deleteServiceAccount: _,
   deleteServiceAccountAccessKey: w,
   deleteUser: Q,
   disableMfa: p,
@@ -598,9 +609,9 @@ const ea = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getRole: $,
   getRolePolicy: j,
   getServiceAccountAccessKeys: b,
-  getServiceAccountById: R,
+  getServiceAccountById: k,
   getServiceAccountPolicy: K,
-  getServiceAccountRoles: I,
+  getServiceAccountRoles: x,
   getServiceAccounts: O,
   getUser: J,
   getUserLogs: V,
@@ -620,7 +631,7 @@ const ea = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   unlockUser: aa,
   updateCurrentUser: l,
   updateRole: q,
-  updateServiceAccount: _,
+  updateServiceAccount: R,
   updateServiceAccountAccessKey: D,
   updateServiceAccountStatus: B,
   updateUser: N,
@@ -628,7 +639,7 @@ const ea = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   verifyAndActivateMfa: d
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  ea as a,
+  na as a,
   v as b,
   F as l
 };

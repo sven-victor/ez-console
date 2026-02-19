@@ -1,0 +1,1 @@
+"use strict";const s=require("./client.js");async function t(e){return s.request("/api/userTasks",{method:"GET",...e||{}})}const r=Object.freeze(Object.defineProperty({__proto__:null,listUserTasks:t},Symbol.toStringTag,{value:"Module"}));exports.userTasks=r;
