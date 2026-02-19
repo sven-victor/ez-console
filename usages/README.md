@@ -20,6 +20,7 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 14. [Troubleshooting](./14-troubleshooting.md) - Common issues and solutions
 15. [AI and Toolsets](./15-ai-and-toolsets.md) - AI model integration and custom toolsets
 16. [Skills](./16-skills.md) - AI Agent Skills management and chat integration
+17. [Task Management](./17-task-management.md) - Background tasks, registry-based task types, and usage
 
 ## Framework Features
 
