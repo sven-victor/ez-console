@@ -2356,6 +2356,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/authorization/users/export": {
+            "post": {
+                "description": "Create a background task to export users to CSV. Returns the task ID; poll task status and download via artifact when complete.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Create user export task",
+                "operationId": "createUserExportTask",
+                "parameters": [
+                    {
+                        "description": "Optional filters (keywords, status)",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/authorizationapi.CreateUserExportTaskRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_Task"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/authorization/users/{id}": {
             "get": {
                 "description": "Get a user by ID",
@@ -6151,6 +6191,17 @@ const docTemplate = `{
                 }
             }
         },
+        "authorizationapi.CreateUserExportTaskRequest": {
+            "type": "object",
+            "properties": {
+                "keywords": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "authorizationapi.LoginRequest": {
             "type": "object",
             "required": [
@@ -9223,8 +9274,6 @@ const docTemplate = `{
         "time.Duration": {
             "type": "integer",
             "enum": [
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -9235,8 +9284,6 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                60000000000,
-                3600000000000,
                 1,
                 1000,
                 1000000,
@@ -9245,8 +9292,6 @@ const docTemplate = `{
                 3600000000000
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -9257,8 +9302,6 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

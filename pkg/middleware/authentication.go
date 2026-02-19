@@ -267,7 +267,11 @@ func GetUserIDFromContext(c context.Context) string {
 }
 
 func GetRolesFromContext(c context.Context) []model.Role {
-	return c.Value("roles").([]model.Role)
+	roles, ok := c.Value("roles").([]model.Role)
+	if !ok {
+		return nil
+	}
+	return roles
 }
 
 func HasGlobalRolePermission(ctx context.Context, permissionCode string) bool {

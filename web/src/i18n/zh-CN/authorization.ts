@@ -122,6 +122,10 @@ export default {
     unlockSuccess: '用户解锁成功',
     unlockError: '解锁用户失败：{{error}}',
     ldapUserNotBound: 'LDAP 用户未绑定到本地用户，请绑定。',
+    export: '导出',
+    exportTaskCreated: '导出任务已创建。您可以在任务列表中查看进度并下载文件。',
+    exportTaskCreatedShort: '导出任务已创建。',
+    exportError: '创建导出任务失败：{{error}}',
   },
   profile: {
     title: '个人中心',

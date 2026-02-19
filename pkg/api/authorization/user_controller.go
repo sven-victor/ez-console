@@ -15,6 +15,7 @@
 package authorizationapi
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"slices"
@@ -58,6 +59,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.POST("/:id/restore", middleware.RequirePermission("authorization:user:update"), c.RestoreUser)
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
 		users.GET("/ldap-users", middleware.RequirePermission("authorization:user:list"), c.GetLdapUsers)
+		users.POST("/export", middleware.RequirePermission("authorization:user:export"), c.CreateUserExportTask)
 	}
 
 	// Profile management (for current user)
@@ -1061,6 +1063,45 @@ func (c *UserController) RestoreUser(ctx *gin.Context) {
 	}
 }
 
+// CreateUserExportTaskRequest is the request body for creating a user export task.
+type CreateUserExportTaskRequest struct {
+	Keywords string `json:"keywords,omitempty" validate:"optional"`
+	Status   string `json:"status,omitempty" validate:"optional"`
+}
+
+// CreateUserExportTask creates a user export task and returns the task. The task runs in the background and produces a CSV file; download via task artifact.
+//
+//	@Summary		Create user export task
+//	@Description	Create a background task to export users to CSV. Returns the task ID; poll task status and download via artifact when complete.
+//	@ID             createUserExportTask
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		CreateUserExportTaskRequest	false	"Optional filters (keywords, status)"
+//	@Success		200		{object}	util.Response[model.Task]
+//	@Failure		500		{object}	util.ErrorResponse
+//	@Router			/api/authorization/users/export [post]
+func (c *UserController) CreateUserExportTask(ctx *gin.Context) {
+	var req CreateUserExportTaskRequest
+	if ctx.Request.Body != nil && ctx.Request.ContentLength != 0 {
+		if err := ctx.ShouldBindJSON(&req); err != nil {
+			util.RespondWithError(ctx, util.NewError("E4002", err))
+			return
+		}
+	}
+	payloadBytes, _ := json.Marshal(req)
+	payload := string(payloadBytes)
+	t, err := c.service.TaskService.CreateTask(ctx, "user_export",
+		service.WithPayload(payload),
+		service.WithMaxRetries(1),
+	)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to create export task", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, t)
+}
+
 // GetLdapUsers gets LDAP users
 //
 //	@Summary		Get LDAP users
@@ -1086,39 +1127,39 @@ func (c *UserController) GetLdapUsers(ctx *gin.Context) {
 func init() {
 	middleware.RegisterPermission("User Management", "Manage user creation, editing, deletion, and permission assignment", []model.Permission{
 		{
-			Code:            "authorization:user:list",
-			Name:            "List users",
-			Description:     "List users",
+			Code:             "authorization:user:list",
+			Name:             "List users",
+			Description:      "List users",
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:            "authorization:user:view",
-			Name:            "View users",
-			Description:     "View details",
+			Code:             "authorization:user:view",
+			Name:             "View users",
+			Description:      "View details",
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 		{
-			Code:            "authorization:user:create",
-			Name:            "Create users",
-			Description:     "Create new users",
+			Code:             "authorization:user:create",
+			Name:             "Create users",
+			Description:      "Create new users",
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:            "authorization:user:update",
-			Name:            "Update users",
-			Description:     "Update user information",
+			Code:             "authorization:user:update",
+			Name:             "Update users",
+			Description:      "Update user information",
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:            "authorization:user:reset-password",
-			Name:            "Reset User Password",
-			Description:     "Reset user password",
+			Code:             "authorization:user:reset-password",
+			Name:             "Reset User Password",
+			Description:      "Reset user password",
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:            "authorization:user:assign-roles",
-			Name:            "Assign roles to users",
-			Description:     "Assign roles to users",
+			Code:             "authorization:user:assign-roles",
+			Name:             "Assign roles to users",
+			Description:      "Assign roles to users",
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
@@ -1127,9 +1168,15 @@ func init() {
 			Description: "Delete users",
 		},
 		{
-			Code:            "authorization:user:view_audit_logs",
-			Name:            "View User Audit Logs",
-			Description:     "View user audit logs",
+			Code:             "authorization:user:view_audit_logs",
+			Name:             "View User Audit Logs",
+			Description:      "View user audit logs",
+			DefaultRoleNames: []string{"operator", "viewer"},
+		},
+		{
+			Code:             "authorization:user:export",
+			Name:             "Export users",
+			Description:      "Create user export task to export users to CSV",
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 	})

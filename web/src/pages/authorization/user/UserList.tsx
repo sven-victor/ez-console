@@ -45,6 +45,7 @@ import {
   UndoOutlined,
   ToolOutlined,
   UnlockOutlined,
+  ExportOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';
@@ -147,6 +148,7 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
 
 // User list page
 const UserList: React.FC = () => {
+  const { addTask } = useSite();
   const navigate = useNavigate();
   const { t } = useTranslation("authorization");
   const { t: tCommon } = useTranslation("common");
@@ -295,6 +297,39 @@ const UserList: React.FC = () => {
       },
     });
   };
+
+  // Create user export task (adds task to task list; user can download from task when complete)
+  const { run: handleExport, loading: exportLoading } = useRequest(
+    () =>
+      api.authorization.createUserExportTask({
+        keywords: queryParams.keywords,
+        status: queryParams.status,
+      }),
+    {
+      onSuccess: (res) => {
+        const taskId = res.id;
+        if (taskId) {
+          message.success(
+            t('user.exportTaskCreated', {
+              defaultValue: 'Export task created. You can view progress and download the file from the task list.',
+            })
+          );
+        } else {
+          message.success(t('user.exportTaskCreatedShort', { defaultValue: 'Export task created.' }));
+        }
+        addTask(res);
+      },
+      onError: (error) => {
+        message.error(
+          t('user.exportError', {
+            defaultValue: 'Failed to create export task',
+            error: (error as any)?.message ?? String(error),
+          })
+        );
+      },
+      manual: true,
+    }
+  );
 
   const handleUnlock = (user: API.User) => {
     Modal.confirm({
@@ -546,16 +581,28 @@ const UserList: React.FC = () => {
             <Button type='primary' icon={<ReloadOutlined />} onClick={fetchUsers}>{tCommon('refresh', { defaultValue: 'Refresh' })}</Button>
           </Col>
           <Col>
-            <PermissionGuard permission="authorization:user:create">
-              <Button
-                type="primary"
-                icon={<UserAddOutlined />}
-                style={{ marginBottom: 16 }}
-                onClick={() => navigate('/authorization/users/create')}
-              >
-                {t('user.create', { defaultValue: 'Create User' })}
-              </Button>
-            </PermissionGuard>
+            <Space>
+              <PermissionGuard permission="authorization:user:export">
+                <Button
+                  icon={<ExportOutlined />}
+                  loading={exportLoading}
+                  style={{ marginBottom: 16 }}
+                  onClick={() => handleExport()}
+                >
+                  {t('user.export', { defaultValue: 'Export' })}
+                </Button>
+              </PermissionGuard>
+              <PermissionGuard permission="authorization:user:create">
+                <Button
+                  type="primary"
+                  icon={<UserAddOutlined />}
+                  style={{ marginBottom: 16 }}
+                  onClick={() => navigate('/authorization/users/create')}
+                >
+                  {t('user.create', { defaultValue: 'Create User' })}
+                </Button>
+              </PermissionGuard>
+            </Space>
           </Col>
         </Row>
 

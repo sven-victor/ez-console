@@ -122,6 +122,10 @@ export default {
     unlockSuccess: 'User unlocked successfully',
     unlockError: 'Failed to unlock user: {{error}}',
     ldapUserNotBound: 'LDAP user is not bound to a local user, please bind.',
+    export: 'Export',
+    exportTaskCreated: 'Export task created. You can view progress and download the file from the task list.',
+    exportTaskCreatedShort: 'Export task created.',
+    exportError: 'Failed to create export task: {{error}}',
   },
 
   profile: {

@@ -37,6 +37,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 
 	"github.com/sven-victor/ez-console/pkg/api"
+	authorizationapi "github.com/sven-victor/ez-console/pkg/api/authorization"
 	clientsldap "github.com/sven-victor/ez-console/pkg/clients/ldap"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -360,6 +361,8 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	svc := service.NewService(ctx)
 
 	initSettings(ctx, cfg, svc)
+
+	authorizationapi.RegisterUserExportTask(svc)
 	svc.TaskService.Start(context.Background())
 
 	// Setup API routes

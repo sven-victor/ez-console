@@ -816,3 +816,18 @@ export async function unlockUser(
     }
   );
 }
+
+/** Create user export task Create a background task to export users to CSV. Returns the task ID; poll task status and download via artifact when complete. POST /api/authorization/users/export */
+export async function createUserExportTask(
+  body: API.CreateUserExportTaskRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelTask>("/api/authorization/users/export", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}

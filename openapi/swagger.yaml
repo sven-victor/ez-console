@@ -292,6 +292,13 @@ definitions:
     - description
     - name
     type: object
+  authorizationapi.CreateUserExportTaskRequest:
+    properties:
+      keywords:
+        type: string
+      status:
+        type: string
+    type: object
   authorizationapi.LoginRequest:
     properties:
       mfa_code:
@@ -2491,8 +2498,6 @@ definitions:
     type: object
   time.Duration:
     enum:
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -2503,8 +2508,6 @@ definitions:
     - 1000
     - 1000000
     - 1000000000
-    - 60000000000
-    - 3600000000000
     - 1
     - 1000
     - 1000000
@@ -2513,8 +2516,6 @@ definitions:
     - 3600000000000
     type: integer
     x-enum-varnames:
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -2525,8 +2526,6 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -5628,6 +5627,33 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Unlock a user
+      tags:
+      - Authorization/Users
+  /api/authorization/users/export:
+    post:
+      consumes:
+      - application/json
+      description: Create a background task to export users to CSV. Returns the task
+        ID; poll task status and download via artifact when complete.
+      operationId: createUserExportTask
+      parameters:
+      - description: Optional filters (keywords, status)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/authorizationapi.CreateUserExportTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Task'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create user export task
       tags:
       - Authorization/Users
   /api/files:
