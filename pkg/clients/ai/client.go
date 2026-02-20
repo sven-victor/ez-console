@@ -90,21 +90,54 @@ func GetRegisteredFactories() map[model.AIModelProvider]AIClientFactory {
 	return factories
 }
 
-// ChatMessagesFromModel converts model.AIChatMessage slice to ChatMessage slice
+// ChatMessagesFromModel converts model.AIChatMessage slice to ChatMessage slice.
+// For assistant messages with ToolCalls, only ToolCalls that have a corresponding
+// role=tool message (same ToolCallID) are kept. This avoids 400 errors when the
+// session was interrupted during tool execution and some tool results are missing.
 func ChatMessagesFromModel(messages []model.AIChatMessage) []ChatMessage {
+	// Collect ToolCallIDs that have a tool response (role=tool)
+	respondedToolCallIDs := make(map[string]struct{})
+	for _, msg := range messages {
+		if msg.Role == model.AIChatMessageRoleTool && msg.ToolCallID != "" {
+			respondedToolCallIDs[msg.ToolCallID] = struct{}{}
+		}
+	}
+
 	result := make([]ChatMessage, 0, len(messages))
 	for _, msg := range messages {
 		var toolCalls []ToolCall
-		for _, tc := range msg.ToolCalls {
-			toolCalls = append(toolCalls, ToolCall{
-				Index: tc.Index,
-				ID:    tc.ID,
-				Type:  openai.ToolType(tc.Type),
-				Function: FunctionCall{
-					Name:      tc.Function.Name,
-					Arguments: tc.Function.Arguments,
-				},
-			})
+		if msg.Role == model.AIChatMessageRoleAssistant && len(msg.ToolCalls) > 0 {
+			// Only include ToolCalls that have a corresponding role=tool message
+			for _, tc := range msg.ToolCalls {
+				if _, ok := respondedToolCallIDs[tc.ID]; ok {
+					toolCalls = append(toolCalls, ToolCall{
+						Index: nil, // set to contiguous 0,1,2... below
+						ID:    tc.ID,
+						Type:  openai.ToolType(tc.Type),
+						Function: FunctionCall{
+							Name:      tc.Function.Name,
+							Arguments: tc.Function.Arguments,
+						},
+					})
+				}
+			}
+			// Re-index to contiguous 0,1,2,... for API compatibility
+			for i := range toolCalls {
+				idx := i
+				toolCalls[i].Index = &idx
+			}
+		} else {
+			for _, tc := range msg.ToolCalls {
+				toolCalls = append(toolCalls, ToolCall{
+					Index: tc.Index,
+					ID:    tc.ID,
+					Type:  openai.ToolType(tc.Type),
+					Function: FunctionCall{
+						Name:      tc.Function.Name,
+						Arguments: tc.Function.Arguments,
+					},
+				})
+			}
 		}
 		result = append(result, ChatMessage{
 			Role:       msg.Role,
