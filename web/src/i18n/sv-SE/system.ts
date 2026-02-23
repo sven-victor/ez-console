@@ -28,6 +28,18 @@ export default {
       skills: 'Färdigheter',
       aiModels: 'AI-modellinställningar',
       organizations: 'Organisationshantering',
+      task: 'Uppgiftsinställningar',
+    },
+    task: {
+      maxConcurrent: 'Max antal samtidiga uppgifter',
+      maxConcurrentTooltip: 'Maximalt antal uppgifter som kan köras samtidigt.',
+      logStorageBackend: 'Logglagring',
+      logStorageBackendTooltip: 'Var körningsloggar lagras. Databas lagrar loggar i programmets databas.',
+      logStoragePlaceholder: 'Välj backend',
+      logStorageDatabase: 'Databas',
+      logStorage: {
+        database: 'Databas',
+      },
     },
     skills: {
       title: 'AI Agent-färdigheter',

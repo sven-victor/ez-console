@@ -49,6 +49,8 @@ export default {
   tasks: '任务',
   more: '更多',
   noTasks: '暂无任务',
+  logsTitle: '任务日志',
+  noLogs: '暂无日志。',
   status: {
     pending: '等待中',
     running: '运行中',

@@ -49,6 +49,8 @@ export default {
   tasks: 'Tasks',
   more: 'More',
   noTasks: 'No tasks',
+  logsTitle: 'Task logs',
+  noLogs: 'No logs yet.',
   status: {
     pending: 'Pending',
     running: 'Running',

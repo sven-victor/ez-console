@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Form, InputNumber, Button, message, Space, Spin } from 'antd';
+import { Form, InputNumber, Button, message, Space, Spin, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -26,10 +26,19 @@ const TaskSettingsForm: React.FC = () => {
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();
 
+  const { data: backendsList } = useRequest(api.system.listLogStorageBackends);
+  const logStorageBackendOptions = (backendsList ?? []).map((b: API.LogStorageBackendOption) => ({
+    value: b.id,
+    label: t(`settings.task.logStorage.${b.id}`, { defaultValue: b.name }),
+  }));
+
   const { loading, refresh } = useRequest(api.system.getTaskSettings, {
     onSuccess: (res) => {
       if (res) {
-        form.setFieldsValue({ max_concurrent: res.max_concurrent });
+        form.setFieldsValue({
+          max_concurrent: res.max_concurrent,
+          log_storage_backend: res.log_storage_backend ?? 'database',
+        });
       }
     },
     onError: () => {
@@ -58,8 +67,21 @@ const TaskSettingsForm: React.FC = () => {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{ max_concurrent: 10 }}
+        initialValues={{ max_concurrent: 10, log_storage_backend: 'database' }}
       >
+        <Form.Item
+          name="log_storage_backend"
+          label={t('settings.task.logStorageBackend', { defaultValue: 'Log storage' })}
+          tooltip={t('settings.task.logStorageBackendTooltip', {
+            defaultValue: 'Where task execution logs are stored. Database stores logs in the application database.',
+          })}
+        >
+          <Select
+            options={logStorageBackendOptions}
+            placeholder={t('settings.task.logStoragePlaceholder', { defaultValue: 'Select backend' })}
+            loading={backendsList === undefined}
+          />
+        </Form.Item>
         <Form.Item
           name="max_concurrent"
           label={t('settings.task.maxConcurrent', { defaultValue: 'Max concurrent tasks' })}

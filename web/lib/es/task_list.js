@@ -1,43 +1,44 @@
 import { j as a } from "./vendor.js";
-import { useRef as _, useState as S } from "react";
-import { Tag as D, Space as u, Tooltip as h, Button as d, Card as I, Input as b, message as n } from "antd";
-import { StopOutlined as R, RedoOutlined as A, DownloadOutlined as F, DeleteOutlined as E, SearchOutlined as p, ReloadOutlined as L } from "@ant-design/icons";
+import { useRef as S, useState as D } from "react";
+import { Tag as I, Space as u, Button as i, Tooltip as h, Card as R, Input as b, message as n } from "antd";
+import { EyeOutlined as A, StopOutlined as F, RedoOutlined as E, DownloadOutlined as O, DeleteOutlined as v, SearchOutlined as p, ReloadOutlined as L } from "@ant-design/icons";
 import { useTranslation as x } from "react-i18next";
-import { a as i } from "./index.js";
-import { f as c, b as m, i as O } from "./components.js";
+import { a as c } from "./index.js";
+import { f as d, b as m, i as P } from "./components.js";
 import { P as k } from "./base.js";
-const P = {
+import { useNavigate as z } from "react-router-dom";
+const $ = {
   pending: "default",
   running: "processing",
   success: "success",
   failed: "error",
   cancelled: "default"
-}, Z = () => {
-  const { t: s } = x("task"), { t: o } = x("common"), r = _(null), [f, y] = S(""), j = async (t) => {
+}, M = () => {
+  const { t: s } = x("task"), { t: o } = x("common"), r = S(null), [f, y] = D(""), j = z(), g = async (t) => {
     var e, l;
     try {
-      await i.tasks.cancelTask({ id: t }), n.success(s("cancelSuccess", { defaultValue: "Task cancelled." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
+      await c.tasks.cancelTask({ id: t }), n.success(s("cancelSuccess", { defaultValue: "Task cancelled." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
     } catch {
       n.error(s("cancelFailed", { defaultValue: "Failed to cancel task." }));
     }
   }, w = async (t) => {
     var e, l;
     try {
-      await i.tasks.retryTask({ id: t }), n.success(s("retrySuccess", { defaultValue: "Task retry requested." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
+      await c.tasks.retryTask({ id: t }), n.success(s("retrySuccess", { defaultValue: "Task retry requested." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
     } catch {
       n.error(s("retryFailed", { defaultValue: "Failed to retry task." }));
     }
-  }, g = async (t) => {
+  }, V = async (t) => {
     var e, l;
     try {
-      await i.tasks.deleteTask({ id: t }), n.success(s("deleteSuccess", { defaultValue: "Task deleted." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
+      await c.tasks.deleteTask({ id: t }), n.success(s("deleteSuccess", { defaultValue: "Task deleted." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
     } catch {
       n.error(s("deleteFailed", { defaultValue: "Failed to delete task." }));
     }
-  }, V = async (t) => {
-    const e = await i.base.downloadFile({ fileKey: t }, { params: { method: "sign" } }), l = `/api/files/${t}?signature=${e.signature}&expires=${e.expires}`;
+  }, C = async (t) => {
+    const e = await c.base.downloadFile({ fileKey: t }, { params: { method: "sign" } }), l = `/api/files/${t}?signature=${e.signature}&expires=${e.expires}`;
     window.open(l, "_blank");
-  }, C = [
+  }, T = [
     {
       title: s("typeLabel", { defaultValue: "Type" }),
       dataIndex: "type",
@@ -49,7 +50,7 @@ const P = {
       dataIndex: "status",
       key: "status",
       width: 100,
-      render: (t) => /* @__PURE__ */ a.jsx(D, { color: P[t] || "default", children: s(`status.${t}`, { defaultValue: t }) })
+      render: (t) => /* @__PURE__ */ a.jsx(I, { color: $[t] || "default", children: s(`status.${t}`, { defaultValue: t }) })
     },
     {
       title: s("progress", { defaultValue: "Progress" }),
@@ -78,52 +79,55 @@ const P = {
       width: 220,
       fixed: "right",
       render: (t, e) => /* @__PURE__ */ a.jsxs(u, { size: "small", children: [
-        (e.status === "running" || e.status === "pending") && /* @__PURE__ */ a.jsx(c, { permission: "task:cancel", children: /* @__PURE__ */ a.jsx(
+        /* @__PURE__ */ a.jsx(i, { type: "text", icon: /* @__PURE__ */ a.jsx(A, {}), onClick: () => {
+          j(`/tasks/${e.id}`);
+        } }),
+        (e.status === "running" || e.status === "pending") && /* @__PURE__ */ a.jsx(d, { permission: "task:cancel", children: /* @__PURE__ */ a.jsx(
           m,
           {
             actions: [
               {
                 key: "cancel",
                 label: s("cancel", { defaultValue: "Cancel" }),
-                icon: /* @__PURE__ */ a.jsx(R, {}),
+                icon: /* @__PURE__ */ a.jsx(F, {}),
                 confirm: {
                   title: s("cancelConfirm", { defaultValue: "Cancel this task?" }),
-                  onConfirm: () => j(e.id)
+                  onConfirm: () => g(e.id)
                 }
               }
             ]
           }
         ) }),
-        (e.status === "failed" || e.status === "cancelled") && /* @__PURE__ */ a.jsx(c, { permission: "task:retry", children: /* @__PURE__ */ a.jsx(h, { title: s("retry", { defaultValue: "Retry" }), children: /* @__PURE__ */ a.jsx(
-          d,
+        (e.status === "failed" || e.status === "cancelled") && /* @__PURE__ */ a.jsx(d, { permission: "task:retry", children: /* @__PURE__ */ a.jsx(h, { title: s("retry", { defaultValue: "Retry" }), children: /* @__PURE__ */ a.jsx(
+          i,
           {
             type: "text",
             size: "small",
-            icon: /* @__PURE__ */ a.jsx(A, {}),
+            icon: /* @__PURE__ */ a.jsx(E, {}),
             onClick: () => w(e.id)
           }
         ) }) }),
-        e.artifact_file_key && /* @__PURE__ */ a.jsx(c, { permission: "task:view", children: /* @__PURE__ */ a.jsx(h, { title: s("download", { defaultValue: "Download" }), children: /* @__PURE__ */ a.jsx(
-          d,
+        e.artifact_file_key && /* @__PURE__ */ a.jsx(d, { permission: "task:view", children: /* @__PURE__ */ a.jsx(h, { title: s("download", { defaultValue: "Download" }), children: /* @__PURE__ */ a.jsx(
+          i,
           {
             type: "text",
             size: "small",
-            icon: /* @__PURE__ */ a.jsx(F, {}),
-            onClick: () => V(e.artifact_file_key)
+            icon: /* @__PURE__ */ a.jsx(O, {}),
+            onClick: () => C(e.artifact_file_key)
           }
         ) }) }),
-        /* @__PURE__ */ a.jsx(c, { permission: "task:delete", children: /* @__PURE__ */ a.jsx(
+        /* @__PURE__ */ a.jsx(d, { permission: "task:delete", children: /* @__PURE__ */ a.jsx(
           m,
           {
             actions: [
               {
                 key: "delete",
                 label: s("delete", { defaultValue: "Delete" }),
-                icon: /* @__PURE__ */ a.jsx(E, {}),
+                icon: /* @__PURE__ */ a.jsx(v, {}),
                 danger: !0,
                 confirm: {
                   title: s("deleteConfirm", { defaultValue: "Delete this task?" }),
-                  onConfirm: () => g(e.id)
+                  onConfirm: () => V(e.id)
                 }
               }
             ]
@@ -131,12 +135,12 @@ const P = {
         ) })
       ] })
     }
-  ], T = (t) => i.tasks.listTasks({
+  ], _ = (t) => c.tasks.listTasks({
     current: t.current ?? k.DEFAULT_CURRENT,
     page_size: t.page_size ?? k.DEFAULT_PAGE_SIZE,
     search: f || void 0
   });
-  return /* @__PURE__ */ a.jsx(I, { title: s("listTitle", { defaultValue: "Task List" }), children: /* @__PURE__ */ a.jsxs(u, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
+  return /* @__PURE__ */ a.jsx(R, { title: s("listTitle", { defaultValue: "Task List" }), children: /* @__PURE__ */ a.jsxs(u, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
     /* @__PURE__ */ a.jsxs(u, { wrap: !0, children: [
       /* @__PURE__ */ a.jsx(
         b,
@@ -153,21 +157,21 @@ const P = {
           allowClear: !0
         }
       ),
-      /* @__PURE__ */ a.jsx(d, { icon: /* @__PURE__ */ a.jsx(p, {}), onClick: () => {
+      /* @__PURE__ */ a.jsx(i, { icon: /* @__PURE__ */ a.jsx(p, {}), onClick: () => {
         var t, e;
-        return (e = (t = r.current) == null ? void 0 : t.reload) == null ? void 0 : e.call(t);
+        console.log(r.current), (e = (t = r.current) == null ? void 0 : t.reload) == null || e.call(t);
       }, children: o("search", { defaultValue: "Search" }) }),
-      /* @__PURE__ */ a.jsx(d, { icon: /* @__PURE__ */ a.jsx(L, {}), onClick: () => {
+      /* @__PURE__ */ a.jsx(i, { icon: /* @__PURE__ */ a.jsx(L, {}), onClick: () => {
         var t, e;
         return (e = (t = r.current) == null ? void 0 : t.reload) == null ? void 0 : e.call(t);
       }, children: o("refresh", { defaultValue: "Refresh" }) })
     ] }),
     /* @__PURE__ */ a.jsx(
-      O,
+      P,
       {
-        ref: r,
-        request: T,
-        columns: C,
+        actionRef: r,
+        request: _,
+        columns: T,
         rowKey: "id",
         scroll: { x: 900 }
       }
@@ -175,5 +179,5 @@ const P = {
   ] }) });
 };
 export {
-  Z as default
+  M as default
 };

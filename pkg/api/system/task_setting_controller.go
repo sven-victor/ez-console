@@ -16,8 +16,10 @@ package systemapi
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/logstore"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
@@ -40,6 +42,7 @@ func (c *TaskSettingController) RegisterRoutes(router *gin.RouterGroup) {
 	{
 		taskSettings.GET("", middleware.RequirePermission("system:settings:view"), c.GetTaskSettings)
 		taskSettings.PUT("", middleware.RequirePermission("system:settings:update"), c.UpdateTaskSettings)
+		taskSettings.GET("/log-storage-backends", middleware.RequirePermission("system:settings:view"), c.ListLogStorageBackends)
 	}
 }
 
@@ -86,4 +89,28 @@ func (c *TaskSettingController) UpdateTaskSettings(ctx *gin.Context) {
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, util.MessageData{Message: "Task settings updated successfully"})
+}
+
+// ListLogStorageBackends returns the list of registered log storage backends for task log storage selection.
+//
+//	@Summary		List log storage backends
+//	@Description	Returns registered log storage backend options (e.g. database) for use in task settings.
+//	@ID             listLogStorageBackends
+//	@Tags			System Settings/Task
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response[[]model.LogStorageBackendOption]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/task-settings/log-storage-backends [get]
+func (c *TaskSettingController) ListLogStorageBackends(ctx *gin.Context) {
+	names := logstore.ListBackendNames()
+	list := make([]model.LogStorageBackendOption, 0, len(names))
+	for _, id := range names {
+		if id == "" {
+			continue
+		}
+		name := strings.ToUpper(id[0:1]) + strings.ToLower(id[1:])
+		list = append(list, model.LogStorageBackendOption{ID: id, Name: name})
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, list)
 }

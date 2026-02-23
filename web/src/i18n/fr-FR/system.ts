@@ -28,6 +28,18 @@ export default {
       skills: 'Compétences',
       aiModels: 'Paramètres de modèles AI',
       organizations: 'Gestion des organisations',
+      task: 'Paramètres des tâches',
+    },
+    task: {
+      maxConcurrent: 'Tâches simultanées max.',
+      maxConcurrentTooltip: 'Nombre maximum de tâches pouvant s\'exécuter en même temps.',
+      logStorageBackend: 'Stockage des journaux',
+      logStorageBackendTooltip: 'Où sont stockés les journaux d\'exécution. Base de données stocke les journaux dans la base de données de l\'application.',
+      logStoragePlaceholder: 'Sélectionner le backend',
+      logStorageDatabase: 'Base de données',
+      logStorage: {
+        database: 'Base de données',
+      },
     },
     skills: {
       title: 'Compétences d\'agent AI',

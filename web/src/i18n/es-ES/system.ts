@@ -28,6 +28,18 @@ export default {
       skills: 'Habilidades',
       aiModels: 'Ajustes de modelos AI',
       organizations: 'Gestión de organizaciones',
+      task: 'Ajustes de tareas',
+    },
+    task: {
+      maxConcurrent: 'Tareas simultáneas máximas',
+      maxConcurrentTooltip: 'Número máximo de tareas que pueden ejecutarse al mismo tiempo.',
+      logStorageBackend: 'Almacenamiento de registros',
+      logStorageBackendTooltip: 'Dónde se almacenan los registros de ejecución de tareas. Base de datos almacena los registros en la base de datos de la aplicación.',
+      logStoragePlaceholder: 'Seleccionar backend',
+      logStorageDatabase: 'Base de datos',
+      logStorage: {
+        database: 'Base de datos',
+      },
     },
     skills: {
       title: 'Habilidades de agente AI',

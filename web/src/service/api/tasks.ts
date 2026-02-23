@@ -59,6 +59,22 @@ export async function cancelTask(
   });
 }
 
+/** Get task logs Get log entries for a task. Admin or creator only. GET /api/tasks/${param0}/logs */
+export async function getTaskLogs(
+  params: API.getTaskLogsParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseArrayModelTaskLogEntry>(
+    `/api/tasks/${param0}/logs`,
+    {
+      method: "GET",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
 /** Retry task Retry a failed or cancelled task POST /api/tasks/${param0}/retry */
 export async function retryTask(
   params: API.retryTaskParams,

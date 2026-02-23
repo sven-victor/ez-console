@@ -33,6 +33,13 @@ export default {
     task: {
       maxConcurrent: 'Max concurrent tasks',
       maxConcurrentTooltip: 'Maximum number of tasks that can run at the same time.',
+      logStorageBackend: 'Log storage',
+      logStorageBackendTooltip: 'Where task execution logs are stored. Database stores logs in the application database.',
+      logStoragePlaceholder: 'Select backend',
+      logStorageDatabase: 'Database',
+      logStorage: {
+        database: 'Database',
+      },
     },
     skills: {
       title: 'AI Agent Skills',

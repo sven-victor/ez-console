@@ -29,7 +29,8 @@ func (s *SettingService) InitDefaultTaskSettings(ctx context.Context) error {
 		Value   string
 		Comment string
 	}{
-		model.SettingTaskMaxConcurrent: {"10", "Maximum number of tasks that can run concurrently"},
+		model.SettingTaskMaxConcurrent:     {"10", "Maximum number of tasks that can run concurrently"},
+		model.SettingTaskLogStorageBackend:  {"database", "Log storage backend for task logs (e.g. database)"},
 	}
 	for key, setting := range defaultSettings {
 		var count int64
@@ -49,13 +50,18 @@ func (s *SettingService) GetTaskSettings(ctx context.Context) (*model.TaskSettin
 	if err != nil {
 		return nil, err
 	}
-	return &model.TaskSettings{MaxConcurrent: maxConcurrent}, nil
+	logStorageBackend, _ := s.GetStringSetting(ctx, model.SettingTaskLogStorageBackend, "database")
+	return &model.TaskSettings{
+		MaxConcurrent:     maxConcurrent,
+		LogStorageBackend: logStorageBackend,
+	}, nil
 }
 
 // UpdateTaskSettings updates task settings
 func (s *SettingService) UpdateTaskSettings(ctx context.Context, settings *model.TaskSettings) error {
 	settingsMap := map[string]string{
-		string(model.SettingTaskMaxConcurrent): strconv.Itoa(settings.MaxConcurrent),
+		string(model.SettingTaskMaxConcurrent):    strconv.Itoa(settings.MaxConcurrent),
+		string(model.SettingTaskLogStorageBackend): settings.LogStorageBackend,
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }

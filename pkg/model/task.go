@@ -49,3 +49,13 @@ type Task struct {
 	FinishedAt       *time.Time `json:"finished_at,omitempty"`
 	Payload          string     `gorm:"type:text" json:"payload,omitempty"` // optional JSON payload for task input
 }
+
+// TaskLogEntry represents a single task log line returned by the task logs API.
+type TaskLogEntry struct {
+	ID        string `json:"id"`
+	RefID     string `json:"ref_id"`
+	LogType   string `json:"log_type"`
+	Level     string `json:"level,omitempty"`
+	Message   string `json:"message"`
+	CreatedAt string `json:"created_at"`
+}

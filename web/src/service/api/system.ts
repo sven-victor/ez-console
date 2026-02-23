@@ -729,6 +729,17 @@ export async function updateTaskSettings(
   });
 }
 
+/** List log storage backends Returns registered log storage backend options (e.g. database) for use in task settings. GET /api/system/task-settings/log-storage-backends */
+export async function listLogStorageBackends(options?: { [key: string]: any }) {
+  return request<API.ResponseArrayModelLogStorageBackendOption>(
+    "/api/system/task-settings/log-storage-backends",
+    {
+      method: "GET",
+      ...(options || {}),
+    }
+  );
+}
+
 /** List toolsets List toolsets with pagination and search GET /api/system/toolsets */
 export async function listToolSets(
   params: API.listToolSetsParams,

@@ -22,6 +22,7 @@ import { List, Tag, Progress, Button, Typography } from 'antd';
 import HeaderDropdown from './HeaderDropdown';
 import { useSite } from '@/contexts/SiteContext';
 import api from '@/service/api';
+import { PermissionGuard } from './PermissionGuard';
 
 const statusColors: Record<API.TaskStatus, string> = {
   pending: 'default',
@@ -83,11 +84,13 @@ const TaskListDropdown: React.FC<{ className?: string }> = ({ className }) => {
           </List.Item>
         )}
       />
-      <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8, textAlign: 'center' }}>
-        <Button type="link" size="small" onClick={() => navigate('/tasks')}>
-          {t('more', { defaultValue: 'More' })}
-        </Button>
-      </div>
+      <PermissionGuard permission="task:view">
+        <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8, textAlign: 'center' }}>
+          <Button type="link" size="small" onClick={() => navigate('/tasks')}>
+            {t('more', { defaultValue: 'More' })}
+          </Button>
+        </div>
+      </PermissionGuard>
     </div>
   );
   if (!tasks || tasks.length === 0) {

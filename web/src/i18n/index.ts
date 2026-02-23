@@ -40,26 +40,31 @@ import deDECommon from './de-DE/common';
 import deDEAuthorization from './de-DE/authorization';
 import deDESystem from './de-DE/system';
 import deDEAi from './de-DE/ai';
+import deDETask from './de-DE/task';
 
 import esESCommon from './es-ES/common';
 import esESAuthorization from './es-ES/authorization';
 import esESSystem from './es-ES/system';
 import esESAi from './es-ES/ai';
+import esESTask from './es-ES/task';
 
 import frFRCommon from './fr-FR/common';
 import frFRAuthorization from './fr-FR/authorization';
 import frFRSystem from './fr-FR/system';
 import frFRAi from './fr-FR/ai';
+import frFRTask from './fr-FR/task';
 
 import arAECommon from './ar-AE/common';
 import arAEAuthorization from './ar-AE/authorization';
 import arAESystem from './ar-AE/system';
 import arAEAi from './ar-AE/ai';
+import arAETask from './ar-AE/task';
 
 import svSECommon from './sv-SE/common';
 import svSEAuthorization from './sv-SE/authorization';
 import svSESystem from './sv-SE/system';
 import svSEAi from './sv-SE/ai';
+import svSETask from './sv-SE/task';
 
 
 i18n
@@ -91,7 +96,7 @@ i18n
         authorization: deDEAuthorization,
         system: deDESystem,
         ai: deDEAi,
-        task: enUSTask,
+        task: deDETask,
       },
       'es-ES': {
         translation: esES,
@@ -99,7 +104,7 @@ i18n
         authorization: esESAuthorization,
         system: esESSystem,
         ai: esESAi,
-        task: enUSTask,
+        task: esESTask,
       },
       'fr-FR': {
         translation: frFR,
@@ -107,7 +112,7 @@ i18n
         authorization: frFRAuthorization,
         system: frFRSystem,
         ai: frFRAi,
-        task: enUSTask,
+        task: frFRTask,
       },
       'ar-AE': {
         translation: arAE,
@@ -115,7 +120,7 @@ i18n
         authorization: arAEAuthorization,
         system: arAESystem,
         ai: arAEAi,
-        task: enUSTask,
+        task: arAETask,
       },
       'sv-SE': {
         translation: svSE,
@@ -123,7 +128,7 @@ i18n
         authorization: svSEAuthorization,
         system: svSESystem,
         ai: svSEAi,
-        task: enUSTask,
+        task: svSETask,
       },
     },
     fallbackLng: 'en-US',

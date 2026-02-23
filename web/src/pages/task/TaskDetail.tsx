@@ -23,6 +23,7 @@ import { useRequest } from 'ahooks';
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
+import TaskLogViewer from '@/components/TaskLogViewer';
 
 const statusColors: Record<API.TaskStatus, string> = {
   pending: 'default',
@@ -157,6 +158,13 @@ const TaskDetail: React.FC = () => {
             </Descriptions.Item>
           )}
         </Descriptions>
+
+        {id && (
+          <TaskLogViewer
+            taskId={id}
+            poll={task.status === 'running' || task.status === 'pending'}
+          />
+        )}
 
         {task.artifact_file_key && (
           <Space>

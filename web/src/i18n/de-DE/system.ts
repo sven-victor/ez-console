@@ -28,6 +28,18 @@ export default {
       skills: 'Fähigkeiten',
       aiModels: 'AI Models Einstellungen',
       organizations: 'Organisationsverwaltung',
+      task: 'Aufgabeneinstellungen',
+    },
+    task: {
+      maxConcurrent: 'Max. gleichzeitige Aufgaben',
+      maxConcurrentTooltip: 'Maximale Anzahl der gleichzeitig ausgeführten Aufgaben.',
+      logStorageBackend: 'Protokollspeicher',
+      logStorageBackendTooltip: 'Wo Ausführungsprotokolle gespeichert werden. Datenbank speichert Protokolle in der Anwendungsdatenbank.',
+      logStoragePlaceholder: 'Backend auswählen',
+      logStorageDatabase: 'Datenbank',
+      logStorage: {
+        database: 'Datenbank',
+      },
     },
     skills: {
       title: 'AI Agent Fähigkeiten',

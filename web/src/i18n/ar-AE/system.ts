@@ -28,6 +28,18 @@ export default {
       skills: 'المهارات',
       aiModels: 'إعدادات مودلات AI',
       organizations: 'إدارة المنظمات',
+      task: 'إعدادات المهام',
+    },
+    task: {
+      maxConcurrent: 'الحد الأقصى للمهام المتزامنة',
+      maxConcurrentTooltip: 'الحد الأقصى لعدد المهام التي يمكن تشغيلها في نفس الوقت.',
+      logStorageBackend: 'تخزين السجلات',
+      logStorageBackendTooltip: 'مكان تخزين سجلات تنفيذ المهام. قاعدة البيانات تخزن السجلات في قاعدة بيانات التطبيق.',
+      logStoragePlaceholder: 'اختر الواجهة الخلفية',
+      logStorageDatabase: 'قاعدة البيانات',
+      logStorage: {
+        database: 'قاعدة البيانات',
+      },
     },
     skills: {
       title: 'مهارات وكيل AI',

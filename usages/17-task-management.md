@@ -13,6 +13,8 @@ The Task Management module provides:
 - **Artifact download**: Tasks can attach an artifact file key; users download via the existing file API.
 - **Creator-based visibility**: Non-admin users see only their own tasks; admins see all.
 - **Completion callbacks**: Optional in-process callbacks when a task completes (success or failure).
+- **Task execution logs**: Logs produced during task execution (via the context logger) are stored in a configurable log storage backend and can be viewed on the task detail page.
+- **Configurable log storage**: Task settings let you choose where task logs are stored (e.g. database); the list of backends is provided by a registry in `pkg/logstore`.
 
 ## Architecture
 
@@ -37,6 +39,7 @@ The Task Management module provides:
 - **Task creation** is only via `TaskService.CreateTask` (no HTTP POST). Other modules (e.g. export) call it and get a task ID.
 - **Worker pool** reads max concurrency from system setting `task_max_concurrent` (default 10), polls for pending tasks, claims one, gets a runner from the registry, and runs it with progress callback and cancel channel.
 - **Task types** are registered with `task.RegisterTaskType(typeName, factory)`. Each type has a `TaskRunnerFactory` that creates a `TaskRunner` implementing `Run(ctx, task, progressCallback, cancelCh)`.
+- **Task logs**: Before running a task, the worker reads the log storage backend name from task settings (`task_log_storage_backend`). It creates a tee logger that forwards all `log.Logger` output from the runner to both the default logger and a **task logger** that writes to the chosen log storage backend (e.g. database). Log storage backends are registered in `pkg/logstore`; the default backend is `"database"`.
 
 ## User-Facing Features
 
@@ -52,6 +55,7 @@ The Task Management module provides:
 - **Path**: `/tasks/:id`
 - **Permission**: `task:view`
 - **Behavior**: Type, status, progress bar (for running/pending), creator, timestamps, error/result, artifact download link. Buttons: Cancel, Retry, Delete. Page polls every 2 seconds while status is running or pending.
+- **Task logs**: A **Task logs** card shows stored execution logs for the task. Logs are fetched from `GET /api/tasks/:id/logs`. While the task is running or pending, the log list is polled every 2 seconds so new lines appear in real time. Each line shows timestamp, level, and message (logfmt-style).
 
 ### Header Task Dropdown
 
@@ -63,12 +67,21 @@ The Task Management module provides:
 - **Fetch and polling**: SiteContext uses `api.userTasks.listUserTasks()` with polling: **every 3 seconds** when the dropdown is open (`tasksDropdownOpen === true`), **every 60 seconds** when closed. Fetch also runs once when the dropdown is opened.
 - **TaskListDropdown** (`web/src/components/TaskListDropdown.tsx`): A presentational component that reads `tasks`, `tasksDropdownOpen`, and `setTasksDropdownOpen` from `useSite()`. It renders the dropdown overlay (type, status, progress, Download, More link to `/tasks`) and does not perform its own data fetching.
 
-### System Setting: Max Concurrent Tasks
+### System Settings: Task Settings Tab
 
 - **Location**: System Settings → Task Settings tab
-- **Permission**: `system:settings:update`
+- **Permission**: `system:settings:view` to view, `system:settings:update` to save
+
+**Max concurrent tasks**
+
 - **Setting key**: `task_max_concurrent` (integer, default 10)
 - **Effect**: Maximum number of tasks that run at the same time.
+
+**Log storage**
+
+- **Setting key**: `task_log_storage_backend` (string, default `"database"`)
+- **Effect**: Backend used to store and read task execution logs. When a task runs, the context logger is teed with a task logger that writes each log line to this backend. `GetTaskLogs` also uses this backend so the task detail page shows logs from the same store.
+- **UI**: A dropdown lists available backends. The list is loaded from `GET /api/system/task-settings/log-storage-backends`, which returns registered backends from `pkg/logstore` (e.g. `database`). Adding a new backend in code and registering it makes it appear in the dropdown without frontend changes.
 
 ## Permissions
 
@@ -90,11 +103,14 @@ All task APIs require authentication.
 |--------|-----------------------|------------|----------------------------|
 | GET    | `/api/tasks`          | task:list  | List tasks (paginated)     |
 | GET    | `/api/tasks/:id`      | task:view  | Get one task              |
+| GET    | `/api/tasks/:id/logs` | task:view  | Get task execution logs   |
 | POST   | `/api/tasks/:id/cancel` | task:cancel | Cancel task             |
 | POST   | `/api/tasks/:id/retry`  | task:retry | Retry task              |
 | DELETE | `/api/tasks/:id`      | task:delete | Delete task (soft)      |
 
 **List query parameters**: `current`, `page_size`, `search` (optional). Admins see all tasks; others see only their own.
+
+**Task logs** (`GET /api/tasks/:id/logs`): Returns an array of log entries for the task (same visibility as the task: admin or creator). Each entry has `id`, `ref_id`, `log_type`, `level`, `message`, `created_at`. The backend used is the one selected in Task Settings (log storage).
 
 ### User tasks for header dropdown (`/api/userTasks`)
 
@@ -107,6 +123,14 @@ All task APIs require authentication.
 - **Use case**: The header task dropdown uses this API to show the current user's recent tasks and allow quick access to View/Download. The full task list page uses `/api/tasks` with pagination and `task:list`.
 
 **Artifact download**: Use the task’s `artifact_file_key` with the existing file API: `GET /api/files/:fileKey`.
+
+### Task settings APIs (log storage backends)
+
+| Method | Path                                              | Permission           | Description |
+|--------|---------------------------------------------------|----------------------|-------------|
+| GET    | `/api/system/task-settings/log-storage-backends` | system:settings:view | List registered log storage backends for the task settings dropdown. |
+
+- **Response**: Array of `{ "id": "database", "name": "Database" }` (and any other registered backends). Used by the Task Settings form to populate the “Log storage” select.
 
 There is **no** HTTP API to create tasks; creation is done in code via `TaskService.CreateTask`. Modules that need to expose "create task" to the frontend (e.g. user export) provide their own POST endpoint that calls `TaskService.CreateTask` and returns the task.
 
@@ -221,6 +245,28 @@ When your runner produces a file, it should associate it with the task. The runn
 
 Artifact download uses the existing file API; the file should be readable by the task creator (e.g. owner = creator).
 
+## Task Log Storage (for implementers)
+
+Task execution logs are stored via a **log storage** layer so they can be queried by task ID and shown in the UI.
+
+### Backend registry (`pkg/logstore`)
+
+- **Interface**: `Backend` with `Write(ctx, refID, logType, level, message)` and `ListByRefIDAndType(ctx, refID, logType)`.
+- **Registry**: `logstore.Register(name, factory)` registers a backend; `logstore.Get(name)` returns a backend (empty name uses default `"database"`). `logstore.ListBackendNames()` returns all registered names for the task settings API.
+- **Database backend**: `logstore.NewDatabaseBackend()` is registered as `"database"` in `pkg/logstore/database.go`. It persists to the `stored_logs` table (model `StoredLog`: ref_id, log_type, level, message, created_at).
+- **Service**: `LogStorageService` in `pkg/service/log_storage_service.go` wraps the registry: `Write` and `GetLogs` delegate to the backend chosen by name (from task settings when running a task or reading logs).
+
+### How task logs are captured
+
+When the worker runs a task it:
+
+1. Reads task settings and gets `LogStorageBackend` (e.g. `"database"`).
+2. Builds a `LogStorageService` for that backend and a **task logger** that implements `log.Logger` and forwards each `Log(keyvals...)` call to the storage service (formatted as a single logfmt-style line).
+3. Creates a tee logger: `log.NewTeeLogger(baseLogger, taskLogger)` and attaches it to the context with `log.NewContextLogger(ctx, log.WithLogger(tee))`.
+4. Passes this context to `runner.Run(ctx, …)`. Any code in the runner that uses `log.GetContextLogger(ctx)` and logs will have lines stored in the selected backend.
+
+To add a new log storage backend (e.g. file, external service), implement `logstore.Backend`, register it with `logstore.Register("my_backend", func() Backend { return NewMyBackend() })`, and ensure the backend is registered before the server starts (e.g. in `init()`). It will then appear in the Task Settings “Log storage” dropdown and can be selected for storing and reading task logs.
+
 ## Task Model (summary)
 
 | Field             | Type      | Description                          |
@@ -242,12 +288,14 @@ Artifact download uses the existing file API; the file should be readable by the
 ## Configuration
 
 - **Max concurrent tasks**: System Settings → Task Settings → “Max concurrent tasks” (default 10). Stored as `task_max_concurrent` in the settings table.
+- **Log storage backend**: System Settings → Task Settings → “Log storage” dropdown (default `database`). Stored as `task_log_storage_backend`. Determines where task execution logs are written and read from; options come from `pkg/logstore` registry.
 
 ## Troubleshooting
 
 - **Task stays “pending”**: Ensure a runner is registered for the task’s `type` via `task.RegisterTaskType`. Ensure the server has restarted after registering so the worker pool and registry are loaded.
 - **“task type not registered”**: The worker sets status to failed with this message when `task.GetTaskRunner(task.Type)` returns false. Add a `RegisterTaskType` call for that type (e.g. in `init()` of the package that implements the runner).
 - **Creator or admin only**: List and get APIs filter by `creator_id` for non-admin users. Use a context with the correct user when calling from backend code if you need to simulate a user.
+- **No task logs on detail page**: Ensure Task Settings → Log storage is set to a registered backend (e.g. `database`). Logs are only stored when the runner uses the context logger (`log.GetContextLogger(ctx)`); if the runner does not log, the list will be empty. Ensure the task has started at least once (logs are written during execution).
 
 ## Related Documentation
 

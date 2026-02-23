@@ -431,7 +431,15 @@ export interface downloadFileParams {
   fileKey: string;
 }
 
-export type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+export type Duration =
+  | -9223372036854776000
+  | 9223372036854776000
+  | 1
+  | 1000
+  | 1000000
+  | 1000000000
+  | 60000000000
+  | 3600000000000;
 
 export interface EnableMFAResponse {
   qr_code: string;
@@ -582,6 +590,11 @@ export interface getSkillFileParams {
 
 export interface getSkillParams {
   /** Skill ID */
+  id: string;
+}
+
+export interface getTaskLogsParams {
+  /** Task ID (UUID) */
   id: string;
 }
 
@@ -813,6 +826,13 @@ export interface LoginResponse {
   password_expired: boolean;
   token: string;
   user: User;
+}
+
+export interface LogStorageBackendOption {
+  /** Backend name (e.g. "database") */
+  id: string;
+  /** Display name for UI */
+  name: string;
 }
 
 export interface MenuConfig {
@@ -1110,6 +1130,13 @@ export interface ResponseArrayModelFile {
   trace_id: string;
 }
 
+export interface ResponseArrayModelLogStorageBackendOption {
+  code: string;
+  data: LogStorageBackendOption[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayModelOrganization {
   code: string;
   data: Organization[];
@@ -1134,6 +1161,13 @@ export interface ResponseArrayModelServiceAccountAccessKey {
 export interface ResponseArrayModelTask {
   code: string;
   data: Task[];
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseArrayModelTaskLogEntry {
+  code: string;
+  data: TaskLogEntry[];
   err: string;
   trace_id: string;
 }
@@ -1677,7 +1711,18 @@ export interface Task {
   updated_at: string;
 }
 
+export interface TaskLogEntry {
+  created_at: string;
+  id: string;
+  level: string;
+  log_type: string;
+  message: string;
+  ref_id: string;
+}
+
 export interface TaskSettings {
+  /** Backend name for task log storage (e.g. "database"), empty for default */
+  log_storage_backend: string;
   max_concurrent: number;
 }
 

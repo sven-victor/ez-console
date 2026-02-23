@@ -42,6 +42,7 @@ func (c *TaskController) RegisterRoutes(ctx context.Context, router *gin.RouterG
 	{
 		tasks.GET("", middleware.RequirePermission("task:list"), c.ListTasks)
 		tasks.GET("/:id", middleware.RequirePermission("task:view"), c.GetTask)
+		tasks.GET("/:id/logs", middleware.RequirePermission("task:view"), c.GetTaskLogs)
 		tasks.POST("/:id/cancel", middleware.RequirePermission("task:cancel"), c.CancelTask)
 		tasks.POST("/:id/retry", middleware.RequirePermission("task:retry"), c.RetryTask)
 		tasks.DELETE("/:id", middleware.RequirePermission("task:delete"), c.DeleteTask)
@@ -144,6 +145,33 @@ func (c *TaskController) GetTask(ctx *gin.Context) {
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, t)
+}
+
+// GetTaskLogs gets stored log entries for a task
+//
+//	@Summary		Get task logs
+//	@Description	Get log entries for a task. Admin or creator only.
+//	@ID             getTaskLogs
+//	@Tags			Task Management
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Task ID (UUID)"
+//	@Success		200	{object}	util.Response[[]model.TaskLogEntry] "data is array of TaskLogEntry"
+//	@Failure		404	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/tasks/{id}/logs [get]
+func (c *TaskController) GetTaskLogs(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Task ID is required"))
+		return
+	}
+	logs, err := c.service.TaskService.GetTaskLogs(ctx, id)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get task logs", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, logs)
 }
 
 // CancelTask cancels a task

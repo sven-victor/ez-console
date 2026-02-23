@@ -16,7 +16,7 @@
 
 import React, { useRef, useState } from 'react';
 import { Card, Button, Space, message, Input, Tag, Tooltip } from 'antd';
-import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
+import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined, EyeOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { Table } from '@/components/Table';
@@ -25,6 +25,7 @@ import { ColumnsType } from 'antd/es/table';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
 import { PAGINATION } from '@/constants';
+import { useNavigate } from 'react-router-dom';
 
 const statusColors: Record<API.TaskStatus, string> = {
   pending: 'default',
@@ -39,6 +40,7 @@ const TaskList: React.FC = () => {
   const { t: tCommon } = useTranslation('common');
   const tableRef = useRef<TableRef<API.Task>>(null);
   const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
   const handleCancel = async (id: string) => {
     try {
@@ -123,6 +125,10 @@ const TaskList: React.FC = () => {
       fixed: 'right',
       render: (_: unknown, record: API.Task) => (
         <Space size="small">
+
+          <Button type="text" icon={<EyeOutlined />} onClick={() => {
+            navigate(`/tasks/${record.id}`);
+          }} />
           {(record.status === 'running' || record.status === 'pending') && (
             <PermissionGuard permission="task:cancel">
               <Actions
@@ -205,7 +211,10 @@ const TaskList: React.FC = () => {
             style={{ width: 220 }}
             allowClear
           />
-          <Button icon={<SearchOutlined />} onClick={() => tableRef.current?.reload?.()}>
+          <Button icon={<SearchOutlined />} onClick={() => {
+            console.log(tableRef.current);
+            tableRef.current?.reload?.()
+          }}>
             {tCommon('search', { defaultValue: 'Search' })}
           </Button>
           <Button icon={<ReloadOutlined />} onClick={() => tableRef.current?.reload?.()}>
@@ -213,7 +222,7 @@ const TaskList: React.FC = () => {
           </Button>
         </Space>
         <Table<API.Task>
-          ref={tableRef}
+          actionRef={tableRef}
           request={request}
           columns={columns}
           rowKey="id"

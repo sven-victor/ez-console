@@ -34,7 +34,7 @@ import (
 type TaskCompletionCallback func(taskID string, status string, result interface{}, err error)
 
 // CreateTaskOption configures task creation.
-type CreateTaskOption func(*model.Task, *createTaskOpts)
+type CreateTaskOption func(*model.Task)
 
 type createTaskOpts struct {
 	onComplete TaskCompletionCallback
@@ -42,22 +42,15 @@ type createTaskOpts struct {
 
 // WithPayload sets the task payload (JSON string).
 func WithPayload(payload string) CreateTaskOption {
-	return func(t *model.Task, _ *createTaskOpts) {
+	return func(t *model.Task) {
 		t.Payload = payload
 	}
 }
 
 // WithMaxRetries sets the maximum retry count.
 func WithMaxRetries(n int) CreateTaskOption {
-	return func(t *model.Task, _ *createTaskOpts) {
+	return func(t *model.Task) {
 		t.MaxRetries = n
-	}
-}
-
-// WithOnComplete registers a callback when the task completes.
-func WithOnComplete(cb TaskCompletionCallback) CreateTaskOption {
-	return func(_ *model.Task, o *createTaskOpts) {
-		o.onComplete = cb
 	}
 }
 
@@ -69,15 +62,19 @@ type TaskService struct {
 	callbacks      map[string]TaskCompletionCallback
 	callbacksMu    sync.RWMutex
 	pollInterval   time.Duration
+
+	logStorageService *LogStorageService
 }
 
 // NewTaskService creates a new TaskService.
-func NewTaskService(settingService *SettingService) *TaskService {
+func NewTaskService(settingService *SettingService, logStorageService *LogStorageService) *TaskService {
 	return &TaskService{
 		settingService: settingService,
 		cancelChans:    make(map[string]chan struct{}),
 		callbacks:      make(map[string]TaskCompletionCallback),
 		pollInterval:   2 * time.Second,
+
+		logStorageService: logStorageService,
 	}
 }
 
@@ -93,17 +90,11 @@ func (s *TaskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 		Progress:  0,
 		CreatorID: creatorID,
 	}
-	opt := &createTaskOpts{}
 	for _, o := range opts {
-		o(t, opt)
+		o(t)
 	}
 	if err := db.Session(ctx).Create(t).Error; err != nil {
 		return nil, err
-	}
-	if opt.onComplete != nil {
-		s.callbacksMu.Lock()
-		s.callbacks[t.ResourceID] = opt.onComplete
-		s.callbacksMu.Unlock()
 	}
 	return t, nil
 }
@@ -253,6 +244,36 @@ func (s *TaskService) DeleteTask(ctx context.Context, id string) error {
 	return db.Session(ctx).Delete(t).Error
 }
 
+// GetTaskLogs returns stored log entries for a task. Enforces same visibility as GetTask (admin or creator).
+// Uses the log storage backend selected in task settings.
+func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]*model.TaskLogEntry, error) {
+	if _, err := s.GetTask(ctx, id); err != nil {
+		return nil, err
+	}
+	taskSettings, _ := s.settingService.GetTaskSettings(ctx)
+	backendName := "database"
+	if taskSettings != nil && taskSettings.LogStorageBackend != "" {
+		backendName = taskSettings.LogStorageBackend
+	}
+	logSvc := NewLogStorageServiceWithBackend(backendName)
+	entries, err := logSvc.GetLogs(ctx, id, model.LogTypeTask)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*model.TaskLogEntry, 0, len(entries))
+	for _, e := range entries {
+		result = append(result, &model.TaskLogEntry{
+			ID:        e.ID,
+			RefID:     e.RefID,
+			LogType:   e.LogType,
+			Level:     e.Level,
+			Message:   e.Message,
+			CreatedAt: e.CreatedAt,
+		})
+	}
+	return result, nil
+}
+
 // claimNextPendingTask atomically claims one pending task and sets it to running. Returns nil if none.
 func (s *TaskService) claimNextPendingTask(ctx context.Context) (*model.Task, error) {
 	var t model.Task
@@ -334,6 +355,17 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 		s.cancelMu.Unlock()
 	}()
 
+	// Bridge task logs to log storage: get backend name from task settings and tee the context logger with a task logger.
+	taskSettings, _ := s.settingService.GetTaskSettings(ctx)
+	backendName := "database"
+	if taskSettings != nil && taskSettings.LogStorageBackend != "" {
+		backendName = taskSettings.LogStorageBackend
+	}
+	taskLogSvc := NewLogStorageServiceWithBackend(backendName)
+	taskLogger := newTaskLogger(ctx, t.ResourceID, taskLogSvc)
+	tee := log.NewTeeLogger(logger, taskLogger)
+	ctx, logger = log.NewContextLogger(ctx, log.WithLogger(tee))
+
 	runner, ok := task.GetTaskRunner(t.Type)
 	if !ok {
 		_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusFailed), "", "task type not registered", 0)
@@ -344,6 +376,7 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 	progressCallback := func(progress int) {
 		_ = s.UpdateTaskProgress(ctx, t.ResourceID, progress)
 	}
+	level.Info(logger).Log("msg", "Running task", "task_id", t.ResourceID, "task_type", t.Type)
 	result, err := runner.Run(ctx, t, progressCallback, cancelCh)
 	if err != nil {
 		if errors.Is(err, task.ErrCancelled) {
@@ -353,9 +386,10 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 			_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusFailed), "", err.Error(), 0)
 			s.invokeCallback(t.ResourceID, string(model.TaskStatusFailed), nil, err)
 		}
-		level.Debug(logger).Log("msg", "Task ended", "task_id", t.ResourceID, "error", err)
+		level.Warn(logger).Log("msg", "Task ended", "task_id", t.ResourceID, "error", err)
 		return
 	}
+	level.Info(logger).Log("msg", "Task ended", "task_id", t.ResourceID, "error", err)
 	var resultStr string
 	if result != nil {
 		if b, e := json.Marshal(result); e == nil {

@@ -1,11 +1,11 @@
-import { r as g } from "./client.js";
-import v from "i18next";
-import { initReactI18next as b } from "react-i18next";
-import { B as A } from "./vendor.js";
-const ce = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
+import { r as p } from "./client.js";
+import f from "i18next";
+import { initReactI18next as v } from "react-i18next";
+import { B as b } from "./vendor.js";
+const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = e instanceof Date ? e : new Date(e), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), n = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
   return t.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", n).replace("mm", i).replace("ss", l);
-}, ue = (e, t) => {
+}, fe = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
   const a = e.trim().toLowerCase();
@@ -35,17 +35,17 @@ const ce = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, me = (e) => {
+}, ve = (e) => {
   if (!e)
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, pe = (e) => {
+}, be = (e) => {
   const t = "/";
   return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
 };
-async function S(e, t) {
-  return g("/api/files", {
+async function A(e, t) {
+  return p("/api/files", {
     method: "GET",
     params: {
       ...e
@@ -58,34 +58,34 @@ async function k(e, t, a) {
   return t && o.append("file", t), Object.keys(e).forEach((s) => {
     const r = e[s];
     r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((n) => o.append(s, n || "")) : o.append(s, JSON.stringify(r)) : o.append(s, r));
-  }), g("/api/files", {
+  }), p("/api/files", {
     method: "POST",
     data: o,
     requestType: "form",
     ...a || {}
   });
 }
-async function y(e, t) {
+async function S(e, t) {
   const { fileKey: a, ...o } = e;
-  return g(`/api/files/${a}`, {
+  return p(`/api/files/${a}`, {
     method: "GET",
     params: { ...o },
     ...t || {}
   });
 }
-async function P(e) {
-  return g("/api/statistics", {
+async function y(e) {
+  return p("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: y,
-  getStatistics: P,
-  listFiles: S,
+  downloadFile: S,
+  getStatistics: y,
+  listFiles: A,
   uploadFile: k
-}, Symbol.toStringTag, { value: "Module" })), w = {
+}, Symbol.toStringTag, { value: "Module" })), P = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -199,7 +199,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, R = {
+}, w = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -309,7 +309,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, D = {
+}, R = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -835,7 +835,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, E = {
+}, D = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -853,7 +853,14 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     },
     task: {
       maxConcurrent: "Max concurrent tasks",
-      maxConcurrentTooltip: "Maximum number of tasks that can run at the same time."
+      maxConcurrentTooltip: "Maximum number of tasks that can run at the same time.",
+      logStorageBackend: "Log storage",
+      logStorageBackendTooltip: "Where task execution logs are stored. Database stores logs in the application database.",
+      logStoragePlaceholder: "Select backend",
+      logStorageDatabase: "Database",
+      logStorage: {
+        database: "Database"
+      }
     },
     skills: {
       title: "AI Agent Skills",
@@ -1337,7 +1344,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, z = {
+}, E = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1393,7 +1400,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Skills (optional)",
     skillDomain: "Skill domain"
   }
-}, u = {
+}, F = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1428,6 +1435,8 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   tasks: "Tasks",
   more: "More",
   noTasks: "No tasks",
+  logsTitle: "Task logs",
+  noLogs: "No logs yet.",
   status: {
     pending: "Pending",
     running: "Running",
@@ -1435,7 +1444,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "Failed",
     cancelled: "Cancelled"
   }
-}, F = {
+}, z = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -2549,7 +2558,14 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     },
     task: {
       maxConcurrent: "最大并发任务数",
-      maxConcurrentTooltip: "允许同时运行的最大任务数量。"
+      maxConcurrentTooltip: "允许同时运行的最大任务数量。",
+      logStorageBackend: "日志存储",
+      logStorageBackendTooltip: "任务执行日志的存储位置。数据库将日志存储在应用数据库中。",
+      logStoragePlaceholder: "选择存储后端",
+      logStorageDatabase: "数据库",
+      logStorage: {
+        database: "数据库"
+      }
     },
     skills: {
       title: "AI Agent 技能",
@@ -3091,7 +3107,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, V = {
+}, B = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3126,6 +3142,8 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   tasks: "任务",
   more: "更多",
   noTasks: "暂无任务",
+  logsTitle: "任务日志",
+  noLogs: "暂无日志。",
   status: {
     pending: "等待中",
     running: "运行中",
@@ -3133,7 +3151,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "失败",
     cancelled: "已取消"
   }
-}, B = {
+}, V = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3646,7 +3664,19 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolSets: "Tool Sets Einstellungen",
       skills: "Fähigkeiten",
       aiModels: "AI Models Einstellungen",
-      organizations: "Organisationsverwaltung"
+      organizations: "Organisationsverwaltung",
+      task: "Aufgabeneinstellungen"
+    },
+    task: {
+      maxConcurrent: "Max. gleichzeitige Aufgaben",
+      maxConcurrentTooltip: "Maximale Anzahl der gleichzeitig ausgeführten Aufgaben.",
+      logStorageBackend: "Protokollspeicher",
+      logStorageBackendTooltip: "Wo Ausführungsprotokolle gespeichert werden. Datenbank speichert Protokolle in der Anwendungsdatenbank.",
+      logStoragePlaceholder: "Backend auswählen",
+      logStorageDatabase: "Datenbank",
+      logStorage: {
+        database: "Datenbank"
+      }
     },
     skills: {
       title: "AI Agent Fähigkeiten",
@@ -4128,6 +4158,50 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillDomain: "Fähigkeitsbereich"
   }
 }, j = {
+  listTitle: "Aufgabenliste",
+  detailTitle: "Aufgabendetails",
+  typeLabel: "Typ",
+  type: {
+    user_export: "Benutzerexport"
+  },
+  statusLabel: "Status",
+  progress: "Fortschritt",
+  creatorId: "Ersteller",
+  createdAt: "Erstellt am",
+  startedAt: "Gestartet am",
+  finishedAt: "Beendet am",
+  error: "Fehler",
+  result: "Ergebnis",
+  view: "Ansehen",
+  cancel: "Abbrechen",
+  retry: "Wiederholen",
+  delete: "Löschen",
+  download: "Herunterladen",
+  downloadArtifact: "Artefakt herunterladen",
+  cancelConfirm: "Diese Aufgabe abbrechen?",
+  deleteConfirm: "Diese Aufgabe löschen?",
+  cancelSuccess: "Aufgabe abgebrochen.",
+  cancelFailed: "Aufgabe konnte nicht abgebrochen werden.",
+  retrySuccess: "Wiederholung der Aufgabe angefordert.",
+  retryFailed: "Wiederholung der Aufgabe fehlgeschlagen.",
+  deleteSuccess: "Aufgabe gelöscht.",
+  deleteFailed: "Aufgabe konnte nicht gelöscht werden.",
+  notFound: "Aufgabe nicht gefunden.",
+  backToList: "Zurück zur Liste",
+  searchPlaceholder: "Nach Typ oder ID suchen",
+  tasks: "Aufgaben",
+  more: "Mehr",
+  noTasks: "Keine Aufgaben",
+  logsTitle: "Aufgabenprotokolle",
+  noLogs: "Noch keine Protokolle.",
+  status: {
+    pending: "Ausstehend",
+    running: "Läuft",
+    success: "Erfolgreich",
+    failed: "Fehlgeschlagen",
+    cancelled: "Abgebrochen"
+  }
+}, G = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -4197,7 +4271,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, G = {
+}, W = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -4627,7 +4701,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, W = {
+}, H = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -4640,7 +4714,19 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolSets: "Ajustes de conjuntos de herramientas",
       skills: "Habilidades",
       aiModels: "Ajustes de modelos AI",
-      organizations: "Gestión de organizaciones"
+      organizations: "Gestión de organizaciones",
+      task: "Ajustes de tareas"
+    },
+    task: {
+      maxConcurrent: "Tareas simultáneas máximas",
+      maxConcurrentTooltip: "Número máximo de tareas que pueden ejecutarse al mismo tiempo.",
+      logStorageBackend: "Almacenamiento de registros",
+      logStorageBackendTooltip: "Dónde se almacenan los registros de ejecución de tareas. Base de datos almacena los registros en la base de datos de la aplicación.",
+      logStoragePlaceholder: "Seleccionar backend",
+      logStorageDatabase: "Base de datos",
+      logStorage: {
+        database: "Base de datos"
+      }
     },
     skills: {
       title: "Habilidades de agente AI",
@@ -5077,7 +5163,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, H = {
+}, J = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -5121,7 +5207,51 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Habilidades (opcional)",
     skillDomain: "Dominio de habilidad"
   }
-}, J = {
+}, Z = {
+  listTitle: "Lista de tareas",
+  detailTitle: "Detalle de tarea",
+  typeLabel: "Tipo",
+  type: {
+    user_export: "Exportar usuarios"
+  },
+  statusLabel: "Estado",
+  progress: "Progreso",
+  creatorId: "Creador",
+  createdAt: "Creado el",
+  startedAt: "Iniciado el",
+  finishedAt: "Finalizado el",
+  error: "Error",
+  result: "Resultado",
+  view: "Ver",
+  cancel: "Cancelar",
+  retry: "Reintentar",
+  delete: "Eliminar",
+  download: "Descargar",
+  downloadArtifact: "Descargar artefacto",
+  cancelConfirm: "¿Cancelar esta tarea?",
+  deleteConfirm: "¿Eliminar esta tarea?",
+  cancelSuccess: "Tarea cancelada.",
+  cancelFailed: "Error al cancelar la tarea.",
+  retrySuccess: "Reintento de tarea solicitado.",
+  retryFailed: "Error al reintentar la tarea.",
+  deleteSuccess: "Tarea eliminada.",
+  deleteFailed: "Error al eliminar la tarea.",
+  notFound: "Tarea no encontrada.",
+  backToList: "Volver a la lista",
+  searchPlaceholder: "Buscar por tipo o ID",
+  tasks: "Tareas",
+  more: "Más",
+  noTasks: "Sin tareas",
+  logsTitle: "Registros de tareas",
+  noLogs: "Aún no hay registros.",
+  status: {
+    pending: "Pendiente",
+    running: "En ejecución",
+    success: "Correcto",
+    failed: "Fallido",
+    cancelled: "Cancelado"
+  }
+}, Q = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -5191,7 +5321,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, Z = {
+}, Y = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -5621,7 +5751,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, Q = {
+}, $ = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -5634,7 +5764,19 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolSets: "Paramètres d'ensembles d'outils",
       skills: "Compétences",
       aiModels: "Paramètres de modèles AI",
-      organizations: "Gestion des organisations"
+      organizations: "Gestion des organisations",
+      task: "Paramètres des tâches"
+    },
+    task: {
+      maxConcurrent: "Tâches simultanées max.",
+      maxConcurrentTooltip: "Nombre maximum de tâches pouvant s'exécuter en même temps.",
+      logStorageBackend: "Stockage des journaux",
+      logStorageBackendTooltip: "Où sont stockés les journaux d'exécution. Base de données stocke les journaux dans la base de données de l'application.",
+      logStoragePlaceholder: "Sélectionner le backend",
+      logStorageDatabase: "Base de données",
+      logStorage: {
+        database: "Base de données"
+      }
     },
     skills: {
       title: "Compétences d'agent AI",
@@ -6071,7 +6213,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, Y = {
+}, X = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -6115,7 +6257,51 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Compétences (optionnel)",
     skillDomain: "Domaine de compétence"
   }
-}, $ = {
+}, ee = {
+  listTitle: "Liste des tâches",
+  detailTitle: "Détail de la tâche",
+  typeLabel: "Type",
+  type: {
+    user_export: "Export d'utilisateurs"
+  },
+  statusLabel: "Statut",
+  progress: "Progression",
+  creatorId: "Créateur",
+  createdAt: "Créé le",
+  startedAt: "Démarré le",
+  finishedAt: "Terminé le",
+  error: "Erreur",
+  result: "Résultat",
+  view: "Voir",
+  cancel: "Annuler",
+  retry: "Réessayer",
+  delete: "Supprimer",
+  download: "Télécharger",
+  downloadArtifact: "Télécharger l'artefact",
+  cancelConfirm: "Annuler cette tâche ?",
+  deleteConfirm: "Supprimer cette tâche ?",
+  cancelSuccess: "Tâche annulée.",
+  cancelFailed: "Échec de l'annulation de la tâche.",
+  retrySuccess: "Nouvelle tentative demandée.",
+  retryFailed: "Échec de la nouvelle tentative.",
+  deleteSuccess: "Tâche supprimée.",
+  deleteFailed: "Échec de la suppression de la tâche.",
+  notFound: "Tâche introuvable.",
+  backToList: "Retour à la liste",
+  searchPlaceholder: "Rechercher par type ou ID",
+  tasks: "Tâches",
+  more: "Plus",
+  noTasks: "Aucune tâche",
+  logsTitle: "Journaux des tâches",
+  noLogs: "Pas encore de journaux.",
+  status: {
+    pending: "En attente",
+    running: "En cours",
+    success: "Réussi",
+    failed: "Échoué",
+    cancelled: "Annulé"
+  }
+}, te = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -6185,7 +6371,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, X = {
+}, ie = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -6615,7 +6801,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, ee = {
+}, ae = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -6628,7 +6814,19 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolSets: "إعدادات مجموعات الأدوات",
       skills: "المهارات",
       aiModels: "إعدادات مودلات AI",
-      organizations: "إدارة المنظمات"
+      organizations: "إدارة المنظمات",
+      task: "إعدادات المهام"
+    },
+    task: {
+      maxConcurrent: "الحد الأقصى للمهام المتزامنة",
+      maxConcurrentTooltip: "الحد الأقصى لعدد المهام التي يمكن تشغيلها في نفس الوقت.",
+      logStorageBackend: "تخزين السجلات",
+      logStorageBackendTooltip: "مكان تخزين سجلات تنفيذ المهام. قاعدة البيانات تخزن السجلات في قاعدة بيانات التطبيق.",
+      logStoragePlaceholder: "اختر الواجهة الخلفية",
+      logStorageDatabase: "قاعدة البيانات",
+      logStorage: {
+        database: "قاعدة البيانات"
+      }
     },
     skills: {
       title: "مهارات وكيل AI",
@@ -7065,7 +7263,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, te = {
+}, re = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -7109,7 +7307,51 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "المهارات (اختياري)",
     skillDomain: "مجال المهارة"
   }
-}, ie = {
+}, se = {
+  listTitle: "قائمة المهام",
+  detailTitle: "تفاصيل المهمة",
+  typeLabel: "النوع",
+  type: {
+    user_export: "تصدير المستخدمين"
+  },
+  statusLabel: "الحالة",
+  progress: "التقدم",
+  creatorId: "المنشئ",
+  createdAt: "تاريخ الإنشاء",
+  startedAt: "تاريخ البدء",
+  finishedAt: "تاريخ الانتهاء",
+  error: "خطأ",
+  result: "النتيجة",
+  view: "عرض",
+  cancel: "إلغاء",
+  retry: "إعادة المحاولة",
+  delete: "حذف",
+  download: "تحميل",
+  downloadArtifact: "تحميل المخرجات",
+  cancelConfirm: "إلغاء هذه المهمة؟",
+  deleteConfirm: "حذف هذه المهمة؟",
+  cancelSuccess: "تم إلغاء المهمة.",
+  cancelFailed: "فشل إلغاء المهمة.",
+  retrySuccess: "تم طلب إعادة تشغيل المهمة.",
+  retryFailed: "فشلت إعادة المحاولة.",
+  deleteSuccess: "تم حذف المهمة.",
+  deleteFailed: "فشل حذف المهمة.",
+  notFound: "المهمة غير موجودة.",
+  backToList: "العودة إلى القائمة",
+  searchPlaceholder: "البحث حسب النوع أو المعرّف",
+  tasks: "المهام",
+  more: "المزيد",
+  noTasks: "لا توجد مهام",
+  logsTitle: "سجلات المهام",
+  noLogs: "لا توجد سجلات بعد.",
+  status: {
+    pending: "قيد الانتظار",
+    running: "قيد التشغيل",
+    success: "نجاح",
+    failed: "فشل",
+    cancelled: "ملغى"
+  }
+}, oe = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -7179,7 +7421,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, ae = {
+}, ne = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -7609,7 +7851,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policyhantering"
     }
   }
-}, re = {
+}, le = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -7622,7 +7864,19 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolSets: "Verktygssättinställningar",
       skills: "Färdigheter",
       aiModels: "AI-modellinställningar",
-      organizations: "Organisationshantering"
+      organizations: "Organisationshantering",
+      task: "Uppgiftsinställningar"
+    },
+    task: {
+      maxConcurrent: "Max antal samtidiga uppgifter",
+      maxConcurrentTooltip: "Maximalt antal uppgifter som kan köras samtidigt.",
+      logStorageBackend: "Logglagring",
+      logStorageBackendTooltip: "Var körningsloggar lagras. Databas lagrar loggar i programmets databas.",
+      logStoragePlaceholder: "Välj backend",
+      logStorageDatabase: "Databas",
+      logStorage: {
+        database: "Databas"
+      }
     },
     skills: {
       title: "AI Agent-färdigheter",
@@ -8059,7 +8313,7 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, se = {
+}, de = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -8103,66 +8357,110 @@ const ge = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Färdigheter (valfritt)",
     skillDomain: "Färdighetsdomän"
   }
+}, ce = {
+  listTitle: "Uppgiftslista",
+  detailTitle: "Uppgiftsdetaljer",
+  typeLabel: "Typ",
+  type: {
+    user_export: "Användarexport"
+  },
+  statusLabel: "Status",
+  progress: "Framsteg",
+  creatorId: "Skapad av",
+  createdAt: "Skapad",
+  startedAt: "Startad",
+  finishedAt: "Slutförd",
+  error: "Fel",
+  result: "Resultat",
+  view: "Visa",
+  cancel: "Avbryt",
+  retry: "Försök igen",
+  delete: "Ta bort",
+  download: "Ladda ner",
+  downloadArtifact: "Ladda ner artefakt",
+  cancelConfirm: "Avbryt denna uppgift?",
+  deleteConfirm: "Ta bort denna uppgift?",
+  cancelSuccess: "Uppgiften avbröts.",
+  cancelFailed: "Kunde inte avbryta uppgiften.",
+  retrySuccess: "Återförsök begärt.",
+  retryFailed: "Återförsök misslyckades.",
+  deleteSuccess: "Uppgiften togs bort.",
+  deleteFailed: "Kunde inte ta bort uppgiften.",
+  notFound: "Uppgiften hittades inte.",
+  backToList: "Tillbaka till listan",
+  searchPlaceholder: "Sök på typ eller ID",
+  tasks: "Uppgifter",
+  more: "Mer",
+  noTasks: "Inga uppgifter",
+  logsTitle: "Uppgiftsloggar",
+  noLogs: "Inga loggar ännu.",
+  status: {
+    pending: "Väntar",
+    running: "Kör",
+    success: "Lyckad",
+    failed: "Misslyckad",
+    cancelled: "Avbruten"
+  }
 };
-v.use(A).use(b).init({
+f.use(b).use(v).init({
   ns: ["common", "authorization", "system", "ai", "task"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: w,
+      translation: P,
       common: I,
       authorization: M,
       system: N,
       ai: O,
-      task: V
+      task: B
     },
     "en-US": {
-      translation: R,
-      common: D,
+      translation: w,
+      common: R,
       authorization: T,
-      system: E,
-      ai: z,
-      task: u
+      system: D,
+      ai: E,
+      task: F
     },
     "de-DE": {
-      translation: F,
-      common: B,
+      translation: z,
+      common: V,
       authorization: x,
       system: K,
       ai: _,
-      task: u
+      task: j
     },
     "es-ES": {
       translation: C,
-      common: j,
-      authorization: G,
-      system: W,
-      ai: H,
-      task: u
+      common: G,
+      authorization: W,
+      system: H,
+      ai: J,
+      task: Z
     },
     "fr-FR": {
       translation: L,
-      common: J,
-      authorization: Z,
-      system: Q,
-      ai: Y,
-      task: u
+      common: Q,
+      authorization: Y,
+      system: $,
+      ai: X,
+      task: ee
     },
     "ar-AE": {
       translation: q,
-      common: $,
-      authorization: X,
-      system: ee,
-      ai: te,
-      task: u
+      common: te,
+      authorization: ie,
+      system: ae,
+      ai: re,
+      task: se
     },
     "sv-SE": {
       translation: U,
-      common: ie,
-      authorization: ae,
-      system: re,
-      ai: se,
-      task: u
+      common: oe,
+      authorization: ne,
+      system: le,
+      ai: de,
+      task: ce
     }
   },
   fallbackLng: "en-US",
@@ -8171,10 +8469,10 @@ v.use(A).use(b).init({
     escapeValue: !1
   }
 });
-const he = {
+const ke = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
-}, fe = (e, t) => {
+}, Se = (e, t) => {
   var n;
   if (!e)
     return !0;
@@ -8196,7 +8494,7 @@ const he = {
       return console.warn(`Unknown visibility operator: ${o}`), !0;
   }
 };
-function f(e) {
+function h(e) {
   const t = {}, a = e.split(/\r?\n/);
   for (const o of a) {
     const s = o.trim();
@@ -8208,19 +8506,19 @@ function f(e) {
   }
   return t;
 }
-function p(e) {
+function m(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function ve(e) {
+function ye(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
   const a = t.slice(3), o = a.indexOf(`
 ---`);
   if (o === -1) return e;
-  const s = a.slice(0, o).trim(), r = a.slice(o + 4).trimStart(), n = f(s), i = Object.keys(n);
+  const s = a.slice(0, o).trim(), r = a.slice(o + 4).trimStart(), n = h(s), i = Object.keys(n);
   if (i.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(n[m] ?? "") + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
 `);
   return l + `
 ` + d + `
@@ -8228,19 +8526,19 @@ function ve(e) {
 
 ` + r;
 }
-function be(e) {
+function Pe(e) {
   if (!e || !e.trim()) return e;
   let t = e;
   const a = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
   let o = t.match(a);
   for (; o; ) {
-    const s = o[1].trim(), r = t.slice((o.index ?? 0) + o[0].length), n = f(s), i = Object.keys(n);
+    const s = o[1].trim(), r = t.slice((o.index ?? 0) + o[0].length), n = h(s), i = Object.keys(n);
     if (i.length > 0) {
-      const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(n[m] ?? "") + " |").join(`
-`), h = l + `
+      const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
+`), g = l + `
 ` + d + `
 ` + c;
-      t = t.slice(0, o.index) + h + `
+      t = t.slice(0, o.index) + g + `
 
 ` + r;
     } else
@@ -8250,13 +8548,13 @@ function be(e) {
   return t;
 }
 export {
-  he as P,
-  ve as a,
-  ge as b,
-  fe as c,
-  ce as f,
-  pe as g,
-  me as m,
-  be as s,
-  ue as t
+  ke as P,
+  ye as a,
+  Ae as b,
+  Se as c,
+  he as f,
+  be as g,
+  ve as m,
+  Pe as s,
+  fe as t
 };

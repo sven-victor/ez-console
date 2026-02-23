@@ -33,6 +33,13 @@ export default {
     task: {
       maxConcurrent: '最大并发任务数',
       maxConcurrentTooltip: '允许同时运行的最大任务数量。',
+      logStorageBackend: '日志存储',
+      logStorageBackendTooltip: '任务执行日志的存储位置。数据库将日志存储在应用数据库中。',
+      logStoragePlaceholder: '选择存储后端',
+      logStorageDatabase: '数据库',
+      logStorage: {
+        database: '数据库',
+      },
     },
     skills: {
       title: 'AI Agent 技能',

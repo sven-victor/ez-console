@@ -1,5 +1,5 @@
 import { r as e } from "./client.js";
-async function n(a, r) {
+async function n(a, s) {
   return e("/api/tasks", {
     method: "GET",
     params: {
@@ -9,49 +9,61 @@ async function n(a, r) {
       page_size: "10",
       ...a
     },
-    ...r || {}
+    ...s || {}
   });
 }
-async function o(a, r) {
-  const { id: s, ...t } = a;
-  return e(`/api/tasks/${s}`, {
+async function o(a, s) {
+  const { id: r, ...t } = a;
+  return e(`/api/tasks/${r}`, {
     method: "GET",
     params: { ...t },
-    ...r || {}
+    ...s || {}
   });
 }
-async function c(a, r) {
-  const { id: s, ...t } = a;
-  return e(`/api/tasks/${s}`, {
+async function c(a, s) {
+  const { id: r, ...t } = a;
+  return e(`/api/tasks/${r}`, {
     method: "DELETE",
     params: { ...t },
-    ...r || {}
+    ...s || {}
   });
 }
-async function m(a, r) {
-  const { id: s, ...t } = a;
-  return e(`/api/tasks/${s}/cancel`, {
+async function m(a, s) {
+  const { id: r, ...t } = a;
+  return e(`/api/tasks/${r}/cancel`, {
     method: "POST",
     params: { ...t },
-    ...r || {}
+    ...s || {}
   });
 }
-async function i(a, r) {
-  const { id: s, ...t } = a;
-  return e(`/api/tasks/${s}/retry`, {
+async function i(a, s) {
+  const { id: r, ...t } = a;
+  return e(
+    `/api/tasks/${r}/logs`,
+    {
+      method: "GET",
+      params: { ...t },
+      ...s || {}
+    }
+  );
+}
+async function p(a, s) {
+  const { id: r, ...t } = a;
+  return e(`/api/tasks/${r}/retry`, {
     method: "POST",
     params: { ...t },
-    ...r || {}
+    ...s || {}
   });
 }
-const u = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const y = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   cancelTask: m,
   deleteTask: c,
   getTask: o,
+  getTaskLogs: i,
   listTasks: n,
-  retryTask: i
+  retryTask: p
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  u as t
+  y as t
 };

@@ -15,11 +15,13 @@
 package model
 
 const (
-	SettingTaskMaxConcurrent SettingKey = "task_max_concurrent" // Max concurrent task executions
+	SettingTaskMaxConcurrent    SettingKey = "task_max_concurrent"     // Max concurrent task executions
+	SettingTaskLogStorageBackend SettingKey = "task_log_storage_backend" // Log storage backend name (e.g. "database"), empty for default
 )
 
 var TaskSettingKeys = []SettingKey{
 	SettingTaskMaxConcurrent,
+	SettingTaskLogStorageBackend,
 }
 
 func init() {
@@ -28,5 +30,12 @@ func init() {
 
 // TaskSettings holds task-related system settings
 type TaskSettings struct {
-	MaxConcurrent int `json:"max_concurrent"`
+	MaxConcurrent     int    `json:"max_concurrent"`
+	LogStorageBackend string `json:"log_storage_backend"` // Backend name for task log storage (e.g. "database"), empty for default
+}
+
+// LogStorageBackendOption represents a log storage backend option for the task settings UI.
+type LogStorageBackendOption struct {
+	ID   string `json:"id"`   // Backend name (e.g. "database")
+	Name string `json:"name"` // Display name for UI
 }

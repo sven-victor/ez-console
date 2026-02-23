@@ -433,7 +433,15 @@ declare global {
       fileKey: string;
     }
   
-    type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+    type Duration =
+      | -9223372036854776000
+      | 9223372036854776000
+      | 1
+      | 1000
+      | 1000000
+      | 1000000000
+      | 60000000000
+      | 3600000000000;
   
     interface EnableMFAResponse {
       qr_code: string;
@@ -584,6 +592,11 @@ declare global {
   
     interface getSkillParams {
       /** Skill ID */
+      id: string;
+    }
+  
+    interface getTaskLogsParams {
+      /** Task ID (UUID) */
       id: string;
     }
   
@@ -815,6 +828,13 @@ declare global {
       password_expired: boolean;
       token: string;
       user: User;
+    }
+  
+    interface LogStorageBackendOption {
+      /** Backend name (e.g. "database") */
+      id: string;
+      /** Display name for UI */
+      name: string;
     }
   
     interface MenuConfig {
@@ -1112,6 +1132,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArrayModelLogStorageBackendOption {
+      code: string;
+      data: LogStorageBackendOption[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayModelOrganization {
       code: string;
       data: Organization[];
@@ -1136,6 +1163,13 @@ declare global {
     interface ResponseArrayModelTask {
       code: string;
       data: Task[];
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseArrayModelTaskLogEntry {
+      code: string;
+      data: TaskLogEntry[];
       err: string;
       trace_id: string;
     }
@@ -1679,7 +1713,18 @@ declare global {
       updated_at: string;
     }
   
+    interface TaskLogEntry {
+      created_at: string;
+      id: string;
+      level: string;
+      log_type: string;
+      message: string;
+      ref_id: string;
+    }
+  
     interface TaskSettings {
+      /** Backend name for task log storage (e.g. "database"), empty for default */
+      log_storage_backend: string;
       max_concurrent: number;
     }
   
