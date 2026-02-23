@@ -41,12 +41,12 @@ type TaskRunnerFactory interface {
 }
 
 var (
-	registry   = make(map[string]TaskRunnerFactory)
+	registry   = make(map[model.TaskType]TaskRunnerFactory)
 	registryMu sync.RWMutex
 )
 
 // RegisterTaskType registers a task type and its factory. Panics if the type is already registered.
-func RegisterTaskType(taskType string, factory TaskRunnerFactory) {
+func RegisterTaskType(taskType model.TaskType, factory TaskRunnerFactory) {
 	registryMu.Lock()
 	defer registryMu.Unlock()
 	if _, ok := registry[taskType]; ok {
@@ -56,7 +56,7 @@ func RegisterTaskType(taskType string, factory TaskRunnerFactory) {
 }
 
 // GetTaskRunner returns a runner for the given task type, or (nil, false) if not registered.
-func GetTaskRunner(taskType string) (TaskRunner, bool) {
+func GetTaskRunner(taskType model.TaskType) (TaskRunner, bool) {
 	registryMu.RLock()
 	factory, ok := registry[taskType]
 	registryMu.RUnlock()
@@ -71,10 +71,10 @@ func GetTaskRunner(taskType string) (TaskRunner, bool) {
 }
 
 // GetRegisteredTaskTypes returns all registered task type names.
-func GetRegisteredTaskTypes() []string {
+func GetRegisteredTaskTypes() []model.TaskType {
 	registryMu.RLock()
 	defer registryMu.RUnlock()
-	types := make([]string, 0, len(registry))
+	types := make([]model.TaskType, 0, len(registry))
 	for t := range registry {
 		types = append(types, t)
 	}

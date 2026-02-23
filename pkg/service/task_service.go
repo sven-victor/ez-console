@@ -82,7 +82,7 @@ func NewTaskService(settingService *SettingService) *TaskService {
 }
 
 // CreateTask creates a new task. CreatorID is set from context. Not exposed via HTTP.
-func (s *TaskService) CreateTask(ctx context.Context, taskType string, opts ...CreateTaskOption) (*model.Task, error) {
+func (s *TaskService) CreateTask(ctx context.Context, taskType model.TaskType, opts ...CreateTaskOption) (*model.Task, error) {
 	creatorID := middleware.GetUserIDFromContext(ctx)
 	if creatorID == "" {
 		creatorID = "system"

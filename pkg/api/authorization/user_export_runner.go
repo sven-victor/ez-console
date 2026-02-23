@@ -29,7 +29,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/task"
 )
 
-const userExportTaskType = "user_export"
+const userExportTaskType model.TaskType = "user_export"
 
 // UserExportPayload is the JSON payload for user export task.
 type UserExportPayload struct {

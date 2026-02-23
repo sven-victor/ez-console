@@ -29,10 +29,13 @@ const (
 	TaskStatusCancelled TaskStatus = "cancelled"
 )
 
+// TaskType represents the type of a task
+type TaskType string
+
 // Task is the model for background tasks
 type Task struct {
 	Base
-	Type             string     `gorm:"size:64;not null;index" json:"type"`
+	Type             TaskType   `gorm:"size:64;not null;index" json:"type"`
 	Status           TaskStatus `gorm:"size:32;not null;index" json:"status"`
 	Progress         int        `gorm:"default:0" json:"progress"` // 0-100
 	Result           string     `gorm:"type:text" json:"result,omitempty"`
