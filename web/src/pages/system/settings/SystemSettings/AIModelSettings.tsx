@@ -46,7 +46,7 @@ import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
-import DynamicConfigField from '@/components/DynamicConfigField';
+import JsonSchemaConfigForm from '@/components/JsonSchemaConfigForm';
 
 const { TextArea } = Input;
 
@@ -79,7 +79,6 @@ const AIModelSettings: React.FC = () => {
   const [editingModel, setEditingModel] = useState<AIModel | null>(null);
   const [searchText, setSearchText] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
   // Fetch AI type definitions
   const { loading: typeDefinitionsLoading, data: typeDefinitions } = useRequest(
     () => api.ai.getAiTypeDefinitions(),
@@ -196,7 +195,6 @@ const AIModelSettings: React.FC = () => {
   const handleCreate = () => {
     setEditingModel(null);
     setSelectedProvider('');
-    setFormValues({});
     form.resetFields();
     setIsModalVisible(true);
   };
@@ -213,8 +211,6 @@ const AIModelSettings: React.FC = () => {
       config: config, // Spread config fields to form
       status: record.status,
     };
-    console.log(formData)
-    setFormValues(formData);
     form.setFieldsValue(formData);
     setIsModalVisible(true);
   };
@@ -222,24 +218,12 @@ const AIModelSettings: React.FC = () => {
   const handleProviderChange = (provider: string) => {
     setSelectedProvider(provider);
     // Reset config fields when provider changes
-    if (currentProviderDefinition?.config_fields) {
-      currentProviderDefinition.config_fields.forEach((field) => {
-        form.setFieldValue(field.name, undefined);
-      });
-    }
+
+    form.setFieldValue('config', undefined);
   };
 
   const handleSubmit = (values: AIModelFormData) => {
-    // Extract config fields from form values
-    const config: Record<string, any> = {};
-    if (currentProviderDefinition?.config_fields) {
-      currentProviderDefinition.config_fields.forEach((field) => {
-        const value = values.config?.[field.name];
-        if (value !== undefined && value !== null && value !== '') {
-          config[field.name] = value;
-        }
-      });
-    }
+    let config: Record<string, any> = values.config ?? {};
 
     const submitData: AIModelFormData = {
       name: values.name,
@@ -257,16 +241,6 @@ const AIModelSettings: React.FC = () => {
     }
   };
 
-  const getDependentValues = (field: API.ConfigField) => {
-    if (!field.data_source?.depends_on) {
-      return {};
-    }
-    const dependentValues: Record<string, any> = {};
-    field.data_source.depends_on.forEach((dep) => {
-      dependentValues[dep] = formValues[dep];
-    });
-    return dependentValues;
-  };
 
 
   const columns: ColumnsType<AIModel> = [
@@ -297,7 +271,7 @@ const AIModelSettings: React.FC = () => {
       key: 'status',
       render: (status) => (
         <Tag color={status === 'enabled' ? 'green' : 'red'}>
-          {status === 'enabled' ? t('common.enabled', { defaultValue: 'Enabled' }) : t('common.disabled', { defaultValue: 'Disabled' })}
+          {status === 'enabled' ? tCommon('enabled', { defaultValue: 'Enabled' }) : tCommon('disabled', { defaultValue: 'Disabled' })}
         </Tag>
       ),
     },
@@ -393,7 +367,7 @@ const AIModelSettings: React.FC = () => {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              t('common.pagination.total', {
+              tCommon('pagination.total', {
                 defaultValue: `${range[0]}-${range[1]} of ${total} items`,
                 start: range[0],
                 end: range[1],
@@ -419,7 +393,6 @@ const AIModelSettings: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          onValuesChange={(_, allValues) => setFormValues(allValues)}
         >
           <Form.Item
             name="name"
@@ -456,16 +429,11 @@ const AIModelSettings: React.FC = () => {
             />
           </Form.Item>
 
-          {/* Dynamic config fields based on selected provider */}
-          {currentProviderDefinition?.config_fields?.map((field) => (
-            <DynamicConfigField
-              key={field.name}
-              field={field}
-              selectedType={selectedProvider}
-              dependentValues={getDependentValues(field)}
-              formValues={formValues}
+          {currentProviderDefinition && (<Form.Item name={['config']}>
+            <JsonSchemaConfigForm
+              schema={currentProviderDefinition.config_schema as unknown as Record<string, unknown>}
             />
-          ))}
+          </Form.Item>)}
 
           <Form.Item
             name="is_default"
@@ -492,7 +460,6 @@ const AIModelSettings: React.FC = () => {
                   form.resetFields();
                   setEditingModel(null);
                   setSelectedProvider('');
-                  setFormValues({});
                 }}
               >
                 {tCommon('cancel', { defaultValue: 'Cancel' })}

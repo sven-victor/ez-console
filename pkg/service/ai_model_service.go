@@ -20,6 +20,7 @@ import (
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/invopop/jsonschema"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -298,7 +299,8 @@ func (s *AIModelService) testOpenAIModel(ctx context.Context, aiModel *model.AIM
 // AITypeDefinition represents the type definition for an AI provider
 type AITypeDefinition struct {
 	Provider     model.AIModelProvider `json:"provider"`
-	ConfigFields []util.ConfigField    `json:"config_fields"`
+	ConfigSchema *jsonschema.Schema    `json:"config_schema,omitempty"`
+	UISchema     map[string]any        `json:"ui_schema,omitempty"`
 	Description  string                `json:"description"`
 	Name         string                `json:"name"`
 }
@@ -308,12 +310,23 @@ func (s *AIModelService) GetAITypeDefinitions(ctx context.Context) []AITypeDefin
 	factories := ai.GetRegisteredFactories()
 	definitions := []AITypeDefinition{}
 	for provider, factory := range factories {
-		definitions = append(definitions, AITypeDefinition{
-			Provider:     provider,
-			Description:  factory.GetDescription(),
-			Name:         factory.GetName(),
-			ConfigFields: factory.GetConfigFields(),
-		})
+		def := AITypeDefinition{
+			Provider:    provider,
+			Description: factory.GetDescription(),
+			Name:        factory.GetName(),
+		}
+		if v2, ok := factory.(ai.AIClientFactoryV2); ok {
+			schema, uiSchema, err := v2.GetConfigSchema()
+			if err == nil && schema != nil {
+				def.ConfigSchema = schema
+			} else {
+				def.ConfigSchema = util.ConfigFieldsToJSONSchema(factory.GetConfigFields())
+			}
+			def.UISchema = uiSchema
+		} else {
+			def.ConfigSchema = util.ConfigFieldsToJSONSchema(factory.GetConfigFields())
+		}
+		definitions = append(definitions, def)
 	}
 	return definitions
 }

@@ -7,11 +7,13 @@ import { ComponentProps } from '@ant-design/x-markdown';
 import { ComponentType } from 'react';
 import { default as default_2 } from 'react';
 import { DropDownProps } from 'antd/es/dropdown';
+import { FormItemProps } from 'antd';
 import { default as i18n } from 'i18next';
 import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { Popconfirm } from 'antd';
 import { ReactNode } from 'react';
+import { RJSFSchema } from '@rjsf/utils/lib';
 import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
 import { UploadProps } from 'antd';
@@ -180,10 +182,11 @@ export declare interface AIToolCall {
 }
 
 export declare interface AITypeDefinition {
-    config_fields: ConfigField[];
+    config_schema: Schema;
     description: string;
     name: string;
     provider: AIModelProvider;
+    ui_schema: Record<string, any>;
 }
 
 export declare const AllLangUIConfig: LanguageConfig[];
@@ -690,27 +693,6 @@ export declare const client: AxiosInstance;
 
 export declare type Condition = true;
 
-export declare interface ConfigField {
-    /** Dynamic data source configuration */
-    data_source: DataSource;
-    default: string;
-    description: string;
-    display_name: string;
-    name: string;
-    /** Static options (used when DataSource is nil or type=static) */
-    options: ConfigFieldOptions[];
-    placeholder: string;
-    required: boolean;
-    type: FieldType;
-    /** Condition for field visibility */
-    visible_when: VisibleCondition;
-}
-
-export declare interface ConfigFieldOptions {
-    label: string;
-    value: string;
-}
-
 export declare interface CreateAIModelRequest {
     config: Record<string, any>;
     description?: string;
@@ -819,33 +801,7 @@ export declare interface Dataset {
     label: string;
 }
 
-export declare interface DataSource {
-    /** Cache control */
-    cache: boolean;
-    /** Cache TTL in seconds (0 = no expiration) */
-    cache_ttl: number;
-    /** DependsOn specifies field dependencies (field names that this field depends on)
-     When dependent fields change, this field's options should be reloaded */
-    depends_on: string[];
-    /** Filter conditions (flexible filtering for different source types)
-     For toolsets: {"type": "webhook"} to filter by toolset type
-     For internal: {"status": "active"} to filter by status, etc. */
-    filter: Record<string, any>;
-    /** Response mapping fields (for API and other sources) */
-    label_key: string;
-    /** HTTP method (GET, POST, etc.) */
-    method: string;
-    /** Parameters for API requests (query params or request body) */
-    params: Record<string, any>;
-    /** Type specifies the data source type */
-    type: DataSourceType;
-    /** API-specific fields (when Type = "api") */
-    url: string;
-    /** JSON key for option value */
-    value_key: string;
-}
-
-export declare type DataSourceType = "static" | "api" | "toolsets" | "internal";
+export declare type Definitions = true;
 
 export declare interface deleteAIModelParams {
     /** AI model ID */
@@ -949,8 +905,6 @@ export declare interface EZAppProps {
 }
 
 export declare function fetchSSE(url: string, config?: SSEConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
-
-export declare type FieldType = "text" | "string" | "password" | "number" | "boolean" | "array" | "object" | "select";
 
 declare interface File_2 {
     access: AccessType;
@@ -1162,6 +1116,8 @@ export declare interface HealthResult {
 
 export { i18n }
 
+export declare type ID = "";
+
 export declare interface ImportLDAPUsersRequest {
     user_dn?: string[];
 }
@@ -1188,6 +1144,36 @@ export declare interface IRouteItem {
     is_private?: boolean;
     index: true;
     permissions?: string[];
+}
+
+/**
+ * Renders a form from a JSON Schema. Use inside Ant Design Form with
+ * Form.Item name={['config']} so value/onChange are provided by the parent form.
+ */
+export declare const JsonSchemaConfigForm: default_2.FC<JsonSchemaConfigFormProps>;
+
+export declare const JsonSchemaConfigFormItem: ({ schema, uiSchema, ...props }: JsonSchemaConfigFormItemProps) => JSX_2.Element;
+
+declare interface JsonSchemaConfigFormItemProps extends FormItemProps {
+    schema: RJSFSchema;
+    uiSchema?: Record<string, unknown>;
+}
+
+declare interface JsonSchemaConfigFormProps {
+    /** JSON Schema for the config object (type: object with properties) */
+    schema: RJSFSchema;
+    /** Current config values */
+    value?: Record<string, unknown>;
+    /** Called when config changes */
+    onChange?: (config: Record<string, unknown>) => void;
+    /** Optional UI schema for layout hints */
+    uiSchema?: Record<string, unknown>;
+    disabled?: boolean;
+    formRef?: default_2.Ref<JsonSchemaConfigFormRef>;
+}
+
+declare interface JsonSchemaConfigFormRef {
+    validate: (value: Record<string, unknown>) => Promise<void>;
 }
 
 export declare const LabelCreater: React.FC<LabelCreaterProps>;
@@ -1507,6 +1493,8 @@ export declare interface OAuthSettings {
     username_field: string;
     wellknown_endpoint: string;
 }
+
+export declare type OrderedMapStringGithubComInvopopJsonschemaSchema = true;
 
 export declare interface Organization {
     created_at: string;
@@ -2158,6 +2146,115 @@ export declare interface RoleAIToolPermissionRequest {
 
 export declare type RoleMappingMode = "disabled" | "auto" | "enforce";
 
+export declare interface Schema {
+    /** section 8.2.2 */
+    $anchor: string;
+    /** section 8.3 */
+    $comment: string;
+    /** section 8.2.4 */
+    $defs: Definitions;
+    /** section 8.2.3.2 */
+    $dynamicRef: string;
+    /** section 8.2.1 */
+    $id: ID;
+    /** section 8.2.3.1 */
+    $ref: string;
+    /** RFC draft-bhutton-json-schema-00 */
+    $schema: string;
+    /** section 10.3.2.3 */
+    additionalProperties: Schema;
+    /** RFC draft-bhutton-json-schema-00 section 10.2.1 (Sub-schemas with logic) */
+    allOf: Schema[];
+    /** section 10.2.1.2 */
+    anyOf: Schema[];
+    /** section 6.1.3 */
+    const: any;
+    /** section 10.3.1.3 */
+    contains: Schema;
+    /** RFC draft-bhutton-json-schema-validation-00, section 8 */
+    contentEncoding: string;
+    /** section 8.4 */
+    contentMediaType: string;
+    /** section 8.5 */
+    contentSchema: Schema;
+    /** section 9.2 */
+    default: any;
+    /** section 6.5.4 */
+    dependentRequired: Record<string, any>;
+    /** section 10.2.2.4 */
+    dependentSchemas: Record<string, any>;
+    /** section 9.3 */
+    deprecated: boolean;
+    /** section 9.1 */
+    description: string;
+    /** section 10.2.2.3 */
+    else: Schema;
+    /** section 6.1.2 */
+    enum: any[];
+    /** section 9.5 */
+    examples: any[];
+    /** section 6.2.3 */
+    exclusiveMaximum: string;
+    /** section 6.2.5 */
+    exclusiveMinimum: string;
+    /** RFC draft-bhutton-json-schema-validation-00, section 7 */
+    format: string;
+    /** RFC draft-bhutton-json-schema-00 section 10.2.2 (Apply sub-schemas conditionally) */
+    if: Schema;
+    /** section 10.3.1.2  (replaces additionalItems) */
+    items: Schema;
+    /** section 6.4.4 */
+    maxContains: number;
+    /** section 6.4.1 */
+    maxItems: number;
+    /** section 6.3.1 */
+    maxLength: number;
+    /** section 6.5.1 */
+    maxProperties: number;
+    /** section 6.2.2 */
+    maximum: string;
+    /** section 6.4.5 */
+    minContains: number;
+    /** section 6.4.2 */
+    minItems: number;
+    /** section 6.3.2 */
+    minLength: number;
+    /** section 6.5.2 */
+    minProperties: number;
+    /** section 6.2.4 */
+    minimum: string;
+    /** section 6.2.1 */
+    multipleOf: string;
+    /** section 10.2.1.4 */
+    not: Schema;
+    /** section 10.2.1.3 */
+    oneOf: Schema[];
+    /** section 6.3.3 */
+    pattern: string;
+    /** section 10.3.2.2 */
+    patternProperties: Record<string, any>;
+    /** RFC draft-bhutton-json-schema-00 section 10.3.1 (arrays) */
+    prefixItems: Schema[];
+    /** RFC draft-bhutton-json-schema-00 section 10.3.2 (sub-schemas) */
+    properties: OrderedMapStringGithubComInvopopJsonschemaSchema;
+    /** section 10.3.2.4 */
+    propertyNames: Schema;
+    /** section 9.4 */
+    readOnly: boolean;
+    /** section 6.5.3 */
+    required: string[];
+    /** section 10.2.2.2 */
+    then: Schema;
+    /** RFC draft-bhutton-json-schema-validation-00, section 9 */
+    title: string;
+    /** RFC draft-bhutton-json-schema-validation-00, section 6 */
+    type: string;
+    /** section 6.4.3 */
+    uniqueItems: boolean;
+    /** section 9.4 */
+    writeOnly: boolean;
+}
+
 export declare interface SecuritySettings {
     history_password_check: boolean;
     history_password_count: number;
@@ -2513,10 +2610,11 @@ export declare type ToolSetStatus = "enabled" | "disabled";
 export declare type ToolSetType = "utils";
 
 export declare interface ToolSetTypeDefinition {
-    config_fields: ConfigField[];
+    config_schema: Schema;
     description: string;
     name: string;
     tool_set_type: ToolSetType;
+    ui_schema: Record<string, any>;
 }
 
 export declare type ToolType = "function";
@@ -2796,17 +2894,6 @@ export declare interface VerifyAndActivateMFARequest {
     mfa_type: string;
     token?: string;
 }
-
-export declare interface VisibleCondition {
-    /** Field is the name of the field to check */
-    field: string;
-    /** Operator is the comparison operator (eq, ne, in, not_in, contains) */
-    operator: VisibleConditionOperator;
-    /** Value is the value to compare against (can be a single value or array for in/not_in) */
-    value: any;
-}
-
-export declare type VisibleConditionOperator = "eq" | "ne" | "in" | "not_in" | "contains";
 
 export declare function withSuspense<T extends default_2.ComponentType<any>>(Component: default_2.LazyExoticComponent<T>, props?: default_2.ComponentProps<T>): JSX_2.Element;
 

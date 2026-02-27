@@ -341,6 +341,19 @@ export default {
     user_agent: 'User Agent',
   },
 
+  action: {
+    system: {
+      toolsets: {
+        update: 'Update toolsets',
+      },
+    },
+    authorization: {
+      user: {
+        login: 'User Login',
+      },
+    },
+  },
+
   actions: {
     login: 'Login',
     logout: 'Logout',
@@ -356,6 +369,11 @@ export default {
     failed: 'Failed'
   },
   serviceAccount: {
+    organization: 'Organization',
+    global: 'Global',
+    scope: 'Scope',
+    filterByOrg: 'All organizations',
+    organizationScoped: 'Organization',
     name: 'Service Account',
     description: 'Service Account Description',
     createdAt: 'Created At',
@@ -410,6 +428,7 @@ export default {
 
     policy: 'Policy Management',
     policyStatements: 'Policy Statements',
+    editPolicy: 'Edit Policy',
     addStatement: 'Add Policy Statement',
     editStatement: 'Edit Policy Statement',
     deleteStatement: 'Delete Policy Statement',

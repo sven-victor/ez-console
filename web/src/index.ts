@@ -54,7 +54,7 @@ import * as oauthapi from '@/service/api/oauth';
 import * as systemapi from '@/service/api/system';
 import * as aiapi from '@/service/api/system';
 export type * from '@/service/api/typing';
-
+export { JsonSchemaConfigForm, JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
 
 const api = {
   ...authorizationapi,

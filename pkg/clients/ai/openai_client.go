@@ -20,6 +20,7 @@ import (
 	"os"
 
 	"github.com/gofrs/uuid"
+	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
@@ -234,6 +235,14 @@ func NewOpenAIChatStream(ctx context.Context, client *OpenAIClient, messages []o
 	return stream, nil
 }
 
+// OpenAIConfig is the config shape for the OpenAI provider (for JSON Schema reflection).
+type OpenAIConfig struct {
+	APIKey         string `json:"api_key" jsonschema:"description=OpenAI API key (encrypted),format=password"`
+	ModelID        string `json:"model_id" jsonschema:"description=OpenAI model ID (e.g.\\, gpt-4\\, gpt-3.5-turbo)"`
+	BaseURL        string `json:"base_url,omitempty" jsonschema:"description=Custom API endpoint URL (optional)"`
+	OrganizationID string `json:"organization_id,omitempty" jsonschema:"description=OpenAI organization ID (optional)"`
+}
+
 // OpenAIClientFactory implements AIClientFactory for OpenAI
 type OpenAIClientFactory struct{}
 
@@ -245,6 +254,11 @@ func (f *OpenAIClientFactory) GetName() string {
 // GetDescription returns the description of the OpenAI provider
 func (f *OpenAIClientFactory) GetDescription() string {
 	return "OpenAI API client for GPT models"
+}
+
+// GetConfigSchema implements AIClientFactoryV2.
+func (f *OpenAIClientFactory) GetConfigSchema() (*jsonschema.Schema, error) {
+	return jsonschema.Reflect(&OpenAIConfig{}), nil
 }
 
 // GetConfigFields returns the configuration fields for OpenAI
@@ -290,5 +304,5 @@ func (f *OpenAIClientFactory) CreateClient(ctx context.Context, organizationID s
 
 func init() {
 	// Register the OpenAI client factory
-	RegisterFactory(model.AIModelProviderOpenAI, &OpenAIClientFactory{})
+	RegisterFactoryV2(model.AIModelProviderOpenAI, &OpenAIClientFactory{})
 }

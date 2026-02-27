@@ -316,6 +316,19 @@ export default {
     user_agent: 'User Agent',
   },
 
+  action: {
+    system: {
+      toolsets: {
+        update: 'Uppdatera verktygsset',
+      },
+    },
+    authorization: {
+      user: {
+        login: 'Användarinloggning',
+      },
+    },
+  },
+
   actions: {
     login: 'Logga in',
     logout: 'Logga ut',
@@ -331,6 +344,11 @@ export default {
     failed: 'Misslyckades'
   },
   serviceAccount: {
+    organization: 'Organisation',
+    global: 'Global',
+    scope: 'Omfattning',
+    filterByOrg: 'Alla organisationer',
+    organizationScoped: 'Organisation',
     name: 'Tjänstekonto',
     description: 'Beskrivning av tjänstekonto',
     createdAt: 'Skapad den',
@@ -385,6 +403,7 @@ export default {
 
     policy: 'Policyhantering',
     policyStatements: 'Policyuttalanden',
+    editPolicy: 'Redigera policy',
     addStatement: 'Lägg till policyuttalande',
     editStatement: 'Redigera policyuttalande',
     deleteStatement: 'Ta bort policyuttalande',

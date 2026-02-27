@@ -1,10 +1,10 @@
 import { r as p } from "./client.js";
 import f from "i18next";
 import { initReactI18next as v } from "react-i18next";
-import { B as b } from "./vendor.js";
+import b from "i18next-browser-languagedetector";
 const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const a = e instanceof Date ? e : new Date(e), o = a.getFullYear(), s = String(a.getMonth() + 1).padStart(2, "0"), r = String(a.getDate()).padStart(2, "0"), n = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
-  return t.replace("YYYY", String(o)).replace("MM", s).replace("DD", r).replace("HH", n).replace("mm", i).replace("ss", l);
+  const a = e instanceof Date ? e : new Date(e), r = a.getFullYear(), o = String(a.getMonth() + 1).padStart(2, "0"), s = String(a.getDate()).padStart(2, "0"), l = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), n = String(a.getSeconds()).padStart(2, "0");
+  return t.replace("YYYY", String(r)).replace("MM", o).replace("DD", s).replace("HH", l).replace("mm", i).replace("ss", n);
 }, fe = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
@@ -13,24 +13,24 @@ const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
     let i = a.slice(1);
     if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const l = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), c = parseInt(i.slice(4, 6), 16);
-    if (isNaN(l) || isNaN(d) || isNaN(c))
+    const n = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), c = parseInt(i.slice(4, 6), 16);
+    if (isNaN(n) || isNaN(d) || isNaN(c))
       throw new Error("Invalid characters in HEX color value.");
-    return `rgba(${l}, ${d}, ${c}, ${t})`;
+    return `rgba(${n}, ${d}, ${c}, ${t})`;
   }
-  const o = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, s = a.match(o);
-  if (s) {
-    const i = parseInt(s[1], 10), l = parseInt(s[2], 10), d = parseInt(s[3], 10);
-    if (i < 0 || i > 255 || l < 0 || l > 255 || d < 0 || d > 255)
+  const r = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = a.match(r);
+  if (o) {
+    const i = parseInt(o[1], 10), n = parseInt(o[2], 10), d = parseInt(o[3], 10);
+    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${i}, ${l}, ${d}, ${t})`;
+    return `rgba(${i}, ${n}, ${d}, ${t})`;
   }
-  const r = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, n = a.match(r);
-  if (n) {
-    const i = parseInt(n[1], 10), l = parseInt(n[2], 10), d = parseInt(n[3], 10);
-    if (i < 0 || i > 255 || l < 0 || l > 255 || d < 0 || d > 255)
+  const s = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = a.match(s);
+  if (l) {
+    const i = parseInt(l[1], 10), n = parseInt(l[2], 10), d = parseInt(l[3], 10);
+    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${i}, ${l}, ${d}, ${t})`;
+    return `rgba(${i}, ${n}, ${d}, ${t})`;
   }
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
@@ -53,23 +53,23 @@ async function A(e, t) {
     ...t || {}
   });
 }
-async function k(e, t, a) {
-  const o = new FormData();
-  return t && o.append("file", t), Object.keys(e).forEach((s) => {
-    const r = e[s];
-    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((n) => o.append(s, n || "")) : o.append(s, JSON.stringify(r)) : o.append(s, r));
+async function S(e, t, a) {
+  const r = new FormData();
+  return t && r.append("file", t), Object.keys(e).forEach((o) => {
+    const s = e[o];
+    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((l) => r.append(o, l || "")) : r.append(o, JSON.stringify(s)) : r.append(o, s));
   }), p("/api/files", {
     method: "POST",
-    data: o,
+    data: r,
     requestType: "form",
     ...a || {}
   });
 }
-async function S(e, t) {
-  const { fileKey: a, ...o } = e;
+async function k(e, t) {
+  const { fileKey: a, ...r } = e;
   return p(`/api/files/${a}`, {
     method: "GET",
-    params: { ...o },
+    params: { ...r },
     ...t || {}
   });
 }
@@ -81,10 +81,10 @@ async function y(e) {
 }
 const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: S,
+  downloadFile: k,
   getStatistics: y,
   listFiles: A,
-  uploadFile: k
+  uploadFile: S
 }, Symbol.toStringTag, { value: "Module" })), P = {
   login: {
     subtitle: "登录您的账户",
@@ -703,6 +703,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     username: "Username",
     user_agent: "User Agent"
   },
+  action: {
+    system: {
+      toolsets: {
+        update: "Update toolsets"
+      }
+    },
+    authorization: {
+      user: {
+        login: "User Login"
+      }
+    }
+  },
   actions: {
     login: "Login",
     logout: "Logout",
@@ -717,6 +729,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "Failed"
   },
   serviceAccount: {
+    organization: "Organization",
+    global: "Global",
+    scope: "Scope",
+    filterByOrg: "All organizations",
+    organizationScoped: "Organization",
     name: "Service Account",
     description: "Service Account Description",
     createdAt: "Created At",
@@ -769,6 +786,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     assignRolesError: "Failed to assign roles",
     policy: "Policy Management",
     policyStatements: "Policy Statements",
+    editPolicy: "Edit Policy",
     addStatement: "Add Policy Statement",
     editStatement: "Edit Policy Statement",
     deleteStatement: "Delete Policy Statement",
@@ -1235,11 +1253,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       startTls: "Enable TLS",
       insecure: "Do not check certificate",
       caCert: "CA Certificate",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
       clientCert: "Client Certificate",
       clientCertPlaceholder: "Please enter the client certificate",
       clientKey: "Client Key",
       clientKeyPlaceholder: "Do not modify",
       importTitle: "Import LDAP Users",
+      username: "Username",
+      email: "Email",
+      fullName: "Full Name",
+      importStatus: "Import Status",
+      importTypeBound: "Bound",
       checkAll: "Check all",
       timeout: "Timeout",
       timeoutTooltip: "LDAP connection timeout (seconds)"
@@ -1283,7 +1308,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       create: "Create Toolset",
       edit: "Edit Toolset",
       test: "Test Connection",
+      viewTools: "View Tools",
       viewConfig: "View Configuration",
+      tools: "Tools",
+      noTools: "No tools available",
       searchPlaceholder: "Search toolsets...",
       namePlaceholder: "Enter toolset name",
       descriptionPlaceholder: "Enter toolset description",
@@ -1400,7 +1428,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Skills (optional)",
     skillDomain: "Skill domain"
   }
-}, F = {
+}, z = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1444,7 +1472,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "Failed",
     cancelled: "Cancelled"
   }
-}, z = {
+}, F = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1872,7 +1900,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, U = {
+}, I = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -1979,7 +2007,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, I = {
+}, U = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2405,6 +2433,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     username: "用户名",
     user_agent: "用户代理"
   },
+  action: {
+    system: {
+      toolsets: {
+        update: "更新工具集"
+      }
+    },
+    authorization: {
+      user: {
+        login: "用户登录"
+      }
+    }
+  },
   actions: {
     login: "登录",
     logout: "登出",
@@ -2419,6 +2459,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "失败"
   },
   serviceAccount: {
+    organization: "组织",
+    global: "全局",
+    scope: "范围",
+    filterByOrg: "全部组织",
+    organizationScoped: "组织",
     insertTemplate: "插入模板",
     allowAll: "允许所有",
     denyAll: "拒绝所有",
@@ -2942,11 +2987,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       startTls: "启用TLS",
       insecure: "不检查证书",
       caCert: "CA证书",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
       clientCert: "客户端证书",
       clientCertPlaceholder: "请输入客户端证书",
       clientKey: "客户端密钥",
       clientKeyPlaceholder: "不修改",
       importTitle: "导入LDAP用户",
+      username: "用户名",
+      email: "邮箱",
+      fullName: "姓名",
+      importStatus: "导入状态",
+      importTypeBound: "已绑定",
       checkAll: "全选",
       timeout: "超时时间",
       timeoutTooltip: "LDAP连接超时时间（秒）"
@@ -2990,7 +3042,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       create: "创建工具集",
       edit: "编辑工具集",
       test: "测试连接",
+      viewTools: "查看工具",
       viewConfig: "查看配置",
+      tools: "工具",
+      noTools: "暂无可用工具",
       searchPlaceholder: "搜索工具集...",
       namePlaceholder: "请输入工具集名称",
       descriptionPlaceholder: "请输入工具集描述",
@@ -3519,6 +3574,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     username: "Benutzername",
     user_agent: "User Agent"
   },
+  action: {
+    system: {
+      toolsets: {
+        update: "Toolsets aktualisieren"
+      }
+    },
+    authorization: {
+      user: {
+        login: "Benutzeranmeldung"
+      }
+    }
+  },
   actions: {
     login: "Anmelden",
     logout: "Abmelden",
@@ -3533,6 +3600,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "Fehlgeschlagen"
   },
   serviceAccount: {
+    organization: "Organisation",
+    global: "Global",
+    scope: "Geltungsbereich",
+    filterByOrg: "Alle Organisationen",
+    organizationScoped: "Organisation",
     name: "Dienstkonto",
     description: "Beschreibung des Dienstkontos",
     createdAt: "Erstellt am",
@@ -3585,6 +3657,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     assignRolesError: "Rolle konnte nicht zugewiesen werden",
     policy: "Richtlinienverwaltung",
     policyStatements: "Richtlinienanweisungen",
+    editPolicy: "Richtlinie bearbeiten",
     addStatement: "Richtlinienanweisung hinzufügen",
     editStatement: "Richtlinienanweisung bearbeiten",
     deleteStatement: "Richtlinienanweisung löschen",
@@ -4004,11 +4077,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       startTls: "TLS aktivieren",
       insecure: "Zertifikat nicht überprüfen",
       caCert: "CA-Zertifikat",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
       clientCert: "Client-Zertifikat",
       clientCertPlaceholder: "Bitte geben Sie das Client-Zertifikat ein",
       clientKey: "Client-Schlüssel",
       clientKeyPlaceholder: "Nicht ändern",
       importTitle: "LDAP-Benutzer importieren",
+      username: "Benutzername",
+      email: "E-Mail",
+      fullName: "Vollständiger Name",
+      importStatus: "Importstatus",
+      importTypeBound: "Gebunden",
       checkAll: "Alle auswählen",
       timeout: "Timeout",
       timeoutTooltip: "LDAP-Verbindungstimeout (Sekunden)"
@@ -4052,7 +4132,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       create: "Toolset erstellen",
       edit: "Toolset bearbeiten",
       test: "Verbindung testen",
+      viewTools: "Werkzeuge anzeigen",
       viewConfig: "Konfiguration anzeigen",
+      tools: "Werkzeuge",
+      noTools: "Keine Werkzeuge verfügbar",
       searchPlaceholder: "Toolsets suchen...",
       namePlaceholder: "Toolset-Name eingeben",
       descriptionPlaceholder: "Toolset-Beschreibung eingeben",
@@ -4569,6 +4652,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     username: "Nombre de usuario",
     user_agent: "Agente de usuario"
   },
+  action: {
+    system: {
+      toolsets: {
+        update: "Actualizar conjuntos de herramientas"
+      }
+    },
+    authorization: {
+      user: {
+        login: "Inicio de sesión de usuario"
+      }
+    }
+  },
   actions: {
     login: "Iniciar sesión",
     logout: "Cerrar sesión",
@@ -4583,6 +4678,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "Fallido"
   },
   serviceAccount: {
+    organization: "Organización",
+    global: "Global",
+    scope: "Ámbito",
+    filterByOrg: "Todas las organizaciones",
+    organizationScoped: "Organización",
     name: "Cuenta de servicio",
     description: "Descripción de la cuenta de servicio",
     createdAt: "Creado el",
@@ -4635,6 +4735,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     assignRolesError: "Error al asignar roles",
     policy: "Gestión de políticas",
     policyStatements: "Declaraciones de política",
+    editPolicy: "Editar política",
     addStatement: "Añadir declaración de política",
     editStatement: "Editar declaración de política",
     deleteStatement: "Eliminar declaración de política",
@@ -5054,11 +5155,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       startTls: "Habilitar TLS",
       insecure: "No comprobar el certificado",
       caCert: "Certificado de CA",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
       clientCert: "Certificado de cliente",
       clientCertPlaceholder: "Por favor, introduce el certificado de cliente",
       clientKey: "Clave de cliente",
       clientKeyPlaceholder: "No modificar",
       importTitle: "Importar usuarios de LDAP",
+      username: "Nombre de usuario",
+      email: "Correo electrónico",
+      fullName: "Nombre completo",
+      importStatus: "Estado de importación",
+      importTypeBound: "Vinculado",
       checkAll: "Seleccionar todo",
       timeout: "Tiempo de espera",
       timeoutTooltip: "Tiempo de espera para la conexión LDAP (segundos)"
@@ -5102,7 +5210,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       create: "Crear conjunto de herramientas",
       edit: "Editar conjunto de herramientas",
       test: "Probar conexión",
+      viewTools: "Ver herramientas",
       viewConfig: "Ver configuración",
+      tools: "Herramientas",
+      noTools: "No hay herramientas disponibles",
       searchPlaceholder: "Buscar conjuntos de herramientas...",
       namePlaceholder: "Ingrese el nombre del conjunto de herramientas",
       descriptionPlaceholder: "Ingrese la descripción del conjunto de herramientas",
@@ -5619,6 +5730,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     username: "Nom d'utilisateur",
     user_agent: "Agent utilisateur"
   },
+  action: {
+    system: {
+      toolsets: {
+        update: "Mettre à jour les ensembles d'outils"
+      }
+    },
+    authorization: {
+      user: {
+        login: "Connexion utilisateur"
+      }
+    }
+  },
   actions: {
     login: "Connexion",
     logout: "Déconnexion",
@@ -5633,6 +5756,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "Échec"
   },
   serviceAccount: {
+    organization: "Organisation",
+    global: "Global",
+    scope: "Périmètre",
+    filterByOrg: "Toutes les organisations",
+    organizationScoped: "Organisation",
     name: "Compte de service",
     description: "Description du compte de service",
     createdAt: "Créé le",
@@ -5685,6 +5813,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     assignRolesError: "Échec de l'attribution des rôles",
     policy: "Gestion des politiques",
     policyStatements: "Déclarations de politique",
+    editPolicy: "Modifier la politique",
     addStatement: "Ajouter une déclaration de politique",
     editStatement: "Modifier la déclaration de politique",
     deleteStatement: "Supprimer la déclaration de politique",
@@ -6104,11 +6233,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       startTls: "Activer TLS",
       insecure: "Ne pas vérifier le certificat",
       caCert: "Certificat de l'autorité de certification",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
       clientCert: "Certificat client",
       clientCertPlaceholder: "Veuillez saisir le certificat client",
       clientKey: "Clé client",
       clientKeyPlaceholder: "Ne pas modifier",
       importTitle: "Importer des utilisateurs LDAP",
+      username: "Nom d'utilisateur",
+      email: "E-mail",
+      fullName: "Nom complet",
+      importStatus: "Statut d'importation",
+      importTypeBound: "Lié",
       checkAll: "Tout cocher",
       timeout: "Timeout",
       timeoutTooltip: "Temps d'attente pour la connexion LDAP (secondes)"
@@ -6152,7 +6288,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       create: "Créer un ensemble d'outils",
       edit: "Modifier l'ensemble d'outils",
       test: "Tester la connexion",
+      viewTools: "Voir les outils",
       viewConfig: "Voir la configuration",
+      tools: "Outils",
+      noTools: "Aucun outil disponible",
       searchPlaceholder: "Rechercher des ensembles d'outils...",
       namePlaceholder: "Entrez le nom de l'ensemble d'outils",
       descriptionPlaceholder: "Entrez la description de l'ensemble d'outils",
@@ -6669,6 +6808,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     username: "اسم المستخدم",
     user_agent: "وكيل المستخدم"
   },
+  action: {
+    system: {
+      toolsets: {
+        update: "تحديث مجموعات الأدوات"
+      }
+    },
+    authorization: {
+      user: {
+        login: "تسجيل دخول المستخدم"
+      }
+    }
+  },
   actions: {
     login: "تسجيل الدخول",
     logout: "تسجيل الخروج",
@@ -6683,6 +6834,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "فشل"
   },
   serviceAccount: {
+    organization: "المنظمة",
+    global: "عام",
+    scope: "النطاق",
+    filterByOrg: "جميع المنظمات",
+    organizationScoped: "المنظمة",
     name: "حساب الخدمة",
     description: "وصف حساب الخدمة",
     createdAt: "أنشئ في",
@@ -6735,6 +6891,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     assignRolesError: "فشل تعيين الأدوار",
     policy: "إدارة السياسات",
     policyStatements: "بيانات السياسة",
+    editPolicy: "تعديل السياسة",
     addStatement: "إضافة بيان سياسة",
     editStatement: "تعديل بيان السياسة",
     deleteStatement: "حذف بيان السياسة",
@@ -7154,11 +7311,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       startTls: "تمكين TLS",
       insecure: "عدم التحقق من الشهادة",
       caCert: "شهادة CA",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
       clientCert: "شهادة العميل",
       clientCertPlaceholder: "الرجاء إدخال شهادة العميل",
       clientKey: "مفتاح العميل",
       clientKeyPlaceholder: "لا تقم بالتعديل",
       importTitle: "استيراد مستخدمي LDAP",
+      username: "اسم المستخدم",
+      email: "البريد الإلكتروني",
+      fullName: "الاسم الكامل",
+      importStatus: "حالة الاستيراد",
+      importTypeBound: "مرتبط",
       checkAll: "تحديد الكل",
       timeout: "وقت الإنتظار",
       timeoutTooltip: "وقت الإنتظار للاتصال LDAP (ثوان)"
@@ -7202,7 +7366,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       create: "إنشاء مجموعة أدوات",
       edit: "تحرير مجموعة الأدوات",
       test: "اختبار الاتصال",
+      viewTools: "عرض الأدوات",
       viewConfig: "عرض التكوين",
+      tools: "الأدوات",
+      noTools: "لا توجد أدوات متاحة",
       searchPlaceholder: "البحث في مجموعات الأدوات...",
       namePlaceholder: "أدخل اسم مجموعة الأدوات",
       descriptionPlaceholder: "أدخل وصف مجموعة الأدوات",
@@ -7719,6 +7886,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     username: "Användarnamn",
     user_agent: "User Agent"
   },
+  action: {
+    system: {
+      toolsets: {
+        update: "Uppdatera verktygsset"
+      }
+    },
+    authorization: {
+      user: {
+        login: "Användarinloggning"
+      }
+    }
+  },
   actions: {
     login: "Logga in",
     logout: "Logga ut",
@@ -7733,6 +7912,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     failed: "Misslyckades"
   },
   serviceAccount: {
+    organization: "Organisation",
+    global: "Global",
+    scope: "Omfattning",
+    filterByOrg: "Alla organisationer",
+    organizationScoped: "Organisation",
     name: "Tjänstekonto",
     description: "Beskrivning av tjänstekonto",
     createdAt: "Skapad den",
@@ -7785,6 +7969,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     assignRolesError: "Det gick inte att tilldela roller",
     policy: "Policyhantering",
     policyStatements: "Policyuttalanden",
+    editPolicy: "Redigera policy",
     addStatement: "Lägg till policyuttalande",
     editStatement: "Redigera policyuttalande",
     deleteStatement: "Ta bort policyuttalande",
@@ -8204,11 +8389,18 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       startTls: "Aktivera TLS",
       insecure: "Kontrollera inte certifikat",
       caCert: "CA-certifikat",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
       clientCert: "Klientcertifikat",
       clientCertPlaceholder: "Vänligen ange klientcertifikatet",
       clientKey: "Klientnyckel",
       clientKeyPlaceholder: "Ändra inte",
       importTitle: "Importera LDAP-användare",
+      username: "Användarnamn",
+      email: "E-post",
+      fullName: "Fullständigt namn",
+      importStatus: "Importstatus",
+      importTypeBound: "Bunden",
       checkAll: "Markera alla",
       timeout: "Timeout",
       timeoutTooltip: "LDAP-anslutningstid (sekunder)"
@@ -8252,7 +8444,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       create: "Skapa verktygsset",
       edit: "Redigera verktygsset",
       test: "Testa anslutning",
+      viewTools: "Visa verktyg",
       viewConfig: "Visa konfiguration",
+      tools: "Verktyg",
+      noTools: "Inga verktyg tillgängliga",
       searchPlaceholder: "Sök verktygsset...",
       namePlaceholder: "Ange verktygsset-namn",
       descriptionPlaceholder: "Ange verktygsset-beskrivning",
@@ -8408,7 +8603,7 @@ f.use(b).use(v).init({
   resources: {
     "zh-CN": {
       translation: P,
-      common: I,
+      common: U,
       authorization: M,
       system: N,
       ai: O,
@@ -8420,10 +8615,10 @@ f.use(b).use(v).init({
       authorization: T,
       system: D,
       ai: E,
-      task: F
+      task: z
     },
     "de-DE": {
-      translation: z,
+      translation: F,
       common: V,
       authorization: x,
       system: K,
@@ -8455,7 +8650,7 @@ f.use(b).use(v).init({
       task: se
     },
     "sv-SE": {
-      translation: U,
+      translation: I,
       common: oe,
       authorization: ne,
       system: le,
@@ -8469,92 +8664,70 @@ f.use(b).use(v).init({
     escapeValue: !1
   }
 });
-const ke = {
+const Se = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
-}, Se = (e, t) => {
-  var n;
-  if (!e)
-    return !0;
-  const { field: a, operator: o, value: s } = e, r = ((n = t.config) == null ? void 0 : n[a]) ?? t[a];
-  if (r == null)
-    return !1;
-  switch (o) {
-    case "eq":
-      return r === s;
-    case "ne":
-      return r !== s;
-    case "in":
-      return Array.isArray(s) ? s.includes(r) : (console.warn('VisibleCondition: "in" operator requires an array value'), !1);
-    case "not_in":
-      return Array.isArray(s) ? !s.includes(r) : (console.warn('VisibleCondition: "not_in" operator requires an array value'), !1);
-    case "contains":
-      return typeof r != "string" ? !1 : typeof s != "string" ? (console.warn('VisibleCondition: "contains" operator requires a string value'), !1) : r.includes(s);
-    default:
-      return console.warn(`Unknown visibility operator: ${o}`), !0;
-  }
 };
 function h(e) {
   const t = {}, a = e.split(/\r?\n/);
-  for (const o of a) {
-    const s = o.trim();
-    if (!s) continue;
-    const r = s.indexOf(":");
-    if (r <= 0) continue;
-    const n = s.slice(0, r).trim(), i = s.slice(r + 1).trim(), l = i.startsWith('"') && i.endsWith('"') || i.startsWith("'") && i.endsWith("'") ? i.slice(1, -1) : i;
-    t[n] = l;
+  for (const r of a) {
+    const o = r.trim();
+    if (!o) continue;
+    const s = o.indexOf(":");
+    if (s <= 0) continue;
+    const l = o.slice(0, s).trim(), i = o.slice(s + 1).trim(), n = i.startsWith('"') && i.endsWith('"') || i.startsWith("'") && i.endsWith("'") ? i.slice(1, -1) : i;
+    t[l] = n;
   }
   return t;
 }
 function m(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function ye(e) {
+function ke(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
-  const a = t.slice(3), o = a.indexOf(`
+  const a = t.slice(3), r = a.indexOf(`
 ---`);
-  if (o === -1) return e;
-  const s = a.slice(0, o).trim(), r = a.slice(o + 4).trimStart(), n = h(s), i = Object.keys(n);
+  if (r === -1) return e;
+  const o = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), l = h(o), i = Object.keys(l);
   if (i.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
+  const n = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
 `);
-  return l + `
+  return n + `
 ` + d + `
 ` + c + `
 
-` + r;
+` + s;
 }
-function Pe(e) {
+function ye(e) {
   if (!e || !e.trim()) return e;
   let t = e;
   const a = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
-  let o = t.match(a);
-  for (; o; ) {
-    const s = o[1].trim(), r = t.slice((o.index ?? 0) + o[0].length), n = h(s), i = Object.keys(n);
+  let r = t.match(a);
+  for (; r; ) {
+    const o = r[1].trim(), s = t.slice((r.index ?? 0) + r[0].length), l = h(o), i = Object.keys(l);
     if (i.length > 0) {
-      const l = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(n[u] ?? "") + " |").join(`
-`), g = l + `
+      const n = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
+`), g = n + `
 ` + d + `
 ` + c;
-      t = t.slice(0, o.index) + g + `
+      t = t.slice(0, r.index) + g + `
 
-` + r;
+` + s;
     } else
-      t = t.slice(0, o.index) + r;
-    o = t.match(a);
+      t = t.slice(0, r.index) + s;
+    r = t.match(a);
   }
   return t;
 }
 export {
-  ke as P,
-  ye as a,
+  Se as P,
+  ke as a,
   Ae as b,
-  Se as c,
   he as f,
   be as g,
   ve as m,
-  Pe as s,
+  ye as s,
   fe as t
 };

@@ -316,6 +316,19 @@ export default {
     user_agent: 'وكيل المستخدم',
   },
 
+  action: {
+    system: {
+      toolsets: {
+        update: 'تحديث مجموعات الأدوات',
+      },
+    },
+    authorization: {
+      user: {
+        login: 'تسجيل دخول المستخدم',
+      },
+    },
+  },
+
   actions: {
     login: 'تسجيل الدخول',
     logout: 'تسجيل الخروج',
@@ -331,6 +344,11 @@ export default {
     failed: 'فشل'
   },
   serviceAccount: {
+    organization: 'المنظمة',
+    global: 'عام',
+    scope: 'النطاق',
+    filterByOrg: 'جميع المنظمات',
+    organizationScoped: 'المنظمة',
     name: 'حساب الخدمة',
     description: 'وصف حساب الخدمة',
     createdAt: 'أنشئ في',
@@ -385,6 +403,7 @@ export default {
 
     policy: 'إدارة السياسات',
     policyStatements: 'بيانات السياسة',
+    editPolicy: 'تعديل السياسة',
     addStatement: 'إضافة بيان سياسة',
     editStatement: 'تعديل بيان السياسة',
     deleteStatement: 'حذف بيان السياسة',

@@ -24,9 +24,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 // MCPToolSet implements the ToolSet interface for MCP protocol
@@ -275,6 +277,17 @@ func (m *MCPToolSet) makeHTTPRequest(ctx context.Context, request MCPRequest) (*
 	return &response, nil
 }
 
+// MCPToolSetConfig is the config shape for the MCP toolset (for JSON Schema reflection).
+type MCPToolSetConfig struct {
+	Endpoint string                 `json:"endpoint" jsonschema:"required,description=The endpoint of the MCP server"`
+	Protocol string                 `json:"protocol" jsonschema:"required,description=The protocol of the MCP server,enum=http,enum=websocket,default=http" jsonschema_extras:"x-ui-col-xs=12"`
+	AuthType string                 `json:"auth_type" jsonschema:"required,description=The authentication type,enum=basic,enum=bearer,default=basic" jsonschema_extras:"x-ui-col-xs=12"`
+	Username string                 `json:"username,omitempty" jsonschema:"description=The username for the MCP server" jsonschema_extras:"x-ui-col-xs=12"`
+	Password string                 `json:"password,omitempty" jsonschema:"description=The password for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=12"`
+	Token    string                 `json:"token,omitempty" jsonschema:"description=The bearer token for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=24"`
+	Args     map[string]interface{} `json:"args,omitempty" jsonschema:"description=The arguments for the MCP server" jsonschema_extras:"x-ui-field=objectEditor"`
+}
+
 var mcpConfigFields = []util.ConfigField{
 	{
 		Name:        "endpoint",
@@ -343,6 +356,109 @@ func (f *MCPToolSetFactory) GetConfigFields() []util.ConfigField {
 	return mcpConfigFields
 }
 
+// GetConfigSchema implements toolset.ToolSetFactoryV2.
+func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]any, error) {
+	schema := jsonschema.Reflect(&MCPToolSetConfig{})
+	if schema.Extras == nil {
+		schema.Extras = make(map[string]any)
+	}
+	if def, ok := schema.Definitions["MCPToolSetConfig"]; ok {
+		authTypeDef, _ := def.Properties.Get("auth_type")
+		usernameDef, _ := def.Properties.Get("username")
+		passwordDef, _ := def.Properties.Get("password")
+		tokenDef, _ := def.Properties.Get("token")
+		if authTypeDef != nil && usernameDef != nil && passwordDef != nil && tokenDef != nil {
+			if def.Extras == nil {
+				def.Extras = make(map[string]any)
+			}
+			def.Properties.Delete("username")
+			def.Properties.Delete("password")
+			def.Properties.Delete("token")
+
+			def.Extras["dependencies"] = map[string]*jsonschema.Schema{
+				"auth_type": &jsonschema.Schema{
+					OneOf: []*jsonschema.Schema{
+						&jsonschema.Schema{
+							Properties: orderedmap.New[string, *jsonschema.Schema](
+								orderedmap.WithInitialData(
+									orderedmap.Pair[string, *jsonschema.Schema]{Key: "auth_type", Value: &jsonschema.Schema{
+										Enum: []any{"basic"},
+									}},
+									orderedmap.Pair[string, *jsonschema.Schema]{Key: "username", Value: usernameDef},
+									orderedmap.Pair[string, *jsonschema.Schema]{Key: "password", Value: passwordDef},
+								),
+							),
+							Required: []string{"username", "password"},
+						},
+						&jsonschema.Schema{
+							Properties: orderedmap.New[string, *jsonschema.Schema](
+								orderedmap.WithInitialData(
+									orderedmap.Pair[string, *jsonschema.Schema]{Key: "auth_type", Value: &jsonschema.Schema{
+										Enum: []any{"bearer"},
+									}},
+									orderedmap.Pair[string, *jsonschema.Schema]{Key: "token", Value: tokenDef},
+								),
+							),
+							Required: []string{"token"},
+						},
+					},
+				},
+			}
+		}
+	}
+	uiSchema := map[string]any{
+		"ui:width": 1024,
+		"ui:field": "LayoutGridField",
+
+		"args": map[string]any{
+			"ui:field": "objectEditor",
+		},
+		"ui:layoutGrid": map[string]any{
+			"ui:row": map[string]any{
+				"gutter":    []int{12, 0},
+				"className": "row",
+				"children": []map[string]map[string]any{{
+					"ui:col": {
+						"xs":       24,
+						"children": []string{"endpoint"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       12,
+						"children": []string{"protocol"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       12,
+						"children": []string{"auth_type"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       24,
+						"children": []string{"token"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       12,
+						"children": []string{"username"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       12,
+						"children": []string{"password"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       24,
+						"children": []string{"args"},
+					},
+				}},
+			},
+		},
+	}
+	return schema, uiSchema, nil
+}
+
 // MCPToolSetFactory creates a new MCP toolset from configuration
 func (f *MCPToolSetFactory) CreateToolSet(configJSON string) (toolset.ToolSet, error) {
 	var config struct {
@@ -369,5 +485,5 @@ const (
 
 func init() {
 	// Register the MCP toolset factory
-	toolset.RegisterToolSet(ToolSetTypeMCP, &MCPToolSetFactory{})
+	toolset.RegisterToolSetV2(ToolSetTypeMCP, &MCPToolSetFactory{})
 }

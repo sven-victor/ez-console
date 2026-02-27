@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
@@ -61,6 +62,13 @@ type AIClientFactory interface {
 	GetDescription() string
 }
 
+// AIClientFactoryV2 extends AIClientFactory with optional GetConfigSchema.
+// When implemented, GetAITypeDefinitions uses it; otherwise ConfigFields are converted to JSON Schema.
+type AIClientFactoryV2 interface {
+	AIClientFactory
+	GetConfigSchema() (schema *jsonschema.Schema, uiSchema map[string]any, err error)
+}
+
 var registeredClients = make(map[model.AIModelProvider]AIClientFactory)
 
 // RegisterFactory registers an AI client factory for a provider
@@ -70,6 +78,11 @@ func RegisterFactory(provider model.AIModelProvider, factory AIClientFactory) er
 	}
 	registeredClients[provider] = factory
 	return nil
+}
+
+// RegisterFactory registers an AI client factory for a provider
+func RegisterFactoryV2(provider model.AIModelProvider, factory AIClientFactory) error {
+	return RegisterFactory(provider, factory)
 }
 
 // GetFactory returns the factory for a given provider

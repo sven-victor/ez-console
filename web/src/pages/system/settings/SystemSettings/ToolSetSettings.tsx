@@ -46,7 +46,7 @@ import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import Actions from '@/components/Actions';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import DynamicConfigField from '@/components/DynamicConfigField';
+import { JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
 
 const { TextArea } = Input;
 
@@ -80,7 +80,6 @@ const ToolSetSettings: React.FC = () => {
   const [selectedType, setSelectedType] = useState<string>('');
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
-  const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [toolSetType, setToolSetType] = useState<string>();
 
   // Fetch toolsets
@@ -227,81 +226,17 @@ const ToolSetSettings: React.FC = () => {
   const handleEdit = (record: ToolSet) => {
     setEditingToolSet(record);
     setSelectedType(record.type);
-
-    // Convert config object fields to JSON strings for display
     const formValues = { ...record };
-    if (formValues.config) {
-      const typeDefinition = typeDefinitions?.find((td) => td.tool_set_type === record.type);
-      if (typeDefinition) {
-        const configWithStringifiedObjects: Record<string, any> = {};
-        typeDefinition.config_fields.forEach((field) => {
-          if (field.type === 'object' && formValues.config?.[field.name]) {
-            configWithStringifiedObjects[field.name] = JSON.stringify(formValues.config[field.name], null, 2);
-          } else if (formValues.config?.[field.name] !== undefined) {
-            configWithStringifiedObjects[field.name] = formValues.config[field.name];
-          }
-        });
-        formValues.config = configWithStringifiedObjects;
-      }
-    }
-
     form.setFieldsValue(formValues);
     setIsModalVisible(true);
   };
 
-  console.log(selectedType, typeDefinitions)
   const handleTypeChange = (value: string) => {
     setSelectedType(value);
-
-    // Reset and set default values for config fields when type changes
-    const typeDefinition = typeDefinitions?.find((td) => td.tool_set_type === value);
-    if (typeDefinition) {
-      const defaultConfig: Record<string, any> = {};
-      typeDefinition.config_fields.forEach((field) => {
-        if (field.default) {
-          switch (field.type) {
-            case 'number':
-              defaultConfig[field.name] = Number(field.default);
-              break;
-            case 'boolean':
-              defaultConfig[field.name] = field.default === 'true';
-              break;
-            case 'array':
-              defaultConfig[field.name] = field.default.split(',');
-              break;
-            default:
-              defaultConfig[field.name] = field.default;
-          }
-        }
-      });
-      form.setFieldValue('config', defaultConfig);
-    } else {
-      form.setFieldValue('config', undefined);
-    }
+    form.setFieldValue('config', {});
   };
 
   const handleSubmit = (values: ToolSetFormData) => {
-    // Convert object field JSON strings to objects
-    if (values.config && currentTypeDefinition) {
-      const processedConfig: Record<string, any> = {};
-      currentTypeDefinition.config_fields.forEach((field) => {
-        const value = values.config?.[field.name];
-        if (value !== undefined) {
-          if (field.type === 'object') {
-            try {
-              processedConfig[field.name] = typeof value === 'string' ? JSON.parse(value) : value;
-            } catch (e) {
-              // If parsing fails, keep the original value
-              processedConfig[field.name] = value;
-            }
-          } else {
-            processedConfig[field.name] = value;
-          }
-        }
-      });
-      values.config = processedConfig;
-    }
-
     if (editingToolSet) {
       updateToolSet({ id: editingToolSet.id, data: values });
     } else {
@@ -320,30 +255,10 @@ const ToolSetSettings: React.FC = () => {
   };
 
   const handleToggleStatus = (record: ToolSet) => {
-    console.log(new Date(), "handleToggleStatus")
     const newStatus = record.status === 'enabled' ? 'disabled' : 'enabled';
-    return updateToolSetStatus({ id: record.id, status: newStatus }).then(() => {
-      console.log(new Date(), "handleToggleStatus1")
-    });
+    return updateToolSetStatus({ id: record.id, status: newStatus });
   };
 
-  // Get dependent field values for a specific field
-  const getDependentValues = (field: API.ConfigField): Record<string, any> => {
-    if (!field.data_source?.depends_on || field.data_source.depends_on.length === 0) {
-      return {};
-    }
-
-    const dependentValues: Record<string, any> = {};
-    field.data_source.depends_on.forEach((fieldName) => {
-      const value = formValues.config?.[fieldName];
-      if (value !== undefined) {
-        dependentValues[fieldName] = value;
-      }
-    });
-
-    return dependentValues;
-  };
-  console.log(data)
   const columns: ColumnsType<ToolSet> = [
     {
       title: t('settings.toolsets.name', { defaultValue: 'Name' }),
@@ -362,7 +277,7 @@ const ToolSetSettings: React.FC = () => {
       key: 'status',
       render: (status) => (
         <Tag color={status === 'enabled' ? 'green' : 'red'}>
-          {status === 'enabled' ? t('common.enabled', { defaultValue: 'Enabled' }) : t('common.disabled', { defaultValue: 'Disabled' })}
+          {status === 'enabled' ? tCommon('enabled', { defaultValue: 'Enabled' }) : tCommon('disabled', { defaultValue: 'Disabled' })}
         </Tag>
       ),
     },
@@ -501,7 +416,7 @@ const ToolSetSettings: React.FC = () => {
             showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              t('common.pagination.total', {
+              tCommon('pagination.total', {
                 defaultValue: `${range[0]}-${range[1]} of ${total} items`,
                 start: range[0],
                 end: range[1],
@@ -522,13 +437,12 @@ const ToolSetSettings: React.FC = () => {
           setSelectedType('');
         }}
         footer={null}
-        width={600}
+        width={currentTypeDefinition?.ui_schema?.['ui:width'] || 600}
       >
         <Form
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
-          onValuesChange={(_, allValues) => setFormValues(allValues)}
         >
           <Form.Item
             name="name"
@@ -565,16 +479,11 @@ const ToolSetSettings: React.FC = () => {
             />
           </Form.Item>
 
-          {/* Dynamic config fields based on selected type */}
-          {currentTypeDefinition?.config_fields?.map((field) => (
-            <DynamicConfigField
-              key={field.name}
-              field={field}
-              selectedType={selectedType}
-              dependentValues={getDependentValues(field)}
-              formValues={formValues}
-            />
-          ))}
+          <JsonSchemaConfigFormItem
+            name="config"
+            schema={currentTypeDefinition?.config_schema as any}
+            uiSchema={currentTypeDefinition?.ui_schema as any}
+          />
           <Form.Item hidden name="status" label={t('settings.toolsets.status', { defaultValue: 'Status' })}>
             <Input />
           </Form.Item>
@@ -672,7 +581,7 @@ const ToolSetSettings: React.FC = () => {
           )}
         </div>
       </Modal>
-    </div>
+    </div >
   );
 };
 

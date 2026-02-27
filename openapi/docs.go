@@ -6513,6 +6513,368 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_invopop_jsonschema.Schema": {
+            "type": "object",
+            "required": [
+                "$anchor",
+                "$comment",
+                "$defs",
+                "$dynamicRef",
+                "$id",
+                "$ref",
+                "$schema",
+                "additionalProperties",
+                "allOf",
+                "anyOf",
+                "const",
+                "contains",
+                "contentEncoding",
+                "contentMediaType",
+                "contentSchema",
+                "default",
+                "dependentRequired",
+                "dependentSchemas",
+                "deprecated",
+                "description",
+                "else",
+                "enum",
+                "examples",
+                "exclusiveMaximum",
+                "exclusiveMinimum",
+                "format",
+                "if",
+                "items",
+                "maxContains",
+                "maxItems",
+                "maxLength",
+                "maxProperties",
+                "maximum",
+                "minContains",
+                "minItems",
+                "minLength",
+                "minProperties",
+                "minimum",
+                "multipleOf",
+                "not",
+                "oneOf",
+                "pattern",
+                "patternProperties",
+                "prefixItems",
+                "properties",
+                "propertyNames",
+                "readOnly",
+                "required",
+                "then",
+                "title",
+                "type",
+                "uniqueItems",
+                "writeOnly"
+            ],
+            "properties": {
+                "$anchor": {
+                    "description": "section 8.2.2",
+                    "type": "string"
+                },
+                "$comment": {
+                    "description": "section 8.3",
+                    "type": "string"
+                },
+                "$defs": {
+                    "description": "section 8.2.4",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/jsonschema.Definitions"
+                        }
+                    ]
+                },
+                "$dynamicRef": {
+                    "description": "section 8.2.3.2",
+                    "type": "string"
+                },
+                "$id": {
+                    "description": "section 8.2.1",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/jsonschema.ID"
+                        }
+                    ]
+                },
+                "$ref": {
+                    "description": "section 8.2.3.1",
+                    "type": "string"
+                },
+                "$schema": {
+                    "description": "RFC draft-bhutton-json-schema-00",
+                    "type": "string"
+                },
+                "additionalProperties": {
+                    "description": "section 10.3.2.3",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "allOf": {
+                    "description": "RFC draft-bhutton-json-schema-00 section 10.2.1 (Sub-schemas with logic)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                    }
+                },
+                "anyOf": {
+                    "description": "section 10.2.1.2",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                    }
+                },
+                "const": {
+                    "description": "section 6.1.3"
+                },
+                "contains": {
+                    "description": "section 10.3.1.3",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "contentEncoding": {
+                    "description": "RFC draft-bhutton-json-schema-validation-00, section 8",
+                    "type": "string"
+                },
+                "contentMediaType": {
+                    "description": "section 8.4",
+                    "type": "string"
+                },
+                "contentSchema": {
+                    "description": "section 8.5",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "default": {
+                    "description": "section 9.2"
+                },
+                "dependentRequired": {
+                    "description": "section 6.5.4",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "dependentSchemas": {
+                    "description": "section 10.2.2.4",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                    }
+                },
+                "deprecated": {
+                    "description": "section 9.3",
+                    "type": "boolean"
+                },
+                "description": {
+                    "description": "section 9.1",
+                    "type": "string"
+                },
+                "else": {
+                    "description": "section 10.2.2.3",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "enum": {
+                    "description": "section 6.1.2",
+                    "type": "array",
+                    "items": {}
+                },
+                "examples": {
+                    "description": "section 9.5",
+                    "type": "array",
+                    "items": {}
+                },
+                "exclusiveMaximum": {
+                    "description": "section 6.2.3",
+                    "type": "string"
+                },
+                "exclusiveMinimum": {
+                    "description": "section 6.2.5",
+                    "type": "string"
+                },
+                "format": {
+                    "description": "RFC draft-bhutton-json-schema-validation-00, section 7",
+                    "type": "string"
+                },
+                "if": {
+                    "description": "RFC draft-bhutton-json-schema-00 section 10.2.2 (Apply sub-schemas conditionally)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "items": {
+                    "description": "section 10.3.1.2  (replaces additionalItems)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "maxContains": {
+                    "description": "section 6.4.4",
+                    "type": "integer"
+                },
+                "maxItems": {
+                    "description": "section 6.4.1",
+                    "type": "integer"
+                },
+                "maxLength": {
+                    "description": "section 6.3.1",
+                    "type": "integer"
+                },
+                "maxProperties": {
+                    "description": "section 6.5.1",
+                    "type": "integer"
+                },
+                "maximum": {
+                    "description": "section 6.2.2",
+                    "type": "string"
+                },
+                "minContains": {
+                    "description": "section 6.4.5",
+                    "type": "integer"
+                },
+                "minItems": {
+                    "description": "section 6.4.2",
+                    "type": "integer"
+                },
+                "minLength": {
+                    "description": "section 6.3.2",
+                    "type": "integer"
+                },
+                "minProperties": {
+                    "description": "section 6.5.2",
+                    "type": "integer"
+                },
+                "minimum": {
+                    "description": "section 6.2.4",
+                    "type": "string"
+                },
+                "multipleOf": {
+                    "description": "section 6.2.1",
+                    "type": "string"
+                },
+                "not": {
+                    "description": "section 10.2.1.4",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "oneOf": {
+                    "description": "section 10.2.1.3",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                    }
+                },
+                "pattern": {
+                    "description": "section 6.3.3",
+                    "type": "string"
+                },
+                "patternProperties": {
+                    "description": "section 10.3.2.2",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                    }
+                },
+                "prefixItems": {
+                    "description": "RFC draft-bhutton-json-schema-00 section 10.3.1 (arrays)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                    }
+                },
+                "properties": {
+                    "description": "RFC draft-bhutton-json-schema-00 section 10.3.2 (sub-schemas)",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/orderedmap.OrderedMap-string-github_com_invopop_jsonschema_Schema"
+                        }
+                    ]
+                },
+                "propertyNames": {
+                    "description": "section 10.3.2.4",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "readOnly": {
+                    "description": "section 9.4",
+                    "type": "boolean"
+                },
+                "required": {
+                    "description": "section 6.5.3",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "then": {
+                    "description": "section 10.2.2.2",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+                        }
+                    ]
+                },
+                "title": {
+                    "description": "RFC draft-bhutton-json-schema-validation-00, section 9",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "RFC draft-bhutton-json-schema-validation-00, section 6",
+                    "type": "string"
+                },
+                "uniqueItems": {
+                    "description": "section 6.4.3",
+                    "type": "boolean"
+                },
+                "writeOnly": {
+                    "description": "section 9.4",
+                    "type": "boolean"
+                }
+            }
+        },
+        "jsonschema.Definitions": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
+            }
+        },
+        "jsonschema.ID": {
+            "type": "string",
+            "enum": [
+                ""
+            ],
+            "x-enum-varnames": [
+                "EmptyID"
+            ]
+        },
         "model.AIChatMessage": {
             "type": "object",
             "required": [
@@ -8148,20 +8510,21 @@ const docTemplate = `{
                 "ToolTypeFunction"
             ]
         },
+        "orderedmap.OrderedMap-string-github_com_invopop_jsonschema_Schema": {
+            "type": "object"
+        },
         "service.AITypeDefinition": {
             "type": "object",
             "required": [
-                "config_fields",
+                "config_schema",
                 "description",
                 "name",
-                "provider"
+                "provider",
+                "ui_schema"
             ],
             "properties": {
-                "config_fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/util.ConfigField"
-                    }
+                "config_schema": {
+                    "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
                 },
                 "description": {
                     "type": "string"
@@ -8171,6 +8534,10 @@ const docTemplate = `{
                 },
                 "provider": {
                     "$ref": "#/definitions/model.AIModelProvider"
+                },
+                "ui_schema": {
+                    "type": "object",
+                    "additionalProperties": {}
                 }
             }
         },
@@ -8698,17 +9065,15 @@ const docTemplate = `{
         "service.ToolSetTypeDefinition": {
             "type": "object",
             "required": [
-                "config_fields",
+                "config_schema",
                 "description",
                 "name",
-                "tool_set_type"
+                "tool_set_type",
+                "ui_schema"
             ],
             "properties": {
-                "config_fields": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/util.ConfigField"
-                    }
+                "config_schema": {
+                    "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
                 },
                 "description": {
                     "type": "string"
@@ -8718,6 +9083,10 @@ const docTemplate = `{
                 },
                 "tool_set_type": {
                     "$ref": "#/definitions/toolset.ToolSetType"
+                },
+                "ui_schema": {
+                    "type": "object",
+                    "additionalProperties": {}
                 }
             }
         },
@@ -9411,6 +9780,12 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
@@ -9437,6 +9812,12 @@ const docTemplate = `{
                 "Millisecond",
                 "Second",
                 "Minute",
+                "Hour",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
                 "Hour"
             ]
         },
@@ -9447,163 +9828,6 @@ const docTemplate = `{
             ],
             "x-enum-varnames": [
                 "ToolSetTypeUtils"
-            ]
-        },
-        "util.ConfigField": {
-            "type": "object",
-            "required": [
-                "data_source",
-                "default",
-                "description",
-                "display_name",
-                "name",
-                "options",
-                "placeholder",
-                "required",
-                "type",
-                "visible_when"
-            ],
-            "properties": {
-                "data_source": {
-                    "description": "Dynamic data source configuration",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/util.DataSource"
-                        }
-                    ]
-                },
-                "default": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "display_name": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "options": {
-                    "description": "Static options (used when DataSource is nil or type=static)",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/util.ConfigFieldOptions"
-                    }
-                },
-                "placeholder": {
-                    "type": "string"
-                },
-                "required": {
-                    "type": "boolean"
-                },
-                "type": {
-                    "$ref": "#/definitions/util.FieldType"
-                },
-                "visible_when": {
-                    "description": "Condition for field visibility",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/util.VisibleCondition"
-                        }
-                    ]
-                }
-            }
-        },
-        "util.ConfigFieldOptions": {
-            "type": "object",
-            "required": [
-                "label",
-                "value"
-            ],
-            "properties": {
-                "label": {
-                    "type": "string"
-                },
-                "value": {
-                    "type": "string"
-                }
-            }
-        },
-        "util.DataSource": {
-            "type": "object",
-            "required": [
-                "cache",
-                "cache_ttl",
-                "depends_on",
-                "filter",
-                "label_key",
-                "method",
-                "params",
-                "type",
-                "url",
-                "value_key"
-            ],
-            "properties": {
-                "cache": {
-                    "description": "Cache control",
-                    "type": "boolean"
-                },
-                "cache_ttl": {
-                    "description": "Cache TTL in seconds (0 = no expiration)",
-                    "type": "integer"
-                },
-                "depends_on": {
-                    "description": "DependsOn specifies field dependencies (field names that this field depends on)\nWhen dependent fields change, this field's options should be reloaded",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "filter": {
-                    "description": "Filter conditions (flexible filtering for different source types)\nFor toolsets: {\"type\": \"webhook\"} to filter by toolset type\nFor internal: {\"status\": \"active\"} to filter by status, etc.",
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "label_key": {
-                    "description": "Response mapping fields (for API and other sources)",
-                    "type": "string"
-                },
-                "method": {
-                    "description": "HTTP method (GET, POST, etc.)",
-                    "type": "string"
-                },
-                "params": {
-                    "description": "Parameters for API requests (query params or request body)",
-                    "type": "object",
-                    "additionalProperties": true
-                },
-                "type": {
-                    "description": "Type specifies the data source type",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/util.DataSourceType"
-                        }
-                    ]
-                },
-                "url": {
-                    "description": "API-specific fields (when Type = \"api\")",
-                    "type": "string"
-                },
-                "value_key": {
-                    "description": "JSON key for option value",
-                    "type": "string"
-                }
-            }
-        },
-        "util.DataSourceType": {
-            "type": "string",
-            "enum": [
-                "static",
-                "api",
-                "toolsets",
-                "internal"
-            ],
-            "x-enum-varnames": [
-                "DataSourceTypeStatic",
-                "DataSourceTypeAPI",
-                "DataSourceTypeToolsets",
-                "DataSourceTypeInternal"
             ]
         },
         "util.ErrorResponse": {
@@ -9626,32 +9850,6 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "util.FieldType": {
-            "type": "string",
-            "enum": [
-                "text",
-                "string",
-                "password",
-                "number",
-                "boolean",
-                "array",
-                "object",
-                "select"
-            ],
-            "x-enum-comments": {
-                "FieldTypeSelect": "select dropdown"
-            },
-            "x-enum-varnames": [
-                "FieldTypeText",
-                "FieldTypeString",
-                "FieldTypePassword",
-                "FieldTypeNumber",
-                "FieldTypeBoolean",
-                "FieldTypeArray",
-                "FieldTypeObject",
-                "FieldTypeSelect"
-            ]
         },
         "util.MessageData": {
             "type": "object",
@@ -11249,55 +11447,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "util.VisibleCondition": {
-            "type": "object",
-            "required": [
-                "field",
-                "operator",
-                "value"
-            ],
-            "properties": {
-                "field": {
-                    "description": "Field is the name of the field to check",
-                    "type": "string"
-                },
-                "operator": {
-                    "description": "Operator is the comparison operator (eq, ne, in, not_in, contains)",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/util.VisibleConditionOperator"
-                        }
-                    ]
-                },
-                "value": {
-                    "description": "Value is the value to compare against (can be a single value or array for in/not_in)"
-                }
-            }
-        },
-        "util.VisibleConditionOperator": {
-            "type": "string",
-            "enum": [
-                "eq",
-                "ne",
-                "in",
-                "not_in",
-                "contains"
-            ],
-            "x-enum-varnames": [
-                "OperatorEq",
-                "OperatorNe",
-                "OperatorIn",
-                "OperatorNotIn",
-                "OperatorContains"
-            ]
         }
     }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "v1.10.1",
+	Version:          "v1.11.0",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},

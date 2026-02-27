@@ -255,7 +255,7 @@ const OrganizationSettings: React.FC = () => {
             total: data?.total || 0,
             showSizeChanger: true,
             showTotal: (total, range) =>
-              t('common.pagination.total', {
+              tCommon('pagination.total', {
                 defaultValue: `${range[0]}-${range[1]} of ${total} items`,
                 start: range[0],
                 end: range[1],

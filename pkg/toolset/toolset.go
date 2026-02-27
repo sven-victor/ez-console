@@ -22,6 +22,7 @@ import (
 	"sync"
 
 	"github.com/go-kit/log/level"
+	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/errors"
@@ -46,6 +47,13 @@ type ToolSetFactory interface {
 	GetDescription() string
 }
 
+// ToolSetFactoryV2 extends ToolSetFactory with optional GetConfigSchema.
+// When implemented, GetToolSetTypeDefinitions uses it; otherwise ConfigFields are converted to JSON Schema.
+type ToolSetFactoryV2 interface {
+	ToolSetFactory
+	GetConfigSchema() (schema *jsonschema.Schema, uiSchema map[string]any, err error)
+}
+
 var registeredToolSets = make(map[ToolSetType]ToolSetFactory)
 
 func RegisterToolSet(toolSetType ToolSetType, toolSetFactory ToolSetFactory) error {
@@ -56,6 +64,10 @@ func RegisterToolSet(toolSetType ToolSetType, toolSetFactory ToolSetFactory) err
 	toolSetFactory.GetDescription()
 	registeredToolSets[toolSetType] = toolSetFactory
 	return nil
+}
+
+func RegisterToolSetV2(toolSetType ToolSetType, toolSetFactory ToolSetFactoryV2) error {
+	return RegisterToolSet(toolSetType, toolSetFactory)
 }
 
 func GetToolSetFactory(toolSetType ToolSetType) (ToolSetFactory, bool) {

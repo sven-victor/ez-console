@@ -366,6 +366,19 @@ export default {
     user_agent: '用户代理',
   },
 
+  action: {
+    system: {
+      toolsets: {
+        update: '更新工具集',
+      },
+    },
+    authorization: {
+      user: {
+        login: '用户登录',
+      },
+    },
+  },
+
   actions: {
     login: '登录',
     logout: '登出',
@@ -381,6 +394,11 @@ export default {
     failed: '失败'
   },
   serviceAccount: {
+    organization: '组织',
+    global: '全局',
+    scope: '范围',
+    filterByOrg: '全部组织',
+    organizationScoped: '组织',
     insertTemplate: '插入模板',
     allowAll: '允许所有',
     denyAll: '拒绝所有',

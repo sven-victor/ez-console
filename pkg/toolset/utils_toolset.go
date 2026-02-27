@@ -21,7 +21,7 @@ import (
 	"time"
 
 	openai "github.com/sashabaranov/go-openai"
-	"github.com/sashabaranov/go-openai/jsonschema"
+	openaijsonschema "github.com/sashabaranov/go-openai/jsonschema"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
@@ -64,11 +64,11 @@ func (t *UtilsToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 		Function: &openai.FunctionDefinition{
 			Name:        "now",
 			Description: "Get the current time",
-			Parameters: jsonschema.Definition{
-				Type: jsonschema.Object,
-				Properties: map[string]jsonschema.Definition{
+			Parameters: openaijsonschema.Definition{
+				Type: openaijsonschema.Object,
+				Properties: map[string]openaijsonschema.Definition{
 					"format": {
-						Type:        jsonschema.String,
+						Type:        openaijsonschema.String,
 						Description: "The format of the time, e.g. 2006-01-02 15:04:05",
 					},
 				},
@@ -79,11 +79,11 @@ func (t *UtilsToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 		Function: &openai.FunctionDefinition{
 			Name:        "sleep",
 			Description: "Sleep for a given number of seconds",
-			Parameters: jsonschema.Definition{
-				Type: jsonschema.Object,
-				Properties: map[string]jsonschema.Definition{
+			Parameters: openaijsonschema.Definition{
+				Type: openaijsonschema.Object,
+				Properties: map[string]openaijsonschema.Definition{
 					"seconds": {
-						Type:        jsonschema.Integer,
+						Type:        openaijsonschema.Integer,
 						Description: "The number of seconds to sleep, e.g. 10, max 60",
 					},
 				},

@@ -316,6 +316,19 @@ export default {
     user_agent: 'Agente de usuario',
   },
 
+  action: {
+    system: {
+      toolsets: {
+        update: 'Actualizar conjuntos de herramientas',
+      },
+    },
+    authorization: {
+      user: {
+        login: 'Inicio de sesión de usuario',
+      },
+    },
+  },
+
   actions: {
     login: 'Iniciar sesión',
     logout: 'Cerrar sesión',
@@ -331,6 +344,11 @@ export default {
     failed: 'Fallido'
   },
   serviceAccount: {
+    organization: 'Organización',
+    global: 'Global',
+    scope: 'Ámbito',
+    filterByOrg: 'Todas las organizaciones',
+    organizationScoped: 'Organización',
     name: 'Cuenta de servicio',
     description: 'Descripción de la cuenta de servicio',
     createdAt: 'Creado el',
@@ -385,6 +403,7 @@ export default {
 
     policy: 'Gestión de políticas',
     policyStatements: 'Declaraciones de política',
+    editPolicy: 'Editar política',
     addStatement: 'Añadir declaración de política',
     editStatement: 'Editar declaración de política',
     deleteStatement: 'Eliminar declaración de política',

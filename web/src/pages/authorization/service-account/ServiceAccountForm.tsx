@@ -115,9 +115,12 @@ const ServiceAccountForm = ({
   return <Modal
     title={serviceAccountID ? t('serviceAccount.edit', { defaultValue: 'Edit Service Account' }) : t('serviceAccount.create', { defaultValue: 'Create Service Account' })}
     width={500}
-    onClose={() => {
-      form.resetFields();
-      onClose()
+    loading={loadingServiceAccount}
+    afterOpenChange={(open) => {
+      if (!open) {
+        form.resetFields();
+        onClose()
+      }
     }}
     onCancel={() => {
       form.resetFields();

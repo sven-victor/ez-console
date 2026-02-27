@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -232,7 +233,8 @@ func (s *ToolSetService) GetAllEnabledToolSetInstances(ctx context.Context, orga
 
 type ToolSetTypeDefinition struct {
 	ToolSetType  toolset.ToolSetType `json:"tool_set_type"`
-	ConfigFields []util.ConfigField  `json:"config_fields"`
+	ConfigSchema *jsonschema.Schema  `json:"config_schema,omitempty"`
+	UISchema     map[string]any      `json:"ui_schema,omitempty"`
 	Description  string              `json:"description"`
 	Name         string              `json:"name"`
 }
@@ -240,13 +242,24 @@ type ToolSetTypeDefinition struct {
 func (s *ToolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSetTypeDefinition {
 	toolSets := toolset.GetRegisteredToolSets()
 	definitions := []ToolSetTypeDefinition{}
-	for name, toolSet := range toolSets {
-		definitions = append(definitions, ToolSetTypeDefinition{
-			ToolSetType:  name,
-			Description:  toolSet.GetDescription(),
-			Name:         toolSet.GetName(),
-			ConfigFields: toolSet.GetConfigFields(),
-		})
+	for name, factory := range toolSets {
+		def := ToolSetTypeDefinition{
+			ToolSetType: name,
+			Description: factory.GetDescription(),
+			Name:        factory.GetName(),
+		}
+		if v2, ok := factory.(toolset.ToolSetFactoryV2); ok {
+			schema, uiSchema, err := v2.GetConfigSchema()
+			if err == nil && schema != nil {
+				def.ConfigSchema = schema
+			} else {
+				def.ConfigSchema = util.ConfigFieldsToJSONSchema(factory.GetConfigFields())
+			}
+			def.UISchema = uiSchema
+		} else {
+			def.ConfigSchema = util.ConfigFieldsToJSONSchema(factory.GetConfigFields())
+		}
+		definitions = append(definitions, def)
 	}
 	return definitions
 }

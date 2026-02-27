@@ -16,8 +16,10 @@
 
 import { defineConfig, UserConfig, ConfigEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 import dts from 'vite-plugin-dts'
 import path from 'path'
+import pkg from './package.json'
 
 
 function toSnakeCase(str: string) {
@@ -98,6 +100,11 @@ export default defineConfig((env: ConfigEnv) => {
       ...baseConfig,
       base: '/',
       plugins: [
+        visualizer({
+          open: true,
+          filename: 'stats.html',
+          gzipSize: true
+        }),
         ...baseConfig.plugins,
         dts({
           insertTypesEntry: true,
@@ -132,24 +139,7 @@ export default defineConfig((env: ConfigEnv) => {
             },
           },
           external: [
-            "@ant-design/icons",
-            "@ant-design/pro-components",
-            "@ant-design/x",
-            "@ant-design/x-markdown",
-            "@ant-design/x-sdk",
-            "ahooks",
-            "antd",
-            "antd-style",
-            "axios",
-            "classnames",
-            "dayjs",
-            "i18next",
-            "lodash-es",
-            "react",
-            "react-dom",
-            "react-i18next",
-            "react-query",
-            "react-router-dom"
+            ...Object.keys(pkg.peerDependencies),
           ],
         },
         cssCodeSplit: false

@@ -109,10 +109,11 @@ declare global {
     }
   
     interface AITypeDefinition {
-      config_fields: ConfigField[];
+      config_schema: Schema;
       description: string;
       name: string;
       provider: AIModelProvider;
+      ui_schema: Record<string, any>;
     }
   
     interface assignPermissionsParams {
@@ -211,27 +212,6 @@ declare global {
     }
   
     type Condition = true;
-  
-    interface ConfigField {
-      /** Dynamic data source configuration */
-      data_source: DataSource;
-      default: string;
-      description: string;
-      display_name: string;
-      name: string;
-      /** Static options (used when DataSource is nil or type=static) */
-      options: ConfigFieldOptions[];
-      placeholder: string;
-      required: boolean;
-      type: FieldType;
-      /** Condition for field visibility */
-      visible_when: VisibleCondition;
-    }
-  
-    interface ConfigFieldOptions {
-      label: string;
-      value: string;
-    }
   
     interface CreateAIModelRequest {
       config: Record<string, any>;
@@ -341,33 +321,7 @@ declare global {
       label: string;
     }
   
-    interface DataSource {
-      /** Cache control */
-      cache: boolean;
-      /** Cache TTL in seconds (0 = no expiration) */
-      cache_ttl: number;
-      /** DependsOn specifies field dependencies (field names that this field depends on)
-  When dependent fields change, this field's options should be reloaded */
-      depends_on: string[];
-      /** Filter conditions (flexible filtering for different source types)
-  For toolsets: {"type": "webhook"} to filter by toolset type
-  For internal: {"status": "active"} to filter by status, etc. */
-      filter: Record<string, any>;
-      /** Response mapping fields (for API and other sources) */
-      label_key: string;
-      /** HTTP method (GET, POST, etc.) */
-      method: string;
-      /** Parameters for API requests (query params or request body) */
-      params: Record<string, any>;
-      /** Type specifies the data source type */
-      type: DataSourceType;
-      /** API-specific fields (when Type = "api") */
-      url: string;
-      /** JSON key for option value */
-      value_key: string;
-    }
-  
-    type DataSourceType = "static" | "api" | "toolsets" | "internal";
+    type Definitions = true;
   
     interface deleteAIModelParams {
       /** AI model ID */
@@ -457,16 +411,6 @@ declare global {
     }
   
     type EventType = "content" | "tool_call" | "error";
-  
-    type FieldType =
-      | "text"
-      | "string"
-      | "password"
-      | "number"
-      | "boolean"
-      | "array"
-      | "object"
-      | "select";
   
     interface File {
       access: AccessType;
@@ -646,6 +590,8 @@ declare global {
       reason: string;
       status: string;
     }
+  
+    type ID = "";
   
     interface ImportLDAPUsersRequest {
       user_dn?: string[];
@@ -916,6 +862,8 @@ declare global {
       username_field: string;
       wellknown_endpoint: string;
     }
+  
+    type OrderedMapStringGithubComInvopopJsonschemaSchema = true;
   
     interface Organization {
       created_at: string;
@@ -1508,6 +1456,115 @@ declare global {
   
     type RoleMappingMode = "disabled" | "auto" | "enforce";
   
+    interface Schema {
+      /** section 8.2.2 */
+      $anchor: string;
+      /** section 8.3 */
+      $comment: string;
+      /** section 8.2.4 */
+      $defs: Definitions;
+      /** section 8.2.3.2 */
+      $dynamicRef: string;
+      /** section 8.2.1 */
+      $id: ID;
+      /** section 8.2.3.1 */
+      $ref: string;
+      /** RFC draft-bhutton-json-schema-00 */
+      $schema: string;
+      /** section 10.3.2.3 */
+      additionalProperties: Schema;
+      /** RFC draft-bhutton-json-schema-00 section 10.2.1 (Sub-schemas with logic) */
+      allOf: Schema[];
+      /** section 10.2.1.2 */
+      anyOf: Schema[];
+      /** section 6.1.3 */
+      const: any;
+      /** section 10.3.1.3 */
+      contains: Schema;
+      /** RFC draft-bhutton-json-schema-validation-00, section 8 */
+      contentEncoding: string;
+      /** section 8.4 */
+      contentMediaType: string;
+      /** section 8.5 */
+      contentSchema: Schema;
+      /** section 9.2 */
+      default: any;
+      /** section 6.5.4 */
+      dependentRequired: Record<string, any>;
+      /** section 10.2.2.4 */
+      dependentSchemas: Record<string, any>;
+      /** section 9.3 */
+      deprecated: boolean;
+      /** section 9.1 */
+      description: string;
+      /** section 10.2.2.3 */
+      else: Schema;
+      /** section 6.1.2 */
+      enum: any[];
+      /** section 9.5 */
+      examples: any[];
+      /** section 6.2.3 */
+      exclusiveMaximum: string;
+      /** section 6.2.5 */
+      exclusiveMinimum: string;
+      /** RFC draft-bhutton-json-schema-validation-00, section 7 */
+      format: string;
+      /** RFC draft-bhutton-json-schema-00 section 10.2.2 (Apply sub-schemas conditionally) */
+      if: Schema;
+      /** section 10.3.1.2  (replaces additionalItems) */
+      items: Schema;
+      /** section 6.4.4 */
+      maxContains: number;
+      /** section 6.4.1 */
+      maxItems: number;
+      /** section 6.3.1 */
+      maxLength: number;
+      /** section 6.5.1 */
+      maxProperties: number;
+      /** section 6.2.2 */
+      maximum: string;
+      /** section 6.4.5 */
+      minContains: number;
+      /** section 6.4.2 */
+      minItems: number;
+      /** section 6.3.2 */
+      minLength: number;
+      /** section 6.5.2 */
+      minProperties: number;
+      /** section 6.2.4 */
+      minimum: string;
+      /** section 6.2.1 */
+      multipleOf: string;
+      /** section 10.2.1.4 */
+      not: Schema;
+      /** section 10.2.1.3 */
+      oneOf: Schema[];
+      /** section 6.3.3 */
+      pattern: string;
+      /** section 10.3.2.2 */
+      patternProperties: Record<string, any>;
+      /** RFC draft-bhutton-json-schema-00 section 10.3.1 (arrays) */
+      prefixItems: Schema[];
+      /** RFC draft-bhutton-json-schema-00 section 10.3.2 (sub-schemas) */
+      properties: OrderedMapStringGithubComInvopopJsonschemaSchema;
+      /** section 10.3.2.4 */
+      propertyNames: Schema;
+      /** section 9.4 */
+      readOnly: boolean;
+      /** section 6.5.3 */
+      required: string[];
+      /** section 10.2.2.2 */
+      then: Schema;
+      /** RFC draft-bhutton-json-schema-validation-00, section 9 */
+      title: string;
+      /** RFC draft-bhutton-json-schema-validation-00, section 6 */
+      type: string;
+      /** section 6.4.3 */
+      uniqueItems: boolean;
+      /** section 9.4 */
+      writeOnly: boolean;
+    }
+  
     interface SecuritySettings {
       history_password_check: boolean;
       history_password_count: number;
@@ -1808,10 +1865,11 @@ declare global {
     type ToolSetType = "utils";
   
     interface ToolSetTypeDefinition {
-      config_fields: ConfigField[];
+      config_schema: Schema;
       description: string;
       name: string;
       tool_set_type: ToolSetType;
+      ui_schema: Record<string, any>;
     }
   
     type ToolType = "function";
@@ -2049,17 +2107,6 @@ declare global {
       mfa_type: string;
       token?: string;
     }
-  
-    interface VisibleCondition {
-      /** Field is the name of the field to check */
-      field: string;
-      /** Operator is the comparison operator (eq, ne, in, not_in, contains) */
-      operator: VisibleConditionOperator;
-      /** Value is the value to compare against (can be a single value or array for in/not_in) */
-      value: any;
-    }
-  
-    type VisibleConditionOperator = "eq" | "ne" | "in" | "not_in" | "contains";
   }
   
 }

@@ -468,6 +468,264 @@ definitions:
     - code
     - mfa_type
     type: object
+  github_com_invopop_jsonschema.Schema:
+    properties:
+      $anchor:
+        description: section 8.2.2
+        type: string
+      $comment:
+        description: section 8.3
+        type: string
+      $defs:
+        allOf:
+        - $ref: '#/definitions/jsonschema.Definitions'
+        description: section 8.2.4
+      $dynamicRef:
+        description: section 8.2.3.2
+        type: string
+      $id:
+        allOf:
+        - $ref: '#/definitions/jsonschema.ID'
+        description: section 8.2.1
+      $ref:
+        description: section 8.2.3.1
+        type: string
+      $schema:
+        description: RFC draft-bhutton-json-schema-00
+        type: string
+      additionalProperties:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.3.2.3
+      allOf:
+        description: RFC draft-bhutton-json-schema-00 section 10.2.1 (Sub-schemas
+          with logic)
+        items:
+          $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        type: array
+      anyOf:
+        description: section 10.2.1.2
+        items:
+          $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        type: array
+      const:
+        description: section 6.1.3
+      contains:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.3.1.3
+      contentEncoding:
+        description: RFC draft-bhutton-json-schema-validation-00, section 8
+        type: string
+      contentMediaType:
+        description: section 8.4
+        type: string
+      contentSchema:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 8.5
+      default:
+        description: section 9.2
+      dependentRequired:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        description: section 6.5.4
+        type: object
+      dependentSchemas:
+        additionalProperties:
+          $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.2.2.4
+        type: object
+      deprecated:
+        description: section 9.3
+        type: boolean
+      description:
+        description: section 9.1
+        type: string
+      else:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.2.2.3
+      enum:
+        description: section 6.1.2
+        items: {}
+        type: array
+      examples:
+        description: section 9.5
+        items: {}
+        type: array
+      exclusiveMaximum:
+        description: section 6.2.3
+        type: string
+      exclusiveMinimum:
+        description: section 6.2.5
+        type: string
+      format:
+        description: RFC draft-bhutton-json-schema-validation-00, section 7
+        type: string
+      if:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: RFC draft-bhutton-json-schema-00 section 10.2.2 (Apply sub-schemas
+          conditionally)
+      items:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.3.1.2  (replaces additionalItems)
+      maxContains:
+        description: section 6.4.4
+        type: integer
+      maxItems:
+        description: section 6.4.1
+        type: integer
+      maxLength:
+        description: section 6.3.1
+        type: integer
+      maxProperties:
+        description: section 6.5.1
+        type: integer
+      maximum:
+        description: section 6.2.2
+        type: string
+      minContains:
+        description: section 6.4.5
+        type: integer
+      minItems:
+        description: section 6.4.2
+        type: integer
+      minLength:
+        description: section 6.3.2
+        type: integer
+      minProperties:
+        description: section 6.5.2
+        type: integer
+      minimum:
+        description: section 6.2.4
+        type: string
+      multipleOf:
+        description: section 6.2.1
+        type: string
+      not:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.2.1.4
+      oneOf:
+        description: section 10.2.1.3
+        items:
+          $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        type: array
+      pattern:
+        description: section 6.3.3
+        type: string
+      patternProperties:
+        additionalProperties:
+          $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.3.2.2
+        type: object
+      prefixItems:
+        description: RFC draft-bhutton-json-schema-00 section 10.3.1 (arrays)
+        items:
+          $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        type: array
+      properties:
+        allOf:
+        - $ref: '#/definitions/orderedmap.OrderedMap-string-github_com_invopop_jsonschema_Schema'
+        description: RFC draft-bhutton-json-schema-00 section 10.3.2 (sub-schemas)
+      propertyNames:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.3.2.4
+      readOnly:
+        description: section 9.4
+        type: boolean
+      required:
+        description: section 6.5.3
+        items:
+          type: string
+        type: array
+      then:
+        allOf:
+        - $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+        description: section 10.2.2.2
+      title:
+        description: RFC draft-bhutton-json-schema-validation-00, section 9
+        type: string
+      type:
+        description: RFC draft-bhutton-json-schema-validation-00, section 6
+        type: string
+      uniqueItems:
+        description: section 6.4.3
+        type: boolean
+      writeOnly:
+        description: section 9.4
+        type: boolean
+    required:
+    - $anchor
+    - $comment
+    - $defs
+    - $dynamicRef
+    - $id
+    - $ref
+    - $schema
+    - additionalProperties
+    - allOf
+    - anyOf
+    - const
+    - contains
+    - contentEncoding
+    - contentMediaType
+    - contentSchema
+    - default
+    - dependentRequired
+    - dependentSchemas
+    - deprecated
+    - description
+    - else
+    - enum
+    - examples
+    - exclusiveMaximum
+    - exclusiveMinimum
+    - format
+    - if
+    - items
+    - maxContains
+    - maxItems
+    - maxLength
+    - maxProperties
+    - maximum
+    - minContains
+    - minItems
+    - minLength
+    - minProperties
+    - minimum
+    - multipleOf
+    - not
+    - oneOf
+    - pattern
+    - patternProperties
+    - prefixItems
+    - properties
+    - propertyNames
+    - readOnly
+    - required
+    - then
+    - title
+    - type
+    - uniqueItems
+    - writeOnly
+    type: object
+  jsonschema.Definitions:
+    additionalProperties:
+      $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
+    type: object
+  jsonschema.ID:
+    enum:
+    - ""
+    type: string
+    x-enum-varnames:
+    - EmptyID
   model.AIChatMessage:
     properties:
       content:
@@ -1665,23 +1923,27 @@ definitions:
     type: string
     x-enum-varnames:
     - ToolTypeFunction
+  orderedmap.OrderedMap-string-github_com_invopop_jsonschema_Schema:
+    type: object
   service.AITypeDefinition:
     properties:
-      config_fields:
-        items:
-          $ref: '#/definitions/util.ConfigField'
-        type: array
+      config_schema:
+        $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
       description:
         type: string
       name:
         type: string
       provider:
         $ref: '#/definitions/model.AIModelProvider'
+      ui_schema:
+        additionalProperties: {}
+        type: object
     required:
-    - config_fields
+    - config_schema
     - description
     - name
     - provider
+    - ui_schema
     type: object
   service.Chart:
     properties:
@@ -2053,21 +2315,23 @@ definitions:
     type: object
   service.ToolSetTypeDefinition:
     properties:
-      config_fields:
-        items:
-          $ref: '#/definitions/util.ConfigField'
-        type: array
+      config_schema:
+        $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
       description:
         type: string
       name:
         type: string
       tool_set_type:
         $ref: '#/definitions/toolset.ToolSetType'
+      ui_schema:
+        additionalProperties: {}
+        type: object
     required:
-    - config_fields
+    - config_schema
     - description
     - name
     - tool_set_type
+    - ui_schema
     type: object
   service.UpdateUserRequest:
     properties:
@@ -2561,6 +2825,12 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -2587,129 +2857,18 @@ definitions:
     - Second
     - Minute
     - Hour
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
   toolset.ToolSetType:
     enum:
     - utils
     type: string
     x-enum-varnames:
     - ToolSetTypeUtils
-  util.ConfigField:
-    properties:
-      data_source:
-        allOf:
-        - $ref: '#/definitions/util.DataSource'
-        description: Dynamic data source configuration
-      default:
-        type: string
-      description:
-        type: string
-      display_name:
-        type: string
-      name:
-        type: string
-      options:
-        description: Static options (used when DataSource is nil or type=static)
-        items:
-          $ref: '#/definitions/util.ConfigFieldOptions'
-        type: array
-      placeholder:
-        type: string
-      required:
-        type: boolean
-      type:
-        $ref: '#/definitions/util.FieldType'
-      visible_when:
-        allOf:
-        - $ref: '#/definitions/util.VisibleCondition'
-        description: Condition for field visibility
-    required:
-    - data_source
-    - default
-    - description
-    - display_name
-    - name
-    - options
-    - placeholder
-    - required
-    - type
-    - visible_when
-    type: object
-  util.ConfigFieldOptions:
-    properties:
-      label:
-        type: string
-      value:
-        type: string
-    required:
-    - label
-    - value
-    type: object
-  util.DataSource:
-    properties:
-      cache:
-        description: Cache control
-        type: boolean
-      cache_ttl:
-        description: Cache TTL in seconds (0 = no expiration)
-        type: integer
-      depends_on:
-        description: |-
-          DependsOn specifies field dependencies (field names that this field depends on)
-          When dependent fields change, this field's options should be reloaded
-        items:
-          type: string
-        type: array
-      filter:
-        additionalProperties: true
-        description: |-
-          Filter conditions (flexible filtering for different source types)
-          For toolsets: {"type": "webhook"} to filter by toolset type
-          For internal: {"status": "active"} to filter by status, etc.
-        type: object
-      label_key:
-        description: Response mapping fields (for API and other sources)
-        type: string
-      method:
-        description: HTTP method (GET, POST, etc.)
-        type: string
-      params:
-        additionalProperties: true
-        description: Parameters for API requests (query params or request body)
-        type: object
-      type:
-        allOf:
-        - $ref: '#/definitions/util.DataSourceType'
-        description: Type specifies the data source type
-      url:
-        description: API-specific fields (when Type = "api")
-        type: string
-      value_key:
-        description: JSON key for option value
-        type: string
-    required:
-    - cache
-    - cache_ttl
-    - depends_on
-    - filter
-    - label_key
-    - method
-    - params
-    - type
-    - url
-    - value_key
-    type: object
-  util.DataSourceType:
-    enum:
-    - static
-    - api
-    - toolsets
-    - internal
-    type: string
-    x-enum-varnames:
-    - DataSourceTypeStatic
-    - DataSourceTypeAPI
-    - DataSourceTypeToolsets
-    - DataSourceTypeInternal
   util.ErrorResponse:
     properties:
       code:
@@ -2725,28 +2884,6 @@ definitions:
     - message
     - trace_id
     type: object
-  util.FieldType:
-    enum:
-    - text
-    - string
-    - password
-    - number
-    - boolean
-    - array
-    - object
-    - select
-    type: string
-    x-enum-comments:
-      FieldTypeSelect: select dropdown
-    x-enum-varnames:
-    - FieldTypeText
-    - FieldTypeString
-    - FieldTypePassword
-    - FieldTypeNumber
-    - FieldTypeBoolean
-    - FieldTypeArray
-    - FieldTypeObject
-    - FieldTypeSelect
   util.MessageData:
     properties:
       message:
@@ -3860,41 +3997,10 @@ definitions:
     - err
     - trace_id
     type: object
-  util.VisibleCondition:
-    properties:
-      field:
-        description: Field is the name of the field to check
-        type: string
-      operator:
-        allOf:
-        - $ref: '#/definitions/util.VisibleConditionOperator'
-        description: Operator is the comparison operator (eq, ne, in, not_in, contains)
-      value:
-        description: Value is the value to compare against (can be a single value
-          or array for in/not_in)
-    required:
-    - field
-    - operator
-    - value
-    type: object
-  util.VisibleConditionOperator:
-    enum:
-    - eq
-    - ne
-    - in
-    - not_in
-    - contains
-    type: string
-    x-enum-varnames:
-    - OperatorEq
-    - OperatorNe
-    - OperatorIn
-    - OperatorNotIn
-    - OperatorContains
 info:
   contact: {}
   title: EZ Console API
-  version: v1.10.1
+  version: v1.11.0
 paths:
   /api/ai/chat/sessions:
     get:

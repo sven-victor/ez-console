@@ -316,6 +316,19 @@ export default {
     user_agent: 'User Agent',
   },
 
+  action: {
+    system: {
+      toolsets: {
+        update: 'Toolsets aktualisieren',
+      },
+    },
+    authorization: {
+      user: {
+        login: 'Benutzeranmeldung',
+      },
+    },
+  },
+
   actions: {
     login: 'Anmelden',
     logout: 'Abmelden',
@@ -331,6 +344,11 @@ export default {
     failed: 'Fehlgeschlagen'
   },
   serviceAccount: {
+    organization: 'Organisation',
+    global: 'Global',
+    scope: 'Geltungsbereich',
+    filterByOrg: 'Alle Organisationen',
+    organizationScoped: 'Organisation',
     name: 'Dienstkonto',
     description: 'Beschreibung des Dienstkontos',
     createdAt: 'Erstellt am',
@@ -385,6 +403,7 @@ export default {
 
     policy: 'Richtlinienverwaltung',
     policyStatements: 'Richtlinienanweisungen',
+    editPolicy: 'Richtlinie bearbeiten',
     addStatement: 'Richtlinienanweisung hinzufügen',
     editStatement: 'Richtlinienanweisung bearbeiten',
     deleteStatement: 'Richtlinienanweisung löschen',
