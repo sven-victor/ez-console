@@ -549,6 +549,15 @@ declare global {
       id: string;
     }
   
+    interface getTaskScheduleHistoryParams {
+      /** Schedule ID */
+      id: string;
+      /** Page number */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+    }
+  
     interface getToolSetParams {
       /** Toolset ID */
       id: string;
@@ -1136,6 +1145,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArrayServiceScheduledJobState {
+      code: string;
+      data: ScheduledJobState[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayServiceSessionInfo {
       code: string;
       data: SessionInfo[];
@@ -1456,6 +1472,17 @@ declare global {
   
     type RoleMappingMode = "disabled" | "auto" | "enforce";
   
+    interface ScheduledJobState {
+      description: string;
+      enabled: boolean;
+      id: string;
+      last_run: string;
+      name: string;
+      next_run: string;
+      spec: string;
+      task_type: string;
+    }
+  
     interface Schema {
       /** section 8.2.2 */
       $anchor: string;
@@ -1752,8 +1779,13 @@ declare global {
     interface Task {
       artifact_file_key: string;
       artifact_file_name: string;
+      auto_retry_count: number;
+      /** user or system */
+      category: TaskCategory;
       created_at: string;
       creator_id: string;
+      /** set when task was created by a scheduled job */
+      cron_schedule_id: string;
       error: string;
       finished_at: string;
       id: string;
@@ -1769,6 +1801,8 @@ declare global {
       type: string;
       updated_at: string;
     }
+  
+    type TaskCategory = "user" | "system";
   
     interface TaskLogEntry {
       created_at: string;
@@ -1804,6 +1838,11 @@ declare global {
   
     interface testToolSetParams {
       /** Toolset ID */
+      id: string;
+    }
+  
+    interface toggleTaskScheduleParams {
+      /** Schedule ID */
       id: string;
     }
   
@@ -1873,6 +1912,11 @@ declare global {
     }
   
     type ToolType = "function";
+  
+    interface triggerTaskScheduleParams {
+      /** Schedule ID */
+      id: string;
+    }
   
     interface unlockUserParams {
       /** User ID */

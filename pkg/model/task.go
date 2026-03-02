@@ -32,6 +32,15 @@ const (
 // TaskType represents the type of a task
 type TaskType string
 
+type TaskCategory string
+
+// TaskCategory identifies whether a task is user-facing or system-internal.
+// Only tasks with category "user" are shown in the header task dropdown.
+const (
+	TaskCategoryUser   TaskCategory = "user"
+	TaskCategorySystem TaskCategory = "system"
+)
+
 // Task is the model for background tasks
 type Task struct {
 	Base
@@ -45,9 +54,13 @@ type Task struct {
 	ArtifactFileName string     `json:"artifact_file_name,omitempty"`
 	RetryCount       int        `gorm:"default:0" json:"retry_count"`
 	MaxRetries       int        `gorm:"default:0" json:"max_retries"`
+	AutoRetryCount   int        `gorm:"default:0" json:"auto_retry_count"`
 	StartedAt        *time.Time `json:"started_at,omitempty"`
 	FinishedAt       *time.Time `json:"finished_at,omitempty"`
 	Payload          string     `gorm:"type:text" json:"payload,omitempty"` // optional JSON payload for task input
+
+	Category       TaskCategory `gorm:"size:32;not null;index;default:user" json:"category"` // user or system
+	CronScheduleID string       `gorm:"size:64;index" json:"cron_schedule_id,omitempty"`     // set when task was created by a scheduled job
 }
 
 // TaskLogEntry represents a single task log line returned by the task logs API.

@@ -26,7 +26,7 @@ import (
 
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
-	"github.com/sven-victor/ez-console/pkg/task"
+	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 )
 
 const userExportTaskType model.TaskType = "user_export"
@@ -44,7 +44,7 @@ type userExportRunner struct {
 func (r *userExportRunner) Run(
 	ctx context.Context,
 	t *model.Task,
-	progressCallback task.ProgressCallback,
+	progressCallback taskscheduler.ProgressCallback,
 	cancelCh <-chan struct{},
 ) (interface{}, error) {
 	var payload UserExportPayload
@@ -69,7 +69,7 @@ func (r *userExportRunner) Run(
 	for {
 		select {
 		case <-cancelCh:
-			return nil, task.ErrCancelled
+			return nil, taskscheduler.ErrCancelled
 		default:
 		}
 		users, n, err := r.svc.ListUsers(ctx, payload.Keywords, payload.Status, current, pageSize)
@@ -139,16 +139,8 @@ func (r *userExportRunner) Run(
 	return map[string]interface{}{"file_key": file.ResourceID, "rows": written}, nil
 }
 
-type userExportRunnerFactory struct {
-	svc *service.Service
-}
-
-func (f *userExportRunnerFactory) CreateRunner() (task.TaskRunner, error) {
-	return &userExportRunner{svc: f.svc}, nil
-}
-
 // RegisterUserExportTask registers the user export task type with the task registry.
 // Must be called once at server startup before TaskService.Start.
 func RegisterUserExportTask(svc *service.Service) {
-	task.RegisterTaskType(userExportTaskType, &userExportRunnerFactory{svc: svc})
+	taskscheduler.RegisterTaskType(userExportTaskType, &userExportRunner{svc: svc})
 }

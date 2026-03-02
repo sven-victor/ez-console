@@ -5534,6 +5534,188 @@
                 }
             }
         },
+        "/api/task-schedules": {
+            "get": {
+                "description": "Returns defined cron jobs with next/last run and enabled status.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task Scheduler"
+                ],
+                "summary": "List scheduled tasks",
+                "operationId": "listTaskSchedules",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_service_ScheduledJobState"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/task-schedules/{id}/history": {
+            "get": {
+                "description": "Returns tasks created by the given cron schedule.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task Scheduler"
+                ],
+                "summary": "Get schedule execution history",
+                "operationId": "getTaskScheduleHistory",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_Task"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/task-schedules/{id}/toggle": {
+            "post": {
+                "description": "Enable or disable a cron job by ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task Scheduler"
+                ],
+                "summary": "Toggle scheduled task",
+                "operationId": "toggleTaskSchedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "{\\",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/task-schedules/{id}/trigger": {
+            "post": {
+                "description": "Creates and enqueues one task for the given schedule immediately.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task Scheduler"
+                ],
+                "summary": "Trigger scheduled task",
+                "operationId": "triggerTaskSchedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schedule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_Task"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/tasks": {
             "get": {
                 "description": "Get a list of tasks. Admin sees all; others see only their own.",
@@ -8143,8 +8325,11 @@
             "required": [
                 "artifact_file_key",
                 "artifact_file_name",
+                "auto_retry_count",
+                "category",
                 "created_at",
                 "creator_id",
+                "cron_schedule_id",
                 "error",
                 "finished_at",
                 "id",
@@ -8165,10 +8350,25 @@
                 "artifact_file_name": {
                     "type": "string"
                 },
+                "auto_retry_count": {
+                    "type": "integer"
+                },
+                "category": {
+                    "description": "user or system",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.TaskCategory"
+                        }
+                    ]
+                },
                 "created_at": {
                     "type": "string"
                 },
                 "creator_id": {
+                    "type": "string"
+                },
+                "cron_schedule_id": {
+                    "description": "set when task was created by a scheduled job",
                     "type": "string"
                 },
                 "error": {
@@ -8210,6 +8410,17 @@
                     "type": "string"
                 }
             }
+        },
+        "model.TaskCategory": {
+            "type": "string",
+            "enum": [
+                "user",
+                "system"
+            ],
+            "x-enum-varnames": [
+                "TaskCategoryUser",
+                "TaskCategorySystem"
+            ]
         },
         "model.TaskLogEntry": {
             "type": "object",
@@ -8876,6 +9087,45 @@
                     "type": "string"
                 },
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "service.ScheduledJobState": {
+            "type": "object",
+            "required": [
+                "description",
+                "enabled",
+                "id",
+                "last_run",
+                "name",
+                "next_run",
+                "spec",
+                "task_type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_run": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "next_run": {
+                    "type": "string"
+                },
+                "spec": {
+                    "type": "string"
+                },
+                "task_type": {
                     "type": "string"
                 }
             }
@@ -10511,6 +10761,32 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/service.AITypeDefinition"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_service_ScheduledJobState": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.ScheduledJobState"
                     }
                 },
                 "err": {

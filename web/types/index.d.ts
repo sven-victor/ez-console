@@ -1063,6 +1063,15 @@ export declare interface getTaskParams {
     id: string;
 }
 
+export declare interface getTaskScheduleHistoryParams {
+    /** Schedule ID */
+    id: string;
+    /** Page number */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+}
+
 export declare interface getToolSetParams {
     /** Toolset ID */
     id: string;
@@ -1822,6 +1831,13 @@ export declare interface ResponseArrayServiceAITypeDefinition {
     trace_id: string;
 }
 
+export declare interface ResponseArrayServiceScheduledJobState {
+    code: string;
+    data: ScheduledJobState[];
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayServiceSessionInfo {
     code: string;
     data: SessionInfo[];
@@ -2145,6 +2161,17 @@ export declare interface RoleAIToolPermissionRequest {
 }
 
 export declare type RoleMappingMode = "disabled" | "auto" | "enforce";
+
+export declare interface ScheduledJobState {
+    description: string;
+    enabled: boolean;
+    id: string;
+    last_run: string;
+    name: string;
+    next_run: string;
+    spec: string;
+    task_type: string;
+}
 
 export declare interface Schema {
     /** section 8.2.2 */
@@ -2493,8 +2520,13 @@ export declare interface TableRefProps<T extends API.Entity> extends TableProps<
 export declare interface Task {
     artifact_file_key: string;
     artifact_file_name: string;
+    auto_retry_count: number;
+    /** user or system */
+    category: TaskCategory;
     created_at: string;
     creator_id: string;
+    /** set when task was created by a scheduled job */
+    cron_schedule_id: string;
     error: string;
     finished_at: string;
     id: string;
@@ -2510,6 +2542,8 @@ export declare interface Task {
     type: string;
     updated_at: string;
 }
+
+export declare type TaskCategory = "user" | "system";
 
 export declare interface TaskLogEntry {
     created_at: string;
@@ -2550,6 +2584,11 @@ export declare interface testToolSetParams {
 
 declare interface TextRequestConfig extends Omit<RequestConfig, 'responseType'> {
     responseType: 'text';
+}
+
+export declare interface toggleTaskScheduleParams {
+    /** Schedule ID */
+    id: string;
 }
 
 export declare interface TokenResponse {
@@ -2618,6 +2657,11 @@ export declare interface ToolSetTypeDefinition {
 }
 
 export declare type ToolType = "function";
+
+export declare interface triggerTaskScheduleParams {
+    /** Schedule ID */
+    id: string;
+}
 
 export declare interface unlockUserParams {
     /** User ID */

@@ -363,7 +363,7 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	initSettings(ctx, cfg, svc)
 
 	authorizationapi.RegisterUserExportTask(svc)
-	svc.TaskService.Start(context.Background())
+	svc.TaskService.Start(ctx)
 
 	// Setup API routes
 	api.RegisterControllers(ctx, engine, svc)
@@ -375,6 +375,8 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	for _, option := range options {
 		option(engine)
 	}
+
+	svc.SchedulerService.Start(ctx)
 	// Start the server
 	serverAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	level.Info(logger).Log("msg", "Server starting on", "serverAddr", serverAddr)

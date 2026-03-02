@@ -16,6 +16,7 @@ package taskapi
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -51,6 +52,14 @@ func (c *TaskController) RegisterRoutes(ctx context.Context, router *gin.RouterG
 	{
 		userTasks.GET("", c.ListUserTasks)
 	}
+	taskSchedules := router.Group("/task-schedules")
+	taskSchedules.Use(middleware.RequirePermission("task:schedule:list"))
+	{
+		taskSchedules.GET("", c.ListTaskSchedules)
+		taskSchedules.GET("/:id/history", c.GetTaskScheduleHistory)
+		taskSchedules.POST("/:id/toggle", middleware.RequirePermission("task:schedule:update"), c.ToggleTaskSchedule)
+		taskSchedules.POST("/:id/trigger", middleware.RequirePermission("task:schedule:update"), c.TriggerTaskSchedule)
+	}
 }
 
 func init() {
@@ -60,6 +69,10 @@ func init() {
 		{Code: "task:cancel", Name: "Cancel task", Description: "Cancel a running or pending task", DefaultRoleNames: []string{"admin", "operator"}},
 		{Code: "task:retry", Name: "Retry task", Description: "Retry a failed or cancelled task", DefaultRoleNames: []string{"admin", "operator"}},
 		{Code: "task:delete", Name: "Delete task", Description: "Delete a task", DefaultRoleNames: []string{"admin", "operator"}},
+	})
+	middleware.RegisterPermission("Task Scheduler", "View and manage scheduled (cron) tasks", []model.Permission{
+		{Code: "task:schedule:list", Name: "List scheduled tasks", Description: "View defined cron jobs and execution history", DefaultRoleNames: []string{"admin", "operator"}},
+		{Code: "task:schedule:update", Name: "Update scheduled tasks", Description: "Enable/disable and trigger scheduled tasks", DefaultRoleNames: []string{"admin", "operator"}},
 	})
 }
 
@@ -247,4 +260,125 @@ func (c *TaskController) DeleteTask(ctx *gin.Context) {
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, util.MessageData{Message: "Task deleted"})
+}
+
+// ListTaskSchedules returns all registered scheduled jobs with runtime state.
+//
+//	@Summary		List scheduled tasks
+//	@Description	Returns defined cron jobs with next/last run and enabled status.
+//	@ID             listTaskSchedules
+//	@Tags			Task Scheduler
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response[[]service.ScheduledJobState]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/task-schedules [get]
+func (c *TaskController) ListTaskSchedules(ctx *gin.Context) {
+	list := c.service.SchedulerService.ListScheduledJobsWithState()
+	util.RespondWithSuccess(ctx, http.StatusOK, list)
+}
+
+// GetTaskScheduleHistory returns paginated execution history for a scheduled job.
+//
+//	@Summary		Get schedule execution history
+//	@Description	Returns tasks created by the given cron schedule.
+//	@ID             getTaskScheduleHistory
+//	@Tags			Task Scheduler
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string	true	"Schedule ID"
+//	@Param			current	query		int		false	"Page number"	default(1)
+//	@Param			page_size	query	int		false	"Page size"	default(10)
+//	@Success		200	{object}	util.PaginationResponse[model.Task]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/task-schedules/{id}/history [get]
+func (c *TaskController) GetTaskScheduleHistory(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Schedule ID is required"))
+		return
+	}
+	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
+	if current < 1 {
+		current = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 10
+	}
+	list, total, err := c.service.TaskService.ListTasksByCronScheduleID(ctx, id, current, pageSize)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to list schedule history", err))
+		return
+	}
+	util.RespondWithSuccessList(ctx, http.StatusOK, list, total, current, pageSize)
+}
+
+// ToggleTaskSchedule enables or disables a scheduled job.
+//
+//	@Summary		Toggle scheduled task
+//	@Description	Enable or disable a cron job by ID.
+//	@ID             toggleTaskSchedule
+//	@Tags			Task Scheduler
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string	true	"Schedule ID"
+//	@Param			body	body		object	true	"{\"enabled\": true|false}"
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		404	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/task-schedules/{id}/toggle [post]
+func (c *TaskController) ToggleTaskSchedule(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Schedule ID is required"))
+		return
+	}
+	var body struct {
+		Enabled bool `json:"enabled"`
+	}
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Invalid request body", err))
+		return
+	}
+	if err := c.service.SchedulerService.ToggleEnabled(id, body.Enabled); err != nil {
+		if errors.Is(err, service.ErrScheduledJobNotFound) {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4041", "Scheduled job not found"))
+			return
+		}
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to toggle schedule", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, util.MessageData{Message: "Schedule updated"})
+}
+
+// TriggerTaskSchedule runs the scheduled job once immediately.
+//
+//	@Summary		Trigger scheduled task
+//	@Description	Creates and enqueues one task for the given schedule immediately.
+//	@ID             triggerTaskSchedule
+//	@Tags			Task Scheduler
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Schedule ID"
+//	@Success		200	{object}	util.Response[model.Task]
+//	@Failure		404	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/task-schedules/{id}/trigger [post]
+func (c *TaskController) TriggerTaskSchedule(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Schedule ID is required"))
+		return
+	}
+	task, err := c.service.SchedulerService.TriggerNow(ctx, id)
+	if err != nil {
+		if errors.Is(err, service.ErrScheduledJobNotFound) {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4041", "Scheduled job not found"))
+			return
+		}
+		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to trigger schedule", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, task)
 }

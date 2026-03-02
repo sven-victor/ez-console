@@ -52,6 +52,7 @@ const ServiceAccountDetail = lazy(() => import('@/pages/authorization/service-ac
 // Task pages
 const TaskList = lazy(() => import('@/pages/task/TaskList'));
 const TaskDetail = lazy(() => import('@/pages/task/TaskDetail'));
+const TaskScheduleList = lazy(() => import('@/pages/task/TaskScheduleList'));
 
 // Wrap lazy loaded components
 export function withSuspense<
@@ -120,12 +121,18 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         ...extraPrivateRoutes,
         {
           path: '/tasks',
-          permissions: ['task:list'],
+          permissions: ['task:list', 'task:schedule:list'],
           children: [
             {
               path: '/tasks',
               element: withSuspense(TaskList),
               permissions: ['task:list'],
+              index: true,
+            },
+            {
+              path: '/tasks/schedules',
+              element: withSuspense(TaskScheduleList),
+              permissions: ['task:schedule:list'],
               index: true,
             },
             {

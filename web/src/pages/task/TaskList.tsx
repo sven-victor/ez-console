@@ -16,7 +16,7 @@
 
 import React, { useRef, useState } from 'react';
 import { Card, Button, Space, message, Input, Tag, Tooltip } from 'antd';
-import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined, EyeOutlined } from '@ant-design/icons';
+import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined, EyeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { Table } from '@/components/Table';
@@ -199,7 +199,16 @@ const TaskList: React.FC = () => {
     });
 
   return (
-    <Card title={t('listTitle', { defaultValue: 'Task List' })}>
+    <Card
+      title={t('listTitle', { defaultValue: 'Task List' })}
+      extra={
+        <PermissionGuard permission="task:schedule:list">
+          <Button type="link" icon={<CalendarOutlined />} onClick={() => navigate('/tasks/schedules')}>
+            {t('scheduledTasks', { defaultValue: 'Scheduled Tasks' })}
+          </Button>
+        </PermissionGuard>
+      }
+    >
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
         <Space wrap>
           <Input

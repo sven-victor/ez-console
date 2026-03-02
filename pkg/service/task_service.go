@@ -25,20 +25,13 @@ import (
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
-	"github.com/sven-victor/ez-console/pkg/task"
+	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 	"github.com/sven-victor/ez-utils/log"
 	"gorm.io/gorm"
 )
 
-// TaskCompletionCallback is invoked when a task completes (success or failure).
-type TaskCompletionCallback func(taskID string, status string, result interface{}, err error)
-
 // CreateTaskOption configures task creation.
 type CreateTaskOption func(*model.Task)
-
-type createTaskOpts struct {
-	onComplete TaskCompletionCallback
-}
 
 // WithPayload sets the task payload (JSON string).
 func WithPayload(payload string) CreateTaskOption {
@@ -54,27 +47,43 @@ func WithMaxRetries(n int) CreateTaskOption {
 	}
 }
 
+// WithCategory sets the task category (user or system). If not set, defaults to "user" when creator is not "system", otherwise "system".
+func WithCategory(category model.TaskCategory) CreateTaskOption {
+	return func(t *model.Task) {
+		t.Category = category
+	}
+}
+
+// WithCronScheduleID sets the cron schedule ID that triggered this task (for execution history).
+func WithCronScheduleID(id string) CreateTaskOption {
+	return func(t *model.Task) {
+		t.CronScheduleID = id
+	}
+}
+
+const (
+	defaultTaskQueueSize = 1000
+	taskPollInterval     = 2 * time.Second
+	taskFallbackInterval = 1 * time.Minute
+)
+
 // TaskService handles task CRUD and worker pool.
 type TaskService struct {
-	settingService *SettingService
-	cancelChans    map[string]chan struct{}
-	cancelMu       sync.RWMutex
-	callbacks      map[string]TaskCompletionCallback
-	callbacksMu    sync.RWMutex
-	pollInterval   time.Duration
-
+	settingService    *SettingService
 	logStorageService *LogStorageService
+	cancelChans       map[string]chan struct{}
+	cancelMu          sync.RWMutex
+	taskQueue         chan *model.Task
+	taskQueueMu       sync.Mutex
 }
 
 // NewTaskService creates a new TaskService.
 func NewTaskService(settingService *SettingService, logStorageService *LogStorageService) *TaskService {
 	return &TaskService{
-		settingService: settingService,
-		cancelChans:    make(map[string]chan struct{}),
-		callbacks:      make(map[string]TaskCompletionCallback),
-		pollInterval:   2 * time.Second,
-
+		settingService:    settingService,
 		logStorageService: logStorageService,
+		cancelChans:       make(map[string]chan struct{}),
+		taskQueue:         make(chan *model.Task, defaultTaskQueueSize),
 	}
 }
 
@@ -89,12 +98,24 @@ func (s *TaskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 		Status:    model.TaskStatusPending,
 		Progress:  0,
 		CreatorID: creatorID,
+		Category:  model.TaskCategoryUser,
+	}
+	if creatorID == "system" {
+		t.Category = model.TaskCategorySystem
 	}
 	for _, o := range opts {
 		o(t)
 	}
 	if err := db.Session(ctx).Create(t).Error; err != nil {
 		return nil, err
+	}
+	taskCreatedTotal.WithLabelValues(string(t.Category), string(t.Type)).Inc()
+	// Prefer in-memory queue; if full, leave task in DB only and set overflow so workers will poll DB.
+	select {
+	case s.taskQueue <- t:
+		taskQueueLength.Inc()
+	default:
+		taskQueueOverflowTotal.WithLabelValues(string(t.Category)).Inc()
 	}
 	return t, nil
 }
@@ -144,10 +165,27 @@ func (s *TaskService) ListTasks(ctx context.Context, current, pageSize int, sear
 	return list, total, nil
 }
 
-// ListTasks returns paginated tasks. Non-admin users only see their own.
+// ListTasksByCronScheduleID returns paginated tasks created by the given cron schedule (for schedule execution history).
+func (s *TaskService) ListTasksByCronScheduleID(ctx context.Context, cronScheduleID string, current, pageSize int) ([]*model.Task, int64, error) {
+	query := db.Session(ctx).Model(&model.Task{}).Where("cron_schedule_id = ?", cronScheduleID)
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	var list []*model.Task
+	offset := (current - 1) * pageSize
+	if err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&list).Error; err != nil {
+		return nil, 0, err
+	}
+	return list, total, nil
+}
+
+// ListUserTasks returns recent tasks for the header dropdown: only tasks with category "user" for the given user.
 func (s *TaskService) ListUserTasks(ctx context.Context, userID string) ([]*model.Task, error) {
-	query := db.Session(ctx).Model(&model.Task{})
-	query = query.Where("creator_id = ?", userID).Where("(created_at > ?) OR (status in ?)", time.Now().Add(-time.Hour*24), []model.TaskStatus{model.TaskStatusRunning, model.TaskStatusPending})
+	query := db.Session(ctx).Model(&model.Task{}).
+		Where("creator_id = ?", userID).
+		Where("category = ?", model.TaskCategoryUser).
+		Where("(created_at > ?) OR (status in ?)", time.Now().Add(-time.Hour*24), []model.TaskStatus{model.TaskStatusRunning, model.TaskStatusPending})
 	var list []*model.Task
 	if err := query.Order("created_at DESC").Limit(10).Find(&list).Error; err != nil {
 		return nil, err
@@ -232,6 +270,8 @@ func (s *TaskService) RetryTask(ctx context.Context, id string) error {
 		"started_at":  nil,
 		"finished_at": nil,
 		"retry_count": t.RetryCount + 1,
+		// Manual retry starts a fresh auto-retry cycle.
+		"auto_retry_count": 0,
 	}).Error
 }
 
@@ -274,11 +314,11 @@ func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]*model.Task
 	return result, nil
 }
 
-// claimNextPendingTask atomically claims one pending task and sets it to running. Returns nil if none.
-func (s *TaskService) claimNextPendingTask(ctx context.Context) (*model.Task, error) {
+// claimTaskByID atomically claims the given pending task by ID (sets status to running). Returns the task or nil if not found/not pending.
+func (s *TaskService) claimTaskByID(ctx context.Context, id string) (*model.Task, error) {
 	var t model.Task
 	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("status = ?", model.TaskStatusPending).Order("created_at ASC").First(&t).Error; err != nil {
+		if err := tx.Where("resource_id = ? AND status = ?", id, model.TaskStatusPending).First(&t).Error; err != nil {
 			return err
 		}
 		now := time.Now()
@@ -300,20 +340,7 @@ func (s *TaskService) claimNextPendingTask(ctx context.Context) (*model.Task, er
 	return &t, nil
 }
 
-// invokeCallback invokes the per-task completion callback if registered.
-func (s *TaskService) invokeCallback(taskID string, status string, result interface{}, err error) {
-	s.callbacksMu.Lock()
-	cb, ok := s.callbacks[taskID]
-	if ok {
-		delete(s.callbacks, taskID)
-	}
-	s.callbacksMu.Unlock()
-	if ok && cb != nil {
-		cb(taskID, status, result, err)
-	}
-}
-
-// Start starts the worker pool. Call once at server startup.
+// Start starts the worker pool and the fallback poller. Call once at server startup.
 func (s *TaskService) Start(ctx context.Context) {
 	logger := log.GetContextLogger(ctx)
 	maxConcurrent, _ := s.settingService.GetIntSetting(ctx, model.SettingTaskMaxConcurrent, 10)
@@ -327,16 +354,19 @@ func (s *TaskService) Start(ctx context.Context) {
 }
 
 func (s *TaskService) worker(ctx context.Context, id int, logger interface{}) {
-	ticker := time.NewTicker(s.pollInterval)
-	defer ticker.Stop()
 	for {
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
-			t, err := s.claimNextPendingTask(ctx)
-			if err != nil || t == nil {
-				continue
+		case t := <-s.taskQueue:
+			taskQueueLength.Dec()
+			// Task from queue may still be pending in DB; claim it before running.
+			if t.Status != model.TaskStatusRunning {
+				claimed, err := s.claimTaskByID(ctx, t.ResourceID)
+				if err != nil || claimed == nil {
+					continue
+				}
+				t = claimed
 			}
 			s.runTask(ctx, t)
 		}
@@ -344,7 +374,17 @@ func (s *TaskService) worker(ctx context.Context, id int, logger interface{}) {
 }
 
 func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
+	startTime := time.Now()
 	logger := log.GetContextLogger(ctx)
+	category := t.Category
+	taskType := string(t.Type)
+	taskStartedTotal.WithLabelValues(string(category), taskType).Inc()
+	taskRunningGauge.WithLabelValues(taskType).Inc()
+	defer func() {
+		taskRunningGauge.WithLabelValues(taskType).Dec()
+		taskRunDurationSeconds.WithLabelValues(taskType).Observe(time.Since(startTime).Seconds())
+	}()
+
 	cancelCh := make(chan struct{})
 	s.cancelMu.Lock()
 	s.cancelChans[t.ResourceID] = cancelCh
@@ -366,10 +406,10 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 	tee := log.NewTeeLogger(logger, taskLogger)
 	ctx, logger = log.NewContextLogger(ctx, log.WithLogger(tee))
 
-	runner, ok := task.GetTaskRunner(t.Type)
+	runner, ok := taskscheduler.GetTaskRunner(ctx, t.Type)
 	if !ok {
 		_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusFailed), "", "task type not registered", 0)
-		s.invokeCallback(t.ResourceID, string(model.TaskStatusFailed), nil, nil)
+		taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusFailed)).Inc()
 		return
 	}
 
@@ -379,17 +419,48 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 	level.Info(logger).Log("msg", "Running task", "task_id", t.ResourceID, "task_type", t.Type)
 	result, err := runner.Run(ctx, t, progressCallback, cancelCh)
 	if err != nil {
-		if errors.Is(err, task.ErrCancelled) {
+		if errors.Is(err, taskscheduler.ErrCancelled) {
 			_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusCancelled), "", "cancelled", 0)
-			s.invokeCallback(t.ResourceID, string(model.TaskStatusCancelled), nil, err)
+			taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusCancelled)).Inc()
 		} else {
-			_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusFailed), "", err.Error(), 0)
-			s.invokeCallback(t.ResourceID, string(model.TaskStatusFailed), nil, err)
+			// Auto retry: increment auto_retry_count and if not exceeding max_retries, set task back to pending and enqueue.
+			nextAutoRetry := t.AutoRetryCount + 1
+			shouldRetry := t.MaxRetries > 0 && nextAutoRetry <= t.MaxRetries
+
+			if shouldRetry {
+				t.Status = model.TaskStatusPending
+				t.Error = err.Error()
+				t.Result = ""
+				t.Progress = 0
+				t.FinishedAt = nil
+				t.AutoRetryCount = nextAutoRetry
+				_ = db.Session(ctx).Model(&model.Task{}).
+					Where("resource_id = ?", t.ResourceID).
+					Select("status", "error", "result", "progress", "finished_at", "auto_retry_count").
+					Updates(t).Error
+
+				select {
+				case s.taskQueue <- t:
+					taskQueueLength.Inc()
+				default:
+					taskQueueOverflowTotal.WithLabelValues(string(t.Category)).Inc()
+				}
+			} else {
+				now := time.Now()
+				_ = db.Session(ctx).Model(&model.Task{}).Where("resource_id = ?", t.ResourceID).Updates(map[string]interface{}{
+					"status":           model.TaskStatusFailed,
+					"error":            err.Error(),
+					"progress":         0,
+					"finished_at":      &now,
+					"auto_retry_count": nextAutoRetry,
+				}).Error
+				taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusFailed)).Inc()
+			}
 		}
 		level.Warn(logger).Log("msg", "Task ended", "task_id", t.ResourceID, "error", err)
 		return
 	}
-	level.Info(logger).Log("msg", "Task ended", "task_id", t.ResourceID, "error", err)
+	level.Info(logger).Log("msg", "Task ended", "task_id", t.ResourceID)
 	var resultStr string
 	if result != nil {
 		if b, e := json.Marshal(result); e == nil {
@@ -397,5 +468,5 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 		}
 	}
 	_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusSuccess), resultStr, "", 100)
-	s.invokeCallback(t.ResourceID, string(model.TaskStatusSuccess), result, nil)
+	taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusSuccess)).Inc()
 }

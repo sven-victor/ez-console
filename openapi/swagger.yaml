@@ -1664,9 +1664,18 @@ definitions:
         type: string
       artifact_file_name:
         type: string
+      auto_retry_count:
+        type: integer
+      category:
+        allOf:
+        - $ref: '#/definitions/model.TaskCategory'
+        description: user or system
       created_at:
         type: string
       creator_id:
+        type: string
+      cron_schedule_id:
+        description: set when task was created by a scheduled job
         type: string
       error:
         type: string
@@ -1697,8 +1706,11 @@ definitions:
     required:
     - artifact_file_key
     - artifact_file_name
+    - auto_retry_count
+    - category
     - created_at
     - creator_id
+    - cron_schedule_id
     - error
     - finished_at
     - id
@@ -1712,6 +1724,14 @@ definitions:
     - type
     - updated_at
     type: object
+  model.TaskCategory:
+    enum:
+    - user
+    - system
+    type: string
+    x-enum-varnames:
+    - TaskCategoryUser
+    - TaskCategorySystem
   model.TaskLogEntry:
     properties:
       created_at:
@@ -2189,6 +2209,34 @@ definitions:
     - status
     - updated_at
     - username
+    type: object
+  service.ScheduledJobState:
+    properties:
+      description:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: string
+      last_run:
+        type: string
+      name:
+        type: string
+      next_run:
+        type: string
+      spec:
+        type: string
+      task_type:
+        type: string
+    required:
+    - description
+    - enabled
+    - id
+    - last_run
+    - name
+    - next_run
+    - spec
+    - task_type
     type: object
   service.SessionInfo:
     properties:
@@ -3348,6 +3396,24 @@ definitions:
       data:
         items:
           $ref: '#/definitions/service.AITypeDefinition'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-array_service_ScheduledJobState:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/service.ScheduledJobState'
         type: array
       err:
         type: string
@@ -7702,6 +7768,128 @@ paths:
       summary: Get toolset type definitions
       tags:
       - ToolSets
+  /api/task-schedules:
+    get:
+      consumes:
+      - application/json
+      description: Returns defined cron jobs with next/last run and enabled status.
+      operationId: listTaskSchedules
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_service_ScheduledJobState'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List scheduled tasks
+      tags:
+      - Task Scheduler
+  /api/task-schedules/{id}/history:
+    get:
+      consumes:
+      - application/json
+      description: Returns tasks created by the given cron schedule.
+      operationId: getTaskScheduleHistory
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_Task'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get schedule execution history
+      tags:
+      - Task Scheduler
+  /api/task-schedules/{id}/toggle:
+    post:
+      consumes:
+      - application/json
+      description: Enable or disable a cron job by ID.
+      operationId: toggleTaskSchedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: '{\'
+        in: body
+        name: body
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Toggle scheduled task
+      tags:
+      - Task Scheduler
+  /api/task-schedules/{id}/trigger:
+    post:
+      consumes:
+      - application/json
+      description: Creates and enqueues one task for the given schedule immediately.
+      operationId: triggerTaskSchedule
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Task'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Trigger scheduled task
+      tags:
+      - Task Scheduler
   /api/tasks:
     get:
       consumes:

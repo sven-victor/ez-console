@@ -547,6 +547,15 @@ export interface getTaskParams {
   id: string;
 }
 
+export interface getTaskScheduleHistoryParams {
+  /** Schedule ID */
+  id: string;
+  /** Page number */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+}
+
 export interface getToolSetParams {
   /** Toolset ID */
   id: string;
@@ -1134,6 +1143,13 @@ export interface ResponseArrayServiceAITypeDefinition {
   trace_id: string;
 }
 
+export interface ResponseArrayServiceScheduledJobState {
+  code: string;
+  data: ScheduledJobState[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayServiceSessionInfo {
   code: string;
   data: SessionInfo[];
@@ -1454,6 +1470,17 @@ export interface RoleAIToolPermissionRequest {
 
 export type RoleMappingMode = "disabled" | "auto" | "enforce";
 
+export interface ScheduledJobState {
+  description: string;
+  enabled: boolean;
+  id: string;
+  last_run: string;
+  name: string;
+  next_run: string;
+  spec: string;
+  task_type: string;
+}
+
 export interface Schema {
   /** section 8.2.2 */
   $anchor: string;
@@ -1750,8 +1777,13 @@ export interface SystemSettings {
 export interface Task {
   artifact_file_key: string;
   artifact_file_name: string;
+  auto_retry_count: number;
+  /** user or system */
+  category: TaskCategory;
   created_at: string;
   creator_id: string;
+  /** set when task was created by a scheduled job */
+  cron_schedule_id: string;
   error: string;
   finished_at: string;
   id: string;
@@ -1767,6 +1799,8 @@ export interface Task {
   type: string;
   updated_at: string;
 }
+
+export type TaskCategory = "user" | "system";
 
 export interface TaskLogEntry {
   created_at: string;
@@ -1802,6 +1836,11 @@ export interface TestOAuthCallbackResponse {
 
 export interface testToolSetParams {
   /** Toolset ID */
+  id: string;
+}
+
+export interface toggleTaskScheduleParams {
+  /** Schedule ID */
   id: string;
 }
 
@@ -1871,6 +1910,11 @@ export interface ToolSetTypeDefinition {
 }
 
 export type ToolType = "function";
+
+export interface triggerTaskScheduleParams {
+  /** Schedule ID */
+  id: string;
+}
 
 export interface unlockUserParams {
   /** User ID */

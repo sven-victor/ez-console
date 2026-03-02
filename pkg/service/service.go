@@ -45,6 +45,7 @@ type Service struct {
 	*SkillService
 	*TaskService
 	*LogStorageService
+	*SchedulerService
 }
 
 type BaseService struct {
@@ -105,6 +106,7 @@ func NewService(ctx context.Context) *Service {
 	logStorageService := NewLogStorageService()
 	s.LogStorageService = logStorageService
 	s.TaskService = NewTaskService(settingService, logStorageService)
+	s.SchedulerService = NewSchedulerService(s.TaskService)
 	s.FileService = NewFileService(baseService)
 	return s
 }

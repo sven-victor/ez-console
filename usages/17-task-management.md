@@ -12,7 +12,6 @@ The Task Management module provides:
 - **Cancellation and retry**: Running or pending tasks can be cancelled; failed or cancelled tasks can be retried.
 - **Artifact download**: Tasks can attach an artifact file key; users download via the existing file API.
 - **Creator-based visibility**: Non-admin users see only their own tasks; admins see all.
-- **Completion callbacks**: Optional in-process callbacks when a task completes (success or failure).
 - **Task execution logs**: Logs produced during task execution (via the context logger) are stored in a configurable log storage backend and can be viewed on the task detail page.
 - **Configurable log storage**: Task settings let you choose where task logs are stored (e.g. database); the list of backends is provided by a registry in `pkg/logstore`.
 
@@ -37,8 +36,8 @@ The Task Management module provides:
 ```
 
 - **Task creation** is only via `TaskService.CreateTask` (no HTTP POST). Other modules (e.g. export) call it and get a task ID.
-- **Worker pool** reads max concurrency from system setting `task_max_concurrent` (default 10), polls for pending tasks, claims one, gets a runner from the registry, and runs it with progress callback and cancel channel.
-- **Task types** are registered with `task.RegisterTaskType(typeName, factory)`. Each type has a `TaskRunnerFactory` that creates a `TaskRunner` implementing `Run(ctx, task, progressCallback, cancelCh)`.
+- **Worker pool** reads max concurrency from system setting `task_max_concurrent` (default 10). Tasks are fed by an in-memory channel. When the channel is full, the task is still persisted to the DB but is **not** enqueued (see **Task scheduling internals** below).
+- **Task types** are registered with `task.RegisterTaskType(typeName, runner)`. Each type has a `TaskRunner` implementing `Run(ctx, task, progressCallback, cancelCh)`.
 - **Task logs**: Before running a task, the worker reads the log storage backend name from task settings (`task_log_storage_backend`). It creates a tee logger that forwards all `log.Logger` output from the runner to both the default logger and a **task logger** that writes to the chosen log storage backend (e.g. database). Log storage backends are registered in `pkg/logstore`; the default backend is `"database"`.
 
 ## User-Facing Features
@@ -67,6 +66,12 @@ The Task Management module provides:
 - **Fetch and polling**: SiteContext uses `api.userTasks.listUserTasks()` with polling: **every 3 seconds** when the dropdown is open (`tasksDropdownOpen === true`), **every 60 seconds** when closed. Fetch also runs once when the dropdown is opened.
 - **TaskListDropdown** (`web/src/components/TaskListDropdown.tsx`): A presentational component that reads `tasks`, `tasksDropdownOpen`, and `setTasksDropdownOpen` from `useSite()`. It renders the dropdown overlay (type, status, progress, Download, More link to `/tasks`) and does not perform its own data fetching.
 
+### Scheduled Tasks page
+
+- **Path**: `/tasks/schedules`
+- **Permission**: `task:schedule:list` (with `task:schedule:update` for toggle and trigger actions).
+- **Behavior**: Lists all registered cron jobs (name, cron spec, description, task type, enabled, next run, last run). Actions: View history, Toggle enable/disable, Trigger now. Selecting “View history” shows a paginated table of tasks created by that schedule (execution history). Accessible from the Task list page via the “Scheduled Tasks” link (when the user has `task:schedule:list`).
+
 ### System Settings: Task Settings Tab
 
 - **Location**: System Settings → Task Settings tab
@@ -85,13 +90,15 @@ The Task Management module provides:
 
 ## Permissions
 
-| Code           | Description                    | Typical roles   |
-|----------------|--------------------------------|-----------------|
-| `task:list`    | List tasks (own or all)        | admin, operator, viewer |
-| `task:view`    | View task detail               | admin, operator, viewer |
-| `task:cancel`  | Cancel running/pending task    | admin, operator |
-| `task:retry`   | Retry failed/cancelled task    | admin, operator |
-| `task:delete`  | Delete task                    | admin, operator |
+| Code                    | Description                           | Typical roles        |
+|-------------------------|---------------------------------------|----------------------|
+| `task:list`             | List tasks (own or all)               | admin, operator, viewer |
+| `task:view`             | View task detail                      | admin, operator, viewer |
+| `task:cancel`           | Cancel running/pending task           | admin, operator      |
+| `task:retry`            | Retry failed/cancelled task           | admin, operator      |
+| `task:delete`           | Delete task                           | admin, operator      |
+| `task:schedule:list`    | List scheduled (cron) tasks and history | admin, operator   |
+| `task:schedule:update`  | Enable/disable and trigger scheduled tasks | admin, operator |
 
 Non-admin users are restricted to their own tasks for list and detail; admins see all.
 
@@ -119,10 +126,19 @@ All task APIs require authentication.
 | GET    | `/api/userTasks` | (auth only)| List current user's recent tasks for the header dropdown. |
 
 - **Authentication**: Required (no separate permission; any logged-in user can call).
-- **Response**: Array of tasks (not paginated). Returns up to 10 tasks that are either (a) created in the last 24 hours, or (b) currently `running` or `pending`.
-- **Use case**: The header task dropdown uses this API to show the current user's recent tasks and allow quick access to View/Download. The full task list page uses `/api/tasks` with pagination and `task:list`.
+- **Response**: Array of tasks (not paginated). Returns up to 10 tasks that are (a) created by the current user, (b) have **category** `"user"`, and (c) are either created in the last 24 hours or currently `running` or `pending`. Tasks with category `"system"` are not returned.
+- **Use case**: The header task dropdown uses this API to show the current user's recent **user** tasks and allow quick access to View/Download. The full task list page uses `/api/tasks` with pagination and `task:list`.
 
 **Artifact download**: Use the task’s `artifact_file_key` with the existing file API: `GET /api/files/:fileKey`.
+
+### Scheduled tasks (cron) APIs
+
+| Method | Path                                | Permission           | Description |
+|--------|-------------------------------------|----------------------|-------------|
+| GET    | `/api/task-schedules`               | task:schedule:list   | List registered cron jobs with next/last run and enabled status. |
+| GET    | `/api/task-schedules/:id/history`   | task:schedule:list   | Paginated execution history (tasks created by this schedule). Query: `current`, `page_size`. |
+| POST   | `/api/task-schedules/:id/toggle`    | task:schedule:update | Enable or disable a cron job. Body: `{ "enabled": true \| false }`. |
+| POST   | `/api/task-schedules/:id/trigger`   | task:schedule:update | Run the scheduled job once immediately (creates one task). |
 
 ### Task settings APIs (log storage backends)
 
@@ -142,24 +158,22 @@ Obtain `*service.TaskService` from the main `*service.Service` and call `CreateT
 
 ```go
 // In your handler or service (ctx has user from middleware)
-task, err := svc.TaskService.CreateTask(ctx, "export", 
+task, err := svc.TaskService.CreateTask(ctx, "export",
     service.WithPayload(`{"scope":"users"}`),
     service.WithMaxRetries(2),
-    service.WithOnComplete(func(taskID string, status string, result interface{}, err error) {
-        // Notify user, update UI, etc.
-    }),
 )
 if err != nil {
     return err
 }
 // task.ResourceID is the task ID; worker will pick it up and run when a runner for "export" is registered.
+// Callers should rely on polling task status or the task list/detail APIs; completion callbacks are not supported (they are lost on service restart).
 ```
 
 Options:
 
 - **WithPayload(payload string)**: Optional JSON or string stored on the task for the runner to read.
 - **WithMaxRetries(n int)**: Max retries (runner is invoked again on retry).
-- **WithOnComplete(cb TaskCompletionCallback)**: Called when the task finishes (success, failed, or cancelled).
+- **WithCategory(category string)**: Set task category to `"user"` or `"system"`. Defaults to `"user"` when creator is not `"system"`, otherwise `"system"`.
 
 Creator is taken from `middleware.GetUserIDFromContext(ctx)`; if empty, `"system"` is used.
 
@@ -179,7 +193,7 @@ This pattern (POST endpoint → CreateTask → return task; frontend addTask + o
 
 Task execution is pluggable: register a task type and its runner so the worker can execute it.
 
-### 1. Implement TaskRunner
+### 1. Implement TaskRunner and register
 
 `TaskRunner` runs a single task. It must respect the cancel channel and may call the progress callback.
 
@@ -214,34 +228,20 @@ func (r *ExportRunner) Run(
     // 3. On success, optionally set artifact via TaskService.SetTaskArtifact (if your module has access to it)
     return map[string]string{"rows": "42"}, nil
 }
+
+func init() {
+    task.RegisterTaskType("export", &ExportRunner{})
+}
 ```
 
 - Return `task.ErrCancelled` when the task is cancelled so the service can set status to cancelled.
 - Return a non-nil error for failure; the service will set status to failed and store the error message.
 - Return `(result, nil)` for success; result can be JSON-serialized and stored in the task’s result field.
-
-### 2. Implement TaskRunnerFactory and register
-
-```go
-type ExportRunnerFactory struct{}
-
-func (f *ExportRunnerFactory) CreateRunner() (task.TaskRunner, error) {
-    return &ExportRunner{}, nil
-}
-
-func init() {
-    task.RegisterTaskType("export", &ExportRunnerFactory{})
-}
-```
-
-Register in `init()` so the type is available when the worker starts. The worker calls `task.GetTaskRunner(task.Type)` to get a runner for each pending task.
+- Register in `init()` so the type is available when the worker starts. The worker calls `task.GetTaskRunner(task.Type)` to get a runner for each pending task.
 
 ### 3. Setting the artifact (e.g. export file)
 
-When your runner produces a file, it should associate it with the task. The runner does not receive `TaskService` in `Run`; options:
-
-- Have the runner return a result that includes a file key, and have a completion callback (registered with `WithOnComplete`) call `TaskService.SetTaskArtifact(ctx, taskID, fileKey)` after the task succeeds; or
-- Create the file in your own service before/after running, then call `SetTaskArtifact` in the same place you create the task or in the completion callback.
+When your runner produces a file, it should associate it with the task. The runner does not receive `TaskService` in `Run`; the runner should call `TaskService.SetTaskArtifact(ctx, taskID, fileKey, filename)` from code that has access to the service (e.g. a runner that was constructed with a reference to the service, or via a closure). Alternatively, have the runner return a result that includes a file key and have the module that creates the task call `SetTaskArtifact` after the task completes (by polling the task status).
 
 Artifact download uses the existing file API; the file should be readable by the task creator (e.g. owner = creator).
 
@@ -269,21 +269,68 @@ To add a new log storage backend (e.g. file, external service), implement `logst
 
 ## Task Model (summary)
 
-| Field             | Type      | Description                          |
-|-------------------|-----------|--------------------------------------|
-| id (ResourceID)   | string    | UUID                                 |
-| type              | string    | Task type key for registry           |
-| status            | enum      | pending, running, success, failed, cancelled |
-| progress          | int       | 0–100                                |
-| result            | string    | JSON or text result                  |
-| error             | string    | Last error message if failed         |
-| creator_id        | string    | User ID of creator                   |
-| artifact_file_key | string    | Optional file key for download       |
-| retry_count       | int       | Number of retries                    |
-| max_retries       | int       | Max retries allowed                  |
-| started_at        | *time     | When run started                    |
-| finished_at       | *time     | When run finished                   |
-| payload           | string    | Optional input for the runner       |
+| Field               | Type      | Description                          |
+|---------------------|-----------|--------------------------------------|
+| id (ResourceID)     | string    | UUID                                 |
+| type                | string    | Task type key for registry           |
+| status              | enum      | pending, running, success, failed, cancelled |
+| category            | string    | `"user"` or `"system"`. Only `user` tasks are returned by `GET /api/userTasks` (header dropdown). |
+| progress            | int       | 0–100                                |
+| result              | string    | JSON or text result                  |
+| error               | string    | Last error message if failed         |
+| creator_id          | string    | User ID of creator                   |
+| artifact_file_key   | string    | Optional file key for download       |
+| retry_count         | int       | Number of retries                    |
+| max_retries         | int       | Max retries allowed                  |
+| started_at          | *time     | When run started                    |
+| finished_at         | *time     | When run finished                   |
+| payload             | string    | Optional input for the runner       |
+| cron_schedule_id    | string    | Set when the task was created by a scheduled (cron) job; used for execution history. |
+
+## Task scheduling internals
+
+- **Write-first**: When a task is created, it is always written to the DB first (status `pending`).
+- **Best-effort enqueue**: After persisting, `TaskService.CreateTask` tries to push the task into an in-memory buffered channel. This is a best-effort optimization for fast pickup by workers.
+- **Overflow behavior**: If the channel is full, the task remains in the DB as `pending` and is **not** enqueued. The service increments the Prometheus counter `task_queue_overflow_total{category=...}` for visibility.
+- **Worker claim-before-run**: A worker consumes tasks from the channel, then atomically "claims" the task in the DB (transitions `pending → running` and sets `started_at`). If the claim fails (already claimed, deleted, or no longer pending), the worker skips it. This prevents duplicate execution.
+
+## Prometheus metrics for tasks
+
+The following metrics are exposed under `/metrics` for monitoring:
+
+| Metric                         | Type     | Labels                    | Description |
+|--------------------------------|----------|---------------------------|-------------|
+| `task_created_total`           | Counter  | category, type            | Total tasks created. |
+| `task_started_total`           | Counter  | category, type            | Total tasks that started running. |
+| `task_completed_total`         | Counter  | category, type, status    | Total tasks completed (status: success, failed, cancelled). |
+| `task_queue_overflow_total`    | Counter  | category                  | Number of times a task was not enqueued because the in-memory queue was full. |
+| `task_queue_length`           | Gauge    | —                         | Current number of tasks in the in-memory queue. |
+| `task_running_gauge`          | Gauge    | type                      | Number of tasks currently running. |
+| `task_run_duration_seconds`   | Histogram| type                      | Task run duration from start to finish. |
+
+## Scheduled tasks (cron)
+
+- **Registry**: Scheduled jobs are defined in code via `pkg/scheduler`. Call `scheduler.RegisterScheduledJob(def)` with a `ScheduledJobDef` (ID, Name, Spec, Description, TaskType, PayloadBuilder, MaxRetries). Definitions are **not** persisted to the DB; they exist only in memory.
+- **Execution**: The scheduler uses `github.com/robfig/cron/v3`. When a cron job fires, it calls `TaskService.CreateTask` with the job’s task type, payload from `PayloadBuilder()`, category `"system"`, and `WithCronScheduleID(jobID)`. The created task is then processed like any other task (queue, workers, DB). Each run produces one task row, so execution history is the list of tasks with that `cron_schedule_id`.
+- **UI**: The **Scheduled Tasks** page (`/tasks/schedules`) lists all registered cron jobs (name, spec, description, task type, enabled, next run, last run) and allows viewing execution history for a selected job. Users with `task:schedule:update` can enable/disable a job and trigger a run immediately.
+
+### Registering a scheduled job
+
+In an `init()` or during server startup, register a job and ensure the scheduler is started after the service is created (see `server.go`):
+
+```go
+scheduler.RegisterScheduledJob(&scheduler.ScheduledJobDef{
+    ID:          "my-daily-job",
+    Name:        "Daily cleanup",
+    Spec:        "0 0 * * *",  // daily at midnight
+    Description: "Runs the cleanup task type",
+    TaskType:    "cleanup",
+    PayloadBuilder: func() string { return `{}` },
+    MaxRetries:  1,
+})
+```
+
+The task type (e.g. `"cleanup"`) must be registered in `pkg/task` like any other task type. The scheduler does not store cron definitions in the DB; adding or changing a job requires a code change and restart.
 
 ## Configuration
 
@@ -293,6 +340,7 @@ To add a new log storage backend (e.g. file, external service), implement `logst
 ## Troubleshooting
 
 - **Task stays “pending”**: Ensure a runner is registered for the task’s `type` via `task.RegisterTaskType`. Ensure the server has restarted after registering so the worker pool and registry are loaded.
+- **Many tasks stay “pending” under high load**: Check Prometheus `task_queue_overflow_total`. If it increases, the in-memory queue was full at task creation time, so some tasks were persisted but not enqueued. Mitigations: reduce bursty task creation, increase the in-memory queue size (code change: `defaultTaskQueueSize`), or implement a DB-backed pickup loop to drain pending tasks.
 - **“task type not registered”**: The worker sets status to failed with this message when `task.GetTaskRunner(task.Type)` returns false. Add a `RegisterTaskType` call for that type (e.g. in `init()` of the package that implements the runner).
 - **Creator or admin only**: List and get APIs filter by `creator_id` for non-admin users. Use a context with the correct user when calling from backend code if you need to simulate a user.
 - **No task logs on detail page**: Ensure Task Settings → Log storage is set to a registered backend (e.g. `database`). Logs are only stored when the runner uses the context logger (`log.GetContextLogger(ctx)`); if the runner does not log, the list will be empty. Ensure the task has started at least once (logs are written during execution).

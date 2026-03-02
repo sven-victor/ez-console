@@ -66,6 +66,11 @@ func MigrateDB(ctx context.Context) error {
 			return err
 		}
 
+		// Backfill task category for existing rows (added with default "user")
+		if err := tx.Model(&model.Task{}).Where("category = ? OR category IS NULL OR category = ''", "").Update("category", model.TaskCategoryUser).Error; err != nil {
+			return fmt.Errorf("backfill task category: %w", err)
+		}
+
 		level.Info(logger).Log("msg", "Database migration completed")
 		return nil
 	})
