@@ -53,7 +53,7 @@ async function A(e, t) {
     ...t || {}
   });
 }
-async function S(e, t, a) {
+async function k(e, t, a) {
   const r = new FormData();
   return t && r.append("file", t), Object.keys(e).forEach((o) => {
     const s = e[o];
@@ -65,7 +65,7 @@ async function S(e, t, a) {
     ...a || {}
   });
 }
-async function k(e, t) {
+async function S(e, t) {
   const { fileKey: a, ...r } = e;
   return p(`/api/files/${a}`, {
     method: "GET",
@@ -81,10 +81,10 @@ async function y(e) {
 }
 const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: k,
+  downloadFile: S,
   getStatistics: y,
   listFiles: A,
-  uploadFile: S
+  uploadFile: k
 }, Symbol.toStringTag, { value: "Module" })), P = {
   login: {
     subtitle: "登录您的账户",
@@ -872,6 +872,12 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task: {
       maxConcurrent: "Max concurrent tasks",
       maxConcurrentTooltip: "Maximum number of tasks that can run at the same time.",
+      aiChatRetentionDays: "AI chat retention (days)",
+      aiChatRetentionDaysTooltip: "Retention period for AI chat sessions, based on the last conversation time.",
+      taskLogRetentionDays: "Task log retention (days)",
+      taskLogRetentionDaysTooltip: "Retention period for task execution logs and historical task run records.",
+      auditLogRetentionDays: "Audit log retention (days)",
+      auditLogRetentionDaysTooltip: "Retention period for audit logs.",
       logStorageBackend: "Log storage",
       logStorageBackendTooltip: "Where task execution logs are stored. Database stores logs in the application database.",
       logStoragePlaceholder: "Select backend",
@@ -1471,8 +1477,26 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     success: "Success",
     failed: "Failed",
     cancelled: "Cancelled"
+  },
+  scheduledTasks: "Scheduled Tasks",
+  scheduleName: "Name",
+  scheduleSpec: "Cron",
+  scheduleDescription: "Description",
+  scheduleTaskType: "Task Type",
+  scheduleEnabled: "Enabled",
+  scheduleNextRun: "Next Run",
+  scheduleLastRun: "Last Run",
+  viewHistory: "View history",
+  triggerNow: "Trigger now",
+  executionHistory: "Execution History",
+  task: {
+    type: {
+      audit_log_cleanup_task: "Audit Log Cleanup",
+      ai_chat_session_cleanup_task: "AI Chat Session Cleanup",
+      task_log_cleanup_task: "Task Log Cleanup"
+    }
   }
-}, F = {
+}, C = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1579,7 +1603,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, C = {
+}, F = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -2604,6 +2628,12 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task: {
       maxConcurrent: "最大并发任务数",
       maxConcurrentTooltip: "允许同时运行的最大任务数量。",
+      aiChatRetentionDays: "AI 会话保留天数",
+      aiChatRetentionDaysTooltip: "基于最后一次对话时间自动清理 AI 会话（包含会话与消息）。",
+      taskLogRetentionDays: "任务日志保留天数",
+      taskLogRetentionDaysTooltip: "自动清理任务执行日志与历史任务运行记录。",
+      auditLogRetentionDays: "审计日志保留天数",
+      auditLogRetentionDaysTooltip: "自动清理指定天数之前的审计日志。",
       logStorageBackend: "日志存储",
       logStorageBackendTooltip: "任务执行日志的存储位置。数据库将日志存储在应用数据库中。",
       logStoragePlaceholder: "选择存储后端",
@@ -3205,8 +3235,26 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     success: "成功",
     failed: "失败",
     cancelled: "已取消"
+  },
+  scheduledTasks: "已计划任务",
+  scheduleName: "名称",
+  scheduleSpec: "Cron",
+  scheduleDescription: "描述",
+  scheduleTaskType: "任务类型",
+  scheduleEnabled: "启用",
+  scheduleNextRun: "下一次运行",
+  scheduleLastRun: "上一次运行",
+  viewHistory: "查看历史",
+  triggerNow: "立即触发",
+  executionHistory: "执行历史",
+  task: {
+    type: {
+      audit_log_cleanup_task: "审计日志清理任务",
+      ai_chat_session_cleanup_task: "AI 会话清理任务",
+      task_log_cleanup_task: "任务日志清理任务"
+    }
   }
-}, V = {
+}, x = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3276,7 +3324,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, x = {
+}, V = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -3724,7 +3772,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, K = {
+}, _ = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -3743,6 +3791,12 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task: {
       maxConcurrent: "Max. gleichzeitige Aufgaben",
       maxConcurrentTooltip: "Maximale Anzahl der gleichzeitig ausgeführten Aufgaben.",
+      aiChatRetentionDays: "AI-Chat-Aufbewahrungszeit (Tage)",
+      aiChatRetentionDaysTooltip: "Aufbewahrungszeit für AI-Chat-Sitzungen, basierend auf der letzten Konversationszeit.",
+      taskLogRetentionDays: "Aufbewahrung von Task-Logs (Tage)",
+      taskLogRetentionDaysTooltip: "Aufbewahrungszeit für Task-Ausführungsprotokolle und historische Task-Ausführungsaufzeichnungen.",
+      auditLogRetentionDays: "Aufbewahrung von Audit-Logs (Tage)",
+      auditLogRetentionDaysTooltip: "Aufbewahrungszeit für Audit-Logs.",
       logStorageBackend: "Protokollspeicher",
       logStorageBackendTooltip: "Wo Ausführungsprotokolle gespeichert werden. Datenbank speichert Protokolle in der Anwendungsdatenbank.",
       logStoragePlaceholder: "Backend auswählen",
@@ -4196,7 +4250,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, _ = {
+}, K = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -4283,6 +4337,24 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     success: "Erfolgreich",
     failed: "Fehlgeschlagen",
     cancelled: "Abgebrochen"
+  },
+  scheduledTasks: "Geplante Aufgaben",
+  scheduleName: "Name",
+  scheduleSpec: "Cron",
+  scheduleDescription: "Beschreibung",
+  scheduleTaskType: "Aufgabentyp",
+  scheduleEnabled: "Aktiviert",
+  scheduleNextRun: "Nächster Lauf",
+  scheduleLastRun: "Letzter Lauf",
+  viewHistory: "Verlauf anzeigen",
+  triggerNow: "Jetzt auslösen",
+  executionHistory: "Ausführungsverlauf",
+  task: {
+    type: {
+      audit_log_cleanup_task: "Bereinigung von Audit-Logs",
+      ai_chat_session_cleanup_task: "Bereinigung von AI-Chat-Sitzungen",
+      task_log_cleanup_task: "Bereinigung von Aufgaben-Logs"
+    }
   }
 }, G = {
   loading: "Cargando...",
@@ -4821,6 +4893,12 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task: {
       maxConcurrent: "Tareas simultáneas máximas",
       maxConcurrentTooltip: "Número máximo de tareas que pueden ejecutarse al mismo tiempo.",
+      aiChatRetentionDays: "Retención de chats de IA (días)",
+      aiChatRetentionDaysTooltip: "Período de retención para sesiones de chat de IA, según la última hora de conversación.",
+      taskLogRetentionDays: "Retención de registros de tareas (días)",
+      taskLogRetentionDaysTooltip: "Período de retención para los registros de ejecución de tareas y los registros históricos de ejecución.",
+      auditLogRetentionDays: "Retención de registros de auditoría (días)",
+      auditLogRetentionDaysTooltip: "Período de retención para los registros de auditoría.",
       logStorageBackend: "Almacenamiento de registros",
       logStorageBackendTooltip: "Dónde se almacenan los registros de ejecución de tareas. Base de datos almacena los registros en la base de datos de la aplicación.",
       logStoragePlaceholder: "Seleccionar backend",
@@ -5361,6 +5439,24 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     success: "Correcto",
     failed: "Fallido",
     cancelled: "Cancelado"
+  },
+  scheduledTasks: "Tareas programadas",
+  scheduleName: "Nombre",
+  scheduleSpec: "Cron",
+  scheduleDescription: "Descripción",
+  scheduleTaskType: "Tipo de tarea",
+  scheduleEnabled: "Habilitado",
+  scheduleNextRun: "Próxima ejecución",
+  scheduleLastRun: "Última ejecución",
+  viewHistory: "Ver historial",
+  triggerNow: "Ejecutar ahora",
+  executionHistory: "Historial de ejecuciones",
+  task: {
+    type: {
+      audit_log_cleanup_task: "Limpieza de registros de auditoría",
+      ai_chat_session_cleanup_task: "Limpieza de sesiones de chat de IA",
+      task_log_cleanup_task: "Limpieza de registros de tareas"
+    }
   }
 }, Q = {
   loading: "Chargement...",
@@ -5899,6 +5995,12 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task: {
       maxConcurrent: "Tâches simultanées max.",
       maxConcurrentTooltip: "Nombre maximum de tâches pouvant s'exécuter en même temps.",
+      aiChatRetentionDays: "Conservation des chats IA (jours)",
+      aiChatRetentionDaysTooltip: "Période de conservation des sessions de chat IA, basée sur l'heure de la dernière conversation.",
+      taskLogRetentionDays: "Conservation des journaux des tâches (jours)",
+      taskLogRetentionDaysTooltip: "Période de conservation des journaux d'exécution des tâches et des enregistrements historiques des exécutions.",
+      auditLogRetentionDays: "Conservation des journaux d'audit (jours)",
+      auditLogRetentionDaysTooltip: "Période de conservation des journaux d'audit.",
       logStorageBackend: "Stockage des journaux",
       logStorageBackendTooltip: "Où sont stockés les journaux d'exécution. Base de données stocke les journaux dans la base de données de l'application.",
       logStoragePlaceholder: "Sélectionner le backend",
@@ -6439,6 +6541,24 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     success: "Réussi",
     failed: "Échoué",
     cancelled: "Annulé"
+  },
+  scheduledTasks: "Tâches planifiées",
+  scheduleName: "Nom",
+  scheduleSpec: "Cron",
+  scheduleDescription: "Description",
+  scheduleTaskType: "Type de tâche",
+  scheduleEnabled: "Activé",
+  scheduleNextRun: "Prochaine exécution",
+  scheduleLastRun: "Dernière exécution",
+  viewHistory: "Voir l'historique",
+  triggerNow: "Déclencher maintenant",
+  executionHistory: "Historique d'exécution",
+  task: {
+    type: {
+      audit_log_cleanup_task: "Nettoyage des journaux d'audit",
+      ai_chat_session_cleanup_task: "Nettoyage des sessions de chat IA",
+      task_log_cleanup_task: "Nettoyage des journaux de tâches"
+    }
   }
 }, te = {
   loading: "جار التحميل...",
@@ -6977,6 +7097,12 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task: {
       maxConcurrent: "الحد الأقصى للمهام المتزامنة",
       maxConcurrentTooltip: "الحد الأقصى لعدد المهام التي يمكن تشغيلها في نفس الوقت.",
+      aiChatRetentionDays: "الاحتفاظ بمحادثات الذكاء الاصطناعي (بالأيام)",
+      aiChatRetentionDaysTooltip: "فترة الاحتفاظ لجلسات محادثات الذكاء الاصطناعي، بناءً على وقت آخر محادثة.",
+      taskLogRetentionDays: "الاحتفاظ بسجلات المهام (بالأيام)",
+      taskLogRetentionDaysTooltip: "فترة الاحتفاظ لسجلات تنفيذ المهام وسجلات تشغيل المهام التاريخية.",
+      auditLogRetentionDays: "الاحتفاظ بسجلات التدقيق (بالأيام)",
+      auditLogRetentionDaysTooltip: "فترة الاحتفاظ لسجلات التدقيق.",
       logStorageBackend: "تخزين السجلات",
       logStorageBackendTooltip: "مكان تخزين سجلات تنفيذ المهام. قاعدة البيانات تخزن السجلات في قاعدة بيانات التطبيق.",
       logStoragePlaceholder: "اختر الواجهة الخلفية",
@@ -7517,6 +7643,24 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     success: "نجاح",
     failed: "فشل",
     cancelled: "ملغى"
+  },
+  scheduledTasks: "المهام المجدولة",
+  scheduleName: "الاسم",
+  scheduleSpec: "Cron",
+  scheduleDescription: "الوصف",
+  scheduleTaskType: "نوع المهمة",
+  scheduleEnabled: "مفعّل",
+  scheduleNextRun: "التشغيل التالي",
+  scheduleLastRun: "آخر تشغيل",
+  viewHistory: "عرض السجل",
+  triggerNow: "شغّل الآن",
+  executionHistory: "سجل التنفيذ",
+  task: {
+    type: {
+      audit_log_cleanup_task: "تنظيف سجلات التدقيق",
+      ai_chat_session_cleanup_task: "تنظيف جلسات محادثات الذكاء الاصطناعي",
+      task_log_cleanup_task: "تنظيف سجلات المهام"
+    }
   }
 }, oe = {
   loading: "Laddar...",
@@ -8055,6 +8199,12 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task: {
       maxConcurrent: "Max antal samtidiga uppgifter",
       maxConcurrentTooltip: "Maximalt antal uppgifter som kan köras samtidigt.",
+      aiChatRetentionDays: "Bevaring av AI-chatt (dagar)",
+      aiChatRetentionDaysTooltip: "Bevarandetid för AI-chattsessioner baserat på tiden för den senaste konversationen.",
+      taskLogRetentionDays: "Bevaring av uppgiftsloggar (dagar)",
+      taskLogRetentionDaysTooltip: "Bevarandetid för uppgiftskörningsloggar och historik över tidigare körningar.",
+      auditLogRetentionDays: "Bevaring av granskningsloggar (dagar)",
+      auditLogRetentionDaysTooltip: "Bevarandetid för granskningsloggar.",
       logStorageBackend: "Logglagring",
       logStorageBackendTooltip: "Var körningsloggar lagras. Databas lagrar loggar i programmets databas.",
       logStoragePlaceholder: "Välj backend",
@@ -8595,6 +8745,24 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     success: "Lyckad",
     failed: "Misslyckad",
     cancelled: "Avbruten"
+  },
+  scheduledTasks: "Schemalagda uppgifter",
+  scheduleName: "Namn",
+  scheduleSpec: "Cron",
+  scheduleDescription: "Beskrivning",
+  scheduleTaskType: "Uppgiftstyp",
+  scheduleEnabled: "Aktiverad",
+  scheduleNextRun: "Nästa körning",
+  scheduleLastRun: "Senaste körning",
+  viewHistory: "Visa historik",
+  triggerNow: "Kör nu",
+  executionHistory: "Körhistorik",
+  task: {
+    type: {
+      audit_log_cleanup_task: "Rensning av granskningsloggar",
+      ai_chat_session_cleanup_task: "Rensning av AI-chattsessioner",
+      task_log_cleanup_task: "Rensning av uppgiftsloggar"
+    }
   }
 };
 f.use(b).use(v).init({
@@ -8618,15 +8786,15 @@ f.use(b).use(v).init({
       task: z
     },
     "de-DE": {
-      translation: F,
-      common: V,
-      authorization: x,
-      system: K,
-      ai: _,
+      translation: C,
+      common: x,
+      authorization: V,
+      system: _,
+      ai: K,
       task: j
     },
     "es-ES": {
-      translation: C,
+      translation: F,
       common: G,
       authorization: W,
       system: H,
@@ -8664,7 +8832,7 @@ f.use(b).use(v).init({
     escapeValue: !1
   }
 });
-const Se = {
+const ke = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
@@ -8683,7 +8851,7 @@ function h(e) {
 function m(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function ke(e) {
+function Se(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
@@ -8722,8 +8890,8 @@ function ye(e) {
   return t;
 }
 export {
-  Se as P,
-  ke as a,
+  ke as P,
+  Se as a,
   Ae as b,
   he as f,
   be as g,

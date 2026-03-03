@@ -58,4 +58,22 @@ export default {
     failed: 'Failed',
     cancelled: 'Cancelled',
   },
+  scheduledTasks: 'Scheduled Tasks',
+  scheduleName: 'Name',
+  scheduleSpec: 'Cron',
+  scheduleDescription: 'Description',
+  scheduleTaskType: 'Task Type',
+  scheduleEnabled: 'Enabled',
+  scheduleNextRun: 'Next Run',
+  scheduleLastRun: 'Last Run',
+  viewHistory: 'View history',
+  triggerNow: 'Trigger now',
+  executionHistory: 'Execution History',
+  task: {
+    type: {
+      audit_log_cleanup_task: 'Audit Log Cleanup',
+      ai_chat_session_cleanup_task: 'AI Chat Session Cleanup',
+      task_log_cleanup_task: 'Task Log Cleanup',
+    },
+  },
 };

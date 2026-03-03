@@ -58,4 +58,22 @@ export default {
     failed: 'Misslyckad',
     cancelled: 'Avbruten',
   },
+  scheduledTasks: 'Schemalagda uppgifter',
+  scheduleName: 'Namn',
+  scheduleSpec: 'Cron',
+  scheduleDescription: 'Beskrivning',
+  scheduleTaskType: 'Uppgiftstyp',
+  scheduleEnabled: 'Aktiverad',
+  scheduleNextRun: 'Nästa körning',
+  scheduleLastRun: 'Senaste körning',
+  viewHistory: 'Visa historik',
+  triggerNow: 'Kör nu',
+  executionHistory: 'Körhistorik',
+  task: {
+    type: {
+      audit_log_cleanup_task: 'Rensning av granskningsloggar',
+      ai_chat_session_cleanup_task: 'Rensning av AI-chattsessioner',
+      task_log_cleanup_task: 'Rensning av uppgiftsloggar',
+    },
+  },
 };

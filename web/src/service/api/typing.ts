@@ -1122,9 +1122,9 @@ export interface ResponseArrayModelTask {
   trace_id: string;
 }
 
-export interface ResponseArrayModelTaskLogEntry {
+export interface ResponseArrayModelTaskLog {
   code: string;
-  data: TaskLogEntry[];
+  data: TaskLog[];
   err: string;
   trace_id: string;
 }
@@ -1802,16 +1802,25 @@ export interface Task {
 
 export type TaskCategory = "user" | "system";
 
-export interface TaskLogEntry {
+export interface TaskLog {
   created_at: string;
   id: string;
+  /** Log level (info, debug, error, etc.) */
   level: string;
-  log_type: string;
+  /** Formatted log line (e.g. logfmt) */
   message: string;
-  ref_id: string;
+  /** Task ID */
+  task_id: string;
+  updated_at: string;
 }
 
 export interface TaskSettings {
+  /** Retention days for AI chat sessions/messages */
+  ai_chat_retention_days: number;
+  /** Retention days for audit logs */
+  audit_log_retention_days: number;
+  /** Retention days for task logs and task run records */
+  log_retention_days: number;
   /** Backend name for task log storage (e.g. "database"), empty for default */
   log_storage_backend: string;
   max_concurrent: number;

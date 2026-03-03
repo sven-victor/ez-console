@@ -18,13 +18,16 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-kit/log/level"
+	"github.com/robfig/cron/v3"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-utils/log"
 	"gorm.io/gorm"
@@ -36,12 +39,115 @@ type AIChatService struct {
 	toolSetService *ToolSetService
 }
 
+var aiChatSessionCleanupTaskType = model.TaskType("ai_chat_session_cleanup_task")
+
+var (
+	aiChatServiceOnce sync.Once
+	aiChatService     *AIChatService
+)
+
 // NewAIChatService creates a new AI chat service
 func NewAIChatService() *AIChatService {
-	return &AIChatService{
-		aiModelService: NewAIModelService(),
-		toolSetService: NewToolSetService(),
-	}
+	aiChatServiceOnce.Do(func() {
+		aiChatService = &AIChatService{
+			aiModelService: NewAIModelService(),
+			toolSetService: NewToolSetService(),
+		}
+		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
+			ID:             "ai-chat-session-cleanup",
+			Name:           "AI Chat Session Cleanup",
+			Spec:        "0 0 * * *",
+			Schedule:       cron.Every(time.Hour * 24),
+			Description:    "Cleanup AI chat sessions",
+			TaskType:       aiChatSessionCleanupTaskType,
+			PayloadBuilder: func() string { return "{}" },
+			Runner: taskscheduler.NewFuncTaskRunner(func(ctx context.Context, t *model.Task, progressCallback taskscheduler.ProgressCallback, cancelCh <-chan struct{}) (result interface{}, err error) {
+				logger := log.GetContextLogger(ctx)
+				settingSvc := new(SettingService)
+				retentionDays, _ := settingSvc.GetIntSetting(ctx, model.SettingTaskAIChatRetentionDays, 90)
+				if retentionDays < 1 {
+					retentionDays = 90
+				}
+				level.Info(logger).Log("msg", "AI chat session cleanup started", "retention_days", retentionDays)
+				cutoff := time.Now().Add(-time.Hour * 24 * time.Duration(retentionDays))
+
+				dbConn := db.Session(ctx)
+
+				lastMsgSubForCount := dbConn.Model(&model.AIChatMessage{}).
+					Select("session_id, MAX(message_time) AS last_message_time").
+					Group("session_id")
+
+				var totalSessions int64
+				if err := dbConn.Table(model.AIChatSession{}.TableName()+" AS s").
+					Joins("LEFT JOIN (?) AS m ON m.session_id = s.resource_id", lastMsgSubForCount).
+					Where("COALESCE(m.last_message_time, s.start_time) < ?", cutoff).
+					Count(&totalSessions).Error; err != nil {
+					return nil, fmt.Errorf("failed to count expired chat sessions: %w", err)
+				}
+
+				if totalSessions == 0 {
+					progressCallback(100)
+					level.Info(logger).Log("msg", "AI chat session cleanup completed", "deleted_sessions", 0, "retention_days", retentionDays)
+					return map[string]interface{}{"deleted_sessions": 0, "retention_days": retentionDays}, nil
+				}
+
+				level.Info(logger).Log("msg", "AI chat session cleanup started", "total_sessions", totalSessions, "retention_days", retentionDays)
+
+				const batchSize = 500
+				deletedSessions := 0
+				for {
+					select {
+					case <-cancelCh:
+						return nil, taskscheduler.ErrCancelled
+					default:
+					}
+
+					lastMsgSub := dbConn.Model(&model.AIChatMessage{}).
+						Select("session_id, MAX(message_time) AS last_message_time").
+						Group("session_id")
+
+					var batch []string
+					if err := dbConn.Table(model.AIChatSession{}.TableName()+" AS s").
+						Select("s.resource_id").
+						Joins("LEFT JOIN (?) AS m ON m.session_id = s.resource_id", lastMsgSub).
+						Where("COALESCE(m.last_message_time, s.start_time) < ?", cutoff).
+						Limit(batchSize).
+						Pluck("s.resource_id", &batch).Error; err != nil {
+						return nil, fmt.Errorf("failed to query expired chat sessions: %w", err)
+					}
+
+					if len(batch) == 0 {
+						break
+					}
+
+					if err := dbConn.Transaction(func(tx *gorm.DB) error {
+						if err := tx.Unscoped().Where("session_id IN ?", batch).Delete(&model.AIChatMessage{}).Error; err != nil {
+							return err
+						}
+						if err := tx.Unscoped().Where("resource_id IN ?", batch).Delete(&model.AIChatSession{}).Error; err != nil {
+							return err
+						}
+						return nil
+					}); err != nil {
+						return nil, fmt.Errorf("failed to cleanup chat sessions: %w", err)
+					}
+
+					deletedSessions += len(batch)
+					progress := int(float64(deletedSessions) / float64(totalSessions) * 99)
+					if progress < 1 {
+						progress = 1
+					}
+					progressCallback(progress)
+					level.Info(logger).Log("msg", "AI chat session cleanup in progress", "deleted_sessions", deletedSessions, "total_sessions", totalSessions, "progress", progress)
+				}
+
+				progressCallback(100)
+				level.Info(logger).Log("msg", "AI chat session cleanup completed", "deleted_sessions", deletedSessions, "retention_days", retentionDays)
+				return map[string]interface{}{"deleted_sessions": deletedSessions, "retention_days": retentionDays}, nil
+			}),
+		})
+	})
+	return aiChatService
 }
 
 // CreateChatSession creates a new chat session

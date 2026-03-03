@@ -33,6 +33,12 @@ export default {
     task: {
       maxConcurrent: 'Tareas simultáneas máximas',
       maxConcurrentTooltip: 'Número máximo de tareas que pueden ejecutarse al mismo tiempo.',
+      aiChatRetentionDays: 'Retención de chats de IA (días)',
+      aiChatRetentionDaysTooltip: 'Período de retención para sesiones de chat de IA, según la última hora de conversación.',
+      taskLogRetentionDays: 'Retención de registros de tareas (días)',
+      taskLogRetentionDaysTooltip: 'Período de retención para los registros de ejecución de tareas y los registros históricos de ejecución.',
+      auditLogRetentionDays: 'Retención de registros de auditoría (días)',
+      auditLogRetentionDaysTooltip: 'Período de retención para los registros de auditoría.',
       logStorageBackend: 'Almacenamiento de registros',
       logStorageBackendTooltip: 'Dónde se almacenan los registros de ejecución de tareas. Base de datos almacena los registros en la base de datos de la aplicación.',
       logStoragePlaceholder: 'Seleccionar backend',

@@ -58,4 +58,22 @@ export default {
     failed: 'Fallido',
     cancelled: 'Cancelado',
   },
+  scheduledTasks: 'Tareas programadas',
+  scheduleName: 'Nombre',
+  scheduleSpec: 'Cron',
+  scheduleDescription: 'Descripción',
+  scheduleTaskType: 'Tipo de tarea',
+  scheduleEnabled: 'Habilitado',
+  scheduleNextRun: 'Próxima ejecución',
+  scheduleLastRun: 'Última ejecución',
+  viewHistory: 'Ver historial',
+  triggerNow: 'Ejecutar ahora',
+  executionHistory: 'Historial de ejecuciones',
+  task: {
+    type: {
+      audit_log_cleanup_task: 'Limpieza de registros de auditoría',
+      ai_chat_session_cleanup_task: 'Limpieza de sesiones de chat de IA',
+      task_log_cleanup_task: 'Limpieza de registros de tareas',
+    },
+  },
 };

@@ -29,7 +29,7 @@ type PayloadBuilder func() string
 type ScheduledJobDef struct {
 	ID             string
 	Name           string
-	Spec           string // cron expression, e.g. "0 0 * * *" for daily at midnight
+	Spec           string // cron expression, e.g. "0 0 * * *" for daily at midnight, If the Schedule attribute is not empty, this value is only used for the front display.
 	Schedule       cron.Schedule
 	Description    string
 	TaskType       model.TaskType

@@ -1732,30 +1732,42 @@ definitions:
     x-enum-varnames:
     - TaskCategoryUser
     - TaskCategorySystem
-  model.TaskLogEntry:
+  model.TaskLog:
     properties:
       created_at:
         type: string
       id:
         type: string
       level:
-        type: string
-      log_type:
+        description: Log level (info, debug, error, etc.)
         type: string
       message:
+        description: Formatted log line (e.g. logfmt)
         type: string
-      ref_id:
+      task_id:
+        description: Task ID
+        type: string
+      updated_at:
         type: string
     required:
     - created_at
     - id
     - level
-    - log_type
     - message
-    - ref_id
+    - task_id
+    - updated_at
     type: object
   model.TaskSettings:
     properties:
+      ai_chat_retention_days:
+        description: Retention days for AI chat sessions/messages
+        type: integer
+      audit_log_retention_days:
+        description: Retention days for audit logs
+        type: integer
+      log_retention_days:
+        description: Retention days for task logs and task run records
+        type: integer
       log_storage_backend:
         description: Backend name for task log storage (e.g. "database"), empty for
           default
@@ -1763,6 +1775,9 @@ definitions:
       max_concurrent:
         type: integer
     required:
+    - ai_chat_retention_days
+    - audit_log_retention_days
+    - log_retention_days
     - log_storage_backend
     - max_concurrent
     type: object
@@ -2873,6 +2888,16 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -2905,6 +2930,16 @@ definitions:
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -3353,13 +3388,13 @@ definitions:
     - err
     - trace_id
     type: object
-  util.Response-array_model_TaskLogEntry:
+  util.Response-array_model_TaskLog:
     properties:
       code:
         type: string
       data:
         items:
-          $ref: '#/definitions/model.TaskLogEntry'
+          $ref: '#/definitions/model.TaskLog'
         type: array
       err:
         type: string
@@ -8022,9 +8057,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: data is array of TaskLogEntry
+          description: data is array of TaskLog
           schema:
-            $ref: '#/definitions/util.Response-array_model_TaskLogEntry'
+            $ref: '#/definitions/util.Response-array_model_TaskLog'
         "404":
           description: Not Found
           schema:

@@ -33,6 +33,12 @@ export default {
     task: {
       maxConcurrent: '最大并发任务数',
       maxConcurrentTooltip: '允许同时运行的最大任务数量。',
+      aiChatRetentionDays: 'AI 会话保留天数',
+      aiChatRetentionDaysTooltip: '基于最后一次对话时间自动清理 AI 会话（包含会话与消息）。',
+      taskLogRetentionDays: '任务日志保留天数',
+      taskLogRetentionDaysTooltip: '自动清理任务执行日志与历史任务运行记录。',
+      auditLogRetentionDays: '审计日志保留天数',
+      auditLogRetentionDaysTooltip: '自动清理指定天数之前的审计日志。',
       logStorageBackend: '日志存储',
       logStorageBackendTooltip: '任务执行日志的存储位置。数据库将日志存储在应用数据库中。',
       logStoragePlaceholder: '选择存储后端',

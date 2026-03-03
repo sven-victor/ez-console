@@ -169,7 +169,7 @@ func (c *TaskController) GetTask(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Task ID (UUID)"
-//	@Success		200	{object}	util.Response[[]model.TaskLogEntry] "data is array of TaskLogEntry"
+//	@Success		200	{object}	util.Response[[]model.TaskLog] "data is array of TaskLog"
 //	@Failure		404	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/tasks/{id}/logs [get]

@@ -7,38 +7,38 @@ This guide describes the Task Management module: background task execution, regi
 The Task Management module provides:
 
 - **Background task execution**: Tasks run in a worker pool with configurable concurrency.
-- **Registry-based task types**: Extensible task types via `pkg/task`; no built-in task types by default.
+- **Registry-based task types**: Extensible task types via `pkg/taskscheduler`; no built-in task types by default.
 - **Real-time progress and status**: Progress (0–100) and status (pending, running, success, failed, cancelled) are stored and can be polled by the frontend.
 - **Cancellation and retry**: Running or pending tasks can be cancelled; failed or cancelled tasks can be retried.
 - **Artifact download**: Tasks can attach an artifact file key; users download via the existing file API.
 - **Creator-based visibility**: Non-admin users see only their own tasks; admins see all.
 - **Task execution logs**: Logs produced during task execution (via the context logger) are stored in a configurable log storage backend and can be viewed on the task detail page.
-- **Configurable log storage**: Task settings let you choose where task logs are stored (e.g. database); the list of backends is provided by a registry in `pkg/logstore`.
+- **Configurable log storage**: Task settings let you choose where task logs are stored (e.g. database); the list of backends is provided by a registry in `pkg/taskscheduler`.
 
 ## Architecture
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│  Other      │     │  TaskService │     │  Task Type      │
-│  Modules    │───▶│  CreateTask  │───▶│  Registry       │
-│  (e.g.      │     │  Get/List/   │     │  (pkg/task)     │
-│   Export)   │     │  Cancel/     │     │                 │
-└─────────────┘     │  Retry/Delete│     └────────┬────────┘
-                    └──────┬───────┘              │
-                           │                      │ GetTaskRunner
-                           ▼                      ▼
-                    ┌───────────────┐     ┌─────────────────┐
-                    │  Worker Pool  │───▶│  TaskRunner     │
-                    │  (configurable│     │  Run(ctx, task, │
-                    │   concurrency)│     │  progress,      │
-                    └───────────────┘     │  cancelCh)      │
-                                          └─────────────────┘
+┌─────────────┐     ┌──────────────┐     ┌─────────────────────────┐
+│  Other      │     │  TaskService │     │  Task Type              │
+│  Modules    │───▶│  CreateTask  │───▶│  Registry               │
+│  (e.g.      │     │  Get/List/   │     │  (pkg/taskscheduler)    │
+│   Export)   │     │  Cancel/     │     │                         │
+└─────────────┘     │  Retry/Delete│     └──────────┬──────────────┘
+                    └──────┬───────┘                │
+                           │                        │ GetTaskRunner
+                           ▼                        ▼
+                    ┌───────────────┐     ┌─────────────────────────┐
+                    │  Worker Pool  │───▶│  TaskRunner              │
+                    │  (configurable│     │  Run(ctx, task,          │
+                    │   concurrency)│     │  progressCallback,       │
+                    └───────────────┘     │  cancelCh)               │
+                                          └─────────────────────────┘
 ```
 
 - **Task creation** is only via `TaskService.CreateTask` (no HTTP POST). Other modules (e.g. export) call it and get a task ID.
 - **Worker pool** reads max concurrency from system setting `task_max_concurrent` (default 10). Tasks are fed by an in-memory channel. When the channel is full, the task is still persisted to the DB but is **not** enqueued (see **Task scheduling internals** below).
-- **Task types** are registered with `task.RegisterTaskType(typeName, runner)`. Each type has a `TaskRunner` implementing `Run(ctx, task, progressCallback, cancelCh)`.
-- **Task logs**: Before running a task, the worker reads the log storage backend name from task settings (`task_log_storage_backend`). It creates a tee logger that forwards all `log.Logger` output from the runner to both the default logger and a **task logger** that writes to the chosen log storage backend (e.g. database). Log storage backends are registered in `pkg/logstore`; the default backend is `"database"`.
+- **Task types** are registered with `taskscheduler.RegisterTaskType(typeName, runner)` or `taskscheduler.RegisterFuncTaskType(typeName, fn)`. Each type has a `TaskRunner` implementing `Run(ctx, task, progressCallback, cancelCh)`.
+- **Task logs**: Before running a task, the worker reads the log storage backend name from task settings (`task_log_storage_backend`). It creates a tee logger that forwards all `log.Logger` output from the runner to both the default logger and a **task logger** (created via `taskscheduler.NewTaskLogger`) that writes to the chosen log storage backend. Log storage backends are registered in `pkg/taskscheduler`; the default backend is `"database"`.
 
 ## User-Facing Features
 
@@ -70,7 +70,7 @@ The Task Management module provides:
 
 - **Path**: `/tasks/schedules`
 - **Permission**: `task:schedule:list` (with `task:schedule:update` for toggle and trigger actions).
-- **Behavior**: Lists all registered cron jobs (name, cron spec, description, task type, enabled, next run, last run). Actions: View history, Toggle enable/disable, Trigger now. Selecting “View history” shows a paginated table of tasks created by that schedule (execution history). Accessible from the Task list page via the “Scheduled Tasks” link (when the user has `task:schedule:list`).
+- **Behavior**: Lists all registered cron jobs (name, cron spec, description, task type, enabled, next run, last run). Actions: View history, Toggle enable/disable, Trigger now. Selecting "View history" shows a paginated table of tasks created by that schedule (execution history). Accessible from the Task list page via the "Scheduled Tasks" link (when the user has `task:schedule:list`).
 
 ### System Settings: Task Settings Tab
 
@@ -86,7 +86,7 @@ The Task Management module provides:
 
 - **Setting key**: `task_log_storage_backend` (string, default `"database"`)
 - **Effect**: Backend used to store and read task execution logs. When a task runs, the context logger is teed with a task logger that writes each log line to this backend. `GetTaskLogs` also uses this backend so the task detail page shows logs from the same store.
-- **UI**: A dropdown lists available backends. The list is loaded from `GET /api/system/task-settings/log-storage-backends`, which returns registered backends from `pkg/logstore` (e.g. `database`). Adding a new backend in code and registering it makes it appear in the dropdown without frontend changes.
+- **UI**: A dropdown lists available backends. The list is loaded from `GET /api/system/task-settings/log-storage-backends`, which returns registered backends from `pkg/taskscheduler` (e.g. `database`). Adding a new backend in code and registering it makes it appear in the dropdown without frontend changes.
 
 ## Permissions
 
@@ -129,7 +129,7 @@ All task APIs require authentication.
 - **Response**: Array of tasks (not paginated). Returns up to 10 tasks that are (a) created by the current user, (b) have **category** `"user"`, and (c) are either created in the last 24 hours or currently `running` or `pending`. Tasks with category `"system"` are not returned.
 - **Use case**: The header task dropdown uses this API to show the current user's recent **user** tasks and allow quick access to View/Download. The full task list page uses `/api/tasks` with pagination and `task:list`.
 
-**Artifact download**: Use the task’s `artifact_file_key` with the existing file API: `GET /api/files/:fileKey`.
+**Artifact download**: Use the task's `artifact_file_key` with the existing file API: `GET /api/files/:fileKey`.
 
 ### Scheduled tasks (cron) APIs
 
@@ -146,7 +146,7 @@ All task APIs require authentication.
 |--------|---------------------------------------------------|----------------------|-------------|
 | GET    | `/api/system/task-settings/log-storage-backends` | system:settings:view | List registered log storage backends for the task settings dropdown. |
 
-- **Response**: Array of `{ "id": "database", "name": "Database" }` (and any other registered backends). Used by the Task Settings form to populate the “Log storage” select.
+- **Response**: Array of `{ "id": "database", "name": "Database" }` (and any other registered backends). Used by the Task Settings form to populate the "Log storage" select.
 
 There is **no** HTTP API to create tasks; creation is done in code via `TaskService.CreateTask`. Modules that need to expose "create task" to the frontend (e.g. user export) provide their own POST endpoint that calls `TaskService.CreateTask` and returns the task.
 
@@ -183,7 +183,7 @@ User export is a full example of a module that creates a task via an HTTP endpoi
 
 - **Permission**: `authorization:user:export` (create user export task).
 - **API**: `POST /api/authorization/users/export`. Optional body: `{ "keywords": "", "status": "" }` to filter users. Returns the created task (same shape as task list items).
-- **Backend**: `UserController.CreateUserExportTask` calls `TaskService.CreateTask(ctx, "user_export", WithPayload(payload), WithMaxRetries(1))` and returns the task. The task type `user_export` is registered in `pkg/api/authorization/user_export_runner.go` via `RegisterUserExportTask(svc)` at server startup.
+- **Backend**: `UserController.CreateUserExportTask` calls `TaskService.CreateTask(ctx, "user_export", WithPayload(payload), WithMaxRetries(1))` and returns the task. The task type `user_export` is registered in `pkg/api/authorization/user_export_runner.go` via `taskscheduler.RegisterTaskType` at server startup.
 - **Runner**: `userExportRunner` in `user_export_runner.go` parses payload (keywords, status), paginates over users, writes CSV, uploads via `FileService.UploadFileWithOwner` with owner = task creator, then calls `TaskService.SetTaskArtifact(ctx, taskID, fileKey, filename)`. Progress is reported during the loop; cancellation is respected via `cancelCh`.
 - **Frontend**: On the user list page (`UserList`), an Export button (guarded by `authorization:user:export`) calls `api.authorization.createUserExportTask({ keywords, status })`. On success, it calls `addTask(res)` from `useSite()` so the new task appears in the header dropdown and the dropdown opens. The user can watch progress and download the CSV from the dropdown or the task detail page when the task completes.
 
@@ -191,7 +191,7 @@ This pattern (POST endpoint → CreateTask → return task; frontend addTask + o
 
 ## For Module Developers: Registering a Task Type
 
-Task execution is pluggable: register a task type and its runner so the worker can execute it.
+Task execution is pluggable: register a task type and its runner so the worker can execute it. All registry, logstore, and scheduler functions now live in the single `pkg/taskscheduler` package.
 
 ### 1. Implement TaskRunner and register
 
@@ -202,8 +202,12 @@ package mypackage
 
 import (
     "context"
+    "fmt"
+
+    "github.com/go-kit/log/level"
     "github.com/sven-victor/ez-console/pkg/model"
-    "github.com/sven-victor/ez-console/pkg/task"
+    "github.com/sven-victor/ez-console/pkg/taskscheduler"
+    "github.com/sven-victor/ez-utils/log"
 )
 
 type ExportRunner struct{}
@@ -211,35 +215,97 @@ type ExportRunner struct{}
 func (r *ExportRunner) Run(
     ctx context.Context,
     t *model.Task,
-    progressCallback task.ProgressCallback,
+    progressCallback taskscheduler.ProgressCallback,
     cancelCh <-chan struct{},
 ) (interface{}, error) {
-    // 1. Parse t.Payload if needed
-    // 2. Do work in a loop, calling progressCallback(percent) and checking cancelCh
-    for i := 0; i <= 100; i += 10 {
+    logger := log.GetContextLogger(ctx) // lines logged here are stored in the configured log backend
+
+    level.Info(logger).Log("msg", "export started", "task_id", t.ResourceID)
+
+    total := 10
+    for i := 0; i < total; i++ {
         select {
         case <-cancelCh:
-            return nil, task.ErrCancelled
+            level.Warn(logger).Log("msg", "export cancelled", "processed", i)
+            return nil, taskscheduler.ErrCancelled
         default:
-            progressCallback(i)
-            // ... do chunk of work
         }
+        // ... do chunk of work
+        level.Info(logger).Log("msg", "processing chunk", "chunk", i+1, "total", total)
+        progressCallback((i + 1) * 100 / total)
     }
-    // 3. On success, optionally set artifact via TaskService.SetTaskArtifact (if your module has access to it)
-    return map[string]string{"rows": "42"}, nil
+
+    level.Info(logger).Log("msg", "export completed", "rows", fmt.Sprintf("%d", total))
+    // optionally set artifact via TaskService.SetTaskArtifact
+    return map[string]string{"rows": "10"}, nil
 }
 
 func init() {
-    task.RegisterTaskType("export", &ExportRunner{})
+    taskscheduler.RegisterTaskType("export", &ExportRunner{})
 }
 ```
 
-- Return `task.ErrCancelled` when the task is cancelled so the service can set status to cancelled.
-- Return a non-nil error for failure; the service will set status to failed and store the error message.
-- Return `(result, nil)` for success; result can be JSON-serialized and stored in the task’s result field.
-- Register in `init()` so the type is available when the worker starts. The worker calls `task.GetTaskRunner(task.Type)` to get a runner for each pending task.
+**`RegisterFuncTaskType`** — register a plain function directly, without defining a struct:
 
-### 3. Setting the artifact (e.g. export file)
+```go
+func init() {
+    taskscheduler.RegisterFuncTaskType("cleanup", func(
+        ctx context.Context,
+        t *model.Task,
+        progressCallback taskscheduler.ProgressCallback,
+        cancelCh <-chan struct{},
+    ) (interface{}, error) {
+        logger := log.GetContextLogger(ctx)
+        level.Info(logger).Log("msg", "cleanup started")
+
+        select {
+        case <-cancelCh:
+            return nil, taskscheduler.ErrCancelled
+        default:
+        }
+
+        // ... do work
+        progressCallback(100)
+        level.Info(logger).Log("msg", "cleanup done")
+        return nil, nil
+    })
+}
+```
+
+**`NewFuncTaskRunner`** — wrap a function as a `TaskRunner` value without immediately registering it. Useful when you need to pass the runner as a field (e.g. `ScheduledJobDef.Runner`) or register it conditionally at runtime:
+
+```go
+runner := taskscheduler.NewFuncTaskRunner(func(
+    ctx context.Context,
+    t *model.Task,
+    progressCallback taskscheduler.ProgressCallback,
+    cancelCh <-chan struct{},
+) (interface{}, error) {
+    logger := log.GetContextLogger(ctx)
+    level.Info(logger).Log("msg", "job started", "type", string(t.Type))
+    progressCallback(100)
+    return nil, nil
+})
+
+// Pass to a scheduled job — RegisterScheduledJob will call RegisterFuncTaskType for you.
+taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
+    ID:       "my-job",
+    Name:     "My Job",
+    Spec:     "0 * * * *",
+    TaskType: "my_job",
+    Runner:   runner,
+})
+
+// Or register it explicitly:
+// taskscheduler.RegisterTaskType("my_job", runner)
+```
+
+- Return `taskscheduler.ErrCancelled` when the task is cancelled so the service can set status to cancelled.
+- Return a non-nil error for failure; the service will set status to failed and store the error message.
+- Return `(result, nil)` for success; result can be JSON-serialized and stored in the task's result field.
+- Register in `init()` so the type is available when the worker starts. The worker calls `taskscheduler.GetTaskRunner(ctx, task.Type)` to get a runner for each pending task.
+
+### 2. Setting the artifact (e.g. export file)
 
 When your runner produces a file, it should associate it with the task. The runner does not receive `TaskService` in `Run`; the runner should call `TaskService.SetTaskArtifact(ctx, taskID, fileKey, filename)` from code that has access to the service (e.g. a runner that was constructed with a reference to the service, or via a closure). Alternatively, have the runner return a result that includes a file key and have the module that creates the task call `SetTaskArtifact` after the task completes (by polling the task status).
 
@@ -247,25 +313,25 @@ Artifact download uses the existing file API; the file should be readable by the
 
 ## Task Log Storage (for implementers)
 
-Task execution logs are stored via a **log storage** layer so they can be queried by task ID and shown in the UI.
+Task execution logs are stored via a **log storage** layer so they can be queried by task ID and shown in the UI. The logstore registry is part of the `pkg/taskscheduler` package (previously a separate `pkg/logstore` package).
 
-### Backend registry (`pkg/logstore`)
+### Backend registry (`pkg/taskscheduler`)
 
-- **Interface**: `Backend` with `Write(ctx, refID, logType, level, message)` and `ListByRefIDAndType(ctx, refID, logType)`.
-- **Registry**: `logstore.Register(name, factory)` registers a backend; `logstore.Get(name)` returns a backend (empty name uses default `"database"`). `logstore.ListBackendNames()` returns all registered names for the task settings API.
-- **Database backend**: `logstore.NewDatabaseBackend()` is registered as `"database"` in `pkg/logstore/database.go`. It persists to the `stored_logs` table (model `StoredLog`: ref_id, log_type, level, message, created_at).
-- **Service**: `LogStorageService` in `pkg/service/log_storage_service.go` wraps the registry: `Write` and `GetLogs` delegate to the backend chosen by name (from task settings when running a task or reading logs).
+- **Interface**: `LogStoreBackend` with `Write(ctx, refID, level, message)` and `ListByTaskID(ctx, refID)`.
+- **Registry**: `taskscheduler.RegisterLogStoreBackend(name, factory)` registers a backend; `taskscheduler.GetLogStoreBackend(name)` returns a backend instance (empty name uses the default `"database"`). `taskscheduler.ListLogStoreBackendNames()` returns all registered names for the task settings API.
+- **Database backend**: `taskscheduler.NewDatabaseLogStoreBackend()` is registered as `"database"` in `pkg/taskscheduler/logstore_database.go` via `init()`. It persists to the `task_logs` table (model `TaskLog`: task_id, level, message, created_at).
+- **Task logger**: `taskscheduler.NewTaskLogger(ctx, backendName, taskID)` returns a `log.Logger` that writes each log event to the selected backend. Used internally by the worker, but also available for direct use.
 
 ### How task logs are captured
 
 When the worker runs a task it:
 
 1. Reads task settings and gets `LogStorageBackend` (e.g. `"database"`).
-2. Builds a `LogStorageService` for that backend and a **task logger** that implements `log.Logger` and forwards each `Log(keyvals...)` call to the storage service (formatted as a single logfmt-style line).
+2. Creates a **task logger** via `taskscheduler.NewTaskLogger(ctx, backendName, taskID)` that forwards each `Log(keyvals...)` call to the storage backend (formatted as a single logfmt-style line). Debug-level logs are silently dropped.
 3. Creates a tee logger: `log.NewTeeLogger(baseLogger, taskLogger)` and attaches it to the context with `log.NewContextLogger(ctx, log.WithLogger(tee))`.
 4. Passes this context to `runner.Run(ctx, …)`. Any code in the runner that uses `log.GetContextLogger(ctx)` and logs will have lines stored in the selected backend.
 
-To add a new log storage backend (e.g. file, external service), implement `logstore.Backend`, register it with `logstore.Register("my_backend", func() Backend { return NewMyBackend() })`, and ensure the backend is registered before the server starts (e.g. in `init()`). It will then appear in the Task Settings “Log storage” dropdown and can be selected for storing and reading task logs.
+To add a new log storage backend (e.g. file, external service), implement `taskscheduler.LogStoreBackend`, register it with `taskscheduler.RegisterLogStoreBackend("my_backend", func() LogStoreBackend { return NewMyBackend() })`, and ensure the backend is registered before the server starts (e.g. in `init()`). It will then appear in the Task Settings "Log storage" dropdown and can be selected for storing and reading task logs.
 
 ## Task Model (summary)
 
@@ -310,16 +376,19 @@ The following metrics are exposed under `/metrics` for monitoring:
 
 ## Scheduled tasks (cron)
 
-- **Registry**: Scheduled jobs are defined in code via `pkg/scheduler`. Call `scheduler.RegisterScheduledJob(def)` with a `ScheduledJobDef` (ID, Name, Spec, Description, TaskType, PayloadBuilder, MaxRetries). Definitions are **not** persisted to the DB; they exist only in memory.
-- **Execution**: The scheduler uses `github.com/robfig/cron/v3`. When a cron job fires, it calls `TaskService.CreateTask` with the job’s task type, payload from `PayloadBuilder()`, category `"system"`, and `WithCronScheduleID(jobID)`. The created task is then processed like any other task (queue, workers, DB). Each run produces one task row, so execution history is the list of tasks with that `cron_schedule_id`.
+- **Registry**: Scheduled jobs are defined in code via `pkg/taskscheduler`. Call `taskscheduler.RegisterScheduledJob(def)` with a `ScheduledJobDef` (ID, Name, Spec, Description, TaskType, PayloadBuilder, MaxRetries, Runner). Definitions are **not** persisted to the DB; they exist only in memory.
+- **Runner field**: `ScheduledJobDef.Runner` is optional. If set, `RegisterScheduledJob` automatically registers the runner as the task type via `RegisterFuncTaskType`. If nil, the task type must be registered separately (e.g. via another `RegisterTaskType` call).
+- **Execution**: The `SchedulerService` (in `pkg/service`) uses `github.com/robfig/cron/v3`. When a cron job fires, it calls `TaskService.CreateTask` with the job's task type, payload from `PayloadBuilder()`, category `"system"`, and `WithCronScheduleID(jobID)`. The created task is then processed like any other task (queue, workers, DB). Each run produces one task row, so execution history is the list of tasks with that `cron_schedule_id`.
 - **UI**: The **Scheduled Tasks** page (`/tasks/schedules`) lists all registered cron jobs (name, spec, description, task type, enabled, next run, last run) and allows viewing execution history for a selected job. Users with `task:schedule:update` can enable/disable a job and trigger a run immediately.
 
 ### Registering a scheduled job
 
-In an `init()` or during server startup, register a job and ensure the scheduler is started after the service is created (see `server.go`):
+In an `init()` or during server startup, register a job. The `Runner` field is optional — if provided, its task type is automatically registered; otherwise register the task type separately:
 
 ```go
-scheduler.RegisterScheduledJob(&scheduler.ScheduledJobDef{
+// With Runner field — task type is registered automatically by RegisterScheduledJob.
+// Use NewFuncTaskRunner to avoid defining a dedicated struct.
+taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
     ID:          "my-daily-job",
     Name:        "Daily cleanup",
     Spec:        "0 0 * * *",  // daily at midnight
@@ -327,21 +396,46 @@ scheduler.RegisterScheduledJob(&scheduler.ScheduledJobDef{
     TaskType:    "cleanup",
     PayloadBuilder: func() string { return `{}` },
     MaxRetries:  1,
+    Runner: taskscheduler.NewFuncTaskRunner(func(
+        ctx context.Context,
+        t *model.Task,
+        progressCallback taskscheduler.ProgressCallback,
+        cancelCh <-chan struct{},
+    ) (interface{}, error) {
+        logger := log.GetContextLogger(ctx)
+        level.Info(logger).Log("msg", "daily cleanup started")
+        // ... do work, check cancelCh, call progressCallback
+        progressCallback(100)
+        level.Info(logger).Log("msg", "daily cleanup done")
+        return nil, nil
+    }),
 })
+
+// Without Runner — register the task type separately.
+taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
+    ID:          "my-daily-job",
+    Name:        "Daily cleanup",
+    Spec:        "0 0 * * *",
+    Description: "Runs the cleanup task type",
+    TaskType:    "cleanup",
+    PayloadBuilder: func() string { return `{}` },
+    MaxRetries:  1,
+})
+taskscheduler.RegisterTaskType("cleanup", &myCleanupRunner{})
 ```
 
-The task type (e.g. `"cleanup"`) must be registered in `pkg/task` like any other task type. The scheduler does not store cron definitions in the DB; adding or changing a job requires a code change and restart.
+The scheduler does not store cron definitions in the DB; adding or changing a job requires a code change and restart.
 
 ## Configuration
 
-- **Max concurrent tasks**: System Settings → Task Settings → “Max concurrent tasks” (default 10). Stored as `task_max_concurrent` in the settings table.
-- **Log storage backend**: System Settings → Task Settings → “Log storage” dropdown (default `database`). Stored as `task_log_storage_backend`. Determines where task execution logs are written and read from; options come from `pkg/logstore` registry.
+- **Max concurrent tasks**: System Settings → Task Settings → "Max concurrent tasks" (default 10). Stored as `task_max_concurrent` in the settings table.
+- **Log storage backend**: System Settings → Task Settings → "Log storage" dropdown (default `database`). Stored as `task_log_storage_backend`. Determines where task execution logs are written and read from; options come from `pkg/taskscheduler` registry.
 
 ## Troubleshooting
 
-- **Task stays “pending”**: Ensure a runner is registered for the task’s `type` via `task.RegisterTaskType`. Ensure the server has restarted after registering so the worker pool and registry are loaded.
-- **Many tasks stay “pending” under high load**: Check Prometheus `task_queue_overflow_total`. If it increases, the in-memory queue was full at task creation time, so some tasks were persisted but not enqueued. Mitigations: reduce bursty task creation, increase the in-memory queue size (code change: `defaultTaskQueueSize`), or implement a DB-backed pickup loop to drain pending tasks.
-- **“task type not registered”**: The worker sets status to failed with this message when `task.GetTaskRunner(task.Type)` returns false. Add a `RegisterTaskType` call for that type (e.g. in `init()` of the package that implements the runner).
+- **Task stays "pending"**: Ensure a runner is registered for the task's `type` via `taskscheduler.RegisterTaskType` or `taskscheduler.RegisterFuncTaskType`. Ensure the server has restarted after registering so the worker pool and registry are loaded.
+- **Many tasks stay "pending" under high load**: Check Prometheus `task_queue_overflow_total`. If it increases, the in-memory queue was full at task creation time, so some tasks were persisted but not enqueued. Mitigations: reduce bursty task creation, increase the in-memory queue size (code change: `defaultTaskQueueSize`), or implement a DB-backed pickup loop to drain pending tasks.
+- **"task type not registered"**: The worker sets status to failed with this message when `taskscheduler.GetTaskRunner(ctx, task.Type)` returns false. Add a `RegisterTaskType` or `RegisterFuncTaskType` call for that type (e.g. in `init()` of the package that implements the runner).
 - **Creator or admin only**: List and get APIs filter by `creator_id` for non-admin users. Use a context with the correct user when calling from backend code if you need to simulate a user.
 - **No task logs on detail page**: Ensure Task Settings → Log storage is set to a registered backend (e.g. `database`). Logs are only stored when the runner uses the context logger (`log.GetContextLogger(ctx)`); if the runner does not log, the list will be empty. Ensure the task has started at least once (logs are written during execution).
 

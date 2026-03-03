@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useRef, useState } from 'react';
-import { Card, Button, Space, message, Tag, Tooltip, Switch } from 'antd';
+import React, { useEffect, useRef, useState } from 'react';
+import { Card, Button, Space, message, Tag, Tooltip, Switch, Progress } from 'antd';
 import { ReloadOutlined, PlayCircleOutlined, HistoryOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -44,7 +44,12 @@ const TaskScheduleList: React.FC = () => {
   const historyTableRef = useRef<TableRef<API.Task>>(null);
 
   const { data: schedulesResp, loading: schedulesLoading, refresh: refreshSchedules } = useRequest(
-    () => api.taskSchedules.listTaskSchedules()
+    () => api.taskSchedules.listTaskSchedules(),
+    {
+      onError: (error) => {
+        message.error(t('scheduleListFailed', { defaultValue: 'Failed to list schedules: {{error}}', error: error }));
+      },
+    }
   );
   const scheduleList: API.ScheduledJobState[] = Array.isArray(schedulesResp) ? schedulesResp : (schedulesResp as API.ResponseArrayServiceScheduledJobState | undefined)?.data ?? [];
 
@@ -58,12 +63,17 @@ const TaskScheduleList: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (selectedScheduleId) {
+      historyTableRef.current?.reload?.();
+    }
+  }, [selectedScheduleId]);
+
   const handleTrigger = async (id: string) => {
     try {
       await api.taskSchedules.triggerTaskSchedule({ id });
       message.success(t('scheduleTriggered', { defaultValue: 'Task triggered.' }));
       setSelectedScheduleId(id);
-      historyTableRef.current?.reload?.();
     } catch {
       message.error(t('scheduleTriggerFailed', { defaultValue: 'Failed to trigger schedule.' }));
     }
@@ -73,7 +83,16 @@ const TaskScheduleList: React.FC = () => {
     { title: t('scheduleName', { defaultValue: 'Name' }), dataIndex: 'name', key: 'name', width: 160 },
     { title: t('scheduleSpec', { defaultValue: 'Cron' }), dataIndex: 'spec', key: 'spec', width: 120 },
     { title: t('scheduleDescription', { defaultValue: 'Description' }), dataIndex: 'description', key: 'description', ellipsis: true },
-    { title: t('scheduleTaskType', { defaultValue: 'Task Type' }), dataIndex: 'task_type', key: 'task_type', width: 120 },
+    {
+      title: t('scheduleTaskType', { defaultValue: 'Task Type' }),
+      dataIndex: 'task_type',
+      key: 'task_type',
+      width: 300,
+      render: (taskType: string) => {
+        const taskTypeLabel = t(`task.type.${taskType}`, { defaultValue: taskType });
+        return <Tag color="blue">{taskTypeLabel}</Tag>;
+      },
+    },
     {
       title: t('scheduleEnabled', { defaultValue: 'Enabled' }),
       dataIndex: 'enabled',
@@ -111,7 +130,9 @@ const TaskScheduleList: React.FC = () => {
               type="text"
               size="small"
               icon={<HistoryOutlined />}
-              onClick={() => setSelectedScheduleId(record.id)}
+              onClick={() => {
+                setSelectedScheduleId(record.id);
+              }}
             />
           </Tooltip>
           <PermissionGuard permission="task:schedule:update">
@@ -130,6 +151,7 @@ const TaskScheduleList: React.FC = () => {
   ];
 
   const historyRequest = (params: API.PaginationRequest): Promise<API.PaginationResponseModelTask> => {
+    console.log('historyRequest', selectedScheduleId, params);
     if (!selectedScheduleId) {
       return Promise.resolve({
         code: '0',
@@ -154,7 +176,16 @@ const TaskScheduleList: React.FC = () => {
   };
 
   const historyColumns: ColumnsType<API.Task> = [
-    { title: t('typeLabel', { defaultValue: 'Type' }), dataIndex: 'type', key: 'type', width: 120 },
+    {
+      title: t('scheduleTaskType', { defaultValue: 'Task Type' }),
+      dataIndex: 'type',
+      key: 'task_type',
+      width: 300,
+      render: (taskType: string) => {
+        const taskTypeLabel = t(`task.type.${taskType}`, { defaultValue: taskType });
+        return <Tag color="blue">{taskTypeLabel}</Tag>;
+      },
+    },
     {
       title: t('statusLabel', { defaultValue: 'Status' }),
       dataIndex: 'status',
@@ -170,7 +201,7 @@ const TaskScheduleList: React.FC = () => {
       key: 'progress',
       width: 100,
       render: (progress: number, record: API.Task) =>
-        record.status === 'running' || record.status === 'pending' ? `${progress}%` : '-',
+        record.status === 'running' || record.status === 'success' || record.status === 'pending' ? <Progress percent={progress} size="small" /> : '-',
     },
     { title: t('creatorId', { defaultValue: 'Creator' }), dataIndex: 'creator_id', key: 'creator_id', width: 120, ellipsis: true },
     {

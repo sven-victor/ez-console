@@ -69,21 +69,19 @@ const (
 
 // TaskService handles task CRUD and worker pool.
 type TaskService struct {
-	settingService    *SettingService
-	logStorageService *LogStorageService
-	cancelChans       map[string]chan struct{}
-	cancelMu          sync.RWMutex
-	taskQueue         chan *model.Task
-	taskQueueMu       sync.Mutex
+	settingService *SettingService
+	cancelChans    map[string]chan struct{}
+	cancelMu       sync.RWMutex
+	taskQueue      chan *model.Task
+	taskQueueMu    sync.Mutex
 }
 
 // NewTaskService creates a new TaskService.
-func NewTaskService(settingService *SettingService, logStorageService *LogStorageService) *TaskService {
+func NewTaskService(settingService *SettingService) *TaskService {
 	return &TaskService{
-		settingService:    settingService,
-		logStorageService: logStorageService,
-		cancelChans:       make(map[string]chan struct{}),
-		taskQueue:         make(chan *model.Task, defaultTaskQueueSize),
+		settingService: settingService,
+		cancelChans:    make(map[string]chan struct{}),
+		taskQueue:      make(chan *model.Task, defaultTaskQueueSize),
 	}
 }
 
@@ -286,7 +284,7 @@ func (s *TaskService) DeleteTask(ctx context.Context, id string) error {
 
 // GetTaskLogs returns stored log entries for a task. Enforces same visibility as GetTask (admin or creator).
 // Uses the log storage backend selected in task settings.
-func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]*model.TaskLogEntry, error) {
+func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskLog, error) {
 	if _, err := s.GetTask(ctx, id); err != nil {
 		return nil, err
 	}
@@ -295,23 +293,15 @@ func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]*model.Task
 	if taskSettings != nil && taskSettings.LogStorageBackend != "" {
 		backendName = taskSettings.LogStorageBackend
 	}
-	logSvc := NewLogStorageServiceWithBackend(backendName)
-	entries, err := logSvc.GetLogs(ctx, id, model.LogTypeTask)
+	be := taskscheduler.GetLogStoreBackend(backendName)
+	if be == nil {
+		return nil, nil
+	}
+	entries, err := be.ListByTaskID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	result := make([]*model.TaskLogEntry, 0, len(entries))
-	for _, e := range entries {
-		result = append(result, &model.TaskLogEntry{
-			ID:        e.ID,
-			RefID:     e.RefID,
-			LogType:   e.LogType,
-			Level:     e.Level,
-			Message:   e.Message,
-			CreatedAt: e.CreatedAt,
-		})
-	}
-	return result, nil
+	return entries, nil
 }
 
 // claimTaskByID atomically claims the given pending task by ID (sets status to running). Returns the task or nil if not found/not pending.
@@ -401,8 +391,7 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 	if taskSettings != nil && taskSettings.LogStorageBackend != "" {
 		backendName = taskSettings.LogStorageBackend
 	}
-	taskLogSvc := NewLogStorageServiceWithBackend(backendName)
-	taskLogger := newTaskLogger(ctx, t.ResourceID, taskLogSvc)
+	taskLogger := taskscheduler.NewTaskLogger(ctx, backendName, t.ResourceID)
 	tee := log.NewTeeLogger(logger, taskLogger)
 	ctx, logger = log.NewContextLogger(ctx, log.WithLogger(tee))
 
@@ -414,6 +403,9 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 	}
 
 	progressCallback := func(progress int) {
+		if progress < 0 || progress > 100 {
+			return
+		}
 		_ = s.UpdateTaskProgress(ctx, t.ResourceID, progress)
 	}
 	level.Info(logger).Log("msg", "Running task", "task_id", t.ResourceID, "task_type", t.Type)

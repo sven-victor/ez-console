@@ -15,7 +15,7 @@
  */
 
 import React, { useRef, useState } from 'react';
-import { Card, Button, Space, message, Input, Tag, Tooltip } from 'antd';
+import { Card, Button, Space, message, Input, Tag, Tooltip, Progress } from 'antd';
 import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined, EyeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -80,10 +80,14 @@ const TaskList: React.FC = () => {
 
   const columns: ColumnsType<API.Task> = [
     {
-      title: t('typeLabel', { defaultValue: 'Type' }),
+      title: t('scheduleTaskType', { defaultValue: 'Task Type' }),
       dataIndex: 'type',
-      key: 'type',
-      width: 120,
+      key: 'task_type',
+      width: 300,
+      render: (taskType: string) => {
+        const taskTypeLabel = t(`task.type.${taskType}`, { defaultValue: taskType });
+        return <Tag color="blue">{taskTypeLabel}</Tag>;
+      },
     },
     {
       title: t('statusLabel', { defaultValue: 'Status' }),
@@ -102,7 +106,7 @@ const TaskList: React.FC = () => {
       key: 'progress',
       width: 100,
       render: (progress: number, record: API.Task) =>
-        record.status === 'running' || record.status === 'pending' ? `${progress}%` : '-',
+        record.status === 'running' || record.status === 'success' || record.status === 'pending' ? <Progress percent={progress} size="small" /> : '-',
     },
     {
       title: t('creatorId', { defaultValue: 'Creator' }),

@@ -58,4 +58,22 @@ export default {
     failed: 'Fehlgeschlagen',
     cancelled: 'Abgebrochen',
   },
+  scheduledTasks: 'Geplante Aufgaben',
+  scheduleName: 'Name',
+  scheduleSpec: 'Cron',
+  scheduleDescription: 'Beschreibung',
+  scheduleTaskType: 'Aufgabentyp',
+  scheduleEnabled: 'Aktiviert',
+  scheduleNextRun: 'Nächster Lauf',
+  scheduleLastRun: 'Letzter Lauf',
+  viewHistory: 'Verlauf anzeigen',
+  triggerNow: 'Jetzt auslösen',
+  executionHistory: 'Ausführungsverlauf',
+  task: {
+    type: {
+      audit_log_cleanup_task: 'Bereinigung von Audit-Logs',
+      ai_chat_session_cleanup_task: 'Bereinigung von AI-Chat-Sitzungen',
+      task_log_cleanup_task: 'Bereinigung von Aufgaben-Logs',
+    },
+  },
 };

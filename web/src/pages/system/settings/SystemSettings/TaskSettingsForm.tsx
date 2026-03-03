@@ -18,13 +18,17 @@ import React from 'react';
 import { Form, InputNumber, Button, message, Space, Spin, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
-import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, CalendarOutlined } from '@ant-design/icons';
 import api from '@/service/api';
+import { PermissionGuard } from '@/components/PermissionGuard';
+import { useNavigate } from 'react-router-dom';
 
 const TaskSettingsForm: React.FC = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation('system');
+  const { t: tTask } = useTranslation('task');
   const { t: tCommon } = useTranslation('common');
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<API.TaskSettings>();
 
   const { data: backendsList } = useRequest(api.system.listLogStorageBackends);
   const logStorageBackendOptions = (backendsList ?? []).map((b: API.LogStorageBackendOption) => ({
@@ -38,6 +42,9 @@ const TaskSettingsForm: React.FC = () => {
         form.setFieldsValue({
           max_concurrent: res.max_concurrent,
           log_storage_backend: res.log_storage_backend ?? 'database',
+          ai_chat_retention_days: res.ai_chat_retention_days ?? 90,
+          log_retention_days: res.log_retention_days ?? 30,
+          audit_log_retention_days: res.audit_log_retention_days ?? 365,
         });
       }
     },
@@ -67,7 +74,13 @@ const TaskSettingsForm: React.FC = () => {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{ max_concurrent: 10, log_storage_backend: 'database' }}
+        initialValues={{
+          max_concurrent: 10,
+          log_storage_backend: 'database',
+          ai_chat_retention_days: 90,
+          task_log_retention_days: 30,
+          audit_log_retention_days: 365,
+        }}
       >
         <Form.Item
           name="log_storage_backend"
@@ -92,6 +105,39 @@ const TaskSettingsForm: React.FC = () => {
         >
           <InputNumber min={1} max={100} style={{ width: '100%' }} />
         </Form.Item>
+
+        <Form.Item
+          name="ai_chat_retention_days"
+          label={t('settings.task.aiChatRetentionDays', { defaultValue: 'AI chat retention (days)' })}
+          tooltip={t('settings.task.aiChatRetentionDaysTooltip', {
+            defaultValue: 'Retention period for AI chat sessions, based on the last conversation time.',
+          })}
+          rules={[{ type: 'number', min: 1, max: 3650 }]}
+        >
+          <InputNumber min={1} max={3650} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
+        </Form.Item>
+
+        <Form.Item
+          name="task_log_retention_days"
+          label={t('settings.task.taskLogRetentionDays', { defaultValue: 'Task log retention (days)' })}
+          tooltip={t('settings.task.taskLogRetentionDaysTooltip', {
+            defaultValue: 'Retention period for task execution logs and historical task run records.',
+          })}
+          rules={[{ type: 'number', min: 1, max: 3650 }]}
+        >
+          <InputNumber min={1} max={3650} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
+        </Form.Item>
+
+        <Form.Item
+          name="audit_log_retention_days"
+          label={t('settings.task.auditLogRetentionDays', { defaultValue: 'Audit log retention (days)' })}
+          tooltip={t('settings.task.auditLogRetentionDaysTooltip', {
+            defaultValue: 'Retention period for audit logs.',
+          })}
+          rules={[{ type: 'number', min: 1, max: 3650 }]}
+        >
+          <InputNumber min={1} max={3650} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
+        </Form.Item>
         <Form.Item>
           <Space>
             <Button type="primary" htmlType="submit" loading={submitting} icon={<SaveOutlined />}>
@@ -100,6 +146,11 @@ const TaskSettingsForm: React.FC = () => {
             <Button onClick={() => refresh()} icon={<ReloadOutlined />}>
               {tCommon('refresh', { defaultValue: 'Refresh' })}
             </Button>
+            <PermissionGuard permission="task:schedule:list">
+              <Button icon={<CalendarOutlined />} onClick={() => navigate('/tasks/schedules')}>
+                {tTask('scheduledTasks', { defaultValue: 'Scheduled Tasks' })}
+              </Button>
+            </PermissionGuard>
           </Space>
         </Form.Item>
       </Form>

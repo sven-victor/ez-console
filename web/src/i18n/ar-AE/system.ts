@@ -33,6 +33,12 @@ export default {
     task: {
       maxConcurrent: 'الحد الأقصى للمهام المتزامنة',
       maxConcurrentTooltip: 'الحد الأقصى لعدد المهام التي يمكن تشغيلها في نفس الوقت.',
+      aiChatRetentionDays: 'الاحتفاظ بمحادثات الذكاء الاصطناعي (بالأيام)',
+      aiChatRetentionDaysTooltip: 'فترة الاحتفاظ لجلسات محادثات الذكاء الاصطناعي، بناءً على وقت آخر محادثة.',
+      taskLogRetentionDays: 'الاحتفاظ بسجلات المهام (بالأيام)',
+      taskLogRetentionDaysTooltip: 'فترة الاحتفاظ لسجلات تنفيذ المهام وسجلات تشغيل المهام التاريخية.',
+      auditLogRetentionDays: 'الاحتفاظ بسجلات التدقيق (بالأيام)',
+      auditLogRetentionDaysTooltip: 'فترة الاحتفاظ لسجلات التدقيق.',
       logStorageBackend: 'تخزين السجلات',
       logStorageBackendTooltip: 'مكان تخزين سجلات تنفيذ المهام. قاعدة البيانات تخزن السجلات في قاعدة بيانات التطبيق.',
       logStoragePlaceholder: 'اختر الواجهة الخلفية',

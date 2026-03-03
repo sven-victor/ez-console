@@ -65,14 +65,11 @@ export async function getTaskLogs(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseArrayModelTaskLogEntry>(
-    `/api/tasks/${param0}/logs`,
-    {
-      method: "GET",
-      params: { ...queryParams },
-      ...(options || {}),
-    }
-  );
+  return request<API.ResponseArrayModelTaskLog>(`/api/tasks/${param0}/logs`, {
+    method: "GET",
+    params: { ...queryParams },
+    ...(options || {}),
+  });
 }
 
 /** Retry task Retry a failed or cancelled task POST /api/tasks/${param0}/retry */

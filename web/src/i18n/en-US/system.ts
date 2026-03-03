@@ -33,6 +33,12 @@ export default {
     task: {
       maxConcurrent: 'Max concurrent tasks',
       maxConcurrentTooltip: 'Maximum number of tasks that can run at the same time.',
+      aiChatRetentionDays: 'AI chat retention (days)',
+      aiChatRetentionDaysTooltip: 'Retention period for AI chat sessions, based on the last conversation time.',
+      taskLogRetentionDays: 'Task log retention (days)',
+      taskLogRetentionDaysTooltip: 'Retention period for task execution logs and historical task run records.',
+      auditLogRetentionDays: 'Audit log retention (days)',
+      auditLogRetentionDaysTooltip: 'Retention period for audit logs.',
       logStorageBackend: 'Log storage',
       logStorageBackendTooltip: 'Where task execution logs are stored. Database stores logs in the application database.',
       logStoragePlaceholder: 'Select backend',

@@ -58,4 +58,22 @@ export default {
     failed: 'فشل',
     cancelled: 'ملغى',
   },
+  scheduledTasks: 'المهام المجدولة',
+  scheduleName: 'الاسم',
+  scheduleSpec: 'Cron',
+  scheduleDescription: 'الوصف',
+  scheduleTaskType: 'نوع المهمة',
+  scheduleEnabled: 'مفعّل',
+  scheduleNextRun: 'التشغيل التالي',
+  scheduleLastRun: 'آخر تشغيل',
+  viewHistory: 'عرض السجل',
+  triggerNow: 'شغّل الآن',
+  executionHistory: 'سجل التنفيذ',
+  task: {
+    type: {
+      audit_log_cleanup_task: 'تنظيف سجلات التدقيق',
+      ai_chat_session_cleanup_task: 'تنظيف جلسات محادثات الذكاء الاصطناعي',
+      task_log_cleanup_task: 'تنظيف سجلات المهام',
+    },
+  },
 };

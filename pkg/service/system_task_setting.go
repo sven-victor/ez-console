@@ -29,8 +29,11 @@ func (s *SettingService) InitDefaultTaskSettings(ctx context.Context) error {
 		Value   string
 		Comment string
 	}{
-		model.SettingTaskMaxConcurrent:     {"10", "Maximum number of tasks that can run concurrently"},
-		model.SettingTaskLogStorageBackend:  {"database", "Log storage backend for task logs (e.g. database)"},
+		model.SettingTaskMaxConcurrent:         {"10", "Maximum number of tasks that can run concurrently"},
+		model.SettingTaskLogStorageBackend:     {"database", "Log storage backend for task logs (e.g. database)"},
+		model.SettingTaskAIChatRetentionDays:   {"90", "Retention days for AI chat sessions/messages"},
+		model.SettingTaskLogRetentionDays:      {"30", "Retention days for task logs and task run records"},
+		model.SettingTaskAuditLogRetentionDays: {"365", "Retention days for audit logs"},
 	}
 	for key, setting := range defaultSettings {
 		var count int64
@@ -51,17 +54,26 @@ func (s *SettingService) GetTaskSettings(ctx context.Context) (*model.TaskSettin
 		return nil, err
 	}
 	logStorageBackend, _ := s.GetStringSetting(ctx, model.SettingTaskLogStorageBackend, "database")
+	aiChatRetentionDays, _ := s.GetIntSetting(ctx, model.SettingTaskAIChatRetentionDays, 90)
+	taskLogRetentionDays, _ := s.GetIntSetting(ctx, model.SettingTaskLogRetentionDays, 30)
+	auditLogRetentionDays, _ := s.GetIntSetting(ctx, model.SettingTaskAuditLogRetentionDays, 365)
 	return &model.TaskSettings{
-		MaxConcurrent:     maxConcurrent,
-		LogStorageBackend: logStorageBackend,
+		MaxConcurrent:         maxConcurrent,
+		LogStorageBackend:     logStorageBackend,
+		AIChatRetentionDays:   aiChatRetentionDays,
+		LogRetentionDays:      taskLogRetentionDays,
+		AuditLogRetentionDays: auditLogRetentionDays,
 	}, nil
 }
 
 // UpdateTaskSettings updates task settings
 func (s *SettingService) UpdateTaskSettings(ctx context.Context, settings *model.TaskSettings) error {
 	settingsMap := map[string]string{
-		string(model.SettingTaskMaxConcurrent):    strconv.Itoa(settings.MaxConcurrent),
-		string(model.SettingTaskLogStorageBackend): settings.LogStorageBackend,
+		string(model.SettingTaskMaxConcurrent):         strconv.Itoa(settings.MaxConcurrent),
+		string(model.SettingTaskLogStorageBackend):     settings.LogStorageBackend,
+		string(model.SettingTaskAIChatRetentionDays):   strconv.Itoa(settings.AIChatRetentionDays),
+		string(model.SettingTaskLogRetentionDays):      strconv.Itoa(settings.LogRetentionDays),
+		string(model.SettingTaskAuditLogRetentionDays): strconv.Itoa(settings.AuditLogRetentionDays),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }

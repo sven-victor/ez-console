@@ -19,10 +19,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sven-victor/ez-console/pkg/logstore"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
+	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
@@ -103,7 +103,7 @@ func (c *TaskSettingController) UpdateTaskSettings(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/task-settings/log-storage-backends [get]
 func (c *TaskSettingController) ListLogStorageBackends(ctx *gin.Context) {
-	names := logstore.ListBackendNames()
+	names := taskscheduler.ListLogStoreBackendNames()
 	list := make([]model.LogStorageBackendOption, 0, len(names))
 	for _, id := range names {
 		if id == "" {

@@ -46,7 +46,7 @@ var migrateModels = []interface{}{
 	&model.AIChatMessage{},
 	&model.Skill{},
 	&model.Task{},
-	&model.StoredLog{},
+	&model.TaskLog{},
 }
 
 func RegisterModels(models ...interface{}) {

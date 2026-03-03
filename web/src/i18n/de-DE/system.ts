@@ -33,6 +33,12 @@ export default {
     task: {
       maxConcurrent: 'Max. gleichzeitige Aufgaben',
       maxConcurrentTooltip: 'Maximale Anzahl der gleichzeitig ausgeführten Aufgaben.',
+      aiChatRetentionDays: 'AI-Chat-Aufbewahrungszeit (Tage)',
+      aiChatRetentionDaysTooltip: 'Aufbewahrungszeit für AI-Chat-Sitzungen, basierend auf der letzten Konversationszeit.',
+      taskLogRetentionDays: 'Aufbewahrung von Task-Logs (Tage)',
+      taskLogRetentionDaysTooltip: 'Aufbewahrungszeit für Task-Ausführungsprotokolle und historische Task-Ausführungsaufzeichnungen.',
+      auditLogRetentionDays: 'Aufbewahrung von Audit-Logs (Tage)',
+      auditLogRetentionDaysTooltip: 'Aufbewahrungszeit für Audit-Logs.',
       logStorageBackend: 'Protokollspeicher',
       logStorageBackendTooltip: 'Wo Ausführungsprotokolle gespeichert werden. Datenbank speichert Protokolle in der Anwendungsdatenbank.',
       logStoragePlaceholder: 'Backend auswählen',

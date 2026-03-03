@@ -58,4 +58,22 @@ export default {
     failed: '失败',
     cancelled: '已取消',
   },
+  scheduledTasks: '已计划任务',
+  scheduleName: '名称',
+  scheduleSpec: 'Cron',
+  scheduleDescription: '描述',
+  scheduleTaskType: '任务类型',
+  scheduleEnabled: '启用',
+  scheduleNextRun: '下一次运行',
+  scheduleLastRun: '上一次运行',
+  viewHistory: '查看历史',
+  triggerNow: '立即触发',
+  executionHistory: '执行历史',
+  task: {
+    type: {
+      audit_log_cleanup_task: '审计日志清理任务',
+      ai_chat_session_cleanup_task: 'AI 会话清理任务',
+      task_log_cleanup_task: '任务日志清理任务',
+    },
+  },
 };

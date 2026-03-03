@@ -115,6 +115,7 @@ func (s *SchedulerService) ListScheduledJobsWithState() []ScheduledJobState {
 			TaskType:    string(d.TaskType),
 			Enabled:     d.Enabled,
 		}
+
 		if entryID, ok := s.entryIDs[d.ID]; ok {
 			entry := s.cron.Entry(entryID)
 			state.NextRun = &entry.Next
@@ -155,6 +156,11 @@ func (s *SchedulerService) TriggerNow(ctx context.Context, id string) (*model.Ta
 		return nil, ErrScheduledJobNotFound
 	}
 	payload := def.PayloadBuilder()
+	defer func() {
+		s.mu.Lock()
+		s.lastRun[id] = time.Now()
+		s.mu.Unlock()
+	}()
 	return s.taskService.CreateTask(ctx, def.TaskType,
 		WithPayload(payload),
 		WithMaxRetries(def.MaxRetries),

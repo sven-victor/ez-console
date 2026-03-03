@@ -33,6 +33,12 @@ export default {
     task: {
       maxConcurrent: 'Max antal samtidiga uppgifter',
       maxConcurrentTooltip: 'Maximalt antal uppgifter som kan köras samtidigt.',
+      aiChatRetentionDays: 'Bevaring av AI-chatt (dagar)',
+      aiChatRetentionDaysTooltip: 'Bevarandetid för AI-chattsessioner baserat på tiden för den senaste konversationen.',
+      taskLogRetentionDays: 'Bevaring av uppgiftsloggar (dagar)',
+      taskLogRetentionDaysTooltip: 'Bevarandetid för uppgiftskörningsloggar och historik över tidigare körningar.',
+      auditLogRetentionDays: 'Bevaring av granskningsloggar (dagar)',
+      auditLogRetentionDaysTooltip: 'Bevarandetid för granskningsloggar.',
       logStorageBackend: 'Logglagring',
       logStorageBackendTooltip: 'Var körningsloggar lagras. Databas lagrar loggar i programmets databas.',
       logStoragePlaceholder: 'Välj backend',

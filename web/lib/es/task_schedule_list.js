@@ -1,91 +1,111 @@
 import { j as t } from "./vendor.js";
-import { useState as z, useRef as L } from "react";
-import { Switch as b, Space as h, Tooltip as f, Button as i, Tag as A, Card as g, Table as E, message as u } from "antd";
-import { HistoryOutlined as D, PlayCircleOutlined as N, EyeOutlined as F, DownloadOutlined as P, ReloadOutlined as $ } from "@ant-design/icons";
-import { useTranslation as y } from "react-i18next";
-import { a as r } from "./index.js";
-import { f as m, i as O } from "./components.js";
-import { P as k } from "./base.js";
-import { useRequest as H } from "ahooks";
-import { useNavigate as U } from "react-router-dom";
-const q = {
+import { useState as R, useRef as z, useEffect as E } from "react";
+import { message as r, Tag as h, Switch as A, Space as f, Tooltip as y, Button as d, Progress as D, Card as g, Table as F } from "antd";
+import { HistoryOutlined as N, PlayCircleOutlined as P, EyeOutlined as $, DownloadOutlined as O, ReloadOutlined as H } from "@ant-design/icons";
+import { useTranslation as k } from "react-i18next";
+import { a as n } from "./index.js";
+import { f as m, i as U } from "./components.js";
+import { P as w } from "./base.js";
+import { useRequest as q } from "ahooks";
+import { useNavigate as v } from "react-router-dom";
+const G = {
   pending: "default",
   running: "processing",
   success: "success",
   failed: "error",
   cancelled: "default"
-}, Y = () => {
-  const { t: a } = y("task"), { t: n } = y("common"), w = U(), [o, c] = z(null), p = L(null), { data: d, loading: T, refresh: x } = H(
-    () => r.taskSchedules.listTaskSchedules()
-  ), j = Array.isArray(d) ? d : (d == null ? void 0 : d.data) ?? [], V = async (e, s) => {
-    try {
-      await r.taskSchedules.toggleTaskSchedule({ id: e }, { enabled: s }), u.success(a("scheduleUpdated", { defaultValue: "Schedule updated." })), x();
-    } catch {
-      u.error(a("scheduleUpdateFailed", { defaultValue: "Failed to update schedule." }));
-    }
-  }, S = async (e) => {
-    var s, l;
-    try {
-      await r.taskSchedules.triggerTaskSchedule({ id: e }), u.success(a("scheduleTriggered", { defaultValue: "Task triggered." })), c(e), (l = (s = p.current) == null ? void 0 : s.reload) == null || l.call(s);
-    } catch {
-      u.error(a("scheduleTriggerFailed", { defaultValue: "Failed to trigger schedule." }));
-    }
-  }, _ = [
-    { title: a("scheduleName", { defaultValue: "Name" }), dataIndex: "name", key: "name", width: 160 },
-    { title: a("scheduleSpec", { defaultValue: "Cron" }), dataIndex: "spec", key: "spec", width: 120 },
-    { title: a("scheduleDescription", { defaultValue: "Description" }), dataIndex: "description", key: "description", ellipsis: !0 },
-    { title: a("scheduleTaskType", { defaultValue: "Task Type" }), dataIndex: "task_type", key: "task_type", width: 120 },
+}, te = () => {
+  const { t: s } = k("task"), { t: u } = k("common"), T = v(), [l, o] = R(null), p = z(null), { data: i, loading: j, refresh: x } = q(
+    () => n.taskSchedules.listTaskSchedules(),
     {
-      title: a("scheduleEnabled", { defaultValue: "Enabled" }),
+      onError: (e) => {
+        r.error(s("scheduleListFailed", { defaultValue: "Failed to list schedules: {{error}}", error: e }));
+      }
+    }
+  ), V = Array.isArray(i) ? i : (i == null ? void 0 : i.data) ?? [], S = async (e, a) => {
+    try {
+      await n.taskSchedules.toggleTaskSchedule({ id: e }, { enabled: a }), r.success(s("scheduleUpdated", { defaultValue: "Schedule updated." })), x();
+    } catch {
+      r.error(s("scheduleUpdateFailed", { defaultValue: "Failed to update schedule." }));
+    }
+  };
+  E(() => {
+    var e, a;
+    l && ((a = (e = p.current) == null ? void 0 : e.reload) == null || a.call(e));
+  }, [l]);
+  const _ = async (e) => {
+    try {
+      await n.taskSchedules.triggerTaskSchedule({ id: e }), r.success(s("scheduleTriggered", { defaultValue: "Task triggered." })), o(e);
+    } catch {
+      r.error(s("scheduleTriggerFailed", { defaultValue: "Failed to trigger schedule." }));
+    }
+  }, C = [
+    { title: s("scheduleName", { defaultValue: "Name" }), dataIndex: "name", key: "name", width: 160 },
+    { title: s("scheduleSpec", { defaultValue: "Cron" }), dataIndex: "spec", key: "spec", width: 120 },
+    { title: s("scheduleDescription", { defaultValue: "Description" }), dataIndex: "description", key: "description", ellipsis: !0 },
+    {
+      title: s("scheduleTaskType", { defaultValue: "Task Type" }),
+      dataIndex: "task_type",
+      key: "task_type",
+      width: 300,
+      render: (e) => {
+        const a = s(`task.type.${e}`, { defaultValue: e });
+        return /* @__PURE__ */ t.jsx(h, { color: "blue", children: a });
+      }
+    },
+    {
+      title: s("scheduleEnabled", { defaultValue: "Enabled" }),
       dataIndex: "enabled",
       key: "enabled",
       width: 90,
-      render: (e, s) => /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(b, { checked: e, onChange: (l) => V(s.id, l), size: "small" }) })
+      render: (e, a) => /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(A, { checked: e, onChange: (c) => S(a.id, c), size: "small" }) })
     },
     {
-      title: a("scheduleNextRun", { defaultValue: "Next Run" }),
+      title: s("scheduleNextRun", { defaultValue: "Next Run" }),
       dataIndex: "next_run",
       key: "next_run",
       width: 170,
       render: (e) => e ? new Date(e).toLocaleString() : "-"
     },
     {
-      title: a("scheduleLastRun", { defaultValue: "Last Run" }),
+      title: s("scheduleLastRun", { defaultValue: "Last Run" }),
       dataIndex: "last_run",
       key: "last_run",
       width: 170,
       render: (e) => e ? new Date(e).toLocaleString() : "-"
     },
     {
-      title: n("actions", { defaultValue: "Actions" }),
+      title: u("actions", { defaultValue: "Actions" }),
       key: "action",
       width: 200,
       fixed: "right",
-      render: (e, s) => /* @__PURE__ */ t.jsxs(h, { size: "small", children: [
-        /* @__PURE__ */ t.jsx(f, { title: a("viewHistory", { defaultValue: "View history" }), children: /* @__PURE__ */ t.jsx(
-          i,
-          {
-            type: "text",
-            size: "small",
-            icon: /* @__PURE__ */ t.jsx(D, {}),
-            onClick: () => c(s.id)
-          }
-        ) }),
-        /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(f, { title: a("triggerNow", { defaultValue: "Trigger now" }), children: /* @__PURE__ */ t.jsx(
-          i,
+      render: (e, a) => /* @__PURE__ */ t.jsxs(f, { size: "small", children: [
+        /* @__PURE__ */ t.jsx(y, { title: s("viewHistory", { defaultValue: "View history" }), children: /* @__PURE__ */ t.jsx(
+          d,
           {
             type: "text",
             size: "small",
             icon: /* @__PURE__ */ t.jsx(N, {}),
-            onClick: () => S(s.id)
+            onClick: () => {
+              o(a.id);
+            }
+          }
+        ) }),
+        /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(y, { title: s("triggerNow", { defaultValue: "Trigger now" }), children: /* @__PURE__ */ t.jsx(
+          d,
+          {
+            type: "text",
+            size: "small",
+            icon: /* @__PURE__ */ t.jsx(P, {}),
+            onClick: () => _(a.id)
           }
         ) }) })
       ] })
     }
-  ], C = (e) => o ? r.taskSchedules.getTaskScheduleHistory({
-    id: o,
-    current: e.current ?? k.DEFAULT_CURRENT,
-    page_size: e.page_size ?? k.DEFAULT_PAGE_SIZE
+  ], I = (e) => (console.log("historyRequest", l, e), l ? n.taskSchedules.getTaskScheduleHistory({
+    id: l,
+    current: e.current ?? w.DEFAULT_CURRENT,
+    page_size: e.page_size ?? w.DEFAULT_PAGE_SIZE
   }) : Promise.resolve({
     code: "0",
     data: [],
@@ -93,73 +113,82 @@ const q = {
     current: 1,
     page_size: 10,
     trace_id: ""
-  }), I = async (e) => {
-    const s = await r.base.downloadFile({ fileKey: e }, { params: { method: "sign" } }), l = `/api/files/${e}?signature=${s.signature}&expires=${s.expires}`;
-    window.open(l, "_blank");
-  }, R = [
-    { title: a("typeLabel", { defaultValue: "Type" }), dataIndex: "type", key: "type", width: 120 },
+  })), b = async (e) => {
+    const a = await n.base.downloadFile({ fileKey: e }, { params: { method: "sign" } }), c = `/api/files/${e}?signature=${a.signature}&expires=${a.expires}`;
+    window.open(c, "_blank");
+  }, L = [
     {
-      title: a("statusLabel", { defaultValue: "Status" }),
+      title: s("scheduleTaskType", { defaultValue: "Task Type" }),
+      dataIndex: "type",
+      key: "task_type",
+      width: 300,
+      render: (e) => {
+        const a = s(`task.type.${e}`, { defaultValue: e });
+        return /* @__PURE__ */ t.jsx(h, { color: "blue", children: a });
+      }
+    },
+    {
+      title: s("statusLabel", { defaultValue: "Status" }),
       dataIndex: "status",
       key: "status",
       width: 100,
-      render: (e) => /* @__PURE__ */ t.jsx(A, { color: q[e] || "default", children: a(`status.${e}`, { defaultValue: e }) })
+      render: (e) => /* @__PURE__ */ t.jsx(h, { color: G[e] || "default", children: s(`status.${e}`, { defaultValue: e }) })
     },
     {
-      title: a("progress", { defaultValue: "Progress" }),
+      title: s("progress", { defaultValue: "Progress" }),
       dataIndex: "progress",
       key: "progress",
       width: 100,
-      render: (e, s) => s.status === "running" || s.status === "pending" ? `${e}%` : "-"
+      render: (e, a) => a.status === "running" || a.status === "success" || a.status === "pending" ? /* @__PURE__ */ t.jsx(D, { percent: e, size: "small" }) : "-"
     },
-    { title: a("creatorId", { defaultValue: "Creator" }), dataIndex: "creator_id", key: "creator_id", width: 120, ellipsis: !0 },
+    { title: s("creatorId", { defaultValue: "Creator" }), dataIndex: "creator_id", key: "creator_id", width: 120, ellipsis: !0 },
     {
-      title: a("createdAt", { defaultValue: "Created At" }),
+      title: s("createdAt", { defaultValue: "Created At" }),
       dataIndex: "created_at",
       key: "created_at",
       width: 170,
       render: (e) => e ? new Date(e).toLocaleString() : "-"
     },
     {
-      title: n("actions", { defaultValue: "Actions" }),
+      title: u("actions", { defaultValue: "Actions" }),
       key: "action",
       width: 140,
-      render: (e, s) => /* @__PURE__ */ t.jsxs(h, { size: "small", children: [
-        /* @__PURE__ */ t.jsx(i, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx(F, {}), onClick: () => w(`/tasks/${s.id}`) }),
-        s.artifact_file_key && /* @__PURE__ */ t.jsx(i, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx(P, {}), onClick: () => I(s.artifact_file_key) })
+      render: (e, a) => /* @__PURE__ */ t.jsxs(f, { size: "small", children: [
+        /* @__PURE__ */ t.jsx(d, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx($, {}), onClick: () => T(`/tasks/${a.id}`) }),
+        a.artifact_file_key && /* @__PURE__ */ t.jsx(d, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx(O, {}), onClick: () => b(a.artifact_file_key) })
       ] })
     }
   ];
-  return /* @__PURE__ */ t.jsxs(h, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
+  return /* @__PURE__ */ t.jsxs(f, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
     /* @__PURE__ */ t.jsx(
       g,
       {
-        title: a("scheduledTasks", { defaultValue: "Scheduled Tasks" }),
-        extra: /* @__PURE__ */ t.jsx(i, { icon: /* @__PURE__ */ t.jsx($, {}), onClick: () => x(), children: n("refresh", { defaultValue: "Refresh" }) }),
+        title: s("scheduledTasks", { defaultValue: "Scheduled Tasks" }),
+        extra: /* @__PURE__ */ t.jsx(d, { icon: /* @__PURE__ */ t.jsx(H, {}), onClick: () => x(), children: u("refresh", { defaultValue: "Refresh" }) }),
         children: /* @__PURE__ */ t.jsx(
-          E,
+          F,
           {
             rowKey: "id",
-            columns: _,
-            dataSource: j,
-            loading: T,
+            columns: C,
+            dataSource: V,
+            loading: j,
             pagination: !1,
             scroll: { x: 900 }
           }
         )
       }
     ),
-    o && /* @__PURE__ */ t.jsx(
+    l && /* @__PURE__ */ t.jsx(
       g,
       {
-        title: a("executionHistory", { defaultValue: "Execution History" }),
-        extra: /* @__PURE__ */ t.jsx(i, { type: "text", size: "small", onClick: () => c(null), children: n("close", { defaultValue: "Close" }) }),
+        title: s("executionHistory", { defaultValue: "Execution History" }),
+        extra: /* @__PURE__ */ t.jsx(d, { type: "text", size: "small", onClick: () => o(null), children: u("close", { defaultValue: "Close" }) }),
         children: /* @__PURE__ */ t.jsx(
-          O,
+          U,
           {
             actionRef: p,
-            request: C,
-            columns: R,
+            request: I,
+            columns: L,
             rowKey: "id",
             scroll: { x: 800 }
           }
@@ -169,5 +198,5 @@ const q = {
   ] });
 };
 export {
-  Y as default
+  te as default
 };

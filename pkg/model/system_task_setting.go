@@ -15,13 +15,19 @@
 package model
 
 const (
-	SettingTaskMaxConcurrent    SettingKey = "task_max_concurrent"     // Max concurrent task executions
-	SettingTaskLogStorageBackend SettingKey = "task_log_storage_backend" // Log storage backend name (e.g. "database"), empty for default
+	SettingTaskMaxConcurrent         SettingKey = "task_max_concurrent"           // Max concurrent task executions
+	SettingTaskLogStorageBackend     SettingKey = "task_log_storage_backend"      // Log storage backend name (e.g. "database"), empty for default
+	SettingTaskAIChatRetentionDays   SettingKey = "task_ai_chat_retention_days"   // Retention days for AI chat sessions/messages
+	SettingTaskLogRetentionDays      SettingKey = "task_log_retention_days"       // Retention days for task logs and task run records
+	SettingTaskAuditLogRetentionDays SettingKey = "task_audit_log_retention_days" // Retention days for audit logs
 )
 
 var TaskSettingKeys = []SettingKey{
 	SettingTaskMaxConcurrent,
 	SettingTaskLogStorageBackend,
+	SettingTaskAIChatRetentionDays,
+	SettingTaskLogRetentionDays,
+	SettingTaskAuditLogRetentionDays,
 }
 
 func init() {
@@ -30,8 +36,11 @@ func init() {
 
 // TaskSettings holds task-related system settings
 type TaskSettings struct {
-	MaxConcurrent     int    `json:"max_concurrent"`
-	LogStorageBackend string `json:"log_storage_backend"` // Backend name for task log storage (e.g. "database"), empty for default
+	MaxConcurrent         int    `json:"max_concurrent"`
+	LogStorageBackend     string `json:"log_storage_backend"`      // Backend name for task log storage (e.g. "database"), empty for default
+	AIChatRetentionDays   int    `json:"ai_chat_retention_days"`   // Retention days for AI chat sessions/messages
+	LogRetentionDays      int    `json:"log_retention_days"`       // Retention days for task logs and task run records
+	AuditLogRetentionDays int    `json:"audit_log_retention_days"` // Retention days for audit logs
 }
 
 // LogStorageBackendOption represents a log storage backend option for the task settings UI.

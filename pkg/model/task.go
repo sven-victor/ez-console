@@ -63,12 +63,9 @@ type Task struct {
 	CronScheduleID string       `gorm:"size:64;index" json:"cron_schedule_id,omitempty"`     // set when task was created by a scheduled job
 }
 
-// TaskLogEntry represents a single task log line returned by the task logs API.
-type TaskLogEntry struct {
-	ID        string `json:"id"`
-	RefID     string `json:"ref_id"`
-	LogType   string `json:"log_type"`
-	Level     string `json:"level,omitempty"`
-	Message   string `json:"message"`
-	CreatedAt string `json:"created_at"`
+type TaskLog struct {
+	Base
+	TaskID  string `gorm:"size:36;not null;index:idx_ref_task_id" json:"task_id"` // Task ID
+	Level   string `gorm:"size:16" json:"level,omitempty"`                        // Log level (info, debug, error, etc.)
+	Message string `gorm:"type:text" json:"message"`                              // Formatted log line (e.g. logfmt)
 }

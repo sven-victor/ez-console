@@ -38,14 +38,11 @@ async function m(a, s) {
 }
 async function i(a, s) {
   const { id: r, ...t } = a;
-  return e(
-    `/api/tasks/${r}/logs`,
-    {
-      method: "GET",
-      params: { ...t },
-      ...s || {}
-    }
-  );
+  return e(`/api/tasks/${r}/logs`, {
+    method: "GET",
+    params: { ...t },
+    ...s || {}
+  });
 }
 async function p(a, s) {
   const { id: r, ...t } = a;

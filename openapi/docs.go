@@ -5923,9 +5923,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "data is array of TaskLogEntry",
+                        "description": "data is array of TaskLog",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-array_model_TaskLogEntry"
+                            "$ref": "#/definitions/util.Response-array_model_TaskLog"
                         }
                     },
                     "404": {
@@ -8431,15 +8431,15 @@ const docTemplate = `{
                 "TaskCategorySystem"
             ]
         },
-        "model.TaskLogEntry": {
+        "model.TaskLog": {
             "type": "object",
             "required": [
                 "created_at",
                 "id",
                 "level",
-                "log_type",
                 "message",
-                "ref_id"
+                "task_id",
+                "updated_at"
             ],
             "properties": {
                 "created_at": {
@@ -8449,15 +8449,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "level": {
-                    "type": "string"
-                },
-                "log_type": {
+                    "description": "Log level (info, debug, error, etc.)",
                     "type": "string"
                 },
                 "message": {
+                    "description": "Formatted log line (e.g. logfmt)",
                     "type": "string"
                 },
-                "ref_id": {
+                "task_id": {
+                    "description": "Task ID",
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -8465,10 +8468,25 @@ const docTemplate = `{
         "model.TaskSettings": {
             "type": "object",
             "required": [
+                "ai_chat_retention_days",
+                "audit_log_retention_days",
+                "log_retention_days",
                 "log_storage_backend",
                 "max_concurrent"
             ],
             "properties": {
+                "ai_chat_retention_days": {
+                    "description": "Retention days for AI chat sessions/messages",
+                    "type": "integer"
+                },
+                "audit_log_retention_days": {
+                    "description": "Retention days for audit logs",
+                    "type": "integer"
+                },
+                "log_retention_days": {
+                    "description": "Retention days for task logs and task run records",
+                    "type": "integer"
+                },
                 "log_storage_backend": {
                     "description": "Backend name for task log storage (e.g. \"database\"), empty for default",
                     "type": "string"
@@ -10031,6 +10049,16 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -10063,6 +10091,16 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -10702,7 +10740,7 @@ const docTemplate = `{
                 }
             }
         },
-        "util.Response-array_model_TaskLogEntry": {
+        "util.Response-array_model_TaskLog": {
             "type": "object",
             "required": [
                 "code",
@@ -10717,7 +10755,7 @@ const docTemplate = `{
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.TaskLogEntry"
+                        "$ref": "#/definitions/model.TaskLog"
                     }
                 },
                 "err": {

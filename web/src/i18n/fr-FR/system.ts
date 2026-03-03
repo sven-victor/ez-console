@@ -33,6 +33,12 @@ export default {
     task: {
       maxConcurrent: 'Tâches simultanées max.',
       maxConcurrentTooltip: 'Nombre maximum de tâches pouvant s\'exécuter en même temps.',
+      aiChatRetentionDays: 'Conservation des chats IA (jours)',
+      aiChatRetentionDaysTooltip: 'Période de conservation des sessions de chat IA, basée sur l\'heure de la dernière conversation.',
+      taskLogRetentionDays: 'Conservation des journaux des tâches (jours)',
+      taskLogRetentionDaysTooltip: 'Période de conservation des journaux d\'exécution des tâches et des enregistrements historiques des exécutions.',
+      auditLogRetentionDays: 'Conservation des journaux d\'audit (jours)',
+      auditLogRetentionDaysTooltip: 'Période de conservation des journaux d\'audit.',
       logStorageBackend: 'Stockage des journaux',
       logStorageBackendTooltip: 'Où sont stockés les journaux d\'exécution. Base de données stocke les journaux dans la base de données de l\'application.',
       logStoragePlaceholder: 'Sélectionner le backend',

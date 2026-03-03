@@ -101,8 +101,7 @@ export default defineConfig((env: ConfigEnv) => {
       base: '/',
       plugins: [
         visualizer({
-          open: true,
-          filename: 'stats.html',
+          filename: '../dist/stats.html',
           gzipSize: true
         }),
         ...baseConfig.plugins,
