@@ -41,6 +41,7 @@ import { LanguageConfig } from './components/LanguageSwitch';
 import { SiteProvider } from './contexts/SiteContext';
 import { AIProvider } from './contexts/AIContext';
 import { ThemeProvider } from 'antd-style';
+import { type AIChatProps } from './components/AIChat';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -72,6 +73,7 @@ export interface AppProps {
   menuStyle?: 'dark' | 'light';
   transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
   renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+  aiChatProps?: AIChatProps;
 }
 
 function App({
@@ -83,6 +85,7 @@ function App({
   menuStyle = 'dark',
   transformHeaderItems = (items) => items,
   renderLayout,
+  aiChatProps,
 }: AppProps) {
   const { i18n } = useTranslation();
   const [antdLocale, setAntdLocale] = useState(antdLocales[i18n.language] || enUS);
@@ -126,6 +129,7 @@ function App({
         menuStyle={menuStyle}
         transformHeaderItems={transformHeaderItems}
         renderLayout={renderLayout}
+        aiChatProps={aiChatProps}
       />} /> : route.element
       if ('children' in route && route.children && route.children.length > 0) {
         return <Route key={route.path ?? route.name ?? index} path={route.path} element={element} >

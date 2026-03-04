@@ -23,6 +23,7 @@ import { withSuspense } from '@/routes';
 import ResizeDivider from './ResizeDivider';
 import { createStyles } from 'antd-style';
 import classNames from 'classnames';
+import { type AIChatProps } from './AIChat';
 const AIChatDialog = lazy(() => import('./AIChat'));
 
 
@@ -52,7 +53,7 @@ const useStyle = createStyles(({ token, css }) => {
   };
 });
 
-export const AIChatModal: React.FC = () => {
+export const AIChatModal: React.FC<AIChatProps> = (props) => {
   const { visible: chatVisible, setVisible: setChatVisible, setLoaded } = useAI()
   useEffect(() => {
     setLoaded(true);
@@ -66,12 +67,12 @@ export const AIChatModal: React.FC = () => {
       onCancel={() => setChatVisible(false)}
       footer={null}
     >
-      {withSuspense(AIChatDialog)}
+      {withSuspense(AIChatDialog, props)}
     </Modal>
   )
 }
 
-export const AIChatSider: React.FC = () => {
+export const AIChatSider: React.FC<AIChatProps> = (props) => {
   const { styles } = useStyle();
   const { layout, visible } = useAI()
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
@@ -115,7 +116,7 @@ export const AIChatSider: React.FC = () => {
         }}
       >
         <div>
-          {withSuspense(AIChatDialog)}
+          {withSuspense(AIChatDialog, props)}
         </div>
       </div>
     </div>

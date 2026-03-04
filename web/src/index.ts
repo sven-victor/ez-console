@@ -34,7 +34,7 @@ export { default as AppLayout, type AppLayoutProps } from '@/components/Layout';
 export { PermissionGuard, type PermissionGuardProps, AdminGuard } from '@/components/PermissionGuard';
 export { default as PrivateRoute, type PrivateRouteProps } from '@/components/PrivateRoute';
 export { default as Table, type TableRefProps, type TableActionRefProps, type TableProps } from '@/components/Table';
-export { default as AIChat } from '@/components/AIChat';
+export { default as AIChat, type AIChatProps } from '@/components/AIChat';
 export { AIChatModal, AIChatButton, AIChatSider } from '@/components/AIChatLayout';
 export { default as MarkdownViewer, Code as MarkdownCode, type MarkdownViewerProps } from '@/components/MarkdownViewer';
 

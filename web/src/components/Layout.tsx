@@ -42,6 +42,7 @@ import { useSite } from '@/contexts/SiteContext';
 import { useAI } from '@/contexts/AIContext';
 import { useThemeMode, createStyles } from 'antd-style';
 import classNames from 'classnames';
+import { type AIChatProps } from './AIChat';
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
 
@@ -130,6 +131,7 @@ export interface AppLayoutProps {
   menuStyle?: 'dark' | 'light';
   transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
   renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+  aiChatProps?: AIChatProps;
 }
 
 const AppLayout: React.FC<AppLayoutProps> = ({
@@ -140,6 +142,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   menuStyle = 'dark',
   transformHeaderItems = (items) => items,
   renderLayout,
+  aiChatProps,
 }) => {
   const { themeMode, setThemeMode, isDarkMode } = useThemeMode();
   const { styles } = useStyle();
@@ -385,11 +388,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
             {content}
           </div>
           {siteConfig?.attrs?.ai_enabled && <AIChatButton />}
-          {siteConfig?.attrs?.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal />}
+          {siteConfig?.attrs?.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
         </Content>
         <Footer className={classNames("site-footer", styles.footer)}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
-      {(siteConfig?.attrs?.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider />)}
+      {(siteConfig?.attrs?.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider {...aiChatProps} />)}
     </Layout>
   }
 

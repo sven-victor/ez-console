@@ -35,7 +35,7 @@ import {
 } from '@ant-design/x';
 import { AbstractChatProvider, TransformMessage, useXChat, XRequest, XRequestOptions } from '@ant-design/x-sdk';
 import { useXConversations, type MessageInfo } from '@ant-design/x-sdk';
-import { type ComponentProps, XMarkdown } from '@ant-design/x-markdown';
+import { type ComponentProps, XMarkdown, XMarkdownProps } from '@ant-design/x-markdown';
 
 import { useRequest } from 'ahooks';
 import { Button, Dropdown, Radio, Select, Space, Spin, Tag, message } from 'antd';
@@ -145,8 +145,10 @@ const useStyle = createStyles(({ token, css }) => {
           height: 100%;
         }
       }
-      .ant-bubble > .ant-bubble-content{
-        max-width: 90%;
+      .ant-bubble-list{
+        .ant-bubble.ant-bubble-start{
+          padding-inline-end: 10%;
+        }
       }
       .ant-bubble-end{
         .ant-bubble-content{
@@ -336,7 +338,41 @@ interface SelectedSkillOption {
   value: string;
 }
 
-const AIChat: React.FC = () => {
+export interface AIChatProps {
+  bubble?: {
+    contentRender?: (content: string) => React.ReactNode;
+    footerRender?: (message: MessageInfo<ChatStreamMessage>) => React.ReactNode;
+    components?: XMarkdownProps['components'];
+  }
+}
+
+export const AIChat: React.FC<AIChatProps> = ({
+  bubble = {},
+}) => {
+
+  const {
+    components = { code: Code, },
+    contentRender = (content: string) => {
+      return (
+        <XMarkdown
+          paragraphTag="div"
+          content={content}
+          className={className}
+          components={components}
+        />
+      );
+    },
+    footerRender = ({ message }: MessageInfo<ChatStreamMessage>) => {
+      if (message.error) {
+        return (
+          <div>
+            <XMarkdown content={message.error} components={components} />
+          </div>
+        );
+      }
+      return undefined;
+    },
+  } = bubble;
   const {
     layout,
     setVisible,
@@ -653,30 +689,11 @@ const AIChat: React.FC = () => {
     </div>
   );
 
-  const renderFooter = ({ message }: MessageInfo<ChatStreamMessage>) => {
-    if (message.error) {
-      return (
-        <div>
-          <XMarkdown content={message.error} components={{ code: Code }} />
-        </div>
-      );
-    }
-    return undefined;
-  }
   const bubbleMessages: BubbleListProps['items'] = messages?.map((i) => ({
     ...i.message,
     key: i.id,
-    contentRender: (content: string) => {
-      return (
-        <XMarkdown
-          paragraphTag="div"
-          content={content}
-          className={className}
-          components={{ code: Code }}
-        />
-      );
-    },
-    footer: renderFooter(i)
+    contentRender: contentRender,
+    footer: footerRender?.(i),
   }))
   const chatList = (
     <div className={styles.chatList}>
