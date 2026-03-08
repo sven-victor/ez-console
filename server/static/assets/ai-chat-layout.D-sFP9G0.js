@@ -1,0 +1,21 @@
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/ai-chat.DARMN8al.js","assets/vendor.LQJKd8gI.js","assets/vite.BF1G3H_w.js","assets/lodash.C17Xpf0Y.js","assets/highlight.BslI14e2.js","assets/vendor.D-Ncpkvi.css","assets/index.m1UpKUiX.js","assets/ai.BQJBKavF.js","assets/client.CUA-kUJY.js","assets/base.MnQ2PzQl.js","assets/authorization.ClI7NrbX.js","assets/system.D1UxFeoR.js","assets/oauth.CMrAAOT0.js","assets/task_schedules.CrjZy98X.js","assets/tasks.DnzR1zWE.js","assets/user_tasks.B1kZG-pR.js","assets/components.D2U70F9l.js","assets/contexts.BJtB765F.js","assets/ant-design-x.zFCyZ3nz.js","assets/highlighter.zdSLrVoT.js","assets/refractor.CZ8vF4i1.js","assets/mermaid.DAPR72D0.js","assets/ant-design-x.C1GP9Q3x.css","assets/index.CiFTqlrA.css"])))=>i.map(i=>d[i]);
+import{_ as x}from"./vite.BF1G3H_w.js";import{r as i,c as b,u as f,j as t,p as m,F as y,q as v,M as g,h as w}from"./vendor.LQJKd8gI.js";import{u as l}from"./contexts.BJtB765F.js";import{w as c}from"./index.m1UpKUiX.js";import{R as S}from"./components.D2U70F9l.js";const h=i.lazy(()=>x(()=>import("./ai-chat.DARMN8al.js"),__vite__mapDeps([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]))),j=b(({token:s,css:e})=>({siderLayout:e`
+      position: relative;
+      height: 100vh;
+    `,floatSiderLayout:e`
+      position: fixed;
+      right: 16px;
+      top: 16px;
+      height: calc(100vh - 32px);
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+      z-index: 1000;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      border: 1px solid ${s.colorBorderSecondary};
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      &:hover {
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1);
+      }
+    `})),E=s=>{const{visible:e,setVisible:a,setLoaded:o}=l();return i.useEffect(()=>{o(!0)},[o]),t.jsx(g,{className:"ai-chat-modal",width:1200,open:e,closable:!1,onCancel:()=>a(!1),footer:null,children:c(h,s)})},L=s=>{const{styles:e}=j(),{layout:a,visible:o}=l(),[n,p]=i.useState(()=>{const r=localStorage.getItem("ai-sidebar-width");return r?parseInt(r,10):400}),{setLoaded:d}=l();i.useEffect(()=>{d(!0)},[d]),i.useEffect(()=>{localStorage.setItem("ai-sidebar-width",n.toString())},[n]);const u=r=>{p(r)};return t.jsxs("div",{style:{width:`${n}px`,display:o?"flex":"none",overflow:"hidden",flexShrink:0},className:w("ai-sidebar-layout",a==="float-sidebar"?e.floatSiderLayout:e.siderLayout),children:[t.jsx(S,{onResize:u,minWidth:300,maxWidth:window.innerWidth*.5}),t.jsx("div",{style:{width:"100%",height:"100%",backgroundColor:"#ffffff",overflow:"hidden",borderRadius:a==="float-sidebar"?"12px":"0"},children:t.jsx("div",{children:c(h,s)})})]})},k=()=>{const{setVisible:s,visible:e}=l(),{t:a}=f("ai");return t.jsx(t.Fragment,{children:t.jsx(m,{title:a("chat.openAssistant",{defaultValue:"Open AI Assistant"}),placement:"left",style:{display:e?"none":"block"},className:"ai-chat-tooltip",children:t.jsx(y,{icon:t.jsx(v,{}),className:"ai-chat-float-button",type:"primary",onClick:()=>s(!0),style:{right:24,bottom:24,display:e?"none":"block"}})})})};export{k as A,E as a,L as b};

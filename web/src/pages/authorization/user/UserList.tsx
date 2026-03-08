@@ -57,6 +57,7 @@ import Actions, { ActionProps } from '@/components/Actions';
 import { Avatar } from '@/components/Avatar';
 import { useRequest } from 'ahooks';
 import { useSite } from '@/contexts/SiteContext';
+import { useAI } from '@/contexts/AIContext';
 
 const { Option } = Select;
 
@@ -148,6 +149,7 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
 
 // User list page
 const UserList: React.FC = () => {
+  const { registerPageAI } = useAI();
   const { addTask } = useSite();
   const navigate = useNavigate();
   const { t } = useTranslation("authorization");
@@ -168,6 +170,15 @@ const UserList: React.FC = () => {
     keywords: undefined,
     status: undefined,
   });
+
+  useEffect(() => {
+    if (users) {
+      registerPageAI?.({
+        pageData: () => users,
+        pageDataDescription: 'Returns the current user list as a JSON object.',
+      });
+    }
+  }, [registerPageAI, users]);
 
   const { data: organizations, loading: organizationsLoading } = useRequest(async () => {
     return (await api.system.listOrganizations({ current: 1, page_size: 1000 })).data || [];

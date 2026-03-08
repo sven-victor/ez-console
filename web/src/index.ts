@@ -46,6 +46,7 @@ export { useSite } from '@/contexts/SiteContext'
 export { useAuth } from '@/hooks/useAuth'
 export { usePermission } from '@/hooks/usePermission'
 export { useAI } from '@/contexts/AIContext'
+export type { PageAIOptions, RegisteredClientTool, ClientToolHandler, PageDataGetter } from '@/contexts/AIContext'
 
 export { apiDelete, apiPost, apiGet, apiPut, ApiError, client, request, fetchSSE } from '@/service/client';
 import * as authorizationapi from '@/service/api/authorization';

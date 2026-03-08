@@ -1,1 +1,0 @@
-import{r}from"./client.BhBvRWnL.js";async function s(e){return r("/api/userTasks",{method:"GET",...e||{}})}const o=Object.freeze(Object.defineProperty({__proto__:null,listUserTasks:s},Symbol.toStringTag,{value:"Module"}));export{o as u};

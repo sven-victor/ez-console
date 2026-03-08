@@ -6017,6 +6017,7 @@ const docTemplate = `{
         "ai.ChatStreamEvent": {
             "type": "object",
             "required": [
+                "client_tool_calls",
                 "content",
                 "event_type",
                 "message_id",
@@ -6024,6 +6025,12 @@ const docTemplate = `{
                 "tool_calls"
             ],
             "properties": {
+                "client_tool_calls": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ai.ClientToolPendingCall"
+                    }
+                },
                 "content": {
                     "type": "string"
                 },
@@ -6044,17 +6051,38 @@ const docTemplate = `{
                 }
             }
         },
+        "ai.ClientToolPendingCall": {
+            "type": "object",
+            "required": [
+                "arguments",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "arguments": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "ai.EventType": {
             "type": "string",
             "enum": [
                 "content",
                 "tool_call",
-                "error"
+                "error",
+                "client_tool_pending"
             ],
             "x-enum-varnames": [
                 "EventTypeContent",
                 "EventTypeToolCall",
-                "EventTypeError"
+                "EventTypeError",
+                "EventTypeClientToolPending"
             ]
         },
         "ai.FunctionCall": {
@@ -6135,6 +6163,38 @@ const docTemplate = `{
                 "ToolCallStatusFailed"
             ]
         },
+        "aiapi.ClientToolDefinition": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "parameters"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {}
+            }
+        },
+        "aiapi.ClientToolResult": {
+            "type": "object",
+            "required": [
+                "content",
+                "tool_call_id"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "tool_call_id": {
+                    "type": "string"
+                }
+            }
+        },
         "aiapi.CreateAIModelRequest": {
             "type": "object",
             "required": [
@@ -6201,16 +6261,40 @@ const docTemplate = `{
         "aiapi.SendMessageRequest": {
             "type": "object",
             "required": [
+                "client_tool_results",
+                "client_tools",
                 "content",
                 "domains",
+                "ephemeral_system_prompts",
                 "skill_ids"
             ],
             "properties": {
+                "client_tool_results": {
+                    "description": "results from client-side tool execution",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/aiapi.ClientToolResult"
+                    }
+                },
+                "client_tools": {
+                    "description": "client-side tool definitions (JSON Schema)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/aiapi.ClientToolDefinition"
+                    }
+                },
                 "content": {
                     "type": "string"
                 },
                 "domains": {
                     "description": "optional: load skills for these domains (plus core) as system context",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "ephemeral_system_prompts": {
+                    "description": "page-level system prompts, memory-only (not persisted)",
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -10041,24 +10125,6 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -10083,24 +10149,6 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

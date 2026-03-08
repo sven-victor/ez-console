@@ -152,7 +152,7 @@ func ChatMessagesFromModel(messages []model.AIChatMessage) []ChatMessage {
 				})
 			}
 		}
-		if msg.Content == "" || len(toolCalls) == 0 {
+		if msg.Content == "" && len(toolCalls) == 0 {
 			continue
 		}
 		result = append(result, ChatMessage{

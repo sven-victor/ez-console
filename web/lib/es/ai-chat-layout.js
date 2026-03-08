@@ -1,14 +1,14 @@
 import { j as e } from "./vendor.js";
-import { lazy as b, useEffect as l, useState as m } from "react";
-import { Modal as f, Tooltip as x, FloatButton as u } from "antd";
-import { RobotOutlined as y } from "@ant-design/icons";
-import { useTranslation as g } from "react-i18next";
-import { u as a } from "./contexts.js";
-import { w as d } from "./index.js";
-import { R as v } from "./components.js";
-import { createStyles as w } from "antd-style";
-import S from "classnames";
-const c = b(() => import("./ai-chat.js")), j = w(({ token: o, css: t }) => ({
+import { lazy as m, useEffect as n, useState as f } from "react";
+import { Modal as x, Tooltip as u, FloatButton as y } from "antd";
+import { RobotOutlined as g } from "@ant-design/icons";
+import { useTranslation as v } from "react-i18next";
+import { u as r } from "./contexts.js";
+import { w as c } from "./index.js";
+import { R as w } from "./components.js";
+import { createStyles as S } from "antd-style";
+import j from "classnames";
+const p = m(() => import("./ai-chat.js")), A = S(({ token: o, css: t }) => ({
   siderLayout: t`
       position: relative;
       height: 100vh;
@@ -30,50 +30,50 @@ const c = b(() => import("./ai-chat.js")), j = w(({ token: o, css: t }) => ({
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1);
       }
     `
-})), B = () => {
-  const { visible: o, setVisible: t, setLoaded: i } = a();
-  return l(() => {
-    i(!0);
-  }, [i]), /* @__PURE__ */ e.jsx(
-    f,
+})), D = (o) => {
+  const { visible: t, setVisible: i, setLoaded: s } = r();
+  return n(() => {
+    s(!0);
+  }, [s]), /* @__PURE__ */ e.jsx(
+    x,
     {
       className: "ai-chat-modal",
       width: 1200,
-      open: o,
+      open: t,
       closable: !1,
-      onCancel: () => t(!1),
+      onCancel: () => i(!1),
       footer: null,
-      children: d(c)
+      children: c(p, o)
     }
   );
-}, D = () => {
-  const { styles: o } = j(), { layout: t, visible: i } = a(), [r, p] = m(() => {
-    const s = localStorage.getItem("ai-sidebar-width");
-    return s ? parseInt(s, 10) : 400;
-  }), { setLoaded: n } = a();
-  l(() => {
-    n(!0);
-  }, [n]), l(() => {
-    localStorage.setItem("ai-sidebar-width", r.toString());
-  }, [r]);
-  const h = (s) => {
-    p(s);
+}, E = (o) => {
+  const { styles: t } = A(), { layout: i, visible: s } = r(), [l, h] = f(() => {
+    const a = localStorage.getItem("ai-sidebar-width");
+    return a ? parseInt(a, 10) : 400;
+  }), { setLoaded: d } = r();
+  n(() => {
+    d(!0);
+  }, [d]), n(() => {
+    localStorage.setItem("ai-sidebar-width", l.toString());
+  }, [l]);
+  const b = (a) => {
+    h(a);
   };
   return /* @__PURE__ */ e.jsxs(
     "div",
     {
       style: {
-        width: `${r}px`,
-        display: i ? "flex" : "none",
+        width: `${l}px`,
+        display: s ? "flex" : "none",
         overflow: "hidden",
         flexShrink: 0
       },
-      className: S("ai-sidebar-layout", t === "float-sidebar" ? o.floatSiderLayout : o.siderLayout),
+      className: j("ai-sidebar-layout", i === "float-sidebar" ? t.floatSiderLayout : t.siderLayout),
       children: [
         /* @__PURE__ */ e.jsx(
-          v,
+          w,
           {
-            onResize: h,
+            onResize: b,
             minWidth: 300,
             maxWidth: window.innerWidth * 0.5
           }
@@ -86,27 +86,27 @@ const c = b(() => import("./ai-chat.js")), j = w(({ token: o, css: t }) => ({
               height: "100%",
               backgroundColor: "#ffffff",
               overflow: "hidden",
-              borderRadius: t === "float-sidebar" ? "12px" : "0"
+              borderRadius: i === "float-sidebar" ? "12px" : "0"
             },
-            children: /* @__PURE__ */ e.jsx("div", { children: d(c) })
+            children: /* @__PURE__ */ e.jsx("div", { children: c(p, o) })
           }
         )
       ]
     }
   );
-}, E = () => {
-  const { setVisible: o, visible: t } = a(), { t: i } = g("ai");
+}, F = () => {
+  const { setVisible: o, visible: t } = r(), { t: i } = v("ai");
   return /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(
-    x,
+    u,
     {
       title: i("chat.openAssistant", { defaultValue: "Open AI Assistant" }),
       placement: "left",
       style: { display: t ? "none" : "block" },
       className: "ai-chat-tooltip",
       children: /* @__PURE__ */ e.jsx(
-        u,
+        y,
         {
-          icon: /* @__PURE__ */ e.jsx(y, {}),
+          icon: /* @__PURE__ */ e.jsx(g, {}),
           className: "ai-chat-float-button",
           type: "primary",
           onClick: () => o(!0),
@@ -121,7 +121,7 @@ const c = b(() => import("./ai-chat.js")), j = w(({ token: o, css: t }) => ({
   ) });
 };
 export {
-  E as A,
-  B as a,
-  D as b
+  F as A,
+  D as a,
+  E as b
 };

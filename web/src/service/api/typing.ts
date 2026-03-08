@@ -194,6 +194,7 @@ export interface Chart {
 }
 
 export interface ChatStreamEvent {
+  client_tool_calls: ClientToolPendingCall[];
   content: string;
   event_type: EventType;
   message_id: string;
@@ -207,6 +208,23 @@ export interface CheckPasswordComplexityRequest {
 
 export interface CheckPasswordComplexityResponse {
   is_valid: boolean;
+}
+
+export interface ClientToolDefinition {
+  description: string;
+  name: string;
+  parameters: any;
+}
+
+export interface ClientToolPendingCall {
+  arguments: string;
+  id: string;
+  name: string;
+}
+
+export interface ClientToolResult {
+  content: string;
+  tool_call_id: string;
 }
 
 export type Condition = true;
@@ -408,7 +426,7 @@ export interface ErrorResponse {
   trace_id: string;
 }
 
-export type EventType = "content" | "tool_call" | "error";
+export type EventType = "content" | "tool_call" | "error" | "client_tool_pending";
 
 export interface File {
   access: AccessType;
@@ -1606,9 +1624,15 @@ export interface SecuritySettings {
 }
 
 export interface SendMessageRequest {
+  /** results from client-side tool execution */
+  client_tool_results: ClientToolResult[];
+  /** client-side tool definitions (JSON Schema) */
+  client_tools: ClientToolDefinition[];
   content: string;
   /** optional: load skills for these domains (plus core) as system context */
   domains: string[];
+  /** page-level system prompts, memory-only (not persisted) */
+  ephemeral_system_prompts: string[];
   /** optional: load these specific skills by id */
   skill_ids: string[];
 }

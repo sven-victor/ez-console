@@ -1,6 +1,6 @@
 import { j as t } from "./vendor.js";
-import { useState as R, useRef as z, useEffect as E } from "react";
-import { message as r, Tag as h, Switch as A, Space as f, Tooltip as y, Button as d, Progress as D, Card as g, Table as F } from "antd";
+import { useState as z, useRef as R, useEffect as E } from "react";
+import { message as r, Tag as h, Switch as A, Space as f, Tooltip as y, Button as l, Progress as D, Card as g, Table as F } from "antd";
 import { HistoryOutlined as N, PlayCircleOutlined as P, EyeOutlined as $, DownloadOutlined as O, ReloadOutlined as H } from "@ant-design/icons";
 import { useTranslation as k } from "react-i18next";
 import { a as n } from "./index.js";
@@ -15,7 +15,7 @@ const G = {
   failed: "error",
   cancelled: "default"
 }, te = () => {
-  const { t: s } = k("task"), { t: u } = k("common"), T = v(), [l, o] = R(null), p = z(null), { data: i, loading: j, refresh: x } = q(
+  const { t: s } = k("task"), { t: u } = k("common"), T = v(), [d, o] = z(null), p = R(null), { data: i, loading: j, refresh: x } = q(
     () => n.taskSchedules.listTaskSchedules(),
     {
       onError: (e) => {
@@ -31,8 +31,8 @@ const G = {
   };
   E(() => {
     var e, a;
-    l && ((a = (e = p.current) == null ? void 0 : e.reload) == null || a.call(e));
-  }, [l]);
+    d && ((a = (e = p.current) == null ? void 0 : e.reload) == null || a.call(e));
+  }, [d]);
   const _ = async (e) => {
     try {
       await n.taskSchedules.triggerTaskSchedule({ id: e }), r.success(s("scheduleTriggered", { defaultValue: "Task triggered." })), o(e);
@@ -81,7 +81,7 @@ const G = {
       fixed: "right",
       render: (e, a) => /* @__PURE__ */ t.jsxs(f, { size: "small", children: [
         /* @__PURE__ */ t.jsx(y, { title: s("viewHistory", { defaultValue: "View history" }), children: /* @__PURE__ */ t.jsx(
-          d,
+          l,
           {
             type: "text",
             size: "small",
@@ -92,7 +92,7 @@ const G = {
           }
         ) }),
         /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(y, { title: s("triggerNow", { defaultValue: "Trigger now" }), children: /* @__PURE__ */ t.jsx(
-          d,
+          l,
           {
             type: "text",
             size: "small",
@@ -102,8 +102,8 @@ const G = {
         ) }) })
       ] })
     }
-  ], I = (e) => (console.log("historyRequest", l, e), l ? n.taskSchedules.getTaskScheduleHistory({
-    id: l,
+  ], I = (e) => d ? n.taskSchedules.getTaskScheduleHistory({
+    id: d,
     current: e.current ?? w.DEFAULT_CURRENT,
     page_size: e.page_size ?? w.DEFAULT_PAGE_SIZE
   }) : Promise.resolve({
@@ -113,7 +113,7 @@ const G = {
     current: 1,
     page_size: 10,
     trace_id: ""
-  })), b = async (e) => {
+  }), b = async (e) => {
     const a = await n.base.downloadFile({ fileKey: e }, { params: { method: "sign" } }), c = `/api/files/${e}?signature=${a.signature}&expires=${a.expires}`;
     window.open(c, "_blank");
   }, L = [
@@ -154,8 +154,8 @@ const G = {
       key: "action",
       width: 140,
       render: (e, a) => /* @__PURE__ */ t.jsxs(f, { size: "small", children: [
-        /* @__PURE__ */ t.jsx(d, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx($, {}), onClick: () => T(`/tasks/${a.id}`) }),
-        a.artifact_file_key && /* @__PURE__ */ t.jsx(d, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx(O, {}), onClick: () => b(a.artifact_file_key) })
+        /* @__PURE__ */ t.jsx(l, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx($, {}), onClick: () => T(`/tasks/${a.id}`) }),
+        a.artifact_file_key && /* @__PURE__ */ t.jsx(l, { type: "text", size: "small", icon: /* @__PURE__ */ t.jsx(O, {}), onClick: () => b(a.artifact_file_key) })
       ] })
     }
   ];
@@ -164,7 +164,7 @@ const G = {
       g,
       {
         title: s("scheduledTasks", { defaultValue: "Scheduled Tasks" }),
-        extra: /* @__PURE__ */ t.jsx(d, { icon: /* @__PURE__ */ t.jsx(H, {}), onClick: () => x(), children: u("refresh", { defaultValue: "Refresh" }) }),
+        extra: /* @__PURE__ */ t.jsx(l, { icon: /* @__PURE__ */ t.jsx(H, {}), onClick: () => x(), children: u("refresh", { defaultValue: "Refresh" }) }),
         children: /* @__PURE__ */ t.jsx(
           F,
           {
@@ -178,11 +178,11 @@ const G = {
         )
       }
     ),
-    l && /* @__PURE__ */ t.jsx(
+    d && /* @__PURE__ */ t.jsx(
       g,
       {
         title: s("executionHistory", { defaultValue: "Execution History" }),
-        extra: /* @__PURE__ */ t.jsx(d, { type: "text", size: "small", onClick: () => o(null), children: u("close", { defaultValue: "Close" }) }),
+        extra: /* @__PURE__ */ t.jsx(l, { type: "text", size: "small", onClick: () => o(null), children: u("close", { defaultValue: "Close" }) }),
         children: /* @__PURE__ */ t.jsx(
           U,
           {

@@ -151,7 +151,6 @@ const TaskScheduleList: React.FC = () => {
   ];
 
   const historyRequest = (params: API.PaginationRequest): Promise<API.PaginationResponseModelTask> => {
-    console.log('historyRequest', selectedScheduleId, params);
     if (!selectedScheduleId) {
       return Promise.resolve({
         code: '0',

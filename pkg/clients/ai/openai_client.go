@@ -16,8 +16,10 @@ package ai
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/invopop/jsonschema"
@@ -230,7 +232,16 @@ func NewOpenAIChatStream(ctx context.Context, client *OpenAIClient, messages []o
 	// Call OpenAI API
 	stream.stream, err = client.client.CreateChatCompletionStream(ctx, request)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
+		var openaiErr *openai.APIError
+		if errors.As(err, &openaiErr) {
+			if strings.Contains(openaiErr.Message, "maximum context length") {
+				return nil, &ChatError{Err: err, Type: ChatErrorTypeMaxTokensExceeded, Detail: openaiErr.Message}
+			}
+			if openaiErr.HTTPStatusCode == 429 {
+				return nil, &ChatError{Err: err, Type: ChatErrorTypeRateLimitExceeded, Detail: openaiErr.Message}
+			}
+		}
+		return nil, err
 	}
 	return stream, nil
 }

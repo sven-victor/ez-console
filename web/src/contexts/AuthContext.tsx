@@ -87,7 +87,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
     onSuccess: (data) => { setUser(data) },
     onError: (error) => {
-      console.log([error])
       console.error('Failed to get current user:', error);
       logout();
     },

@@ -146,7 +146,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const { themeMode, setThemeMode, isDarkMode } = useThemeMode();
   const { styles } = useStyle();
-  const { layout, visible: chatVisible, loaded: chatLoaded } = useAI()
+  const { layout, visible: chatVisible, loaded: chatLoaded, resetPageAIContext } = useAI()
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const location = useLocation();
@@ -159,6 +159,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
   const [siteIcon, setSiteIcon] = useState<string | null>(null);
   const [siteName, setSiteName] = useState<string>("Loading...");
+
+  // Reset page-level AI context on route change (before new page mounts)
+  useEffect(() => {
+    resetPageAIContext();
+  }, [location.pathname, resetPageAIContext]);
 
   if (location.pathname !== '/profile') {
     if (user && user.mfa_enforced && !user.mfa_enabled) {

@@ -19,9 +19,11 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/go-kit/log/level"
 	"github.com/gofrs/uuid"
 	"github.com/prometheus/client_golang/prometheus"
@@ -134,13 +136,14 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		return (totalChars + 3) / 4
 	}
 
-	// Helper function to summarize messages
+	// Helper function to summarize messages.
+	// Tries one-shot summarization first; falls back to segmented summarization
+	// if the one-shot call itself exceeds the context window.
 	summarizeMessages := func() error {
 		if len(messages) <= 1 {
 			return nil
 		}
 
-		// Find the first system message
 		var systemMessage *ChatMessage
 		var messagesToSummarize []ChatMessage
 		firstSystemFound := false
@@ -158,44 +161,44 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			return nil
 		}
 
-		// Create summary prompt
-		summaryPrompt := "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive."
+		originalCount := len(messagesToSummarize) + 1
 
-		// Build summary request messages
-		summaryMessages := []ChatMessage{
+		summaryMsgs := []ChatMessage{
 			{
 				Role:    model.AIChatMessageRoleSystem,
-				Content: summaryPrompt,
+				Content: "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive.",
 			},
 		}
-		summaryMessages = append(summaryMessages, messagesToSummarize...)
+		summaryMsgs = append(summaryMsgs, messagesToSummarize...)
 
-		// Call non-streaming API for summarization
-		level.Debug(logger).Log("msg", "Summarizing messages", "count", len(messagesToSummarize))
-		response, err := c.aiClient.Chat(ctx, summaryMessages, nil)
-		if err != nil {
-			return fmt.Errorf("failed to create summary: %w", err)
+		level.Debug(logger).Log("msg", "Attempting one-shot summarization", "count", len(messagesToSummarize))
+		response, err := c.aiClient.Chat(ctx, summaryMsgs, nil)
+		if err == nil && response != nil {
+			messages = make([]ChatMessage, 0, 2)
+			if systemMessage != nil {
+				messages = append(messages, *systemMessage)
+			}
+			messages = append(messages, ChatMessage{
+				Role:    model.AIChatMessageRoleUser,
+				Content: fmt.Sprintf("[Previous conversation summary]: %s", response.Content),
+			})
+			if opts.OnSummary != nil {
+				opts.OnSummary(ctx, messages)
+			}
+			level.Debug(logger).Log("msg", "Messages summarized (one-shot)", "original_count", originalCount, "new_count", len(messages))
+			return nil
 		}
 
-		if response == nil {
-			return fmt.Errorf("no response")
+		level.Info(logger).Log("msg", "One-shot summarization failed, falling back to segmented summarization", "error", err)
+		summarizedMessages, serr := segmentedSummarize(ctx, c.aiClient, messages, fmt.Sprintf("proactive summarization fallback: %v", err))
+		if serr != nil {
+			return fmt.Errorf("segmented summarization fallback also failed: %w", serr)
 		}
-
-		// Rebuild messages: system message (if exists) + summary
-		messages = make([]ChatMessage, 0, 2)
-		if systemMessage != nil {
-			messages = append(messages, *systemMessage)
-		}
-		messages = append(messages, ChatMessage{
-			Role:    model.AIChatMessageRoleUser,
-			Content: fmt.Sprintf("[Previous conversation summary]: %s", response.Content),
-		})
-
+		messages = summarizedMessages
 		if opts.OnSummary != nil {
 			opts.OnSummary(ctx, messages)
 		}
-
-		level.Debug(logger).Log("msg", "Messages summarized", "original_count", len(messagesToSummarize)+1, "new_count", len(messages))
+		level.Debug(logger).Log("msg", "Messages summarized (segmented fallback)", "original_count", originalCount, "new_count", len(messages))
 		return nil
 	}
 
@@ -228,11 +231,11 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		return response.Content, nil
 	}
 
-	// Collect all assistant messages for the final result
 	var resultMessages []ChatMessage
 	reachedMaxIterations := false
+	endChat := false
+	summaryAttempts := 0
 
-	// Main loop for handling tool calls
 	for iteration := 0; iteration < opts.MaxIterations; iteration++ {
 		// Check token limit and summarize if needed
 		if opts.MaxTokens > 0 {
@@ -240,86 +243,98 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			tokenThreshold := int(float64(opts.MaxTokens) * 0.9) // 90% threshold
 
 			if currentTokens >= opts.MaxTokens {
-				// Token limit exceeded
 				if !opts.EnableAutoSummarization {
 					return nil, fmt.Errorf("token limit exceeded (%d/%d), auto summarization is disabled", currentTokens, opts.MaxTokens)
 				}
-				// Try to summarize
 				if err := summarizeMessages(); err != nil {
 					return nil, fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, opts.MaxTokens, err)
 				}
 			} else if currentTokens >= tokenThreshold && opts.EnableAutoSummarization {
-				// At 90% threshold, summarize proactively
 				if err := summarizeMessages(); err != nil {
-					// Log error but continue (don't fail the request)
 					level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
 				}
 			}
 		}
 
-		// Record prompt tokens before API call
 		promptTokens := calculateTokens(messages)
 		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
 
-		// Call OpenAI API
-		response, err := c.aiClient.Chat(ctx, messages, toolSets)
+		response, err := backoff.Retry(ctx, func() (*ChatMessage, error) {
+			resp, err := c.aiClient.Chat(ctx, messages, toolSets)
+			if err != nil {
+				if _, ok := IsChatError(err, ChatErrorTypeRateLimitExceeded); ok {
+					level.Warn(logger).Log("msg", "Rate limit hit, will retry with exponential backoff")
+					return nil, err
+				}
+				return nil, backoff.Permanent(err)
+			}
+			return resp, nil
+		})
 		if err != nil {
+			if aiErr, ok := IsChatError(err, ChatErrorTypeMaxTokensExceeded); ok {
+				if summaryAttempts >= maxSummaryAttempts {
+					return nil, fmt.Errorf("max tokens still exceeded after %d summarization attempts: %w", summaryAttempts, err)
+				}
+				summaryAttempts++
+				level.Info(logger).Log("msg", "Max tokens exceeded, starting segmented summarization", "attempt", summaryAttempts)
+				summarizedMessages, serr := segmentedSummarize(ctx, c.aiClient, messages, aiErr.Detail)
+				if serr != nil {
+					return nil, fmt.Errorf("segmented summarization failed: %w", serr)
+				}
+				messages = summarizedMessages
+				if opts.OnSummary != nil {
+					opts.OnSummary(ctx, messages)
+				}
+				iteration--
+				continue
+			}
 			return nil, fmt.Errorf("failed to create chat completion: %w", err)
 		}
 
-		// Check response
 		if response == nil {
 			return nil, fmt.Errorf("no response")
 		}
 
-		// Record completion tokens for the response
 		completionTokens := calculateTokens([]ChatMessage{*response})
 		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
 
-		// Check if there are tool calls
 		if len(response.ToolCalls) == 0 {
-			// No tool calls, add the final message and break
 			appendMessage(*response)
 			resultMessages = append(resultMessages, *response)
 			break
 		}
 
-		// Add assistant message with tool calls to messages and results
 		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
 
-		// Execute tool calls serially
 		if len(toolSets) == 0 {
 			return nil, fmt.Errorf("tool calls are required but no toolSets provided")
 		}
-
 		for _, toolCall := range response.ToolCalls {
-			// Call the tool
 			toolResult, err := toolSets.CallTool(ctx, toolCall.Function.Name, toolCall.Function.Arguments)
 			if err != nil {
-				level.Error(logger).Log("msg", "Failed to call tool", "error", err, "tool", toolCall.Function.Name)
-				// Use error message as tool result
-				toolResult = err.Error()
+				if _, ok := IsChatError(err, ChatErrorTypeEndOfChat); ok {
+					endChat = true
+				} else {
+					level.Error(logger).Log("msg", "Failed to call tool", "error", err, "tool", toolCall.Function.Name)
+					toolResult = err.Error()
+				}
 			}
 
-			// Trigger tool call result changed callback
 			if opts.OnToolCallResultChanged != nil {
 				opts.OnToolCallResultChanged(ctx, toolCall.ID, toolResult)
 			}
 
-			// Check if tool result exceeds max size and summarize if needed
-			if opts.ToolResultMaxSize > 0 && len(toolResult) > opts.ToolResultMaxSize {
+			if !endChat && opts.ToolResultMaxSize > 0 && len(toolResult) > opts.ToolResultMaxSize {
 				level.Info(logger).Log("msg", "Tool result exceeds max size, summarizing", "tool", toolCall.Function.Name, "size", len(toolResult), "max_size", opts.ToolResultMaxSize)
 				summarized, err := summarizeToolResult(toolCall.ID, toolCall.Function.Name, toolResult)
 				if err != nil {
 					level.Error(logger).Log("msg", "Failed to summarize tool result", "error", err, "tool", toolCall.Function.Name)
-					// Continue with original result if summarization fails
 				} else {
 					toolResult = summarized
 				}
 			}
 
-			// Add tool result to messages
 			toolResultMessage := ChatMessage{
 				Role:       model.AIChatMessageRoleTool,
 				Content:    toolResult,
@@ -327,18 +342,21 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			}
 			appendMessage(toolResultMessage)
 			resultMessages = append(resultMessages, toolResultMessage)
+
+			if endChat {
+				break
+			}
 		}
 
-		// Check if we reached the last iteration
 		if iteration == opts.MaxIterations-1 {
 			reachedMaxIterations = true
 		}
-
-		// Continue to next iteration
+		if endChat {
+			break
+		}
 	}
-	if opts.FinalPrompt != "" {
-		// Check if we need to make a final prompt call
-		// Append the final prompt as a user message
+
+	if !endChat && opts.FinalPrompt != "" {
 		finalPromptMessage := ChatMessage{
 			Role:    model.AIChatMessageRoleUser,
 			Content: opts.FinalPrompt,
@@ -346,30 +364,26 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		appendMessage(finalPromptMessage)
 		resultMessages = append(resultMessages, finalPromptMessage)
 
-		// Record prompt tokens before API call
 		promptTokens := calculateTokens(messages)
 		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
 
-		// Make one more API call without tools
 		response, err := c.aiClient.Chat(ctx, messages, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create final prompt completion: %w", err)
 		}
 
-		// Check response
 		if response == nil {
 			return nil, fmt.Errorf("no response")
 		}
 
-		// Record completion tokens
 		completionTokens := calculateTokens([]ChatMessage{*response})
 		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
 
 		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
 	}
-	// If ResponseJsonSchema is set and there were tool calls, request JSON format response
-	if opts.ResponseJsonSchema != "" && len(toolSets) > 0 {
+
+	if !endChat && opts.ResponseJsonSchema != "" && len(toolSets) > 0 {
 		schemaPrompt := fmt.Sprintf("Please provide your final response in the following JSON format:\n%s", opts.ResponseJsonSchema)
 		schemaMessage := ChatMessage{
 			Role:    model.AIChatMessageRoleUser,
@@ -378,11 +392,9 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		appendMessage(schemaMessage)
 		resultMessages = append(resultMessages, schemaMessage)
 
-		// Record prompt tokens before API call
 		promptTokens := calculateTokens(messages)
 		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
 
-		// Make API call for JSON formatted response
 		response, err := c.aiClient.Chat(ctx, messages, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create JSON formatted response: %w", err)
@@ -392,7 +404,6 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			return nil, fmt.Errorf("no response")
 		}
 
-		// Record completion tokens
 		completionTokens := calculateTokens([]ChatMessage{*response})
 		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
 
@@ -400,8 +411,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		resultMessages = append(resultMessages, *response)
 	}
 
-	// If we reached max iterations without completion and no final prompt, return error
-	if reachedMaxIterations && opts.FinalPrompt == "" && opts.ResponseJsonSchema == "" {
+	if reachedMaxIterations && !endChat && opts.FinalPrompt == "" && opts.ResponseJsonSchema == "" {
 		return nil, fmt.Errorf("reached maximum iterations (%d) without completion", opts.MaxIterations)
 	}
 
@@ -446,11 +456,15 @@ type ClassicChatStream struct {
 	responseJsonSchema      string
 	hasToolCalls            bool // Track if we had tool calls in this session
 	jsonSchemaRequested     bool // Track if we've already requested JSON schema response
+	handoffTriggered        bool // True after a client_tool_pending event was emitted
+	summaryAttempts         int
 
 	onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
 	onMessageAdded          func(ctx context.Context, message ChatMessage)
 	onSummary               func(ctx context.Context, messages []ChatMessage)
 }
+
+const maxSummaryAttempts = 3
 
 func (o *ClassicChatStream) appendMessage(ctx context.Context, message ChatMessage) {
 	o.messages = append(o.messages, message)
@@ -499,15 +513,16 @@ func (o *ClassicChatStream) calculateTokens(messages []ChatMessage) int {
 	return (totalChars + 3) / 4
 }
 
-// summarizeMessages creates a summary of old messages while preserving the first system message
+// summarizeMessages creates a summary of old messages while preserving the first system message.
+// It first attempts a fast one-shot summarization; if that fails (e.g. the messages themselves
+// exceed the model's context window), it falls back to segmentedSummarize.
 func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 	logger := log.GetContextLogger(ctx)
 
 	if len(o.messages) <= 1 {
-		return nil // Nothing to summarize
+		return nil
 	}
 
-	// Find the first system message
 	var systemMessage *ChatMessage
 	var messagesToSummarize []ChatMessage
 	firstSystemFound := false
@@ -522,49 +537,47 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 	}
 
 	if len(messagesToSummarize) == 0 {
-		return nil // Nothing to summarize
+		return nil
 	}
 
-	// Create summary prompt
-	summaryPrompt := "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive."
+	originalCount := len(messagesToSummarize) + 1
 
-	// Build summary request messages
 	summaryMessages := []ChatMessage{
 		{
 			Role:    model.AIChatMessageRoleSystem,
-			Content: summaryPrompt,
+			Content: "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive.",
 		},
 	}
-
-	// Add messages to summarize
 	summaryMessages = append(summaryMessages, messagesToSummarize...)
 
-	// Call non-streaming API for summarization
-	level.Debug(logger).Log("msg", "Summarizing messages", "count", len(messagesToSummarize))
-	response, err := o.client.Chat(ctx, summaryMessages, o.toolSets)
-	if err != nil {
-		return fmt.Errorf("failed to create summary: %w", err)
+	level.Debug(logger).Log("msg", "Attempting one-shot summarization", "count", len(messagesToSummarize))
+	response, err := o.client.Chat(ctx, summaryMessages, nil)
+	if err == nil && response != nil {
+		o.messages = make([]ChatMessage, 0, 2)
+		if systemMessage != nil {
+			o.messages = append(o.messages, *systemMessage)
+		}
+		o.messages = append(o.messages, ChatMessage{
+			Role:    model.AIChatMessageRoleUser,
+			Content: fmt.Sprintf("[Previous conversation summary]: %s", response.Content),
+		})
+		if o.onSummary != nil {
+			o.onSummary(ctx, o.messages)
+		}
+		level.Debug(logger).Log("msg", "Messages summarized (one-shot)", "original_count", originalCount, "new_count", len(o.messages))
+		return nil
 	}
 
-	if response == nil {
-		return fmt.Errorf("no response")
+	level.Info(logger).Log("msg", "One-shot summarization failed, falling back to segmented summarization", "error", err)
+	summarizedMessages, serr := o.segmentedSummarize(ctx, fmt.Sprintf("proactive summarization fallback: %v", err))
+	if serr != nil {
+		return fmt.Errorf("segmented summarization fallback also failed: %w", serr)
 	}
-
-	summaryContent := response.Content
-
-	// Rebuild messages: system message (if exists) + summary
-	o.messages = make([]ChatMessage, 0, 2)
-	if systemMessage != nil {
-		o.messages = append(o.messages, *systemMessage)
+	o.messages = summarizedMessages
+	if o.onSummary != nil {
+		o.onSummary(ctx, o.messages)
 	}
-	o.messages = append(o.messages, ChatMessage{
-		Role:    model.AIChatMessageRoleUser,
-		Content: fmt.Sprintf("[Previous conversation summary]: %s", summaryContent),
-	})
-
-	o.onSummary(ctx, o.messages)
-
-	level.Debug(logger).Log("msg", "Messages summarized", "original_count", len(messagesToSummarize)+1, "new_count", len(o.messages))
+	level.Debug(logger).Log("msg", "Messages summarized (segmented fallback)", "original_count", originalCount, "new_count", len(o.messages))
 	return nil
 }
 
@@ -696,6 +709,9 @@ func (o *ClassicChatStream) CallTools(ctx context.Context) (isRunning bool) {
 	o.toolCallRunning = true
 	for idx := range o.toolCalls {
 		if o.toolCalls[idx].Status == ToolCallStatusPending {
+			if strings.HasPrefix(o.toolCalls[idx].Function.Name, ClientToolPrefix) {
+				continue
+			}
 			o.toolCalls[idx].Status = ToolCallStatusRunning
 			o.backgroundCallTool(ctx, &o.toolCalls[idx])
 		}
@@ -736,6 +752,10 @@ func (o *ClassicChatStream) mergeToolCall(toolCall ToolCall) {
 
 // Recv implements ChatStream.
 func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
+	if o.handoffTriggered {
+		return nil, ErrClientToolHandoff
+	}
+
 	if o.currentChatStream != nil {
 		for {
 			resp, err := o.currentChatStream.Recv(ctx)
@@ -835,6 +855,31 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 
 	if len(o.toolCalls) > 0 {
 		if isRunning := o.CallTools(ctx); !isRunning {
+			var pendingClientCalls []ClientToolPendingCall
+			var completedToolCalls []ToolCall
+			for _, tc := range o.toolCalls {
+				if strings.HasPrefix(tc.Function.Name, ClientToolPrefix) && tc.Status == ToolCallStatusPending {
+					pendingClientCalls = append(pendingClientCalls, ClientToolPendingCall{
+						ID:        tc.ID,
+						Name:      tc.Function.Name,
+						Arguments: tc.Function.Arguments,
+					})
+				} else {
+					completedToolCalls = append(completedToolCalls, tc)
+				}
+			}
+
+			if len(pendingClientCalls) > 0 {
+				o.toolCalls = nil
+				o.handoffTriggered = true
+				return &ChatStreamEvent{
+					MessageID:       o.messageID,
+					EventType:       EventTypeClientToolPending,
+					ToolCalls:       completedToolCalls,
+					ClientToolCalls: pendingClientCalls,
+				}, nil
+			}
+
 			toolCalls := o.toolCalls
 			o.toolCalls = nil
 			return &ChatStreamEvent{
@@ -907,11 +952,9 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 		promptTokens := o.calculateTokens(o.messages)
 		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
 
-		var err error
-		// Call OpenAI API
-		o.currentChatStream, err = o.client.ChatStream(ctx, o.messages, o.toolSets)
+		err := o.smartChatStream(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
+			return nil, err
 		}
 	}
 	return o.Recv(ctx)
@@ -930,6 +973,91 @@ func (stream *ClassicChatStream) applyChatCompletionOptions(o ChatCompletionOpti
 	stream.maxTokens = o.MaxTokens
 	stream.enableAutoSummarization = o.EnableAutoSummarization
 	stream.toolResultMaxSize = o.ToolResultMaxSize
+}
+
+func (o *ClassicChatStream) smartChatStream(ctx context.Context) error {
+	logger := log.GetContextLogger(ctx)
+
+	stream, err := backoff.Retry(ctx, func() (ChatStream, error) {
+		s, err := o.client.ChatStream(ctx, o.messages, o.toolSets)
+		if err != nil {
+			if _, ok := IsChatError(err, ChatErrorTypeRateLimitExceeded); ok {
+				level.Warn(logger).Log("msg", "Rate limit hit, will retry with exponential backoff")
+				return nil, err
+			}
+			return nil, backoff.Permanent(err)
+		}
+		return s, nil
+	})
+	if err != nil {
+		if aiErr, ok := IsChatError(err, ChatErrorTypeMaxTokensExceeded); ok {
+			if o.summaryAttempts >= maxSummaryAttempts {
+				return fmt.Errorf("max tokens still exceeded after %d summarization attempts: %w", o.summaryAttempts, err)
+			}
+			o.summaryAttempts++
+			level.Info(logger).Log("msg", "Max tokens exceeded, starting segmented summarization", "attempt", o.summaryAttempts)
+			summarizedMessages, serr := o.segmentedSummarize(ctx, aiErr.Detail)
+			if serr != nil {
+				return fmt.Errorf("segmented summarization failed: %w", serr)
+			}
+			// Replace the original messages with the summarized messages
+			o.messages = summarizedMessages
+			if o.onSummary != nil {
+				o.onSummary(ctx, o.messages)
+			}
+			return o.smartChatStream(ctx)
+		}
+		return err
+	}
+	o.currentChatStream = stream
+	return nil
+}
+
+func (o *ClassicChatStream) segmentedSummarize(ctx context.Context, errorDetail string) ([]ChatMessage, error) {
+	return segmentedSummarize(ctx, o.client, o.messages, errorDetail)
+}
+
+// segmentedSummarize performs segmented summarization on the given messages
+// using tool-based iterative reading and condensing. It is usable from both
+// the streaming (ClassicChatStream) and non-streaming (Exchange) code paths.
+func segmentedSummarize(ctx context.Context, client AIClient, messages []ChatMessage, errorDetail string) ([]ChatMessage, error) {
+	logger := log.GetContextLogger(ctx)
+
+	summaryTS := newSummaryToolSet(messages, errorDetail)
+
+	summarizeMessages := []ChatMessage{
+		{
+			Role:    model.AIChatMessageRoleSystem,
+			Content: summaryTS.buildSystemPrompt(),
+		},
+		{
+			Role:    model.AIChatMessageRoleUser,
+			Content: "Begin segmented summarization. Start by fetching the first segment of messages using get_messages.",
+		},
+	}
+
+	ts := toolset.ToolSets{"summary": summaryTS}
+
+	exchangeClient := &classicChatClient{aiClient: client}
+	_, err := exchangeClient.Exchange(ctx, summarizeMessages,
+		WithChatToolSets(ts),
+		WithChatMaxIterations(50),
+		WithChatToolResultMaxSize(1024*1024),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("summarization exchange failed: %w", err)
+	}
+
+	if !summaryTS.finished {
+		return nil, fmt.Errorf("summarization did not produce a result: save_summary was not called by the model")
+	}
+
+	level.Info(logger).Log(
+		"msg", "Segmented summarization completed",
+		"original_count", len(summaryTS.messages),
+		"summarized_count", len(summaryTS.summarizedMessages),
+	)
+	return summaryTS.summarizedMessages, nil
 }
 
 func NewClassicChatStream(ctx context.Context, client ClassicChatClient, messages []ChatMessage, options ...WithChatOptions) (ChatStream, error) {
@@ -951,6 +1079,10 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 		}
 	}
 
+	if len(opts.ClientTools) > 0 {
+		toolSets[clientToolSetKey] = NewClientToolsProxy(opts.ClientTools)
+	}
+
 	stream := &ClassicChatStream{
 		client:           client,
 		messages:         messages,
@@ -961,9 +1093,9 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 	}
 	stream.applyChatCompletionOptions(opts)
 	// Call OpenAI API
-	stream.currentChatStream, err = client.ChatStream(ctx, messages, toolSets)
+	err = stream.smartChatStream(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
+		return nil, err
 	}
 	return stream, nil
 }

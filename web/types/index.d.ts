@@ -11,14 +11,18 @@ import { FormItemProps } from 'antd';
 import { default as i18n } from 'i18next';
 import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { MessageInfo } from '@ant-design/x-sdk';
+import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import { Popconfirm } from 'antd';
 import { ReactNode } from 'react';
 import { RJSFSchema } from '@rjsf/utils/lib';
+import { StrictRJSFSchema } from '@rjsf/utils';
 import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { XMarkdown } from '@ant-design/x-markdown';
+import { XMarkdownProps } from '@ant-design/x-markdown';
 
 export declare type AccessType = "public" | "private" | "owner";
 
@@ -61,7 +65,7 @@ export declare interface AddUserToOrganizationRequest {
  */
 export declare const AdminGuard: default_2.FC<Omit<PermissionGuardProps, 'permission' | 'permissions' | 'checkAll'>>;
 
-export declare const AIChat: default_2.FC;
+export declare const AIChat: default_2.FC<AIChatProps>;
 
 export declare const AIChatButton: default_2.FC;
 
@@ -99,7 +103,15 @@ export declare type AIChatMessageRole = "user" | "assistant" | "system" | "tool"
 
 export declare type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
 
-export declare const AIChatModal: default_2.FC;
+export declare const AIChatModal: default_2.FC<AIChatProps>;
+
+export declare interface AIChatProps {
+    bubble?: {
+        contentRender?: (content: string) => default_2.ReactNode;
+        footerRender?: (message: MessageInfo<ChatStreamMessage>) => default_2.ReactNode;
+        components?: XMarkdownProps['components'];
+    };
+}
 
 export declare interface AIChatSession {
     /** Whether the session is anonymous */
@@ -123,7 +135,7 @@ export declare interface AIChatSession {
     user_id: string;
 }
 
-export declare const AIChatSider: default_2.FC;
+export declare const AIChatSider: default_2.FC<AIChatProps>;
 
 declare interface AIContextType {
     layout: 'classic' | 'sidebar' | 'float-sidebar';
@@ -139,6 +151,10 @@ declare interface AIContextType {
     conversations: API.AIChatSession[] | undefined;
     activeConversationKey: string | undefined;
     setActiveConversationKey: (key: string) => void;
+    ephemeralSystemPrompts: string[];
+    clientTools: RegisteredClientTool[];
+    registerPageAI: (opts: PageAIOptions) => () => void;
+    resetPageAIContext: () => void;
 }
 
 export declare interface AIFunctionCall {
@@ -559,6 +575,7 @@ export declare interface AppLayoutProps {
     menuStyle?: 'dark' | 'light';
     transformHeaderItems?: (items: default_2.ReactNode[]) => default_2.ReactNode[];
     renderLayout?: (siteIconUrl: string | null, menuItems: default_2.ReactNode[], headerItems: default_2.ReactNode[], breadcrumbs: ItemType[], content: default_2.ReactNode) => default_2.ReactNode;
+    aiChatProps?: AIChatProps;
 }
 
 declare interface ArrayBufferRequestConfig extends Omit<RequestConfig, 'responseType'> {
@@ -674,11 +691,19 @@ export declare interface Chart {
 }
 
 export declare interface ChatStreamEvent {
+    client_tool_calls: ClientToolPendingCall[];
     content: string;
     event_type: EventType;
     message_id: string;
     role: AIChatMessageRole;
     tool_calls: ToolCall[];
+}
+
+declare interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'> {
+    error?: string;
+    pendingClientToolCalls?: ClientToolPendingCall_2[];
+    messageId?: string;
+    status?: MessageStatus;
 }
 
 export declare interface CheckPasswordComplexityRequest {
@@ -690,6 +715,31 @@ export declare interface CheckPasswordComplexityResponse {
 }
 
 export declare const client: AxiosInstance;
+
+export declare interface ClientToolDefinition {
+    description: string;
+    name: string;
+    parameters: any;
+}
+
+export declare type ClientToolHandler = (argsJson: string) => Promise<string> | string;
+
+export declare interface ClientToolPendingCall {
+    arguments: string;
+    id: string;
+    name: string;
+}
+
+declare interface ClientToolPendingCall_2 {
+    id: string;
+    name: string;
+    arguments: string;
+}
+
+export declare interface ClientToolResult {
+    content: string;
+    tool_call_id: string;
+}
 
 export declare type Condition = true;
 
@@ -888,9 +938,9 @@ export declare interface ErrorResponse {
     trace_id: string;
 }
 
-export declare type EventType = "content" | "tool_call" | "error";
+export declare type EventType = "content" | "tool_call" | "error" | "client_tool_pending";
 
-export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, }: EZAppProps): JSX_2.Element;
+export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, aiChatProps, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;
@@ -902,6 +952,7 @@ export declare interface EZAppProps {
     menuStyle?: 'dark' | 'light';
     transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
     renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+    aiChatProps?: AIChatProps;
 }
 
 export declare function fetchSSE(url: string, config?: SSEConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
@@ -1539,6 +1590,21 @@ export declare interface OrganizationUser {
     username: string;
 }
 
+export declare interface PageAIOptions {
+    ephemeralSystemPrompts?: string[];
+    tools?: RegisteredClientTool[];
+    /** Register a getter for the current page data.  When provided, a built-in
+     *  `ui_get_page_data` client tool is automatically created so the AI model
+     *  can retrieve the page data on demand. */
+    pageData?: any | PageDataGetter;
+    /** Human-readable description of what `pageData` returns – becomes the
+     *  tool's `description` field visible to the model. */
+    pageDataDescription?: string;
+}
+
+/** Getter that returns the current page data snapshot (called lazily by the built-in tool). */
+export declare type PageDataGetter = () => any;
+
 export declare interface PaginationResponseModelAIChatSession {
     code: string;
     current: number;
@@ -1720,6 +1786,15 @@ export declare interface putSkillFileParams {
     id: string;
     /** File path */
     path: string;
+}
+
+export declare interface RegisteredClientTool {
+    /** Must start with "ui_" prefix */
+    name: string;
+    description: string;
+    /** OpenAI-compatible function parameters JSON Schema */
+    parameters: StrictRJSFSchema;
+    handler: ClientToolHandler;
 }
 
 export declare interface removeUserFromOrganizationParams {
@@ -2298,9 +2373,15 @@ export declare interface SecuritySettings {
 }
 
 export declare interface SendMessageRequest {
+    /** results from client-side tool execution */
+    client_tool_results: ClientToolResult[];
+    /** client-side tool definitions (JSON Schema) */
+    client_tools: ClientToolDefinition[];
     content: string;
     /** optional: load skills for these domains (plus core) as system context */
     domains: string[];
+    /** page-level system prompts, memory-only (not persisted) */
+    ephemeral_system_prompts: string[];
     /** optional: load these specific skills by id */
     skill_ids: string[];
 }

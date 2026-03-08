@@ -138,6 +138,8 @@ type AIChatMessage struct {
 	Status         AIChatMessageStatus   `gorm:"size:20;not null;default:'completed'" json:"status"` // Message status
 	Metadata       AIChatMessageMetadata `gorm:"type:text" json:"metadata,omitempty"`                // Additional metadata
 	TokensUsed     int                   `gorm:"default:0" json:"tokens_used"`                       // Tokens used for this message
+	Summarized     bool                  `gorm:"default:false" json:"summarized"`                    // Superseded by a summary; excluded from future AI conversations
+	IsSummary      bool                  `gorm:"default:false" json:"is_summary"`                    // Generated summary message; hidden from frontend display
 	MessageTime    time.Time             `gorm:"not null" json:"message_time"`                       // Message timestamp
 }
 

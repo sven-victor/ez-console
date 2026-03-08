@@ -196,6 +196,7 @@ declare global {
     }
   
     interface ChatStreamEvent {
+      client_tool_calls: ClientToolPendingCall[];
       content: string;
       event_type: EventType;
       message_id: string;
@@ -209,6 +210,23 @@ declare global {
   
     interface CheckPasswordComplexityResponse {
       is_valid: boolean;
+    }
+  
+    interface ClientToolDefinition {
+      description: string;
+      name: string;
+      parameters: any;
+    }
+  
+    interface ClientToolPendingCall {
+      arguments: string;
+      id: string;
+      name: string;
+    }
+  
+    interface ClientToolResult {
+      content: string;
+      tool_call_id: string;
     }
   
     type Condition = true;
@@ -410,7 +428,7 @@ declare global {
       trace_id: string;
     }
   
-    type EventType = "content" | "tool_call" | "error";
+    type EventType = "content" | "tool_call" | "error" | "client_tool_pending";
   
     interface File {
       access: AccessType;
@@ -1608,9 +1626,15 @@ declare global {
     }
   
     interface SendMessageRequest {
+      /** results from client-side tool execution */
+      client_tool_results: ClientToolResult[];
+      /** client-side tool definitions (JSON Schema) */
+      client_tools: ClientToolDefinition[];
       content: string;
       /** optional: load skills for these domains (plus core) as system context */
       domains: string[];
+      /** page-level system prompts, memory-only (not persisted) */
+      ephemeral_system_prompts: string[];
       /** optional: load these specific skills by id */
       skill_ids: string[];
     }

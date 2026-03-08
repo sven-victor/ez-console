@@ -16,6 +16,8 @@ package ai
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/sashabaranov/go-openai"
@@ -52,17 +54,34 @@ type ToolCall struct {
 type EventType string
 
 const (
-	EventTypeContent  EventType = "content"
-	EventTypeToolCall EventType = "tool_call"
-	EventTypeError    EventType = "error"
+	EventTypeContent           EventType = "content"
+	EventTypeToolCall          EventType = "tool_call"
+	EventTypeError             EventType = "error"
+	EventTypeClientToolPending EventType = "client_tool_pending"
 )
 
+const ClientToolPrefix = "ui_"
+
+// ErrClientToolHandoff is a sentinel error indicating that the current
+// streaming response should end gracefully because control is being
+// transferred to the browser to execute client-side tools.
+var ErrClientToolHandoff = errors.New("client tool handoff: control transferred to browser")
+
+// ClientToolPendingCall represents a tool call that must be executed
+// on the client side (browser).
+type ClientToolPendingCall struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Arguments string `json:"arguments"`
+}
+
 type ChatStreamEvent struct {
-	MessageID string                  `json:"message_id,omitempty"`
-	Content   string                  `json:"content,omitempty"`
-	Role      model.AIChatMessageRole `json:"role,omitempty"`
-	ToolCalls []ToolCall              `json:"tool_calls,omitempty"`
-	EventType EventType               `json:"event_type,omitempty"`
+	MessageID       string                  `json:"message_id,omitempty"`
+	Content         string                  `json:"content,omitempty"`
+	Role            model.AIChatMessageRole `json:"role,omitempty"`
+	ToolCalls       []ToolCall              `json:"tool_calls,omitempty"`
+	EventType       EventType               `json:"event_type,omitempty"`
+	ClientToolCalls []ClientToolPendingCall `json:"client_tool_calls,omitempty"`
 }
 
 type ChatStream interface {
@@ -109,6 +128,7 @@ type ChatCompletionOptions struct {
 	ResponseJsonSchema      string // JSON Schema for expected response format
 
 	ToolSetsFactory func(ctx context.Context) (toolset.ToolSets, error)
+	ClientTools     []openai.Tool // Tools to be executed on the client side (browser)
 
 	OnSummary               func(ctx context.Context, messages []ChatMessage)
 	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
@@ -169,4 +189,63 @@ func WithChatResponseJsonSchema(schema string) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.ResponseJsonSchema = schema
 	}
+}
+
+func WithChatClientTools(tools []openai.Tool) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.ClientTools = tools
+	}
+}
+
+// ChatErrorType classifies the kind of failure from an AI API call.
+type ChatErrorType int
+
+const (
+	ChatErrorTypeMaxTokensExceeded ChatErrorType = iota + 1
+	ChatErrorTypeRateLimitExceeded
+	ChatErrorTypeEndOfChat
+)
+
+// ChatError wraps an upstream AI API error with a typed classification so
+// callers can decide on a recovery strategy (retry, summarize, etc.).
+type ChatError struct {
+	Err    error
+	Type   ChatErrorType
+	Detail string
+}
+
+func NewChatError(err error, t ChatErrorType, detail string) *ChatError {
+	return &ChatError{
+		Err:    err,
+		Type:   t,
+		Detail: detail,
+	}
+}
+
+func (e *ChatError) Error() string {
+	if e.Detail != "" {
+		return fmt.Sprintf("%s: %s", e.typeString(), e.Detail)
+	}
+	return e.typeString()
+}
+
+func (e *ChatError) Unwrap() error { return e.Err }
+
+func (e *ChatError) typeString() string {
+	switch e.Type {
+	case ChatErrorTypeMaxTokensExceeded:
+		return "max tokens exceeded"
+	case ChatErrorTypeRateLimitExceeded:
+		return "rate limit exceeded"
+	default:
+		return "unknown AI call error"
+	}
+}
+
+func IsChatError(err error, t ChatErrorType) (*ChatError, bool) {
+	var aiErr *ChatError
+	if errors.As(err, &aiErr) && aiErr.Type == t {
+		return aiErr, true
+	}
+	return nil, false
 }

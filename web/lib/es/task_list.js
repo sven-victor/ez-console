@@ -3,8 +3,8 @@ import { useRef as b, useState as D } from "react";
 import { Tag as k, Progress as I, Space as u, Button as n, Tooltip as p, Card as R, Input as A, message as i } from "antd";
 import { EyeOutlined as F, StopOutlined as O, RedoOutlined as E, DownloadOutlined as P, DeleteOutlined as v, SearchOutlined as x, ReloadOutlined as z, CalendarOutlined as L } from "@ant-design/icons";
 import { useTranslation as m } from "react-i18next";
-import { a as c } from "./index.js";
-import { f as d, b as y, i as $ } from "./components.js";
+import { a as d } from "./index.js";
+import { f as c, b as y, i as $ } from "./components.js";
 import { P as j } from "./base.js";
 import { useNavigate as N } from "react-router-dom";
 const G = {
@@ -17,26 +17,26 @@ const G = {
   const { t: s } = m("task"), { t: o } = m("common"), r = b(null), [f, g] = D(""), h = N(), V = async (t) => {
     var e, l;
     try {
-      await c.tasks.cancelTask({ id: t }), i.success(s("cancelSuccess", { defaultValue: "Task cancelled." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
+      await d.tasks.cancelTask({ id: t }), i.success(s("cancelSuccess", { defaultValue: "Task cancelled." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
     } catch {
       i.error(s("cancelFailed", { defaultValue: "Failed to cancel task." }));
     }
   }, w = async (t) => {
     var e, l;
     try {
-      await c.tasks.retryTask({ id: t }), i.success(s("retrySuccess", { defaultValue: "Task retry requested." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
+      await d.tasks.retryTask({ id: t }), i.success(s("retrySuccess", { defaultValue: "Task retry requested." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
     } catch {
       i.error(s("retryFailed", { defaultValue: "Failed to retry task." }));
     }
   }, T = async (t) => {
     var e, l;
     try {
-      await c.tasks.deleteTask({ id: t }), i.success(s("deleteSuccess", { defaultValue: "Task deleted." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
+      await d.tasks.deleteTask({ id: t }), i.success(s("deleteSuccess", { defaultValue: "Task deleted." })), (l = (e = r.current) == null ? void 0 : e.reload) == null || l.call(e);
     } catch {
       i.error(s("deleteFailed", { defaultValue: "Failed to delete task." }));
     }
   }, C = async (t) => {
-    const e = await c.base.downloadFile({ fileKey: t }, { params: { method: "sign" } }), l = `/api/files/${t}?signature=${e.signature}&expires=${e.expires}`;
+    const e = await d.base.downloadFile({ fileKey: t }, { params: { method: "sign" } }), l = `/api/files/${t}?signature=${e.signature}&expires=${e.expires}`;
     window.open(l, "_blank");
   }, _ = [
     {
@@ -86,7 +86,7 @@ const G = {
         /* @__PURE__ */ a.jsx(n, { type: "text", icon: /* @__PURE__ */ a.jsx(F, {}), onClick: () => {
           h(`/tasks/${e.id}`);
         } }),
-        (e.status === "running" || e.status === "pending") && /* @__PURE__ */ a.jsx(d, { permission: "task:cancel", children: /* @__PURE__ */ a.jsx(
+        (e.status === "running" || e.status === "pending") && /* @__PURE__ */ a.jsx(c, { permission: "task:cancel", children: /* @__PURE__ */ a.jsx(
           y,
           {
             actions: [
@@ -102,7 +102,7 @@ const G = {
             ]
           }
         ) }),
-        (e.status === "failed" || e.status === "cancelled") && /* @__PURE__ */ a.jsx(d, { permission: "task:retry", children: /* @__PURE__ */ a.jsx(p, { title: s("retry", { defaultValue: "Retry" }), children: /* @__PURE__ */ a.jsx(
+        (e.status === "failed" || e.status === "cancelled") && /* @__PURE__ */ a.jsx(c, { permission: "task:retry", children: /* @__PURE__ */ a.jsx(p, { title: s("retry", { defaultValue: "Retry" }), children: /* @__PURE__ */ a.jsx(
           n,
           {
             type: "text",
@@ -111,7 +111,7 @@ const G = {
             onClick: () => w(e.id)
           }
         ) }) }),
-        e.artifact_file_key && /* @__PURE__ */ a.jsx(d, { permission: "task:view", children: /* @__PURE__ */ a.jsx(p, { title: s("download", { defaultValue: "Download" }), children: /* @__PURE__ */ a.jsx(
+        e.artifact_file_key && /* @__PURE__ */ a.jsx(c, { permission: "task:view", children: /* @__PURE__ */ a.jsx(p, { title: s("download", { defaultValue: "Download" }), children: /* @__PURE__ */ a.jsx(
           n,
           {
             type: "text",
@@ -120,7 +120,7 @@ const G = {
             onClick: () => C(e.artifact_file_key)
           }
         ) }) }),
-        /* @__PURE__ */ a.jsx(d, { permission: "task:delete", children: /* @__PURE__ */ a.jsx(
+        /* @__PURE__ */ a.jsx(c, { permission: "task:delete", children: /* @__PURE__ */ a.jsx(
           y,
           {
             actions: [
@@ -139,7 +139,7 @@ const G = {
         ) })
       ] })
     }
-  ], S = (t) => c.tasks.listTasks({
+  ], S = (t) => d.tasks.listTasks({
     current: t.current ?? j.DEFAULT_CURRENT,
     page_size: t.page_size ?? j.DEFAULT_PAGE_SIZE,
     search: f || void 0
@@ -148,7 +148,7 @@ const G = {
     R,
     {
       title: s("listTitle", { defaultValue: "Task List" }),
-      extra: /* @__PURE__ */ a.jsx(d, { permission: "task:schedule:list", children: /* @__PURE__ */ a.jsx(n, { type: "link", icon: /* @__PURE__ */ a.jsx(L, {}), onClick: () => h("/tasks/schedules"), children: s("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) }),
+      extra: /* @__PURE__ */ a.jsx(c, { permission: "task:schedule:list", children: /* @__PURE__ */ a.jsx(n, { type: "link", icon: /* @__PURE__ */ a.jsx(L, {}), onClick: () => h("/tasks/schedules"), children: s("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) }),
       children: /* @__PURE__ */ a.jsxs(u, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
         /* @__PURE__ */ a.jsxs(u, { wrap: !0, children: [
           /* @__PURE__ */ a.jsx(
@@ -168,7 +168,7 @@ const G = {
           ),
           /* @__PURE__ */ a.jsx(n, { icon: /* @__PURE__ */ a.jsx(x, {}), onClick: () => {
             var t, e;
-            console.log(r.current), (e = (t = r.current) == null ? void 0 : t.reload) == null || e.call(t);
+            (e = (t = r.current) == null ? void 0 : t.reload) == null || e.call(t);
           }, children: o("search", { defaultValue: "Search" }) }),
           /* @__PURE__ */ a.jsx(n, { icon: /* @__PURE__ */ a.jsx(z, {}), onClick: () => {
             var t, e;

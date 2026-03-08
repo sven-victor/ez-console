@@ -40,7 +40,7 @@ import { type ComponentProps, XMarkdown, XMarkdownProps } from '@ant-design/x-ma
 import { useRequest } from 'ahooks';
 import { Button, Dropdown, Radio, Select, Space, Spin, Tag, message } from 'antd';
 import { createStyles } from 'antd-style';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { theme } from 'antd';
@@ -48,12 +48,13 @@ import { useAI } from '@/contexts/AIContext';
 import { BaseOptionType } from 'antd/es/select';
 import { isArray } from 'lodash-es';
 import classNames from 'classnames';
+import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 
 const useStyle = createStyles(({ token, css }) => {
   return {
     siderLayout: css`
       width: 100%;
-      height: calc(100vh - 100px);
+      height: calc(100vh - 60px);
       display: flex;
       background: ${token.colorBgContainer};
       font-family: AlibabaPuHuiTi, ${token.fontFamily}, sans-serif;
@@ -158,6 +159,22 @@ const useStyle = createStyles(({ token, css }) => {
       .ant-bubble-list-autoscroll{
         flex-direction: column-reverse;
       }
+      .ant-bubble-content-updating {
+        background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
+        background-size: 200% 2px;
+        background-repeat: no-repeat;
+        background-position: 0% 100%;
+        animation: loading-line 2s linear infinite;
+      }
+
+      @keyframes loading-line {
+        from {
+          background-position: 0% 100%;
+        }
+        to {
+          background-position: 100% 100%;
+        }
+      }
     `,
     loadingMessage: css`
       background-image: linear-gradient(90deg, #ff6b23 0%, #af3cb8 31%, #53b6ff 89%);
@@ -192,8 +209,28 @@ const useStyle = createStyles(({ token, css }) => {
   };
 });
 
+interface ClientToolPendingCall {
+  id: string;
+  name: string;
+  arguments: string;
+}
+
 interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'> {
   error?: string;
+  pendingClientToolCalls?: ClientToolPendingCall[];
+  messageId?: string;
+  status?: MessageStatus;
+}
+
+interface ClientToolSchema {
+  name: string;
+  description: string;
+  parameters: unknown;
+}
+
+interface ClientToolResultPayload {
+  tool_call_id: string;
+  content: string;
 }
 
 interface ChatStreamInput {
@@ -201,11 +238,14 @@ interface ChatStreamInput {
   sessionId: string;
   domains?: string[];
   skill_ids?: string[];
+  ephemeral_system_prompts?: string[];
+  client_tools?: ClientToolSchema[];
+  client_tool_results?: ClientToolResultPayload[];
 }
 
 interface ChatStreamOutput {
   data: string;
-};
+}
 
 class ChatError extends Error {
   buffer: string[];
@@ -237,31 +277,46 @@ class AIProvider<
     } as ChatMessage;
   }
   transformMessage(info: TransformMessage<ChatMessage, Output>): ChatMessage {
-    const { originMessage, chunk } = info || {};
+    const { originMessage, chunk, status } = info || {};
     if (!chunk) {
       return {
+        ...originMessage,
         content: originMessage?.content || '',
         role: 'assistant',
+        status,
       } as ChatMessage;
     }
     const chunkJson = JSON.parse(chunk.data) as API.ChatStreamEvent;
-    const content = originMessage?.content || '';
+    const content = chunkJson.message_id === originMessage?.messageId ?
+      `${originMessage?.content || ''}${chunkJson.content || ''}` :
+      chunkJson.content || '';
     switch (chunkJson.event_type) {
+      case 'tool_call':
       case 'content':
         return {
-          content: `${content || ''}${chunkJson.content || ''}`,
+          ...originMessage,
+          content: content,
           role: 'assistant',
-        } as ChatMessage;
-      case 'tool_call':
-        return {
-          content: content.endsWith('<br/>') ? `${content}${chunkJson.content || ''}` : `${content}<br/>${chunkJson.content || ''}`,
-          role: 'assistant',
+          messageId: chunkJson.message_id,
+          status,
         } as ChatMessage;
       case 'error':
         return {
+          ...originMessage,
           content: content,
           role: 'assistant',
           error: chunkJson.content,
+          messageId: chunkJson.message_id,
+          status,
+        } as ChatMessage;
+      case 'client_tool_pending':
+        return {
+          ...originMessage,
+          content: content || '',
+          role: 'assistant',
+          pendingClientToolCalls: (chunkJson as any).client_tool_calls as ClientToolPendingCall[],
+          messageId: chunkJson.message_id,
+          status,
         } as ChatMessage;
     }
 
@@ -382,7 +437,9 @@ export const AIChat: React.FC<AIChatProps> = ({
     setActiveConversationKey: setDefaultActiveConversationKey,
     conversations: rawConversations,
     fetchConversationsLoading,
-  } = useAI()
+    ephemeralSystemPrompts,
+    clientTools,
+  } = useAI();
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
   const { styles } = useStyle();
@@ -469,6 +526,67 @@ export const AIChat: React.FC<AIChatProps> = ({
       }
     },
   });
+  const buildPageAIFields = useCallback((): Pick<ChatStreamInput, 'ephemeral_system_prompts' | 'client_tools'> => {
+    const fields: Pick<ChatStreamInput, 'ephemeral_system_prompts' | 'client_tools'> = {};
+    if (ephemeralSystemPrompts.length > 0) {
+      fields.ephemeral_system_prompts = ephemeralSystemPrompts;
+    }
+    if (clientTools.length > 0) {
+      fields.client_tools = clientTools.map(t => ({
+        name: t.name,
+        description: t.description,
+        parameters: t.parameters,
+      }));
+    }
+    return fields;
+  }, [ephemeralSystemPrompts, clientTools]);
+
+  const pendingHandoffRef = useRef<ClientToolPendingCall[] | null>(null);
+
+  const handleClientToolHandoff = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
+    const results: ClientToolResultPayload[] = [];
+    for (const call of pendingCalls) {
+      const tool = clientTools.find(t => t.name === call.name);
+      if (!tool) {
+        results.push({
+          tool_call_id: call.id,
+          content: JSON.stringify({ error: `Client tool handler not found for ${call.name}` }),
+        });
+        continue;
+      }
+      try {
+        const result = await Promise.resolve(tool.handler(call.arguments));
+        results.push({ tool_call_id: call.id, content: result });
+      } catch (err: any) {
+        results.push({
+          tool_call_id: call.id,
+          content: JSON.stringify({ error: err?.message || String(err) }),
+        });
+      }
+    }
+    onRequest({
+      content: '',
+      client_tool_results: results,
+      ...buildPageAIFields(),
+    });
+  }, [clientTools, onRequest, buildPageAIFields]);
+
+  // Watch for completed requests with pending client tool calls
+  useEffect(() => {
+    if (!isRequesting && messages && messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg?.message?.pendingClientToolCalls?.length) {
+        const calls = lastMsg.message.pendingClientToolCalls;
+        if (pendingHandoffRef.current !== calls) {
+          pendingHandoffRef.current = calls;
+          handleClientToolHandoff(calls);
+        }
+      } else {
+        pendingHandoffRef.current = null;
+      }
+    }
+  }, [isRequesting, messages, handleClientToolHandoff]);
+
   const onSubmit = (val: string) => {
     if (!val) return;
 
@@ -480,6 +598,7 @@ export const AIChat: React.FC<AIChatProps> = ({
       content: val,
       domains: selectedSkills.filter((s) => s.type === 'domain').map((s) => s.value),
       skill_ids: selectedSkills.filter((s) => s.type === 'skill').map((s) => s.value),
+      ...buildPageAIFields(),
     });
   };
 
@@ -502,16 +621,10 @@ export const AIChat: React.FC<AIChatProps> = ({
           case 'assistant':
             buffer.status = (item.status === 'completed' && buffer.status === 'success') ? 'success' : 'error';
             buffer.message.role = 'assistant';
-            buffer.id = item.id;
-            if (item.tool_calls && item.tool_calls.length > 0) {
-              if (buffer.message.content.endsWith('<br/>')) {
-                buffer.message.content = `${buffer.message.content}${item.content}`;
-              } else {
-                buffer.message.content = `${buffer.message.content}<br/>${item.content}`;
-              }
-            } else {
-              buffer.message.content = `${buffer.message.content}${item.content}`;
+            if (buffer.id !== item.id && item.content) {
+              buffer.message.content = item.content;
             }
+            buffer.id = item.id;
             break;
           case 'user':
             if (buffer.message.content.length > 0) {
@@ -612,11 +725,12 @@ export const AIChat: React.FC<AIChatProps> = ({
       setTimeout(() => {
         onRequest({
           content: msg,
+          ...buildPageAIFields(),
         });
       }, 1000)
       setMessageBuffer(undefined);
     }
-  }, [activeConversationKey, messageBuffer])
+  }, [activeConversationKey, messageBuffer, buildPageAIFields])
 
   useEffect(() => {
     if (activeConversationKey) {
@@ -694,7 +808,8 @@ export const AIChat: React.FC<AIChatProps> = ({
     key: i.id,
     contentRender: contentRender,
     footer: footerRender?.(i),
-  }))
+  })).filter((i) => i.content);
+
   const chatList = (
     <div className={styles.chatList}>
       <Spin spinning={fetchConversationLoading || createNewConversationLoading}>

@@ -56,7 +56,7 @@ func NewAIChatService() *AIChatService {
 		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
 			ID:             "ai-chat-session-cleanup",
 			Name:           "AI Chat Session Cleanup",
-			Spec:        "0 0 * * *",
+			Spec:           "0 0 * * *",
 			Schedule:       cron.Every(time.Hour * 24),
 			Description:    "Cleanup AI chat sessions",
 			TaskType:       aiChatSessionCleanupTaskType,
@@ -223,10 +223,27 @@ func (s *AIChatService) AddChatMessage(ctx context.Context, organizationID, user
 	return message, nil
 }
 
-// GetChatMessages gets messages for a chat session
+// GetChatMessages gets active messages for a chat session (excludes summarized messages).
 func (s *AIChatService) GetChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
 	var messages []model.AIChatMessage
-	if err := db.Session(ctx).Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).Order("message_time ASC").Find(&messages).Error; err != nil {
+	if err := db.Session(ctx).
+		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
+		Where("summarized = ?", false).
+		Order("message_time ASC").Find(&messages).Error; err != nil {
+		return nil, fmt.Errorf("failed to get chat messages: %w", err)
+	}
+
+	return messages, nil
+}
+
+// GetChatMessages gets messages for a chat session
+func (s *AIChatService) GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
+	var messages []model.AIChatMessage
+	if err := db.Session(ctx).
+		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
+		Where("role in ? and (tool_calls is null or tool_calls = '')", []model.AIChatMessageRole{model.AIChatMessageRoleUser, model.AIChatMessageRoleAssistant}).
+		Where("is_summary = ?", false).
+		Order("message_time ASC").Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("failed to get chat messages: %w", err)
 	}
 
@@ -242,13 +259,37 @@ func (s *AIChatService) UpdateChatToolCallResult(ctx context.Context, organizati
 	return nil
 }
 
-// UpdateChatMessage updates a chat message
+// DeleteSessionAllMessages deletes all messages in a session.
 func (s *AIChatService) DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error {
 	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).Delete(&model.AIChatMessage{}).Error; err != nil {
 		return fmt.Errorf("failed to delete session messages: %w", err)
 	}
 
 	return nil
+}
+
+// MarkSessionMessagesSummarized marks all existing messages in a session as
+// summarized (superseded). It also clears the is_summary flag on any previous
+// summary messages so only the newly added summaries are considered active.
+func (s *AIChatService) MarkSessionMessagesSummarized(ctx context.Context, organizationID, userID, sessionID string) error {
+	if err := db.Session(ctx).Model(&model.AIChatMessage{}).
+		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
+		Updates(map[string]interface{}{"summarized": true, "is_summary": false}).Error; err != nil {
+		return fmt.Errorf("failed to mark messages as summarized: %w", err)
+	}
+	return nil
+}
+
+// AddSummaryChatMessage persists a summary message that replaces older
+// conversation history for the AI context but is hidden from the frontend.
+func (s *AIChatService) AddSummaryChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string) (*model.AIChatMessage, error) {
+	message := model.NewAIChatMessage(organizationID, userID, sessionID, role, content, nil, "")
+	message.IsSummary = true
+
+	if err := db.Session(ctx).Create(message).Error; err != nil {
+		return nil, fmt.Errorf("failed to add summary chat message: %w", err)
+	}
+	return message, nil
 }
 
 // EndChatSession ends a chat session
@@ -294,6 +335,16 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 		return "", fmt.Errorf("failed to get chat messages: %w", err)
 	}
 
+	lastUserMessageIndex := -1
+	for i, msg := range messages {
+		if msg.Role == model.AIChatMessageRoleUser {
+			lastUserMessageIndex = i
+		}
+	}
+	if lastUserMessageIndex != -1 {
+		messages = messages[:lastUserMessageIndex+1]
+	}
+
 	// Filter out tool messages and get only user and assistant messages
 	var conversationMessages []model.AIChatMessage
 	for _, msg := range messages {
@@ -330,7 +381,7 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 	}
 
 	// Generate title using AI
-	responseMessages, err := s.CreateChatCompletion(ctx, organizationID, modelID, titlePromptMessages)
+	responseMessages, err := s.CreateChatCompletionWithoutToolSets(ctx, organizationID, modelID, titlePromptMessages)
 	if err != nil {
 		return "", fmt.Errorf("failed to generate title: %w", err)
 	}
@@ -349,7 +400,7 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 		title = title[:len(title)-1]
 	}
 	// Trim whitespace
-	title = strings.TrimSpace(title)
+	title = strings.TrimRight(strings.TrimSpace(title), "\ufffd")
 	// Limit to 50 characters
 	if len(title) > 50 {
 		title = title[:50]
@@ -374,6 +425,48 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 // 	// Call CreateChatCompletionWithToolSets with the obtained toolSets
 // 	return s.CreateChatCompletionWithToolSets(ctx, organizationID, modelID, messages, toolSets)
 // }
+
+// CreateChatCompletionWithToolSets creates a chat completion using the specified model with toolSets
+func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
+	var err error
+	var aiModel *model.AIModel
+	// Get the AI model
+	if modelID == "" {
+		aiModel, err = s.aiModelService.GetDefaultAIModel(ctx, organizationID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get default AI model: %w", err)
+		}
+	} else {
+		aiModel, err = s.aiModelService.GetAIModel(ctx, organizationID, modelID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get AI model: %w", err)
+		}
+	}
+
+	// Get factory for the provider
+	factory, ok := ai.GetFactory(aiModel.Provider)
+	if !ok {
+		return nil, fmt.Errorf("unsupported AI provider: %s", aiModel.Provider)
+	}
+
+	// Create AI client using factory with Config from AIModel
+	config := aiModel.Config
+	if config == nil {
+		config = make(map[string]interface{})
+	}
+	client, err := factory.CreateClient(ctx, organizationID, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create AI client: %w", err)
+	}
+
+	// Call CreateChat
+	responseMessages, err := client.Exchange(ctx, messages, options...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create chat completion: %w", err)
+	}
+
+	return responseMessages, nil
+}
 
 // CreateChatCompletionWithToolSets creates a chat completion using the specified model with toolSets
 func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {

@@ -16,14 +16,18 @@ package aiapi
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
+	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -64,12 +68,41 @@ type CreateChatSessionRequest struct {
 	Anonymous bool                   `json:"anonymous"`
 }
 
+// ClientToolDefinition represents a client-side tool definition sent from the browser.
+type ClientToolDefinition struct {
+	Name        string      `json:"name"`
+	Description string      `json:"description"`
+	Parameters  interface{} `json:"parameters"`
+}
+
+// ClientToolResult represents the result of a client-side tool execution.
+type ClientToolResult struct {
+	ToolCallID string `json:"tool_call_id"`
+	Content    string `json:"content"`
+}
+
+type ClientToolDefinitionList []ClientToolDefinition
+
+func (l ClientToolDefinitionList) HasTool(name string) bool {
+	for _, tool := range l {
+		if tool.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 // SendMessageRequest represents the request to send a message
 type SendMessageRequest struct {
-	Content  string   `json:"content" binding:"required"`
-	Domains  []string `json:"domains"`   // optional: load skills for these domains (plus core) as system context
-	SkillIDs []string `json:"skill_ids"` // optional: load these specific skills by id
+	Content                string                   `json:"content"`
+	Domains                []string                 `json:"domains"`                  // optional: load skills for these domains (plus core) as system context
+	SkillIDs               []string                 `json:"skill_ids"`                // optional: load these specific skills by id
+	EphemeralSystemPrompts []string                 `json:"ephemeral_system_prompts"` // page-level system prompts, memory-only (not persisted)
+	ClientTools            ClientToolDefinitionList `json:"client_tools"`             // client-side tool definitions (JSON Schema)
+	ClientToolResults      []ClientToolResult       `json:"client_tool_results"`      // results from client-side tool execution
 }
+
+var clientToolNameRegex = regexp.MustCompile(`^ui_[a-zA-Z0-9_]+$`)
 
 // GenerateChatSessionTitleRequest represents the request to generate or update a chat session title
 type GenerateChatSessionTitleRequest struct {
@@ -225,7 +258,7 @@ func (c *AIChatController) GetChatSession(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
-	messages, err := c.service.GetChatMessages(ctx, organizationID, userID.(string), sessionID)
+	messages, err := c.service.GetSimpleChatMessages(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -311,6 +344,43 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		return
 	}
 
+	// Validate: content or client_tool_results must be provided
+	contentTrimmed := strings.TrimSpace(req.Content)
+	if contentTrimmed == "" && len(req.ClientToolResults) == 0 {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Either content or client_tool_results must be provided"))
+		return
+	}
+
+	// Validate client tool names
+	if len(req.ClientTools) > 20 {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Too many client tools (max 20)"))
+		return
+	}
+	for _, ct := range req.ClientTools {
+		if !clientToolNameRegex.MatchString(ct.Name) {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4001",
+				fmt.Sprintf("Invalid client tool name %q: must match ^ui_[a-zA-Z0-9_]+$", ct.Name)))
+			return
+		}
+		if len(ct.Description) > 1000 {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4001",
+				fmt.Sprintf("Client tool %q description too long (max 1000 chars)", ct.Name)))
+			return
+		}
+	}
+
+	// Validate client tool results
+	for _, ctr := range req.ClientToolResults {
+		if strings.TrimSpace(ctr.ToolCallID) == "" {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4001", "client_tool_results: tool_call_id is required"))
+			return
+		}
+		if strings.TrimSpace(ctr.Content) == "" {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4001", "client_tool_results: content is required"))
+			return
+		}
+	}
+
 	// Get current user ID from context
 	userID, exists := ctx.Get("user_id")
 	if !exists {
@@ -325,6 +395,15 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		return
 	}
 
+	// Persist and append client tool results (before user message per §4.4)
+	for _, ctr := range req.ClientToolResults {
+		_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleTool, ctr.Content, nil, ctr.ToolCallID)
+		if err != nil {
+			level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+			return
+		}
+	}
+
 	// Get chat messages
 	messages, err := c.service.GetChatMessages(ctx, organizationID, userID.(string), sessionID)
 	if err != nil {
@@ -335,17 +414,17 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	// Convert from model.AIChatMessage to ai.ChatMessage
 	chatMessages := ai.ChatMessagesFromModel(messages)
 
-	// Add the new user message
-	chatMessages = append(chatMessages, ai.ChatMessage{
-		Role:    model.AIChatMessageRoleUser,
-		Content: req.Content,
-	})
-
-	// Save the user message to database
-	_, err = c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleUser, req.Content, nil, "")
-	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to add chat message", err)))
-		return
+	// Add and persist the new user message (only if content is non-empty)
+	if contentTrimmed != "" {
+		chatMessages = append(chatMessages, ai.ChatMessage{
+			Role:    model.AIChatMessageRoleUser,
+			Content: req.Content,
+		})
+		_, err = c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleUser, req.Content, nil, "")
+		if err != nil {
+			util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to add chat message", err)))
+			return
+		}
 	}
 
 	// Track initial message count (excluding tool messages)
@@ -392,19 +471,13 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 					return
 				}
 				// Check if this is the first conversation (exactly 2 messages: 1 user + 1 assistant)
-				// After adding the assistant message, we should have: initialMessageCount (0) + 1 user + 1 assistant = 2
 				if initialMessageCount == 0 {
-					// Auto-generate title in background (don't block)
 					go func() {
-						// Create a new context for background operation
 						bgCtx := context.Background()
-						// Copy organization_id
 						bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
-						// Copy user_id
 						if userID != nil {
 							bgCtx = context.WithValue(bgCtx, "user_id", userID)
 						}
-						// Copy roles
 						if roles != nil {
 							bgCtx = context.WithValue(bgCtx, "roles", roles)
 						}
@@ -425,30 +498,38 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}),
 
 		ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
-			err := c.service.DeleteSessionAllMessages(ctx, organizationID, userID.(string), sessionID)
-			if err != nil {
-				level.Error(logger).Log("msg", "Failed to delete session messages", "error", err)
+			if err := c.service.MarkSessionMessagesSummarized(ctx, organizationID, userID.(string), sessionID); err != nil {
+				level.Error(logger).Log("msg", "Failed to mark messages as summarized", "error", err)
 				return
 			}
 			for _, message := range messages {
-				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, message.Role, message.Content, nil, "")
-				if err != nil {
-					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
+				if _, err := c.service.AddSummaryChatMessage(ctx, organizationID, userID.(string), sessionID, message.Role, message.Content); err != nil {
+					level.Error(logger).Log("msg", "Failed to add summary chat message", "error", err)
 					return
 				}
 			}
 		}),
-		ai.WithChatOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
-			err := c.service.UpdateChatToolCallResult(ctx, organizationID, userID.(string), sessionID, toolCallID, result)
-			if err != nil {
-				level.Error(logger).Log("msg", "Failed to update chat tool call result", "error", err)
-				return
-			}
-		}),
+	}
+
+	// Inject client tools
+	if len(req.ClientTools) > 0 {
+		var clientOpenAITools []openai.Tool
+		for _, ct := range req.ClientTools {
+			clientOpenAITools = append(clientOpenAITools, openai.Tool{
+				Type: openai.ToolTypeFunction,
+				Function: &openai.FunctionDefinition{
+					Name:        ct.Name,
+					Description: ct.Description,
+					Parameters:  ct.Parameters,
+				},
+			})
+		}
+		options = append(options, ai.WithChatClientTools(clientOpenAITools))
 	}
 
 	var skillLoaderToolSet toolset.ToolSet
-	// Progressive skill loading: when domains/skillIDs are set, inject metadata only and add skill_loader toolset so the model can load content on demand
+	// Progressive skill loading: when domains/skillIDs are set, inject metadata only
+	// and add skill_loader toolset so the model can load content on demand
 	if len(req.Domains) > 0 || len(req.SkillIDs) > 0 {
 		metadataContent, skillIDs, err := c.service.SkillService.LoadSkillsMetadataForChat(ctx, req.Domains, req.SkillIDs)
 		if err != nil {
@@ -465,6 +546,22 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}
 	}
 
+	// Prepend ephemeral system prompts (page-level, memory-only)
+	if len(req.EphemeralSystemPrompts) > 0 {
+		var ephemeralMessages []ai.ChatMessage
+		for _, prompt := range req.EphemeralSystemPrompts {
+			if trimmed := strings.TrimSpace(prompt); trimmed != "" {
+				ephemeralMessages = append(ephemeralMessages, ai.ChatMessage{
+					Role:    model.AIChatMessageRoleSystem,
+					Content: trimmed,
+				})
+			}
+		}
+		if len(ephemeralMessages) > 0 {
+			chatMessages = append(ephemeralMessages, chatMessages...)
+		}
+	}
+
 	// Create streaming chat completion
 	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, chatMessages, options...)
 	if err != nil {
@@ -476,12 +573,29 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	ctx.Stream(func(w io.Writer) bool {
 		event, err := stream.Recv(ctx)
 		if err != nil {
-			if err != io.EOF {
-				ctx.SSEvent("message", ai.ChatStreamEvent{
-					EventType: ai.EventTypeContent,
-					Content:   err.Error(),
-					Role:      model.AIChatMessageRoleAssistant,
-				})
+			if err == io.EOF || errors.Is(err, ai.ErrClientToolHandoff) {
+				return false
+			}
+			ctx.SSEvent("message", ai.ChatStreamEvent{
+				EventType: ai.EventTypeContent,
+				Content:   err.Error(),
+				Role:      model.AIChatMessageRoleAssistant,
+			})
+			return false
+		}
+		if event.EventType == ai.EventTypeToolCall {
+			return true
+		}
+		var toolCalls []ai.ClientToolPendingCall
+		if event.EventType == ai.EventTypeClientToolPending {
+			for _, toolCall := range event.ClientToolCalls {
+				if req.ClientTools.HasTool(toolCall.Name) {
+					toolCalls = append(toolCalls, toolCall)
+				}
+			}
+			if len(toolCalls) != 0 {
+				event.ClientToolCalls = toolCalls
+				ctx.SSEvent("message", event)
 			}
 			return false
 		}

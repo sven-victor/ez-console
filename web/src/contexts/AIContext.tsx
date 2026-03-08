@@ -19,6 +19,39 @@ import { useRequest } from 'ahooks';
 import { message } from 'antd';
 import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { type StrictRJSFSchema as JSONSchema7 } from '@rjsf/utils';
+import { isFunction } from 'lodash-es';
+import { isString } from 'antd/es/button';
+
+// Client tool handler: receives JSON arguments string, returns JSON result string
+export type ClientToolHandler = (argsJson: string) => Promise<string> | string;
+
+// A client-side tool registered by a page
+export interface RegisteredClientTool {
+  /** Must start with "ui_" prefix */
+  name: string;
+  description: string;
+  /** OpenAI-compatible function parameters JSON Schema */
+  parameters: JSONSchema7;
+  handler: ClientToolHandler;
+}
+
+
+/** Getter that returns the current page data snapshot (called lazily by the built-in tool). */
+export type PageDataGetter = () => any;
+
+// Options for page-level AI context registration
+export interface PageAIOptions {
+  ephemeralSystemPrompts?: string[];
+  tools?: RegisteredClientTool[];
+  /** Register a getter for the current page data.  When provided, a built-in
+   *  `ui_get_page_data` client tool is automatically created so the AI model
+   *  can retrieve the page data on demand. */
+  pageData?: any | PageDataGetter;
+  /** Human-readable description of what `pageData` returns – becomes the
+   *  tool's `description` field visible to the model. */
+  pageDataDescription?: string;
+}
 
 // AI context type
 export interface AIContextType {
@@ -35,6 +68,11 @@ export interface AIContextType {
   conversations: API.AIChatSession[] | undefined;
   activeConversationKey: string | undefined;
   setActiveConversationKey: (key: string) => void;
+  // Page-level AI context
+  ephemeralSystemPrompts: string[];
+  clientTools: RegisteredClientTool[];
+  registerPageAI: (opts: PageAIOptions) => () => void;
+  resetPageAIContext: () => void;
 }
 
 // Create AI context
@@ -52,6 +90,10 @@ export const AIContext = createContext<AIContextType>({
   conversations: undefined,
   activeConversationKey: undefined,
   setActiveConversationKey: () => { },
+  ephemeralSystemPrompts: [],
+  clientTools: [],
+  registerPageAI: () => () => { },
+  resetPageAIContext: () => { },
 });
 
 export const useAI = () => useContext(AIContext);
@@ -71,6 +113,39 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
   const [activeConversationKey, setActiveConversationKey] = useState<string | undefined>(undefined);
   const [cacheMessages, setCacheMessages] = useState<[string, API.SimpleChatMessage[] | undefined]>();
   const [onCallAI, setOnCallAI] = useState<((message: string, messages?: API.SimpleChatMessage[]) => void) | null>(null);
+
+  // Page-level AI context
+  const [ephemeralSystemPrompts, setEphemeralSystemPrompts] = useState<string[]>([]);
+  const [clientTools, setClientTools] = useState<RegisteredClientTool[]>([]);
+
+  const resetPageAIContext = useCallback(() => {
+    setEphemeralSystemPrompts([]);
+    setClientTools([]);
+  }, []);
+
+  const registerPageAI = useCallback((opts: PageAIOptions) => {
+    if (opts.ephemeralSystemPrompts) {
+      setEphemeralSystemPrompts(opts.ephemeralSystemPrompts);
+    }
+    const innerTools: RegisteredClientTool[] = opts.pageData ? [{
+      name: 'ui_get_page_data',
+      description: `This is a browser/client-side method. If the user explicitly instructs you to retrieve page data or if you believe it is necessary to retrieve page data, you can try invoking this method. ${opts.pageDataDescription || 'Returns a JSON snapshot of the current page data.'}`,
+      parameters: { type: 'object', properties: {}, required: [] },
+      handler: () => {
+        if (isString(opts.pageData)) {
+          return opts.pageData;
+        }
+        if (isFunction(opts.pageData)) {
+          return JSON.stringify(opts.pageData());
+        }
+        return JSON.stringify(opts.pageData);
+      },
+    }] : [];
+    setClientTools([...innerTools, ...(opts.tools ?? [])]);
+    return () => {
+      resetPageAIContext();
+    };
+  }, [resetPageAIContext]);
 
   useEffect(() => {
     const activeConversationKey = localStorage.getItem('activeConversationKey');
@@ -132,6 +207,10 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
           setActiveConversationKey(key);
           localStorage.setItem('activeConversationKey', key);
         },
+        ephemeralSystemPrompts,
+        clientTools,
+        registerPageAI,
+        resetPageAIContext,
       }}
     >
       {children}

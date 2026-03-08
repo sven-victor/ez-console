@@ -2,7 +2,7 @@ import { c as i, A as p, b as n, w as m } from "./es/index.js";
 import { useTranslation as u } from "react-i18next";
 import "./es/base.js";
 import { b as A, h as c, e as l, A as h, c as g, D as x, H as C, J as I, j as S, d as b, a as w, L, C as P, M as D, f as F, P as M, i as v, g as y } from "./es/components.js";
-import { default as G } from "./es/ai-chat.js";
+import { AIChat as G } from "./es/ai-chat.js";
 import { A as k, a as B, b as H } from "./es/ai-chat-layout.js";
 import { default as T } from "./es/forbidden.js";
 import { default as j } from "./es/not_found.js";
@@ -11,7 +11,7 @@ import { A as O, a as Q, e as W, d as X, f as Y, c as _, g as $, r as aa } from 
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";
-import { default as ea } from "i18next";
+import { default as oa } from "i18next";
 export {
   G as AIChat,
   k as AIChatButton,
@@ -47,7 +47,7 @@ export {
   _ as client,
   $ as fetchSSE,
   y as getIconByName,
-  ea as i18n,
+  oa as i18n,
   aa as request,
   R as useAI,
   V as useAuth,

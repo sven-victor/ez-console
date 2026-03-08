@@ -15,6 +15,7 @@ require (
 
 require (
 	github.com/MicahParks/keyfunc/v3 v3.4.0
+	github.com/cenkalti/backoff/v5 v5.0.2
 	github.com/gin-contrib/static v1.1.5
 	github.com/go-kit/log v0.2.1
 	github.com/go-ldap/ldap/v3 v3.4.11
@@ -64,7 +65,6 @@ require (
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
-	github.com/cenkalti/backoff/v5 v5.0.2 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect

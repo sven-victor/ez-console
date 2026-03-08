@@ -1,6 +1,10 @@
 definitions:
   ai.ChatStreamEvent:
     properties:
+      client_tool_calls:
+        items:
+          $ref: '#/definitions/ai.ClientToolPendingCall'
+        type: array
       content:
         type: string
       event_type:
@@ -14,22 +18,38 @@ definitions:
           $ref: '#/definitions/ai.ToolCall'
         type: array
     required:
+    - client_tool_calls
     - content
     - event_type
     - message_id
     - role
     - tool_calls
     type: object
+  ai.ClientToolPendingCall:
+    properties:
+      arguments:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    required:
+    - arguments
+    - id
+    - name
+    type: object
   ai.EventType:
     enum:
     - content
     - tool_call
     - error
+    - client_tool_pending
     type: string
     x-enum-varnames:
     - EventTypeContent
     - EventTypeToolCall
     - EventTypeError
+    - EventTypeClientToolPending
   ai.FunctionCall:
     properties:
       arguments:
@@ -86,6 +106,28 @@ definitions:
     - ToolCallStatusRunning
     - ToolCallStatusCompleted
     - ToolCallStatusFailed
+  aiapi.ClientToolDefinition:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      parameters: {}
+    required:
+    - description
+    - name
+    - parameters
+    type: object
+  aiapi.ClientToolResult:
+    properties:
+      content:
+        type: string
+      tool_call_id:
+        type: string
+    required:
+    - content
+    - tool_call_id
+    type: object
   aiapi.CreateAIModelRequest:
     properties:
       config:
@@ -131,11 +173,26 @@ definitions:
     type: object
   aiapi.SendMessageRequest:
     properties:
+      client_tool_results:
+        description: results from client-side tool execution
+        items:
+          $ref: '#/definitions/aiapi.ClientToolResult'
+        type: array
+      client_tools:
+        description: client-side tool definitions (JSON Schema)
+        items:
+          $ref: '#/definitions/aiapi.ClientToolDefinition'
+        type: array
       content:
         type: string
       domains:
         description: 'optional: load skills for these domains (plus core) as system
           context'
+        items:
+          type: string
+        type: array
+      ephemeral_system_prompts:
+        description: page-level system prompts, memory-only (not persisted)
         items:
           type: string
         type: array
@@ -145,8 +202,11 @@ definitions:
           type: string
         type: array
     required:
+    - client_tool_results
+    - client_tools
     - content
     - domains
+    - ephemeral_system_prompts
     - skill_ids
     type: object
   aiapi.UpdateAIModelRequest:
@@ -2880,24 +2940,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -2922,24 +2964,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond

@@ -225,7 +225,6 @@ const TaskList: React.FC = () => {
             allowClear
           />
           <Button icon={<SearchOutlined />} onClick={() => {
-            console.log(tableRef.current);
             tableRef.current?.reload?.()
           }}>
             {tCommon('search', { defaultValue: 'Search' })}
