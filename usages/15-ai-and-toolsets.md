@@ -1,10 +1,11 @@
 # AI and Toolsets
 
-This guide covers the AI model integration and toolsets functionality in EZ-Console, including how to use built-in providers and register custom implementations.
+This guide covers the AI model integration and toolsets functionality in EZ-Console, including how to use built-in providers, register custom implementations, and integrate with the frontend chat UI.
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Architecture](#architecture)
 - [AI Models](#ai-models)
   - [Built-in AI Providers](#built-in-ai-providers)
   - [Using AI Models](#using-ai-models)
@@ -13,6 +14,26 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
   - [Built-in Toolsets](#built-in-toolsets)
   - [Using Toolsets](#using-toolsets)
   - [Registering Custom Toolsets](#registering-custom-toolsets)
+  - [RBAC Tool Permissions](#rbac-tool-permissions)
+- [Skills System](#skills-system)
+  - [Skill Structure](#skill-structure)
+  - [Skill Domains](#skill-domains)
+  - [Progressive Skill Loading](#progressive-skill-loading)
+- [Client Tools](#client-tools)
+  - [How Client Tools Work](#how-client-tools-work)
+  - [Registering Client Tools in the Frontend](#registering-client-tools-in-the-frontend)
+  - [Server-Side Client Tool Handling](#server-side-client-tool-handling)
+- [Chat Sessions & Streaming](#chat-sessions--streaming)
+  - [Session Management](#session-management)
+  - [SSE Streaming Protocol](#sse-streaming-protocol)
+  - [Chat Completion Options](#chat-completion-options)
+- [Auto-Summarization](#auto-summarization)
+  - [One-Shot Summarization](#one-shot-summarization)
+  - [Segmented Summarization](#segmented-summarization)
+- [Frontend Integration](#frontend-integration)
+  - [AIContext](#aicontext)
+  - [AIChat Component](#aichat-component)
+  - [Page-Level AI Integration](#page-level-ai-integration)
 - [Integration Examples](#integration-examples)
 - [Best Practices](#best-practices)
 
@@ -20,25 +41,83 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
 
 EZ-Console provides a flexible AI integration system that allows you to:
 
-- **Connect multiple AI providers**: Support for OpenAI and custom AI models
-- **Tool calling**: Enable AI models to call external tools and APIs
-- **Streaming responses**: Support for real-time streaming chat completions
-- **Multi-tenancy**: Organization-scoped AI models and toolsets
-- **Extensibility**: Easy registration of custom AI providers and toolsets
+- **Connect multiple AI providers**: Built-in support for OpenAI-compatible APIs, extensible to custom providers
+- **Server-side tool calling**: Enable AI models to call external tools and APIs (MCP, custom toolsets)
+- **Client-side tool calling**: Allow the AI model to invoke browser-side functions (e.g. reading page data)
+- **Streaming responses**: Real-time SSE-based streaming chat completions with tool call status updates
+- **Skills system**: Markdown-based instruction packs that can be injected into AI context, with on-demand loading
+- **Auto-summarization**: Automatic conversation condensing when context window limits are reached (one-shot and segmented)
+- **Multi-tenancy**: Organization-scoped AI models, toolsets, and RBAC-based tool permissions
+- **Session management**: Persistent chat sessions with automatic title generation and configurable retention
+- **Extensibility**: Easy registration of custom AI providers and toolsets via factory pattern
+
+## Architecture
+
+The AI system follows a layered architecture:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React)                          │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────────────┐  │
+│  │  AIContext   │  │  AIChat.tsx  │  │  Page Components   │  │
+│  │  (Provider)  │  │  (Chat UI)   │  │  (registerPageAI)  │  │
+│  └──────┬───────┘  └──────┬───────┘  └─────────┬──────────┘  │
+│         └─────────────────┼────────────────────┘             │
+│                           │ SSE / REST                       │
+├───────────────────────────┼──────────────────────────────────┤
+│                    API Layer (Gin)                           │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │  AIChatController (pkg/api/ai/)                         │ │
+│  │  - REST endpoints for session CRUD                      │ │
+│  │  - SSE streaming for chat                               │ │
+│  │  - Client tool handoff + ephemeral system prompts       │ │
+│  └──────────────────────┬──────────────────────────────────┘ │
+├──────────────────────────┼───────────────────────────────────┤
+│                   Service Layer                              │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │  AIChatService  │  AIModelService  │  ToolSetService    │ │
+│  │  SkillService   │                  │                    │ │
+│  └──────────────────────┬──────────────────────────────────┘ │
+├──────────────────────────┼───────────────────────────────────┤
+│               AI Client Layer (pkg/clients/ai/)              │
+│  ┌──────────────────┐  ┌──────────────────────────────────┐  │
+│  │  AIClient        │  │  ClassicChatClient               │  │
+│  │  (Chat/Stream)   │  │  (Exchange/ExchangeStream)       │  │
+│  │                  │  │  - Tool call loop                │  │
+│  │                  │  │  - Auto-summarization            │  │
+│  │                  │  │  - Rate limit retry              │  │
+│  └──────────────────┘  └──────────────────────────────────┘  │
+├──────────────────────────────────────────────────────────────┤
+│                 Toolset Layer (pkg/toolset/)                  │
+│  ┌─────────────┐ ┌──────────┐ ┌────────┐ ┌──────────────┐   │
+│  │ ToolSets    │ │  MCP     │ │ Utils  │ │ SkillLoader  │   │
+│  │ (map+prefix)│ │ ToolSet  │ │ToolSet │ │  ToolSet     │   │
+│  └─────────────┘ └──────────┘ └────────┘ └──────────────┘   │
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Key concepts:**
+
+- `AIClient` is the low-level interface for a single chat request (one round-trip to the AI provider).
+- `ClassicChatClient` wraps `AIClient` with higher-level logic: iterative tool-call loops, auto-summarization, rate-limit retries, and client tool handoff.
+- `ToolSets` is a `map[string]ToolSet` where each key becomes a **prefix** for tool names (e.g. key `"mcp"` + tool `"query"` → `"mcp_query"`). This avoids name collisions across toolsets.
+- The streaming protocol uses SSE with typed events (`content`, `tool_call`, `error`, `client_tool_pending`).
 
 ## AI Models
 
 ### Built-in AI Providers
 
-The framework comes with built-in support for OpenAI-compatible APIs.
-
 #### OpenAI Provider
 
+Supports any OpenAI-compatible API (OpenAI, Azure OpenAI, local LLMs with OpenAI-compatible endpoints).
+
 Configuration fields:
-- `api_key` (required, password): Your OpenAI API key
-- `model_id` (required, string): Model identifier (e.g., gpt-4, gpt-3.5-turbo)
-- `base_url` (optional, string): Custom API endpoint URL
+
+- `api_key` (required, password): Your OpenAI API key (encrypted at rest)
+- `model_id` (required, string): Model identifier (e.g., `gpt-4`, `gpt-3.5-turbo`)
+- `base_url` (optional, string): Custom API endpoint URL (defaults to `https://api.openai.com/v1`)
 - `organization_id` (optional, string): OpenAI organization ID
+- `max_tokens` (optional, integer): Maximum tokens for the model's context window (used for auto-summarization threshold)
 
 ### Using AI Models
 
@@ -56,7 +135,8 @@ Authorization: Bearer <token>
   "config": {
     "api_key": "sk-...",
     "model_id": "gpt-4",
-    "base_url": "https://api.openai.com/v1"
+    "base_url": "https://api.openai.com/v1",
+    "max_tokens": 128000
   },
   "is_default": true
 }
@@ -64,37 +144,22 @@ Authorization: Bearer <token>
 
 #### 2. Using AI Models in Your Code
 
+The typical pattern is to use `AIChatService` which resolves the model, creates the client, and injects authorized toolsets automatically:
+
 ```go
 package main
 
 import (
     "context"
+    "fmt"
     "github.com/sven-victor/ez-console/pkg/service"
     "github.com/sven-victor/ez-console/pkg/clients/ai"
     "github.com/sven-victor/ez-console/pkg/model"
 )
 
 func useAIModel(ctx context.Context, svc *service.Service) error {
-    // Get the default AI model for the organization
     organizationID := "org-123"
-    aiModel, err := svc.GetDefaultAIModel(ctx, organizationID)
-    if err != nil {
-        return err
-    }
 
-    // Get the AI client factory
-    factory, exists := ai.GetFactory(aiModel.Provider)
-    if !exists {
-        return fmt.Errorf("unsupported provider: %s", aiModel.Provider)
-    }
-
-    // Create AI client from config
-    client, err := factory.CreateClient(ctx,organizationID,aiModel.Config)
-    if err != nil {
-        return err
-    }
-
-    // Create chat messages
     messages := []ai.ChatMessage{
         {
             Role:    model.AIChatMessageRoleSystem,
@@ -106,13 +171,20 @@ func useAIModel(ctx context.Context, svc *service.Service) error {
         },
     }
 
-    // Create non-streaming chat completion
-    responses, err := client.CreateChat(ctx, messages)
+    // Non-streaming completion without toolsets
+    responses, err := svc.CreateChatCompletionWithoutToolSets(ctx, organizationID, "", messages)
     if err != nil {
         return err
     }
+    for _, resp := range responses {
+        fmt.Printf("Role: %s, Content: %s\n", resp.Role, resp.Content)
+    }
 
-    // Process responses
+    // Non-streaming completion with toolsets (auto-injects authorized toolsets)
+    responses, err = svc.CreateChatCompletion(ctx, organizationID, "", messages)
+    if err != nil {
+        return err
+    }
     for _, resp := range responses {
         fmt.Printf("Role: %s, Content: %s\n", resp.Role, resp.Content)
     }
@@ -121,25 +193,70 @@ func useAIModel(ctx context.Context, svc *service.Service) error {
 }
 ```
 
-#### 3. Streaming Chat Completion
+#### 3. Low-Level Client Usage
+
+If you need direct access to the AI client:
 
 ```go
-func streamAIChat(ctx context.Context, client ai.AIClient) error {
-    messages := []ai.ChatMessage{
-        {
-            Role:    model.AIChatMessageRoleUser,
-            Content: "Tell me a story",
-        },
+func useLowLevelClient(ctx context.Context) error {
+    organizationID := "org-123"
+
+    // Get the default AI model
+    aiModelSvc := service.NewAIModelService()
+    aiModel, err := aiModelSvc.GetDefaultAIModel(ctx, organizationID)
+    if err != nil {
+        return err
     }
 
-    // Create streaming chat
-    stream, err := client.CreateChatStream(ctx, messages)
+    // Get the factory (returns ClassicChatClientFactory)
+    factory, exists := ai.GetFactory(aiModel.Provider)
+    if !exists {
+        return fmt.Errorf("unsupported provider: %s", aiModel.Provider)
+    }
+
+    // Create the ClassicChatClient
+    client, err := factory.CreateClient(ctx, organizationID, aiModel.Config)
+    if err != nil {
+        return err
+    }
+
+    messages := []ai.ChatMessage{
+        {Role: model.AIChatMessageRoleUser, Content: "Tell me a joke"},
+    }
+
+    // Exchange: iterative tool-call loop with all options
+    responses, err := client.Exchange(ctx, messages,
+        ai.WithChatMaxIterations(10),
+        ai.WithChatMaxTokens(4000),
+        ai.WithChatAutoSummarization(true),
+    )
+    if err != nil {
+        return err
+    }
+    for _, resp := range responses {
+        fmt.Printf("Response: %s\n", resp.Content)
+    }
+
+    return nil
+}
+```
+
+#### 4. Streaming Chat Completion
+
+```go
+func streamAIChat(ctx context.Context, svc *service.Service) error {
+    organizationID := "org-123"
+
+    messages := []ai.ChatMessage{
+        {Role: model.AIChatMessageRoleUser, Content: "Tell me a story"},
+    }
+
+    stream, err := svc.CreateChatCompletionStream(ctx, organizationID, "", messages)
     if err != nil {
         return err
     }
     defer stream.Close()
 
-    // Receive and process stream events
     for {
         event, err := stream.Recv(ctx)
         if err != nil {
@@ -151,23 +268,25 @@ func streamAIChat(ctx context.Context, client ai.AIClient) error {
 
         switch event.EventType {
         case ai.EventTypeContent:
-            // Handle content delta
             fmt.Print(event.Content)
         case ai.EventTypeToolCall:
-            // Handle tool calls
             for _, toolCall := range event.ToolCalls {
-                fmt.Printf("Tool call: %s\n", toolCall.Function.Name)
+                fmt.Printf("[Tool: %s, Status: %s]\n",
+                    toolCall.Function.Name, toolCall.Status)
             }
+        case ai.EventTypeClientToolPending:
+            fmt.Printf("Waiting for client tools: %v\n", event.ClientToolCalls)
+        case ai.EventTypeError:
+            fmt.Printf("Error: %s\n", event.Content)
         }
     }
-
     return nil
 }
 ```
 
 ### Registering Custom AI Models
 
-To register a custom AI model provider, implement the `AIClientFactory` interface and register it in your `init()` function.
+To register a custom AI model provider, implement the `AIClient` interface and register it via an `AIClientFactory`.
 
 #### Step 1: Implement AIClient Interface
 
@@ -177,41 +296,39 @@ package customai
 import (
     "context"
     "github.com/sven-victor/ez-console/pkg/clients/ai"
+    "github.com/sven-victor/ez-console/pkg/toolset"
 )
 
-// CustomAIClient implements the AIClient interface
 type CustomAIClient struct {
     apiKey   string
     endpoint string
     modelID  string
 }
 
-// CreateChatStream implements AIClient.CreateChatStream
-func (c *CustomAIClient) CreateChatStream(
+// Chat creates a non-streaming chat completion (single round-trip)
+func (c *CustomAIClient) Chat(
     ctx context.Context,
     messages []ai.ChatMessage,
-    options ...ai.WithChatOptions,
-) (ai.ChatStream, error) {
-    // Implement streaming chat logic
-    // Convert messages to your API format
-    // Make streaming API call
-    // Return a ChatStream implementation
+    toolSets toolset.ToolSets,
+) (*ai.ChatMessage, error) {
+    // Convert messages to your API format, include tools from toolSets
+    // Make API call, return the assistant's response message
     return nil, fmt.Errorf("not implemented")
 }
 
-// CreateChat implements AIClient.CreateChat
-func (c *CustomAIClient) CreateChat(
+// ChatStream creates a streaming chat completion (single round-trip)
+func (c *CustomAIClient) ChatStream(
     ctx context.Context,
     messages []ai.ChatMessage,
-    options ...ai.WithChatOptions,
-) ([]ai.ChatMessage, error) {
-    // Implement non-streaming chat logic
-    // Convert messages to your API format
-    // Make API call
-    // Return response messages
+    toolSets toolset.ToolSets,
+) (ai.ChatStream, error) {
+    // Convert messages, make streaming API call
+    // Return a ChatStream that yields ChatStreamEvent via Recv()
     return nil, fmt.Errorf("not implemented")
 }
 ```
+
+The `ClassicChatClient` wrapper automatically adds the tool-call iteration loop, auto-summarization, and rate-limit retries on top of your `AIClient` implementation. You only need to implement single round-trip chat logic.
 
 #### Step 2: Implement AIClientFactory Interface
 
@@ -219,25 +336,22 @@ func (c *CustomAIClient) CreateChat(
 package customai
 
 import (
+    "context"
     "github.com/sven-victor/ez-console/pkg/clients/ai"
-    "github.com/sven-victor/ez-console/pkg/model"
     "github.com/sven-victor/ez-console/pkg/util"
 )
 
-// CustomAIClientFactory implements AIClientFactory
 type CustomAIClientFactory struct{}
 
-// GetName returns the provider name
 func (f *CustomAIClientFactory) GetName() string {
     return "Custom AI"
 }
 
-// GetDescription returns the provider description
 func (f *CustomAIClientFactory) GetDescription() string {
     return "Custom AI provider implementation"
 }
 
-// GetConfigFields returns configuration fields for the frontend
+// GetConfigFields returns configuration fields for the frontend form
 func (f *CustomAIClientFactory) GetConfigFields() []util.ConfigField {
     return []util.ConfigField{
         {
@@ -265,21 +379,14 @@ func (f *CustomAIClientFactory) GetConfigFields() []util.ConfigField {
     }
 }
 
-// CreateClient creates a client from configuration
-func (f *CustomAIClientFactory) CreateClient(ctx content,organizationID string,config map[string]interface{}) (ai.AIClient, error) {
-    apiKey, ok := config["api_key"].(string)
-    if !ok || apiKey == "" {
-        return nil, fmt.Errorf("api_key is required")
-    }
+// CreateClient creates an AIClient from configuration
+func (f *CustomAIClientFactory) CreateClient(ctx context.Context, organizationID string, config map[string]interface{}) (ai.AIClient, error) {
+    apiKey, _ := config["api_key"].(string)
+    endpoint, _ := config["endpoint"].(string)
+    modelID, _ := config["model_id"].(string)
 
-    endpoint, ok := config["endpoint"].(string)
-    if !ok || endpoint == "" {
-        return nil, fmt.Errorf("endpoint is required")
-    }
-
-    modelID, ok := config["model_id"].(string)
-    if !ok || modelID == "" {
-        return nil, fmt.Errorf("model_id is required")
+    if apiKey == "" || endpoint == "" || modelID == "" {
+        return nil, fmt.Errorf("api_key, endpoint, and model_id are required")
     }
 
     return &CustomAIClient{
@@ -300,13 +407,9 @@ import (
     "github.com/sven-victor/ez-console/pkg/model"
 )
 
-const (
-    // Define your custom provider type
-    AIModelProviderCustom model.AIModelProvider = "custom"
-)
+const AIModelProviderCustom model.AIModelProvider = "custom"
 
 func init() {
-    // Register the factory during package initialization
     if err := ai.RegisterFactory(AIModelProviderCustom, &CustomAIClientFactory{}); err != nil {
         panic(err)
     }
@@ -324,14 +427,15 @@ import (
 )
 
 func main() {
-    // Your custom AI provider is now available
     server.Start()
 }
 ```
 
 ## Toolsets
 
-Toolsets allow AI models to call external tools and APIs during chat completions. This enables AI to perform actions like fetching data, executing commands, or interacting with external services.
+Toolsets allow AI models to call external tools and APIs during chat completions. Each toolset is a collection of related tools.
+
+The `ToolSets` type is `map[string]ToolSet`, where the map key serves as a **namespace prefix**. When tools are exposed to the AI model, function names are prefixed with their map key (e.g., a tool named `query` in a toolset registered under key `"mcp"` becomes `mcp_query`). This prevents name collisions across different toolsets.
 
 ### Built-in Toolsets
 
@@ -340,23 +444,33 @@ Toolsets allow AI models to call external tools and APIs during chat completions
 A simple toolset providing utility functions.
 
 **Available Tools:**
-- `now`: Get current time
+
+- `now`: Get current time in a specified format (default: RFC3339)
 - `sleep`: Sleep for a specified duration (max 60 seconds)
 
-**Configuration:**
-No configuration required.
+**Configuration:** No configuration required.
 
 #### 2. MCP Toolset
 
 Model Context Protocol (MCP) toolset for connecting to MCP-compatible servers.
 
 **Configuration Fields:**
+
 - `name` (required): Toolset name
 - `endpoint` (required): MCP server endpoint URL
 - `protocol` (optional): Protocol type (http, websocket)
 - `username` (optional): Authentication username
 - `password` (optional): Authentication password
 - `token` (optional): Authentication token
+
+#### 3. Skill Loader Toolset (Runtime)
+
+An internal toolset injected at runtime when skills are loaded via domains or skill IDs. Not configurable from the admin UI — it is automatically created when the chat API receives `domains` or `skill_ids` parameters.
+
+**Available Tools:**
+
+- `get_skill_content`: Read the content of a skill by ID, optionally specifying a sub-path
+- `list_skill_files`: List files within a skill directory
 
 ### Using Toolsets
 
@@ -378,69 +492,41 @@ Authorization: Bearer <token>
 }
 ```
 
-#### 2. Using Toolsets with AI
+#### 2. Using Toolsets with AI in Code
 
 ```go
-package main
-
-import (
-    "context"
-    "github.com/sven-victor/ez-console/pkg/service"
-    "github.com/sven-victor/ez-console/pkg/clients/ai"
-    "github.com/sven-victor/ez-console/pkg/model"
-    "github.com/sven-victor/ez-console/pkg/toolset"
-)
-
 func useAIWithToolsets(ctx context.Context, svc *service.Service) error {
     organizationID := "org-123"
-    
-    // Get AI client
-    aiModel, err := svc.GetDefaultAIModel(ctx, organizationID)
-    if err != nil {
-        return err
-    }
-    
-    factory, _ := ai.GetFactory(aiModel.Provider)
-    client, err := factory.CreateClient(ctx,organizationID,aiModel.Config)
-    if err != nil {
-        return err
-    }
 
-    // Prepare messages
     messages := []ai.ChatMessage{
-        {
-            Role:    model.AIChatMessageRoleUser,
-            Content: "What's the current time?",
-        },
+        {Role: model.AIChatMessageRoleUser, Content: "What's the current time?"},
     }
 
-    // Create toolsets factory function
-    toolSetsFactory := func(ctx context.Context) (toolset.ToolSets, error) {
-        return svc.GetAllEnabledToolSetInstances(ctx, organizationID)
-    }
-
-    // Create chat with toolsets
-    responses, err := client.CreateChat(ctx, messages, 
-        ai.WithToolSets(toolSetsFactory),
-        ai.WithMaxIterations(10),
+    // Option A: Use CreateChatCompletion which auto-injects authorized toolsets
+    responses, err := svc.CreateChatCompletion(ctx, organizationID, "", messages,
+        ai.WithChatMaxIterations(10),
     )
     if err != nil {
         return err
     }
 
-    // Process responses (may include tool calls and results)
     for _, resp := range responses {
         fmt.Printf("Role: %s, Content: %s\n", resp.Role, resp.Content)
-        
-        // Check for tool calls
-        for _, toolCall := range resp.ToolCalls {
-            fmt.Printf("Tool: %s, Args: %s\n", 
-                toolCall.Function.Name, 
-                toolCall.Function.Arguments)
-        }
     }
 
-    return nil
+    // Option B: Manual toolset injection
+    toolSetSvc := service.NewToolSetService()
+    toolSets, err := toolSetSvc.GetAuthorizedToolSets(ctx, organizationID)
+    if err != nil {
+        return err
+    }
+
+    responses, err = svc.CreateChatCompletionWithoutToolSets(ctx, organizationID, "", messages,
+        ai.WithChatToolSets(toolSets),
+        ai.WithChatMaxIterations(10),
+    )
+
+    return err
 }
 ```
 
@@ -457,50 +543,34 @@ import (
     "context"
     "encoding/json"
     "fmt"
-    
+
     "github.com/sashabaranov/go-openai"
     "github.com/sashabaranov/go-openai/jsonschema"
     "github.com/sven-victor/ez-console/pkg/toolset"
 )
 
-// CustomToolSet implements the ToolSet interface
 type CustomToolSet struct {
     apiKey   string
     endpoint string
-    // Add your configuration fields
 }
 
-// GetName returns the toolset name
-func (t *CustomToolSet) GetName() string {
-    return "custom-toolset"
-}
+func (t *CustomToolSet) GetName() string        { return "custom-toolset" }
+func (t *CustomToolSet) GetDescription() string  { return "Custom toolset implementation" }
 
-// GetDescription returns the toolset description
-func (t *CustomToolSet) GetDescription() string {
-    return "Custom toolset implementation"
-}
-
-// Validate validates the toolset configuration
 func (t *CustomToolSet) Validate() error {
     if t.apiKey == "" {
         return fmt.Errorf("api_key is required")
     }
-    if t.endpoint == "" {
-        return fmt.Errorf("endpoint is required")
-    }
     return nil
 }
 
-// Test tests the toolset connection
 func (t *CustomToolSet) Test(ctx context.Context) error {
-    // Implement a simple test to verify connectivity
-    // For example, make a ping request to your service
+    // Verify connectivity to the external service
     return nil
 }
 
-// ListTools returns the available tools
+// ListTools returns the tool definitions exposed to the AI model
 func (t *CustomToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
-    // Define your tools
     return []openai.Tool{
         {
             Type: openai.ToolTypeFunction,
@@ -526,11 +596,10 @@ func (t *CustomToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
     }, nil
 }
 
-// Call executes a tool
+// Call executes a tool by name with JSON parameters
 func (t *CustomToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
     switch name {
     case "fetch_data":
-        // Parse parameters
         var params struct {
             Query string `json:"query"`
             Limit int    `json:"limit"`
@@ -538,13 +607,8 @@ func (t *CustomToolSet) Call(ctx context.Context, name string, parameters string
         if err := json.Unmarshal([]byte(parameters), &params); err != nil {
             return "", fmt.Errorf("failed to parse parameters: %w", err)
         }
-
-        // Execute your tool logic
-        // Call external API, database, etc.
         result := fmt.Sprintf("Fetched data for query: %s (limit: %d)", params.Query, params.Limit)
-        
         return result, nil
-    
     default:
         return "", fmt.Errorf("tool %s not found", name)
     }
@@ -559,25 +623,16 @@ package customtoolset
 import (
     "encoding/json"
     "fmt"
-    
+
     "github.com/sven-victor/ez-console/pkg/toolset"
     "github.com/sven-victor/ez-console/pkg/util"
 )
 
-// CustomToolSetFactory implements ToolSetFactory
 type CustomToolSetFactory struct{}
 
-// GetName returns the factory name
-func (f *CustomToolSetFactory) GetName() string {
-    return "Custom Toolset"
-}
+func (f *CustomToolSetFactory) GetName() string        { return "Custom Toolset" }
+func (f *CustomToolSetFactory) GetDescription() string { return "Factory for creating custom toolset instances" }
 
-// GetDescription returns the factory description
-func (f *CustomToolSetFactory) GetDescription() string {
-    return "Factory for creating custom toolset instances"
-}
-
-// GetConfigFields returns configuration fields for the frontend
 func (f *CustomToolSetFactory) GetConfigFields() []util.ConfigField {
     return []util.ConfigField{
         {
@@ -598,53 +653,37 @@ func (f *CustomToolSetFactory) GetConfigFields() []util.ConfigField {
     }
 }
 
-// CreateToolSet creates a toolset instance from configuration JSON
 func (f *CustomToolSetFactory) CreateToolSet(configJSON string) (toolset.ToolSet, error) {
     var config map[string]interface{}
     if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
         return nil, fmt.Errorf("failed to parse config: %w", err)
     }
 
-    apiKey, ok := config["api_key"].(string)
-    if !ok || apiKey == "" {
-        return nil, fmt.Errorf("api_key is required")
+    apiKey, _ := config["api_key"].(string)
+    endpoint, _ := config["endpoint"].(string)
+    if apiKey == "" || endpoint == "" {
+        return nil, fmt.Errorf("api_key and endpoint are required")
     }
 
-    endpoint, ok := config["endpoint"].(string)
-    if !ok || endpoint == "" {
-        return nil, fmt.Errorf("endpoint is required")
-    }
-
-    return &CustomToolSet{
-        apiKey:   apiKey,
-        endpoint: endpoint,
-    }, nil
+    return &CustomToolSet{apiKey: apiKey, endpoint: endpoint}, nil
 }
 ```
 
-#### Step 3: Register the Toolset
+#### Step 3: Register and Import
 
 ```go
 package customtoolset
 
-import (
-    "github.com/sven-victor/ez-console/pkg/toolset"
-)
+import "github.com/sven-victor/ez-console/pkg/toolset"
 
-const (
-    // Define your custom toolset type
-    ToolSetTypeCustom toolset.ToolSetType = "custom"
-)
+const ToolSetTypeCustom toolset.ToolSetType = "custom"
 
 func init() {
-    // Register the toolset factory during package initialization
     if err := toolset.RegisterToolSet(ToolSetTypeCustom, &CustomToolSetFactory{}); err != nil {
         panic(err)
     }
 }
 ```
-
-#### Step 4: Import in Your Main Application
 
 ```go
 package main
@@ -655,168 +694,592 @@ import (
 )
 
 func main() {
-    // Your custom toolset is now available
     server.Start()
 }
 ```
 
-## Integration Examples
+### RBAC Tool Permissions
 
-### Example 1: AI Chat with Tool Calling
+Tool access is controlled per-role via `RoleAIToolPermission` records. Each record specifies:
+
+- `RoleID`: The role being granted access
+- `ToolSetID`: The toolset containing the tool
+- `ToolName`: The specific tool name (or `"*"` for all tools in the toolset)
+- `OrganizationID`: The organization scope
+
+When `ToolSetService.GetAuthorizedToolSets` is called, it returns only the toolsets and tools that the current user's roles are permitted to use. Tools not in the permission list are filtered out via `filteredToolSet`.
+
+## Skills System
+
+Skills are markdown-based instruction packs stored on disk that can be injected into the AI context to provide domain-specific knowledge and behavior.
+
+### Skill Structure
+
+Each skill is stored as a directory under the configured `skills_path`:
+
+```
+skills/
+├── <skill-resource-id>/
+│   ├── main.md          # Primary skill content (with YAML frontmatter)
+│   ├── examples.md      # Additional reference files
+│   └── templates/
+│       └── ...
+```
+
+The `main.md` file contains YAML frontmatter:
+
+```markdown
+---
+name: "Database Query Assistant"
+description: "Helps users write and optimize SQL queries"
+category: "database"
+---
+
+# Database Query Assistant
+
+You are a database expert. When the user asks about SQL...
+```
+
+Skills are persisted in the database (`model.Skill`) for metadata (name, description, category, domain) and on the filesystem for content.
+
+### Skill Domains
+
+Skills are organized into **domains**. The built-in domain is `"core"`. Additional domains can be registered:
 
 ```go
-package main
+skillService.RegisterSkillsDomain("analytics")
+skillService.RegisterSkillsDomain("devops")
+```
 
-import (
-    "context"
-    "fmt"
-    "io"
-    
-    "github.com/gin-gonic/gin"
-    "github.com/sven-victor/ez-console/pkg/service"
-    "github.com/sven-victor/ez-console/pkg/clients/ai"
-    "github.com/sven-victor/ez-console/pkg/model"
-)
+The frontend allows users to select skill domains or specific skills when chatting.
 
-type ChatRequest struct {
-    Message string `json:"message" binding:"required"`
+### Progressive Skill Loading
+
+When the chat API receives `domains` or `skill_ids` parameters, it uses **progressive loading** instead of dumping all skill content into the context:
+
+1. `LoadSkillsMetadataForChat` generates a concise **metadata table** (ID, name, description, domain) as a system message.
+2. A `SkillLoaderToolSet` is injected, providing `get_skill_content` and `list_skill_files` tools.
+3. The AI model reads skill content **on demand** using these tools, keeping the initial context small.
+
+This approach is especially important for large skill libraries where injecting all content would exceed context limits.
+
+## Client Tools
+
+Client tools allow the AI model to invoke functions that execute **in the user's browser** rather than on the server. This is useful for reading page-specific data, triggering UI actions, or accessing information only available on the client side.
+
+### How Client Tools Work
+
+The client tool flow involves a multi-step handoff between frontend, backend, and AI model:
+
+```
+Frontend                    Backend                      AI Model
+   │                           │                            │
+   │ POST /sessions/:id        │                            │
+   │  { content, client_tools }│                            │
+   │ ─────────────────────────>│                            │
+   │                           │  messages + tools ─────────>│
+   │                           │                            │
+   │                           │  <── tool_call: ui_xxx ────│
+   │                           │                            │
+   │  SSE: client_tool_pending │                            │
+   │ <─────────────────────────│                            │
+   │                           │                            │
+   │  (execute tool in browser)│                            │
+   │                           │                            │
+   │ POST /sessions/:id        │                            │
+   │  { client_tool_results }  │                            │
+   │ ─────────────────────────>│                            │
+   │                           │  messages + results ──────>│
+   │                           │                            │
+   │  SSE: content stream      │  <── final response ──────│
+   │ <─────────────────────────│                            │
+```
+
+**Key rules:**
+
+- Client tool names **must** start with the `ui_` prefix.
+- Maximum of 20 client tools per request.
+- Tool descriptions are limited to 1000 characters.
+- On the server, client tools are wrapped in a `clientToolsProxy` ToolSet that returns `ErrClientToolHandoff` when the model calls them, signaling the stream to pause and hand control back to the browser.
+
+### Registering Client Tools in the Frontend
+
+Use the `registerPageAI` function from `AIContext` to register page-specific client tools:
+
+```tsx
+import { useAI, RegisteredClientTool } from '@/contexts/AIContext';
+import { useEffect } from 'react';
+
+function MyPage() {
+  const { registerPageAI } = useAI();
+  const [tableData, setTableData] = useState([]);
+
+  useEffect(() => {
+    const unregister = registerPageAI({
+      // Ephemeral system prompts visible only to the AI (not persisted)
+      ephemeralSystemPrompts: [
+        'The user is viewing a data analytics dashboard. Help them interpret the data.',
+      ],
+
+      // Automatically creates a ui_get_page_data client tool
+      pageData: () => tableData,
+      pageDataDescription: 'Returns the current table data displayed on the analytics page.',
+
+      // Additional custom client tools
+      tools: [
+        {
+          name: 'ui_highlight_row',
+          description: 'Highlight a specific row in the data table by row index.',
+          parameters: {
+            type: 'object',
+            properties: {
+              row_index: { type: 'integer', description: 'Zero-based row index' },
+            },
+            required: ['row_index'],
+          },
+          handler: (argsJson: string) => {
+            const { row_index } = JSON.parse(argsJson);
+            // Perform UI action
+            highlightTableRow(row_index);
+            return JSON.stringify({ success: true, highlighted_row: row_index });
+          },
+        },
+      ],
+    });
+
+    return unregister; // Cleanup on unmount
+  }, [registerPageAI, tableData]);
+
+  return <div>...</div>;
 }
+```
 
+### Server-Side Client Tool Handling
+
+On the backend, the `AIChatController.StreamChat` handler:
+
+1. Validates client tool names match `^ui_[a-zA-Z0-9_]+$`.
+2. Converts `ClientToolDefinition` list to `openai.Tool` format and injects via `WithChatClientTools`.
+3. These tools are wrapped in a `clientToolsProxy` ToolSet under the `"ui"` key.
+4. When the model calls a `ui_*` tool, the proxy returns `ErrClientToolHandoff`.
+5. The `ClassicChatStream` detects the handoff, emits a `client_tool_pending` SSE event with the pending calls, and ends the stream.
+6. The frontend executes the tools, then sends a new request with `client_tool_results`.
+7. Results are persisted as `role=tool` messages, and a new AI completion stream begins.
+
+## Chat Sessions & Streaming
+
+### Session Management
+
+Chat sessions (`model.AIChatSession`) persist the conversation history:
+
+
+| API Endpoint                             | Method | Description                   |
+| ---------------------------------------- | ------ | ----------------------------- |
+| `/api/ai/chat/sessions`                  | GET    | List sessions with pagination |
+| `/api/ai/chat/sessions`                  | POST   | Create a new session          |
+| `/api/ai/chat/sessions/:sessionId`       | GET    | Get session with messages     |
+| `/api/ai/chat/sessions/:sessionId`       | POST   | Send message (SSE stream)     |
+| `/api/ai/chat/sessions/:sessionId`       | DELETE | Delete session and messages   |
+| `/api/ai/chat/sessions/:sessionId/title` | PUT    | Generate/update session title |
+
+
+**Auto-generated titles:** When the first assistant response is produced for a new session, the backend automatically generates a title using the AI model in a background goroutine.
+
+**Session cleanup:** A scheduled job (`ai-chat-session-cleanup`) runs daily and deletes sessions older than the configured retention period (default: 90 days, configurable via `model.SettingTaskAIChatRetentionDays`).
+
+**Anonymous sessions:** Sessions created with `anonymous: true` are not listed in the user's session list but still persist messages. Used for programmatic `callAI` invocations from the frontend.
+
+### SSE Streaming Protocol
+
+The `StreamChat` endpoint uses Server-Sent Events (SSE). Each event is sent as:
+
+```
+event: message
+data: {"event_type":"content","message_id":"...","content":"Hello","role":"assistant"}
+```
+
+**Event types:**
+
+
+| `event_type`          | Description                                 | Key Fields                               |
+| --------------------- | ------------------------------------------- | ---------------------------------------- |
+| `content`             | Text content delta                          | `message_id`, `content`, `role`          |
+| `tool_call`           | Server-side tool execution status           | `message_id`, `tool_calls` (with status) |
+| `client_tool_pending` | Control handoff to browser for client tools | `message_id`, `client_tool_calls`        |
+| `error`               | Error message                               | `content` (error text)                   |
+
+
+`**SendMessageRequest` body:**
+
+```json
+{
+  "content": "User message text",
+  "domains": ["analytics"],
+  "skill_ids": ["skill-uuid-1"],
+  "ephemeral_system_prompts": ["Extra context for this page"],
+  "client_tools": [
+    {
+      "name": "ui_get_page_data",
+      "description": "Returns current page data",
+      "parameters": {"type": "object", "properties": {}}
+    }
+  ],
+  "client_tool_results": [
+    {
+      "tool_call_id": "call_abc123",
+      "content": "{\"data\": [...]}"
+    }
+  ]
+}
+```
+
+Either `content` or `client_tool_results` must be provided (or both).
+
+### Chat Completion Options
+
+The `WithChatOptions` functional options control the behavior of `Exchange` and `ExchangeStream`:
+
+
+| Option                                      | Description                                              | Default      |
+| ------------------------------------------- | -------------------------------------------------------- | ------------ |
+| `WithChatToolSets(toolSets)`                | Inject static toolsets                                   | none         |
+| `WithChatToolSetsFactory(factory)`          | Lazy toolset loading (cacheable)                         | none         |
+| `WithChatMaxIterations(n)`                  | Max tool-call iterations                                 | 30           |
+| `WithChatMaxTokens(n)`                      | Context window size for auto-summarization               | 0 (disabled) |
+| `WithChatAutoSummarization(bool)`           | Enable proactive summarization at 90% threshold          | false        |
+| `WithChatFinalPrompt(prompt)`               | Append a final user prompt after all tool calls complete | none         |
+| `WithChatToolResultMaxSize(bytes)`          | Auto-summarize tool results exceeding this size          | 32KB         |
+| `WithChatResponseJsonSchema(schema)`        | Request JSON-formatted final response                    | none         |
+| `WithChatClientTools(tools)`                | Client-side tool definitions                             | none         |
+| `WithChatOnMessageAdded(callback)`          | Called when a message is appended to the conversation    | none         |
+| `WithChatOnSummary(callback)`               | Called when messages are summarized                      | none         |
+| `WithChatOnToolCallResultChanged(callback)` | Called when a tool result is available                   | none         |
+
+
+## Auto-Summarization
+
+When a conversation exceeds the model's context window, the system automatically summarizes older messages to make room for new ones. There are two strategies:
+
+### One-Shot Summarization
+
+Used as the first attempt. The system sends all messages (except the first system message) to the AI with a "please summarize" prompt. If the summarization request itself fits in the context window, the result replaces the old messages.
+
+### Segmented Summarization
+
+When one-shot summarization fails (the messages themselves exceed the context window), the system falls back to a tool-based segmented approach:
+
+1. A `summaryToolSet` is created with two tools:
+  - `get_messages`: Read message content by ID, with optional `start`/`end` byte offsets for chunked reading of very long messages.
+  - `save_summary`: Persist the condensed conversation, replacing original history.
+2. A system prompt presents an overview table of all messages (ID, role, content length, type).
+3. The AI reads messages in segments using `get_messages`, building a running summary.
+4. Once complete, the AI calls `save_summary` with the condensed message array.
+5. The `OnSummary` callback persists the summarized messages to the database.
+
+This approach handles conversations of any length, limited only by the summarization model's own context window per segment.
+
+**Trigger conditions:**
+
+- **Proactive** (when `EnableAutoSummarization` is true): Summarize when tokens reach 90% of `MaxTokens`.
+- **Reactive**: When the AI API returns a "maximum context length exceeded" error, summarization is attempted automatically (up to 3 retries).
+
+## Frontend Integration
+
+### AIContext
+
+The `AIContext` (`web/src/contexts/AIContext.tsx`) provides global AI state management:
+
+```tsx
+interface AIContextType {
+  // Layout
+  layout: 'classic' | 'sidebar' | 'float-sidebar';
+  setLayout: (layout: 'classic' | 'sidebar' | 'float-sidebar') => void;
+  visible: boolean;
+  setVisible: (visible: boolean) => void;
+
+  // Conversations
+  conversations: API.AIChatSession[] | undefined;
+  activeConversationKey: string | undefined;
+  setActiveConversationKey: (key: string) => void;
+  fetchConversations: () => Promise<API.AIChatSession[]>;
+
+  // Programmatic AI invocation
+  callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
+  onCallAI: (callback: ...) => void;
+
+  // Page-level AI context
+  ephemeralSystemPrompts: string[];
+  clientTools: RegisteredClientTool[];
+  registerPageAI: (opts: PageAIOptions) => () => void;
+  resetPageAIContext: () => void;
+}
+```
+
+**Usage in components:**
+
+```tsx
+import { useAI } from '@/contexts/AIContext';
+
+function MyComponent() {
+  const { callAI, setVisible, registerPageAI } = useAI();
+
+  // Open AI chat with a prefilled message
+  const askAI = () => {
+    callAI('Analyze this data', [
+      { role: 'user', content: 'Here is my dataset...' },
+    ]);
+  };
+
+  return <Button onClick={askAI}>Ask AI</Button>;
+}
+```
+
+### AIChat Component
+
+The `AIChat` component (`web/src/components/AIChat.tsx`) provides the full chat interface using the `@ant-design/x` component library:
+
+**Key features:**
+
+- **Layout modes**: Classic (sidebar + chat), Sidebar (compact), Float-sidebar (overlay)
+- **Conversation management**: Create, delete, rename, switch between conversations
+- **Streaming**: Real-time message rendering via `@ant-design/x-sdk`'s `useXChat` hook
+- **Rich content**: Markdown rendering with code highlighting and Mermaid diagram support
+- **Skill selection**: Users can pick skill domains or specific skills via a select dropdown
+- **Client tool handling**: Automatically dispatches pending tool calls to registered handlers
+
+**SSE stream handling** is managed by a custom `AIProvider` class (extending `AbstractChatProvider` from `@ant-design/x-sdk`) that:
+
+1. Parses SSE events from the `ChatStreamEvent` JSON format.
+2. Accumulates content deltas per `message_id`.
+3. Detects `client_tool_pending` events and surfaces `pendingClientToolCalls` on the message object.
+4. A `useEffect` hook watches for completed requests with pending calls and automatically dispatches them via `handleClientToolHandoff`.
+
+**Customization via props:**
+
+```tsx
+interface AIChatProps {
+  bubble?: {
+    contentRender?: (content: string) => React.ReactNode;
+    footerRender?: (message: MessageInfo<ChatStreamMessage>) => React.ReactNode;
+    components?: XMarkdownProps['components'];
+  }
+}
+```
+
+### Page-Level AI Integration
+
+The `registerPageAI` function from `AIContext` supports three types of page-level integration:
+
+**1. Ephemeral System Prompts:**
+Temporary system instructions that are included in every chat request while the page is active. Not persisted to the database.
+
+```tsx
+registerPageAI({
+  ephemeralSystemPrompts: [
+    'The user is on the user management page. They may ask about user roles and permissions.',
+  ],
+});
+```
+
+**2. Page Data (automatic `ui_get_page_data` tool):**
+When `pageData` is provided (as a value, string, or getter function), a built-in `ui_get_page_data` client tool is automatically registered. The AI can call it to retrieve the current page state.
+
+```tsx
+registerPageAI({
+  pageData: () => ({ users: filteredUsers, filters: currentFilters }),
+  pageDataDescription: 'Returns the filtered user list and active filters from the user management table.',
+});
+```
+
+**3. Custom Client Tools:**
+Register arbitrary browser-side tools with JSON Schema parameters:
+
+```tsx
+registerPageAI({
+  tools: [{
+    name: 'ui_apply_filter',
+    description: 'Apply a filter to the user table',
+    parameters: {
+      type: 'object',
+      properties: {
+        column: { type: 'string', enum: ['name', 'email', 'role'] },
+        value: { type: 'string' },
+      },
+      required: ['column', 'value'],
+    },
+    handler: async (argsJson) => {
+      const { column, value } = JSON.parse(argsJson);
+      applyFilter(column, value);
+      return JSON.stringify({ success: true, applied: { column, value } });
+    },
+  }],
+});
+```
+
+## Integration Examples
+
+### Example 1: AI Chat with Skills and Tool Calling
+
+```go
 func HandleChat(svc *service.Service) gin.HandlerFunc {
     return func(ctx *gin.Context) {
-        var req ChatRequest
+        var req struct {
+            Message  string   `json:"message" binding:"required"`
+            Domains  []string `json:"domains"`
+            SkillIDs []string `json:"skill_ids"`
+        }
         if err := ctx.ShouldBindJSON(&req); err != nil {
             ctx.JSON(400, gin.H{"error": err.Error()})
             return
         }
 
         organizationID := ctx.GetString("organization_id")
-        
-        // Get AI client
-        aiModel, err := svc.GetDefaultAIModel(ctx, organizationID)
-        if err != nil {
-            ctx.JSON(500, gin.H{"error": "Failed to get AI model"})
-            return
-        }
-        
-        factory, _ := ai.GetFactory(aiModel.Provider)
-        client, err := factory.CreateClient(ctx,organizationID,aiModel.Config)
-        if err != nil {
-            ctx.JSON(500, gin.H{"error": "Failed to create AI client"})
-            return
-        }
+        userID, _ := ctx.Get("user_id")
 
-        // Prepare messages
+        // Create or get a session
+        session, _ := svc.CreateChatSession(ctx, organizationID, userID.(string),
+            "Chat", "", nil, false)
+
         messages := []ai.ChatMessage{
-            {
-                Role:    model.AIChatMessageRoleSystem,
-                Content: "You are a helpful assistant with access to various tools.",
-            },
-            {
-                Role:    model.AIChatMessageRoleUser,
-                Content: req.Message,
-            },
+            {Role: model.AIChatMessageRoleUser, Content: req.Message},
         }
 
-        // Stream response with toolsets
-        stream, err := client.CreateChatStream(ctx, messages,
-            ai.WithToolSets(func(ctx context.Context) (toolset.ToolSets, error) {
-                return svc.GetAllEnabledToolSetInstances(ctx, organizationID)
+        // Load skill metadata and create skill loader toolset
+        options := []ai.WithChatOptions{
+            ai.WithChatMaxIterations(10),
+            ai.WithChatOnMessageAdded(func(ctx context.Context, msg ai.ChatMessage) {
+                svc.AddChatMessage(ctx, organizationID, userID.(string),
+                    session.ResourceID, msg.Role, msg.Content, nil, msg.ToolCallID)
             }),
-            ai.WithMaxIterations(10),
-        )
+        }
+
+        if len(req.Domains) > 0 || len(req.SkillIDs) > 0 {
+            metadata, skillIDs, _ := svc.SkillService.LoadSkillsMetadataForChat(ctx,
+                req.Domains, req.SkillIDs)
+            if metadata != "" {
+                messages = append([]ai.ChatMessage{{
+                    Role: model.AIChatMessageRoleSystem, Content: metadata,
+                }}, messages...)
+                loaderTS := service.NewSkillLoaderToolSet(ctx, svc.SkillService, skillIDs)
+                options = append(options, ai.WithChatToolSetsFactory(
+                    toolset.NewStaticToolSetsFactory(toolset.ToolSets{"skill_loader": loaderTS}),
+                ))
+            }
+        }
+
+        // Stream response
+        stream, err := svc.CreateChatCompletionStream(ctx, organizationID, "", messages, options...)
         if err != nil {
-            ctx.JSON(500, gin.H{"error": "Failed to create chat stream"})
+            ctx.JSON(500, gin.H{"error": err.Error()})
             return
         }
         defer stream.Close()
 
-        // Set headers for SSE
         ctx.Writer.Header().Set("Content-Type", "text/event-stream")
         ctx.Writer.Header().Set("Cache-Control", "no-cache")
         ctx.Writer.Header().Set("Connection", "keep-alive")
 
-        // Stream events
-        for {
+        ctx.Stream(func(w io.Writer) bool {
             event, err := stream.Recv(ctx)
             if err != nil {
-                if err == io.EOF {
-                    break
-                }
-                fmt.Fprintf(ctx.Writer, "event: error\ndata: %s\n\n", err.Error())
-                ctx.Writer.Flush()
-                break
+                return false
             }
-
-            switch event.EventType {
-            case ai.EventTypeContent:
-                fmt.Fprintf(ctx.Writer, "event: content\ndata: %s\n\n", event.Content)
-                ctx.Writer.Flush()
-            
-            case ai.EventTypeToolCall:
-                for _, toolCall := range event.ToolCalls {
-                    data := fmt.Sprintf(`{"name":"%s","status":"%s"}`, 
-                        toolCall.Function.Name, toolCall.Status)
-                    fmt.Fprintf(ctx.Writer, "event: tool_call\ndata: %s\n\n", data)
-                    ctx.Writer.Flush()
-                }
+            if event.EventType == ai.EventTypeToolCall {
+                return true
             }
-        }
+            ctx.SSEvent("message", event)
+            return true
+        })
     }
 }
 ```
 
-### Example 2: Background AI Task with Callbacks
+### Example 2: Non-Streaming AI Task with Callbacks
 
 ```go
-package main
-
-import (
-    "context"
-    "fmt"
-    
-    "github.com/sven-victor/ez-console/pkg/clients/ai"
-    "github.com/sven-victor/ez-console/pkg/model"
-)
-
-func ProcessAITask(ctx context.Context, client ai.AIClient) error {
+func ProcessAITask(ctx context.Context, svc *service.Service, orgID string) error {
     messages := []ai.ChatMessage{
-        {
-            Role:    model.AIChatMessageRoleUser,
-            Content: "Analyze this data and provide insights",
-        },
+        {Role: model.AIChatMessageRoleUser, Content: "Analyze this data and provide insights"},
     }
 
-    // Create options with callbacks
     options := []ai.WithChatOptions{
-        ai.WithMaxIterations(20),
-        ai.WithOnMessageEnd(func(ctx context.Context, messageID, content string) {
-            fmt.Printf("Message completed: %s\n", messageID)
-            // Save message to database, send notification, etc.
+        ai.WithChatMaxIterations(20),
+        ai.WithChatMaxTokens(128000),
+        ai.WithChatAutoSummarization(true),
+        ai.WithChatToolResultMaxSize(64 * 1024),
+        ai.WithChatOnMessageAdded(func(ctx context.Context, msg ai.ChatMessage) {
+            fmt.Printf("Message added: role=%s\n", msg.Role)
         }),
-        ai.WithOnToolCallEnd(func(ctx context.Context, toolCall ai.ToolCall) {
-            fmt.Printf("Tool call completed: %s -> %s\n", 
-                toolCall.Function.Name, toolCall.Status)
-            // Log tool execution, track metrics, etc.
-        }),
-        ai.WithOnToolCallsStart(func(ctx context.Context, toolCalls []ai.ToolCall) {
-            fmt.Printf("Starting %d tool calls\n", len(toolCalls))
-            // Update UI, show loading indicators, etc.
+        ai.WithChatOnSummary(func(ctx context.Context, msgs []ai.ChatMessage) {
+            fmt.Printf("Conversation summarized to %d messages\n", len(msgs))
         }),
     }
 
-    // Execute with callbacks
-    responses, err := client.CreateChat(ctx, messages, options...)
+    responses, err := svc.CreateChatCompletion(ctx, orgID, "", messages, options...)
     if err != nil {
         return err
     }
 
-    // Process final responses
     for _, resp := range responses {
-        fmt.Printf("Final response: %s\n", resp.Content)
+        if resp.Role == model.AIChatMessageRoleAssistant && resp.Content != "" {
+            fmt.Printf("Result: %s\n", resp.Content)
+        }
     }
-
     return nil
+}
+```
+
+### Example 3: Frontend Page with AI Integration
+
+```tsx
+import { useAI } from '@/contexts/AIContext';
+import { useEffect, useState } from 'react';
+import { Button } from 'antd';
+
+function UserManagementPage() {
+  const { registerPageAI, callAI } = useAI();
+  const [users, setUsers] = useState([]);
+
+  // Register page-level AI context
+  useEffect(() => {
+    return registerPageAI({
+      ephemeralSystemPrompts: [
+        'The user is on the User Management page. They can view, create, edit, and delete users.',
+        'Available user fields: username, email, full_name, phone, roles, status.',
+      ],
+      pageData: () => users,
+      pageDataDescription: 'Returns the list of users currently displayed in the table.',
+      tools: [{
+        name: 'ui_select_user',
+        description: 'Select and highlight a user in the table by username.',
+        parameters: {
+          type: 'object',
+          properties: {
+            username: { type: 'string', description: 'The username to select' },
+          },
+          required: ['username'],
+        },
+        handler: (argsJson) => {
+          const { username } = JSON.parse(argsJson);
+          const user = users.find(u => u.username === username);
+          if (user) {
+            setSelectedUser(user);
+            return JSON.stringify({ success: true, user });
+          }
+          return JSON.stringify({ error: 'User not found' });
+        },
+      }],
+    });
+  }, [registerPageAI, users]);
+
+  return (
+    <div>
+      <Button onClick={() => callAI('Show me users with expired passwords')}>
+        Ask AI
+      </Button>
+      {/* ... table and other UI ... */}
+    </div>
+  );
 }
 ```
 
@@ -824,129 +1287,75 @@ func ProcessAITask(ctx context.Context, client ai.AIClient) error {
 
 ### AI Models
 
-1. **Secure API Keys**: Always use encrypted configuration fields for sensitive data
-   ```go
-   // API keys are automatically encrypted when stored
-   config := map[string]interface{}{
-       "api_key": "sk-...",  // Will be encrypted
-   }
-   ```
-
-2. **Set Default Models**: Each organization should have a default model
-   ```go
-   aiModel.IsDefault = true
-   ```
-
-3. **Test Before Enabling**: Use the test endpoint to verify connectivity
-   ```http
+1. **Secure API Keys**: API keys are automatically encrypted when stored using `safe.EncryptedString`. Always use `util.FieldTypePassword` for sensitive config fields.
+2. **Set Default Models**: Each organization should have a default model so callers can pass an empty `modelID`.
+3. **Test Before Enabling**: Use the test endpoint to verify connectivity:
+  ```http
    POST /api/ai/models/:id/test
-   ```
-
-4. **Handle Errors Gracefully**: AI API calls can fail; implement retry logic
-   ```go
-   var responses []ai.ChatMessage
-   var err error
-   for retries := 0; retries < 3; retries++ {
-       responses, err = client.CreateChat(ctx, messages)
-       if err == nil {
-           break
-       }
-       time.Sleep(time.Second * time.Duration(retries+1))
-   }
-   ```
+  ```
+4. **Configure `max_tokens`**: Set this in the model config to enable accurate auto-summarization thresholds.
 
 ### Toolsets
 
-1. **Validate Configuration**: Always implement proper validation
-   ```go
-   func (t *CustomToolSet) Validate() error {
-       // Check all required fields
-       if t.apiKey == "" {
-           return fmt.Errorf("api_key is required")
-       }
-       return nil
-   }
-   ```
-
-2. **Implement Test Method**: Provide a way to test connectivity
-   ```go
-   func (t *CustomToolSet) Test(ctx context.Context) error {
-       // Make a simple API call to verify connection
-       return t.ping(ctx)
-   }
-   ```
-
-3. **Handle Timeouts**: Tool calls should have reasonable timeouts
-   ```go
+1. **Validate Configuration**: Always implement `Validate()` to catch misconfigurations early.
+2. **Implement Test**: The `Test(ctx)` method should make a minimal API call to verify connectivity.
+3. **Handle Timeouts**: Tool calls should have reasonable timeouts:
+  ```go
    ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
    defer cancel()
-   ```
+  ```
+4. **Write Clear Descriptions**: Tool descriptions are critical for the AI to use tools correctly:
+  ```go
+   Description: "Fetches user information by user ID. Returns user profile including name, email, and role.",
+  ```
+5. **Keep Results Concise**: Large tool results (>32KB by default) are automatically summarized. Design your tools to return focused, relevant data.
 
-4. **Error Messages**: Return clear, actionable error messages
-   ```go
-   if err != nil {
-       return "", fmt.Errorf("failed to fetch data from API: %w", err)
+### Streaming
+
+1. **Use Streaming for Interactive Chat**: Provides a better user experience with real-time output.
+2. **Limit Iterations**: Prevent runaway tool-call loops:
+  ```go
+   ai.WithChatMaxIterations(10)
+  ```
+3. **Enable Auto-Summarization for Long Conversations**: Prevents context overflow in multi-turn chats:
+  ```go
+   ai.WithChatMaxTokens(128000)
+   ai.WithChatAutoSummarization(true)
+  ```
+
+### Client Tools
+
+1. **Prefix with `ui_`**: All client tool names must match `^ui_[a-zA-Z0-9_]+$`.
+2. **Return JSON**: Tool handlers should return JSON strings for structured data.
+3. **Handle Errors Gracefully**: Return error information in the result rather than throwing:
+  ```tsx
+   handler: async (argsJson) => {
+     try {
+       // ... tool logic
+       return JSON.stringify({ success: true, data: result });
+     } catch (err) {
+       return JSON.stringify({ error: err.message });
+     }
    }
-   ```
-
-5. **Tool Descriptions**: Write clear descriptions for AI to understand
-   ```go
-   Function: &openai.FunctionDefinition{
-       Name:        "fetch_user",
-       Description: "Fetches user information by user ID. Returns user profile including name, email, and role.",
-       // ...
-   }
-   ```
-
-### Performance
-
-1. **Use Streaming for Long Responses**: Provides better UX
-   ```go
-   stream, err := client.CreateChatStream(ctx, messages)
-   ```
-
-2. **Limit Iterations**: Prevent infinite loops in tool calling
-   ```go
-   ai.WithMaxIterations(10)  // Reasonable limit
-   ```
-
-3. **Enable Auto-Summarization**: For long conversations
-   ```go
-   ai.WithMaxTokens(4000),
-   ai.WithEnableAutoSummarization(true)
-   ```
-
-4. **Cache Tool Responses**: When appropriate
-   ```go
-   // Implement caching in your toolset
-   if cachedResult, ok := t.cache.Get(cacheKey); ok {
-       return cachedResult, nil
-   }
-   ```
+  ```
+4. **Cleanup on Unmount**: Always return the cleanup function from `registerPageAI`:
+  ```tsx
+   useEffect(() => {
+     return registerPageAI({ ... }); // Returns unregister function
+   }, [deps]);
+  ```
 
 ### Security
 
-1. **Permission Checks**: Always verify user permissions
-   ```go
-   middleware.RequirePermission("ai:chat:use")
-   ```
+1. **Permission Checks**: AI chat requires the `ai:chat:create` permission (default role: `operator`).
+2. **Tool Authorization**: Toolsets are filtered by RBAC permissions via `GetAuthorizedToolSets`.
+3. **Client Tool Validation**: The server validates client tool names and descriptions to prevent injection.
+4. **Input Length Limits**: Consider limiting message length and the number of messages per session.
 
-2. **Rate Limiting**: Implement rate limits for AI API calls
-   ```go
-   middleware.RateLimit(10, time.Minute)  // 10 requests per minute
-   ```
+### Observability
 
-3. **Input Validation**: Sanitize user inputs
-   ```go
-   if len(req.Message) > 10000 {
-       return errors.New("message too long")
-   }
-   ```
-
-4. **Audit Logging**: Log AI interactions for compliance
-   ```go
-   svc.CreateAuditLog(ctx, "ai_chat", organizationID, userID, details)
-   ```
+1. **Prometheus Metrics**: Token usage is tracked via `ai_tokens_total` counter with `type` label (`prompt`, `completion`).
+2. **Structured Logging**: All AI operations use `go-kit/log` with contextual fields for tracing.
 
 ## Next Steps
 
@@ -957,6 +1366,3 @@ func ProcessAITask(ctx context.Context, client ai.AIClient) error {
 ---
 
 For more information, refer to the code examples in `/demo` directory or contact the development team.
-
-
-

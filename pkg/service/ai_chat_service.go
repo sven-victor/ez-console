@@ -563,12 +563,12 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		}
 	}
 
-	// Call CreateChatStream
 	allOptions := []ai.WithChatOptions{ai.WithChatToolSets(toolSets)}
 	if maxTokens > 0 {
 		allOptions = append(allOptions, ai.WithChatMaxTokens(maxTokens))
 	}
 	allOptions = append(allOptions, options...)
+	// Call ExchangeStream
 	stream, err := client.ExchangeStream(ctx, messages, allOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
