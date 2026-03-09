@@ -1,6 +1,58 @@
-import { r as e } from "./client.js";
-async function n(a, s) {
-  return e("/api/tasks", {
+import { r } from "./client.js";
+async function o(a) {
+  return r(
+    "/api/task-schedules",
+    {
+      method: "GET",
+      ...a || {}
+    }
+  );
+}
+async function c(a, s) {
+  const { id: e, ...t } = a;
+  return r(
+    `/api/task-schedules/${e}/history`,
+    {
+      method: "GET",
+      params: {
+        // current has a default value: 1
+        current: "1",
+        // page_size has a default value: 10
+        page_size: "10",
+        ...t
+      },
+      ...s || {}
+    }
+  );
+}
+async function i(a, s, e) {
+  const { id: t, ...n } = a;
+  return r(
+    `/api/task-schedules/${t}/toggle`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...n },
+      data: s,
+      ...e || {}
+    }
+  );
+}
+async function u(a, s) {
+  const { id: e, ...t } = a;
+  return r(
+    `/api/task-schedules/${e}/trigger`,
+    {
+      method: "POST",
+      params: { ...t },
+      ...s || {}
+    }
+  );
+}
+async function m(a, s) {
+  return r("/api/tasks", {
     method: "GET",
     params: {
       // current has a default value: 1
@@ -12,55 +64,66 @@ async function n(a, s) {
     ...s || {}
   });
 }
-async function o(a, s) {
-  const { id: r, ...t } = a;
-  return e(`/api/tasks/${r}`, {
+async function p(a, s) {
+  const { id: e, ...t } = a;
+  return r(`/api/tasks/${e}`, {
     method: "GET",
     params: { ...t },
     ...s || {}
   });
 }
-async function c(a, s) {
-  const { id: r, ...t } = a;
-  return e(`/api/tasks/${r}`, {
+async function d(a, s) {
+  const { id: e, ...t } = a;
+  return r(`/api/tasks/${e}`, {
     method: "DELETE",
     params: { ...t },
     ...s || {}
   });
 }
-async function m(a, s) {
-  const { id: r, ...t } = a;
-  return e(`/api/tasks/${r}/cancel`, {
+async function y(a, s) {
+  const { id: e, ...t } = a;
+  return r(`/api/tasks/${e}/cancel`, {
     method: "POST",
     params: { ...t },
     ...s || {}
   });
 }
-async function i(a, s) {
-  const { id: r, ...t } = a;
-  return e(`/api/tasks/${r}/logs`, {
+async function T(a, s) {
+  const { id: e, ...t } = a;
+  return r(`/api/tasks/${e}/logs`, {
     method: "GET",
     params: { ...t },
     ...s || {}
   });
 }
-async function p(a, s) {
-  const { id: r, ...t } = a;
-  return e(`/api/tasks/${r}/retry`, {
+async function k(a, s) {
+  const { id: e, ...t } = a;
+  return r(`/api/tasks/${e}/retry`, {
     method: "POST",
     params: { ...t },
     ...s || {}
   });
 }
-const y = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+async function l(a) {
+  return r("/api/user-tasks", {
+    method: "GET",
+    ...a || {}
+  });
+}
+const g = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  cancelTask: m,
-  deleteTask: c,
-  getTask: o,
-  getTaskLogs: i,
-  listTasks: n,
-  retryTask: p
+  cancelTask: y,
+  deleteTask: d,
+  getTask: p,
+  getTaskLogs: T,
+  getTaskScheduleHistory: c,
+  listTaskSchedules: o,
+  listTasks: m,
+  listUserTasks: l,
+  retryTask: k,
+  toggleTaskSchedule: i,
+  triggerTaskSchedule: u
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  y as t
+  g as t
 };

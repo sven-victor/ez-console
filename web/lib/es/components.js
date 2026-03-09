@@ -803,19 +803,19 @@ const Tt = ({
       n == null || n(m ?? {});
     },
     [n]
-  ), p = he.useMemo(() => ({
-    ...It(t),
-    ...s
-  }), [t, s]);
+  ), p = he.useMemo(() => t ? {
+    ...It(t) || {},
+    ...s || {}
+  } : {}, [t, s]);
   return /* @__PURE__ */ e.jsx(
     et,
     {
       className: z(o.jsonSchemaForm, "json-schema-config-form"),
-      schema: t,
+      schema: t || {},
       formData: c,
       onChange: l,
       validator: ne,
-      uiSchema: p,
+      uiSchema: p || {},
       disabled: r,
       showErrorList: !1,
       liveValidate: "onChange",

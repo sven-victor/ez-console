@@ -15,27 +15,27 @@ const G = {
   failed: "error",
   cancelled: "default"
 }, te = () => {
-  const { t: s } = k("task"), { t: u } = k("common"), T = v(), [d, o] = z(null), p = R(null), { data: i, loading: j, refresh: x } = q(
-    () => n.taskSchedules.listTaskSchedules(),
+  const { t: s } = k("task"), { t: u } = k("common"), T = v(), [i, o] = z(null), p = R(null), { data: d, loading: j, refresh: x } = q(
+    () => n.tasks.listTaskSchedules(),
     {
       onError: (e) => {
         r.error(s("scheduleListFailed", { defaultValue: "Failed to list schedules: {{error}}", error: e }));
       }
     }
-  ), V = Array.isArray(i) ? i : (i == null ? void 0 : i.data) ?? [], S = async (e, a) => {
+  ), V = Array.isArray(d) ? d : (d == null ? void 0 : d.data) ?? [], _ = async (e, a) => {
     try {
-      await n.taskSchedules.toggleTaskSchedule({ id: e }, { enabled: a }), r.success(s("scheduleUpdated", { defaultValue: "Schedule updated." })), x();
+      await n.tasks.toggleTaskSchedule({ id: e }, { enabled: a }), r.success(s("scheduleUpdated", { defaultValue: "Schedule updated." })), x();
     } catch {
       r.error(s("scheduleUpdateFailed", { defaultValue: "Failed to update schedule." }));
     }
   };
   E(() => {
     var e, a;
-    d && ((a = (e = p.current) == null ? void 0 : e.reload) == null || a.call(e));
-  }, [d]);
-  const _ = async (e) => {
+    i && ((a = (e = p.current) == null ? void 0 : e.reload) == null || a.call(e));
+  }, [i]);
+  const S = async (e) => {
     try {
-      await n.taskSchedules.triggerTaskSchedule({ id: e }), r.success(s("scheduleTriggered", { defaultValue: "Task triggered." })), o(e);
+      await n.tasks.triggerTaskSchedule({ id: e }), r.success(s("scheduleTriggered", { defaultValue: "Task triggered." })), o(e);
     } catch {
       r.error(s("scheduleTriggerFailed", { defaultValue: "Failed to trigger schedule." }));
     }
@@ -58,7 +58,7 @@ const G = {
       dataIndex: "enabled",
       key: "enabled",
       width: 90,
-      render: (e, a) => /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(A, { checked: e, onChange: (c) => S(a.id, c), size: "small" }) })
+      render: (e, a) => /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(A, { checked: e, onChange: (c) => _(a.id, c), size: "small" }) })
     },
     {
       title: s("scheduleNextRun", { defaultValue: "Next Run" }),
@@ -97,13 +97,13 @@ const G = {
             type: "text",
             size: "small",
             icon: /* @__PURE__ */ t.jsx(P, {}),
-            onClick: () => _(a.id)
+            onClick: () => S(a.id)
           }
         ) }) })
       ] })
     }
-  ], I = (e) => d ? n.taskSchedules.getTaskScheduleHistory({
-    id: d,
+  ], I = (e) => i ? n.tasks.getTaskScheduleHistory({
+    id: i,
     current: e.current ?? w.DEFAULT_CURRENT,
     page_size: e.page_size ?? w.DEFAULT_PAGE_SIZE
   }) : Promise.resolve({
@@ -178,7 +178,7 @@ const G = {
         )
       }
     ),
-    d && /* @__PURE__ */ t.jsx(
+    i && /* @__PURE__ */ t.jsx(
       g,
       {
         title: s("executionHistory", { defaultValue: "Execution History" }),

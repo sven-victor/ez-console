@@ -142,7 +142,7 @@ const x = z({
       A(((l = (e = o == null ? void 0 : o.organizations) == null ? void 0 : e[0]) == null ? void 0 : l.id) ?? null);
     }
   }, [r, o == null ? void 0 : o.organizations]);
-  const [g, n] = u(!1), [a, m] = u([]), { run: h } = O(async () => w.userTasks.listUserTasks({}), {
+  const [g, n] = u(!1), [a, m] = u([]), { run: h } = O(async () => w.tasks.listUserTasks({}), {
     onSuccess: (s) => {
       m(s);
     },

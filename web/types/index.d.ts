@@ -74,6 +74,8 @@ export declare interface AIChatMessage {
     content: string;
     created_at: string;
     id: string;
+    /** Generated summary message; hidden from frontend display */
+    is_summary: boolean;
     /** Message timestamp */
     message_time: string;
     /** Additional metadata */
@@ -86,6 +88,8 @@ export declare interface AIChatMessage {
     session_id: string;
     /** Message status */
     status: AIChatMessageStatus;
+    /** Superseded by a summary; excluded from future AI conversations */
+    summarized: boolean;
     /** Tokens used for this message */
     tokens_used: number;
     /** Tool call ID (for tool messages) */
@@ -99,7 +103,7 @@ export declare interface AIChatMessage {
 
 export declare type AIChatMessageMetadata = true;
 
-export declare type AIChatMessageRole = "user" | "assistant" | "system" | "tool";
+export declare type AIChatMessageRole = "user" | "assistant" | "system" | "tool" | "prompt";
 
 export declare type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
 
@@ -208,6 +212,39 @@ export declare interface AITypeDefinition {
 export declare const AllLangUIConfig: LanguageConfig[];
 
 export declare const api: {
+    listTaskSchedules(options?: {
+        [key: string]: any;
+    }): Promise<API.ScheduledJobState[]>;
+    getTaskScheduleHistory(params: API.getTaskScheduleHistoryParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseModelTask>;
+    toggleTaskSchedule(params: API.toggleTaskScheduleParams, body: Record<string, any>, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    triggerTaskSchedule(params: API.triggerTaskScheduleParams, options?: {
+        [key: string]: any;
+    }): Promise<API.Task>;
+    listTasks(params: API.listTasksParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseModelTask>;
+    getTask(params: API.getTaskParams, options?: {
+        [key: string]: any;
+    }): Promise<API.Task>;
+    deleteTask(params: API.deleteTaskParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    cancelTask(params: API.cancelTaskParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    getTaskLogs(params: API.getTaskLogsParams, options?: {
+        [key: string]: any;
+    }): Promise<API.TaskLog[]>;
+    retryTask(params: API.retryTaskParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    listUserTasks(options?: {
+        [key: string]: any;
+    }): Promise<API.Task[]>;
     testLdapConnection(body: API.LDAPTestRequest, options?: {
         [key: string]: any;
     }): Promise<API.LDAPTestResponse>;

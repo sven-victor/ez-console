@@ -1,58 +1,59 @@
-import { c as i, A as p, b as n, w as m } from "./es/index.js";
-import { useTranslation as u } from "react-i18next";
+import { c as p, A as n, b as m, w as d } from "./es/index.js";
+import { useTranslation as f } from "react-i18next";
 import "./es/base.js";
-import { b as A, h as c, e as l, A as h, c as g, D as x, H as C, J as I, j as S, d as b, a as w, L, C as P, M as D, f as F, P as M, i as v, g as y } from "./es/components.js";
-import { AIChat as G } from "./es/ai-chat.js";
-import { A as k, a as B, b as H } from "./es/ai-chat-layout.js";
-import { default as T } from "./es/forbidden.js";
-import { default as j } from "./es/not_found.js";
-import { u as R, a as V, b as Z, c as z } from "./es/contexts.js";
-import { A as O, a as Q, e as W, d as X, f as Y, c as _, g as $, r as aa } from "./es/client.js";
+import { b as c, h as l, e as h, A as g, c as x, D as C, H as I, J as S, j as b, d as w, a as L, L as P, C as D, M as F, f as M, P as v, i as y, g as E } from "./es/components.js";
+import { AIChat as J } from "./es/ai-chat.js";
+import { A as B, a as H, b as N } from "./es/ai-chat-layout.js";
+import { default as U } from "./es/forbidden.js";
+import { default as q } from "./es/not_found.js";
+import { u as V, a as Z, b as z, c as K } from "./es/contexts.js";
+import { A as Q, a as W, e as X, d as Y, f as _, c as $, g as aa, r as sa } from "./es/client.js";
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";
-import { default as oa } from "i18next";
+import "./es/tasks.js";
+import { default as ea } from "i18next";
 export {
-  G as AIChat,
-  k as AIChatButton,
-  B as AIChatModal,
-  H as AIChatSider,
-  A as Actions,
-  c as AdminGuard,
-  l as AllLangUIConfig,
-  O as ApiError,
-  i as AppLayout,
-  h as Avatar,
-  g as AvatarUpload,
-  x as DynamicIcon,
-  p as EZApp,
-  T as Forbidden,
-  C as HeaderDropdown,
-  I as JsonSchemaConfigForm,
-  S as JsonSchemaConfigFormItem,
-  b as LabelCreater,
-  w as LanguageSwitch,
-  L as Loading,
-  P as MarkdownCode,
-  D as MarkdownViewer,
-  j as NotFound,
-  F as PermissionGuard,
-  M as PrivateRoute,
-  v as Table,
-  n as api,
-  Q as apiDelete,
-  W as apiGet,
-  X as apiPost,
-  Y as apiPut,
-  _ as client,
-  $ as fetchSSE,
-  y as getIconByName,
-  oa as i18n,
-  aa as request,
-  R as useAI,
-  V as useAuth,
-  Z as usePermission,
-  z as useSite,
-  u as useTranslation,
-  m as withSuspense
+  J as AIChat,
+  B as AIChatButton,
+  H as AIChatModal,
+  N as AIChatSider,
+  c as Actions,
+  l as AdminGuard,
+  h as AllLangUIConfig,
+  Q as ApiError,
+  p as AppLayout,
+  g as Avatar,
+  x as AvatarUpload,
+  C as DynamicIcon,
+  n as EZApp,
+  U as Forbidden,
+  I as HeaderDropdown,
+  S as JsonSchemaConfigForm,
+  b as JsonSchemaConfigFormItem,
+  w as LabelCreater,
+  L as LanguageSwitch,
+  P as Loading,
+  D as MarkdownCode,
+  F as MarkdownViewer,
+  q as NotFound,
+  M as PermissionGuard,
+  v as PrivateRoute,
+  y as Table,
+  m as api,
+  W as apiDelete,
+  X as apiGet,
+  Y as apiPost,
+  _ as apiPut,
+  $ as client,
+  aa as fetchSSE,
+  E as getIconByName,
+  ea as i18n,
+  sa as request,
+  V as useAI,
+  Z as useAuth,
+  z as usePermission,
+  K as useSite,
+  f as useTranslation,
+  d as withSuspense
 };
