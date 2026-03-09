@@ -155,8 +155,12 @@ func ChatMessagesFromModel(messages []model.AIChatMessage) []ChatMessage {
 		if msg.Content == "" && len(toolCalls) == 0 {
 			continue
 		}
+		role := msg.Role
+		if role == model.AIChatMessageRolePrompt {
+			role = model.AIChatMessageRoleUser
+		}
 		result = append(result, ChatMessage{
-			Role:       msg.Role,
+			Role:       role,
 			Content:    msg.Content,
 			ToolCalls:  toolCalls,
 			ToolCallID: msg.ToolCallID,
@@ -213,7 +217,8 @@ func ChatMessageFromOpenAI(msg openai.ChatCompletionMessage) ChatMessage {
 	}
 }
 
-// ChatMessageToOpenAI converts ChatMessage to openai.ChatCompletionMessage
+// ChatMessageToOpenAI converts ChatMessage to openai.ChatCompletionMessage.
+// Messages with the "prompt" role are mapped to "user" so they are valid for the LLM API.
 func ChatMessageToOpenAI(msg ChatMessage) openai.ChatCompletionMessage {
 	var toolCalls []openai.ToolCall
 	for _, tc := range msg.ToolCalls {
@@ -227,8 +232,12 @@ func ChatMessageToOpenAI(msg ChatMessage) openai.ChatCompletionMessage {
 			},
 		})
 	}
+	role := msg.Role
+	if role == model.AIChatMessageRolePrompt {
+		role = model.AIChatMessageRoleUser
+	}
 	return openai.ChatCompletionMessage{
-		Role:       string(msg.Role),
+		Role:       string(role),
 		Content:    msg.Content,
 		ToolCalls:  toolCalls,
 		ToolCallID: msg.ToolCallID,

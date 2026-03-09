@@ -259,12 +259,15 @@ func (s *AIModelService) TestAIModel(ctx context.Context, organizationID, id str
 		return client.Test(ctx)
 	}
 
-	resp, err := client.Chat(ctx, []ai.ChatMessage{
+	// Prepend global prompts for stream calls
+	messages := prependGlobalPrompts([]ai.ChatMessage{
 		{
 			Role:    model.AIChatMessageRoleUser,
 			Content: "Hello, how are you?",
 		},
-	}, nil)
+	}, ai.GlobalPromptCategoryNonStream)
+
+	resp, err := client.Chat(ctx, messages, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create chat: %w", err)
 	}

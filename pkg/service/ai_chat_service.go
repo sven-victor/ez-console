@@ -426,7 +426,7 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 // 	return s.CreateChatCompletionWithToolSets(ctx, organizationID, modelID, messages, toolSets)
 // }
 
-// CreateChatCompletionWithToolSets creates a chat completion using the specified model with toolSets
+// CreateChatCompletionWithoutToolSets creates a chat completion using the specified model without toolSets.
 func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
 	var aiModel *model.AIModel
@@ -442,6 +442,9 @@ func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context,
 			return nil, fmt.Errorf("failed to get AI model: %w", err)
 		}
 	}
+
+	// Prepend global prompts for non-stream calls
+	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryNonStream)
 
 	// Get factory for the provider
 	factory, ok := ai.GetFactory(aiModel.Provider)
@@ -468,7 +471,7 @@ func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context,
 	return responseMessages, nil
 }
 
-// CreateChatCompletionWithToolSets creates a chat completion using the specified model with toolSets
+// CreateChatCompletion creates a chat completion using the specified model with toolSets.
 func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
 	var aiModel *model.AIModel
@@ -490,6 +493,9 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 		}),
 	}, options...)
 
+	// Prepend global prompts for non-stream calls
+	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryNonStream)
+
 	// Get factory for the provider
 	factory, ok := ai.GetFactory(aiModel.Provider)
 	if !ok {
@@ -515,7 +521,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 	return responseMessages, nil
 }
 
-// CreateChatCompletionStream creates a streaming chat completion
+// CreateChatCompletionStream creates a streaming chat completion.
 func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) (ai.ChatStream, error) {
 	var err error
 	var aiModel *model.AIModel
@@ -536,6 +542,9 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	if err != nil {
 		return nil, err
 	}
+
+	// Prepend global prompts for stream calls
+	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryStream)
 
 	// Get factory for the provider
 	factory, ok := ai.GetFactory(aiModel.Provider)
@@ -669,4 +678,13 @@ func (f *filteredToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) 
 		}
 	}
 	return filtered, nil
+}
+
+// prependGlobalPrompts prepends registered global prompts to the message list.
+func prependGlobalPrompts(messages []ai.ChatMessage, category ai.GlobalPromptCategory) []ai.ChatMessage {
+	globalMsgs := ai.GetGlobalPromptMessages(category)
+	if len(globalMsgs) == 0 {
+		return messages
+	}
+	return append(globalMsgs, messages...)
 }

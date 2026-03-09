@@ -32,8 +32,9 @@ import (
 
 // OpenAIClient wraps the OpenAI client with model configuration
 type OpenAIClient struct {
-	client  *openai.Client
-	modelID string
+	client       *openai.Client
+	modelID      string
+	systemPrompt string
 }
 
 // newOpenAIClientFromConfig creates a new OpenAI client from configuration map
@@ -69,9 +70,15 @@ func newOpenAIClientFromConfig(config map[string]interface{}) (*OpenAIClient, er
 
 	client := openai.NewClientWithConfig(openaiConfig)
 
+	var systemPrompt string
+	if sp, ok := config["system_prompt"].(string); ok {
+		systemPrompt = sp
+	}
+
 	return &OpenAIClient{
-		client:  client,
-		modelID: modelID,
+		client:       client,
+		modelID:      modelID,
+		systemPrompt: systemPrompt,
 	}, nil
 }
 
@@ -108,8 +115,22 @@ func (c *OpenAIClient) CreateChatCompletionStream(ctx context.Context, request o
 	return c.client.CreateChatCompletionStream(ctx, request)
 }
 
+// prependModelSystemPrompt prepends the model-level system prompt (if configured)
+// to the message list.
+func (c *OpenAIClient) prependModelSystemPrompt(messages []ChatMessage) []ChatMessage {
+	if c.systemPrompt == "" {
+		return messages
+	}
+	return append([]ChatMessage{{
+		Role:    model.AIChatMessageRoleSystem,
+		Content: c.systemPrompt,
+	}}, messages...)
+}
+
 // ChatStream implements AIClient interface
 func (c *OpenAIClient) ChatStream(ctx context.Context, messages []ChatMessage, toolSets toolset.ToolSets) (ChatStream, error) {
+	messages = c.prependModelSystemPrompt(messages)
+
 	// Convert ChatMessage to openai.ChatCompletionMessage
 	openaiMessages := make([]openai.ChatCompletionMessage, 0, len(messages))
 	for _, msg := range messages {
@@ -121,6 +142,8 @@ func (c *OpenAIClient) ChatStream(ctx context.Context, messages []ChatMessage, t
 
 // Chat implements AIClient interface
 func (c *OpenAIClient) Chat(ctx context.Context, messages []ChatMessage, toolSets toolset.ToolSets) (*ChatMessage, error) {
+	messages = c.prependModelSystemPrompt(messages)
+
 	// Convert ChatMessage to openai.ChatCompletionMessage
 	openaiMessages := make([]openai.ChatCompletionMessage, 0, len(messages))
 	for _, msg := range messages {
@@ -252,6 +275,7 @@ type OpenAIConfig struct {
 	ModelID        string `json:"model_id" jsonschema:"description=OpenAI model ID (e.g.\\, gpt-4\\, gpt-3.5-turbo)"`
 	BaseURL        string `json:"base_url,omitempty" jsonschema:"description=Custom API endpoint URL (optional)"`
 	OrganizationID string `json:"organization_id,omitempty" jsonschema:"description=OpenAI organization ID (optional)"`
+	SystemPrompt   string `json:"system_prompt,omitempty" jsonschema:"description=System prompt prepended to every conversation (optional)" jsonschema_extras:"x-ui-widget=textarea"`
 }
 
 // OpenAIClientFactory implements AIClientFactory for OpenAI
@@ -268,9 +292,11 @@ func (f *OpenAIClientFactory) GetDescription() string {
 }
 
 // GetConfigSchema implements AIClientFactoryV2.
-func (f *OpenAIClientFactory) GetConfigSchema() (*jsonschema.Schema, error) {
-	return jsonschema.Reflect(&OpenAIConfig{}), nil
+func (f *OpenAIClientFactory) GetConfigSchema() (*jsonschema.Schema, map[string]any, error) {
+	return jsonschema.Reflect(&OpenAIConfig{}), nil, nil
 }
+
+var _ AIClientFactoryV2 = (*OpenAIClientFactory)(nil)
 
 // GetConfigFields returns the configuration fields for OpenAI
 func (f *OpenAIClientFactory) GetConfigFields() []util.ConfigField {
@@ -302,6 +328,13 @@ func (f *OpenAIClientFactory) GetConfigFields() []util.ConfigField {
 			Name:        "organization_id",
 			DisplayName: "Organization ID",
 			Description: "OpenAI organization ID (optional)",
+			Type:        util.FieldTypeString,
+			Required:    false,
+		},
+		{
+			Name:        "system_prompt",
+			DisplayName: "System Prompt",
+			Description: "System prompt prepended to every conversation (optional)",
 			Type:        util.FieldTypeString,
 			Required:    false,
 		},

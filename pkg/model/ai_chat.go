@@ -29,6 +29,9 @@ const (
 	AIChatMessageRoleAssistant AIChatMessageRole = "assistant"
 	AIChatMessageRoleSystem    AIChatMessageRole = "system"
 	AIChatMessageRoleTool      AIChatMessageRole = "tool"
+	// AIChatMessageRolePrompt stores frontend-supplied instructions that should
+	// be hidden from chat history but included in AI context as user messages.
+	AIChatMessageRolePrompt AIChatMessageRole = "prompt"
 )
 
 // AIChatMessageStatus represents the status of a chat message

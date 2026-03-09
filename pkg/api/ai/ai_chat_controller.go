@@ -527,6 +527,25 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		options = append(options, ai.WithChatClientTools(clientOpenAITools))
 	}
 
+	// Prepend ephemeral system prompts (page-level, memory-only).
+	// These are sent with the "prompt" role so they are delivered to the LLM
+	// as user messages rather than system messages, and excluded from chat
+	// history by GetSimpleChatMessages.
+	if len(req.EphemeralSystemPrompts) > 0 {
+		var ephemeralMessages []ai.ChatMessage
+		for _, prompt := range req.EphemeralSystemPrompts {
+			if trimmed := strings.TrimSpace(prompt); trimmed != "" {
+				ephemeralMessages = append(ephemeralMessages, ai.ChatMessage{
+					Role:    model.AIChatMessageRolePrompt,
+					Content: trimmed,
+				})
+			}
+		}
+		if len(ephemeralMessages) > 0 {
+			chatMessages = append(ephemeralMessages, chatMessages...)
+		}
+	}
+
 	var skillLoaderToolSet toolset.ToolSet
 	// Progressive skill loading: when domains/skillIDs are set, inject metadata only
 	// and add skill_loader toolset so the model can load content on demand
@@ -543,22 +562,6 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 			}}, chatMessages...)
 			skillLoaderToolSet = service.NewSkillLoaderToolSet(ctx, c.service.SkillService, skillIDs)
 			options = append(options, ai.WithChatToolSetsFactory(toolset.NewStaticToolSetsFactory(toolset.ToolSets{"skill_loader": skillLoaderToolSet})))
-		}
-	}
-
-	// Prepend ephemeral system prompts (page-level, memory-only)
-	if len(req.EphemeralSystemPrompts) > 0 {
-		var ephemeralMessages []ai.ChatMessage
-		for _, prompt := range req.EphemeralSystemPrompts {
-			if trimmed := strings.TrimSpace(prompt); trimmed != "" {
-				ephemeralMessages = append(ephemeralMessages, ai.ChatMessage{
-					Role:    model.AIChatMessageRoleSystem,
-					Content: trimmed,
-				})
-			}
-		}
-		if len(ephemeralMessages) > 0 {
-			chatMessages = append(ephemeralMessages, chatMessages...)
 		}
 	}
 
