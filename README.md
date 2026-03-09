@@ -229,6 +229,8 @@ Comprehensive guides are available in the [`usages/`](./usages/) directory:
 ### Advanced Topics
 - [Advanced Topics](./usages/13-advanced-topics.md) - Hooks, events, plugins
 - [AI and Toolsets](./usages/15-ai-and-toolsets.md) - AI model integration
+- [AI Agent Skills](./usages/16-skills.md) - Reusable instruction sets for AI agents
+- [Task Management](./usages/17-task-management.md) - Background task execution and scheduling
 - [Troubleshooting](./usages/14-troubleshooting.md) - Common issues and solutions
 
 ### API Documentation

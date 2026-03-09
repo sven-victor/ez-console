@@ -10,10 +10,12 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
   - [Built-in AI Providers](#built-in-ai-providers)
   - [Using AI Models](#using-ai-models)
   - [Registering Custom AI Models](#registering-custom-ai-models)
+  - [AIClientFactoryV2 (JSON Schema)](#aiclientfactoryv2-json-schema)
 - [Toolsets](#toolsets)
   - [Built-in Toolsets](#built-in-toolsets)
   - [Using Toolsets](#using-toolsets)
   - [Registering Custom Toolsets](#registering-custom-toolsets)
+  - [ToolSetFactoryV2 (JSON Schema)](#toolsetfactoryv2-json-schema)
   - [RBAC Tool Permissions](#rbac-tool-permissions)
 - [Skills System](#skills-system)
   - [Skill Structure](#skill-structure)
@@ -30,6 +32,13 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
 - [Auto-Summarization](#auto-summarization)
   - [One-Shot Summarization](#one-shot-summarization)
   - [Segmented Summarization](#segmented-summarization)
+- [JSON Schema Configuration Forms](#json-schema-configuration-forms)
+  - [Overview](#json-schema-form-overview)
+  - [How It Works End-to-End](#how-it-works-end-to-end)
+  - [Schema Extensions (x-ui-* Tags)](#schema-extensions-x-ui--tags)
+  - [UI Schema and Layout](#ui-schema-and-layout)
+  - [Custom Widgets](#custom-widgets)
+  - [Using JsonSchemaConfigForm in Pages](#using-jsonschemaconfigform-in-pages)
 - [Frontend Integration](#frontend-integration)
   - [AIContext](#aicontext)
   - [AIChat Component](#aichat-component)
@@ -431,6 +440,96 @@ func main() {
 }
 ```
 
+### AIClientFactoryV2 (JSON Schema)
+
+`AIClientFactoryV2` extends `AIClientFactory` by adding a `GetConfigSchema()` method that returns a full JSON Schema (plus an optional UI schema). When a factory implements this interface, the service layer uses the JSON Schema directly for the frontend form; otherwise it falls back to converting the legacy `GetConfigFields()` to JSON Schema via `util.ConfigFieldsToJSONSchema`.
+
+**Interface definition** (`pkg/clients/ai/client.go`):
+
+```go
+type AIClientFactoryV2 interface {
+    AIClientFactory
+    GetConfigSchema() (schema *jsonschema.Schema, uiSchema map[string]any, err error)
+}
+```
+
+**Why use V2?** The legacy `ConfigField`-based approach supports only flat field lists with limited type/widget options. JSON Schema gives you:
+
+- Struct tag–based schema generation via `jsonschema.Reflect()` — single source of truth between config struct and frontend form.
+- Rich validation: `required`, `enum`, `format`, `minLength`, `maxLength`, `pattern`, `minimum`, `maximum`, `default`.
+- Custom UI extensions via `jsonschema_extras` struct tags (e.g. `x-ui-widget=textarea`, `x-ui-placeholder=...`).
+- Conditional fields via `dependencies` / `oneOf`.
+- Complex layout via a separate `uiSchema` with grid-based positioning.
+
+#### Implementing AIClientFactoryV2
+
+**Step 1: Define a config struct with `jsonschema` tags**
+
+```go
+type OpenAIConfig struct {
+    APIKey         string `json:"api_key"          jsonschema:"description=OpenAI API key (encrypted),format=password"`
+    ModelID        string `json:"model_id"         jsonschema:"description=OpenAI model ID (e.g.\\, gpt-4\\, gpt-3.5-turbo)"`
+    BaseURL        string `json:"base_url,omitempty"         jsonschema:"description=Custom API endpoint URL (optional)"`
+    OrganizationID string `json:"organization_id,omitempty"  jsonschema:"description=OpenAI organization ID (optional)"`
+    SystemPrompt   string `json:"system_prompt,omitempty"    jsonschema:"description=System prompt prepended to every conversation (optional)" jsonschema_extras:"x-ui-widget=textarea"`
+}
+```
+
+Key struct tag syntax (`github.com/invopop/jsonschema`):
+
+| Tag | Purpose | Example |
+|-----|---------|---------|
+| `jsonschema:"required"` | Mark field as required | Field appears in `required` array |
+| `jsonschema:"description=..."` | Field description | Rendered as help text under the input |
+| `jsonschema:"format=password"` | String format | Renders as a password input (`type=password`) |
+| `jsonschema:"enum=a,enum=b"` | Enum values | Renders as a select/dropdown |
+| `jsonschema:"default=value"` | Default value | Pre-fills the form field |
+| `jsonschema_extras:"x-ui-widget=textarea"` | Custom UI extension | Maps to `ui:widget` in RJSF (see [Schema Extensions](#schema-extensions-x-ui--tags)) |
+| `jsonschema_extras:"x-ui-placeholder=..."` | Placeholder text | Shown as input placeholder |
+
+**Step 2: Implement GetConfigSchema**
+
+```go
+type MyProviderFactory struct{}
+
+func (f *MyProviderFactory) GetConfigSchema() (*jsonschema.Schema, map[string]any, error) {
+    schema := jsonschema.Reflect(&OpenAIConfig{})
+    // Return nil uiSchema for default layout; or provide a custom one
+    return schema, nil, nil
+}
+
+// Compile-time interface check
+var _ ai.AIClientFactoryV2 = (*MyProviderFactory)(nil)
+```
+
+`jsonschema.Reflect()` inspects the struct fields and tags, producing a complete JSON Schema object that the frontend `JsonSchemaConfigForm` can render directly.
+
+**Step 3: Register via RegisterFactoryV2**
+
+```go
+func init() {
+    ai.RegisterFactoryV2(model.AIModelProviderMyProvider, &MyProviderFactory{})
+}
+```
+
+`RegisterFactoryV2` is a convenience wrapper around `RegisterFactory` — it stores the factory in the same registry. The difference is at consumption time: `AIModelService.GetAITypeDefinitions` checks if the factory satisfies `AIClientFactoryV2` via type assertion:
+
+```go
+if v2, ok := factory.(ai.AIClientFactoryV2); ok {
+    schema, uiSchema, err := v2.GetConfigSchema()
+    // use JSON Schema directly
+} else {
+    // fallback: convert GetConfigFields() → JSON Schema
+    schema = util.ConfigFieldsToJSONSchema(factory.GetConfigFields())
+}
+```
+
+The returned `AITypeDefinition` (with `config_schema` and `ui_schema`) is served via `GET /api/ai/models/types` and consumed by the frontend settings page.
+
+#### Keeping GetConfigFields as Fallback
+
+Even when implementing V2, you should still provide `GetConfigFields()` — it serves as documentation and fallback for environments that don't support JSON Schema rendering. The V2 schema takes priority when available.
+
 ## Toolsets
 
 Toolsets allow AI models to call external tools and APIs during chat completions. Each toolset is a collection of related tools.
@@ -696,6 +795,159 @@ import (
 func main() {
     server.Start()
 }
+```
+
+### ToolSetFactoryV2 (JSON Schema)
+
+`ToolSetFactoryV2` is the toolset equivalent of `AIClientFactoryV2`. It extends `ToolSetFactory` with `GetConfigSchema()` for richer frontend form rendering.
+
+**Interface definition** (`pkg/toolset/toolset.go`):
+
+```go
+type ToolSetFactoryV2 interface {
+    ToolSetFactory
+    GetConfigSchema() (schema *jsonschema.Schema, uiSchema map[string]any, err error)
+}
+```
+
+#### Implementing ToolSetFactoryV2
+
+**Step 1: Define a config struct with `jsonschema` tags**
+
+The MCP toolset is the canonical example of a V2 implementation with conditional fields and layout:
+
+```go
+type MCPToolSetConfig struct {
+    Endpoint string                 `json:"endpoint"           jsonschema:"required,description=The endpoint of the MCP server"`
+    Protocol string                 `json:"protocol"           jsonschema:"required,description=The protocol of the MCP server,enum=http,enum=websocket,default=http"`
+    AuthType string                 `json:"auth_type"          jsonschema:"required,description=The authentication type,enum=basic,enum=bearer,default=basic"`
+    Username string                 `json:"username,omitempty" jsonschema:"description=The username for the MCP server"`
+    Password string                 `json:"password,omitempty" jsonschema:"description=The password for the MCP server,format=password"`
+    Token    string                 `json:"token,omitempty"    jsonschema:"description=The bearer token for the MCP server,format=password"`
+    Args     map[string]interface{} `json:"args,omitempty"     jsonschema:"description=The arguments for the MCP server" jsonschema_extras:"x-ui-field=objectEditor"`
+}
+```
+
+**Step 2: Implement GetConfigSchema with conditional fields and layout**
+
+For simple configs, `jsonschema.Reflect()` alone is sufficient. For advanced scenarios (conditional visibility, grid layout), you can post-process the schema and return a custom `uiSchema`:
+
+```go
+func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]any, error) {
+    schema := jsonschema.Reflect(&MCPToolSetConfig{})
+
+    // --- Conditional fields via JSON Schema `dependencies` ---
+    // Show username/password when auth_type="basic", token when auth_type="bearer"
+    if def, ok := schema.Definitions["MCPToolSetConfig"]; ok {
+        authTypeDef, _ := def.Properties.Get("auth_type")
+        usernameDef, _ := def.Properties.Get("username")
+        passwordDef, _ := def.Properties.Get("password")
+        tokenDef, _ := def.Properties.Get("token")
+
+        // Remove from top-level properties (they'll appear conditionally)
+        def.Properties.Delete("username")
+        def.Properties.Delete("password")
+        def.Properties.Delete("token")
+
+        def.Extras["dependencies"] = map[string]*jsonschema.Schema{
+            "auth_type": {
+                OneOf: []*jsonschema.Schema{
+                    {
+                        // When auth_type = "basic", show username + password
+                        Properties: orderedmap.New[string, *jsonschema.Schema](
+                            orderedmap.WithInitialData(
+                                orderedmap.Pair[string, *jsonschema.Schema]{
+                                    Key: "auth_type", Value: &jsonschema.Schema{Enum: []any{"basic"}},
+                                },
+                                orderedmap.Pair[string, *jsonschema.Schema]{Key: "username", Value: usernameDef},
+                                orderedmap.Pair[string, *jsonschema.Schema]{Key: "password", Value: passwordDef},
+                            ),
+                        ),
+                        Required: []string{"username", "password"},
+                    },
+                    {
+                        // When auth_type = "bearer", show token
+                        Properties: orderedmap.New[string, *jsonschema.Schema](
+                            orderedmap.WithInitialData(
+                                orderedmap.Pair[string, *jsonschema.Schema]{
+                                    Key: "auth_type", Value: &jsonschema.Schema{Enum: []any{"bearer"}},
+                                },
+                                orderedmap.Pair[string, *jsonschema.Schema]{Key: "token", Value: tokenDef},
+                            ),
+                        ),
+                        Required: []string{"token"},
+                    },
+                },
+            },
+        }
+    }
+
+    // --- UI Schema for grid layout ---
+    uiSchema := map[string]any{
+        "ui:width": 1024,                   // Modal width hint
+        "ui:field": "LayoutGridField",       // Enable grid layout
+        "args": map[string]any{
+            "ui:field": "objectEditor",      // JSON editor for the args field
+        },
+        "ui:layoutGrid": map[string]any{
+            "ui:row": map[string]any{
+                "gutter":    []int{12, 0},
+                "children": []map[string]map[string]any{
+                    {"ui:col": {"xs": 24, "children": []string{"endpoint"}}},
+                    {"ui:col": {"xs": 12, "children": []string{"protocol"}}},
+                    {"ui:col": {"xs": 12, "children": []string{"auth_type"}}},
+                    {"ui:col": {"xs": 24, "children": []string{"token"}}},
+                    {"ui:col": {"xs": 12, "children": []string{"username"}}},
+                    {"ui:col": {"xs": 12, "children": []string{"password"}}},
+                    {"ui:col": {"xs": 24, "children": []string{"args"}}},
+                },
+            },
+        },
+    }
+    return schema, uiSchema, nil
+}
+```
+
+**Step 3: Register via RegisterToolSetV2**
+
+```go
+func init() {
+    toolset.RegisterToolSetV2(ToolSetTypeMCP, &MCPToolSetFactory{})
+}
+```
+
+Like AI factories, `RegisterToolSetV2` stores the factory in the same registry. The service layer type-asserts to `ToolSetFactoryV2` at runtime:
+
+```go
+// In ToolSetService.GetToolSetTypeDefinitions:
+if v2, ok := factory.(toolset.ToolSetFactoryV2); ok {
+    schema, uiSchema, err := v2.GetConfigSchema()
+    // ...
+} else {
+    schema = util.ConfigFieldsToJSONSchema(factory.GetConfigFields())
+}
+```
+
+The returned `ToolSetTypeDefinition` (with `config_schema` and `ui_schema`) is served via `GET /api/system/toolsets/types` and consumed by the frontend toolset settings page.
+
+#### Simple V2 Example (Without Conditional Fields)
+
+For toolsets that don't need conditional logic or custom layout, the implementation is minimal:
+
+```go
+type WebhookConfig struct {
+    URL     string `json:"url"     jsonschema:"required,description=Webhook endpoint URL"`
+    Method  string `json:"method"  jsonschema:"required,description=HTTP method,enum=GET,enum=POST,default=POST"`
+    Timeout int    `json:"timeout" jsonschema:"description=Request timeout in seconds,minimum=1,maximum=300,default=30"`
+}
+
+type WebhookToolSetFactory struct{}
+
+func (f *WebhookToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]any, error) {
+    return jsonschema.Reflect(&WebhookConfig{}), nil, nil
+}
+
+var _ toolset.ToolSetFactoryV2 = (*WebhookToolSetFactory)(nil)
 ```
 
 ### RBAC Tool Permissions
@@ -982,6 +1234,276 @@ This approach handles conversations of any length, limited only by the summariza
 
 - **Proactive** (when `EnableAutoSummarization` is true): Summarize when tokens reach 90% of `MaxTokens`.
 - **Reactive**: When the AI API returns a "maximum context length exceeded" error, summarization is attempted automatically (up to 3 retries).
+
+## JSON Schema Configuration Forms
+
+### Overview {#json-schema-form-overview}
+
+The frontend uses a JSON Schema–driven approach to render configuration forms for AI models and toolsets. Instead of hand-coding form fields for each provider/toolset type, a single `JsonSchemaConfigForm` component (`web/src/components/JsonSchemaConfigForm.tsx`) interprets the JSON Schema returned by the backend and dynamically generates the form.
+
+This is built on top of [React JSON Schema Form (RJSF)](https://rjsf-team.github.io/react-jsonschema-form/) with the Ant Design theme (`@rjsf/antd`) and the AJV8 validator (`@rjsf/validator-ajv8`).
+
+### How It Works End-to-End
+
+```
+Backend Factory                    API Response                   Frontend Form
+┌──────────────────┐     ┌────────────────────────────┐     ┌──────────────────────┐
+│ GetConfigSchema() │────>│ GET /api/ai/models/types    │────>│ JsonSchemaConfigForm │
+│   or              │     │ GET /api/system/toolsets/   │     │   schema={...}       │
+│ GetConfigFields() │     │          types              │     │   uiSchema={...}     │
+│ → ConfigFieldsTo  │     │                            │     │   value={config}     │
+│   JSONSchema()    │     │ Returns:                   │     │   onChange={fn}      │
+│                  │     │   config_schema: {...}      │     │                      │
+│                  │     │   ui_schema: {...}          │     │                      │
+└──────────────────┘     └────────────────────────────┘     └──────────────────────┘
+```
+
+1. **Backend**: Each factory provides a JSON Schema via `GetConfigSchema()` (V2) or `GetConfigFields()` (V1, auto-converted via `util.ConfigFieldsToJSONSchema`).
+2. **API**: The service layer returns `config_schema` and `ui_schema` as part of `AITypeDefinition` or `ToolSetTypeDefinition`.
+3. **Frontend**: The settings page fetches type definitions, selects the active type, and passes `config_schema` + `ui_schema` to `JsonSchemaConfigForm`.
+
+### Schema Extensions (x-ui-* Tags)
+
+The backend can embed UI hints directly in the JSON Schema via `x-ui-*` properties (set through `jsonschema_extras` struct tags). The frontend `buildUiSchema()` function automatically converts these to RJSF `ui:*` entries:
+
+```
+Backend struct tag                          → JSON Schema property    → RJSF uiSchema
+jsonschema_extras:"x-ui-widget=textarea"    → "x-ui-widget": "textarea" → "ui:widget": "textarea"
+jsonschema_extras:"x-ui-placeholder=..."    → "x-ui-placeholder": "..." → "ui:placeholder": "..."
+jsonschema_extras:"x-ui-field=objectEditor" → "x-ui-field": "objectEditor" → "ui:field": "objectEditor"
+```
+
+The `buildUiSchema()` function (`web/src/components/JsonSchemaConfigForm.tsx`) walks the entire schema tree (including `$ref` definitions, `dependencies`, `oneOf`, `anyOf`, `allOf`) and extracts all `x-ui-*` keys:
+
+```typescript
+function walk(node: any): any {
+  const ui: any = {};
+  Object.keys(node).forEach(key => {
+    if (key.startsWith("x-ui-")) {
+      ui[`ui:${key.slice(5)}`] = node[key];
+    }
+  });
+  // Also handles x-hidden → ui:widget="hidden"
+  // and x-disabled → ui:disabled=true
+  // Recurses into properties, dependencies, oneOf, etc.
+  return ui;
+}
+```
+
+**Supported `x-ui-*` extensions:**
+
+| Extension | Mapped to | Effect |
+|-----------|-----------|--------|
+| `x-ui-widget` | `ui:widget` | Override the default widget (e.g. `textarea`, `hidden`) |
+| `x-ui-field` | `ui:field` | Override the default field renderer (e.g. `objectEditor` for JSON editor) |
+| `x-ui-placeholder` | `ui:placeholder` | Input placeholder text |
+| `x-ui-col-xs` | `ui:col-xs` | Column span in grid layout (Ant Design grid system, out of 24) |
+| `x-hidden` | `ui:widget=hidden` | Hide the field entirely |
+| `x-disabled` | `ui:disabled=true` | Disable the field |
+
+Additionally, `configFieldToPropertySchema()` (`pkg/util/config_schema.go`) maps legacy `ConfigField` types to `x-ui-*` properties when converting V1 fields:
+
+| FieldType | Schema mapping |
+|-----------|---------------|
+| `password` | `type: "string"`, `format: "password"` |
+| `select` with `DataSource` | `x-ui-widget: "remoteSelect"` or `"toolsetsSelect"` + `x-data-source: {...}` |
+| `object` | `type: "object"`, `x-ui-widget: "objectEditor"` |
+
+### UI Schema and Layout
+
+The `uiSchema` is a separate object (independent from the JSON Schema) that controls form layout and field-level rendering. It is returned as the second value from `GetConfigSchema()`.
+
+#### Merging Strategy
+
+The frontend merges the auto-generated UI schema (from `x-ui-*` extensions) with the explicitly provided `uiSchema`:
+
+```typescript
+const mergedUiSchema = useMemo(() => {
+  const autoUi = buildUiSchema(schema);  // Extract x-ui-* from schema
+  return {
+    ...autoUi,    // Auto-generated from schema extensions
+    ...uiSchema,  // Explicit overrides from backend
+  };
+}, [schema, uiSchema]);
+```
+
+Explicit `uiSchema` values take precedence over auto-generated ones.
+
+#### Grid Layout
+
+For complex forms, use the `LayoutGridField` to arrange fields in a responsive grid (based on Ant Design's 24-column grid):
+
+```go
+uiSchema := map[string]any{
+    "ui:width": 1024,               // Hint: modal width in pixels
+    "ui:field": "LayoutGridField",   // Enable grid layout for the root object
+    "ui:layoutGrid": map[string]any{
+        "ui:row": map[string]any{
+            "gutter": []int{12, 0},  // Horizontal and vertical gutter
+            "children": []map[string]map[string]any{
+                // Full-width field
+                {"ui:col": {"xs": 24, "children": []string{"endpoint"}}},
+                // Two half-width fields side by side
+                {"ui:col": {"xs": 12, "children": []string{"protocol"}}},
+                {"ui:col": {"xs": 12, "children": []string{"auth_type"}}},
+                // Conditional fields (still in the grid)
+                {"ui:col": {"xs": 24, "children": []string{"token"}}},
+                {"ui:col": {"xs": 12, "children": []string{"username"}}},
+                {"ui:col": {"xs": 12, "children": []string{"password"}}},
+                // JSON editor, full width
+                {"ui:col": {"xs": 24, "children": []string{"args"}}},
+            },
+        },
+    },
+}
+```
+
+The `xs` value is the column span (out of 24). Common patterns:
+
+| `xs` value | Effective width | Use case |
+|-----------|-----------------|----------|
+| `24` | Full width | Long inputs, textareas, JSON editors |
+| `12` | Half width | Side-by-side fields |
+| `8` | One-third width | Triple-column layouts |
+| `6` | One-quarter width | Dense forms |
+
+The `ui:width` property is consumed by the frontend modal to set the dialog width (e.g. `width={currentTypeDefinition?.ui_schema?.['ui:width'] || 600}`), keeping the form layout consistent.
+
+#### Conditional Fields via Dependencies
+
+JSON Schema `dependencies` with `oneOf` enables showing/hiding fields based on another field's value. When `auth_type` is `"basic"`, the `username` and `password` fields appear; when `"bearer"`, the `token` field appears:
+
+```json
+{
+  "dependencies": {
+    "auth_type": {
+      "oneOf": [
+        {
+          "properties": {
+            "auth_type": { "enum": ["basic"] },
+            "username": { "type": "string", "description": "..." },
+            "password": { "type": "string", "format": "password" }
+          },
+          "required": ["username", "password"]
+        },
+        {
+          "properties": {
+            "auth_type": { "enum": ["bearer"] },
+            "token": { "type": "string", "format": "password" }
+          },
+          "required": ["token"]
+        }
+      ]
+    }
+  }
+}
+```
+
+RJSF handles the conditional rendering automatically — dependent fields appear/disappear as the user changes `auth_type`.
+
+### Custom Widgets
+
+`JsonSchemaConfigForm` registers several custom widgets and fields:
+
+#### ObjectEditor (`ui:field = "objectEditor"`)
+
+Renders a CodeMirror-based JSON editor for `object`-typed fields. Useful for arbitrary key-value configurations:
+
+```go
+// Backend: mark a map field as objectEditor
+Args map[string]interface{} `json:"args,omitempty" jsonschema_extras:"x-ui-field=objectEditor"`
+```
+
+The editor supports:
+- Syntax-highlighted JSON editing
+- Live JSON validation with error display
+- Schema `examples` dropdown (top-right corner) for pre-filling templates
+- Auto-sync with parent form state
+
+#### RemoteSelect (`ui:widget = "remoteSelect"`)
+
+A `Select` dropdown that fetches options from a remote API at render time:
+
+```go
+// Legacy ConfigField approach:
+{
+    Name: "webhook_id",
+    Type: util.FieldTypeSelect,
+    DataSource: &util.DataSource{
+        Type:     util.DataSourceTypeAPI,
+        URL:      "/api/webhooks",
+        Method:   "GET",
+        LabelKey: "name",
+        ValueKey: "resource_id",
+        Cache:    true,
+        CacheTTL: 60,
+    },
+}
+```
+
+This generates a schema with `x-data-source` and `x-ui-widget: "remoteSelect"`. The frontend `RemoteSelectWidget` reads the `x-data-source` property and calls the specified API to populate options.
+
+#### ToolsetsSelect (`ui:widget = "toolsetsSelect"`)
+
+A specialized variant of `RemoteSelect` that fetches available toolsets via `listToolSets`. Triggered when `DataSource.Type` is `"toolsets"`.
+
+### Using JsonSchemaConfigForm in Pages
+
+#### Basic Usage (AI Model Settings)
+
+```tsx
+import { JsonSchemaConfigForm } from '@/components/JsonSchemaConfigForm';
+
+// In your settings page:
+const currentProviderDefinition = typeDefinitions?.find(
+  (td) => td.provider === selectedProvider
+);
+
+// Inside Ant Design Form:
+<Form.Item name={['config']}>
+  <JsonSchemaConfigForm
+    schema={currentProviderDefinition.config_schema}
+  />
+</Form.Item>
+```
+
+The `value` and `onChange` props are automatically wired by Ant Design's `Form.Item` via `name={['config']}`.
+
+#### With UI Schema and Validation (Toolset Settings)
+
+```tsx
+import { JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
+
+const currentTypeDefinition = typeDefinitions?.find(
+  (td) => td.tool_set_type === selectedType
+);
+
+// Modal with dynamic width from ui_schema
+<Modal width={currentTypeDefinition?.ui_schema?.['ui:width'] || 600}>
+  <Form form={form} layout="vertical" onFinish={handleSubmit}>
+    {/* Other fields: name, description, type... */}
+
+    <JsonSchemaConfigFormItem
+      name="config"
+      schema={currentTypeDefinition?.config_schema}
+      uiSchema={currentTypeDefinition?.ui_schema}
+    />
+  </Form>
+</Modal>
+```
+
+`JsonSchemaConfigFormItem` wraps `JsonSchemaConfigForm` in an `AntForm.Item` with built-in validation — on form submit, it validates the config data against the JSON Schema and shows errors inline.
+
+#### Component Props Reference
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `schema` | `RJSFSchema` | JSON Schema for the config object |
+| `value` | `Record<string, unknown>` | Current config values (provided by Form.Item) |
+| `onChange` | `(config) => void` | Change handler (provided by Form.Item) |
+| `uiSchema` | `Record<string, unknown>` | Optional RJSF UI schema for layout/widget overrides |
+| `disabled` | `boolean` | Disable all fields (default: `false`) |
+| `formRef` | `React.Ref` | Ref for imperative validation via `formRef.validate()` |
 
 ## Frontend Integration
 
