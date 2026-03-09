@@ -38,6 +38,9 @@ generateService({
       if (path.startsWith("/api/file")|| path.startsWith('/api/statistics')) {
         return ['base'];
       }
+      if (path.startsWith("/api/task-schedules")||path.startsWith("/api/user-tasks")) {
+        return ['tasks'];
+      }
       if (path.startsWith('/api/')) {
         return [path.slice('/api/'.length).split('/')[0]];
       }

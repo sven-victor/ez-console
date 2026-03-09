@@ -54,6 +54,7 @@ import * as baseapi from '@/service/api/base';
 import * as oauthapi from '@/service/api/oauth';
 import * as systemapi from '@/service/api/system';
 import * as aiapi from '@/service/api/system';
+import * as tasksapi from '@/service/api/tasks';
 export type * from '@/service/api/typing';
 export { JsonSchemaConfigForm, JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
 
@@ -63,6 +64,7 @@ const api = {
   ...oauthapi,
   ...systemapi,
   ...aiapi,
+  ...tasksapi,
 }
 
 export {

@@ -17,6 +17,8 @@ declare global {
       content: string;
       created_at: string;
       id: string;
+      /** Generated summary message; hidden from frontend display */
+      is_summary: boolean;
       /** Message timestamp */
       message_time: string;
       /** Additional metadata */
@@ -29,6 +31,8 @@ declare global {
       session_id: string;
       /** Message status */
       status: AIChatMessageStatus;
+      /** Superseded by a summary; excluded from future AI conversations */
+      summarized: boolean;
       /** Tokens used for this message */
       tokens_used: number;
       /** Tool call ID (for tool messages) */
@@ -42,7 +46,7 @@ declare global {
   
     type AIChatMessageMetadata = true;
   
-    type AIChatMessageRole = "user" | "assistant" | "system" | "tool";
+    type AIChatMessageRole = "user" | "assistant" | "system" | "tool" | "prompt";
   
     type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
   

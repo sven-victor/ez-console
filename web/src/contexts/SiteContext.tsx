@@ -106,7 +106,7 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
   const [tasks, setTasks] = useState<API.Task[]>([]);
 
   const { run: fetchTasks } = useRequest(async () => {
-    return api.userTasks.listUserTasks({});
+    return api.tasks.listUserTasks({});
   }, {
     onSuccess: (res) => {
       setTasks(res);

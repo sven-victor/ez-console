@@ -795,6 +795,9 @@ definitions:
         type: string
       id:
         type: string
+      is_summary:
+        description: Generated summary message; hidden from frontend display
+        type: boolean
       message_time:
         description: Message timestamp
         type: string
@@ -816,6 +819,9 @@ definitions:
         allOf:
         - $ref: '#/definitions/model.AIChatMessageStatus'
         description: Message status
+      summarized:
+        description: Superseded by a summary; excluded from future AI conversations
+        type: boolean
       tokens_used:
         description: Tokens used for this message
         type: integer
@@ -836,12 +842,14 @@ definitions:
     - content
     - created_at
     - id
+    - is_summary
     - message_time
     - metadata
     - organization_id
     - role
     - session_id
     - status
+    - summarized
     - tokens_used
     - tool_call_id
     - tool_calls
@@ -857,12 +865,14 @@ definitions:
     - assistant
     - system
     - tool
+    - prompt
     type: string
     x-enum-varnames:
     - AIChatMessageRoleUser
     - AIChatMessageRoleAssistant
     - AIChatMessageRoleSystem
     - AIChatMessageRoleTool
+    - AIChatMessageRolePrompt
   model.AIChatMessageStatus:
     enum:
     - pending
@@ -2932,14 +2942,16 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
     - 1
     - 1000
     - 1000000
@@ -2956,14 +2968,16 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -4125,7 +4139,7 @@ definitions:
 info:
   contact: {}
   title: EZ Console API
-  version: v1.11.0
+  version: v1.11.3
 paths:
   /api/ai/chat/sessions:
     get:
@@ -8121,7 +8135,7 @@ paths:
       summary: Retry task
       tags:
       - Task Management
-  /api/userTasks:
+  /api/user-tasks:
     get:
       consumes:
       - application/json

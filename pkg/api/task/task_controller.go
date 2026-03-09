@@ -48,7 +48,7 @@ func (c *TaskController) RegisterRoutes(ctx context.Context, router *gin.RouterG
 		tasks.POST("/:id/retry", middleware.RequirePermission("task:retry"), c.RetryTask)
 		tasks.DELETE("/:id", middleware.RequirePermission("task:delete"), c.DeleteTask)
 	}
-	userTasks := router.Group("/userTasks")
+	userTasks := router.Group("/user-tasks")
 	{
 		userTasks.GET("", c.ListUserTasks)
 	}
@@ -86,7 +86,7 @@ func init() {
 //	@Produce		json
 //	@Success		200			{object}	util.Response[[]model.Task]
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/userTasks [get]
+//	@Router			/api/user-tasks [get]
 func (c *TaskController) ListUserTasks(ctx *gin.Context) {
 	userID := middleware.GetUserIDFromContext(ctx)
 	if userID == "" {

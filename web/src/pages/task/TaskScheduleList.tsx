@@ -44,7 +44,7 @@ const TaskScheduleList: React.FC = () => {
   const historyTableRef = useRef<TableRef<API.Task>>(null);
 
   const { data: schedulesResp, loading: schedulesLoading, refresh: refreshSchedules } = useRequest(
-    () => api.taskSchedules.listTaskSchedules(),
+    () => api.tasks.listTaskSchedules(),
     {
       onError: (error) => {
         message.error(t('scheduleListFailed', { defaultValue: 'Failed to list schedules: {{error}}', error: error }));
@@ -55,7 +55,7 @@ const TaskScheduleList: React.FC = () => {
 
   const handleToggle = async (id: string, enabled: boolean) => {
     try {
-      await api.taskSchedules.toggleTaskSchedule({ id }, { enabled });
+      await api.tasks.toggleTaskSchedule({ id }, { enabled });
       message.success(t('scheduleUpdated', { defaultValue: 'Schedule updated.' }));
       refreshSchedules();
     } catch {
@@ -71,7 +71,7 @@ const TaskScheduleList: React.FC = () => {
 
   const handleTrigger = async (id: string) => {
     try {
-      await api.taskSchedules.triggerTaskSchedule({ id });
+      await api.tasks.triggerTaskSchedule({ id });
       message.success(t('scheduleTriggered', { defaultValue: 'Task triggered.' }));
       setSelectedScheduleId(id);
     } catch {
@@ -161,7 +161,7 @@ const TaskScheduleList: React.FC = () => {
         trace_id: '',
       });
     }
-    return api.taskSchedules.getTaskScheduleHistory({
+    return api.tasks.getTaskScheduleHistory({
       id: selectedScheduleId,
       current: params.current ?? PAGINATION.DEFAULT_CURRENT,
       page_size: params.page_size ?? PAGINATION.DEFAULT_PAGE_SIZE,

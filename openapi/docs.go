@@ -5982,7 +5982,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/userTasks": {
+        "/api/user-tasks": {
             "get": {
                 "description": "Get a list of tasks for the current user.",
                 "consumes": [
@@ -7147,12 +7147,14 @@ const docTemplate = `{
                 "content",
                 "created_at",
                 "id",
+                "is_summary",
                 "message_time",
                 "metadata",
                 "organization_id",
                 "role",
                 "session_id",
                 "status",
+                "summarized",
                 "tokens_used",
                 "tool_call_id",
                 "tool_calls",
@@ -7169,6 +7171,10 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "is_summary": {
+                    "description": "Generated summary message; hidden from frontend display",
+                    "type": "boolean"
                 },
                 "message_time": {
                     "description": "Message timestamp",
@@ -7206,6 +7212,10 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "summarized": {
+                    "description": "Superseded by a summary; excluded from future AI conversations",
+                    "type": "boolean"
+                },
                 "tokens_used": {
                     "description": "Tokens used for this message",
                     "type": "integer"
@@ -7240,13 +7250,15 @@ const docTemplate = `{
                 "user",
                 "assistant",
                 "system",
-                "tool"
+                "tool",
+                "prompt"
             ],
             "x-enum-varnames": [
                 "AIChatMessageRoleUser",
                 "AIChatMessageRoleAssistant",
                 "AIChatMessageRoleSystem",
-                "AIChatMessageRoleTool"
+                "AIChatMessageRoleTool",
+                "AIChatMessageRolePrompt"
             ]
         },
         "model.AIChatMessageStatus": {
@@ -10117,14 +10129,16 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000,
                 1,
                 1000,
                 1000000,
@@ -10141,14 +10155,16 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -11815,7 +11831,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "v1.11.0",
+	Version:          "v1.11.3",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
