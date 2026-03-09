@@ -127,18 +127,7 @@ func (f *UtilsToolSetFactory) GetName() string {
 }
 
 func (f *UtilsToolSetFactory) GetConfigFields() []util.ConfigField {
-	return []util.ConfigField{{
-		Name:        "toolset",
-		DisplayName: "Toolset",
-		Description: "Toolset",
-		Type:        util.FieldTypeSelect,
-		Required:    true,
-		DataSource: &util.DataSource{
-			Type:     util.DataSourceTypeToolsets,
-			LabelKey: "name",
-			ValueKey: "id",
-		},
-	}}
+	return []util.ConfigField{}
 }
 
 func (f *UtilsToolSetFactory) CreateToolSet(configJSON string) (ToolSet, error) {

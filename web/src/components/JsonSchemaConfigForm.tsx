@@ -436,20 +436,23 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
     [onChange]
   );
   const mergedUiSchema = React.useMemo(() => {
+    if (!schema) {
+      return {};
+    }
     const autoUi = buildUiSchema(schema)
     return {
-      ...autoUi,
-      ...uiSchema
+      ...autoUi || {},
+      ...uiSchema || {}
     }
   }, [schema, uiSchema]);
   return (
     <Form
       className={classNames(styles.jsonSchemaForm, 'json-schema-config-form')}
-      schema={schema}
+      schema={schema || {}}
       formData={formData}
       onChange={handleChange}
       validator={validator}
-      uiSchema={mergedUiSchema}
+      uiSchema={mergedUiSchema || {}}
       disabled={disabled}
       showErrorList={false}
       liveValidate="onChange"
