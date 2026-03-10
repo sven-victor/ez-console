@@ -104,7 +104,7 @@ func PrometheusMetrics() gin.HandlerFunc {
 		method := c.Request.Method
 		path := c.FullPath()
 		if path == "" {
-			path = c.Request.URL.Path
+			path = "/*filepath"
 		}
 
 		// Record metrics
