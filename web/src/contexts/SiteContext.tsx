@@ -111,6 +111,7 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
     onSuccess: (res) => {
       setTasks(res);
     },
+    ready: !!user,
     refreshDeps: [user],
     pollingInterval: tasksDropdownOpen ? 3000 : 60000
   });
