@@ -519,10 +519,10 @@ func (c *SkillController) DeleteSkillPath(ctx *gin.Context) {
 
 func init() {
 	middleware.RegisterPermission("Skill Management", "Manage AI Agent Skills (create, edit, delete, file editor)", []model.Permission{
-		{Code: "system:skills:view", Name: "View skills", Description: "View and preview skills"},
-		{Code: "system:skills:create", Name: "Create skill", Description: "Create new skills"},
-		{Code: "system:skills:update", Name: "Update skill", Description: "Update skill metadata"},
-		{Code: "system:skills:delete", Name: "Delete skill", Description: "Delete skills"},
-		{Code: "system:skills:edit_files", Name: "Edit skill files", Description: "Edit skill files and directories"},
+		{Code: "system:skills:view", Name: "View skills", Description: "View and preview skills", OrgPermission: true},
+		{Code: "system:skills:create", Name: "Create skill", Description: "Create new skills", OrgPermission: true},
+		{Code: "system:skills:update", Name: "Update skill", Description: "Update skill metadata", OrgPermission: true},
+		{Code: "system:skills:delete", Name: "Delete skill", Description: "Delete skills", OrgPermission: true},
+		{Code: "system:skills:edit_files", Name: "Edit skill files", Description: "Edit skill files and directories", OrgPermission: true},
 	})
 }
