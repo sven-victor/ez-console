@@ -157,8 +157,8 @@ func (s *PermissionService) UpdatePermission(ctx context.Context, id, name, desc
 func (s *PermissionService) DeletePermission(ctx context.Context, id string) error {
 	// Check if the permission is being used by roles
 	var count int64
-	if err := db.Session(ctx).Model(&model.Role{}).Joins("JOIN role_permissions ON roles.resource_id = role_permissions.role_id").
-		Where("role_permissions.permission_id = ?", id).Count(&count).Error; err != nil {
+	if err := db.Session(ctx).Model(&model.Role{}).Joins("JOIN t_role_permissions ON t_role.resource_id = t_role_permissions.role_id").
+		Where("t_role_permissions.permission_id = ?", id).Count(&count).Error; err != nil {
 		return util.ErrorResponse{
 			Code:    "E5002",
 			Err:     err,
