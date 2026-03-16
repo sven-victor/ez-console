@@ -36,6 +36,7 @@ import api from '@/service/api';
 import type { Skill } from '@/service/api/typing';
 import type { CreateSkillRequest, UpdateSkillRequest } from '@/service/api/typing';
 import { PermissionGuard } from '@/components/PermissionGuard';
+import Actions from '@/components/Actions';
 
 const { TextArea } = Input;
 
@@ -199,29 +200,40 @@ const SkillSettings: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'actions',
+      width: 150,
       render: (_, record) => (
-        <Space>
-          <PermissionGuard permission="system:skills:edit_files">
-            <Button type="link" size="small" icon={<FileTextOutlined />} onClick={() => navigate(`/system/settings/skills/${record.id}/edit`)}>
-              {t('settings.skills.editFiles', { defaultValue: 'Edit files' })}
-            </Button>
-          </PermissionGuard>
-          <PermissionGuard permission="system:skills:view">
-            <Button type="link" size="small" icon={<EyeOutlined />} onClick={() => navigate(`/system/settings/skills/${record.id}/preview`)}>
-              {tCommon('preview', { defaultValue: 'Preview' })}
-            </Button>
-          </PermissionGuard>
-          <PermissionGuard permission="system:skills:update">
-            <Button type="link" size="small" icon={<EditOutlined />} onClick={() => handleEdit(record)}>
-              {tCommon('edit', { defaultValue: 'Edit' })}
-            </Button>
-          </PermissionGuard>
-          <PermissionGuard permission="system:skills:delete">
-            <Button type="link" size="small" danger icon={<DeleteOutlined />} onClick={() => Modal.confirm({ title: tCommon('confirmDelete', { defaultValue: 'Confirm delete?' }), onOk: () => deleteSkill(record.id) })}>
-              {tCommon('delete', { defaultValue: 'Delete' })}
-            </Button>
-          </PermissionGuard>
-        </Space>
+        <Actions
+          actions={[
+            {
+              key: 'edit_files',
+              icon: <FileTextOutlined />,
+              onClick: async () => navigate(`/system/settings/skills/${record.id}/edit`),
+              permission: 'system:skills:edit_files',
+            },
+            {
+              key: 'view',
+              icon: <EyeOutlined />,
+              onClick: async () => navigate(`/system/settings/skills/${record.id}/preview`),
+              permission: 'system:skills:view',
+            },
+            {
+              key: 'update',
+              icon: <EditOutlined />,
+              onClick: async () => handleEdit(record),
+              permission: 'system:skills:update',
+            },
+            {
+              key: 'delete',
+              icon: <DeleteOutlined />,
+              danger: true,
+              confirm: {
+                title: tCommon('confirmDelete', { defaultValue: 'Confirm delete?' }),
+                onConfirm: async () => deleteSkill(record.id),
+              },
+              permission: 'system:skills:delete',
+            },
+          ]}
+        />
       ),
     },
   ];

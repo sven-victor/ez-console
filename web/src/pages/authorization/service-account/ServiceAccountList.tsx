@@ -53,6 +53,7 @@ import { useTranslation } from 'react-i18next';
 import { useSite } from '@/contexts/SiteContext';
 import { useAuth } from '@/hooks/useAuth';
 import ServiceAccountForm from './ServiceAccountForm';
+import Actions from '@/components/Actions';
 
 // Service Account List Page
 const ServiceAccountList: React.FC = () => {
@@ -206,25 +207,25 @@ const ServiceAccountList: React.FC = () => {
     },
     ...(enableMultiOrg
       ? [
-          {
-            title: t('serviceAccount.organization', { defaultValue: 'Organization' }),
-            key: 'organization',
-            render: (_: unknown, record: API.ServiceAccount) => {
-              if (record.organization_id) {
-                return (
-                  <Tag icon={<TeamOutlined />} color="blue">
-                    {record.organization?.name || record.organization_id}
-                  </Tag>
-                );
-              }
+        {
+          title: t('serviceAccount.organization', { defaultValue: 'Organization' }),
+          key: 'organization',
+          render: (_: unknown, record: API.ServiceAccount) => {
+            if (record.organization_id) {
               return (
-                <Tag color="default">
-                  {t('serviceAccount.global', { defaultValue: 'Global' })}
+                <Tag icon={<TeamOutlined />} color="blue">
+                  {record.organization?.name || record.organization_id}
                 </Tag>
               );
-            },
+            }
+            return (
+              <Tag color="default">
+                {t('serviceAccount.global', { defaultValue: 'Global' })}
+              </Tag>
+            );
           },
-        ]
+        },
+      ]
       : []),
     {
       title: t('serviceAccount.status', { defaultValue: 'Status' }),
@@ -277,58 +278,38 @@ const ServiceAccountList: React.FC = () => {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
       render: (_: any, record: API.ServiceAccount) => (
-        <Space size="small">
-          <PermissionGuard permission="authorization:service_account:view">
-            <Tooltip title={t('serviceAccount.viewDetail', { defaultValue: 'View Detail' })}>
-              <Button
-                type="text"
-                size="small"
-                icon={<EyeOutlined />}
-                onClick={() => navigate(`/authorization/service-accounts/${record.id}`)}
-              />
-            </Tooltip>
-          </PermissionGuard>
-
-          <PermissionGuard permission="authorization:service_account:update">
-            <Tooltip title={t('serviceAccount.edit', { defaultValue: 'Edit' })}>
-              <Button
-                type="text"
-                size="small"
-                icon={<EditOutlined />}
-                onClick={() => showEditModal(record)}
-              />
-            </Tooltip>
-          </PermissionGuard>
-
-          <PermissionGuard permission="authorization:service_account:update">
-            <Tooltip title={record.status === 'active' ? tCommon('disable', { defaultValue: 'Disable' }) : tCommon('enable', { defaultValue: 'Enable' })}>
-              <Button
-                type="text"
-                size="small"
-                icon={record.status === 'active' ? <LockOutlined /> : <CheckCircleOutlined />}
-                onClick={() => handleToggleStatus(record)}
-              />
-            </Tooltip>
-          </PermissionGuard>
-
-          <PermissionGuard permission="authorization:service_account:delete">
-            <Tooltip title={t('serviceAccount.delete', { defaultValue: 'Delete' })}>
-              <Popconfirm
-                title={t('serviceAccount.deleteConfirm', { defaultValue: 'Are you sure you want to delete this service account?' })}
-                onConfirm={() => handleDelete(record.id)}
-                okText={tCommon('confirm', { defaultValue: 'Confirm' })}
-                cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
-              >
-                <Button
-                  type="text"
-                  size="small"
-                  danger
-                  icon={<DeleteOutlined />}
-                />
-              </Popconfirm>
-            </Tooltip>
-          </PermissionGuard>
-        </Space>
+        <Actions
+          actions={[
+            {
+              key: 'view',
+              icon: <EyeOutlined />,
+              onClick: async () => navigate(`/authorization/service-accounts/${record.id}`),
+              permission: 'authorization:service_account:view',
+            },
+            {
+              key: 'edit',
+              icon: <EditOutlined />,
+              onClick: async () => showEditModal(record),
+              permission: 'authorization:service_account:update',
+            },
+            {
+              key: 'toggleStatus',
+              icon: record.status === 'active' ? <LockOutlined /> : <CheckCircleOutlined />,
+              onClick: async () => handleToggleStatus(record),
+              permission: 'authorization:service_account:update',
+            },
+            {
+              key: 'delete',
+              icon: <DeleteOutlined />,
+              danger: true,
+              confirm: {
+                title: t('serviceAccount.deleteConfirm', { defaultValue: 'Are you sure you want to delete this service account?' }),
+                onConfirm: async () => handleDelete(record.id),
+              },
+              permission: 'authorization:service_account:delete',
+            },
+          ]}
+        />
       ),
     },
   ];
@@ -375,8 +356,8 @@ const ServiceAccountList: React.FC = () => {
             <Col xs={24} sm={12} md={8} lg={6} style={{ display: 'flex', alignItems: 'flex-end' }}>
               <Form.Item>
                 <Space>
-                  <Button type="primary" htmlType="submit" icon={<FilterOutlined />}>
-                    {tCommon('filter', { defaultValue: 'Filter' })}
+                  <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+                    {tCommon('search', { defaultValue: 'Search' })}
                   </Button>
                   <Button onClick={handleReset} icon={<ReloadOutlined />}>
                     {tCommon('reset', { defaultValue: 'Reset' })}

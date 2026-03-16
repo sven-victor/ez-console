@@ -192,21 +192,18 @@ const OrganizationSettings: React.FC = () => {
           actions={[
             {
               key: 'view',
-              label: tCommon('view', { defaultValue: 'View' }),
               icon: <EyeOutlined />,
               onClick: async () => navigate(`/system/settings/organizations/${record.id}`),
               permission: 'system:organization:view',
             },
             {
               key: 'edit',
-              label: tCommon('edit', { defaultValue: 'Edit' }),
               icon: <EditOutlined />,
               onClick: async () => handleEdit(record),
               permission: 'system:organization:update',
             },
             {
               key: 'delete',
-              label: tCommon('delete', { defaultValue: 'Delete' }),
               icon: <DeleteOutlined />,
               danger: true,
               onClick: async () => handleDelete(record),
