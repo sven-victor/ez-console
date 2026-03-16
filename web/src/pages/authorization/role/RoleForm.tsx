@@ -402,6 +402,28 @@ const RoleForm: React.FC = () => {
     }
   };
 
+  const templateSelectProps = useMemo(() => {
+    return {
+      placeholder: t('role.insertTemplate', { defaultValue: 'Insert Template' }),
+      options: [
+        { label: t('role.allowAll', { defaultValue: 'Allow All' }), value: 'allow_all' },
+        { label: t('role.denyAll', { defaultValue: 'Deny All' }), value: 'deny_all' },
+        {
+          label: t('role.allowWithAction', { defaultValue: 'Allow with Action' }),
+          value: 'allow_with_action',
+        },
+        {
+          label: t('role.denyWithCondition', { defaultValue: 'Allow with Condition' }),
+          value: 'allow_with_condition',
+        },
+        {
+          label: t('role.allowWithUri', { defaultValue: 'Allow with URI' }),
+          value: 'allow_with_uri',
+        },
+      ]
+    };
+  }, [t]);
+
   const handleSubmit = async (values: any) => {
     const payload = { ...values };
 
@@ -830,23 +852,7 @@ const RoleForm: React.FC = () => {
                     <span className={styles.rolePolicyExtra}>
                       <Select
                         style={{ width: 160 }}
-                        placeholder={t('role.insertTemplate', { defaultValue: 'Insert Template' })}
-                        options={[
-                          { label: t('role.allowAll', { defaultValue: 'Allow All' }), value: 'allow_all' },
-                          { label: t('role.denyAll', { defaultValue: 'Deny All' }), value: 'deny_all' },
-                          {
-                            label: t('role.allowWithAction', { defaultValue: 'Allow with Action' }),
-                            value: 'allow_with_action',
-                          },
-                          {
-                            label: t('role.denyWithCondition', { defaultValue: 'Allow with Condition' }),
-                            value: 'allow_with_condition',
-                          },
-                          {
-                            label: t('role.allowWithUri', { defaultValue: 'Allow with URI' }),
-                            value: 'allow_with_uri',
-                          },
-                        ]}
+                        {...templateSelectProps}
                         onChange={(templateKey) => {
                           if (typeof templateKey === 'string') {
                             const template = templateMap[templateKey as keyof typeof templateMap];
