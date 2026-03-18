@@ -60,6 +60,7 @@ export default {
   updateFailed: 'فشل التحديث',
   fetchFailed: 'فشل جلب البيانات',
   operationFailed: 'فشلت العملية',
+  confirmDelete: 'تأكيد الحذف؟',
   done: 'تم',
   verify: 'تحقق',
   previous: 'السابق',

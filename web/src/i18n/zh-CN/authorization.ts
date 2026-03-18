@@ -342,6 +342,23 @@ export default {
       "system.toolsets.test": "测试工具集",
       "system.toolsets.update": "更新工具集",
       "system.toolsets.view": "查看工具集",
+      "Skill_Management": "技能管理",
+      "Task_Management": "任务管理",
+      "Task_Scheduler": "任务调度",
+      "system.skills.view": "查看技能",
+      "system.skills.create": "创建技能",
+      "system.skills.update": "更新技能",
+      "system.skills.delete": "删除技能",
+      "system.skills.edit_files": "编辑技能文件",
+      "task.list": "查看任务列表",
+      "task.view": "查看任务",
+      "task.cancel": "取消任务",
+      "task.retry": "重试任务",
+      "task.delete": "删除任务",
+      "task.schedule.list": "查看定时任务列表",
+      "task.schedule.update": "更新定时任务",
+      "authorization.user.reset-password": "重置用户密码",
+      "authorization.user.export": "导出用户",
     }
   },
 
@@ -370,11 +387,14 @@ export default {
     system: {
       toolsets: {
         update: '更新工具集',
+        create: '创建工具集',
       },
     },
     authorization: {
       user: {
         login: '用户登录',
+        update: '更新用户',
+        delete: '删除用户',
       },
     },
   },

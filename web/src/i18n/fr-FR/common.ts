@@ -60,6 +60,7 @@ export default {
   updateFailed: 'Échec de la mise à jour',
   fetchFailed: 'Échec de la récupération des données',
   operationFailed: 'Opération échouée',
+  confirmDelete: 'Confirmer la suppression ?',
   done: 'Terminé',
   verify: 'Vérifier',
   previous: 'Précédent',

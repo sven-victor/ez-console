@@ -60,6 +60,7 @@ export default {
   updateFailed: 'Update fehlgeschlagen',
   fetchFailed: 'Daten konnten nicht abgerufen werden',
   operationFailed: 'Vorgang fehlgeschlagen',
+  confirmDelete: 'Löschen bestätigen?',
   done: 'Fertig',
   verify: 'Überprüfen',
   previous: 'Zurück',

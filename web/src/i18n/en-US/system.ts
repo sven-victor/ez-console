@@ -498,6 +498,7 @@ export default {
       testSuccess: 'Toolset connection test successful',
       testFailed: 'Toolset connection test failed',
       deleteConfirm: 'Are you sure you want to delete this toolset?',
+      parameters: 'Parameters',
       mcp: {
         protocol: 'Protocol',
         endpoint: 'Endpoint',

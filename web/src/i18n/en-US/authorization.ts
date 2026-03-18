@@ -265,6 +265,12 @@ export default {
     typeUser: 'User',
     systemRoleCannotModify: 'System roles cannot be modified.',
     viewTitle: 'View Role',
+    insertTemplate: 'Insert Template',
+    allowAll: 'Allow All',
+    denyAll: 'Deny All',
+    allowWithAction: 'Allow with Action',
+    denyWithCondition: 'Deny with Condition',
+    allowWithUri: 'Allow with URI',
   },
   permission: {
     title: {
@@ -317,6 +323,23 @@ export default {
       "system.toolsets.test": "Test toolsets",
       "system.toolsets.update": "Update toolsets",
       "system.toolsets.view": "View toolsets",
+      "Skill_Management": "Skill Management",
+      "Task_Management": "Task Management",
+      "Task_Scheduler": "Task Scheduler",
+      "system.skills.view": "View skills",
+      "system.skills.create": "Create skill",
+      "system.skills.update": "Update skill",
+      "system.skills.delete": "Delete skill",
+      "system.skills.edit_files": "Edit skill files",
+      "task.list": "List tasks",
+      "task.view": "View task",
+      "task.cancel": "Cancel task",
+      "task.retry": "Retry task",
+      "task.delete": "Delete task",
+      "task.schedule.list": "List scheduled tasks",
+      "task.schedule.update": "Update scheduled tasks",
+      "authorization.user.reset-password": "Reset user password",
+      "authorization.user.export": "Export users",
     }
   },
 
@@ -345,11 +368,14 @@ export default {
     system: {
       toolsets: {
         update: 'Update toolsets',
+        create: 'Create toolsets',
       },
     },
     authorization: {
       user: {
         login: 'User Login',
+        update: 'Update users',
+        delete: 'Delete users',
       },
     },
   },

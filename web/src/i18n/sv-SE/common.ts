@@ -60,6 +60,7 @@ export default {
   updateFailed: 'Uppdatering misslyckades',
   fetchFailed: 'Det gick inte att hämta data',
   operationFailed: 'Operationen misslyckades',
+  confirmDelete: 'Bekräfta borttagning?',
   done: 'Klar',
   verify: 'Verifiera',
   previous: 'Föregående',

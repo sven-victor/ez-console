@@ -499,6 +499,7 @@ export default {
       testSuccess: '工具集连接测试成功',
       testFailed: '工具集连接测试失败',
       deleteConfirm: '确定要删除此工具集吗？',
+      parameters: '参数',
       mcp: {
         protocol: '协议',
         endpoint: '端点',

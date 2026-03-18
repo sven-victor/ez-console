@@ -60,6 +60,7 @@ export default {
   updateFailed: 'Update failed',
   fetchFailed: 'Failed to fetch data',
   operationFailed: 'Operation failed',
+  confirmDelete: 'Confirm delete?',
   done: 'Done',
   verify: 'Verify',
   previous: 'Previous',
