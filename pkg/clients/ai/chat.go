@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"unicode"
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -96,7 +97,7 @@ type ChatStreamEvent struct {
 	Role            model.AIChatMessageRole `json:"role,omitempty"`
 	ToolCalls       []ToolCall              `json:"tool_calls,omitempty"`
 	EventType       EventType               `json:"event_type,omitempty"`
-	ClientToolCalls []ClientToolPendingCall  `json:"client_tool_calls,omitempty"`
+	ClientToolCalls []ClientToolPendingCall `json:"client_tool_calls,omitempty"`
 	Usage           *TokenUsage             `json:"usage,omitempty"`
 }
 
@@ -150,6 +151,11 @@ type ChatCompletionOptions struct {
 	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
 	OnMessageAdded          func(ctx context.Context, message ChatMessage)
 	OnTokenUsage            func(ctx context.Context, stats TokenUsageStats)
+
+	// AIClientWrapper optionally wraps the underlying AIClient before it is
+	// used for LLM calls. This allows injecting cross-cutting concerns such
+	// as tracing without modifying the client itself.
+	AIClientWrapper func(client AIClient) AIClient
 }
 
 type WithChatOptions func(options *ChatCompletionOptions)
@@ -214,6 +220,12 @@ func WithChatClientTools(tools []openai.Tool) WithChatOptions {
 	}
 }
 
+func WithChatAIClientWrapper(wrapper func(client AIClient) AIClient) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.AIClientWrapper = wrapper
+	}
+}
+
 func WithChatOnTokenUsage(onTokenUsage func(ctx context.Context, stats TokenUsageStats)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.OnTokenUsage = onTokenUsage
@@ -221,17 +233,59 @@ func WithChatOnTokenUsage(onTokenUsage func(ctx context.Context, stats TokenUsag
 }
 
 // EstimateTokens approximates token count for a list of messages.
-// Uses a simple heuristic: 1 token ~ 4 characters.
+// Uses a simple heuristic: 1 token ~= 1~4 characters (depending on the language).
 func EstimateTokens(messages []ChatMessage) int {
-	totalChars := 0
+	totalTokens := 0
+
 	for _, msg := range messages {
-		totalChars += len(msg.Content) + len(msg.Role)
+		totalTokens += estimateStringTokens(string(msg.Role))
+		totalTokens += estimateStringTokens(msg.Content)
+
 		for _, tc := range msg.ToolCalls {
-			totalChars += len(tc.ID) + len(string(tc.Type)) + len(tc.Function.Name) + len(tc.Function.Arguments)
+			totalTokens += estimateStringTokens(tc.ID)
+			totalTokens += estimateStringTokens(string(tc.Type))
+			totalTokens += estimateStringTokens(tc.Function.Name)
+
+			totalTokens += int(float64(estimateStringTokens(tc.Function.Arguments)) * 1.2)
 		}
-		totalChars += len(msg.ToolCallID)
+
+		totalTokens += estimateStringTokens(msg.ToolCallID)
+
+		totalTokens += 4
 	}
-	return (totalChars + 3) / 4
+
+	return totalTokens
+}
+
+func estimateStringTokens(s string) int {
+	tokens := 0
+
+	for _, r := range s {
+		switch {
+		case isCJK(r):
+			tokens += 1
+
+		case unicode.IsLetter(r) || unicode.IsDigit(r):
+			tokens += 1
+
+		case unicode.IsSpace(r):
+			continue
+
+		default:
+			tokens += 1
+		}
+	}
+
+	return int(float64(tokens)*0.6 + 0.5)
+}
+
+func isCJK(r rune) bool {
+	return unicode.In(r,
+		unicode.Han,
+		unicode.Hiragana,
+		unicode.Katakana,
+		unicode.Hangul,
+	)
 }
 
 // ChatErrorType classifies the kind of failure from an AI API call.

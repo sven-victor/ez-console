@@ -232,6 +232,19 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 				},
 			})
 		}
+		if resp.Usage != nil {
+			return &ChatStreamEvent{
+				MessageID: o.messageID,
+				Content:   choice.Delta.Content,
+				Role:      model.AIChatMessageRole(choice.Delta.Role),
+				EventType: EventTypeContent,
+				ToolCalls: toolCalls,
+				Usage: &TokenUsage{
+					PromptTokens:     resp.Usage.PromptTokens,
+					CompletionTokens: resp.Usage.CompletionTokens,
+				},
+			}, nil
+		}
 		if choice.Delta.Content != "" || len(toolCalls) > 0 {
 			return &ChatStreamEvent{
 				MessageID: o.messageID,

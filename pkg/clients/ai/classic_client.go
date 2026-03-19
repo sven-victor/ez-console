@@ -115,6 +115,11 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		}
 	}
 
+	var aiClient AIClient = c.aiClient
+	if opts.AIClientWrapper != nil {
+		aiClient = opts.AIClientWrapper(c.aiClient)
+	}
+
 	// Helper function to append message and trigger callback
 	appendMessage := func(msg ChatMessage) {
 		messages = append(messages, msg)
@@ -182,7 +187,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 
 		level.Debug(logger).Log("msg", "Attempting one-shot summarization", "count", len(messagesToSummarize))
 		estPrompt := EstimateTokens(summaryMsgs)
-		response, err := c.aiClient.Chat(ctx, summaryMsgs, nil)
+		response, err := aiClient.Chat(ctx, summaryMsgs, nil)
 		if err == nil && response != nil {
 			recordUsage(response, estPrompt)
 			messages = make([]ChatMessage, 0, 2)
@@ -201,7 +206,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		}
 
 		level.Info(logger).Log("msg", "One-shot summarization failed, falling back to segmented summarization", "error", err)
-		summarizedMessages, serr := segmentedSummarize(ctx, c.aiClient, messages, fmt.Sprintf("proactive summarization fallback: %v", err))
+		summarizedMessages, serr := segmentedSummarize(ctx, aiClient, messages, fmt.Sprintf("proactive summarization fallback: %v", err))
 		if serr != nil {
 			return fmt.Errorf("segmented summarization fallback also failed: %w", serr)
 		}
@@ -230,7 +235,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 
 		level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult))
 		estPrompt := EstimateTokens(summarizeMessages)
-		response, err := c.aiClient.Chat(ctx, summarizeMessages, nil)
+		response, err := aiClient.Chat(ctx, summarizeMessages, nil)
 		if err != nil {
 			return "", fmt.Errorf("failed to summarize tool result: %w", err)
 		}
@@ -272,7 +277,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		estimatedPromptTokens := EstimateTokens(messages)
 
 		response, err := backoff.Retry(ctx, func() (*ChatMessage, error) {
-			resp, err := c.aiClient.Chat(ctx, messages, toolSets)
+			resp, err := aiClient.Chat(ctx, messages, toolSets)
 			if err != nil {
 				if _, ok := IsChatError(err, ChatErrorTypeRateLimitExceeded); ok {
 					level.Warn(logger).Log("msg", "Rate limit hit, will retry with exponential backoff")
@@ -289,7 +294,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 				}
 				summaryAttempts++
 				level.Info(logger).Log("msg", "Max tokens exceeded, starting segmented summarization", "attempt", summaryAttempts)
-				summarizedMessages, serr := segmentedSummarize(ctx, c.aiClient, messages, aiErr.Detail)
+				summarizedMessages, serr := segmentedSummarize(ctx, aiClient, messages, aiErr.Detail)
 				if serr != nil {
 					return nil, fmt.Errorf("segmented summarization failed: %w", serr)
 				}
@@ -376,7 +381,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		resultMessages = append(resultMessages, finalPromptMessage)
 
 		estPrompt := EstimateTokens(messages)
-		response, err := c.aiClient.Chat(ctx, messages, nil)
+		response, err := aiClient.Chat(ctx, messages, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create final prompt completion: %w", err)
 		}
@@ -400,7 +405,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		resultMessages = append(resultMessages, schemaMessage)
 
 		estPrompt := EstimateTokens(messages)
-		response, err := c.aiClient.Chat(ctx, messages, nil)
+		response, err := aiClient.Chat(ctx, messages, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create JSON formatted response: %w", err)
 		}
@@ -1145,8 +1150,13 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 		toolSets[clientToolSetKey] = NewClientToolsProxy(opts.ClientTools)
 	}
 
+	var aiClient AIClient = client
+	if opts.AIClientWrapper != nil {
+		aiClient = opts.AIClientWrapper(client)
+	}
+
 	stream := &ClassicChatStream{
-		client:           client,
+		client:           aiClient,
 		messages:         messages,
 		toolSets:         toolSets,
 		messageID:        uuid.Must(uuid.NewV4()).String(),

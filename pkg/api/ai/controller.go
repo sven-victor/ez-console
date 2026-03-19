@@ -25,6 +25,7 @@ import (
 type Controller struct {
 	*AIModelController
 	*AIChatController
+	*AITraceController
 }
 
 // NewController creates a new AI controller
@@ -32,6 +33,7 @@ func NewController(svc *service.Service) *Controller {
 	return &Controller{
 		AIModelController: NewAIModelController(svc),
 		AIChatController:  NewAIChatController(svc),
+		AITraceController: NewAITraceController(svc),
 	}
 }
 
@@ -44,4 +46,7 @@ func (c *Controller) RegisterRoutes(ctx context.Context, router *gin.RouterGroup
 
 	// Register AI chat routes
 	c.AIChatController.RegisterRoutes(ai)
+
+	// Register AI trace routes
+	c.AITraceController.RegisterRoutes(ai)
 }

@@ -4,7 +4,6 @@
   "module": "lib/ez-console.es.js",
   "style": "lib/style.css",
   "types": "types/index.d.ts",
-  "private": true,
   "version": "1.11.4",
   "type": "module",
   "scripts": {

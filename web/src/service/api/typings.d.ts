@@ -51,6 +51,8 @@ declare global {
     type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
   
     interface AIChatSession {
+      /** Estimated tokens for unsummarized messages (next LLM input) */
+      active_tokens: number;
       /** Whether the session is anonymous */
       anonymous: boolean;
       created_at: string;
@@ -67,6 +69,10 @@ declare global {
       start_time: string;
       /** Session title */
       title: string;
+      /** Cumulative completion tokens across all API calls */
+      total_completion_tokens: number;
+      /** Cumulative prompt tokens across all API calls */
+      total_prompt_tokens: number;
       updated_at: string;
       /** User ID */
       user_id: string;
@@ -111,6 +117,26 @@ declare global {
       index: number;
       type: string;
     }
+  
+    interface AITraceEvent {
+      content: string;
+      created_at: string;
+      duration_ms: number;
+      event_type: AITraceEventType;
+      id: string;
+      step_order: number;
+      trace_id: string;
+      updated_at: string;
+    }
+  
+    type AITraceEventType =
+      | "llm_request"
+      | "llm_response"
+      | "token_usage"
+      | "tool_call"
+      | "tool_result"
+      | "error"
+      | "summary";
   
     interface AITypeDefinition {
       config_schema: Schema;
@@ -206,6 +232,7 @@ declare global {
       message_id: string;
       role: AIChatMessageRole;
       tool_calls: ToolCall[];
+      usage: TokenUsage;
     }
   
     interface CheckPasswordComplexityRequest {
@@ -404,6 +431,11 @@ declare global {
       id: string;
     }
   
+    interface downloadAITraceEventsParams {
+      /** Trace ID */
+      trace_id: string;
+    }
+  
     interface downloadFileParams {
       /** File key */
       fileKey: string;
@@ -472,6 +504,11 @@ declare global {
     interface getAIModelParams {
       /** AI model ID */
       id: string;
+    }
+  
+    interface getAITraceEventsParams {
+      /** Trace ID */
+      trace_id: string;
     }
   
     interface getAuditLogsParams {
@@ -1097,9 +1134,23 @@ declare global {
       new_password: string;
     }
   
+    interface ResponseAiapiTraceStatusResponse {
+      code: string;
+      data: TraceStatusResponse;
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayAuthorizationapiOAuthProvider {
       code: string;
       data: OAuthProvider[];
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseArrayModelAITraceEvent {
+      code: string;
+      data: AITraceEvent[];
       err: string;
       trace_id: string;
     }
@@ -1883,8 +1934,17 @@ declare global {
       id: string;
     }
   
+    interface ToggleTraceRequest {
+      enabled: boolean;
+    }
+  
     interface TokenResponse {
       token: string;
+    }
+  
+    interface TokenUsage {
+      completion_tokens: number;
+      prompt_tokens: number;
     }
   
     interface Tool {
@@ -1949,6 +2009,10 @@ declare global {
     }
   
     type ToolType = "function";
+  
+    interface TraceStatusResponse {
+      enabled: boolean;
+    }
   
     interface triggerTaskScheduleParams {
       /** Schedule ID */

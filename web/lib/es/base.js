@@ -3,34 +3,34 @@ import f from "i18next";
 import { initReactI18next as v } from "react-i18next";
 import b from "i18next-browser-languagedetector";
 const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const a = e instanceof Date ? e : new Date(e), r = a.getFullYear(), o = String(a.getMonth() + 1).padStart(2, "0"), s = String(a.getDate()).padStart(2, "0"), l = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), n = String(a.getSeconds()).padStart(2, "0");
-  return t.replace("YYYY", String(r)).replace("MM", o).replace("DD", s).replace("HH", l).replace("mm", i).replace("ss", n);
+  const i = e instanceof Date ? e : new Date(e), r = i.getFullYear(), o = String(i.getMonth() + 1).padStart(2, "0"), s = String(i.getDate()).padStart(2, "0"), l = String(i.getHours()).padStart(2, "0"), a = String(i.getMinutes()).padStart(2, "0"), n = String(i.getSeconds()).padStart(2, "0");
+  return t.replace("YYYY", String(r)).replace("MM", o).replace("DD", s).replace("HH", l).replace("mm", a).replace("ss", n);
 }, fe = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
-  const a = e.trim().toLowerCase();
-  if (a.startsWith("#")) {
-    let i = a.slice(1);
-    if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
+  const i = e.trim().toLowerCase();
+  if (i.startsWith("#")) {
+    let a = i.slice(1);
+    if (a.length === 3 && (a = a[0] + a[0] + a[1] + a[1] + a[2] + a[2]), a.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const n = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), c = parseInt(i.slice(4, 6), 16);
+    const n = parseInt(a.slice(0, 2), 16), d = parseInt(a.slice(2, 4), 16), c = parseInt(a.slice(4, 6), 16);
     if (isNaN(n) || isNaN(d) || isNaN(c))
       throw new Error("Invalid characters in HEX color value.");
     return `rgba(${n}, ${d}, ${c}, ${t})`;
   }
-  const r = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = a.match(r);
+  const r = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = i.match(r);
   if (o) {
-    const i = parseInt(o[1], 10), n = parseInt(o[2], 10), d = parseInt(o[3], 10);
-    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
+    const a = parseInt(o[1], 10), n = parseInt(o[2], 10), d = parseInt(o[3], 10);
+    if (a < 0 || a > 255 || n < 0 || n > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${i}, ${n}, ${d}, ${t})`;
+    return `rgba(${a}, ${n}, ${d}, ${t})`;
   }
-  const s = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = a.match(s);
+  const s = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = i.match(s);
   if (l) {
-    const i = parseInt(l[1], 10), n = parseInt(l[2], 10), d = parseInt(l[3], 10);
-    if (i < 0 || i > 255 || n < 0 || n > 255 || d < 0 || d > 255)
+    const a = parseInt(l[1], 10), n = parseInt(l[2], 10), d = parseInt(l[3], 10);
+    if (a < 0 || a > 255 || n < 0 || n > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${i}, ${n}, ${d}, ${t})`;
+    return `rgba(${a}, ${n}, ${d}, ${t})`;
   }
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
@@ -38,13 +38,13 @@ const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
 }, ve = (e) => {
   if (!e)
     return "";
-  const [t, a] = e.split("@");
-  return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
+  const [t, i] = e.split("@");
+  return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + i : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + i;
 }, be = (e) => {
   const t = "/";
   return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
 };
-async function A(e, t) {
+async function k(e, t) {
   return p("/api/files", {
     method: "GET",
     params: {
@@ -53,7 +53,7 @@ async function A(e, t) {
     ...t || {}
   });
 }
-async function k(e, t, a) {
+async function A(e, t, i) {
   const r = new FormData();
   return t && r.append("file", t), Object.keys(e).forEach((o) => {
     const s = e[o];
@@ -62,29 +62,29 @@ async function k(e, t, a) {
     method: "POST",
     data: r,
     requestType: "form",
-    ...a || {}
+    ...i || {}
   });
 }
-async function S(e, t) {
-  const { fileKey: a, ...r } = e;
-  return p(`/api/files/${a}`, {
+async function y(e, t) {
+  const { fileKey: i, ...r } = e;
+  return p(`/api/files/${i}`, {
     method: "GET",
     params: { ...r },
     ...t || {}
   });
 }
-async function y(e) {
+async function S(e) {
   return p("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: S,
-  getStatistics: y,
-  listFiles: A,
-  uploadFile: k
+  downloadFile: y,
+  getStatistics: S,
+  listFiles: k,
+  uploadFile: A
 }, Symbol.toStringTag, { value: "Module" })), P = {
   login: {
     subtitle: "登录您的账户",
@@ -309,7 +309,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, R = {
+}, T = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -355,6 +355,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateFailed: "Update failed",
   fetchFailed: "Failed to fetch data",
   operationFailed: "Operation failed",
+  confirmDelete: "Confirm delete?",
   done: "Done",
   verify: "Verify",
   previous: "Previous",
@@ -380,7 +381,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, T = {
+}, R = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -628,7 +629,13 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "System",
     typeUser: "User",
     systemRoleCannotModify: "System roles cannot be modified.",
-    viewTitle: "View Role"
+    viewTitle: "View Role",
+    insertTemplate: "Insert Template",
+    allowAll: "Allow All",
+    denyAll: "Deny All",
+    allowWithAction: "Allow with Action",
+    denyWithCondition: "Deny with Condition",
+    allowWithUri: "Allow with URI"
   },
   permission: {
     title: {
@@ -680,7 +687,24 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.toolsets.delete": "Delete toolsets",
       "system.toolsets.test": "Test toolsets",
       "system.toolsets.update": "Update toolsets",
-      "system.toolsets.view": "View toolsets"
+      "system.toolsets.view": "View toolsets",
+      Skill_Management: "Skill Management",
+      Task_Management: "Task Management",
+      Task_Scheduler: "Task Scheduler",
+      "system.skills.view": "View skills",
+      "system.skills.create": "Create skill",
+      "system.skills.update": "Update skill",
+      "system.skills.delete": "Delete skill",
+      "system.skills.edit_files": "Edit skill files",
+      "task.list": "List tasks",
+      "task.view": "View task",
+      "task.cancel": "Cancel task",
+      "task.retry": "Retry task",
+      "task.delete": "Delete task",
+      "task.schedule.list": "List scheduled tasks",
+      "task.schedule.update": "Update scheduled tasks",
+      "authorization.user.reset-password": "Reset user password",
+      "authorization.user.export": "Export users"
     }
   },
   auditLog: {
@@ -706,12 +730,15 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   action: {
     system: {
       toolsets: {
-        update: "Update toolsets"
+        update: "Update toolsets",
+        create: "Create toolsets"
       }
     },
     authorization: {
       user: {
-        login: "User Login"
+        login: "User Login",
+        update: "Update users",
+        delete: "Delete users"
       }
     }
   },
@@ -853,7 +880,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, D = {
+}, z = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1337,6 +1364,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       testSuccess: "Toolset connection test successful",
       testFailed: "Toolset connection test failed",
       deleteConfirm: "Are you sure you want to delete this toolset?",
+      parameters: "Parameters",
       mcp: {
         protocol: "Protocol",
         endpoint: "Endpoint",
@@ -1378,7 +1406,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, E = {
+}, D = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1417,6 +1445,47 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Failed to set default AI model",
     deleteConfirm: "Are you sure you want to delete this AI model?"
   },
+  trace: {
+    title: "AI Trace Viewer",
+    debug: "Debug",
+    debugEnabled: "AI Debug Enabled",
+    debugDisabled: "AI Debug Disabled",
+    enableConfirm: "Enable AI debug tracing? This will record detailed AI interaction data.",
+    disableConfirm: "Disable AI debug tracing? All stored trace data will be deleted.",
+    enableSuccess: "AI debug tracing enabled",
+    disableSuccess: "AI debug tracing disabled",
+    toggleFailed: "Failed to toggle AI debug tracing",
+    statusFetchFailed: "Failed to fetch AI debug status",
+    traceId: "Trace ID",
+    traceIdPlaceholder: "Enter trace ID to search",
+    search: "Search",
+    download: "Download",
+    downloadFailed: "Failed to download trace data",
+    noEvents: "No trace events found for this trace ID",
+    fetchFailed: "Failed to fetch trace events",
+    back: "Back",
+    eventTypes: {
+      llm_request: "LLM Request",
+      llm_response: "LLM Response",
+      token_usage: "Token Usage",
+      tool_call: "Tool Call",
+      tool_result: "Tool Result",
+      error: "Error",
+      summary: "Summary"
+    },
+    duration: "Duration",
+    durationMs: "{{ms}}ms",
+    promptTokens: "Prompt Tokens",
+    completionTokens: "Completion Tokens",
+    totalTokens: "Total Tokens",
+    activeTokens: "Active Tokens",
+    tool: "Tool",
+    arguments: "Arguments",
+    result: "Result",
+    toolCallId: "Tool Call ID",
+    expandAll: "Expand All",
+    collapseAll: "Collapse All"
+  },
   chat: {
     openAssistant: "Open AI Assistant",
     newConversation: "New Conversation",
@@ -1434,7 +1503,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Skills (optional)",
     skillDomain: "Skill domain"
   }
-}, z = {
+}, C = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1496,7 +1565,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       task_log_cleanup_task: "Task Log Cleanup"
     }
   }
-}, C = {
+}, E = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1817,7 +1886,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, q = {
+}, I = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -1924,7 +1993,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, I = {
+}, q = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2031,7 +2100,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, U = {
+}, M = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2109,7 +2178,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, M = {
+}, U = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2434,7 +2503,24 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.toolsets.delete": "删除工具集",
       "system.toolsets.test": "测试工具集",
       "system.toolsets.update": "更新工具集",
-      "system.toolsets.view": "查看工具集"
+      "system.toolsets.view": "查看工具集",
+      Skill_Management: "技能管理",
+      Task_Management: "任务管理",
+      Task_Scheduler: "任务调度",
+      "system.skills.view": "查看技能",
+      "system.skills.create": "创建技能",
+      "system.skills.update": "更新技能",
+      "system.skills.delete": "删除技能",
+      "system.skills.edit_files": "编辑技能文件",
+      "task.list": "查看任务列表",
+      "task.view": "查看任务",
+      "task.cancel": "取消任务",
+      "task.retry": "重试任务",
+      "task.delete": "删除任务",
+      "task.schedule.list": "查看定时任务列表",
+      "task.schedule.update": "更新定时任务",
+      "authorization.user.reset-password": "重置用户密码",
+      "authorization.user.export": "导出用户"
     }
   },
   auditLog: {
@@ -2460,12 +2546,15 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   action: {
     system: {
       toolsets: {
-        update: "更新工具集"
+        update: "更新工具集",
+        create: "创建工具集"
       }
     },
     authorization: {
       user: {
-        login: "用户登录"
+        login: "用户登录",
+        update: "更新用户",
+        delete: "删除用户"
       }
     }
   },
@@ -3095,6 +3184,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       testSuccess: "工具集连接测试成功",
       testFailed: "工具集连接测试失败",
       deleteConfirm: "确定要删除此工具集吗？",
+      parameters: "参数",
       mcp: {
         protocol: "协议",
         endpoint: "端点",
@@ -3175,6 +3265,47 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "设置默认AI模型失败",
     deleteConfirm: "确定要删除此AI模型吗？"
   },
+  trace: {
+    title: "AI 跟踪调试",
+    debug: "调试",
+    debugEnabled: "AI 调试已启用",
+    debugDisabled: "AI 调试已关闭",
+    enableConfirm: "启用 AI 调试跟踪？这将记录详细的 AI 交互数据。",
+    disableConfirm: "关闭 AI 调试跟踪？所有存储的跟踪数据将被删除。",
+    enableSuccess: "AI 调试跟踪已启用",
+    disableSuccess: "AI 调试跟踪已关闭",
+    toggleFailed: "切换 AI 调试跟踪失败",
+    statusFetchFailed: "获取 AI 调试状态失败",
+    traceId: "跟踪号",
+    traceIdPlaceholder: "输入跟踪号搜索",
+    search: "搜索",
+    download: "下载",
+    downloadFailed: "下载跟踪数据失败",
+    noEvents: "未找到该跟踪号的事件",
+    fetchFailed: "获取跟踪事件失败",
+    back: "返回",
+    eventTypes: {
+      llm_request: "LLM 请求",
+      llm_response: "LLM 响应",
+      token_usage: "Token 使用量",
+      tool_call: "工具调用",
+      tool_result: "工具调用结果",
+      error: "错误",
+      summary: "汇总"
+    },
+    duration: "耗时",
+    durationMs: "{{ms}}ms",
+    promptTokens: "提示 Tokens",
+    completionTokens: "补全 Tokens",
+    totalTokens: "总 Tokens",
+    activeTokens: "活跃 Tokens",
+    tool: "工具",
+    arguments: "参数",
+    result: "结果",
+    toolCallId: "工具调用ID",
+    expandAll: "展开全部",
+    collapseAll: "收起全部"
+  },
   chat: {
     openAssistant: "打开智能助手",
     newConversation: "新建对话",
@@ -3192,7 +3323,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, B = {
+}, x = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3254,7 +3385,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       task_log_cleanup_task: "任务日志清理任务"
     }
   }
-}, x = {
+}, B = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3300,6 +3431,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateFailed: "Update fehlgeschlagen",
   fetchFailed: "Daten konnten nicht abgerufen werden",
   operationFailed: "Vorgang fehlgeschlagen",
+  confirmDelete: "Löschen bestätigen?",
   done: "Fertig",
   verify: "Überprüfen",
   previous: "Zurück",
@@ -3430,7 +3562,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Benutzer entsperren",
     unlockSuccess: "Benutzer erfolgreich entsperrt",
     unlockError: "Benutzer konnte nicht entsperrt werden: {{error}}",
-    ldapUserNotBound: "LDAP-Benutzer ist nicht an einen lokalen Benutzer gebunden, bitte binden."
+    ldapUserNotBound: "LDAP-Benutzer ist nicht an einen lokalen Benutzer gebunden, bitte binden.",
+    export: "Exportieren",
+    exportTaskCreated: "Exportaufgabe erstellt. Sie können den Fortschritt verfolgen und die Datei aus der Aufgabenliste herunterladen.",
+    exportTaskCreatedShort: "Exportaufgabe erstellt.",
+    exportError: "Exportaufgabe konnte nicht erstellt werden: {{error}}"
   },
   profile: {
     title: "Profil-Center",
@@ -3547,7 +3683,34 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     permissionRequired: "Bitte wählen Sie mindestens eine Berechtigung aus",
     invalidJsonFormat: "Ungültiges JSON-Format",
     permissionOrPolicyRequired: "Bitte wählen Sie mindestens eine Berechtigung oder Richtlinie aus",
-    policyDocument: "Richtliniendokument"
+    policyDocument: "Richtliniendokument",
+    organization: "Organisation",
+    global: "Global",
+    filterByOrganization: "Nach Organisation filtern",
+    selectOrganization: "Organisation auswählen (leer für global)",
+    organizationHelp: "Wählen Sie die Organisation, zu der diese Rolle gehört",
+    roleType: "Rollentyp",
+    roleTypeRequired: "Bitte wählen Sie einen Rollentyp",
+    roleTypeCannotChange: "Der Rollentyp kann nach der Erstellung nicht geändert werden",
+    globalRole: "Globale Rolle",
+    organizationRole: "Organisationsrolle",
+    organizationRequired: "Bitte wählen Sie eine Organisation",
+    noOrganizationsAvailable: "Keine Organisationen verfügbar. Bitte kontaktieren Sie Ihren Administrator.",
+    aiPermissions: "KI-Werkzeugberechtigungen",
+    loadAiToolsetsError: "KI-Werkzeugsätze konnten nicht geladen werden.",
+    aiToolsetNoTools: "Keine Werkzeuge in diesem Werkzeugsatz verfügbar.",
+    aiToolsetsEmpty: "Keine KI-Werkzeugsätze für diese Organisation verfügbar.",
+    aiPermissionsGlobalInfo: "KI-Werkzeugberechtigungen sind nur für Organisationsrollen verfügbar.",
+    typeSystem: "System",
+    typeUser: "Benutzer",
+    systemRoleCannotModify: "Systemrollen können nicht geändert werden.",
+    viewTitle: "Rolle anzeigen",
+    insertTemplate: "Vorlage einfügen",
+    allowAll: "Alle zulassen",
+    denyAll: "Alle verweigern",
+    allowWithAction: "Mit Aktion zulassen",
+    denyWithCondition: "Mit Bedingung verweigern",
+    allowWithUri: "Mit URI zulassen"
   },
   permission: {
     title: {
@@ -3599,7 +3762,43 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "authorization.service_account.role.assign": "Dienstkontorollen zuweisen",
       "authorization.service_account.policy.view": "Dienstkontorichtlinien anzeigen",
       "authorization.service_account.policy.update": "Dienstkontorichtlinien aktualisieren",
-      "statistics.view": "Statistiken anzeigen"
+      "statistics.view": "Statistiken anzeigen",
+      Skill_Management: "Skill-Verwaltung",
+      Task_Management: "Aufgabenverwaltung",
+      Task_Scheduler: "Aufgabenplaner",
+      "system.skills.view": "Skills anzeigen",
+      "system.skills.create": "Skill erstellen",
+      "system.skills.update": "Skill aktualisieren",
+      "system.skills.delete": "Skill löschen",
+      "system.skills.edit_files": "Skill-Dateien bearbeiten",
+      "task.list": "Aufgaben auflisten",
+      "task.view": "Aufgabe anzeigen",
+      "task.cancel": "Aufgabe abbrechen",
+      "task.retry": "Aufgabe wiederholen",
+      "task.delete": "Aufgabe löschen",
+      "task.schedule.list": "Geplante Aufgaben auflisten",
+      "task.schedule.update": "Geplante Aufgaben aktualisieren",
+      "authorization.user.reset-password": "Benutzerpasswort zurücksetzen",
+      "authorization.user.export": "Benutzer exportieren",
+      AI_Model_Management: "KI-Modellverwaltung",
+      AI_Chat: "KI-Chat",
+      Toolset_Management: "Werkzeugsatzverwaltung",
+      Other: "Sonstiges",
+      "ai.models.create": "KI-Modelle erstellen",
+      "ai.models.delete": "KI-Modelle löschen",
+      "ai.models.test": "KI-Modelle testen",
+      "ai.models.update": "KI-Modelle aktualisieren",
+      "ai.models.view": "KI-Modelle anzeigen",
+      "ai.chat.create": "KI-Chat erstellen",
+      "system.organization.create": "Organisation erstellen",
+      "system.organization.delete": "Organisation löschen",
+      "system.organization.update": "Organisation aktualisieren",
+      "system.organization.view": "Organisationen anzeigen",
+      "system.toolsets.create": "Werkzeugsätze erstellen",
+      "system.toolsets.delete": "Werkzeugsätze löschen",
+      "system.toolsets.test": "Werkzeugsätze testen",
+      "system.toolsets.update": "Werkzeugsätze aktualisieren",
+      "system.toolsets.view": "Werkzeugsätze anzeigen"
     }
   },
   auditLog: {
@@ -3625,12 +3824,15 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   action: {
     system: {
       toolsets: {
-        update: "Toolsets aktualisieren"
+        update: "Toolsets aktualisieren",
+        create: "Toolsets erstellen"
       }
     },
     authorization: {
       user: {
-        login: "Benutzeranmeldung"
+        login: "Benutzeranmeldung",
+        update: "Benutzer aktualisieren",
+        delete: "Benutzer löschen"
       }
     }
   },
@@ -3883,7 +4085,9 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logo: "Logo",
       homePage: "Startseite",
       disableLocalUserLogin: "Lokale Benutzeranmeldung deaktivieren",
-      disableLocalUserLoginTooltip: "Lokale Benutzeranmeldung deaktivieren, nur gültig, wenn andere Authentifizierungsmethoden aktiviert sind"
+      disableLocalUserLoginTooltip: "Lokale Benutzeranmeldung deaktivieren, nur gültig, wenn andere Authentifizierungsmethoden aktiviert sind",
+      enableMultiOrg: "Multi-Organisation aktivieren",
+      enableMultiOrgTooltip: "Multi-Organisations-Funktion aktivieren. Wenn aktiviert, können Organisationen im Tab Organisationsverwaltung verwaltet werden."
     },
     security: {
       mfa: {
@@ -4209,6 +4413,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       testSuccess: "Toolset-Verbindungstest erfolgreich",
       testFailed: "Toolset-Verbindungstest fehlgeschlagen",
       deleteConfirm: "Sind Sie sicher, dass Sie dieses Toolset löschen möchten?",
+      parameters: "Parameter",
       mcp: {
         protocol: "Protokoll",
         endpoint: "Endpunkt",
@@ -4228,6 +4433,53 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         usernameTooltip: "Benutzername des MCP-Servers",
         passwordTooltip: "Passwort des MCP-Servers",
         tokenTooltip: "Token des MCP-Servers"
+      }
+    },
+    organizations: {
+      title: "Organisationen verwalten",
+      create: "Organisation erstellen",
+      edit: "Organisation bearbeiten",
+      deleteConfirm: "Organisation löschen",
+      deleteConfirmContent: "Sind Sie sicher, dass Sie diese Organisation löschen möchten?",
+      fetchFailed: "Organisationen konnten nicht abgerufen werden",
+      createSuccess: "Organisation erfolgreich erstellt",
+      createFailed: "Organisation konnte nicht erstellt werden",
+      updateSuccess: "Organisation erfolgreich aktualisiert",
+      updateFailed: "Organisation konnte nicht aktualisiert werden",
+      deleteSuccess: "Organisation erfolgreich gelöscht",
+      deleteFailed: "Organisation konnte nicht gelöscht werden",
+      name: "Name",
+      nameRequired: "Bitte geben Sie den Namen der Organisation ein",
+      description: "Beschreibung",
+      status: "Status",
+      active: "Aktiv",
+      disabled: "Inaktiv",
+      searchPlaceholder: "Organisationen suchen...",
+      detail: "Organisation Details",
+      users: {
+        title: "Organisation Benutzer",
+        add: "Benutzer hinzufügen",
+        addSuccess: "Benutzer erfolgreich zur Organisation hinzugefügt",
+        addFailed: "Benutzer konnte nicht zur Organisation hinzugefügt werden",
+        updateRolesSuccess: "Benutzerrollen erfolgreich aktualisiert",
+        updateRolesFailed: "Benutzerrollen konnten nicht aktualisiert werden",
+        removeSuccess: "Benutzer erfolgreich aus der Organisation entfernt",
+        removeFailed: "Benutzer konnte nicht aus der Organisation entfernt werden",
+        fetchFailed: "Organisationsbenutzer konnten nicht abgerufen werden",
+        username: "Benutzername",
+        email: "E-Mail",
+        fullName: "Vollständiger Name",
+        status: "Status",
+        roles: "Rollen",
+        editRoles: "Rollen bearbeiten",
+        remove: "Entfernen",
+        searchPlaceholder: "Benutzer suchen...",
+        user: "Benutzer",
+        userRequired: "Bitte wählen Sie einen Benutzer",
+        selectUser: "Benutzer auswählen",
+        selectRoles: "Rollen auswählen",
+        removeConfirm: "Benutzer entfernen",
+        removeConfirmContent: "Sind Sie sicher, dass Sie diesen Benutzer aus der Organisation entfernen möchten? Dies entfernt auch alle Rollen in dieser Organisation."
       }
     }
   },
@@ -4289,7 +4541,60 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Standard-KI-Modell konnte nicht festgelegt werden",
     deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?"
   },
+  trace: {
+    title: "KI-Trace-Viewer",
+    debug: "Debuggen",
+    debugEnabled: "KI-Debug aktiviert",
+    debugDisabled: "KI-Debug deaktiviert",
+    enableConfirm: "KI-Debug-Tracing aktivieren? Dies zeichnet detaillierte KI-Interaktionsdaten auf.",
+    disableConfirm: "KI-Debug-Tracing deaktivieren? Alle gespeicherten Trace-Daten werden gelöscht.",
+    enableSuccess: "KI-Debug-Tracing aktiviert",
+    disableSuccess: "KI-Debug-Tracing deaktiviert",
+    toggleFailed: "KI-Debug-Tracing konnte nicht umgeschaltet werden",
+    statusFetchFailed: "KI-Debug-Status konnte nicht abgerufen werden",
+    traceId: "Trace-ID",
+    traceIdPlaceholder: "Trace-ID eingeben",
+    search: "Suchen",
+    download: "Herunterladen",
+    downloadFailed: "Trace-Daten konnten nicht heruntergeladen werden",
+    noEvents: "Keine Trace-Ereignisse für diese Trace-ID gefunden",
+    fetchFailed: "Trace-Ereignisse konnten nicht abgerufen werden",
+    back: "Zurück",
+    eventTypes: {
+      llm_request: "LLM-Anfrage",
+      llm_response: "LLM-Antwort",
+      token_usage: "Token-Nutzung",
+      tool_call: "Werkzeugaufruf",
+      tool_result: "Werkzeugergebnis",
+      error: "Fehler",
+      summary: "Zusammenfassung"
+    },
+    duration: "Dauer",
+    durationMs: "{{ms}}ms",
+    promptTokens: "Prompt-Tokens",
+    completionTokens: "Vervollständigungs-Tokens",
+    totalTokens: "Gesamt-Tokens",
+    activeTokens: "Aktive Tokens",
+    tool: "Werkzeug",
+    arguments: "Argumente",
+    result: "Ergebnis",
+    toolCallId: "Werkzeugaufruf-ID",
+    expandAll: "Alle aufklappen",
+    collapseAll: "Alle zuklappen"
+  },
   chat: {
+    openAssistant: "KI-Assistent öffnen",
+    newConversation: "Neue Konversation",
+    defaultConversationTitle: "Neue Konversation",
+    deleteConversationFailed: "Konversation konnte nicht gelöscht werden.",
+    requestInProgress: "Anfrage wird bearbeitet, bitte warten Sie auf den Abschluss.",
+    today: "Heute",
+    renameConversation: "Umbenennen",
+    inputPlaceholder: "Bitte geben Sie Ihre Nachricht ein",
+    regenerateTitle: "Titel neu generieren",
+    generatingTitle: "Titel wird generiert...",
+    titleGenerated: "Titel erfolgreich generiert",
+    titleGenerationFailed: "Titel konnte nicht generiert werden",
     skill: "Fähigkeit",
     skillsPlaceholder: "Fähigkeiten (optional)",
     skillDomain: "Fähigkeitsbereich"
@@ -4402,6 +4707,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateFailed: "Actualización fallida",
   fetchFailed: "Error al obtener los datos",
   operationFailed: "Operación fallida",
+  confirmDelete: "¿Confirmar eliminación?",
   done: "Hecho",
   verify: "Verificar",
   previous: "Anterior",
@@ -4532,7 +4838,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Desbloquear usuario",
     unlockSuccess: "Usuario desbloqueado correctamente",
     unlockError: "Error al desbloquear el usuario: {{error}}",
-    ldapUserNotBound: "El usuario LDAP no está enlazado a un usuario local, por favor enlaza."
+    ldapUserNotBound: "El usuario LDAP no está enlazado a un usuario local, por favor enlaza.",
+    export: "Exportar",
+    exportTaskCreated: "Tarea de exportación creada. Puedes ver el progreso y descargar el archivo desde la lista de tareas.",
+    exportTaskCreatedShort: "Tarea de exportación creada.",
+    exportError: "Error al crear la tarea de exportación: {{error}}"
   },
   profile: {
     title: "Centro de perfiles",
@@ -4649,7 +4959,34 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     permissionRequired: "Por favor, selecciona al menos un permiso",
     invalidJsonFormat: "Formato JSON no válido",
     permissionOrPolicyRequired: "Por favor, selecciona al menos un permiso o política",
-    policyDocument: "Documento de política"
+    policyDocument: "Documento de política",
+    organization: "Organización",
+    global: "Global",
+    filterByOrganization: "Filtrar por organización",
+    selectOrganization: "Seleccionar organización (vacío para global)",
+    organizationHelp: "Selecciona la organización a la que pertenece este rol",
+    roleType: "Tipo de rol",
+    roleTypeRequired: "Por favor, selecciona el tipo de rol",
+    roleTypeCannotChange: "El tipo de rol no se puede cambiar después de la creación",
+    globalRole: "Rol global",
+    organizationRole: "Rol de organización",
+    organizationRequired: "Por favor, selecciona una organización",
+    noOrganizationsAvailable: "No hay organizaciones disponibles. Por favor, contacta con tu administrador.",
+    aiPermissions: "Permisos de herramientas de IA",
+    loadAiToolsetsError: "Error al cargar los conjuntos de herramientas de IA.",
+    aiToolsetNoTools: "No hay herramientas disponibles en este conjunto de herramientas.",
+    aiToolsetsEmpty: "No hay conjuntos de herramientas de IA disponibles para esta organización.",
+    aiPermissionsGlobalInfo: "Los permisos de herramientas de IA solo están disponibles para roles de organización.",
+    typeSystem: "Sistema",
+    typeUser: "Usuario",
+    systemRoleCannotModify: "Los roles del sistema no se pueden modificar.",
+    viewTitle: "Ver rol",
+    insertTemplate: "Insertar plantilla",
+    allowAll: "Permitir todo",
+    denyAll: "Denegar todo",
+    allowWithAction: "Permitir con acción",
+    denyWithCondition: "Denegar con condición",
+    allowWithUri: "Permitir con URI"
   },
   permission: {
     title: {
@@ -4701,7 +5038,43 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "authorization.service_account.role.assign": "Asignar roles a cuenta de servicio",
       "authorization.service_account.policy.view": "Ver política de cuenta de servicio",
       "authorization.service_account.policy.update": "Actualizar política de cuenta de servicio",
-      "statistics.view": "Ver estadísticas"
+      "statistics.view": "Ver estadísticas",
+      Skill_Management: "Gestión de habilidades",
+      Task_Management: "Gestión de tareas",
+      Task_Scheduler: "Programador de tareas",
+      "system.skills.view": "Ver habilidades",
+      "system.skills.create": "Crear habilidad",
+      "system.skills.update": "Actualizar habilidad",
+      "system.skills.delete": "Eliminar habilidad",
+      "system.skills.edit_files": "Editar archivos de habilidad",
+      "task.list": "Listar tareas",
+      "task.view": "Ver tarea",
+      "task.cancel": "Cancelar tarea",
+      "task.retry": "Reintentar tarea",
+      "task.delete": "Eliminar tarea",
+      "task.schedule.list": "Listar tareas programadas",
+      "task.schedule.update": "Actualizar tareas programadas",
+      "authorization.user.reset-password": "Restablecer contraseña de usuario",
+      "authorization.user.export": "Exportar usuarios",
+      AI_Model_Management: "Gestión de modelos de IA",
+      AI_Chat: "Chat de IA",
+      Toolset_Management: "Gestión de conjuntos de herramientas",
+      Other: "Otros",
+      "ai.models.create": "Crear modelos de IA",
+      "ai.models.delete": "Eliminar modelos de IA",
+      "ai.models.test": "Probar modelos de IA",
+      "ai.models.update": "Actualizar modelos de IA",
+      "ai.models.view": "Ver modelos de IA",
+      "ai.chat.create": "Crear chat de IA",
+      "system.organization.create": "Crear organización",
+      "system.organization.delete": "Eliminar organización",
+      "system.organization.update": "Actualizar organización",
+      "system.organization.view": "Ver organizaciones",
+      "system.toolsets.create": "Crear conjuntos de herramientas",
+      "system.toolsets.delete": "Eliminar conjuntos de herramientas",
+      "system.toolsets.test": "Probar conjuntos de herramientas",
+      "system.toolsets.update": "Actualizar conjuntos de herramientas",
+      "system.toolsets.view": "Ver conjuntos de herramientas"
     }
   },
   auditLog: {
@@ -4727,12 +5100,15 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   action: {
     system: {
       toolsets: {
-        update: "Actualizar conjuntos de herramientas"
+        update: "Actualizar conjuntos de herramientas",
+        create: "Crear conjuntos de herramientas"
       }
     },
     authorization: {
       user: {
-        login: "Inicio de sesión de usuario"
+        login: "Inicio de sesión de usuario",
+        update: "Actualizar usuarios",
+        delete: "Eliminar usuarios"
       }
     }
   },
@@ -4985,7 +5361,9 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logo: "Logo",
       homePage: "Página de inicio",
       disableLocalUserLogin: "Deshabilitar inicio de sesión local",
-      disableLocalUserLoginTooltip: "Deshabilitar inicio de sesión local, solo válido cuando están habilitadas otras formas de autenticación"
+      disableLocalUserLoginTooltip: "Deshabilitar inicio de sesión local, solo válido cuando están habilitadas otras formas de autenticación",
+      enableMultiOrg: "Habilitar multiorganización",
+      enableMultiOrgTooltip: "Habilitar la función de multiorganización. Cuando está habilitado, las organizaciones se pueden gestionar en la pestaña Gestión de organizaciones."
     },
     security: {
       mfa: {
@@ -5311,6 +5689,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       testSuccess: "Prueba de conexión del conjunto de herramientas exitosa",
       testFailed: "Prueba de conexión del conjunto de herramientas fallida",
       deleteConfirm: "¿Está seguro de que desea eliminar este conjunto de herramientas?",
+      parameters: "Parámetros",
       mcp: {
         protocol: "Protocolo",
         endpoint: "Punto final",
@@ -5330,6 +5709,53 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         usernameTooltip: "Nombre de usuario del servidor MCP",
         passwordTooltip: "Contraseña del servidor MCP",
         tokenTooltip: "Token del servidor MCP"
+      }
+    },
+    organizations: {
+      title: "Gestión de organizaciones",
+      create: "Crear organización",
+      edit: "Editar organización",
+      deleteConfirm: "Eliminar organización",
+      deleteConfirmContent: "¿Está seguro de que desea eliminar esta organización? Esta acción no se puede deshacer.",
+      fetchFailed: "Error al obtener organizaciones",
+      createSuccess: "Organización creada exitosamente",
+      createFailed: "Error al crear organización",
+      updateSuccess: "Organización actualizada exitosamente",
+      updateFailed: "Error al actualizar organización",
+      deleteSuccess: "Organización eliminada exitosamente",
+      deleteFailed: "Error al eliminar organización",
+      name: "Nombre",
+      nameRequired: "Por favor ingrese el nombre de la organización",
+      description: "Descripción",
+      status: "Estado",
+      active: "Activo",
+      disabled: "Inactivo",
+      searchPlaceholder: "Buscar organizaciones...",
+      detail: "Detalles de la organización",
+      users: {
+        title: "Usuarios de la organización",
+        add: "Agregar usuario",
+        addSuccess: "Usuario agregado a la organización exitosamente",
+        addFailed: "Error al agregar usuario a la organización",
+        updateRolesSuccess: "Roles de usuario actualizados exitosamente",
+        updateRolesFailed: "Error al actualizar roles de usuario",
+        removeSuccess: "Usuario eliminado de la organización exitosamente",
+        removeFailed: "Error al eliminar usuario de la organización",
+        fetchFailed: "Error al obtener usuarios de la organización",
+        username: "Nombre de usuario",
+        email: "Correo electrónico",
+        fullName: "Nombre completo",
+        status: "Estado",
+        roles: "Roles",
+        editRoles: "Editar roles",
+        remove: "Eliminar",
+        searchPlaceholder: "Buscar usuarios...",
+        user: "Usuario",
+        userRequired: "Por favor, selecciona un usuario",
+        selectUser: "Seleccionar un usuario",
+        selectRoles: "Seleccionar roles",
+        removeConfirm: "Eliminar usuario",
+        removeConfirmContent: "¿Estás seguro de que quieres eliminar este usuario de esta organización? Esto también eliminará todos sus roles en esta organización."
       }
     }
   },
@@ -5352,7 +5778,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, J = {
+}, Z = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -5391,12 +5817,65 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Error al establecer modelo de IA predeterminado",
     deleteConfirm: "¿Está seguro de que desea eliminar este modelo de IA?"
   },
+  trace: {
+    title: "Visor de Rastreo IA",
+    debug: "Depurar",
+    debugEnabled: "Depuración IA habilitada",
+    debugDisabled: "Depuración IA deshabilitada",
+    enableConfirm: "¿Habilitar el rastreo de depuración IA? Esto registrará datos detallados de interacción IA.",
+    disableConfirm: "¿Deshabilitar el rastreo de depuración IA? Todos los datos de rastreo almacenados serán eliminados.",
+    enableSuccess: "Rastreo de depuración IA habilitado",
+    disableSuccess: "Rastreo de depuración IA deshabilitado",
+    toggleFailed: "Error al cambiar el rastreo de depuración IA",
+    statusFetchFailed: "Error al obtener el estado de depuración IA",
+    traceId: "ID de Rastreo",
+    traceIdPlaceholder: "Ingrese el ID de rastreo",
+    search: "Buscar",
+    download: "Descargar",
+    downloadFailed: "Error al descargar datos de rastreo",
+    noEvents: "No se encontraron eventos de rastreo para este ID",
+    fetchFailed: "Error al obtener eventos de rastreo",
+    back: "Volver",
+    eventTypes: {
+      llm_request: "Solicitud LLM",
+      llm_response: "Respuesta LLM",
+      token_usage: "Uso de Tokens",
+      tool_call: "Llamada de Herramienta",
+      tool_result: "Resultado de Herramienta",
+      error: "Error",
+      summary: "Resumen"
+    },
+    duration: "Duración",
+    durationMs: "{{ms}}ms",
+    promptTokens: "Tokens de Prompt",
+    completionTokens: "Tokens de Completado",
+    totalTokens: "Tokens Totales",
+    activeTokens: "Tokens Activos",
+    tool: "Herramienta",
+    arguments: "Argumentos",
+    result: "Resultado",
+    toolCallId: "ID de Llamada",
+    expandAll: "Expandir todo",
+    collapseAll: "Contraer todo"
+  },
   chat: {
+    openAssistant: "Abrir asistente de IA",
+    newConversation: "Nueva conversación",
+    defaultConversationTitle: "Nueva conversación",
+    deleteConversationFailed: "Error al eliminar la conversación.",
+    requestInProgress: "La solicitud está en curso, por favor espera a que se complete.",
+    today: "Hoy",
+    renameConversation: "Renombrar",
+    inputPlaceholder: "Por favor, introduce tu mensaje",
+    regenerateTitle: "Regenerar título",
+    generatingTitle: "Generando título...",
+    titleGenerated: "Título generado correctamente",
+    titleGenerationFailed: "Error al generar el título",
     skill: "Habilidad",
     skillsPlaceholder: "Habilidades (opcional)",
     skillDomain: "Dominio de habilidad"
   }
-}, Z = {
+}, J = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -5504,6 +5983,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateFailed: "Échec de la mise à jour",
   fetchFailed: "Échec de la récupération des données",
   operationFailed: "Opération échouée",
+  confirmDelete: "Confirmer la suppression ?",
   done: "Terminé",
   verify: "Vérifier",
   previous: "Précédent",
@@ -5634,7 +6114,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Déverrouiller l'utilisateur",
     unlockSuccess: "L'utilisateur a été déverrouillé avec succès",
     unlockError: "Échec du déverrouillage de l'utilisateur : {{error}}",
-    ldapUserNotBound: "L'utilisateur LDAP n'est pas lié à un utilisateur local, veuillez le lier."
+    ldapUserNotBound: "L'utilisateur LDAP n'est pas lié à un utilisateur local, veuillez le lier.",
+    export: "Exporter",
+    exportTaskCreated: "Tâche d'exportation créée. Vous pouvez suivre la progression et télécharger le fichier depuis la liste des tâches.",
+    exportTaskCreatedShort: "Tâche d'exportation créée.",
+    exportError: "Échec de la création de la tâche d'exportation : {{error}}"
   },
   profile: {
     title: "Centre de profil",
@@ -5751,7 +6235,34 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     permissionRequired: "Veuillez sélectionner au moins une autorisation",
     invalidJsonFormat: "Format JSON non valide",
     permissionOrPolicyRequired: "Veuillez sélectionner au moins une autorisation ou une politique",
-    policyDocument: "Document de politique"
+    policyDocument: "Document de politique",
+    organization: "Organisation",
+    global: "Global",
+    filterByOrganization: "Filtrer par organisation",
+    selectOrganization: "Sélectionner une organisation (vide pour global)",
+    organizationHelp: "Sélectionnez l'organisation à laquelle ce rôle appartient",
+    roleType: "Type de rôle",
+    roleTypeRequired: "Veuillez sélectionner le type de rôle",
+    roleTypeCannotChange: "Le type de rôle ne peut pas être modifié après la création",
+    globalRole: "Rôle global",
+    organizationRole: "Rôle d'organisation",
+    organizationRequired: "Veuillez sélectionner une organisation",
+    noOrganizationsAvailable: "Aucune organisation disponible. Veuillez contacter votre administrateur.",
+    aiPermissions: "Autorisations des outils IA",
+    loadAiToolsetsError: "Échec du chargement des ensembles d'outils IA.",
+    aiToolsetNoTools: "Aucun outil disponible dans cet ensemble d'outils.",
+    aiToolsetsEmpty: "Aucun ensemble d'outils IA disponible pour cette organisation.",
+    aiPermissionsGlobalInfo: "Les autorisations des outils IA ne sont disponibles que pour les rôles d'organisation.",
+    typeSystem: "Système",
+    typeUser: "Utilisateur",
+    systemRoleCannotModify: "Les rôles système ne peuvent pas être modifiés.",
+    viewTitle: "Voir le rôle",
+    insertTemplate: "Insérer un modèle",
+    allowAll: "Tout autoriser",
+    denyAll: "Tout refuser",
+    allowWithAction: "Autoriser avec action",
+    denyWithCondition: "Refuser avec condition",
+    allowWithUri: "Autoriser avec URI"
   },
   permission: {
     title: {
@@ -5803,7 +6314,43 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "authorization.service_account.role.assign": "Affecter des rôles au compte de service",
       "authorization.service_account.policy.view": "Afficher une politique du compte de service",
       "authorization.service_account.policy.update": "Mettre à jour une politique du compte de service",
-      "statistics.view": "Afficher les statistiques"
+      "statistics.view": "Afficher les statistiques",
+      Skill_Management: "Gestion des compétences",
+      Task_Management: "Gestion des tâches",
+      Task_Scheduler: "Planificateur de tâches",
+      "system.skills.view": "Voir les compétences",
+      "system.skills.create": "Créer une compétence",
+      "system.skills.update": "Mettre à jour une compétence",
+      "system.skills.delete": "Supprimer une compétence",
+      "system.skills.edit_files": "Modifier les fichiers de compétence",
+      "task.list": "Lister les tâches",
+      "task.view": "Voir la tâche",
+      "task.cancel": "Annuler la tâche",
+      "task.retry": "Réessayer la tâche",
+      "task.delete": "Supprimer la tâche",
+      "task.schedule.list": "Lister les tâches planifiées",
+      "task.schedule.update": "Mettre à jour les tâches planifiées",
+      "authorization.user.reset-password": "Réinitialiser le mot de passe de l'utilisateur",
+      "authorization.user.export": "Exporter les utilisateurs",
+      AI_Model_Management: "Gestion des modèles IA",
+      AI_Chat: "Chat IA",
+      Toolset_Management: "Gestion des ensembles d'outils",
+      Other: "Autre",
+      "ai.models.create": "Créer des modèles IA",
+      "ai.models.delete": "Supprimer des modèles IA",
+      "ai.models.test": "Tester des modèles IA",
+      "ai.models.update": "Mettre à jour des modèles IA",
+      "ai.models.view": "Afficher les modèles IA",
+      "ai.chat.create": "Créer un chat IA",
+      "system.organization.create": "Créer une organisation",
+      "system.organization.delete": "Supprimer une organisation",
+      "system.organization.update": "Mettre à jour une organisation",
+      "system.organization.view": "Afficher les organisations",
+      "system.toolsets.create": "Créer des ensembles d'outils",
+      "system.toolsets.delete": "Supprimer des ensembles d'outils",
+      "system.toolsets.test": "Tester des ensembles d'outils",
+      "system.toolsets.update": "Mettre à jour des ensembles d'outils",
+      "system.toolsets.view": "Afficher les ensembles d'outils"
     }
   },
   auditLog: {
@@ -5829,12 +6376,15 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   action: {
     system: {
       toolsets: {
-        update: "Mettre à jour les ensembles d'outils"
+        update: "Mettre à jour les ensembles d'outils",
+        create: "Créer des ensembles d'outils"
       }
     },
     authorization: {
       user: {
-        login: "Connexion utilisateur"
+        login: "Connexion utilisateur",
+        update: "Mettre à jour les utilisateurs",
+        delete: "Supprimer les utilisateurs"
       }
     }
   },
@@ -6087,7 +6637,9 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logo: "Logo",
       homePage: "Page d'accueil",
       disableLocalUserLogin: "Désactiver le login local",
-      disableLocalUserLoginTooltip: "Désactiver le login local, valide uniquement lorsque d'autres méthodes d'authentification sont activées"
+      disableLocalUserLoginTooltip: "Désactiver le login local, valide uniquement lorsque d'autres méthodes d'authentification sont activées",
+      enableMultiOrg: "Activer la multi-organisation",
+      enableMultiOrgTooltip: "Activer la fonctionnalité multi-organisation. Lorsque activé, les organisations peuvent être gérées dans l'onglet Gestion des organisations."
     },
     security: {
       mfa: {
@@ -6413,6 +6965,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       testSuccess: "Test de connexion de l'ensemble d'outils réussi",
       testFailed: "Test de connexion de l'ensemble d'outils échoué",
       deleteConfirm: "Êtes-vous sûr de vouloir supprimer cet ensemble d'outils ?",
+      parameters: "Paramètres",
       mcp: {
         protocol: "Protocole",
         endpoint: "Point de terminaison",
@@ -6432,6 +6985,53 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         usernameTooltip: "Nom d'utilisateur du serveur MCP",
         passwordTooltip: "Mot de passe du serveur MCP",
         tokenTooltip: "Jeton du serveur MCP"
+      }
+    },
+    organizations: {
+      title: "Gestion des organisations",
+      create: "Créer une organisation",
+      edit: "Modifier une organisation",
+      deleteConfirm: "Supprimer une organisation",
+      deleteConfirmContent: "Êtes-vous sûr de vouloir supprimer cette organisation ?",
+      fetchFailed: "Échec de la récupération des organisations",
+      createSuccess: "Organisation créée avec succès",
+      createFailed: "Échec de la création de l'organisation",
+      updateSuccess: "Organisation mise à jour avec succès",
+      updateFailed: "Échec de la mise à jour de l'organisation",
+      deleteSuccess: "Organisation supprimée avec succès",
+      deleteFailed: "Échec de la suppression de l'organisation",
+      name: "Nom",
+      nameRequired: "Veuillez entrer le nom de l'organisation",
+      description: "Description",
+      status: "Statut",
+      active: "Actif",
+      disabled: "Inactif",
+      searchPlaceholder: "Rechercher des organisations...",
+      detail: "Détails de l'organisation",
+      users: {
+        title: "Utilisateurs de l'organisation",
+        add: "Ajouter un utilisateur",
+        addSuccess: "Utilisateur ajouté à l'organisation avec succès",
+        addFailed: "Échec de l'ajout de l'utilisateur à l'organisation",
+        updateRolesSuccess: "Rôles de l'utilisateur mis à jour avec succès",
+        updateRolesFailed: "Échec de la mise à jour des rôles de l'utilisateur",
+        removeSuccess: "Utilisateur retiré de l'organisation avec succès",
+        removeFailed: "Échec du retrait de l'utilisateur de l'organisation",
+        fetchFailed: "Échec de la récupération des utilisateurs de l'organisation",
+        username: "Nom d'utilisateur",
+        email: "E-mail",
+        fullName: "Nom complet",
+        status: "Statut",
+        roles: "Rôles",
+        editRoles: "Modifier les rôles",
+        remove: "Retirer",
+        searchPlaceholder: "Rechercher des utilisateurs...",
+        user: "Utilisateur",
+        userRequired: "Veuillez sélectionner un utilisateur",
+        selectUser: "Sélectionner un utilisateur",
+        selectRoles: "Sélectionner les rôles",
+        removeConfirm: "Retirer l'utilisateur",
+        removeConfirmContent: "Êtes-vous sûr de vouloir retirer cet utilisateur de cette organisation ? Cela supprimera également tous ses rôles dans cette organisation."
       }
     }
   },
@@ -6493,7 +7093,60 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Échec de la définition du modèle IA par défaut",
     deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce modèle IA ?"
   },
+  trace: {
+    title: "Visualiseur de Trace IA",
+    debug: "Déboguer",
+    debugEnabled: "Débogage IA activé",
+    debugDisabled: "Débogage IA désactivé",
+    enableConfirm: "Activer le traçage de débogage IA ? Cela enregistrera les données d'interaction IA détaillées.",
+    disableConfirm: "Désactiver le traçage de débogage IA ? Toutes les données de trace stockées seront supprimées.",
+    enableSuccess: "Traçage de débogage IA activé",
+    disableSuccess: "Traçage de débogage IA désactivé",
+    toggleFailed: "Échec du basculement du traçage de débogage IA",
+    statusFetchFailed: "Échec de la récupération de l'état de débogage IA",
+    traceId: "ID de Trace",
+    traceIdPlaceholder: "Entrez l'ID de trace",
+    search: "Rechercher",
+    download: "Télécharger",
+    downloadFailed: "Échec du téléchargement des données de trace",
+    noEvents: "Aucun événement de trace trouvé pour cet ID",
+    fetchFailed: "Échec de la récupération des événements de trace",
+    back: "Retour",
+    eventTypes: {
+      llm_request: "Requête LLM",
+      llm_response: "Réponse LLM",
+      token_usage: "Utilisation des Tokens",
+      tool_call: "Appel d'Outil",
+      tool_result: "Résultat d'Outil",
+      error: "Erreur",
+      summary: "Résumé"
+    },
+    duration: "Durée",
+    durationMs: "{{ms}}ms",
+    promptTokens: "Tokens de Prompt",
+    completionTokens: "Tokens de Complétion",
+    totalTokens: "Tokens Totaux",
+    activeTokens: "Tokens Actifs",
+    tool: "Outil",
+    arguments: "Arguments",
+    result: "Résultat",
+    toolCallId: "ID d'Appel",
+    expandAll: "Tout déplier",
+    collapseAll: "Tout replier"
+  },
   chat: {
+    openAssistant: "Ouvrir l'assistant IA",
+    newConversation: "Nouvelle conversation",
+    defaultConversationTitle: "Nouvelle conversation",
+    deleteConversationFailed: "Échec de la suppression de la conversation.",
+    requestInProgress: "La requête est en cours, veuillez attendre qu'elle se termine.",
+    today: "Aujourd'hui",
+    renameConversation: "Renommer",
+    inputPlaceholder: "Veuillez saisir votre message",
+    regenerateTitle: "Regénérer le titre",
+    generatingTitle: "Génération du titre...",
+    titleGenerated: "Titre généré avec succès",
+    titleGenerationFailed: "Échec de la génération du titre",
     skill: "Compétence",
     skillsPlaceholder: "Compétences (optionnel)",
     skillDomain: "Domaine de compétence"
@@ -6606,6 +7259,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateFailed: "فشل التحديث",
   fetchFailed: "فشل جلب البيانات",
   operationFailed: "فشلت العملية",
+  confirmDelete: "تأكيد الحذف؟",
   done: "تم",
   verify: "تحقق",
   previous: "السابق",
@@ -6630,7 +7284,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, ie = {
+}, ae = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -6736,7 +7390,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "فتح المستخدم",
     unlockSuccess: "تم فتح المستخدم بنجاح",
     unlockError: "فشل فتح المستخدم: {{error}}",
-    ldapUserNotBound: "المستخدم LDAP غير مربوط إلى مستخدم محلي، يرجى الربط."
+    ldapUserNotBound: "المستخدم LDAP غير مربوط إلى مستخدم محلي، يرجى الربط.",
+    export: "تصدير",
+    exportTaskCreated: "تم إنشاء مهمة التصدير. يمكنك عرض التقدم وتنزيل الملف من قائمة المهام.",
+    exportTaskCreatedShort: "تم إنشاء مهمة التصدير.",
+    exportError: "فشل إنشاء مهمة التصدير: {{error}}"
   },
   profile: {
     title: "مركز الملف الشخصي",
@@ -6853,7 +7511,34 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     permissionRequired: "الرجاء تحديد إذن واحد على الأقل",
     invalidJsonFormat: "تنسيق JSON غير صالح",
     permissionOrPolicyRequired: "الرجاء تحديد إذن أو سياسة واحدة على الأقل",
-    policyDocument: "مستند السياسة"
+    policyDocument: "مستند السياسة",
+    organization: "المنظمة",
+    global: "عام",
+    filterByOrganization: "تصفية حسب المنظمة",
+    selectOrganization: "اختر المنظمة (فارغ للعام)",
+    organizationHelp: "اختر المنظمة التي ينتمي إليها هذا الدور",
+    roleType: "نوع الدور",
+    roleTypeRequired: "الرجاء تحديد نوع الدور",
+    roleTypeCannotChange: "لا يمكن تغيير نوع الدور بعد الإنشاء",
+    globalRole: "دور عام",
+    organizationRole: "دور تنظيمي",
+    organizationRequired: "الرجاء تحديد منظمة",
+    noOrganizationsAvailable: "لا توجد منظمات متاحة. يرجى الاتصال بالمسؤول.",
+    aiPermissions: "أذونات أدوات الذكاء الاصطناعي",
+    loadAiToolsetsError: "فشل تحميل مجموعات أدوات الذكاء الاصطناعي.",
+    aiToolsetNoTools: "لا توجد أدوات متاحة في مجموعة الأدوات هذه.",
+    aiToolsetsEmpty: "لا توجد مجموعات أدوات ذكاء اصطناعي متاحة لهذه المنظمة.",
+    aiPermissionsGlobalInfo: "أذونات أدوات الذكاء الاصطناعي متاحة فقط لأدوار المنظمة.",
+    typeSystem: "نظام",
+    typeUser: "مستخدم",
+    systemRoleCannotModify: "لا يمكن تعديل أدوار النظام.",
+    viewTitle: "عرض الدور",
+    insertTemplate: "إدراج قالب",
+    allowAll: "السماح للكل",
+    denyAll: "رفض الكل",
+    allowWithAction: "السماح بالإجراء",
+    denyWithCondition: "الرفض بالشرط",
+    allowWithUri: "السماح بالمعرف الموحد للموارد (URI)"
   },
   permission: {
     title: {
@@ -6905,7 +7590,43 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "authorization.service_account.role.assign": "تعيين أدوار إلى حسابات الخدمة",
       "authorization.service_account.policy.view": "عرض سياسة حساب الخدمة",
       "authorization.service_account.policy.update": "تحديث سياسة حساب الخدمة",
-      "statistics.view": "عرض الإحصاءات"
+      "statistics.view": "عرض الإحصاءات",
+      Skill_Management: "إدارة المهارات",
+      Task_Management: "إدارة المهام",
+      Task_Scheduler: "جدولة المهام",
+      "system.skills.view": "عرض المهارات",
+      "system.skills.create": "إنشاء مهارة",
+      "system.skills.update": "تحديث مهارة",
+      "system.skills.delete": "حذف مهارة",
+      "system.skills.edit_files": "تعديل ملفات المهارة",
+      "task.list": "عرض قائمة المهام",
+      "task.view": "عرض المهمة",
+      "task.cancel": "إلغاء المهمة",
+      "task.retry": "إعادة محاولة المهمة",
+      "task.delete": "حذف المهمة",
+      "task.schedule.list": "عرض قائمة المهام المجدولة",
+      "task.schedule.update": "تحديث المهام المجدولة",
+      "authorization.user.reset-password": "إعادة تعيين كلمة مرور المستخدم",
+      "authorization.user.export": "تصدير المستخدمين",
+      AI_Model_Management: "إدارة نماذج الذكاء الاصطناعي",
+      AI_Chat: "محادثة الذكاء الاصطناعي",
+      Toolset_Management: "إدارة مجموعات الأدوات",
+      Other: "أخرى",
+      "ai.models.create": "إنشاء نماذج الذكاء الاصطناعي",
+      "ai.models.delete": "حذف نماذج الذكاء الاصطناعي",
+      "ai.models.test": "اختبار نماذج الذكاء الاصطناعي",
+      "ai.models.update": "تحديث نماذج الذكاء الاصطناعي",
+      "ai.models.view": "عرض نماذج الذكاء الاصطناعي",
+      "ai.chat.create": "إنشاء محادثة ذكاء اصطناعي",
+      "system.organization.create": "إنشاء منظمة",
+      "system.organization.delete": "حذف منظمة",
+      "system.organization.update": "تحديث منظمة",
+      "system.organization.view": "عرض المنظمات",
+      "system.toolsets.create": "إنشاء مجموعات أدوات",
+      "system.toolsets.delete": "حذف مجموعات أدوات",
+      "system.toolsets.test": "اختبار مجموعات أدوات",
+      "system.toolsets.update": "تحديث مجموعات أدوات",
+      "system.toolsets.view": "عرض مجموعات الأدوات"
     }
   },
   auditLog: {
@@ -6931,12 +7652,15 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   action: {
     system: {
       toolsets: {
-        update: "تحديث مجموعات الأدوات"
+        update: "تحديث مجموعات الأدوات",
+        create: "إنشاء مجموعات أدوات"
       }
     },
     authorization: {
       user: {
-        login: "تسجيل دخول المستخدم"
+        login: "تسجيل دخول المستخدم",
+        update: "تحديث المستخدمين",
+        delete: "حذف المستخدمين"
       }
     }
   },
@@ -7078,7 +7802,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, ae = {
+}, ie = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -7189,7 +7913,9 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logo: "الشعار",
       homePage: "الصفحة الرئيسية",
       disableLocalUserLogin: "إلغاء تسجيل الدخول المحلي",
-      disableLocalUserLoginTooltip: "إلغاء تسجيل الدخول المحلي، يعمل فقط عندما يكون هناك طريقة تحقق أخرى مفعلة"
+      disableLocalUserLoginTooltip: "إلغاء تسجيل الدخول المحلي، يعمل فقط عندما يكون هناك طريقة تحقق أخرى مفعلة",
+      enableMultiOrg: "تمكين التنظيم المتعدد",
+      enableMultiOrgTooltip: "تمكين ميزة التنظيم المتعدد. عند التمكين، يمكن إدارة المنظمات في علامة تبويب إدارة المنظمات."
     },
     security: {
       mfa: {
@@ -7515,6 +8241,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       testSuccess: "نجح اختبار اتصال مجموعة الأدوات",
       testFailed: "فشل اختبار اتصال مجموعة الأدوات",
       deleteConfirm: "هل أنت متأكد من أنك تريد حذف مجموعة الأدوات هذه؟",
+      parameters: "المعلمات",
       mcp: {
         protocol: "البروتوكول",
         endpoint: "النقطة النهائية",
@@ -7534,6 +8261,53 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         usernameTooltip: "اسم المستخدم لخادم MCP",
         passwordTooltip: "كلمة المرور لخادم MCP",
         tokenTooltip: "الرمز لخادم MCP"
+      }
+    },
+    organizations: {
+      title: "إدارة المنظمات",
+      create: "إنشاء منظمة",
+      edit: "تحرير منظمة",
+      deleteConfirm: "حذف منظمة",
+      deleteConfirmContent: "هل أنت متأكد من أنك تريد حذف هذه المنظمة؟",
+      fetchFailed: "فشل في جلب المنظمات",
+      createSuccess: "تم إنشاء المنظمة بنجاح",
+      createFailed: "فشل في إنشاء المنظمة",
+      updateSuccess: "تم تحديث المنظمة بنجاح",
+      updateFailed: "فشل في تحديث المنظمة",
+      deleteSuccess: "تم حذف المنظمة بنجاح",
+      deleteFailed: "فشل في حذف المنظمة",
+      name: "الاسم",
+      nameRequired: "يرجى إدخال اسم المنظمة",
+      description: "الوصف",
+      status: "الحالة",
+      active: "مفعل",
+      disabled: "معطل",
+      searchPlaceholder: "بحث في المنظمات...",
+      detail: "تفاصيل المنظمة",
+      users: {
+        title: "مستخدمي المنظمة",
+        add: "إضافة مستخدم",
+        addSuccess: "تم إضافة المستخدم إلى المنظمة بنجاح",
+        addFailed: "فشل في إضافة المستخدم إلى المنظمة",
+        updateRolesSuccess: "تم تحديث أدوار المستخدم بنجاح",
+        updateRolesFailed: "فشل في تحديث أدوار المستخدم",
+        removeSuccess: "تمت إزالة المستخدم من المنظمة بنجاح",
+        removeFailed: "فشل في إزالة المستخدم من المنظمة",
+        fetchFailed: "فشل في جلب مستخدمي المنظمة",
+        username: "اسم المستخدم",
+        email: "البريد الإلكتروني",
+        fullName: "الاسم الكامل",
+        status: "الحالة",
+        roles: "الأدوار",
+        editRoles: "تعديل الأدوار",
+        remove: "إزالة",
+        searchPlaceholder: "بحث عن المستخدمين...",
+        user: "المستخدم",
+        userRequired: "الرجاء تحديد مستخدم",
+        selectUser: "اختر مستخدم",
+        selectRoles: "اختر الأدوار",
+        removeConfirm: "إزالة المستخدم",
+        removeConfirmContent: "هل أنت متأكد أنك تريد إزالة هذا المستخدم من هذه المنظمة؟ سيؤدي ذلك أيضًا إلى إزالة جميع أدواره في هذه المنظمة."
       }
     }
   },
@@ -7595,7 +8369,60 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "فشل في تعيين النموذج الذكي الافتراضي",
     deleteConfirm: "هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟"
   },
+  trace: {
+    title: "عارض تتبع الذكاء الاصطناعي",
+    debug: "تصحيح الأخطاء",
+    debugEnabled: "تصحيح أخطاء الذكاء الاصطناعي مفعّل",
+    debugDisabled: "تصحيح أخطاء الذكاء الاصطناعي معطّل",
+    enableConfirm: "تفعيل تتبع تصحيح أخطاء الذكاء الاصطناعي؟ سيتم تسجيل بيانات التفاعل التفصيلية.",
+    disableConfirm: "تعطيل تتبع تصحيح أخطاء الذكاء الاصطناعي؟ سيتم حذف جميع بيانات التتبع المخزنة.",
+    enableSuccess: "تم تفعيل تتبع تصحيح أخطاء الذكاء الاصطناعي",
+    disableSuccess: "تم تعطيل تتبع تصحيح أخطاء الذكاء الاصطناعي",
+    toggleFailed: "فشل في تبديل تتبع تصحيح أخطاء الذكاء الاصطناعي",
+    statusFetchFailed: "فشل في جلب حالة تصحيح أخطاء الذكاء الاصطناعي",
+    traceId: "معرف التتبع",
+    traceIdPlaceholder: "أدخل معرف التتبع",
+    search: "بحث",
+    download: "تحميل",
+    downloadFailed: "فشل في تحميل بيانات التتبع",
+    noEvents: "لم يتم العثور على أحداث تتبع لهذا المعرف",
+    fetchFailed: "فشل في جلب أحداث التتبع",
+    back: "رجوع",
+    eventTypes: {
+      llm_request: "طلب LLM",
+      llm_response: "استجابة LLM",
+      token_usage: "استخدام الرموز",
+      tool_call: "استدعاء أداة",
+      tool_result: "نتيجة الأداة",
+      error: "خطأ",
+      summary: "ملخص"
+    },
+    duration: "المدة",
+    durationMs: "{{ms}}ms",
+    promptTokens: "رموز الطلب",
+    completionTokens: "رموز الإكمال",
+    totalTokens: "إجمالي الرموز",
+    activeTokens: "الرموز النشطة",
+    tool: "أداة",
+    arguments: "المعاملات",
+    result: "النتيجة",
+    toolCallId: "معرف الاستدعاء",
+    expandAll: "توسيع الكل",
+    collapseAll: "طي الكل"
+  },
   chat: {
+    openAssistant: "فتح مساعد الذكاء الاصطناعي",
+    newConversation: "محادثة جديدة",
+    defaultConversationTitle: "محادثة جديدة",
+    deleteConversationFailed: "فشل حذف المحادثة.",
+    requestInProgress: "الطلب قيد التنفيذ، يرجى الانتظار حتى يكتمل.",
+    today: "اليوم",
+    renameConversation: "إعادة تسمية",
+    inputPlaceholder: "الرجاء إدخال رسالتك",
+    regenerateTitle: "إعادة إنشاء العنوان",
+    generatingTitle: "جار إنشاء العنوان...",
+    titleGenerated: "تم إنشاء العنوان بنجاح",
+    titleGenerationFailed: "فشل إنشاء العنوان",
     skill: "المهارة",
     skillsPlaceholder: "المهارات (اختياري)",
     skillDomain: "مجال المهارة"
@@ -7708,6 +8535,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateFailed: "Uppdatering misslyckades",
   fetchFailed: "Det gick inte att hämta data",
   operationFailed: "Operationen misslyckades",
+  confirmDelete: "Bekräfta borttagning?",
   done: "Klar",
   verify: "Verifiera",
   previous: "Föregående",
@@ -7838,7 +8666,11 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Lås upp användare",
     unlockSuccess: "Användaren har låsts upp",
     unlockError: "Det gick inte att låsa upp användaren: {{error}}",
-    ldapUserNotBound: "LDAP-användaren är inte bunden till en lokal användare, vänligen binda."
+    ldapUserNotBound: "LDAP-användaren är inte bunden till en lokal användare, vänligen binda.",
+    export: "Exportera",
+    exportTaskCreated: "Exportuppgift skapad. Du kan se framsteg och ladda ner filen från uppgiftslistan.",
+    exportTaskCreatedShort: "Exportuppgift skapad.",
+    exportError: "Det gick inte att skapa exportuppgift: {{error}}"
   },
   profile: {
     title: "Profilcenter",
@@ -7955,7 +8787,34 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     permissionRequired: "Vänligen välj minst en behörighet",
     invalidJsonFormat: "Ogiltigt JSON-format",
     permissionOrPolicyRequired: "Vänligen välj minst en behörighet eller policy",
-    policyDocument: "Policydokument"
+    policyDocument: "Policydokument",
+    organization: "Organisation",
+    global: "Global",
+    filterByOrganization: "Filtrera efter organisation",
+    selectOrganization: "Välj organisation (tom för global)",
+    organizationHelp: "Välj den organisation som den här rollen tillhör",
+    roleType: "Rolltyp",
+    roleTypeRequired: "Vänligen välj rolltyp",
+    roleTypeCannotChange: "Rolltypen kan inte ändras efter skapandet",
+    globalRole: "Global roll",
+    organizationRole: "Organisationsroll",
+    organizationRequired: "Vänligen välj en organisation",
+    noOrganizationsAvailable: "Inga organisationer tillgängliga. Kontakta din administratör.",
+    aiPermissions: "AI-verktygsbehörigheter",
+    loadAiToolsetsError: "Det gick inte att ladda AI-verktygsuppsättningar.",
+    aiToolsetNoTools: "Inga verktyg tillgängliga i denna verktygsuppsättning.",
+    aiToolsetsEmpty: "Inga AI-verktygsuppsättningar tillgängliga för denna organisation.",
+    aiPermissionsGlobalInfo: "AI-verktygsbehörigheter är endast tillgängliga för organisationsroller.",
+    typeSystem: "System",
+    typeUser: "Användare",
+    systemRoleCannotModify: "Systemroller kan inte ändras.",
+    viewTitle: "Visa roll",
+    insertTemplate: "Infoga mall",
+    allowAll: "Tillåt alla",
+    denyAll: "Neka alla",
+    allowWithAction: "Tillåt med åtgärd",
+    denyWithCondition: "Neka med villkor",
+    allowWithUri: "Tillåt med URI"
   },
   permission: {
     title: {
@@ -8007,7 +8866,43 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "authorization.service_account.role.assign": "Tilldela roller till tjänstekonton",
       "authorization.service_account.policy.view": "Visa tjänstekonton policy",
       "authorization.service_account.policy.update": "Uppdatera tjänstekonton policy",
-      "statistics.view": "Visa statistik"
+      "statistics.view": "Visa statistik",
+      Skill_Management: "Kompetenshantering",
+      Task_Management: "Uppgiftshantering",
+      Task_Scheduler: "Uppgiftsschemaläggare",
+      "system.skills.view": "Visa kompetenser",
+      "system.skills.create": "Skapa kompetens",
+      "system.skills.update": "Uppdatera kompetens",
+      "system.skills.delete": "Ta bort kompetens",
+      "system.skills.edit_files": "Redigera kompetensfiler",
+      "task.list": "Lista uppgifter",
+      "task.view": "Visa uppgift",
+      "task.cancel": "Avbryt uppgift",
+      "task.retry": "Försök igen uppgift",
+      "task.delete": "Ta bort uppgift",
+      "task.schedule.list": "Lista schemalagda uppgifter",
+      "task.schedule.update": "Uppdatera schemalagda uppgifter",
+      "authorization.user.reset-password": "Återställ användarlösenord",
+      "authorization.user.export": "Exportera användare",
+      AI_Model_Management: "AI-modellhantering",
+      AI_Chat: "AI-chatt",
+      Toolset_Management: "Verktygsuppsättningshantering",
+      Other: "Annat",
+      "ai.models.create": "Skapa AI-modeller",
+      "ai.models.delete": "Ta bort AI-modeller",
+      "ai.models.test": "Testa AI-modeller",
+      "ai.models.update": "Uppdatera AI-modeller",
+      "ai.models.view": "Visa AI-modeller",
+      "ai.chat.create": "Skapa AI-chatt",
+      "system.organization.create": "Skapa organisation",
+      "system.organization.delete": "Ta bort organisation",
+      "system.organization.update": "Uppdatera organisation",
+      "system.organization.view": "Visa organisationer",
+      "system.toolsets.create": "Skapa verktygsuppsättningar",
+      "system.toolsets.delete": "Ta bort verktygsuppsättningar",
+      "system.toolsets.test": "Testa verktygsuppsättningar",
+      "system.toolsets.update": "Uppdatera verktygsuppsättningar",
+      "system.toolsets.view": "Visa verktygsuppsättningar"
     }
   },
   auditLog: {
@@ -8033,12 +8928,15 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   action: {
     system: {
       toolsets: {
-        update: "Uppdatera verktygsset"
+        update: "Uppdatera verktygsset",
+        create: "Skapa verktygsuppsättningar"
       }
     },
     authorization: {
       user: {
-        login: "Användarinloggning"
+        login: "Användarinloggning",
+        update: "Uppdatera användare",
+        delete: "Ta bort användare"
       }
     }
   },
@@ -8291,7 +9189,9 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logo: "Logotyp",
       homePage: "Hem",
       disableLocalUserLogin: "Inaktivera lokal användare",
-      disableLocalUserLoginTooltip: "Inaktivera lokal användare, endast gällande när andra autentiseringsmetoder är aktiverade"
+      disableLocalUserLoginTooltip: "Inaktivera lokal användare, endast gällande när andra autentiseringsmetoder är aktiverade",
+      enableMultiOrg: "Aktivera multiorganisation",
+      enableMultiOrgTooltip: "Aktivera multiorganisationsfunktionen. När den är aktiverad kan organisationer hanteras i fliken Organisationshantering."
     },
     security: {
       mfa: {
@@ -8617,6 +9517,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       testSuccess: "Verktygsset-anslutningstest lyckades",
       testFailed: "Verktygsset-anslutningstest misslyckades",
       deleteConfirm: "Är du säker på att du vill ta bort detta verktygsset?",
+      parameters: "Parametrar",
       mcp: {
         protocol: "Protokoll",
         endpoint: "Slutpunkt",
@@ -8636,6 +9537,53 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         usernameTooltip: "MCP-serverns användarnamn",
         passwordTooltip: "MCP-serverns lösenord",
         tokenTooltip: "MCP-serverns token"
+      }
+    },
+    organizations: {
+      title: "Organisationshantering",
+      create: "Skapa organisation",
+      edit: "Redigera organisation",
+      deleteConfirm: "Ta bort organisation",
+      deleteConfirmContent: "Är du säker på att du vill ta bort denna organisation?",
+      fetchFailed: "Misslyckades med att hämta organisationer",
+      createSuccess: "Organisation skapad framgångsrikt",
+      createFailed: "Misslyckades med att skapa organisation",
+      updateSuccess: "Organisation uppdaterad framgångsrikt",
+      updateFailed: "Misslyckades med att uppdatera organisation",
+      deleteSuccess: "Organisation borttaget framgångsrikt",
+      deleteFailed: "Misslyckades med att ta bort organisation",
+      name: "Namn",
+      nameRequired: "Vänligen ange organisationens namn",
+      description: "Beskrivning",
+      status: "Status",
+      active: "Aktiv",
+      disabled: "Inaktiv",
+      searchPlaceholder: "Sök organisationer...",
+      detail: "Organisationens detaljer",
+      users: {
+        title: "Organisationens användare",
+        add: "Lägg till användare",
+        addSuccess: "Användare tillagd till organisationen framgångsrikt",
+        addFailed: "Misslyckades med att lägga till användare till organisationen",
+        updateRolesSuccess: "Användarroller uppdaterade framgångsrikt",
+        updateRolesFailed: "Misslyckades med att uppdatera användarroller",
+        removeSuccess: "Användare borttagen från organisationen framgångsrikt",
+        removeFailed: "Misslyckades med att ta bort användare från organisationen",
+        fetchFailed: "Misslyckades med att hämta organisationsanvändare",
+        username: "Användarnamn",
+        email: "E-post",
+        fullName: "Fullständigt namn",
+        status: "Status",
+        roles: "Roller",
+        editRoles: "Redigera roller",
+        remove: "Ta bort",
+        searchPlaceholder: "Sök användare...",
+        user: "Användare",
+        userRequired: "Vänligen välj en användare",
+        selectUser: "Välj en användare",
+        selectRoles: "Välj roller",
+        removeConfirm: "Ta bort användare",
+        removeConfirmContent: "Är du säker på att du vill ta bort denna användare från organisationen? Detta kommer också att ta bort alla deras roller i denna organisation."
       }
     }
   },
@@ -8697,7 +9645,60 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefaultFailed: "Misslyckades med att ange standard AI-modell",
     deleteConfirm: "Är du säker på att du vill ta bort denna AI-modell?"
   },
+  trace: {
+    title: "AI-spårningsvy",
+    debug: "Felsök",
+    debugEnabled: "AI-felsökning aktiverad",
+    debugDisabled: "AI-felsökning inaktiverad",
+    enableConfirm: "Aktivera AI-felsökningsspårning? Detta kommer att registrera detaljerad AI-interaktionsdata.",
+    disableConfirm: "Inaktivera AI-felsökningsspårning? All lagrad spårningsdata kommer att raderas.",
+    enableSuccess: "AI-felsökningsspårning aktiverad",
+    disableSuccess: "AI-felsökningsspårning inaktiverad",
+    toggleFailed: "Kunde inte växla AI-felsökningsspårning",
+    statusFetchFailed: "Kunde inte hämta AI-felsökningsstatus",
+    traceId: "Spårnings-ID",
+    traceIdPlaceholder: "Ange spårnings-ID",
+    search: "Sök",
+    download: "Ladda ner",
+    downloadFailed: "Kunde inte ladda ner spårningsdata",
+    noEvents: "Inga spårningshändelser hittades för detta ID",
+    fetchFailed: "Kunde inte hämta spårningshändelser",
+    back: "Tillbaka",
+    eventTypes: {
+      llm_request: "LLM-förfrågan",
+      llm_response: "LLM-svar",
+      token_usage: "Tokenanvändning",
+      tool_call: "Verktygsanrop",
+      tool_result: "Verktygsresultat",
+      error: "Fel",
+      summary: "Sammanfattning"
+    },
+    duration: "Varaktighet",
+    durationMs: "{{ms}}ms",
+    promptTokens: "Prompt-tokens",
+    completionTokens: "Kompletteringstokens",
+    totalTokens: "Totala tokens",
+    activeTokens: "Aktiva tokens",
+    tool: "Verktyg",
+    arguments: "Argument",
+    result: "Resultat",
+    toolCallId: "Anrops-ID",
+    expandAll: "Expandera alla",
+    collapseAll: "Komprimera alla"
+  },
   chat: {
+    openAssistant: "Öppna AI-assistent",
+    newConversation: "Ny konversation",
+    defaultConversationTitle: "Ny konversation",
+    deleteConversationFailed: "Misslyckades med att ta bort konversation.",
+    requestInProgress: "Begäran pågår, vänta tills begäran är klar.",
+    today: "Idag",
+    renameConversation: "Byt namn",
+    inputPlaceholder: "Vänligen ange ditt meddelande",
+    regenerateTitle: "Återgenerera titel",
+    generatingTitle: "Genererar titel...",
+    titleGenerated: "Titel genererad framgångsrikt",
+    titleGenerationFailed: "Misslyckades med att generera titel",
     skill: "Färdighet",
     skillsPlaceholder: "Färdigheter (valfritt)",
     skillDomain: "Färdighetsdomän"
@@ -8771,23 +9772,23 @@ f.use(b).use(v).init({
   resources: {
     "zh-CN": {
       translation: P,
-      common: U,
-      authorization: M,
+      common: M,
+      authorization: U,
       system: N,
       ai: O,
-      task: B
+      task: x
     },
     "en-US": {
       translation: w,
-      common: R,
-      authorization: T,
-      system: D,
-      ai: E,
-      task: z
+      common: T,
+      authorization: R,
+      system: z,
+      ai: D,
+      task: C
     },
     "de-DE": {
-      translation: C,
-      common: x,
+      translation: E,
+      common: B,
       authorization: V,
       system: _,
       ai: K,
@@ -8798,8 +9799,8 @@ f.use(b).use(v).init({
       common: G,
       authorization: W,
       system: H,
-      ai: J,
-      task: Z
+      ai: Z,
+      task: J
     },
     "fr-FR": {
       translation: L,
@@ -8810,15 +9811,15 @@ f.use(b).use(v).init({
       task: ee
     },
     "ar-AE": {
-      translation: q,
+      translation: I,
       common: te,
-      authorization: ie,
-      system: ae,
+      authorization: ae,
+      system: ie,
       ai: re,
       task: se
     },
     "sv-SE": {
-      translation: I,
+      translation: q,
       common: oe,
       authorization: ne,
       system: le,
@@ -8832,18 +9833,18 @@ f.use(b).use(v).init({
     escapeValue: !1
   }
 });
-const ke = {
+const Ae = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
 function h(e) {
-  const t = {}, a = e.split(/\r?\n/);
-  for (const r of a) {
+  const t = {}, i = e.split(/\r?\n/);
+  for (const r of i) {
     const o = r.trim();
     if (!o) continue;
     const s = o.indexOf(":");
     if (s <= 0) continue;
-    const l = o.slice(0, s).trim(), i = o.slice(s + 1).trim(), n = i.startsWith('"') && i.endsWith('"') || i.startsWith("'") && i.endsWith("'") ? i.slice(1, -1) : i;
+    const l = o.slice(0, s).trim(), a = o.slice(s + 1).trim(), n = a.startsWith('"') && a.endsWith('"') || a.startsWith("'") && a.endsWith("'") ? a.slice(1, -1) : a;
     t[l] = n;
   }
   return t;
@@ -8851,16 +9852,16 @@ function h(e) {
 function m(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function Se(e) {
+function ye(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
-  const a = t.slice(3), r = a.indexOf(`
+  const i = t.slice(3), r = i.indexOf(`
 ---`);
   if (r === -1) return e;
-  const o = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), l = h(o), i = Object.keys(l);
-  if (i.length === 0) return e;
-  const n = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
+  const o = i.slice(0, r).trim(), s = i.slice(r + 4).trimStart(), l = h(o), a = Object.keys(l);
+  if (a.length === 0) return e;
+  const n = "| Field | Value |", d = "| --- | --- |", c = a.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
 `);
   return n + `
 ` + d + `
@@ -8868,15 +9869,15 @@ function Se(e) {
 
 ` + s;
 }
-function ye(e) {
+function Se(e) {
   if (!e || !e.trim()) return e;
   let t = e;
-  const a = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
-  let r = t.match(a);
+  const i = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
+  let r = t.match(i);
   for (; r; ) {
-    const o = r[1].trim(), s = t.slice((r.index ?? 0) + r[0].length), l = h(o), i = Object.keys(l);
-    if (i.length > 0) {
-      const n = "| Field | Value |", d = "| --- | --- |", c = i.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
+    const o = r[1].trim(), s = t.slice((r.index ?? 0) + r[0].length), l = h(o), a = Object.keys(l);
+    if (a.length > 0) {
+      const n = "| Field | Value |", d = "| --- | --- |", c = a.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
 `), g = n + `
 ` + d + `
 ` + c;
@@ -8885,17 +9886,17 @@ function ye(e) {
 ` + s;
     } else
       t = t.slice(0, r.index) + s;
-    r = t.match(a);
+    r = t.match(i);
   }
   return t;
 }
 export {
-  ke as P,
-  Se as a,
-  Ae as b,
+  Ae as P,
+  ye as a,
+  ke as b,
   he as f,
   be as g,
   ve as m,
-  ye as s,
+  Se as s,
   fe as t
 };

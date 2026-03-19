@@ -146,6 +146,7 @@ const x = z({
     onSuccess: (s) => {
       m(s);
     },
+    ready: !!o,
     refreshDeps: [o],
     pollingInterval: g ? 3e3 : 6e4
   });

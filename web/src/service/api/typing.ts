@@ -49,6 +49,8 @@ export type AIChatMessageRole = "user" | "assistant" | "system" | "tool" | "prom
 export type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
 
 export interface AIChatSession {
+  /** Estimated tokens for unsummarized messages (next LLM input) */
+  active_tokens: number;
   /** Whether the session is anonymous */
   anonymous: boolean;
   created_at: string;
@@ -65,6 +67,10 @@ export interface AIChatSession {
   start_time: string;
   /** Session title */
   title: string;
+  /** Cumulative completion tokens across all API calls */
+  total_completion_tokens: number;
+  /** Cumulative prompt tokens across all API calls */
+  total_prompt_tokens: number;
   updated_at: string;
   /** User ID */
   user_id: string;
@@ -109,6 +115,26 @@ export interface AIToolCall {
   index: number;
   type: string;
 }
+
+export interface AITraceEvent {
+  content: string;
+  created_at: string;
+  duration_ms: number;
+  event_type: AITraceEventType;
+  id: string;
+  step_order: number;
+  trace_id: string;
+  updated_at: string;
+}
+
+export type AITraceEventType =
+  | "llm_request"
+  | "llm_response"
+  | "token_usage"
+  | "tool_call"
+  | "tool_result"
+  | "error"
+  | "summary";
 
 export interface AITypeDefinition {
   config_schema: Schema;
@@ -204,6 +230,7 @@ export interface ChatStreamEvent {
   message_id: string;
   role: AIChatMessageRole;
   tool_calls: ToolCall[];
+  usage: TokenUsage;
 }
 
 export interface CheckPasswordComplexityRequest {
@@ -402,6 +429,11 @@ export interface deleteUserParams {
   id: string;
 }
 
+export interface downloadAITraceEventsParams {
+  /** Trace ID */
+  trace_id: string;
+}
+
 export interface downloadFileParams {
   /** File key */
   fileKey: string;
@@ -470,6 +502,11 @@ export interface GenerateChatSessionTitleRequest {
 export interface getAIModelParams {
   /** AI model ID */
   id: string;
+}
+
+export interface getAITraceEventsParams {
+  /** Trace ID */
+  trace_id: string;
 }
 
 export interface getAuditLogsParams {
@@ -1095,9 +1132,23 @@ export interface ResetUserPasswordResponse {
   new_password: string;
 }
 
+export interface ResponseAiapiTraceStatusResponse {
+  code: string;
+  data: TraceStatusResponse;
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayAuthorizationapiOAuthProvider {
   code: string;
   data: OAuthProvider[];
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseArrayModelAITraceEvent {
+  code: string;
+  data: AITraceEvent[];
   err: string;
   trace_id: string;
 }
@@ -1881,8 +1932,17 @@ export interface toggleTaskScheduleParams {
   id: string;
 }
 
+export interface ToggleTraceRequest {
+  enabled: boolean;
+}
+
 export interface TokenResponse {
   token: string;
+}
+
+export interface TokenUsage {
+  completion_tokens: number;
+  prompt_tokens: number;
 }
 
 export interface Tool {
@@ -1947,6 +2007,10 @@ export interface ToolSetTypeDefinition {
 }
 
 export type ToolType = "function";
+
+export interface TraceStatusResponse {
+  enabled: boolean;
+}
 
 export interface triggerTaskScheduleParams {
   /** Schedule ID */

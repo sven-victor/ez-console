@@ -1,16 +1,16 @@
 import { j as e } from "./vendor.js";
-import { useRef as se, useState as f, useEffect as L, useCallback as C, useMemo as Oe } from "react";
-import { Space as P, Tag as I, Tooltip as H, Button as j, Popconfirm as Ce, Card as Q, Row as Ie, Col as ie, message as z, Form as x, Alert as ke, Tabs as Fe, Input as de, Radio as K, Select as M, Tree as Ne, Spin as De, Checkbox as X, Empty as w } from "antd";
-import { UserOutlined as Le, TeamOutlined as Me, LockOutlined as ae, EditOutlined as qe, DeleteOutlined as Ge, ReloadOutlined as Ue, PlusOutlined as Je, DownOutlined as Be, UpOutlined as $e } from "@ant-design/icons";
-import { f as Y, i as We } from "./components.js";
+import { useRef as de, useState as f, useEffect as L, useCallback as C, useMemo as ie } from "react";
+import { Space as P, Tag as I, Tooltip as H, Button as j, Popconfirm as Ie, Card as Q, Row as ke, Col as ae, message as z, Form as x, Alert as Fe, Tabs as Ne, Input as ce, Radio as K, Select as M, Tree as De, Spin as Le, Checkbox as X, Empty as w } from "antd";
+import { UserOutlined as Me, TeamOutlined as qe, LockOutlined as re, EditOutlined as Ge, DeleteOutlined as Ue, ReloadOutlined as Je, PlusOutlined as Be, DownOutlined as $e, UpOutlined as We } from "@ant-design/icons";
+import { f as Y, i as He } from "./components.js";
 import { a as R } from "./index.js";
 import { useTranslation as q } from "react-i18next";
-import { c as ce, b as He, a as Ke } from "./contexts.js";
-import { useNavigate as ue, useParams as Xe } from "react-router-dom";
-import { isArray as Ye, has as Qe } from "lodash-es";
-import { createStyles as Ze } from "antd-style";
-const el = () => {
-  const { t: r } = q("authorization"), { t: v } = q("common"), { siteConfig: o } = ce(), h = ue(), _ = se(null), V = (s) => {
+import { c as ue, b as Ke, a as Xe } from "./contexts.js";
+import { useNavigate as me, useParams as Ye } from "react-router-dom";
+import { isArray as Qe, has as Ze } from "lodash-es";
+import { createStyles as el } from "antd-style";
+const ll = () => {
+  const { t: r } = q("authorization"), { t: v } = q("common"), { siteConfig: o } = ue(), h = me(), _ = de(null), V = (s) => {
     h(`/authorization/roles/${s}/edit`);
   }, p = async (s) => {
     var a, d;
@@ -25,7 +25,7 @@ const el = () => {
       dataIndex: "name",
       key: "name",
       render: (s) => /* @__PURE__ */ e.jsxs(P, { children: [
-        /* @__PURE__ */ e.jsx(Le, {}),
+        /* @__PURE__ */ e.jsx(Me, {}),
         s
       ] })
     },
@@ -45,7 +45,7 @@ const el = () => {
       hidden: !(o != null && o.enable_multi_org),
       render: (s, a) => {
         var d;
-        return a.organization_id ? /* @__PURE__ */ e.jsx(I, { icon: /* @__PURE__ */ e.jsx(Me, {}), color: "blue", children: ((d = a.organization) == null ? void 0 : d.name) || a.organization_id }) : /* @__PURE__ */ e.jsx(I, { color: "default", children: r("role.global", { defaultValue: "Global" }) });
+        return a.organization_id ? /* @__PURE__ */ e.jsx(I, { icon: /* @__PURE__ */ e.jsx(qe, {}), color: "blue", children: ((d = a.organization) == null ? void 0 : d.name) || a.organization_id }) : /* @__PURE__ */ e.jsx(I, { color: "default", children: r("role.global", { defaultValue: "Global" }) });
       }
     },
     {
@@ -54,7 +54,7 @@ const el = () => {
       render: (s, a) => {
         var d;
         return /* @__PURE__ */ e.jsxs(I, { color: "blue", children: [
-          /* @__PURE__ */ e.jsx(ae, {}),
+          /* @__PURE__ */ e.jsx(re, {}),
           " ",
           ((d = a.permissions) == null ? void 0 : d.length) || 0
         ] });
@@ -78,12 +78,12 @@ const el = () => {
               {
                 type: "text",
                 size: "small",
-                icon: /* @__PURE__ */ e.jsx(qe, {}),
+                icon: /* @__PURE__ */ e.jsx(Ge, {}),
                 onClick: () => V(a.id)
               }
             ) }) }),
             /* @__PURE__ */ e.jsx(Y, { permission: "authorization:role:delete", children: /* @__PURE__ */ e.jsx(H, { title: r("role.delete", { defaultValue: "Delete Role" }), children: /* @__PURE__ */ e.jsx(
-              Ce,
+              Ie,
               {
                 title: r("role.deleteConfirm", { defaultValue: "Are you sure you want to delete this role?" }),
                 onConfirm: () => p(a.id),
@@ -95,20 +95,20 @@ const el = () => {
                     type: "text",
                     size: "small",
                     danger: !0,
-                    icon: /* @__PURE__ */ e.jsx(Ge, {})
+                    icon: /* @__PURE__ */ e.jsx(Ue, {})
                   }
                 )
               }
             ) }) })
           ] }),
-          d && /* @__PURE__ */ e.jsx(H, { title: r("role.systemRoleCannotModify", { defaultValue: "System roles cannot be modified." }), children: /* @__PURE__ */ e.jsx("span", { children: /* @__PURE__ */ e.jsx(j, { type: "text", size: "small", icon: /* @__PURE__ */ e.jsx(ae, {}), disabled: !0 }) }) })
+          d && /* @__PURE__ */ e.jsx(H, { title: r("role.systemRoleCannotModify", { defaultValue: "System roles cannot be modified." }), children: /* @__PURE__ */ e.jsx("span", { children: /* @__PURE__ */ e.jsx(j, { type: "text", size: "small", icon: /* @__PURE__ */ e.jsx(re, {}), disabled: !0 }) }) })
         ] });
       }
     }
   ];
   return /* @__PURE__ */ e.jsx("div", { children: /* @__PURE__ */ e.jsxs(Q, { style: { marginBottom: 16 }, children: [
-    /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(Ie, { justify: "space-between", align: "middle", gutter: 16, children: [
-      /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx(P, { children: /* @__PURE__ */ e.jsx(
+    /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(ke, { justify: "space-between", align: "middle", gutter: 16, children: [
+      /* @__PURE__ */ e.jsx(ae, { children: /* @__PURE__ */ e.jsx(P, { children: /* @__PURE__ */ e.jsx(
         j,
         {
           type: "primary",
@@ -116,22 +116,22 @@ const el = () => {
             var s, a;
             (a = (s = _.current) == null ? void 0 : s.reload) == null || a.call(s);
           },
-          icon: /* @__PURE__ */ e.jsx(Ue, {}),
+          icon: /* @__PURE__ */ e.jsx(Je, {}),
           children: v("refresh", { defaultValue: "Refresh" })
         }
       ) }) }),
-      /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx(Y, { permission: "authorization:role:create", children: /* @__PURE__ */ e.jsx(
+      /* @__PURE__ */ e.jsx(ae, { children: /* @__PURE__ */ e.jsx(Y, { permission: "authorization:role:create", children: /* @__PURE__ */ e.jsx(
         j,
         {
           type: "primary",
-          icon: /* @__PURE__ */ e.jsx(Je, {}),
+          icon: /* @__PURE__ */ e.jsx(Be, {}),
           onClick: () => h("/authorization/roles/create"),
           children: r("role.create", { defaultValue: "Create Role" })
         }
       ) }) })
     ] }) }),
     /* @__PURE__ */ e.jsx(
-      We,
+      He,
       {
         request: async ({ page_size: s, current: a }) => R.authorization.listRoles({
           current: a,
@@ -142,10 +142,10 @@ const el = () => {
       }
     )
   ] }) });
-}, hl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: el
-}, Symbol.toStringTag, { value: "Module" })), { TextArea: re } = de, ll = Ze(({ css: r }) => ({
+  default: ll
+}, Symbol.toStringTag, { value: "Module" })), { TextArea: ne } = ce, tl = el(({ css: r }) => ({
   rolePermissionExtra: r`
       float: right;
       z-index: 1001;
@@ -156,7 +156,7 @@ const el = () => {
       right: 5px;
       top: 5px;
     `
-})), tl = {
+})), ol = {
   allow_all: {
     policy: {
       Statement: [
@@ -218,17 +218,17 @@ const el = () => {
       }
     ]
   }
-}, ne = JSON.stringify({ Statement: [] }, null, 2), ol = () => {
-  const { styles: r } = ll(), { hasGlobalPermission: v } = He(), { t: o } = q("authorization"), { t: h } = q("common"), _ = ue(), { id: V } = Xe(), p = !!V, { enableMultiOrg: E, currentOrgId: s } = ce(), { user: a } = Ke(), d = (a == null ? void 0 : a.organizations) || [], [m] = x.useForm(), [k, T] = f([]), [F, me] = f([]), [fe, G] = f([]), [pe, U] = f(!0), [N, b] = f([]), [O, g] = f({}), J = se({}), [he, Z] = f(!1), [y, B] = f("global"), [$, ge] = f(void 0), [ye, ee] = f(!1), [xe, le] = f(!1), [je, _e] = f(!1);
+}, se = JSON.stringify({ Statement: [] }, null, 2), il = () => {
+  const { styles: r } = tl(), { hasGlobalPermission: v } = Ke(), { t: o } = q("authorization"), { t: h } = q("common"), _ = me(), { id: V } = Ye(), p = !!V, { enableMultiOrg: E, currentOrgId: s } = ue(), { user: a } = Xe(), d = (a == null ? void 0 : a.organizations) || [], [m] = x.useForm(), [k, T] = f([]), [F, fe] = f([]), [pe, G] = f([]), [he, U] = f(!0), [N, b] = f([]), [O, g] = f({}), J = de({}), [ge, Z] = f(!1), [y, B] = f("global"), [$, ye] = f(void 0), [xe, ee] = f(!1), [je, le] = f(!1), [_e, Ve] = f(!1);
   L(() => {
     J.current = O;
   }, [O]), L(() => {
-    ge(s || void 0);
+    ye(s || void 0);
   }, []);
   const te = C(async () => {
     try {
       const t = await R.authorization.listPermissions();
-      me(
+      fe(
         t.map((l, i) => {
           const c = (l.permissions || []).map((n) => ({
             key: n.id,
@@ -268,7 +268,7 @@ const el = () => {
         c.forEach((S) => {
           const W = n[S.id] || [];
           u[S.id] = W.filter(
-            (Pe) => (S.tools || []).some((Te) => Te.name === Pe)
+            (Oe) => (S.tools || []).some((Ce) => Ce.name === Oe)
           );
         }), g(u);
       } catch {
@@ -278,18 +278,18 @@ const el = () => {
       }
     },
     [o]
-  ), Ve = (t) => t ? t.reduce((l, i) => (!i.toolset_id || !i.tool_name || (l[i.toolset_id] || (l[i.toolset_id] = []), l[i.toolset_id].includes(i.tool_name) || l[i.toolset_id].push(i.tool_name)), l), {}) : {}, oe = C(
+  ), be = (t) => t ? t.reduce((l, i) => (!i.toolset_id || !i.tool_name || (l[i.toolset_id] || (l[i.toolset_id] = []), l[i.toolset_id].includes(i.tool_name) || l[i.toolset_id].push(i.tool_name)), l), {}) : {}, oe = C(
     async (t) => {
       var l;
       ee(!0);
       try {
         const i = await R.authorization.getRole({ id: t });
-        _e(i.role_type === "system");
+        Ve(i.role_type === "system");
         const c = ((l = i.permissions) == null ? void 0 : l.map((W) => W.id)) || [];
         T(c), m.setFieldsValue({ permissions: c });
         const n = i.organization_id || "", u = n ? "organization" : "global";
         B(u);
-        const S = Ve(i.ai_tool_permissions);
+        const S = be(i.ai_tool_permissions);
         u === "organization" && n ? await A(n, S) : (b([]), g({})), m.setFieldsValue({
           name: i.name,
           description: i.description,
@@ -314,7 +314,7 @@ const el = () => {
     B(l), m.setFieldsValue({
       role_type: l,
       organization_id: l === "organization" ? t : void 0,
-      policy_document: ne,
+      policy_document: se,
       permissions: []
     }), T([]), g({}), l === "organization" && t ? A(t, {}) : b([]);
   }, [
@@ -327,7 +327,7 @@ const el = () => {
     E,
     oe
   ]);
-  const be = Oe(() => y === "global" ? F : F.map((l) => {
+  const ze = ie(() => y === "global" ? F : F.map((l) => {
     const i = (l.children || []).filter(
       (c) => c.orgPermission === !0
     );
@@ -335,19 +335,19 @@ const el = () => {
       ...l,
       children: i
     };
-  }).filter((l) => l.children && l.children.length > 0), [F, y]), ze = (t) => {
+  }).filter((l) => l.children && l.children.length > 0), [F, y]), Se = (t) => {
     G(t), U(!1);
-  }, Se = () => {
+  }, Re = () => {
     const t = F.map((l) => l.key);
     G(t), U(!0);
-  }, Re = () => {
+  }, ve = () => {
     G([]), U(!1);
-  }, ve = C((t, l) => {
+  }, Ee = C((t, l) => {
     g((i) => ({
       ...i,
       [t]: l
     }));
-  }, []), Ee = C((t, l) => {
+  }, []), Ae = C((t, l) => {
     const i = N.find((n) => n.id === t);
     if (!i)
       return;
@@ -356,7 +356,7 @@ const el = () => {
       ...n,
       [t]: l ? c : []
     }));
-  }, [N]), Ae = (t, l) => {
+  }, [N]), we = (t, l) => {
     if (y === "organization")
       return Promise.resolve();
     if (!l || l.trim() === "" || l === "{}" || l === '{"Statement":[]}')
@@ -374,7 +374,25 @@ const el = () => {
         new Error(o("role.invalidJsonFormat", { defaultValue: "Invalid JSON format." }))
       );
     }
-  }, we = async (t) => {
+  }, Pe = ie(() => ({
+    placeholder: o("role.insertTemplate", { defaultValue: "Insert Template" }),
+    options: [
+      { label: o("role.allowAll", { defaultValue: "Allow All" }), value: "allow_all" },
+      { label: o("role.denyAll", { defaultValue: "Deny All" }), value: "deny_all" },
+      {
+        label: o("role.allowWithAction", { defaultValue: "Allow with Action" }),
+        value: "allow_with_action"
+      },
+      {
+        label: o("role.denyWithCondition", { defaultValue: "Allow with Condition" }),
+        value: "allow_with_condition"
+      },
+      {
+        label: o("role.allowWithUri", { defaultValue: "Allow with URI" }),
+        value: "allow_with_uri"
+      }
+    ]
+  }), [o]), Te = async (t) => {
     const l = { ...t };
     try {
       y === "global" ? l.policy_document = JSON.parse(t.policy_document ?? "{}") : l.policy_document = { Statement: [] }, l.role_type === "organization" ? l.organization_id = l.organization_id || void 0 : l.organization_id = void 0, delete l.role_type;
@@ -394,15 +412,15 @@ const el = () => {
     } finally {
       le(!1);
     }
-  }, D = p && je;
+  }, D = p && _e;
   return /* @__PURE__ */ e.jsxs(
     Q,
     {
       title: D ? o("role.viewTitle", { defaultValue: "View Role" }) : p ? o("role.editTitle", { defaultValue: "Edit Role" }) : o("role.createTitle", { defaultValue: "Create Role" }),
-      loading: ye,
+      loading: xe,
       children: [
         D && /* @__PURE__ */ e.jsx(
-          ke,
+          Fe,
           {
             type: "info",
             message: o("role.systemRoleCannotModify", { defaultValue: "System roles cannot be modified." }),
@@ -417,13 +435,13 @@ const el = () => {
             layout: "vertical",
             disabled: D,
             initialValues: {
-              policy_document: ne,
+              policy_document: se,
               permissions: []
             },
-            onFinish: we,
+            onFinish: Te,
             children: [
               /* @__PURE__ */ e.jsx(
-                Fe,
+                Ne,
                 {
                   items: [
                     {
@@ -443,7 +461,7 @@ const el = () => {
                                 })
                               }
                             ],
-                            children: /* @__PURE__ */ e.jsx(de, { placeholder: o("role.namePlaceholder", { defaultValue: "Enter role name" }) })
+                            children: /* @__PURE__ */ e.jsx(ce, { placeholder: o("role.namePlaceholder", { defaultValue: "Enter role name" }) })
                           }
                         ),
                         /* @__PURE__ */ e.jsx(
@@ -452,7 +470,7 @@ const el = () => {
                             label: o("role.description", { defaultValue: "Description" }),
                             name: "description",
                             children: /* @__PURE__ */ e.jsx(
-                              re,
+                              ne,
                               {
                                 rows: 4,
                                 placeholder: o("role.descriptionPlaceholder", {
@@ -590,26 +608,26 @@ const el = () => {
                               },
                               children: [
                                 /* @__PURE__ */ e.jsxs("span", { className: r.rolePermissionExtra, children: [
-                                  /* @__PURE__ */ e.jsx(j, { type: "link", onClick: Se, icon: /* @__PURE__ */ e.jsx(Be, {}), children: h("expandAll", { defaultValue: "Expand All" }) }),
-                                  /* @__PURE__ */ e.jsx(j, { type: "link", onClick: Re, icon: /* @__PURE__ */ e.jsx($e, {}), children: h("collapseAll", { defaultValue: "Collapse All" }) })
+                                  /* @__PURE__ */ e.jsx(j, { type: "link", onClick: Re, icon: /* @__PURE__ */ e.jsx($e, {}), children: h("expandAll", { defaultValue: "Expand All" }) }),
+                                  /* @__PURE__ */ e.jsx(j, { type: "link", onClick: ve, icon: /* @__PURE__ */ e.jsx(We, {}), children: h("collapseAll", { defaultValue: "Collapse All" }) })
                                 ] }),
                                 /* @__PURE__ */ e.jsx(
-                                  Ne,
+                                  De,
                                   {
-                                    treeData: be,
+                                    treeData: ze,
                                     titleRender: (t) => {
                                       const l = t, i = typeof l.title == "string" ? l.title : String(l.title ?? "");
                                       return /* @__PURE__ */ e.jsx("span", { children: o(`permission.title.${l.code}`, { defaultValue: i }) });
                                     },
                                     checkable: !0,
                                     disabled: D,
-                                    expandedKeys: fe,
-                                    autoExpandParent: pe,
-                                    onExpand: ze,
+                                    expandedKeys: pe,
+                                    autoExpandParent: he,
+                                    onExpand: Se,
                                     checkedKeys: k,
                                     onCheck: (t) => {
                                       let l = [];
-                                      Ye(t) ? l = t : Qe(t, "checked") && (l = t.checked), T(l), m.setFieldsValue({ permissions: l });
+                                      Qe(t) ? l = t : Ze(t, "checked") && (l = t.checked), T(l), m.setFieldsValue({ permissions: l });
                                     }
                                   }
                                 )
@@ -623,7 +641,7 @@ const el = () => {
                       key: "ai-tools",
                       label: o("role.aiPermissions", { defaultValue: "AI Tool Permissions" }),
                       disabled: y === "global",
-                      children: /* @__PURE__ */ e.jsx(De, { spinning: he, children: y === "organization" ? N.length > 0 ? /* @__PURE__ */ e.jsx(P, { direction: "vertical", size: "middle", style: { width: "100%" }, children: N.map((t) => {
+                      children: /* @__PURE__ */ e.jsx(Le, { spinning: ge, children: y === "organization" ? N.length > 0 ? /* @__PURE__ */ e.jsx(P, { direction: "vertical", size: "middle", style: { width: "100%" }, children: N.map((t) => {
                         const l = (t.tools || []).map((u) => u.name), i = O[t.id] || [], c = l.length > 0 && i.length === l.length, n = i.length > 0 && i.length < l.length;
                         return /* @__PURE__ */ e.jsx(
                           Q,
@@ -635,7 +653,7 @@ const el = () => {
                                 {
                                   checked: c,
                                   indeterminate: n,
-                                  onChange: (u) => Ee(t.id, u.target.checked)
+                                  onChange: (u) => Ae(t.id, u.target.checked)
                                 }
                               ),
                               /* @__PURE__ */ e.jsx("span", { children: t.name })
@@ -646,7 +664,7 @@ const el = () => {
                               {
                                 style: { width: "100%" },
                                 value: O[t.id] || [],
-                                onChange: (u) => ve(t.id, u),
+                                onChange: (u) => Ee(t.id, u),
                                 children: /* @__PURE__ */ e.jsx(P, { direction: "vertical", style: { width: "100%" }, children: (t.tools || []).map((u) => /* @__PURE__ */ e.jsx(X, { value: u.name, children: /* @__PURE__ */ e.jsxs("div", { children: [
                                   /* @__PURE__ */ e.jsx("div", { children: u.name }),
                                   u.description && /* @__PURE__ */ e.jsx(
@@ -701,40 +719,24 @@ const el = () => {
                           name: "policy_document",
                           rules: [
                             {
-                              validator: Ae
+                              validator: we
                             }
                           ],
                           extra: /* @__PURE__ */ e.jsx("span", { className: r.rolePolicyExtra, children: /* @__PURE__ */ e.jsx(
                             M,
                             {
                               style: { width: 160 },
-                              placeholder: o("role.insertTemplate", { defaultValue: "Insert Template" }),
-                              options: [
-                                { label: o("role.allowAll", { defaultValue: "Allow All" }), value: "allow_all" },
-                                { label: o("role.denyAll", { defaultValue: "Deny All" }), value: "deny_all" },
-                                {
-                                  label: o("role.allowWithAction", { defaultValue: "Allow with Action" }),
-                                  value: "allow_with_action"
-                                },
-                                {
-                                  label: o("role.denyWithCondition", { defaultValue: "Allow with Condition" }),
-                                  value: "allow_with_condition"
-                                },
-                                {
-                                  label: o("role.allowWithUri", { defaultValue: "Allow with URI" }),
-                                  value: "allow_with_uri"
-                                }
-                              ],
+                              ...Pe,
                               onChange: (t) => {
                                 if (typeof t == "string") {
-                                  const l = tl[t];
+                                  const l = ol[t];
                                   l && m.setFieldValue("policy_document", JSON.stringify(l, null, 2));
                                 }
                               }
                             }
                           ) }),
                           children: /* @__PURE__ */ e.jsx(
-                            re,
+                            ne,
                             {
                               rows: 15,
                               style: { fontFamily: "monospace" },
@@ -772,7 +774,7 @@ const el = () => {
                   {
                     type: "primary",
                     htmlType: "submit",
-                    loading: xe,
+                    loading: je,
                     children: p ? h("update", { defaultValue: "Update" }) : h("create", { defaultValue: "Create" })
                   }
                 ),
@@ -790,11 +792,11 @@ const el = () => {
       ]
     }
   );
-}, gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, yl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: ol
+  default: il
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  hl as R,
-  gl as a
+  gl as R,
+  yl as a
 };

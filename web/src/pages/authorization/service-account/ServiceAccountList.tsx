@@ -27,7 +27,6 @@ import {
   Form,
   Tooltip,
   message,
-  Popconfirm,
   Badge,
   Select,
 } from 'antd';
@@ -37,7 +36,6 @@ import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
-  FilterOutlined,
   EyeOutlined,
   LockOutlined,
   CheckCircleOutlined,

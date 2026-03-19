@@ -42,6 +42,7 @@ const SystemSettings = lazy(() => import('@/pages/system/settings/SystemSettings
 const OrganizationDetail = lazy(() => import('@/pages/system/settings/SystemSettings/OrganizationDetail'));
 const SkillEditor = lazy(() => import('@/pages/system/settings/SystemSettings/SkillEditor'));
 const SkillPreview = lazy(() => import('@/pages/system/settings/SystemSettings/SkillPreview'));
+const AITraceViewer = lazy(() => import('@/pages/system/settings/SystemSettings/AITraceViewer'));
 const OAuthTestCallback = lazy(() => import('@/pages/system/settings/SystemSettings/OAuthTestCallback'));
 const AuditLogs = lazy(() => import('@/pages/system/audit/AuditLogs'));
 
@@ -270,6 +271,12 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                   path: '/system/settings/skills/:id/preview',
                   permissions: ['system:skills:view'],
                   element: withSuspense(SkillPreview),
+                  index: true,
+                },
+                {
+                  path: '/system/settings/ai-trace',
+                  permissions: ['ai:trace:manage'],
+                  element: withSuspense(AITraceViewer),
                   index: true,
                 }
               ],

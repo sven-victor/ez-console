@@ -659,6 +659,161 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/ai/trace/events": {
+            "get": {
+                "description": "Get all trace events for a given trace ID, ordered by step",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Trace"
+                ],
+                "summary": "Get AI trace events",
+                "operationId": "getAITraceEvents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trace ID",
+                        "name": "trace_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_model_AITraceEvent"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/trace/events/download": {
+            "get": {
+                "description": "Download all trace events for a given trace ID as a JSON file",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "AI/Trace"
+                ],
+                "summary": "Download AI trace events",
+                "operationId": "downloadAITraceEvents",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trace ID",
+                        "name": "trace_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/trace/status": {
+            "get": {
+                "description": "Get the current AI debug tracing enabled/disabled status",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Trace"
+                ],
+                "summary": "Get AI trace status",
+                "operationId": "getAITraceStatus",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-aiapi_TraceStatusResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/trace/toggle": {
+            "post": {
+                "description": "Enable or disable AI debug tracing globally. When disabled, all trace data is deleted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Trace"
+                ],
+                "summary": "Toggle AI trace",
+                "operationId": "toggleAITrace",
+                "parameters": [
+                    {
+                        "description": "Toggle request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.ToggleTraceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-aiapi_TraceStatusResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/authorization/auth/login": {
             "post": {
                 "description": "User login",
@@ -6022,7 +6177,8 @@ const docTemplate = `{
                 "event_type",
                 "message_id",
                 "role",
-                "tool_calls"
+                "tool_calls",
+                "usage"
             ],
             "properties": {
                 "client_tool_calls": {
@@ -6048,6 +6204,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/ai.ToolCall"
                     }
+                },
+                "usage": {
+                    "$ref": "#/definitions/ai.TokenUsage"
                 }
             }
         },
@@ -6113,6 +6272,21 @@ const docTemplate = `{
                 },
                 "role": {
                     "$ref": "#/definitions/model.AIChatMessageRole"
+                }
+            }
+        },
+        "ai.TokenUsage": {
+            "type": "object",
+            "required": [
+                "completion_tokens",
+                "prompt_tokens"
+            ],
+            "properties": {
+                "completion_tokens": {
+                    "type": "integer"
+                },
+                "prompt_tokens": {
+                    "type": "integer"
                 }
             }
         },
@@ -6306,6 +6480,28 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "aiapi.ToggleTraceRequest": {
+            "type": "object",
+            "required": [
+                "enabled"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "aiapi.TraceStatusResponse": {
+            "type": "object",
+            "required": [
+                "enabled"
+            ],
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7279,6 +7475,7 @@ const docTemplate = `{
         "model.AIChatSession": {
             "type": "object",
             "required": [
+                "active_tokens",
                 "anonymous",
                 "created_at",
                 "end_time",
@@ -7288,10 +7485,16 @@ const docTemplate = `{
                 "organization_id",
                 "start_time",
                 "title",
+                "total_completion_tokens",
+                "total_prompt_tokens",
                 "updated_at",
                 "user_id"
             ],
             "properties": {
+                "active_tokens": {
+                    "description": "Estimated tokens for unsummarized messages (next LLM input)",
+                    "type": "integer"
+                },
                 "anonymous": {
                     "description": "Whether the session is anonymous",
                     "type": "boolean"
@@ -7328,6 +7531,14 @@ const docTemplate = `{
                 "title": {
                     "description": "Session title",
                     "type": "string"
+                },
+                "total_completion_tokens": {
+                    "description": "Cumulative completion tokens across all API calls",
+                    "type": "integer"
+                },
+                "total_prompt_tokens": {
+                    "description": "Cumulative prompt tokens across all API calls",
+                    "type": "integer"
                 },
                 "updated_at": {
                     "type": "string"
@@ -7467,6 +7678,67 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.AITraceEvent": {
+            "type": "object",
+            "required": [
+                "content",
+                "created_at",
+                "created_at",
+                "duration_ms",
+                "event_type",
+                "id",
+                "step_order",
+                "trace_id",
+                "updated_at"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "duration_ms": {
+                    "type": "integer"
+                },
+                "event_type": {
+                    "$ref": "#/definitions/model.AITraceEventType"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "step_order": {
+                    "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.AITraceEventType": {
+            "type": "string",
+            "enum": [
+                "llm_request",
+                "llm_response",
+                "token_usage",
+                "tool_call",
+                "tool_result",
+                "error",
+                "summary"
+            ],
+            "x-enum-varnames": [
+                "AITraceEventTypeLLMRequest",
+                "AITraceEventTypeLLMResponse",
+                "AITraceEventTypeTokenUsage",
+                "AITraceEventTypeToolCall",
+                "AITraceEventTypeToolResult",
+                "AITraceEventTypeError",
+                "AITraceEventTypeSummary"
+            ]
         },
         "model.AccessType": {
             "type": "string",
@@ -10129,6 +10401,24 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -10139,14 +10429,33 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                60000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -10159,18 +10468,7 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "Minute"
             ]
         },
         "toolset.ToolSetType": {
@@ -10622,6 +10920,29 @@ const docTemplate = `{
                 }
             }
         },
+        "util.Response-aiapi_TraceStatusResponse": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/aiapi.TraceStatusResponse"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-array_authorizationapi_OAuthProvider": {
             "type": "object",
             "required": [
@@ -10638,6 +10959,32 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/authorizationapi.OAuthProvider"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_model_AITraceEvent": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.AITraceEvent"
                     }
                 },
                 "err": {
@@ -11831,7 +12178,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "v1.11.3",
+	Version:          "v1.11.4",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},

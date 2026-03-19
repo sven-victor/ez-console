@@ -37,6 +37,7 @@ import (
 type AIChatService struct {
 	aiModelService *AIModelService
 	toolSetService *ToolSetService
+	aiTraceService *AITraceService
 }
 
 var aiChatSessionCleanupTaskType = model.TaskType("ai_chat_session_cleanup_task")
@@ -49,9 +50,11 @@ var (
 // NewAIChatService creates a new AI chat service
 func NewAIChatService() *AIChatService {
 	aiChatServiceOnce.Do(func() {
+		settingSvc := NewSettingService()
 		aiChatService = &AIChatService{
 			aiModelService: NewAIModelService(),
 			toolSetService: NewToolSetService(),
+			aiTraceService: NewAITraceService(settingSvc),
 		}
 		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
 			ID:             "ai-chat-session-cleanup",
@@ -592,6 +595,41 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		allOptions = append(allOptions, ai.WithChatMaxTokens(maxTokens))
 	}
 	allOptions = append(allOptions, options...)
+
+	// Inject tracing wrapper when AI debug is enabled.
+	// Appended after caller options so tracing callbacks wrap (not get overwritten by) the originals.
+	if s.aiTraceService.IsTraceEnabled(ctx) {
+		writer := s.aiTraceService.NewTraceEventWriter()
+		counter := &ai.TraceCounter{}
+		allOptions = append(allOptions, ai.WithChatAIClientWrapper(func(c ai.AIClient) ai.AIClient {
+			return ai.NewTracingAIClient(c, writer, counter)
+		}))
+
+		origOnTokenUsage := findOnTokenUsage(allOptions)
+		allOptions = append(allOptions, ai.WithChatOnTokenUsage(func(ctx context.Context, stats ai.TokenUsageStats) {
+			ai.WriteTraceTokenUsage(ctx, writer, counter, stats)
+			if origOnTokenUsage != nil {
+				origOnTokenUsage(ctx, stats)
+			}
+		}))
+
+		origOnToolResult := findOnToolCallResultChanged(allOptions)
+		allOptions = append(allOptions, ai.WithChatOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
+			ai.WriteTraceToolResult(ctx, writer, counter, toolCallID, result)
+			if origOnToolResult != nil {
+				origOnToolResult(ctx, toolCallID, result)
+			}
+		}))
+
+		origOnSummary := findOnSummary(allOptions)
+		allOptions = append(allOptions, ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
+			ai.WriteTraceSummary(ctx, writer, counter, messages)
+			if origOnSummary != nil {
+				origOnSummary(ctx, messages)
+			}
+		}))
+	}
+
 	// Call ExchangeStream
 	stream, err := client.ExchangeStream(ctx, messages, allOptions...)
 	if err != nil {
@@ -599,6 +637,33 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	}
 
 	return stream, nil
+}
+
+// findOnTokenUsage extracts the OnTokenUsage callback from options if present.
+func findOnTokenUsage(options []ai.WithChatOptions) func(context.Context, ai.TokenUsageStats) {
+	opts := ai.ChatCompletionOptions{}
+	for _, o := range options {
+		o(&opts)
+	}
+	return opts.OnTokenUsage
+}
+
+// findOnToolCallResultChanged extracts the OnToolCallResultChanged callback from options if present.
+func findOnToolCallResultChanged(options []ai.WithChatOptions) func(context.Context, string, string) {
+	opts := ai.ChatCompletionOptions{}
+	for _, o := range options {
+		o(&opts)
+	}
+	return opts.OnToolCallResultChanged
+}
+
+// findOnSummary extracts the OnSummary callback from options if present.
+func findOnSummary(options []ai.WithChatOptions) func(context.Context, []ai.ChatMessage) {
+	opts := ai.ChatCompletionOptions{}
+	for _, o := range options {
+		o(&opts)
+	}
+	return opts.OnSummary
 }
 
 // GetAvailableTools gets all available tools from enabled toolsets

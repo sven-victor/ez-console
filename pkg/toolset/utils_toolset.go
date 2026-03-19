@@ -53,6 +53,14 @@ func (t *UtilsToolSet) Call(ctx context.Context, name string, parameters string)
 		}
 		time.Sleep(time.Duration(params.Seconds) * time.Second)
 		return "", nil
+	case "random_string":
+		var params struct {
+			StringLength int `json:"string_length"`
+		}
+		if err := json.Unmarshal([]byte(parameters), &params); err != nil {
+			return "", fmt.Errorf("failed to unmarshal parameters: %w", err)
+		}
+		return util.GenerateRandomString(params.StringLength), nil
 	}
 	return "", fmt.Errorf("tool %s not found", name)
 }
@@ -88,6 +96,21 @@ func (t *UtilsToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 					},
 				},
 				Required: []string{"seconds"},
+			},
+		},
+	}, {
+		Type: openai.ToolTypeFunction,
+		Function: &openai.FunctionDefinition{
+			Name: "random_string",
+			Parameters: openaijsonschema.Definition{
+				Type: openaijsonschema.Object,
+				Properties: map[string]openaijsonschema.Definition{
+					"string_length": {
+						Type:        openaijsonschema.Integer,
+						Description: "The number of random string characters",
+					},
+				},
+				Required: []string{"string_length"},
 			},
 		},
 	}}, nil

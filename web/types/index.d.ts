@@ -118,6 +118,8 @@ export declare interface AIChatProps {
 }
 
 export declare interface AIChatSession {
+    /** Estimated tokens for unsummarized messages (next LLM input) */
+    active_tokens: number;
     /** Whether the session is anonymous */
     anonymous: boolean;
     created_at: string;
@@ -134,6 +136,10 @@ export declare interface AIChatSession {
     start_time: string;
     /** Session title */
     title: string;
+    /** Cumulative completion tokens across all API calls */
+    total_completion_tokens: number;
+    /** Cumulative prompt tokens across all API calls */
+    total_prompt_tokens: number;
     updated_at: string;
     /** User ID */
     user_id: string;
@@ -200,6 +206,19 @@ export declare interface AIToolCall {
     index: number;
     type: string;
 }
+
+export declare interface AITraceEvent {
+    content: string;
+    created_at: string;
+    duration_ms: number;
+    event_type: AITraceEventType;
+    id: string;
+    step_order: number;
+    trace_id: string;
+    updated_at: string;
+}
+
+export declare type AITraceEventType = "llm_request" | "llm_response" | "token_usage" | "tool_call" | "tool_result" | "error" | "summary";
 
 export declare interface AITypeDefinition {
     config_schema: Schema;
@@ -734,6 +753,7 @@ export declare interface ChatStreamEvent {
     message_id: string;
     role: AIChatMessageRole;
     tool_calls: ToolCall[];
+    usage: TokenUsage;
 }
 
 declare interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'> {
@@ -949,6 +969,11 @@ export declare interface deleteUserParams {
     id: string;
 }
 
+export declare interface downloadAITraceEventsParams {
+    /** Trace ID */
+    trace_id: string;
+}
+
 export declare interface downloadFileParams {
     /** File key */
     fileKey: string;
@@ -1035,6 +1060,11 @@ export declare interface GenerateChatSessionTitleRequest {
 export declare interface getAIModelParams {
     /** AI model ID */
     id: string;
+}
+
+export declare interface getAITraceEventsParams {
+    /** Trace ID */
+    trace_id: string;
 }
 
 export declare interface getAuditLogsParams {
@@ -1873,9 +1903,23 @@ export declare interface ResetUserPasswordResponse {
     new_password: string;
 }
 
+export declare interface ResponseAiapiTraceStatusResponse {
+    code: string;
+    data: TraceStatusResponse;
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayAuthorizationapiOAuthProvider {
     code: string;
     data: OAuthProvider[];
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseArrayModelAITraceEvent {
+    code: string;
+    data: AITraceEvent[];
     err: string;
     trace_id: string;
 }
@@ -2718,8 +2762,17 @@ export declare interface toggleTaskScheduleParams {
     id: string;
 }
 
+export declare interface ToggleTraceRequest {
+    enabled: boolean;
+}
+
 export declare interface TokenResponse {
     token: string;
+}
+
+export declare interface TokenUsage {
+    completion_tokens: number;
+    prompt_tokens: number;
 }
 
 export declare interface Tool {
@@ -2784,6 +2837,10 @@ export declare interface ToolSetTypeDefinition {
 }
 
 export declare type ToolType = "function";
+
+export declare interface TraceStatusResponse {
+    enabled: boolean;
+}
 
 export declare interface triggerTaskScheduleParams {
     /** Schedule ID */

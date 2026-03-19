@@ -208,6 +208,57 @@ export async function getAiTypeDefinitions(options?: { [key: string]: any }) {
   );
 }
 
+/** Get AI trace events Get all trace events for a given trace ID, ordered by step GET /api/ai/trace/events */
+export async function getAiTraceEvents(
+  params: API.getAITraceEventsParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseArrayModelAITraceEvent>("/api/ai/trace/events", {
+    method: "GET",
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/** Download AI trace events Download all trace events for a given trace ID as a JSON file GET /api/ai/trace/events/download */
+export async function downloadAiTraceEvents(
+  params: API.downloadAITraceEventsParams,
+  options?: { [key: string]: any }
+) {
+  return request<any>("/api/ai/trace/events/download", {
+    method: "GET",
+    params: {
+      ...params,
+    },
+    ...(options || {}),
+  });
+}
+
+/** Get AI trace status Get the current AI debug tracing enabled/disabled status GET /api/ai/trace/status */
+export async function getAiTraceStatus(options?: { [key: string]: any }) {
+  return request<API.ResponseAiapiTraceStatusResponse>("/api/ai/trace/status", {
+    method: "GET",
+    ...(options || {}),
+  });
+}
+
+/** Toggle AI trace Enable or disable AI debug tracing globally. When disabled, all trace data is deleted. POST /api/ai/trace/toggle */
+export async function toggleAiTrace(
+  body: API.ToggleTraceRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseAiapiTraceStatusResponse>("/api/ai/trace/toggle", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 import { type SSERequestConfig } from '@/service/client'
 /** Stream chat Stream chat responses using Server-Sent Events POST /api/ai/chat/sessions/${param0} */
 export async function streamChat(

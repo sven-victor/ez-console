@@ -1,6 +1,6 @@
-import { r as n } from "./client.js";
+import { r as t } from "./client.js";
 async function o(a, e) {
-  return n(
+  return t(
     "/api/ai/chat/sessions",
     {
       method: "GET",
@@ -16,7 +16,7 @@ async function o(a, e) {
   );
 }
 async function r(a, e) {
-  return n("/api/ai/chat/sessions", {
+  return t("/api/ai/chat/sessions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -25,32 +25,32 @@ async function r(a, e) {
     ...e || {}
   });
 }
-async function p(a, e) {
-  const { sessionId: s, ...t } = a;
-  return n(
+async function c(a, e) {
+  const { sessionId: s, ...n } = a;
+  return t(
     `/api/ai/chat/sessions/${s}`,
     {
       method: "GET",
-      params: { ...t },
+      params: { ...n },
       ...e || {}
     }
   );
 }
-async function c(a, e) {
-  const { sessionId: s, ...t } = a;
-  return n(
+async function p(a, e) {
+  const { sessionId: s, ...n } = a;
+  return t(
     `/api/ai/chat/sessions/${s}`,
     {
       method: "DELETE",
-      params: { ...t },
+      params: { ...n },
       ...e || {}
     }
   );
 }
-async function m(a, e, s) {
-  const { sessionId: t, ...i } = a;
-  return n(
-    `/api/ai/chat/sessions/${t}/title`,
+async function d(a, e, s) {
+  const { sessionId: n, ...i } = a;
+  return t(
+    `/api/ai/chat/sessions/${n}/title`,
     {
       method: "PUT",
       headers: {
@@ -62,8 +62,8 @@ async function m(a, e, s) {
     }
   );
 }
-async function d(a, e) {
-  return n("/api/ai/models", {
+async function m(a, e) {
+  return t("/api/ai/models", {
     method: "GET",
     params: {
       // current has a default value: 1
@@ -76,7 +76,7 @@ async function d(a, e) {
   });
 }
 async function u(a, e) {
-  return n("/api/ai/models", {
+  return t("/api/ai/models", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -86,16 +86,16 @@ async function u(a, e) {
   });
 }
 async function l(a, e) {
-  const { id: s, ...t } = a;
-  return n(`/api/ai/models/${s}`, {
+  const { id: s, ...n } = a;
+  return t(`/api/ai/models/${s}`, {
     method: "GET",
-    params: { ...t },
+    params: { ...n },
     ...e || {}
   });
 }
 async function y(a, e, s) {
-  const { id: t, ...i } = a;
-  return n(`/api/ai/models/${t}`, {
+  const { id: n, ...i } = a;
+  return t(`/api/ai/models/${n}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -106,34 +106,34 @@ async function y(a, e, s) {
   });
 }
 async function h(a, e) {
-  const { id: s, ...t } = a;
-  return n(`/api/ai/models/${s}`, {
+  const { id: s, ...n } = a;
+  return t(`/api/ai/models/${s}`, {
     method: "DELETE",
-    params: { ...t },
+    params: { ...n },
     ...e || {}
   });
 }
 async function T(a, e) {
-  const { id: s, ...t } = a;
-  return n(
+  const { id: s, ...n } = a;
+  return t(
     `/api/ai/models/${s}/set-default`,
     {
       method: "POST",
-      params: { ...t },
+      params: { ...n },
       ...e || {}
     }
   );
 }
 async function f(a, e) {
-  const { id: s, ...t } = a;
-  return n(`/api/ai/models/${s}/test`, {
+  const { id: s, ...n } = a;
+  return t(`/api/ai/models/${s}/test`, {
     method: "POST",
-    params: { ...t },
+    params: { ...n },
     ...e || {}
   });
 }
 async function P(a) {
-  return n(
+  return t(
     "/api/ai/models/types",
     {
       method: "GET",
@@ -141,9 +141,43 @@ async function P(a) {
     }
   );
 }
-async function S(a, e, s) {
-  const { sessionId: t, ...i } = a;
-  return n(`/api/ai/chat/sessions/${t}`, {
+async function E(a, e) {
+  return t("/api/ai/trace/events", {
+    method: "GET",
+    params: {
+      ...a
+    },
+    ...e || {}
+  });
+}
+async function g(a, e) {
+  return t("/api/ai/trace/events/download", {
+    method: "GET",
+    params: {
+      ...a
+    },
+    ...e || {}
+  });
+}
+async function S(a) {
+  return t("/api/ai/trace/status", {
+    method: "GET",
+    ...a || {}
+  });
+}
+async function A(a, e) {
+  return t("/api/ai/trace/toggle", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: a,
+    ...e || {}
+  });
+}
+async function C(a, e, s) {
+  const { sessionId: n, ...i } = a;
+  return t(`/api/ai/chat/sessions/${n}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -153,23 +187,27 @@ async function S(a, e, s) {
     ...s || {}
   });
 }
-const E = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const $ = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   createAiModel: u,
   createChatSession: r,
   deleteAiModel: h,
-  deleteChatSession: c,
-  generateChatSessionTitle: m,
+  deleteChatSession: p,
+  downloadAiTraceEvents: g,
+  generateChatSessionTitle: d,
   getAiModel: l,
+  getAiTraceEvents: E,
+  getAiTraceStatus: S,
   getAiTypeDefinitions: P,
-  getChatSession: p,
-  listAiModels: d,
+  getChatSession: c,
+  listAiModels: m,
   listChatSessions: o,
   setDefaultAiModel: T,
-  streamChat: S,
+  streamChat: C,
   testAiModel: f,
+  toggleAiTrace: A,
   updateAiModel: y
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  E as a
+  $ as a
 };

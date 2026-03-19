@@ -39,9 +39,11 @@ import {
   CheckCircleOutlined,
   StarOutlined,
   StarFilled,
+  BugOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
+import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
@@ -74,6 +76,7 @@ interface AIModelFormData {
 const AIModelSettings: React.FC = () => {
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModel | null>(null);
@@ -331,6 +334,14 @@ const AIModelSettings: React.FC = () => {
           </Col>
           <Col>
             <Space>
+              <PermissionGuard permission="ai:trace:manage">
+                <Button
+                  icon={<BugOutlined />}
+                  onClick={() => navigate('/system/settings/ai-trace')}
+                >
+                  {t('trace.debug', { defaultValue: 'Debug' })}
+                </Button>
+              </PermissionGuard>
               <Button
                 type="primary"
                 icon={<ReloadOutlined />}
