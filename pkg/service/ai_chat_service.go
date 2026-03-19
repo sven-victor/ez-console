@@ -319,6 +319,21 @@ func (s *AIChatService) DeleteChatSession(ctx context.Context, organizationID, u
 	})
 }
 
+// UpdateSessionTokenUsage atomically adds prompt/completion tokens to the session
+// totals and sets the active token estimate.
+func (s *AIChatService) UpdateSessionTokenUsage(ctx context.Context, organizationID, userID, sessionID string, promptTokens, completionTokens, activeTokens int) error {
+	if err := db.Session(ctx).Model(&model.AIChatSession{}).
+		Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).
+		Updates(map[string]interface{}{
+			"total_prompt_tokens":     gorm.Expr("total_prompt_tokens + ?", promptTokens),
+			"total_completion_tokens": gorm.Expr("total_completion_tokens + ?", completionTokens),
+			"active_tokens":           activeTokens,
+		}).Error; err != nil {
+		return fmt.Errorf("failed to update session token usage: %w", err)
+	}
+	return nil
+}
+
 // UpdateChatSessionTitle updates the title of a chat session
 func (s *AIChatService) UpdateChatSessionTitle(ctx context.Context, organizationID, userID, sessionID string, title string) error {
 	if err := db.Session(ctx).Model(&model.AIChatSession{}).Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).Update("title", title).Error; err != nil {

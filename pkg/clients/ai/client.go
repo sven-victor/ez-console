@@ -36,6 +36,7 @@ type ChatMessage struct {
 	Content    string                  `json:"content,omitempty"`
 	ToolCalls  []ToolCall              `json:"tool_calls,omitempty"`
 	ToolCallID string                  `json:"tool_call_id,omitempty"`
+	Usage      *TokenUsage             `json:"usage,omitempty"` // Populated from LLM API response when available
 }
 
 // AIClient is the interface that all AI client implementations must satisfy

@@ -173,6 +173,12 @@ func (c *OpenAIClient) Chat(ctx context.Context, messages []ChatMessage, toolSet
 		return nil, fmt.Errorf("no choices in response")
 	}
 	resultMessage := ChatMessageFromOpenAI(response.Choices[0].Message)
+	if response.Usage.PromptTokens > 0 || response.Usage.CompletionTokens > 0 {
+		resultMessage.Usage = &TokenUsage{
+			PromptTokens:     response.Usage.PromptTokens,
+			CompletionTokens: response.Usage.CompletionTokens,
+		}
+	}
 	return &resultMessage, nil
 
 }
@@ -183,6 +189,7 @@ type OpenAIChatStream struct {
 	toolSets  toolset.ToolSets
 	stream    *openai.ChatCompletionStream
 	messageID string
+	usage     *TokenUsage
 }
 
 // Close implements ChatStream.
@@ -200,8 +207,17 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		if resp.Usage != nil {
+			o.usage = &TokenUsage{
+				PromptTokens:     resp.Usage.PromptTokens,
+				CompletionTokens: resp.Usage.CompletionTokens,
+			}
+		}
+
 		if len(resp.Choices) == 0 {
-			return nil, fmt.Errorf("no choices in response")
+			// Usage-only chunk (IncludeUsage enabled); skip and wait for next/EOF
+			continue
 		}
 		choice := resp.Choices[0]
 		var toolCalls []ToolCall
@@ -228,6 +244,12 @@ func (o *OpenAIChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
 	}
 }
 
+// TokenUsage returns the token usage reported by the API for this stream,
+// or nil if the API did not provide usage information.
+func (o *OpenAIChatStream) TokenUsage() *TokenUsage {
+	return o.usage
+}
+
 func NewOpenAIChatStream(ctx context.Context, client *OpenAIClient, messages []openai.ChatCompletionMessage, toolSets toolset.ToolSets) (ChatStream, error) {
 	var err error
 	// Get tools from toolSets if provided
@@ -251,6 +273,9 @@ func NewOpenAIChatStream(ctx context.Context, client *OpenAIClient, messages []o
 		Messages: messages,
 		Tools:    tools,
 		Stream:   true,
+		StreamOptions: &openai.StreamOptions{
+			IncludeUsage: true,
+		},
 	}
 	// Call OpenAI API
 	stream.stream, err = client.client.CreateChatCompletionStream(ctx, request)

@@ -509,6 +509,12 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				}
 			}
 		}),
+
+		ai.WithChatOnTokenUsage(func(ctx context.Context, stats ai.TokenUsageStats) {
+			if err := c.service.UpdateSessionTokenUsage(ctx, organizationID, userID.(string), sessionID, stats.PromptTokens, stats.CompletionTokens, stats.ActiveTokens); err != nil {
+				level.Error(logger).Log("msg", "Failed to update session token usage", "error", err)
+			}
+		}),
 	}
 
 	// Inject client tools

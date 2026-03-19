@@ -75,13 +75,29 @@ type ClientToolPendingCall struct {
 	Arguments string `json:"arguments"`
 }
 
+// TokenUsage holds prompt and completion token counts returned by the LLM API.
+type TokenUsage struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+}
+
+// TokenUsageStats holds accumulated token statistics for an entire exchange
+// (potentially spanning multiple LLM API calls, retries, and summarization).
+type TokenUsageStats struct {
+	PromptTokens     int `json:"prompt_tokens"`
+	CompletionTokens int `json:"completion_tokens"`
+	TotalTokens      int `json:"total_tokens"`
+	ActiveTokens     int `json:"active_tokens"` // Estimated tokens for unsummarized messages to be sent next
+}
+
 type ChatStreamEvent struct {
 	MessageID       string                  `json:"message_id,omitempty"`
 	Content         string                  `json:"content,omitempty"`
 	Role            model.AIChatMessageRole `json:"role,omitempty"`
 	ToolCalls       []ToolCall              `json:"tool_calls,omitempty"`
 	EventType       EventType               `json:"event_type,omitempty"`
-	ClientToolCalls []ClientToolPendingCall `json:"client_tool_calls,omitempty"`
+	ClientToolCalls []ClientToolPendingCall  `json:"client_tool_calls,omitempty"`
+	Usage           *TokenUsage             `json:"usage,omitempty"`
 }
 
 type ChatStream interface {
@@ -133,6 +149,7 @@ type ChatCompletionOptions struct {
 	OnSummary               func(ctx context.Context, messages []ChatMessage)
 	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
 	OnMessageAdded          func(ctx context.Context, message ChatMessage)
+	OnTokenUsage            func(ctx context.Context, stats TokenUsageStats)
 }
 
 type WithChatOptions func(options *ChatCompletionOptions)
@@ -195,6 +212,26 @@ func WithChatClientTools(tools []openai.Tool) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.ClientTools = tools
 	}
+}
+
+func WithChatOnTokenUsage(onTokenUsage func(ctx context.Context, stats TokenUsageStats)) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.OnTokenUsage = onTokenUsage
+	}
+}
+
+// EstimateTokens approximates token count for a list of messages.
+// Uses a simple heuristic: 1 token ~ 4 characters.
+func EstimateTokens(messages []ChatMessage) int {
+	totalChars := 0
+	for _, msg := range messages {
+		totalChars += len(msg.Content) + len(msg.Role)
+		for _, tc := range msg.ToolCalls {
+			totalChars += len(tc.ID) + len(string(tc.Type)) + len(tc.Function.Name) + len(tc.Function.Arguments)
+		}
+		totalChars += len(msg.ToolCallID)
+	}
+	return (totalChars + 3) / 4
 }
 
 // ChatErrorType classifies the kind of failure from an AI API call.

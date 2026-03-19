@@ -123,17 +123,26 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		}
 	}
 
-	// Helper function to calculate tokens (1 token ≈ 4 characters)
-	calculateTokens := func(msgs []ChatMessage) int {
-		totalChars := 0
-		for _, msg := range msgs {
-			totalChars += len(msg.Content) + len(msg.Role)
-			for _, tc := range msg.ToolCalls {
-				totalChars += len(tc.ID) + len(string(tc.Type)) + len(tc.Function.Name) + len(tc.Function.Arguments)
+	totalPromptTokens := 0
+	totalCompletionTokens := 0
+
+	// recordUsage adds token counts from a Chat response to the accumulators.
+	// If the API provided actual usage, use it; otherwise fall back to estimation.
+	recordUsage := func(response *ChatMessage, estimatedPromptTokens int) {
+		if response != nil && response.Usage != nil {
+			totalPromptTokens += response.Usage.PromptTokens
+			totalCompletionTokens += response.Usage.CompletionTokens
+			aiTokensTotal.WithLabelValues("prompt").Add(float64(response.Usage.PromptTokens))
+			aiTokensTotal.WithLabelValues("completion").Add(float64(response.Usage.CompletionTokens))
+		} else {
+			totalPromptTokens += estimatedPromptTokens
+			aiTokensTotal.WithLabelValues("prompt").Add(float64(estimatedPromptTokens))
+			if response != nil {
+				ec := EstimateTokens([]ChatMessage{*response})
+				totalCompletionTokens += ec
+				aiTokensTotal.WithLabelValues("completion").Add(float64(ec))
 			}
-			totalChars += len(msg.ToolCallID)
 		}
-		return (totalChars + 3) / 4
 	}
 
 	// Helper function to summarize messages.
@@ -172,8 +181,10 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		summaryMsgs = append(summaryMsgs, messagesToSummarize...)
 
 		level.Debug(logger).Log("msg", "Attempting one-shot summarization", "count", len(messagesToSummarize))
+		estPrompt := EstimateTokens(summaryMsgs)
 		response, err := c.aiClient.Chat(ctx, summaryMsgs, nil)
 		if err == nil && response != nil {
+			recordUsage(response, estPrompt)
 			messages = make([]ChatMessage, 0, 2)
 			if systemMessage != nil {
 				messages = append(messages, *systemMessage)
@@ -218,6 +229,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		}
 
 		level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult))
+		estPrompt := EstimateTokens(summarizeMessages)
 		response, err := c.aiClient.Chat(ctx, summarizeMessages, nil)
 		if err != nil {
 			return "", fmt.Errorf("failed to summarize tool result: %w", err)
@@ -227,6 +239,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			return "", fmt.Errorf("no response")
 		}
 
+		recordUsage(response, estPrompt)
 		level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(response.Content))
 		return response.Content, nil
 	}
@@ -239,7 +252,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 	for iteration := 0; iteration < opts.MaxIterations; iteration++ {
 		// Check token limit and summarize if needed
 		if opts.MaxTokens > 0 {
-			currentTokens := calculateTokens(messages)
+			currentTokens := EstimateTokens(messages)
 			tokenThreshold := int(float64(opts.MaxTokens) * 0.9) // 90% threshold
 
 			if currentTokens >= opts.MaxTokens {
@@ -256,8 +269,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			}
 		}
 
-		promptTokens := calculateTokens(messages)
-		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
+		estimatedPromptTokens := EstimateTokens(messages)
 
 		response, err := backoff.Retry(ctx, func() (*ChatMessage, error) {
 			resp, err := c.aiClient.Chat(ctx, messages, toolSets)
@@ -295,8 +307,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			return nil, fmt.Errorf("no response")
 		}
 
-		completionTokens := calculateTokens([]ChatMessage{*response})
-		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
+		recordUsage(response, estimatedPromptTokens)
 
 		if len(response.ToolCalls) == 0 {
 			appendMessage(*response)
@@ -364,9 +375,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		appendMessage(finalPromptMessage)
 		resultMessages = append(resultMessages, finalPromptMessage)
 
-		promptTokens := calculateTokens(messages)
-		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
-
+		estPrompt := EstimateTokens(messages)
 		response, err := c.aiClient.Chat(ctx, messages, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create final prompt completion: %w", err)
@@ -376,9 +385,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			return nil, fmt.Errorf("no response")
 		}
 
-		completionTokens := calculateTokens([]ChatMessage{*response})
-		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
-
+		recordUsage(response, estPrompt)
 		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
 	}
@@ -392,9 +399,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		appendMessage(schemaMessage)
 		resultMessages = append(resultMessages, schemaMessage)
 
-		promptTokens := calculateTokens(messages)
-		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
-
+		estPrompt := EstimateTokens(messages)
 		response, err := c.aiClient.Chat(ctx, messages, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create JSON formatted response: %w", err)
@@ -404,15 +409,22 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 			return nil, fmt.Errorf("no response")
 		}
 
-		completionTokens := calculateTokens([]ChatMessage{*response})
-		aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
-
+		recordUsage(response, estPrompt)
 		appendMessage(*response)
 		resultMessages = append(resultMessages, *response)
 	}
 
 	if reachedMaxIterations && !endChat && opts.FinalPrompt == "" && opts.ResponseJsonSchema == "" {
 		return nil, fmt.Errorf("reached maximum iterations (%d) without completion", opts.MaxIterations)
+	}
+
+	if opts.OnTokenUsage != nil {
+		opts.OnTokenUsage(ctx, TokenUsageStats{
+			PromptTokens:     totalPromptTokens,
+			CompletionTokens: totalCompletionTokens,
+			TotalTokens:      totalPromptTokens + totalCompletionTokens,
+			ActiveTokens:     EstimateTokens(messages),
+		})
 	}
 
 	return resultMessages, nil
@@ -459,9 +471,15 @@ type ClassicChatStream struct {
 	handoffTriggered        bool // True after a client_tool_pending event was emitted
 	summaryAttempts         int
 
+	totalPromptTokens     int
+	totalCompletionTokens int
+	tokenUsageOnce        sync.Once
+	ctx                   context.Context // stored for Close()-time callback
+
 	onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
 	onMessageAdded          func(ctx context.Context, message ChatMessage)
 	onSummary               func(ctx context.Context, messages []ChatMessage)
+	onTokenUsage            func(ctx context.Context, stats TokenUsageStats)
 }
 
 const maxSummaryAttempts = 3
@@ -484,33 +502,67 @@ func (o *ClassicChatStream) callToolsRunning() bool {
 
 // Close implements ChatStream.
 func (o *ClassicChatStream) Close() error {
+	o.emitTokenUsage()
 	if o.currentChatStream != nil {
 		return o.currentChatStream.Close()
 	}
 	return nil
 }
 
-// calculateTokens estimates the token count for messages
-// Uses a simple approximation: 1 token ≈ 4 characters
-func (o *ClassicChatStream) calculateTokens(messages []ChatMessage) int {
-	totalChars := 0
-	for _, msg := range messages {
-		// Count content
-		totalChars += len(msg.Content)
-		// Count role
-		totalChars += len(msg.Role)
-		// Count tool calls
-		for _, tc := range msg.ToolCalls {
-			totalChars += len(tc.ID)
-			totalChars += len(string(tc.Type))
-			totalChars += len(tc.Function.Name)
-			totalChars += len(tc.Function.Arguments)
+// usageProvider is implemented by inner ChatStream implementations that report
+// actual token usage from the LLM API (e.g. OpenAIChatStream).
+type usageProvider interface {
+	TokenUsage() *TokenUsage
+}
+
+// recordAPICallUsage captures token usage for the just-completed inner stream.
+// Prefers actual usage from the LLM API; falls back to character-based estimation.
+func (o *ClassicChatStream) recordAPICallUsage() {
+	if up, ok := o.currentChatStream.(usageProvider); ok {
+		if usage := up.TokenUsage(); usage != nil {
+			o.totalPromptTokens += usage.PromptTokens
+			o.totalCompletionTokens += usage.CompletionTokens
+			aiTokensTotal.WithLabelValues("prompt").Add(float64(usage.PromptTokens))
+			aiTokensTotal.WithLabelValues("completion").Add(float64(usage.CompletionTokens))
+			return
 		}
-		// Count tool call ID
-		totalChars += len(msg.ToolCallID)
 	}
-	// Approximate: 1 token ≈ 4 characters
-	return (totalChars + 3) / 4
+	// Fallback: estimate prompt from sent messages, completion from buffered response
+	ep := EstimateTokens(o.messages)
+	o.totalPromptTokens += ep
+	aiTokensTotal.WithLabelValues("prompt").Add(float64(ep))
+
+	var completionMsg ChatMessage
+	if o.messageBuffer.Len() > 0 {
+		completionMsg.Content = o.messageBuffer.String()
+	}
+	for _, tc := range o.toolCalls {
+		completionMsg.ToolCalls = append(completionMsg.ToolCalls, ToolCall{
+			ID:   tc.ID,
+			Type: tc.Type,
+			Function: FunctionCall{
+				Name:      tc.Function.Name,
+				Arguments: tc.Function.Arguments,
+			},
+		})
+	}
+	ec := EstimateTokens([]ChatMessage{completionMsg})
+	o.totalCompletionTokens += ec
+	aiTokensTotal.WithLabelValues("completion").Add(float64(ec))
+}
+
+// emitTokenUsage fires the OnTokenUsage callback exactly once with accumulated totals.
+func (o *ClassicChatStream) emitTokenUsage() {
+	o.tokenUsageOnce.Do(func() {
+		if o.onTokenUsage != nil {
+			o.onTokenUsage(o.ctx, TokenUsageStats{
+				PromptTokens:     o.totalPromptTokens,
+				CompletionTokens: o.totalCompletionTokens,
+				TotalTokens:      o.totalPromptTokens + o.totalCompletionTokens,
+				ActiveTokens:     EstimateTokens(o.messages),
+			})
+		}
+	})
 }
 
 // summarizeMessages creates a summary of old messages while preserving the first system message.
@@ -551,8 +603,10 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 	summaryMessages = append(summaryMessages, messagesToSummarize...)
 
 	level.Debug(logger).Log("msg", "Attempting one-shot summarization", "count", len(messagesToSummarize))
+	estPrompt := EstimateTokens(summaryMessages)
 	response, err := o.client.Chat(ctx, summaryMessages, nil)
 	if err == nil && response != nil {
+		o.recordSideCallUsage(response, estPrompt)
 		o.messages = make([]ChatMessage, 0, 2)
 		if systemMessage != nil {
 			o.messages = append(o.messages, *systemMessage)
@@ -599,6 +653,7 @@ func (o *ClassicChatStream) summarizeToolResult(ctx context.Context, toolName, o
 	}
 
 	level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult))
+	estPrompt := EstimateTokens(summarizeMessages)
 	response, err := o.client.Chat(ctx, summarizeMessages, nil)
 	if err != nil {
 		return "", fmt.Errorf("failed to summarize tool result: %w", err)
@@ -608,8 +663,28 @@ func (o *ClassicChatStream) summarizeToolResult(ctx context.Context, toolName, o
 		return "", fmt.Errorf("no response")
 	}
 
+	o.recordSideCallUsage(response, estPrompt)
 	level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(response.Content))
 	return response.Content, nil
+}
+
+// recordSideCallUsage records token usage from auxiliary Chat calls
+// (summarization, tool result condensing) that happen outside the main stream.
+func (o *ClassicChatStream) recordSideCallUsage(response *ChatMessage, estimatedPromptTokens int) {
+	if response != nil && response.Usage != nil {
+		o.totalPromptTokens += response.Usage.PromptTokens
+		o.totalCompletionTokens += response.Usage.CompletionTokens
+		aiTokensTotal.WithLabelValues("prompt").Add(float64(response.Usage.PromptTokens))
+		aiTokensTotal.WithLabelValues("completion").Add(float64(response.Usage.CompletionTokens))
+	} else {
+		o.totalPromptTokens += estimatedPromptTokens
+		aiTokensTotal.WithLabelValues("prompt").Add(float64(estimatedPromptTokens))
+		if response != nil {
+			ec := EstimateTokens([]ChatMessage{*response})
+			o.totalCompletionTokens += ec
+			aiTokensTotal.WithLabelValues("completion").Add(float64(ec))
+		}
+	}
 }
 
 func (o *ClassicChatStream) backgroundCallTool(ctx context.Context, toolCall *ToolCall) {
@@ -761,6 +836,7 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 			resp, err := o.currentChatStream.Recv(ctx)
 			if err != nil {
 				if err == io.EOF {
+					o.recordAPICallUsage()
 					o.currentChatStream.Close()
 					o.currentChatStream = nil
 					o.messageID = uuid.Must(uuid.NewV4()).String()
@@ -769,16 +845,11 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 							Role:    model.AIChatMessageRoleAssistant,
 							Content: o.messageBuffer.String(),
 						}
-						// Record completion tokens for content message
-						completionTokens := o.calculateTokens([]ChatMessage{msg})
-						aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
-
 						o.appendMessage(ctx, msg)
 						o.messageBuffer.Reset()
 					}
 
 					if len(o.toolCalls) > 0 {
-						// Mark that we had tool calls
 						o.hasToolCalls = true
 						var toolCalls []ToolCall
 						for _, toolCall := range o.toolCalls {
@@ -796,10 +867,6 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 							Role:      model.AIChatMessageRoleAssistant,
 							ToolCalls: toolCalls,
 						}
-						// Record completion tokens for tool call message
-						completionTokens := o.calculateTokens([]ChatMessage{msg})
-						aiTokensTotal.WithLabelValues("completion").Add(float64(completionTokens))
-
 						o.appendMessage(ctx, msg)
 						return &ChatStreamEvent{
 							MessageID: o.messageID,
@@ -926,31 +993,23 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 
 		// Check token limit and summarize if needed
 		if o.maxTokens > 0 {
-			currentTokens := o.calculateTokens(o.messages)
+			currentTokens := EstimateTokens(o.messages)
 			tokenThreshold := int(float64(o.maxTokens) * 0.9) // 90% threshold
 
 			if currentTokens >= o.maxTokens {
-				// Token limit exceeded
 				if !o.enableAutoSummarization {
 					return nil, fmt.Errorf("token limit exceeded (%d/%d), auto summarization is disabled", currentTokens, o.maxTokens)
 				}
-				// Try to summarize even at 100%
 				if err := o.summarizeMessages(ctx); err != nil {
 					return nil, fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, o.maxTokens, err)
 				}
 			} else if currentTokens >= tokenThreshold && o.enableAutoSummarization {
-				// At 90% threshold, summarize proactively
 				if err := o.summarizeMessages(ctx); err != nil {
-					// Log error but continue (don't fail the request)
 					logger := log.GetContextLogger(ctx)
 					level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
 				}
 			}
 		}
-
-		// Record prompt tokens before API call
-		promptTokens := o.calculateTokens(o.messages)
-		aiTokensTotal.WithLabelValues("prompt").Add(float64(promptTokens))
 
 		err := o.smartChatStream(ctx)
 		if err != nil {
@@ -969,6 +1028,9 @@ func (stream *ClassicChatStream) applyChatCompletionOptions(o ChatCompletionOpti
 	}
 	if o.OnSummary != nil {
 		stream.onSummary = o.OnSummary
+	}
+	if o.OnTokenUsage != nil {
+		stream.onTokenUsage = o.OnTokenUsage
 	}
 	stream.maxTokens = o.MaxTokens
 	stream.enableAutoSummarization = o.EnableAutoSummarization
@@ -1090,6 +1152,7 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 		messageID:        uuid.Must(uuid.NewV4()).String(),
 		maxIterations:    opts.MaxIterations,
 		currentIteration: 1,
+		ctx:              ctx,
 	}
 	stream.applyChatCompletionOptions(opts)
 	// Call OpenAI API
