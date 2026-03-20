@@ -43,6 +43,8 @@ func (c *SkillController) RegisterRoutes(router *gin.RouterGroup) {
 		skills.GET("", middleware.RequirePermission("system:skills:view"), c.ListSkills)
 		skills.GET("/domains", middleware.RequirePermission("system:skills:view"), c.ListSkillDomains)
 		skills.POST("", middleware.RequirePermission("system:skills:create"), c.CreateSkill)
+		skills.GET("/:id/ai-tool-bindings", middleware.RequirePermission("system:skills:view"), c.ListSkillAIToolBindings)
+		skills.PUT("/:id/ai-tool-bindings", middleware.RequirePermission("system:skills:update"), c.ReplaceSkillAIToolBindings)
 		skills.GET("/:id", middleware.RequirePermission("system:skills:view"), c.GetSkill)
 		skills.PUT("/:id", middleware.RequirePermission("system:skills:update"), c.UpdateSkill)
 		skills.DELETE("/:id", middleware.RequirePermission("system:skills:delete"), c.DeleteSkill)
@@ -72,6 +74,17 @@ type UpdateSkillRequest struct {
 	Description string `json:"description"`
 	Category    string `json:"category"`
 	Domain      string `json:"domain"`
+}
+
+// SkillAIToolBindingItem is one tool binding for a skill (toolset resource_id or "*", tool name or "*").
+type SkillAIToolBindingItem struct {
+	ToolSetID string `json:"toolset_id" binding:"required"`
+	ToolName  string `json:"tool_name" binding:"required"`
+}
+
+// ReplaceSkillAIToolBindingsRequest replaces all AI tool bindings for a skill in the scoped organization.
+type ReplaceSkillAIToolBindingsRequest struct {
+	Bindings []SkillAIToolBindingItem `json:"bindings"`
 }
 
 // CreateSkillDirRequest for creating a subdirectory
@@ -515,6 +528,88 @@ func (c *SkillController) DeleteSkillPath(ctx *gin.Context) {
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"message": "deleted"})
+}
+
+// ListSkillAIToolBindings lists AI tool bindings for a skill in the current organization scope
+//
+//	@Summary		List skill AI tool bindings
+//	@Description	List bindings for a skill (requires X-Scope-OrgID)
+//	@ID             listSkillAIToolBindings
+//	@Tags			System Settings/Skills
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string	true	"Skill ID"
+//	@Param			current		query		int		false	"Page number"	default(1)
+//	@Param			page_size	query		int		false	"Page size"		default(10)
+//	@Param			search		query		string	false	"Search keyword"
+//	@Success		200			{object}	util.PaginationResponse[model.SkillAIToolBinding]
+//	@Failure		400			{object}	util.ErrorResponse
+//	@Failure		500			{object}	util.ErrorResponse
+//	@Router			/api/system/skills/{id}/ai-tool-bindings [get]
+func (c *SkillController) ListSkillAIToolBindings(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
+		return
+	}
+	orgID := ctx.GetString("organization_id")
+	if orgID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Organization ID is required (send X-Scope-OrgID header)"))
+		return
+	}
+	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
+	search := ctx.Query("search")
+	list, total, err := c.service.SkillService.ListSkillAIToolBindings(ctx, id, orgID, current, pageSize, search)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	util.RespondWithSuccessList(ctx, http.StatusOK, list, total, current, pageSize)
+}
+
+// ReplaceSkillAIToolBindings replaces all AI tool bindings for a skill in the current organization scope
+//
+//	@Summary		Replace skill AI tool bindings
+//	@Description	Replace all bindings (requires X-Scope-OrgID)
+//	@ID             replaceSkillAIToolBindings
+//	@Tags			System Settings/Skills
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string							true	"Skill ID"
+//	@Param			request	body		ReplaceSkillAIToolBindingsRequest	true	"Bindings"
+//	@Success		200		{object}	util.Response[util.MessageData]
+//	@Failure		400		{object}	util.ErrorResponse
+//	@Failure		500		{object}	util.ErrorResponse
+//	@Router			/api/system/skills/{id}/ai-tool-bindings [put]
+func (c *SkillController) ReplaceSkillAIToolBindings(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
+		return
+	}
+	orgID := ctx.GetString("organization_id")
+	if orgID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Organization ID is required (send X-Scope-OrgID header)"))
+		return
+	}
+	var req ReplaceSkillAIToolBindingsRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+	rows := make([]model.SkillAIToolBinding, 0, len(req.Bindings))
+	for _, b := range req.Bindings {
+		rows = append(rows, model.SkillAIToolBinding{
+			ToolSetID: b.ToolSetID,
+			ToolName:  b.ToolName,
+		})
+	}
+	if err := c.service.SkillService.ReplaceSkillAIToolBindings(ctx, id, orgID, rows); err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	util.RespondWithMessage(ctx, "Skill AI tool bindings updated")
 }
 
 func init() {

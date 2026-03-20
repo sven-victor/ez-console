@@ -71,6 +71,18 @@ export default {
       selectFile: '请选择文件',
       file: '文件 (.md 或 .zip)',
       initialContent: '初始 SKILL.md 内容（可选）',
+      aiToolsLoadFailed: '加载 AI 工具绑定失败',
+      aiToolsOrgHint: '绑定按组织存储。请使用顶栏的组织切换器选择组织，或通过 API 发送 X-Scope-OrgID。',
+      aiToolsNoOrg: '请先选择组织后再配置 AI 工具绑定。',
+      aiToolsetNoTools: '该工具集中没有可用工具。',
+      aiToolsetsEmpty: '当前组织下没有可用的 AI 工具集。',
+      wildcardPatterns: '通配符模式（可选）',
+      wildcardPatternsHelp: 'toolset_id 或 tool_name 可使用 *（例如 *:sleep 表示所有工具集中的 sleep；uuid:* 表示该工具集全部工具）。',
+      addWildcardRow: '添加模式行',
+      patternToolsetAll: '*（全部工具集）',
+      patternToolsetPlaceholder: '工具集 ID',
+      patternToolNameAll: '*（全部工具）',
+      patternToolNamePlaceholder: '工具名称',
       editor: {
         backToSkills: '返回技能列表',
         skill: '技能',
@@ -128,6 +140,9 @@ export default {
       disableLocalUserLoginTooltip: '禁用本地用户登录，仅在其他认证方法启用时有效',
       enableMultiOrg: '启用多组织',
       enableMultiOrgTooltip: '启用多组织功能。启用后，可在“组织管理”标签中管理组织。',
+      enableSkillToolBinding: '将 AI 工具与技能关联',
+      enableSkillToolBindingTooltip:
+        '启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。',
     },
     organizations: {
       title: '组织管理',

@@ -71,6 +71,19 @@ export default {
       selectFile: 'Please select a file',
       file: 'File (.md or .zip)',
       initialContent: 'Initial SKILL.md content (optional)',
+      aiToolsLoadFailed: 'Failed to load AI tool bindings',
+      aiToolsOrgHint: 'Bindings are stored per organization. Use the organization switcher in the header, or send X-Scope-OrgID on API calls.',
+      aiToolsNoOrg: 'Select an organization to configure AI tool bindings.',
+      aiToolsetNoTools: 'No tools available in this toolset.',
+      aiToolsetsEmpty: 'No AI toolsets available for this organization.',
+      wildcardPatterns: 'Wildcard patterns (optional)',
+      wildcardPatternsHelp:
+        'Use * for toolset_id or tool_name (e.g. *:sleep for all toolsets, uuid:* for all tools in one toolset).',
+      addWildcardRow: 'Add pattern row',
+      patternToolsetAll: '* (all toolsets)',
+      patternToolsetPlaceholder: 'Toolset ID',
+      patternToolNameAll: '* (all tools)',
+      patternToolNamePlaceholder: 'Tool name',
       editor: {
         backToSkills: 'Back to Skills',
         skill: 'Skill',
@@ -128,6 +141,9 @@ export default {
       disableLocalUserLoginTooltip: 'Disable local user login, It is only valid when other authentication methods are enabled.',
       enableMultiOrg: 'Enable Multi-Organization',
       enableMultiOrgTooltip: 'Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab.',
+      enableSkillToolBinding: 'Link AI tools to skills',
+      enableSkillToolBindingTooltip:
+        'When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools.',
     },
     organizations: {
       title: 'Organization Management',

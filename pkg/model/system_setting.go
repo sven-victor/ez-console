@@ -36,6 +36,8 @@ const (
 	SettingSystemDisableLocalUserLogin SettingKey = "system_disable_local_user_login" // Whether to disable local login
 
 	SettingSystemEnableMultiOrg SettingKey = "system_enable_multi_org" // Whether to enable multi-organization feature
+
+	SettingSystemEnableSkillToolBinding SettingKey = "system_enable_skill_tool_binding" // Whether to link AI tools to skills for chat
 )
 
 var SystemSettingKeys = []SettingKey{
@@ -45,6 +47,7 @@ var SystemSettingKeys = []SettingKey{
 	SettingSystemHomePage,
 	SettingSystemDisableLocalUserLogin,
 	SettingSystemEnableMultiOrg,
+	SettingSystemEnableSkillToolBinding,
 }
 
 var SettingKeys = []SettingKey{}
@@ -55,8 +58,9 @@ type SystemSettings struct {
 	Logo     string            `json:"logo"`
 	HomePage string            `json:"home_page"`
 
-	DisableLocalUserLogin bool `json:"disable_local_user_login"`
-	EnableMultiOrg        bool `json:"enable_multi_org"`
+	DisableLocalUserLogin       bool `json:"disable_local_user_login"`
+	EnableMultiOrg              bool `json:"enable_multi_org"`
+	EnableSkillToolBinding      bool `json:"enable_skill_tool_binding"`
 }
 
 func init() {

@@ -8,6 +8,10 @@
 import React from 'react';
 import { type ComponentProps, XMarkdown } from '@ant-design/x-markdown';
 import { Mermaid, CodeHighlighter } from '@ant-design/x';
+import { theme } from 'antd';
+import '@ant-design/x-markdown/themes/light.css';
+import '@ant-design/x-markdown/themes/dark.css';
+import classNames from 'classnames';
 
 export interface MarkdownViewerProps {
   content: string;
@@ -29,6 +33,20 @@ export const Code: React.FC<ComponentProps> = (props) => {
   return <CodeHighlighter lang={lang}>{children}</CodeHighlighter>;
 };
 
+export const useMarkdownTheme = () => {
+  const token = theme.useToken();
+
+  const isLightMode = React.useMemo(() => {
+    return token?.theme?.id === 0;
+  }, [token]);
+
+  const className = React.useMemo(() => {
+    return isLightMode ? 'x-markdown-light' : 'x-markdown-dark';
+  }, [isLightMode]);
+
+  return [className];
+};
+
 const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   content,
   className,
@@ -37,10 +55,11 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({
   rootClassName,
   components = { code: Code },
 }) => {
+  const [markdownThemeClassName] = useMarkdownTheme();
   return (
     <XMarkdown
       content={content}
-      className={className}
+      className={classNames(className, markdownThemeClassName)}
       style={style}
       components={components}
       paragraphTag={paragraphTag}

@@ -199,7 +199,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, w = {
+}, T = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -309,7 +309,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, T = {
+}, w = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -937,6 +937,18 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       selectFile: "Please select a file",
       file: "File (.md or .zip)",
       initialContent: "Initial SKILL.md content (optional)",
+      aiToolsLoadFailed: "Failed to load AI tool bindings",
+      aiToolsOrgHint: "Bindings are stored per organization. Use the organization switcher in the header, or send X-Scope-OrgID on API calls.",
+      aiToolsNoOrg: "Select an organization to configure AI tool bindings.",
+      aiToolsetNoTools: "No tools available in this toolset.",
+      aiToolsetsEmpty: "No AI toolsets available for this organization.",
+      wildcardPatterns: "Wildcard patterns (optional)",
+      wildcardPatternsHelp: "Use * for toolset_id or tool_name (e.g. *:sleep for all toolsets, uuid:* for all tools in one toolset).",
+      addWildcardRow: "Add pattern row",
+      patternToolsetAll: "* (all toolsets)",
+      patternToolsetPlaceholder: "Toolset ID",
+      patternToolNameAll: "* (all tools)",
+      patternToolNamePlaceholder: "Tool name",
       editor: {
         backToSkills: "Back to Skills",
         skill: "Skill",
@@ -993,7 +1005,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "Disable Local User Login",
       disableLocalUserLoginTooltip: "Disable local user login, It is only valid when other authentication methods are enabled.",
       enableMultiOrg: "Enable Multi-Organization",
-      enableMultiOrgTooltip: "Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab."
+      enableMultiOrgTooltip: "Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab.",
+      enableSkillToolBinding: "Link AI tools to skills",
+      enableSkillToolBindingTooltip: "When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools."
     },
     organizations: {
       title: "Organization Management",
@@ -1503,7 +1517,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Skills (optional)",
     skillDomain: "Skill domain"
   }
-}, C = {
+}, E = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1565,7 +1579,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       task_log_cleanup_task: "Task Log Cleanup"
     }
   }
-}, E = {
+}, C = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1993,7 +2007,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, q = {
+}, M = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2100,7 +2114,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, M = {
+}, q = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2755,6 +2769,18 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       selectFile: "请选择文件",
       file: "文件 (.md 或 .zip)",
       initialContent: "初始 SKILL.md 内容（可选）",
+      aiToolsLoadFailed: "加载 AI 工具绑定失败",
+      aiToolsOrgHint: "绑定按组织存储。请使用顶栏的组织切换器选择组织，或通过 API 发送 X-Scope-OrgID。",
+      aiToolsNoOrg: "请先选择组织后再配置 AI 工具绑定。",
+      aiToolsetNoTools: "该工具集中没有可用工具。",
+      aiToolsetsEmpty: "当前组织下没有可用的 AI 工具集。",
+      wildcardPatterns: "通配符模式（可选）",
+      wildcardPatternsHelp: "toolset_id 或 tool_name 可使用 *（例如 *:sleep 表示所有工具集中的 sleep；uuid:* 表示该工具集全部工具）。",
+      addWildcardRow: "添加模式行",
+      patternToolsetAll: "*（全部工具集）",
+      patternToolsetPlaceholder: "工具集 ID",
+      patternToolNameAll: "*（全部工具）",
+      patternToolNamePlaceholder: "工具名称",
       editor: {
         backToSkills: "返回技能列表",
         skill: "技能",
@@ -2811,7 +2837,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "禁用本地用户登录",
       disableLocalUserLoginTooltip: "禁用本地用户登录，仅在其他认证方法启用时有效",
       enableMultiOrg: "启用多组织",
-      enableMultiOrgTooltip: "启用多组织功能。启用后，可在“组织管理”标签中管理组织。"
+      enableMultiOrgTooltip: "启用多组织功能。启用后，可在“组织管理”标签中管理组织。",
+      enableSkillToolBinding: "将 AI 工具与技能关联",
+      enableSkillToolBindingTooltip: "启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。"
     },
     organizations: {
       title: "组织管理",
@@ -3323,7 +3351,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, x = {
+}, B = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3385,7 +3413,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       task_log_cleanup_task: "任务日志清理任务"
     }
   }
-}, B = {
+}, x = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -4031,6 +4059,18 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       selectFile: "Bitte wählen Sie eine Datei",
       file: "Datei (.md oder .zip)",
       initialContent: "Initialer SKILL.md-Inhalt (optional)",
+      aiToolsLoadFailed: "Laden der KI-Tool-Bindings fehlgeschlagen",
+      aiToolsOrgHint: "Bindings werden pro Organisation gespeichert. Organisations-Umschalter oder X-Scope-OrgID verwenden.",
+      aiToolsNoOrg: "Organisation wählen, um KI-Tool-Bindings zu konfigurieren.",
+      aiToolsetNoTools: "Keine Tools in diesem Toolset.",
+      aiToolsetsEmpty: "Keine KI-Toolsets für diese Organisation.",
+      wildcardPatterns: "Wildcard-Muster (optional)",
+      wildcardPatternsHelp: "* für toolset_id oder tool_name (z. B. *:sleep, uuid:*).",
+      addWildcardRow: "Musterzeile hinzufügen",
+      patternToolsetAll: "* (alle Toolsets)",
+      patternToolsetPlaceholder: "Toolset-ID",
+      patternToolNameAll: "* (alle Tools)",
+      patternToolNamePlaceholder: "Tool-Name",
       editor: {
         backToSkills: "Zurück zu Fähigkeiten",
         skill: "Fähigkeit",
@@ -4087,7 +4127,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "Lokale Benutzeranmeldung deaktivieren",
       disableLocalUserLoginTooltip: "Lokale Benutzeranmeldung deaktivieren, nur gültig, wenn andere Authentifizierungsmethoden aktiviert sind",
       enableMultiOrg: "Multi-Organisation aktivieren",
-      enableMultiOrgTooltip: "Multi-Organisations-Funktion aktivieren. Wenn aktiviert, können Organisationen im Tab Organisationsverwaltung verwaltet werden."
+      enableMultiOrgTooltip: "Multi-Organisations-Funktion aktivieren. Wenn aktiviert, können Organisationen im Tab Organisationsverwaltung verwaltet werden.",
+      enableSkillToolBinding: "KI-Tools mit Skills verknüpfen",
+      enableSkillToolBindingTooltip: "Wenn aktiviert, schränkt der KI-Chat die Tools nach Skill-Bindings ein (weiterhin innerhalb der Rollen-KI-Tool-Berechtigungen)."
     },
     security: {
       mfa: {
@@ -5307,6 +5349,18 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       selectFile: "Por favor seleccione un archivo",
       file: "Archivo (.md o .zip)",
       initialContent: "Contenido inicial de SKILL.md (opcional)",
+      aiToolsLoadFailed: "Error al cargar enlaces de herramientas de IA",
+      aiToolsOrgHint: "Los enlaces se guardan por organización. Use el selector de organización o X-Scope-OrgID.",
+      aiToolsNoOrg: "Seleccione una organización para configurar los enlaces.",
+      aiToolsetNoTools: "No hay herramientas en este conjunto.",
+      aiToolsetsEmpty: "No hay conjuntos de herramientas de IA para esta organización.",
+      wildcardPatterns: "Patrones comodín (opcional)",
+      wildcardPatternsHelp: "Use * en toolset_id o tool_name (p. ej. *:sleep, uuid:*).",
+      addWildcardRow: "Añadir fila de patrón",
+      patternToolsetAll: "* (todos los conjuntos)",
+      patternToolsetPlaceholder: "ID del conjunto",
+      patternToolNameAll: "* (todas las herramientas)",
+      patternToolNamePlaceholder: "Nombre de herramienta",
       editor: {
         backToSkills: "Volver a habilidades",
         skill: "Habilidad",
@@ -5363,7 +5417,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "Deshabilitar inicio de sesión local",
       disableLocalUserLoginTooltip: "Deshabilitar inicio de sesión local, solo válido cuando están habilitadas otras formas de autenticación",
       enableMultiOrg: "Habilitar multiorganización",
-      enableMultiOrgTooltip: "Habilitar la función de multiorganización. Cuando está habilitado, las organizaciones se pueden gestionar en la pestaña Gestión de organizaciones."
+      enableMultiOrgTooltip: "Habilitar la función de multiorganización. Cuando está habilitado, las organizaciones se pueden gestionar en la pestaña Gestión de organizaciones.",
+      enableSkillToolBinding: "Vincular herramientas de IA a habilidades",
+      enableSkillToolBindingTooltip: "Si está habilitado, el chat de IA restringe las herramientas según los enlaces por habilidad (aún dentro de los permisos de rol)."
     },
     security: {
       mfa: {
@@ -5778,7 +5834,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, Z = {
+}, J = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -5875,7 +5931,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Habilidades (opcional)",
     skillDomain: "Dominio de habilidad"
   }
-}, J = {
+}, Z = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -6583,6 +6639,18 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       selectFile: "Veuillez sélectionner un fichier",
       file: "Fichier (.md ou .zip)",
       initialContent: "Contenu initial SKILL.md (optionnel)",
+      aiToolsLoadFailed: "Échec du chargement des liaisons d'outils IA",
+      aiToolsOrgHint: "Les liaisons sont stockées par organisation. Utilisez le sélecteur d'organisation ou l'en-tête X-Scope-OrgID.",
+      aiToolsNoOrg: "Sélectionnez une organisation pour configurer les liaisons d'outils IA.",
+      aiToolsetNoTools: "Aucun outil dans ce jeu d'outils.",
+      aiToolsetsEmpty: "Aucun jeu d'outils IA pour cette organisation.",
+      wildcardPatterns: "Motifs génériques (optionnel)",
+      wildcardPatternsHelp: "Utilisez * pour toolset_id ou tool_name (ex. *:sleep, uuid:*).",
+      addWildcardRow: "Ajouter une ligne de motif",
+      patternToolsetAll: "* (tous les jeux d'outils)",
+      patternToolsetPlaceholder: "ID du jeu d'outils",
+      patternToolNameAll: "* (tous les outils)",
+      patternToolNamePlaceholder: "Nom de l'outil",
       editor: {
         backToSkills: "Retour aux compétences",
         skill: "Compétence",
@@ -6639,7 +6707,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "Désactiver le login local",
       disableLocalUserLoginTooltip: "Désactiver le login local, valide uniquement lorsque d'autres méthodes d'authentification sont activées",
       enableMultiOrg: "Activer la multi-organisation",
-      enableMultiOrgTooltip: "Activer la fonctionnalité multi-organisation. Lorsque activé, les organisations peuvent être gérées dans l'onglet Gestion des organisations."
+      enableMultiOrgTooltip: "Activer la fonctionnalité multi-organisation. Lorsque activé, les organisations peuvent être gérées dans l'onglet Gestion des organisations.",
+      enableSkillToolBinding: "Lier les outils IA aux compétences",
+      enableSkillToolBindingTooltip: "Si activé, le chat IA restreint les outils selon les liaisons par compétence lorsque des compétences sont dans le périmètre (toujours dans les permissions des rôles)."
     },
     security: {
       mfa: {
@@ -7859,6 +7929,18 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       selectFile: "يرجى اختيار ملف",
       file: "ملف (.md أو .zip)",
       initialContent: "محتوى SKILL.md الأولي (اختياري)",
+      aiToolsLoadFailed: "فشل تحميل ارتباطات أدوات الذكاء الاصطناعي",
+      aiToolsOrgHint: "تُخزَّن الارتباطات لكل منظمة. استخدم مبدّل المنظمة أو X-Scope-OrgID.",
+      aiToolsNoOrg: "اختر منظمة لضبط ارتباطات الأدوات.",
+      aiToolsetNoTools: "لا توجد أدوات في مجموعة الأدوات هذه.",
+      aiToolsetsEmpty: "لا توجد مجموعات أدوات ذكاء اصطناعي لهذه المنظمة.",
+      wildcardPatterns: "أنمطة بدل (اختياري)",
+      wildcardPatternsHelp: "استخدم * لـ toolset_id أو tool_name (مثل *:sleep أو uuid:*).",
+      addWildcardRow: "إضافة صف نمط",
+      patternToolsetAll: "* (كل مجموعات الأدوات)",
+      patternToolsetPlaceholder: "معرف مجموعة الأدوات",
+      patternToolNameAll: "* (كل الأدوات)",
+      patternToolNamePlaceholder: "اسم الأداة",
       editor: {
         backToSkills: "العودة إلى المهارات",
         skill: "مهارة",
@@ -7915,7 +7997,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "إلغاء تسجيل الدخول المحلي",
       disableLocalUserLoginTooltip: "إلغاء تسجيل الدخول المحلي، يعمل فقط عندما يكون هناك طريقة تحقق أخرى مفعلة",
       enableMultiOrg: "تمكين التنظيم المتعدد",
-      enableMultiOrgTooltip: "تمكين ميزة التنظيم المتعدد. عند التمكين، يمكن إدارة المنظمات في علامة تبويب إدارة المنظمات."
+      enableMultiOrgTooltip: "تمكين ميزة التنظيم المتعدد. عند التمكين، يمكن إدارة المنظمات في علامة تبويب إدارة المنظمات.",
+      enableSkillToolBinding: "ربط أدوات الذكاء الاصطناعي بالمهارات",
+      enableSkillToolBindingTooltip: "عند التمكين، يحد محادثة الذكاء الاصطناعي الأدوات حسب ارتباطات المهارة (ضمن أذونات الأدوات للدور)."
     },
     security: {
       mfa: {
@@ -9135,6 +9219,18 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       selectFile: "Välj en fil",
       file: "Fil (.md eller .zip)",
       initialContent: "Initialt SKILL.md-innehåll (valfritt)",
+      aiToolsLoadFailed: "Kunde inte ladda AI-verktygsbindningar",
+      aiToolsOrgHint: "Bindningar sparas per organisation. Använd organisationsväljaren eller X-Scope-OrgID.",
+      aiToolsNoOrg: "Välj en organisation för att konfigurera bindningar.",
+      aiToolsetNoTools: "Inga verktyg i detta verktygspaket.",
+      aiToolsetsEmpty: "Inga AI-verktygspaket för denna organisation.",
+      wildcardPatterns: "Jokertecken (valfritt)",
+      wildcardPatternsHelp: "Använd * för toolset_id eller tool_name (t.ex. *:sleep, uuid:*).",
+      addWildcardRow: "Lägg till mönsterrad",
+      patternToolsetAll: "* (alla verktygspaket)",
+      patternToolsetPlaceholder: "Verktygspaket-ID",
+      patternToolNameAll: "* (alla verktyg)",
+      patternToolNamePlaceholder: "Verktygsnamn",
       editor: {
         backToSkills: "Tillbaka till färdigheter",
         skill: "Färdighet",
@@ -9191,7 +9287,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "Inaktivera lokal användare",
       disableLocalUserLoginTooltip: "Inaktivera lokal användare, endast gällande när andra autentiseringsmetoder är aktiverade",
       enableMultiOrg: "Aktivera multiorganisation",
-      enableMultiOrgTooltip: "Aktivera multiorganisationsfunktionen. När den är aktiverad kan organisationer hanteras i fliken Organisationshantering."
+      enableMultiOrgTooltip: "Aktivera multiorganisationsfunktionen. När den är aktiverad kan organisationer hanteras i fliken Organisationshantering.",
+      enableSkillToolBinding: "Koppla AI-verktyg till färdigheter",
+      enableSkillToolBindingTooltip: "När det är aktiverat begränsar AI-chatten verktyg enligt färdighetsbindningar (inom rollbehörigheter)."
     },
     security: {
       mfa: {
@@ -9772,23 +9870,23 @@ f.use(b).use(v).init({
   resources: {
     "zh-CN": {
       translation: P,
-      common: M,
+      common: q,
       authorization: U,
       system: N,
       ai: O,
-      task: x
+      task: B
     },
     "en-US": {
-      translation: w,
-      common: T,
+      translation: T,
+      common: w,
       authorization: R,
       system: z,
       ai: D,
-      task: C
+      task: E
     },
     "de-DE": {
-      translation: E,
-      common: B,
+      translation: C,
+      common: x,
       authorization: V,
       system: _,
       ai: K,
@@ -9799,8 +9897,8 @@ f.use(b).use(v).init({
       common: G,
       authorization: W,
       system: H,
-      ai: Z,
-      task: J
+      ai: J,
+      task: Z
     },
     "fr-FR": {
       translation: L,
@@ -9819,7 +9917,7 @@ f.use(b).use(v).init({
       task: se
     },
     "sv-SE": {
-      translation: q,
+      translation: M,
       common: oe,
       authorization: ne,
       system: le,

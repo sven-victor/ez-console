@@ -1764,6 +1764,31 @@ definitions:
     - name
     - updated_at
     type: object
+  model.SkillAIToolBinding:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      organization_id:
+        type: string
+      skill_id:
+        type: string
+      tool_name:
+        type: string
+      toolset_id:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - created_at
+    - id
+    - organization_id
+    - skill_id
+    - tool_name
+    - toolset_id
+    - updated_at
+    type: object
   model.StatementEntry:
     properties:
       Action:
@@ -1796,6 +1821,8 @@ definitions:
         type: boolean
       enable_multi_org:
         type: boolean
+      enable_skill_tool_binding:
+        type: boolean
       home_page:
         type: string
       logo:
@@ -1809,6 +1836,7 @@ definitions:
     required:
     - disable_local_user_login
     - enable_multi_org
+    - enable_skill_tool_binding
     - home_page
     - logo
     - name
@@ -2443,6 +2471,8 @@ definitions:
         type: boolean
       enable_multi_org:
         type: boolean
+      enable_skill_tool_binding:
+        type: boolean
       home_page:
         type: string
       logo:
@@ -2465,6 +2495,7 @@ definitions:
     - attrs
     - disable_local_user_login
     - enable_multi_org
+    - enable_skill_tool_binding
     - home_page
     - logo
     - menu
@@ -2805,6 +2836,15 @@ definitions:
     required:
     - content
     type: object
+  systemapi.ReplaceSkillAIToolBindingsRequest:
+    properties:
+      bindings:
+        items:
+          $ref: '#/definitions/systemapi.SkillAIToolBindingItem'
+        type: array
+    required:
+    - bindings
+    type: object
   systemapi.SMTPTestResponse:
     properties:
       message:
@@ -2814,6 +2854,16 @@ definitions:
     required:
     - message
     - success
+    type: object
+  systemapi.SkillAIToolBindingItem:
+    properties:
+      tool_name:
+        type: string
+      toolset_id:
+        type: string
+    required:
+    - tool_name
+    - toolset_id
     type: object
   systemapi.Tool:
     properties:
@@ -3044,19 +3094,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3083,19 +3120,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
   toolset.ToolSetType:
     enum:
     - utils
@@ -3301,6 +3325,30 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.Skill'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+      trace_id:
+        type: string
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    - trace_id
+    type: object
+  util.PaginationResponse-model_SkillAIToolBinding:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.SkillAIToolBinding'
         type: array
       page_size:
         type: integer
@@ -7339,6 +7387,85 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Update skill
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}/ai-tool-bindings:
+    get:
+      consumes:
+      - application/json
+      description: List bindings for a skill (requires X-Scope-OrgID)
+      operationId: listSkillAIToolBindings
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Search keyword
+        in: query
+        name: search
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_SkillAIToolBinding'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List skill AI tool bindings
+      tags:
+      - System Settings/Skills
+    put:
+      consumes:
+      - application/json
+      description: Replace all bindings (requires X-Scope-OrgID)
+      operationId: replaceSkillAIToolBindings
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bindings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.ReplaceSkillAIToolBindingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Replace skill AI tool bindings
       tags:
       - System Settings/Skills
   /api/system/skills/{id}/dirs:

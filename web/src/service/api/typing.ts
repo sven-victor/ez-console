@@ -774,6 +774,17 @@ export interface listRolesParams {
   organization_id?: string;
 }
 
+export interface listSkillAIToolBindingsParams {
+  /** Skill ID */
+  id: string;
+  /** Page number */
+  current?: number;
+  /** Page size */
+  page_size?: number;
+  /** Search keyword */
+  search?: string;
+}
+
 export interface listSkillFilesTreeParams {
   /** Skill ID */
   id: string;
@@ -1037,6 +1048,15 @@ export interface PaginationResponseModelSkill {
   trace_id: string;
 }
 
+export interface PaginationResponseModelSkillAIToolBinding {
+  code: string;
+  current: number;
+  data: SkillAIToolBinding[];
+  page_size: number;
+  total: number;
+  trace_id: string;
+}
+
 export interface PaginationResponseModelTask {
   code: string;
   current: number;
@@ -1117,6 +1137,15 @@ export interface removeUserFromOrganizationParams {
   id: string;
   /** User ID */
   user_id: string;
+}
+
+export interface replaceSkillAIToolBindingsParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface ReplaceSkillAIToolBindingsRequest {
+  bindings: SkillAIToolBindingItem[];
 }
 
 export interface resetUserPasswordParams {
@@ -1760,6 +1789,7 @@ export interface SiteConfig {
   attrs: Record<string, any>;
   disable_local_user_login: boolean;
   enable_multi_org: boolean;
+  enable_skill_tool_binding: boolean;
   home_page: string;
   logo: string;
   menu: MenuConfig[];
@@ -1776,6 +1806,21 @@ export interface Skill {
   id: string;
   name: string;
   updated_at: string;
+}
+
+export interface SkillAIToolBinding {
+  created_at: string;
+  id: string;
+  organization_id: string;
+  skill_id: string;
+  tool_name: string;
+  toolset_id: string;
+  updated_at: string;
+}
+
+export interface SkillAIToolBindingItem {
+  tool_name: string;
+  toolset_id: string;
 }
 
 export interface SkillTreeNode {
@@ -1847,6 +1892,7 @@ export interface SystemInfo {
 export interface SystemSettings {
   disable_local_user_login: boolean;
   enable_multi_org: boolean;
+  enable_skill_tool_binding: boolean;
   home_page: string;
   logo: string;
   name: string;

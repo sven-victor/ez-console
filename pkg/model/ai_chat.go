@@ -113,17 +113,18 @@ func (t *AIToolCalls) Scan(value interface{}) error {
 // AIChatSession represents a chat session
 type AIChatSession struct {
 	Base
-	OrganizationID        string          `gorm:"size:36;not null" json:"organization_id"`         // Organization ID
-	Title                 string          `gorm:"size:200;not null" json:"title"`                  // Session title
-	UserID                string          `gorm:"size:36;not null;index" json:"user_id"`           // User ID
-	ModelID               string          `gorm:"size:36;not null" json:"model_id"`                // AI model ID used
-	StartTime             time.Time       `gorm:"not null" json:"start_time"`                      // Session start time
-	EndTime               *time.Time      `json:"end_time"`                                        // Session end time
-	Messages              []AIChatMessage `gorm:"-" json:"messages"`                               // Messages
-	Anonymous             bool            `gorm:"default:false" json:"anonymous"`                   // Whether the session is anonymous
-	TotalPromptTokens     int             `gorm:"default:0" json:"total_prompt_tokens"`            // Cumulative prompt tokens across all API calls
-	TotalCompletionTokens int             `gorm:"default:0" json:"total_completion_tokens"`        // Cumulative completion tokens across all API calls
-	ActiveTokens          int             `gorm:"default:0" json:"active_tokens"`                  // Estimated tokens for unsummarized messages (next LLM input)
+	OrganizationID        string          `gorm:"size:36;not null" json:"organization_id"`  // Organization ID
+	Title                 string          `gorm:"size:200;not null" json:"title"`           // Session title
+	UserID                string          `gorm:"size:36;not null;index" json:"user_id"`    // User ID
+	ModelID               string          `gorm:"size:36;not null" json:"model_id"`         // AI model ID used
+	StartTime             time.Time       `gorm:"not null" json:"start_time"`               // Session start time
+	EndTime               *time.Time      `json:"end_time"`                                 // Session end time
+	Messages              []AIChatMessage `gorm:"-" json:"messages"`                        // Messages
+	Anonymous             bool            `gorm:"default:false" json:"anonymous"`           // Whether the session is anonymous
+	TotalPromptTokens     int             `gorm:"default:0" json:"total_prompt_tokens"`     // Cumulative prompt tokens across all API calls
+	TotalCompletionTokens int             `gorm:"default:0" json:"total_completion_tokens"` // Cumulative completion tokens across all API calls
+	ActiveTokens          int             `gorm:"default:0" json:"active_tokens"`           // Estimated tokens for unsummarized messages (next LLM input)
+	ActivatedSkillIDs     []string        `gorm:"type:text;serializer:json" json:"-"`
 }
 
 // TableName returns the table name for AIChatSession

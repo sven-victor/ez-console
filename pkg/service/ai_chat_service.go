@@ -38,6 +38,8 @@ type AIChatService struct {
 	aiModelService *AIModelService
 	toolSetService *ToolSetService
 	aiTraceService *AITraceService
+	settingService *SettingService
+	skillService   *SkillService
 }
 
 var aiChatSessionCleanupTaskType = model.TaskType("ai_chat_session_cleanup_task")
@@ -55,6 +57,8 @@ func NewAIChatService() *AIChatService {
 			aiModelService: NewAIModelService(),
 			toolSetService: NewToolSetService(),
 			aiTraceService: NewAITraceService(settingSvc),
+			settingService: settingSvc,
+			skillService:   NewSkillService(),
 		}
 		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
 			ID:             "ai-chat-session-cleanup",
@@ -192,6 +196,41 @@ func (s *AIChatService) GetChatSession(ctx context.Context, organizationID, user
 	}
 
 	return &session, nil
+}
+
+// AppendSessionActivatedSkill records that get_skill_content succeeded for a skill in this session (deduplicated).
+func (s *AIChatService) AppendSessionActivatedSkill(ctx context.Context, organizationID, userID, sessionID, skillID string) error {
+	if skillID == "" {
+		return nil
+	}
+	var session model.AIChatSession
+	if err := db.Session(ctx).Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).First(&session).Error; err != nil {
+		return fmt.Errorf("failed to get chat session: %w", err)
+	}
+	ids := session.ActivatedSkillIDs
+	for _, id := range ids {
+		if id == skillID {
+			return nil
+		}
+	}
+	ids = append(ids, skillID)
+	if err := db.Session(ctx).Model(&model.AIChatSession{}).
+		Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).
+		Select("activated_skill_ids").
+		Updates(&model.AIChatSession{ActivatedSkillIDs: ids}).Error; err != nil {
+		return fmt.Errorf("failed to update activated skills: %w", err)
+	}
+	return nil
+}
+
+// ClearSessionActivatedSkills clears skills activated via get_skill_content (e.g. after summarization).
+func (s *AIChatService) ClearSessionActivatedSkills(ctx context.Context, organizationID, userID, sessionID string) error {
+	if err := db.Session(ctx).Model(&model.AIChatSession{}).
+		Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).
+		Update("activated_skill_ids", []string{}).Error; err != nil {
+		return fmt.Errorf("failed to clear activated skills: %w", err)
+	}
+	return nil
 }
 
 // GetUserChatSessions gets chat sessions for a user with pagination
@@ -540,7 +579,8 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 }
 
 // CreateChatCompletionStream creates a streaming chat completion.
-func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) (ai.ChatStream, error) {
+// skillParams is nil for chats without skill metadata; when set, organization tools may load only after get_skill_content (see system_enable_skill_tool_binding).
+func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillParams *SkillChatStreamToolParams, options ...ai.WithChatOptions) (ai.ChatStream, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -556,10 +596,33 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		}
 	}
 
-	toolSets, err := s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
-	if err != nil {
-		return nil, err
+	enableSkillToolBinding, _ := s.settingService.GetBoolSetting(ctx, model.SettingSystemEnableSkillToolBinding, false)
+
+	orgToolSetsFactory := func(ctx context.Context) (toolset.ToolSets, error) {
+		if !enableSkillToolBinding {
+			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingDisabled)
+		}
+		if skillParams == nil || !skillParams.SkillMetadataActive {
+			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingNoMetadata)
+		}
+		var activated []string
+		if skillParams.Activation != nil {
+			activated = skillParams.Activation.Snapshot()
+		}
+		if len(activated) == 0 {
+			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingAwaitingActivation)
+		}
+		if organizationID == "" {
+			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingApply)
+		}
+		bindings, errBind := s.skillService.ListSkillAIToolBindingsForChat(ctx, organizationID, activated)
+		if errBind != nil {
+			return nil, fmt.Errorf("failed to load skill AI tool bindings: %w", errBind)
+		}
+		return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, bindings, SkillChatBindingApply)
 	}
+
+	refreshToolSets := enableSkillToolBinding && skillParams != nil && skillParams.SkillMetadataActive
 
 	// Prepend global prompts for stream calls
 	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryStream)
@@ -590,7 +653,10 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		}
 	}
 
-	allOptions := []ai.WithChatOptions{ai.WithChatToolSets(toolSets)}
+	allOptions := []ai.WithChatOptions{ai.WithChatUncachedToolSetsFactory(orgToolSetsFactory)}
+	if refreshToolSets {
+		allOptions = append(allOptions, ai.WithChatRefreshToolSetsEachIteration(true))
+	}
 	if maxTokens > 0 {
 		allOptions = append(allOptions, ai.WithChatMaxTokens(maxTokens))
 	}

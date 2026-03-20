@@ -71,6 +71,18 @@ export default {
       selectFile: 'Veuillez sélectionner un fichier',
       file: 'Fichier (.md ou .zip)',
       initialContent: 'Contenu initial SKILL.md (optionnel)',
+      aiToolsLoadFailed: 'Échec du chargement des liaisons d\'outils IA',
+      aiToolsOrgHint: 'Les liaisons sont stockées par organisation. Utilisez le sélecteur d\'organisation ou l\'en-tête X-Scope-OrgID.',
+      aiToolsNoOrg: 'Sélectionnez une organisation pour configurer les liaisons d\'outils IA.',
+      aiToolsetNoTools: 'Aucun outil dans ce jeu d\'outils.',
+      aiToolsetsEmpty: 'Aucun jeu d\'outils IA pour cette organisation.',
+      wildcardPatterns: 'Motifs génériques (optionnel)',
+      wildcardPatternsHelp: 'Utilisez * pour toolset_id ou tool_name (ex. *:sleep, uuid:*).',
+      addWildcardRow: 'Ajouter une ligne de motif',
+      patternToolsetAll: '* (tous les jeux d\'outils)',
+      patternToolsetPlaceholder: 'ID du jeu d\'outils',
+      patternToolNameAll: '* (tous les outils)',
+      patternToolNamePlaceholder: 'Nom de l\'outil',
       editor: {
         backToSkills: 'Retour aux compétences',
         skill: 'Compétence',
@@ -128,6 +140,9 @@ export default {
       disableLocalUserLoginTooltip: 'Désactiver le login local, valide uniquement lorsque d\'autres méthodes d\'authentification sont activées',
       enableMultiOrg: 'Activer la multi-organisation',
       enableMultiOrgTooltip: 'Activer la fonctionnalité multi-organisation. Lorsque activé, les organisations peuvent être gérées dans l\'onglet Gestion des organisations.',
+      enableSkillToolBinding: 'Lier les outils IA aux compétences',
+      enableSkillToolBindingTooltip:
+        'Si activé, le chat IA restreint les outils selon les liaisons par compétence lorsque des compétences sont dans le périmètre (toujours dans les permissions des rôles).',
     },
     security: {
       mfa: {

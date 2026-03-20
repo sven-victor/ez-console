@@ -360,6 +360,12 @@ export declare const api: {
     deleteSkill(params: API.deleteSkillParams, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
+    listSkillAiToolBindings(params: API.listSkillAIToolBindingsParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseModelSkillAIToolBinding>;
+    replaceSkillAiToolBindings(params: API.replaceSkillAIToolBindingsParams, body: API.ReplaceSkillAIToolBindingsRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
     createSkillDir(params: API.createSkillDirParams, body: API.CreateSkillDirRequest, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
@@ -1455,6 +1461,17 @@ export declare interface listRolesParams {
     organization_id?: string;
 }
 
+export declare interface listSkillAIToolBindingsParams {
+    /** Skill ID */
+    id: string;
+    /** Page number */
+    current?: number;
+    /** Page size */
+    page_size?: number;
+    /** Search keyword */
+    search?: string;
+}
+
 export declare interface listSkillFilesTreeParams {
     /** Skill ID */
     id: string;
@@ -1744,6 +1761,15 @@ export declare interface PaginationResponseModelSkill {
     trace_id: string;
 }
 
+export declare interface PaginationResponseModelSkillAIToolBinding {
+    code: string;
+    current: number;
+    data: SkillAIToolBinding[];
+    page_size: number;
+    total: number;
+    trace_id: string;
+}
+
 export declare interface PaginationResponseModelTask {
     code: string;
     current: number;
@@ -1869,6 +1895,15 @@ export declare interface removeUserFromOrganizationParams {
     id: string;
     /** User ID */
     user_id: string;
+}
+
+export declare interface replaceSkillAIToolBindingsParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface ReplaceSkillAIToolBindingsRequest {
+    bindings: SkillAIToolBindingItem[];
 }
 
 export declare function request(url: string, config: ArrayBufferRequestConfig): Promise<AxiosResponse<ArrayBuffer>>;
@@ -2535,6 +2570,7 @@ export declare interface SiteConfig {
     attrs: Record<string, any>;
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
+    enable_skill_tool_binding: boolean;
     home_page: string;
     logo: string;
     menu: MenuConfig[];
@@ -2546,6 +2582,7 @@ export declare interface SiteConfig {
 declare interface SiteContextType {
     siteConfig: API.SiteConfig | null;
     enableMultiOrg: boolean;
+    enableSkillToolBinding: boolean;
     loading: boolean;
     fetchSiteConfig: () => Promise<API.SiteConfig | null>;
     currentOrgId: string | null;
@@ -2566,6 +2603,21 @@ export declare interface Skill {
     id: string;
     name: string;
     updated_at: string;
+}
+
+export declare interface SkillAIToolBinding {
+    created_at: string;
+    id: string;
+    organization_id: string;
+    skill_id: string;
+    tool_name: string;
+    toolset_id: string;
+    updated_at: string;
+}
+
+export declare interface SkillAIToolBindingItem {
+    tool_name: string;
+    toolset_id: string;
 }
 
 export declare interface SkillTreeNode {
@@ -2646,6 +2698,7 @@ export declare interface SystemInfo {
 export declare interface SystemSettings {
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
+    enable_skill_tool_binding: boolean;
     home_page: string;
     logo: string;
     name: string;

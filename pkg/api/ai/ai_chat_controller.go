@@ -438,6 +438,10 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	// Capture context values for background goroutine
 	roles, _ := ctx.Get("roles")
 
+	userIDStr := userID.(string)
+	var skillStreamParams *service.SkillChatStreamToolParams
+	var activation *service.SkillActivationTracker
+
 	options := []ai.WithChatOptions{
 		ai.WithChatOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
 			if len(message.ToolCalls) > 0 {
@@ -498,12 +502,18 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}),
 
 		ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
-			if err := c.service.MarkSessionMessagesSummarized(ctx, organizationID, userID.(string), sessionID); err != nil {
+			if activation != nil {
+				activation.Clear()
+				if err := c.service.ClearSessionActivatedSkills(ctx, organizationID, userIDStr, sessionID); err != nil {
+					level.Error(logger).Log("msg", "Failed to clear activated skills after summary", "error", err)
+				}
+			}
+			if err := c.service.MarkSessionMessagesSummarized(ctx, organizationID, userIDStr, sessionID); err != nil {
 				level.Error(logger).Log("msg", "Failed to mark messages as summarized", "error", err)
 				return
 			}
 			for _, message := range messages {
-				if _, err := c.service.AddSummaryChatMessage(ctx, organizationID, userID.(string), sessionID, message.Role, message.Content); err != nil {
+				if _, err := c.service.AddSummaryChatMessage(ctx, organizationID, userIDStr, sessionID, message.Role, message.Content); err != nil {
 					level.Error(logger).Log("msg", "Failed to add summary chat message", "error", err)
 					return
 				}
@@ -515,6 +525,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				level.Error(logger).Log("msg", "Failed to update session token usage", "error", err)
 			}
 		}),
+		ai.WithChatMaxTokens(1024 * 100),
+		ai.WithChatAutoSummarization(true),
 	}
 
 	// Inject client tools
@@ -552,9 +564,9 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}
 	}
 
-	var skillLoaderToolSet toolset.ToolSet
 	// Progressive skill loading: when domains/skillIDs are set, inject metadata only
-	// and add skill_loader toolset so the model can load content on demand
+	// and add skill_loader toolset so the model can load content on demand.
+	// Organization tools gated by skill bindings load only after get_skill_content succeeds (session activated_skill_ids).
 	if len(req.Domains) > 0 || len(req.SkillIDs) > 0 {
 		metadataContent, skillIDs, err := c.service.SkillService.LoadSkillsMetadataForChat(ctx, req.Domains, req.SkillIDs)
 		if err != nil {
@@ -562,17 +574,31 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 			return
 		}
 		if metadataContent != "" {
+			activation = service.NewSkillActivationTracker(session.ActivatedSkillIDs)
+			skillStreamParams = &service.SkillChatStreamToolParams{
+				SkillMetadataActive: true,
+				Activation:          activation,
+			}
+			loaderOpts := &service.SkillLoaderOptions{
+				OnSkillContentLoaded: func(ctx context.Context, skillID string) error {
+					if err := c.service.AppendSessionActivatedSkill(ctx, organizationID, userIDStr, sessionID, skillID); err != nil {
+						return err
+					}
+					activation.Add(skillID)
+					return nil
+				},
+			}
+			skillLoaderToolSet := service.NewSkillLoaderToolSet(ctx, c.service.SkillService, skillIDs, loaderOpts)
 			chatMessages = append([]ai.ChatMessage{{
 				Role:    model.AIChatMessageRoleSystem,
 				Content: metadataContent,
 			}}, chatMessages...)
-			skillLoaderToolSet = service.NewSkillLoaderToolSet(ctx, c.service.SkillService, skillIDs)
 			options = append(options, ai.WithChatToolSetsFactory(toolset.NewStaticToolSetsFactory(toolset.ToolSets{"skill_loader": skillLoaderToolSet})))
 		}
 	}
 
 	// Create streaming chat completion
-	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, chatMessages, options...)
+	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, chatMessages, skillStreamParams, options...)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", fmt.Sprintf("Failed to create chat completion stream: %s", err))))
 		return

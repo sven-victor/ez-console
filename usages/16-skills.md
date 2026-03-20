@@ -11,6 +11,7 @@ This guide describes the AI Agent Skills feature in EZ-Console: how skills are s
 - [Management in the Console](#management-in-the-console)
 - [APIs](#apis)
 - [AI Integration](#ai-integration)
+  - [Skills and organization tools loading](#skills-and-organization-tools-loading)
 - [Registering Custom Domains](#registering-custom-domains)
 
 ## Overview
@@ -23,7 +24,7 @@ Skills are reusable instruction sets for AI agents. Each skill has:
 When calling the AI chat API, you can pass optional **domains** and **skill_ids**. The system then:
 
 - Injects a list of available skills (metadata only) into the system context
-- Attaches a **skill loader toolset** so the model can call `get_skill_content` and `list_skill_files` to load skill content on demand
+- Attaches a **skill loader toolset** so the model can call `get_skill_content` to load skill content on demand
 
 Skills with domain **core** are always included when any skills are loaded; other domains filter which skills are available for that request.
 
@@ -140,6 +141,8 @@ make clean-openapi clean-openapi2ts openapi2ts
 | POST | `/api/system/skills/:id/dirs` | Create directory (body: path) |
 | DELETE | `/api/system/skills/:id/files/*path` | Delete file or directory |
 | PUT | `/api/system/skills/:id/move-path` | Move/rename file or directory (body: from_path, to_path) |
+| GET | `/api/system/skills/:id/ai-tool-bindings` | List AI tool bindings for a skill (requires `X-Scope-OrgID`) |
+| PUT | `/api/system/skills/:id/ai-tool-bindings` | Replace all bindings for that skill in the scoped org (body: `bindings: [{ toolset_id, tool_name }]`) |
 
 ### Permissions
 
@@ -151,6 +154,49 @@ make clean-openapi clean-openapi2ts openapi2ts
 
 ## AI Integration
 
+Implementation reference (streaming chat path):
+
+- `pkg/api/ai/ai_chat_controller.go` — `StreamChat`: when to inject metadata, `SkillLoaderToolSet`, `SkillChatStreamToolParams`, `OnSummary` clearing `activated_skill_ids`.
+- `pkg/service/ai_chat_service.go` — `CreateChatCompletionStream`: `orgToolSetsFactory`, `RefreshToolSetsEachIteration`, `skillParams *SkillChatStreamToolParams`.
+- `pkg/service/toolset_service.go` — `GetAuthorizedToolSetsForChat`, `SkillChatBindingMode`.
+- `pkg/service/skill_loader_toolset.go` — `NewSkillLoaderToolSet`, `SkillLoaderOptions.OnSkillContentLoaded`.
+- `pkg/model/ai_chat.go` — `AIChatSession.ActivatedSkillIDs` (`JSONStringSlice`).
+- `pkg/clients/ai/classic_client.go` — refreshes merged tool sets before each LLM iteration when the option is set.
+- `pkg/clients/ai/skill_content_redact.go` — redacts `skill_loader_get_skill_content` tool results for summarization.
+
+There are **two tool layers** in chat:
+
+1. **Organization toolsets** (MCP, utils, custom toolsets, …): whatever the user’s roles allow in the current org, subject to skill–tool binding rules below.
+2. **Skill loader** (map key `skill_loader`): registered only when the chat request results in non-empty skill **metadata** (`domains` / `skill_ids` → `LoadSkillsMetadataForChat` produces text). The model sees tools as **`skill_loader_get_skill_content`** (namespace prefix + tool name).
+
+### Skills and organization tools loading
+
+**When the request does not load skills** (no `domains` and `skill_ids`, or metadata resolves empty):
+
+- **`skill_loader` is not** attached.
+- **`CreateChatCompletionStream`** is called with `skillParams == nil`.
+- **Organization tools**: always the **full** RBAC-authorized set for the org (`GetAuthorizedToolSetsForChat` with `SkillChatBindingDisabled` if binding is off, or `SkillChatBindingNoMetadata` if binding is on). **Turning on `system_enable_skill_tool_binding` does not restrict tools** unless the same request also injects skill metadata.
+
+**When the request loads skills** (non-empty metadata system message + `SkillLoaderToolSet`):
+
+- **`SkillChatStreamToolParams`** is set with `SkillMetadataActive: true` and a **`SkillActivationTracker`** seeded from **`session.activated_skill_ids`** (persisted JSON array on `t_ai_chat_sessions`).
+- On each successful **`get_skill_content`** call, **`OnSkillContentLoaded`** runs: **`AppendSessionActivatedSkill`** (DB) and **`activation.Add`** (in-memory). Organization tool visibility can change **before the next LLM call** because the stream uses an **uncached** org tool factory and **`RefreshToolSetsEachIteration`** when binding is on and metadata is active.
+
+**`system_enable_skill_tool_binding` and organization toolsets**
+
+| Skill metadata in this chat? | Binding setting | Organization toolsets exposed to the model |
+|------------------------------|-----------------|---------------------------------------------|
+| No | Off | Full authorized (`SkillChatBindingDisabled`) |
+| No | On | Full authorized (`SkillChatBindingNoMetadata`) — same effective outcome as off |
+| Yes | Off | Full authorized; binding logic skipped |
+| Yes | On, **no** skill activated yet (`get_skill_content` never succeeded this session) | **None** (`SkillChatBindingAwaitingActivation`) — empty org tool map; only `skill_loader`, client tools, etc. |
+| Yes | On, **at least one** activated skill ID | Narrowed by rows in **`t_skill_ai_tool_bindings`** for those activated IDs only (`SkillChatBindingApply`). If there are **no** binding rows for that set, behavior matches “no bindings”: **full** authorized org tools. |
+
+**Summarization (token-driven auto-summary in the stream client)**
+
+- **`OnSummary`**: clears **`SkillActivationTracker`** and **`ClearSessionActivatedSkills`** (wipes `activated_skill_ids` in DB).
+- Summarizer input uses **`RedactGetSkillContentToolResultsForSummary`**: large **`get_skill_content`** tool results are replaced with a short placeholder so summaries stay small. The model must call **`get_skill_content`** again after a summary if it needs file bodies.
+
 ### Chat request
 
 When sending a message (e.g. `POST /api/ai/chat/sessions/:sessionId`), the request body can include:
@@ -158,14 +204,12 @@ When sending a message (e.g. `POST /api/ai/chat/sessions/:sessionId`), the reque
 - **domains** (optional): Slice of domain names. Loaded skills are those with `domain = 'core'` or `domain` in this list.
 - **skill_ids** (optional): Slice of skill resource IDs to include in addition to domain-based skills.
 
-If either `domains` or `skill_ids` is non-empty:
+If either `domains` or `skill_ids` is non-empty **and** `LoadSkillsMetadataForChat` returns non-empty text:
 
-1. **System context**: The backend calls `SkillService.LoadSkillsMetadataForChat(ctx, domains, skill_ids)` and appends the result to the system prompt. This text lists available skills (id, name, description, domain) and instructs the model to use the tools `get_skill_content` and `list_skill_files` to load content on demand.
-2. **Toolset**: A `SkillLoaderToolSet` is built for the same `domains` and `skill_ids` and registered for the chat. It exposes:
-   - **get_skill_content(skill_id, path?)**: Load full skill content or a specific file under the skill. Omit `path` for the combined SKILL.md + other .md content.
-   - **list_skill_files(skill_id, path?)**: List entries under a path (default root). Returns names and whether each entry is a directory.
+1. **System context**: The backend appends the metadata (id, name, description, domain) and instructs the model to use **`get_skill_content`** to load bodies on demand.
+2. **Toolset**: A **`SkillLoaderToolSet`** is registered under key **`skill_loader`**, exposing **`get_skill_content(skill_id, path?)`**. Omit **`path`** for combined SKILL.md + other `.md` content.
 
-The model can thus decide when to load which skill content, keeping context smaller when only metadata is needed.
+The model can load skill files only when needed, keeping initial context small.
 
 ### Example chat request with skills
 
@@ -178,7 +222,16 @@ POST /api/ai/chat/sessions/:sessionId
 }
 ```
 
-This makes skills in the `document` domain and the given skill ID available via the injected metadata and the skill loader tools.
+This injects metadata and the skill loader. If **`system_enable_skill_tool_binding`** is on, organization tools appear only after **`get_skill_content`** succeeds for at least one in-scope skill (unless there are no binding rows for the activated set, in which case full authorized tools apply).
+
+### Skill ↔ AI tool bindings (optional)
+
+When **`system_enable_skill_tool_binding`** is enabled:
+
+- **Bindings** are stored per organization in **`t_skill_ai_tool_bindings`** (`skill_id`, `organization_id`, `toolset_id`, `tool_name`). **`toolset_id`** is the toolset **resource ID** or **`*`** (any authorized toolset in that org). **`tool_name`** is the logical tool name (as in role AI permissions) or **`*`**. Examples: `*:sleep`, `<uuid>:*`, `<uuid>:sleep`.
+- **UI**: Base system settings expose the toggle. The Skills edit modal shows the tool picker when the feature is on (`listToolSets?include_tools=true`, `X-Scope-OrgID`), same pattern as role AI tool permissions.
+
+When the setting is **off**, bindings are ignored and the Skills UI does not show tool linking. See [Skills and organization tools loading](#skills-and-organization-tools-loading) for the full decision table and persistence behavior.
 
 ## Registering Custom Domains
 

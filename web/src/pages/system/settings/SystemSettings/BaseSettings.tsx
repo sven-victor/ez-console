@@ -104,6 +104,16 @@ const BaseSettingsForm: React.FC = () => {
       >
         <Switch />
       </Form.Item>
+      <Form.Item
+        label={t('settings.base.enableSkillToolBinding', { defaultValue: 'Link AI tools to skills' })}
+        name="enable_skill_tool_binding"
+        tooltip={t('settings.base.enableSkillToolBindingTooltip', {
+          defaultValue:
+            'When enabled, AI chat narrows tools by skill bindings when skills are in scope (still within role AI tool permissions).',
+        })}
+      >
+        <Switch />
+      </Form.Item>
 
       {/* Submit Button */}
       <Form.Item>

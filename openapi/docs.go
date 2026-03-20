@@ -4665,6 +4665,123 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/skills/{id}/ai-tool-bindings": {
+            "get": {
+                "description": "List bindings for a skill (requires X-Scope-OrgID)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Skills"
+                ],
+                "summary": "List skill AI tool bindings",
+                "operationId": "listSkillAIToolBindings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Skill ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Page size",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search keyword",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_SkillAIToolBinding"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Replace all bindings (requires X-Scope-OrgID)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Skills"
+                ],
+                "summary": "Replace skill AI tool bindings",
+                "operationId": "replaceSkillAIToolBindings",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Skill ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Bindings",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.ReplaceSkillAIToolBindingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/skills/{id}/dirs": {
             "post": {
                 "description": "Create a subdirectory at the given path",
@@ -8627,6 +8744,41 @@ const docTemplate = `{
                 }
             }
         },
+        "model.SkillAIToolBinding": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "organization_id",
+                "skill_id",
+                "tool_name",
+                "toolset_id",
+                "updated_at"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "string"
+                },
+                "skill_id": {
+                    "type": "string"
+                },
+                "tool_name": {
+                    "type": "string"
+                },
+                "toolset_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "model.StatementEntry": {
             "type": "object",
             "required": [
@@ -8668,6 +8820,7 @@ const docTemplate = `{
             "required": [
                 "disable_local_user_login",
                 "enable_multi_org",
+                "enable_skill_tool_binding",
                 "home_page",
                 "logo",
                 "name",
@@ -8678,6 +8831,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "enable_multi_org": {
+                    "type": "boolean"
+                },
+                "enable_skill_tool_binding": {
                     "type": "boolean"
                 },
                 "home_page": {
@@ -9566,6 +9722,7 @@ const docTemplate = `{
                 "attrs",
                 "disable_local_user_login",
                 "enable_multi_org",
+                "enable_skill_tool_binding",
                 "home_page",
                 "logo",
                 "menu",
@@ -9582,6 +9739,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "enable_multi_org": {
+                    "type": "boolean"
+                },
+                "enable_skill_tool_binding": {
                     "type": "boolean"
                 },
                 "home_page": {
@@ -10089,6 +10249,20 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.ReplaceSkillAIToolBindingsRequest": {
+            "type": "object",
+            "required": [
+                "bindings"
+            ],
+            "properties": {
+                "bindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/systemapi.SkillAIToolBindingItem"
+                    }
+                }
+            }
+        },
         "systemapi.SMTPTestResponse": {
             "type": "object",
             "required": [
@@ -10101,6 +10275,21 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "systemapi.SkillAIToolBindingItem": {
+            "type": "object",
+            "required": [
+                "tool_name",
+                "toolset_id"
+            ],
+            "properties": {
+                "tool_name": {
+                    "type": "string"
+                },
+                "toolset_id": {
+                    "type": "string"
                 }
             }
         },
@@ -10416,20 +10605,7 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -10455,20 +10631,7 @@ const docTemplate = `{
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute"
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {
@@ -10771,6 +10934,40 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Skill"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.PaginationResponse-model_SkillAIToolBinding": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SkillAIToolBinding"
                     }
                 },
                 "page_size": {

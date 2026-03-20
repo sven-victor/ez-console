@@ -884,7 +884,7 @@ func (s *SkillService) LoadSkillsByIDs(ctx context.Context, ids []string) (strin
 	return strings.Join(parts, "\n\n---\n\n"), nil
 }
 
-// LoadSkillsMetadataForChat returns a text summary of available skills (id, name, description, domain) for use as system context. No file bodies. Instructs the model to use get_skill_content and list_skill_files tools to load content on demand.
+// LoadSkillsMetadataForChat returns a text summary of available skills (id, name, description, domain) for use as system context. No file bodies. Instructs the model to use get_skill_content to load content on demand.
 func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []string, skillIDs []string) (string, []string, error) {
 	seen := make(map[string]bool)
 	var ordered []*model.Skill
@@ -928,7 +928,7 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 		orderedIDs[i] = sk.ResourceID
 	}
 	var b strings.Builder
-	b.WriteString("Available skills (use get_skill_content or list_skill_files to load content on demand):\n\n")
+	b.WriteString("Available skills (use get_skill_content to load content on demand):\n\n")
 	for _, sk := range ordered {
 		b.WriteString(fmt.Sprintf("- id: %s | name: %s | domain: %s\n", sk.ResourceID, sk.Name, sk.Domain))
 		if sk.Description != "" {
@@ -936,7 +936,7 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("Use the tool get_skill_content(skill_id, path) to load full SKILL.md or a specific file (e.g. REFERENCE/foo.md). Use list_skill_files(skill_id, path) to list files under a path.\n")
+	b.WriteString("Use the tool get_skill_content(skill_id, path) to load full SKILL.md or a specific file (e.g. REFERENCE/foo.md).\n")
 	return b.String(), orderedIDs, nil
 }
 

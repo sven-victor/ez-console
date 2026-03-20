@@ -71,6 +71,18 @@ export default {
       selectFile: 'يرجى اختيار ملف',
       file: 'ملف (.md أو .zip)',
       initialContent: 'محتوى SKILL.md الأولي (اختياري)',
+      aiToolsLoadFailed: 'فشل تحميل ارتباطات أدوات الذكاء الاصطناعي',
+      aiToolsOrgHint: 'تُخزَّن الارتباطات لكل منظمة. استخدم مبدّل المنظمة أو X-Scope-OrgID.',
+      aiToolsNoOrg: 'اختر منظمة لضبط ارتباطات الأدوات.',
+      aiToolsetNoTools: 'لا توجد أدوات في مجموعة الأدوات هذه.',
+      aiToolsetsEmpty: 'لا توجد مجموعات أدوات ذكاء اصطناعي لهذه المنظمة.',
+      wildcardPatterns: 'أنمطة بدل (اختياري)',
+      wildcardPatternsHelp: 'استخدم * لـ toolset_id أو tool_name (مثل *:sleep أو uuid:*).',
+      addWildcardRow: 'إضافة صف نمط',
+      patternToolsetAll: '* (كل مجموعات الأدوات)',
+      patternToolsetPlaceholder: 'معرف مجموعة الأدوات',
+      patternToolNameAll: '* (كل الأدوات)',
+      patternToolNamePlaceholder: 'اسم الأداة',
       editor: {
         backToSkills: 'العودة إلى المهارات',
         skill: 'مهارة',
@@ -128,6 +140,9 @@ export default {
       disableLocalUserLoginTooltip: 'إلغاء تسجيل الدخول المحلي، يعمل فقط عندما يكون هناك طريقة تحقق أخرى مفعلة',
       enableMultiOrg: 'تمكين التنظيم المتعدد',
       enableMultiOrgTooltip: 'تمكين ميزة التنظيم المتعدد. عند التمكين، يمكن إدارة المنظمات في علامة تبويب إدارة المنظمات.',
+      enableSkillToolBinding: 'ربط أدوات الذكاء الاصطناعي بالمهارات',
+      enableSkillToolBindingTooltip:
+        'عند التمكين، يحد محادثة الذكاء الاصطناعي الأدوات حسب ارتباطات المهارة (ضمن أذونات الأدوات للدور).',
     },
     security: {
       mfa: {

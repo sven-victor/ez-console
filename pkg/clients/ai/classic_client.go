@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -99,7 +100,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 
 	// Apply options (default maxIterations is 30, toolResultMaxSize is 32KB)
 	opts := ChatCompletionOptions{
-		MaxIterations:     30,
+		MaxIterations:     10,
 		ToolResultMaxSize: 32 * 1024, // 32KB
 	}
 	for _, option := range options {
@@ -174,6 +175,8 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		if len(messagesToSummarize) == 0 {
 			return nil
 		}
+
+		messagesToSummarize = RedactGetSkillContentToolResultsForSummary(messagesToSummarize)
 
 		originalCount := len(messagesToSummarize) + 1
 
@@ -454,9 +457,12 @@ func (c *classicChatClient) ChatStream(ctx context.Context, messages []ChatMessa
 }
 
 type ClassicChatStream struct {
-	client   AIClient
-	messages []ChatMessage
-	toolSets toolset.ToolSets
+	client                       AIClient
+	messages                     []ChatMessage
+	toolSets                     toolset.ToolSets
+	toolSetsFactory              func(context.Context) (toolset.ToolSets, error)
+	clientTools                  []openai.Tool
+	refreshToolSetsEachIteration bool
 	// tools                   []openai.Tool
 	toolCalls               []ToolCall
 	toolCallMutex           sync.Mutex
@@ -596,6 +602,8 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 	if len(messagesToSummarize) == 0 {
 		return nil
 	}
+
+	messagesToSummarize = RedactGetSkillContentToolResultsForSummary(messagesToSummarize)
 
 	originalCount := len(messagesToSummarize) + 1
 
@@ -996,26 +1004,6 @@ func (o *ClassicChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 			}
 		}
 
-		// Check token limit and summarize if needed
-		if o.maxTokens > 0 {
-			currentTokens := EstimateTokens(o.messages)
-			tokenThreshold := int(float64(o.maxTokens) * 0.9) // 90% threshold
-
-			if currentTokens >= o.maxTokens {
-				if !o.enableAutoSummarization {
-					return nil, fmt.Errorf("token limit exceeded (%d/%d), auto summarization is disabled", currentTokens, o.maxTokens)
-				}
-				if err := o.summarizeMessages(ctx); err != nil {
-					return nil, fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, o.maxTokens, err)
-				}
-			} else if currentTokens >= tokenThreshold && o.enableAutoSummarization {
-				if err := o.summarizeMessages(ctx); err != nil {
-					logger := log.GetContextLogger(ctx)
-					level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
-				}
-			}
-		}
-
 		err := o.smartChatStream(ctx)
 		if err != nil {
 			return nil, err
@@ -1040,10 +1028,53 @@ func (stream *ClassicChatStream) applyChatCompletionOptions(o ChatCompletionOpti
 	stream.maxTokens = o.MaxTokens
 	stream.enableAutoSummarization = o.EnableAutoSummarization
 	stream.toolResultMaxSize = o.ToolResultMaxSize
+	stream.refreshToolSetsEachIteration = o.RefreshToolSetsEachIteration
+	stream.toolSetsFactory = o.ToolSetsFactory
+	if len(o.ClientTools) > 0 {
+		stream.clientTools = slices.Clone(o.ClientTools)
+	}
+}
+
+func (o *ClassicChatStream) rebuildToolSetsIfNeeded() error {
+	if !o.refreshToolSetsEachIteration || o.toolSetsFactory == nil {
+		return nil
+	}
+	ts, err := o.toolSetsFactory(o.ctx)
+	if err != nil {
+		return fmt.Errorf("failed to refresh tool sets: %w", err)
+	}
+	if len(o.clientTools) > 0 {
+		ts[clientToolSetKey] = NewClientToolsProxy(o.clientTools)
+	}
+	o.toolSets = ts
+	return nil
 }
 
 func (o *ClassicChatStream) smartChatStream(ctx context.Context) error {
 	logger := log.GetContextLogger(ctx)
+	// Check token limit and summarize if needed
+	if o.maxTokens > 0 {
+		currentTokens := EstimateTokens(o.messages)
+		tokenThreshold := int(float64(o.maxTokens) * 0.9) // 90% threshold
+
+		if currentTokens >= o.maxTokens {
+			if !o.enableAutoSummarization {
+				return fmt.Errorf("token limit exceeded (%d/%d), auto summarization is disabled", currentTokens, o.maxTokens)
+			}
+			if err := o.summarizeMessages(ctx); err != nil {
+				return fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, o.maxTokens, err)
+			}
+		} else if currentTokens >= tokenThreshold && o.enableAutoSummarization {
+			if err := o.summarizeMessages(ctx); err != nil {
+				logger := log.GetContextLogger(ctx)
+				level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
+			}
+		}
+	}
+
+	if err := o.rebuildToolSetsIfNeeded(); err != nil {
+		return err
+	}
 
 	stream, err := backoff.Retry(ctx, func() (ChatStream, error) {
 		s, err := o.client.ChatStream(ctx, o.messages, o.toolSets)
@@ -1090,6 +1121,8 @@ func (o *ClassicChatStream) segmentedSummarize(ctx context.Context, errorDetail 
 func segmentedSummarize(ctx context.Context, client AIClient, messages []ChatMessage, errorDetail string) ([]ChatMessage, error) {
 	logger := log.GetContextLogger(ctx)
 
+	messages = RedactGetSkillContentToolResultsForSummary(messages)
+
 	summaryTS := newSummaryToolSet(messages, errorDetail)
 
 	summarizeMessages := []ChatMessage{
@@ -1130,7 +1163,7 @@ func segmentedSummarize(ctx context.Context, client AIClient, messages []ChatMes
 func NewClassicChatStream(ctx context.Context, client ClassicChatClient, messages []ChatMessage, options ...WithChatOptions) (ChatStream, error) {
 	// Apply options with defaults
 	opts := ChatCompletionOptions{
-		MaxIterations:     30,
+		MaxIterations:     10,
 		ToolResultMaxSize: 32 * 1024, // 32KB
 	}
 	for _, option := range options {
@@ -1156,13 +1189,16 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 	}
 
 	stream := &ClassicChatStream{
-		client:           aiClient,
-		messages:         messages,
-		toolSets:         toolSets,
-		messageID:        uuid.Must(uuid.NewV4()).String(),
-		maxIterations:    opts.MaxIterations,
-		currentIteration: 1,
-		ctx:              ctx,
+		client:                       aiClient,
+		messages:                     messages,
+		toolSets:                     toolSets,
+		toolSetsFactory:              opts.ToolSetsFactory,
+		clientTools:                  slices.Clone(opts.ClientTools),
+		refreshToolSetsEachIteration: opts.RefreshToolSetsEachIteration,
+		messageID:                    uuid.Must(uuid.NewV4()).String(),
+		maxIterations:                opts.MaxIterations,
+		currentIteration:             1,
+		ctx:                          ctx,
 	}
 	stream.applyChatCompletionOptions(opts)
 	// Call OpenAI API

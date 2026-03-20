@@ -16,6 +16,7 @@ import E from "dayjs";
 import { u as tt } from "./contexts.js";
 import { isArray as st } from "lodash-es";
 import re from "classnames";
+/* empty css             */
 const nt = Ze(({ token: i, css: n }) => ({
   siderLayout: n`
       width: 100%;
@@ -265,7 +266,7 @@ const q = /* @__PURE__ */ new Map(), it = (i) => (q.get(i) || q.set(
     return ((l = i == null ? void 0 : i.theme) == null ? void 0 : l.id) === 0;
   }, [i]);
   return [H.useMemo(() => n ? "x-markdown-light" : "x-markdown-dark", [n])];
-}, ct = H.createContext({}), Tt = ({
+}, ct = H.createContext({}), Lt = ({
   bubble: i = {}
 }) => {
   const {
@@ -702,7 +703,7 @@ const q = /* @__PURE__ */ new Map(), it = (i) => (q.get(i) || q.set(
   ] });
 };
 export {
-  Tt as AIChat,
-  Tt as default,
+  Lt as AIChat,
+  Lt as default,
   lt as useMarkdownTheme
 };

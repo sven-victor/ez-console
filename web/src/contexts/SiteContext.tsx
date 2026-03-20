@@ -23,6 +23,7 @@ import { useAuth } from './AuthContext';
 export interface SiteContextType {
   siteConfig: API.SiteConfig | null;
   enableMultiOrg: boolean;
+  enableSkillToolBinding: boolean;
   loading: boolean;
   fetchSiteConfig: () => Promise<API.SiteConfig | null>;
   currentOrgId: string | null;
@@ -39,6 +40,7 @@ export interface SiteContextType {
 export const SiteContext = createContext<SiteContextType>({
   siteConfig: null,
   enableMultiOrg: false,
+  enableSkillToolBinding: false,
   loading: false,
   fetchSiteConfig: async () => null,
   currentOrgId: null,
@@ -128,6 +130,7 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
         siteConfig,
         loading,
         enableMultiOrg: siteConfig?.enable_multi_org ?? false,
+        enableSkillToolBinding: siteConfig?.enable_skill_tool_binding ?? false,
         fetchSiteConfig,
         currentOrgId,
         setCurrentOrgId: (orgId: string) => {

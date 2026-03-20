@@ -71,6 +71,18 @@ export default {
       selectFile: 'Välj en fil',
       file: 'Fil (.md eller .zip)',
       initialContent: 'Initialt SKILL.md-innehåll (valfritt)',
+      aiToolsLoadFailed: 'Kunde inte ladda AI-verktygsbindningar',
+      aiToolsOrgHint: 'Bindningar sparas per organisation. Använd organisationsväljaren eller X-Scope-OrgID.',
+      aiToolsNoOrg: 'Välj en organisation för att konfigurera bindningar.',
+      aiToolsetNoTools: 'Inga verktyg i detta verktygspaket.',
+      aiToolsetsEmpty: 'Inga AI-verktygspaket för denna organisation.',
+      wildcardPatterns: 'Jokertecken (valfritt)',
+      wildcardPatternsHelp: 'Använd * för toolset_id eller tool_name (t.ex. *:sleep, uuid:*).',
+      addWildcardRow: 'Lägg till mönsterrad',
+      patternToolsetAll: '* (alla verktygspaket)',
+      patternToolsetPlaceholder: 'Verktygspaket-ID',
+      patternToolNameAll: '* (alla verktyg)',
+      patternToolNamePlaceholder: 'Verktygsnamn',
       editor: {
         backToSkills: 'Tillbaka till färdigheter',
         skill: 'Färdighet',
@@ -128,6 +140,9 @@ export default {
       disableLocalUserLoginTooltip: 'Inaktivera lokal användare, endast gällande när andra autentiseringsmetoder är aktiverade',
       enableMultiOrg: 'Aktivera multiorganisation',
       enableMultiOrgTooltip: 'Aktivera multiorganisationsfunktionen. När den är aktiverad kan organisationer hanteras i fliken Organisationshantering.',
+      enableSkillToolBinding: 'Koppla AI-verktyg till färdigheter',
+      enableSkillToolBindingTooltip:
+        'När det är aktiverat begränsar AI-chatten verktyg enligt färdighetsbindningar (inom rollbehörigheter).',
     },
     security: {
       mfa: {

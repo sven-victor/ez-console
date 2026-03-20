@@ -71,6 +71,18 @@ export default {
       selectFile: 'Por favor seleccione un archivo',
       file: 'Archivo (.md o .zip)',
       initialContent: 'Contenido inicial de SKILL.md (opcional)',
+      aiToolsLoadFailed: 'Error al cargar enlaces de herramientas de IA',
+      aiToolsOrgHint: 'Los enlaces se guardan por organización. Use el selector de organización o X-Scope-OrgID.',
+      aiToolsNoOrg: 'Seleccione una organización para configurar los enlaces.',
+      aiToolsetNoTools: 'No hay herramientas en este conjunto.',
+      aiToolsetsEmpty: 'No hay conjuntos de herramientas de IA para esta organización.',
+      wildcardPatterns: 'Patrones comodín (opcional)',
+      wildcardPatternsHelp: 'Use * en toolset_id o tool_name (p. ej. *:sleep, uuid:*).',
+      addWildcardRow: 'Añadir fila de patrón',
+      patternToolsetAll: '* (todos los conjuntos)',
+      patternToolsetPlaceholder: 'ID del conjunto',
+      patternToolNameAll: '* (todas las herramientas)',
+      patternToolNamePlaceholder: 'Nombre de herramienta',
       editor: {
         backToSkills: 'Volver a habilidades',
         skill: 'Habilidad',
@@ -128,6 +140,9 @@ export default {
       disableLocalUserLoginTooltip: 'Deshabilitar inicio de sesión local, solo válido cuando están habilitadas otras formas de autenticación',
       enableMultiOrg: 'Habilitar multiorganización',
       enableMultiOrgTooltip: 'Habilitar la función de multiorganización. Cuando está habilitado, las organizaciones se pueden gestionar en la pestaña Gestión de organizaciones.',
+      enableSkillToolBinding: 'Vincular herramientas de IA a habilidades',
+      enableSkillToolBindingTooltip:
+        'Si está habilitado, el chat de IA restringe las herramientas según los enlaces por habilidad (aún dentro de los permisos de rol).',
     },
     security: {
       mfa: {

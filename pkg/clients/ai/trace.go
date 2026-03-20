@@ -96,8 +96,14 @@ func (t *TracingAIClient) Chat(ctx context.Context, messages []ChatMessage, tool
 
 func (t *TracingAIClient) ChatStream(ctx context.Context, messages []ChatMessage, toolSets toolset.ToolSets) (ChatStream, error) {
 	traceID := log.GetTraceId(ctx)
-	reqJSON, _ := json.Marshal(messages)
-
+	tools, err := toolSets.GetTools(ctx)
+	if err != nil {
+		return nil, err
+	}
+	reqJSON, _ := json.Marshal(map[string]any{
+		"messages": messages,
+		"tools":    tools,
+	})
 	t.writer(ctx, model.AITraceEvent{
 		TraceID:   traceID,
 		StepOrder: t.counter.Next(),

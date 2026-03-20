@@ -130,6 +130,27 @@ func WithChatToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets
 	}
 }
 
+// WithChatUncachedToolSetsFactory appends a tool-sets factory without caching (invoked on every factory call).
+func WithChatUncachedToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		if factory == nil {
+			return
+		}
+		if options.ToolSetsFactory == nil {
+			options.ToolSetsFactory = factory
+			return
+		}
+		options.ToolSetsFactory = toolset.NewToolSetsFactoryChain(options.ToolSetsFactory, factory)
+	}
+}
+
+// WithChatRefreshToolSetsEachIteration enables reloading tool definitions before each LLM request in a streaming chat.
+func WithChatRefreshToolSetsEachIteration(refresh bool) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.RefreshToolSetsEachIteration = refresh
+	}
+}
+
 func WithoutChatCompletionToolSets() WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.ToolSetsFactory = nil
@@ -145,7 +166,9 @@ type ChatCompletionOptions struct {
 	ResponseJsonSchema      string // JSON Schema for expected response format
 
 	ToolSetsFactory func(ctx context.Context) (toolset.ToolSets, error)
-	ClientTools     []openai.Tool // Tools to be executed on the client side (browser)
+	// RefreshToolSetsEachIteration, when true, re-invokes ToolSetsFactory before each LLM stream iteration (after tool rounds).
+	RefreshToolSetsEachIteration bool
+	ClientTools                  []openai.Tool // Tools to be executed on the client side (browser)
 
 	OnSummary               func(ctx context.Context, messages []ChatMessage)
 	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)

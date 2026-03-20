@@ -315,18 +315,42 @@ func convertOpenAITools(tools []openai.Tool) []model.ToolDefinition {
 	return definitions
 }
 
-func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+// authorizedToolSetItem is one RBAC-authorized toolset instance with stable map key and toolset resource_id.
+type authorizedToolSetItem struct {
+	ResourceID string
+	MapKey     string
+	ToolSet    toolset.ToolSet
+}
+
+func toolSetsFromAuthorizedItems(items []authorizedToolSetItem) toolset.ToolSets {
+	if len(items) == 0 {
+		return nil
+	}
+	out := make(toolset.ToolSets, len(items))
+	for _, it := range items {
+		out[it.MapKey] = it.ToolSet
+	}
+	return out
+}
+
+func (s *ToolSetService) buildAuthorizedToolSetItems(ctx context.Context, organizationID string) ([]authorizedToolSetItem, error) {
 	allowedTools := getAllowedAIToolPermissions(ctx, organizationID)
 	if len(allowedTools) == 0 {
 		return nil, nil
 	}
 
-	filtered := make(toolset.ToolSets)
+	var orgToolSets []model.ToolSet
+	var orgToolSetsLoaded bool
+
+	var items []authorizedToolSetItem
 	for toolSetID, toolNames := range allowedTools {
 		if toolSetID == "*" {
-			orgToolSets, _, err := s.ListToolSets(ctx, organizationID, 1, 1000, "", "", false)
-			if err != nil {
-				return nil, fmt.Errorf("failed to list toolsets: %w", err)
+			if !orgToolSetsLoaded {
+				var err error
+				if orgToolSets, _, err = s.ListToolSets(ctx, organizationID, 1, 1000, "", "", false); err != nil {
+					return nil, fmt.Errorf("failed to list toolsets: %w", err)
+				}
+				orgToolSetsLoaded = true
 			}
 			for _, toolSet := range orgToolSets {
 				if toolSet.Status != model.ToolSetStatusEnabled {
@@ -336,7 +360,12 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 				if err != nil {
 					return nil, fmt.Errorf("failed to create toolset instance: %w", err)
 				}
-				filtered[fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)] = newFilteredToolSet(instance, toolNames)
+				key := fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)
+				items = append(items, authorizedToolSetItem{
+					ResourceID: toolSet.ResourceID,
+					MapKey:     key,
+					ToolSet:    newFilteredToolSet(instance, toolNames),
+				})
 			}
 		} else {
 			toolSet, err := s.GetToolSet(ctx, organizationID, toolSetID)
@@ -347,10 +376,104 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 			if err != nil {
 				return nil, fmt.Errorf("failed to get toolset instance %s: %w", toolSetID, err)
 			}
-			filtered[fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)] = newFilteredToolSet(instance, toolNames)
+			key := fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)
+			items = append(items, authorizedToolSetItem{
+				ResourceID: toolSet.ResourceID,
+				MapKey:     key,
+				ToolSet:    newFilteredToolSet(instance, toolNames),
+			})
 		}
 	}
-	return filtered, nil
+	return items, nil
+}
+
+func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+	items, err := s.buildAuthorizedToolSetItems(ctx, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	return toolSetsFromAuthorizedItems(items), nil
+}
+
+// SkillBindingMatches reports whether a tool in a toolset matches any skill binding pattern.
+func SkillBindingMatches(bindings []model.SkillAIToolBinding, toolSetResourceID, toolName string) bool {
+	for _, b := range bindings {
+		tsOK := b.ToolSetID == "*" || b.ToolSetID == toolSetResourceID
+		tnOK := b.ToolName == "*" || b.ToolName == toolName
+		if tsOK && tnOK {
+			return true
+		}
+	}
+	return false
+}
+
+func (s *ToolSetService) applySkillAIToolBindings(ctx context.Context, bindings []model.SkillAIToolBinding, items []authorizedToolSetItem) ([]authorizedToolSetItem, error) {
+	if len(bindings) == 0 {
+		return items, nil
+	}
+	var out []authorizedToolSetItem
+	for _, it := range items {
+		tools, err := it.ToolSet.ListTools(ctx)
+		if err != nil {
+			return nil, err
+		}
+		allowed := make(map[string]struct{})
+		for _, tool := range tools {
+			if tool.Function == nil {
+				continue
+			}
+			name := tool.Function.Name
+			if SkillBindingMatches(bindings, it.ResourceID, name) {
+				allowed[name] = struct{}{}
+			}
+		}
+		if len(allowed) == 0 {
+			continue
+		}
+		out = append(out, authorizedToolSetItem{
+			ResourceID: it.ResourceID,
+			MapKey:     it.MapKey,
+			ToolSet:    newFilteredToolSet(it.ToolSet, allowed),
+		})
+	}
+	return out, nil
+}
+
+// SkillChatBindingMode selects how organization toolsets are exposed when skill–tool binding is enabled.
+type SkillChatBindingMode uint8
+
+const (
+	// SkillChatBindingDisabled: binding feature off — full authorized toolsets.
+	SkillChatBindingDisabled SkillChatBindingMode = iota
+	// SkillChatBindingNoMetadata: binding on but this chat has no skill metadata — full authorized toolsets.
+	SkillChatBindingNoMetadata
+	// SkillChatBindingAwaitingActivation: binding on, skill metadata present, no get_skill_content yet — no org tools.
+	SkillChatBindingAwaitingActivation
+	// SkillChatBindingApply: apply skillBindings to filter tools (full toolsets if bindings list is empty).
+	SkillChatBindingApply
+)
+
+// GetAuthorizedToolSetsForChat returns authorized toolsets for chat under the given binding mode.
+func (s *ToolSetService) GetAuthorizedToolSetsForChat(ctx context.Context, organizationID string, skillBindings []model.SkillAIToolBinding, mode SkillChatBindingMode) (toolset.ToolSets, error) {
+	items, err := s.buildAuthorizedToolSetItems(ctx, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	switch mode {
+	case SkillChatBindingAwaitingActivation:
+		return toolset.ToolSets{}, nil
+	case SkillChatBindingApply:
+		if len(skillBindings) == 0 {
+			return toolSetsFromAuthorizedItems(items), nil
+		}
+		items2, err := s.applySkillAIToolBindings(ctx, skillBindings, items)
+		if err != nil {
+			return nil, err
+		}
+		return toolSetsFromAuthorizedItems(items2), nil
+	default:
+		return toolSetsFromAuthorizedItems(items), nil
+	}
 }
 
 func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map[string]map[string]struct{} {

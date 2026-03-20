@@ -71,6 +71,18 @@ export default {
       selectFile: 'Bitte wählen Sie eine Datei',
       file: 'Datei (.md oder .zip)',
       initialContent: 'Initialer SKILL.md-Inhalt (optional)',
+      aiToolsLoadFailed: 'Laden der KI-Tool-Bindings fehlgeschlagen',
+      aiToolsOrgHint: 'Bindings werden pro Organisation gespeichert. Organisations-Umschalter oder X-Scope-OrgID verwenden.',
+      aiToolsNoOrg: 'Organisation wählen, um KI-Tool-Bindings zu konfigurieren.',
+      aiToolsetNoTools: 'Keine Tools in diesem Toolset.',
+      aiToolsetsEmpty: 'Keine KI-Toolsets für diese Organisation.',
+      wildcardPatterns: 'Wildcard-Muster (optional)',
+      wildcardPatternsHelp: '* für toolset_id oder tool_name (z. B. *:sleep, uuid:*).',
+      addWildcardRow: 'Musterzeile hinzufügen',
+      patternToolsetAll: '* (alle Toolsets)',
+      patternToolsetPlaceholder: 'Toolset-ID',
+      patternToolNameAll: '* (alle Tools)',
+      patternToolNamePlaceholder: 'Tool-Name',
       editor: {
         backToSkills: 'Zurück zu Fähigkeiten',
         skill: 'Fähigkeit',
@@ -128,6 +140,9 @@ export default {
       disableLocalUserLoginTooltip: 'Lokale Benutzeranmeldung deaktivieren, nur gültig, wenn andere Authentifizierungsmethoden aktiviert sind',
       enableMultiOrg: 'Multi-Organisation aktivieren',
       enableMultiOrgTooltip: 'Multi-Organisations-Funktion aktivieren. Wenn aktiviert, können Organisationen im Tab Organisationsverwaltung verwaltet werden.',
+      enableSkillToolBinding: 'KI-Tools mit Skills verknüpfen',
+      enableSkillToolBindingTooltip:
+        'Wenn aktiviert, schränkt der KI-Chat die Tools nach Skill-Bindings ein (weiterhin innerhalb der Rollen-KI-Tool-Berechtigungen).',
     },
     security: {
       mfa: {

@@ -776,6 +776,17 @@ declare global {
       organization_id?: string;
     }
   
+    interface listSkillAIToolBindingsParams {
+      /** Skill ID */
+      id: string;
+      /** Page number */
+      current?: number;
+      /** Page size */
+      page_size?: number;
+      /** Search keyword */
+      search?: string;
+    }
+  
     interface listSkillFilesTreeParams {
       /** Skill ID */
       id: string;
@@ -1039,6 +1050,15 @@ declare global {
       trace_id: string;
     }
   
+    interface PaginationResponseModelSkillAIToolBinding {
+      code: string;
+      current: number;
+      data: SkillAIToolBinding[];
+      page_size: number;
+      total: number;
+      trace_id: string;
+    }
+  
     interface PaginationResponseModelTask {
       code: string;
       current: number;
@@ -1119,6 +1139,15 @@ declare global {
       id: string;
       /** User ID */
       user_id: string;
+    }
+  
+    interface replaceSkillAIToolBindingsParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface ReplaceSkillAIToolBindingsRequest {
+      bindings: SkillAIToolBindingItem[];
     }
   
     interface resetUserPasswordParams {
@@ -1762,6 +1791,7 @@ declare global {
       attrs: Record<string, any>;
       disable_local_user_login: boolean;
       enable_multi_org: boolean;
+      enable_skill_tool_binding: boolean;
       home_page: string;
       logo: string;
       menu: MenuConfig[];
@@ -1778,6 +1808,21 @@ declare global {
       id: string;
       name: string;
       updated_at: string;
+    }
+  
+    interface SkillAIToolBinding {
+      created_at: string;
+      id: string;
+      organization_id: string;
+      skill_id: string;
+      tool_name: string;
+      toolset_id: string;
+      updated_at: string;
+    }
+  
+    interface SkillAIToolBindingItem {
+      tool_name: string;
+      toolset_id: string;
     }
   
     interface SkillTreeNode {
@@ -1849,6 +1894,7 @@ declare global {
     interface SystemSettings {
       disable_local_user_login: boolean;
       enable_multi_org: boolean;
+      enable_skill_tool_binding: boolean;
       home_page: string;
       logo: string;
       name: string;

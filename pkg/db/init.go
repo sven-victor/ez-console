@@ -45,6 +45,7 @@ var migrateModels = []interface{}{
 	&model.AIChatSession{},
 	&model.AIChatMessage{},
 	&model.Skill{},
+	&model.SkillAIToolBinding{},
 	&model.Task{},
 	&model.TaskLog{},
 	&model.AITraceEvent{},

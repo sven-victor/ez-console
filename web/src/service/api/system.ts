@@ -491,6 +491,49 @@ export async function deleteSkill(
   });
 }
 
+/** List skill AI tool bindings List bindings for a skill (requires X-Scope-OrgID) GET /api/system/skills/${param0}/ai-tool-bindings */
+export async function listSkillAiToolBindings(
+  params: API.listSkillAIToolBindingsParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.PaginationResponseModelSkillAIToolBinding>(
+    `/api/system/skills/${param0}/ai-tool-bindings`,
+    {
+      method: "GET",
+      params: {
+        // current has a default value: 1
+        current: "1",
+        // page_size has a default value: 10
+        page_size: "10",
+        ...queryParams,
+      },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Replace skill AI tool bindings Replace all bindings (requires X-Scope-OrgID) PUT /api/system/skills/${param0}/ai-tool-bindings */
+export async function replaceSkillAiToolBindings(
+  params: API.replaceSkillAIToolBindingsParams,
+  body: API.ReplaceSkillAIToolBindingsRequest,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/system/skills/${param0}/ai-tool-bindings`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** Create skill directory Create a subdirectory at the given path POST /api/system/skills/${param0}/dirs */
 export async function createSkillDir(
   params: API.createSkillDirParams,

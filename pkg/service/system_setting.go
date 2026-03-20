@@ -214,6 +214,11 @@ var defaultSettings = []DefaultSetting{
 		Value:   "false",
 		Comment: "Enable multi-organization feature",
 	},
+	{
+		Key:     model.SettingSystemEnableSkillToolBinding,
+		Value:   "false",
+		Comment: "When enabled, AI chat restricts tools by skill bindings when skills are in scope",
+	},
 }
 
 func RegisterDefaultSettings(ctx context.Context, key model.SettingKey, value, comment string) error {
@@ -268,14 +273,16 @@ func (s *SettingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 
 	disableLocalUserLogin, _ := strconv.ParseBool(settings[string(model.SettingSystemDisableLocalUserLogin)])
 	enableMultiOrg, _ := strconv.ParseBool(settings[string(model.SettingSystemEnableMultiOrg)])
+	enableSkillToolBinding, _ := strconv.ParseBool(settings[string(model.SettingSystemEnableSkillToolBinding)])
 	baseSettings := &model.SystemSettings{
 		Name:     settings[string(model.SettingSystemName)],
 		NameI18n: map[string]string{},
 		Logo:     settings[string(model.SettingSystemLogo)],
 		HomePage: settings[string(model.SettingSystemHomePage)],
 
-		DisableLocalUserLogin: disableLocalUserLogin,
-		EnableMultiOrg:        enableMultiOrg,
+		DisableLocalUserLogin:  disableLocalUserLogin,
+		EnableMultiOrg:         enableMultiOrg,
+		EnableSkillToolBinding: enableSkillToolBinding,
 	}
 	if err := json.Unmarshal([]byte(settings[string(model.SettingSystemNameI18n)]), &baseSettings.NameI18n); err != nil {
 		baseSettings.NameI18n = map[string]string{}
@@ -291,8 +298,9 @@ func (s *SettingService) UpdateSystemSettings(ctx context.Context, settings mode
 		string(model.SettingSystemLogo):     settings.Logo,
 		string(model.SettingSystemHomePage): settings.HomePage,
 
-		string(model.SettingSystemDisableLocalUserLogin): strconv.FormatBool(settings.DisableLocalUserLogin),
-		string(model.SettingSystemEnableMultiOrg):        strconv.FormatBool(settings.EnableMultiOrg),
+		string(model.SettingSystemDisableLocalUserLogin):    strconv.FormatBool(settings.DisableLocalUserLogin),
+		string(model.SettingSystemEnableMultiOrg):           strconv.FormatBool(settings.EnableMultiOrg),
+		string(model.SettingSystemEnableSkillToolBinding):   strconv.FormatBool(settings.EnableSkillToolBinding),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }

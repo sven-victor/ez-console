@@ -49,6 +49,8 @@ import { BaseOptionType } from 'antd/es/select';
 import { isArray } from 'lodash-es';
 import classNames from 'classnames';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
+import '@ant-design/x-markdown/themes/light.css';
+import '@ant-design/x-markdown/themes/dark.css';
 
 const useStyle = createStyles(({ token, css }) => {
   return {

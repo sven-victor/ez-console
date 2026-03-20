@@ -16,10 +16,17 @@ import (
 	"github.com/sven-victor/ez-console/pkg/toolset"
 )
 
-// SkillLoaderToolSet is a runtime-only toolset that exposes get_skill_content and list_skill_files for skills allowed by domains/skillIDs.
+// SkillLoaderOptions configures optional hooks for SkillLoaderToolSet.
+type SkillLoaderOptions struct {
+	// OnSkillContentLoaded is called after get_skill_content returns successfully (any path).
+	OnSkillContentLoaded func(ctx context.Context, skillID string) error
+}
+
+// SkillLoaderToolSet is a runtime-only toolset that exposes get_skill_content for skills allowed by domains/skillIDs.
 type SkillLoaderToolSet struct {
 	skillService *SkillService
 	allowedIDs   map[string]struct{}
+	onLoaded     func(ctx context.Context, skillID string) error
 }
 
 func (s SkillLoaderToolSet) GetAllowedIDs() []string {
@@ -31,7 +38,7 @@ func (s SkillLoaderToolSet) GetAllowedIDs() []string {
 }
 
 // NewSkillLoaderToolSet creates a toolset that allows loading only the given skills (resolved from domains + skillIDs).
-func NewSkillLoaderToolSet(ctx context.Context, skillService *SkillService, skillIDs []string) toolset.ToolSet {
+func NewSkillLoaderToolSet(ctx context.Context, skillService *SkillService, skillIDs []string, opts *SkillLoaderOptions) toolset.ToolSet {
 	allowed := make(map[string]struct{})
 	for _, id := range skillIDs {
 		if id == "" {
@@ -39,12 +46,16 @@ func NewSkillLoaderToolSet(ctx context.Context, skillService *SkillService, skil
 		}
 		allowed[id] = struct{}{}
 	}
-	return &SkillLoaderToolSet{skillService: skillService, allowedIDs: allowed}
+	var onLoaded func(ctx context.Context, skillID string) error
+	if opts != nil {
+		onLoaded = opts.OnSkillContentLoaded
+	}
+	return &SkillLoaderToolSet{skillService: skillService, allowedIDs: allowed, onLoaded: onLoaded}
 }
 
 func (t *SkillLoaderToolSet) GetName() string { return "skill_loader" }
 func (t *SkillLoaderToolSet) GetDescription() string {
-	return "Load skill file content or list files on demand"
+	return "Load skill file content on demand"
 }
 func (t *SkillLoaderToolSet) Validate() error                { return nil }
 func (t *SkillLoaderToolSet) Test(ctx context.Context) error { return nil }
@@ -70,32 +81,10 @@ func (t *SkillLoaderToolSet) ListTools(ctx context.Context) ([]openai.Tool, erro
 				},
 			},
 		},
-		{
-			Type: openai.ToolTypeFunction,
-			Function: &openai.FunctionDefinition{
-				Name:        "list_skill_files",
-				Description: "List files and directories under a skill path. Use skill_id and optional path (default root). Returns names and whether each entry is a directory.",
-				Parameters: jsonschema.Definition{
-					Type: jsonschema.Object,
-					Properties: map[string]jsonschema.Definition{
-						"skill_id": {
-							Type:        jsonschema.String,
-							Description: "Skill ID (resource_id from the available skills list)",
-							Enum:        t.GetAllowedIDs(),
-						},
-						"path": {Type: jsonschema.String, Description: "Optional: directory path under the skill (empty = root)"},
-					},
-					Required: []string{"skill_id"},
-				},
-			},
-		},
 	}, nil
 }
 
 func (t *SkillLoaderToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
-	if _, ok := t.allowedIDs[""]; ok {
-		// empty allowed set after resolving domains could mean no skills
-	}
 	switch name {
 	case "get_skill_content":
 		var params struct {
@@ -111,38 +100,24 @@ func (t *SkillLoaderToolSet) Call(ctx context.Context, name string, parameters s
 		if _, allowed := t.allowedIDs[params.SkillID]; !allowed {
 			return "", fmt.Errorf("skill %s is not in the allowed list for this chat", params.SkillID)
 		}
+		var out string
+		var err error
 		if params.Path == "" {
-			content, err := t.skillService.GetSkillContent(ctx, params.SkillID)
-			if err != nil {
-				return "", err
+			out, err = t.skillService.GetSkillContent(ctx, params.SkillID)
+		} else {
+			var body []byte
+			body, err = t.skillService.GetFile(ctx, params.SkillID, strings.TrimSpace(params.Path))
+			out = string(body)
+		}
+		if err != nil {
+			return "", err
+		}
+		if t.onLoaded != nil {
+			if err := t.onLoaded(ctx, params.SkillID); err != nil {
+				return "", fmt.Errorf("skill activation hook failed: %w", err)
 			}
-			return content, nil
 		}
-		body, err := t.skillService.GetFile(ctx, params.SkillID, strings.TrimSpace(params.Path))
-		if err != nil {
-			return "", err
-		}
-		return string(body), nil
-	case "list_skill_files":
-		var params struct {
-			SkillID string `json:"skill_id"`
-			Path    string `json:"path"`
-		}
-		if err := json.Unmarshal([]byte(parameters), &params); err != nil {
-			return "", fmt.Errorf("failed to unmarshal parameters: %w", err)
-		}
-		if params.SkillID == "" {
-			return "", fmt.Errorf("skill_id is required")
-		}
-		if _, allowed := t.allowedIDs[params.SkillID]; !allowed {
-			return "", fmt.Errorf("skill %s is not in the allowed list for this chat", params.SkillID)
-		}
-		entries, err := t.skillService.ListFiles(ctx, params.SkillID, strings.TrimSpace(params.Path))
-		if err != nil {
-			return "", err
-		}
-		out, _ := json.Marshal(entries)
-		return string(out), nil
+		return out, nil
 	default:
 		return "", fmt.Errorf("tool %s not found", name)
 	}
