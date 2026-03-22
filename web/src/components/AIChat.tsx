@@ -257,6 +257,18 @@ class ChatError extends Error {
   }
 }
 
+function isAbortError(error: unknown): boolean {
+  if (error == null || typeof error !== 'object') {
+    return false;
+  }
+  const e = error as { name?: string; message?: string };
+  if (e.name === 'AbortError') {
+    return true;
+  }
+  const msg = typeof e.message === 'string' ? e.message : '';
+  return /aborted/i.test(msg) || /BodyStreamBuffer/i.test(msg);
+}
+
 
 class AIProvider<
   ChatMessage extends ChatStreamMessage = ChatStreamMessage,
@@ -513,6 +525,12 @@ export const AIChat: React.FC<AIChatProps> = ({
       };
     },
     requestFallback: (_, { error }) => {
+      if (isAbortError(error)) {
+        return {
+          content: '',
+          role: 'assistant' as API.AIChatMessageRole,
+        };
+      }
       if (error instanceof ChatError) {
         return {
           content: error.buffer.join(''),
