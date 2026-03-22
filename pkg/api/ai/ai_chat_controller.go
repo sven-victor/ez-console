@@ -525,7 +525,6 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				level.Error(logger).Log("msg", "Failed to update session token usage", "error", err)
 			}
 		}),
-		ai.WithChatMaxTokens(1024 * 100),
 		ai.WithChatAutoSummarization(true),
 	}
 

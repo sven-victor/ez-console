@@ -6503,6 +6503,12 @@ const docTemplate = `{
                 "is_default": {
                     "type": "boolean"
                 },
+                "max_chat_iterations": {
+                    "type": "integer"
+                },
+                "max_chat_tokens": {
+                    "type": "integer"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -6637,6 +6643,12 @@ const docTemplate = `{
                 },
                 "is_default": {
                     "type": "boolean"
+                },
+                "max_chat_iterations": {
+                    "type": "integer"
+                },
+                "max_chat_tokens": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
@@ -7690,6 +7702,8 @@ const docTemplate = `{
                 "description",
                 "id",
                 "is_default",
+                "max_chat_iterations",
+                "max_chat_tokens",
                 "name",
                 "organization_id",
                 "provider",
@@ -7719,6 +7733,14 @@ const docTemplate = `{
                 "is_default": {
                     "description": "Whether this is the default model",
                     "type": "boolean"
+                },
+                "max_chat_iterations": {
+                    "description": "Max tool-call iterations; 0 uses client default",
+                    "type": "integer"
+                },
+                "max_chat_tokens": {
+                    "description": "Context window for auto-summarization; 0 uses config fallback only",
+                    "type": "integer"
                 },
                 "name": {
                     "description": "Model name",
@@ -10597,25 +10619,9 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",

@@ -483,6 +483,27 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 // 	return s.CreateChatCompletionWithToolSets(ctx, organizationID, modelID, messages, toolSets)
 // }
 
+// withAIModelChatTokenAndIterationOptions returns default MaxChatTokens / MaxChatIterations from the AIModel.
+// Apply caller-supplied WithChatOptions after this slice so callers can override these defaults.
+func withAIModelChatTokenAndIterationOptions(aiModel *model.AIModel) []ai.WithChatOptions {
+	maxTokens := aiModel.MaxChatTokens
+	if maxTokens <= 0 && aiModel.Config != nil {
+		if mt, ok := aiModel.Config["max_tokens"].(float64); ok {
+			maxTokens = int(mt)
+		} else if mt, ok := aiModel.Config["max_tokens"].(int); ok {
+			maxTokens = mt
+		}
+	}
+	var out []ai.WithChatOptions
+	if maxTokens > 0 {
+		out = append(out, ai.WithChatMaxTokens(maxTokens))
+	}
+	if aiModel.MaxChatIterations > 0 {
+		out = append(out, ai.WithChatMaxIterations(aiModel.MaxChatIterations))
+	}
+	return out
+}
+
 // CreateChatCompletionWithoutToolSets creates a chat completion using the specified model without toolSets.
 func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
@@ -519,8 +540,8 @@ func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context,
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
-	// Call CreateChat
-	responseMessages, err := client.Exchange(ctx, messages, options...)
+	callOptions := append(withAIModelChatTokenAndIterationOptions(aiModel), options...)
+	responseMessages, err := client.Exchange(ctx, messages, callOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)
 	}
@@ -544,11 +565,13 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 			return nil, fmt.Errorf("failed to get AI model: %w", err)
 		}
 	}
-	options = append([]ai.WithChatOptions{
+	mergedOptions := []ai.WithChatOptions{
 		ai.WithChatToolSetsFactory(func(ctx context.Context) (toolset.ToolSets, error) {
 			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
 		}),
-	}, options...)
+	}
+	mergedOptions = append(mergedOptions, withAIModelChatTokenAndIterationOptions(aiModel)...)
+	mergedOptions = append(mergedOptions, options...)
 
 	// Prepend global prompts for non-stream calls
 	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryNonStream)
@@ -569,8 +592,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
-	// Call CreateChat
-	responseMessages, err := client.Exchange(ctx, messages, options...)
+	responseMessages, err := client.Exchange(ctx, messages, mergedOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)
 	}
@@ -643,23 +665,11 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
-	// Get max_tokens from model config if available
-	var maxTokens int
-	if aiModel.Config != nil {
-		if mt, ok := aiModel.Config["max_tokens"].(float64); ok {
-			maxTokens = int(mt)
-		} else if mt, ok := aiModel.Config["max_tokens"].(int); ok {
-			maxTokens = mt
-		}
-	}
-
 	allOptions := []ai.WithChatOptions{ai.WithChatUncachedToolSetsFactory(orgToolSetsFactory)}
 	if refreshToolSets {
 		allOptions = append(allOptions, ai.WithChatRefreshToolSetsEachIteration(true))
 	}
-	if maxTokens > 0 {
-		allOptions = append(allOptions, ai.WithChatMaxTokens(maxTokens))
-	}
+	allOptions = append(allOptions, withAIModelChatTokenAndIterationOptions(aiModel)...)
 	allOptions = append(allOptions, options...)
 
 	// Inject tracing wrapper when AI debug is enabled.

@@ -56,21 +56,25 @@ func (c *AIModelController) RegisterRoutes(router *gin.RouterGroup) {
 
 // CreateAIModelRequest represents the request to create an AI model
 type CreateAIModelRequest struct {
-	Name        string                `json:"name" binding:"required"`
-	Description string                `json:"description" validate:"optional"`
-	Provider    model.AIModelProvider `json:"provider" binding:"required"`
-	Config      model.AIModelConfig   `json:"config" binding:"required" swaggertype:"object"`
-	IsDefault   bool                  `json:"is_default" validate:"optional"`
+	Name              string                `json:"name" binding:"required"`
+	Description       string                `json:"description" validate:"optional"`
+	Provider          model.AIModelProvider `json:"provider" binding:"required"`
+	Config            model.AIModelConfig   `json:"config" binding:"required" swaggertype:"object"`
+	IsDefault         bool                  `json:"is_default" validate:"optional"`
+	MaxChatTokens     int                   `json:"max_chat_tokens" validate:"optional"`
+	MaxChatIterations int                   `json:"max_chat_iterations" validate:"optional"`
 }
 
 // UpdateAIModelRequest represents the request to update an AI model
 type UpdateAIModelRequest struct {
-	Name        string                `json:"name" binding:"required"`
-	Description string                `json:"description" validate:"optional"`
-	Provider    model.AIModelProvider `json:"provider" binding:"required"`
-	Config      model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
-	IsDefault   bool                  `json:"is_default" validate:"optional"`
-	Status      model.AIModelStatus   `json:"status" validate:"optional"`
+	Name              string                `json:"name" binding:"required"`
+	Description       string                `json:"description" validate:"optional"`
+	Provider          model.AIModelProvider `json:"provider" binding:"required"`
+	Config            model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
+	IsDefault         bool                  `json:"is_default" validate:"optional"`
+	Status            model.AIModelStatus   `json:"status" validate:"optional"`
+	MaxChatTokens     int                   `json:"max_chat_tokens" validate:"optional"`
+	MaxChatIterations int                   `json:"max_chat_iterations" validate:"optional"`
 }
 
 // ListAIModels lists AI models with pagination
@@ -156,6 +160,10 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
+	if req.MaxChatTokens < 0 || req.MaxChatIterations < 0 {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "max_chat_tokens and max_chat_iterations must be >= 0"))
+		return
+	}
 
 	// Get current user ID from context
 	userID, exists := ctx.Get("user_id")
@@ -199,6 +207,8 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 		userID.(string),
 	)
 	aiModel.IsDefault = req.IsDefault
+	aiModel.MaxChatTokens = req.MaxChatTokens
+	aiModel.MaxChatIterations = req.MaxChatIterations
 
 	createdModel, err := c.service.CreateAIModel(ctx, aiModel)
 	if err != nil {
@@ -277,6 +287,10 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
+	if req.MaxChatTokens < 0 || req.MaxChatIterations < 0 {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "max_chat_tokens and max_chat_iterations must be >= 0"))
+		return
+	}
 
 	// Get current user ID from context
 	userID, exists := ctx.Get("user_id")
@@ -312,13 +326,15 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 	}
 
 	aiModel := &model.AIModel{
-		Name:        req.Name,
-		Description: req.Description,
-		Provider:    req.Provider,
-		Config:      req.Config,
-		IsDefault:   req.IsDefault,
-		UpdatedBy:   userID.(string),
-		Status:      req.Status,
+		Name:              req.Name,
+		Description:       req.Description,
+		Provider:          req.Provider,
+		Config:            req.Config,
+		IsDefault:         req.IsDefault,
+		UpdatedBy:         userID.(string),
+		Status:            req.Status,
+		MaxChatTokens:     req.MaxChatTokens,
+		MaxChatIterations: req.MaxChatIterations,
 	}
 
 	updatedModel, err := c.service.UpdateAIModel(ctx, organizationID, id, aiModel)

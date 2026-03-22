@@ -23,6 +23,7 @@ import {
   Modal,
   Form,
   Input,
+  InputNumber,
   Select,
   Switch,
   message,
@@ -40,6 +41,7 @@ import {
   StarOutlined,
   StarFilled,
   BugOutlined,
+  CopyOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
@@ -60,6 +62,8 @@ interface AIModel {
   config: Record<string, any>;
   status: 'enabled' | 'disabled';
   is_default: boolean;
+  max_chat_tokens?: number;
+  max_chat_iterations?: number;
   created_at: string;
   updated_at: string;
 }
@@ -71,6 +75,8 @@ interface AIModelFormData {
   config?: Record<string, any>;
   is_default?: boolean;
   status?: 'enabled' | 'disabled';
+  max_chat_tokens?: number;
+  max_chat_iterations?: number;
 }
 
 const AIModelSettings: React.FC = () => {
@@ -213,9 +219,37 @@ const AIModelSettings: React.FC = () => {
       is_default: record.is_default,
       config: config, // Spread config fields to form
       status: record.status,
+      max_chat_tokens: record.max_chat_tokens ?? 0,
+      max_chat_iterations: record.max_chat_iterations ?? 0,
     };
     form.setFieldsValue(formData);
     setIsModalVisible(true);
+  };
+
+  const handleClone = async (record: AIModel) => {
+    setEditingModel(null);
+    setSelectedProvider(record.provider);
+    form.resetFields();
+    try {
+      const m = (await api.ai.getAiModel({ id: record.id })) as AIModel;
+      const cfg = { ...(m.config || {}) };
+      if ('api_key' in cfg) {
+        cfg.api_key = '';
+      }
+      form.setFieldsValue({
+        name: `${m.name} (copy)`,
+        description: m.description,
+        provider: m.provider,
+        config: cfg,
+        is_default: false,
+        status: 'enabled' as const,
+        max_chat_tokens: m.max_chat_tokens ?? 0,
+        max_chat_iterations: m.max_chat_iterations ?? 0,
+      });
+      setIsModalVisible(true);
+    } catch {
+      message.error(t('models.cloneLoadFailed', { defaultValue: 'Failed to load model for clone' }));
+    }
   };
 
   const handleProviderChange = (provider: string) => {
@@ -235,6 +269,8 @@ const AIModelSettings: React.FC = () => {
       config,
       is_default: values.is_default,
       status: values.status,
+      max_chat_tokens: values.max_chat_tokens ?? 0,
+      max_chat_iterations: values.max_chat_iterations ?? 0,
     };
 
     if (editingModel) {
@@ -302,14 +338,21 @@ const AIModelSettings: React.FC = () => {
             key: 'update',
             permission: 'ai:models:update',
             icon: <EditOutlined />,
-            tooltip: tCommon('edit', { defaultValue: 'Edit' }),
+            tooltip: t('models.editTooltip', { defaultValue: 'Edit model' }),
             onClick: async () => handleEdit(record),
+          },
+          {
+            key: 'clone',
+            permission: 'ai:models:create',
+            icon: <CopyOutlined />,
+            tooltip: t('models.cloneTooltip', { defaultValue: 'Clone as new model (re-enter API key if needed)' }),
+            onClick: async () => handleClone(record),
           },
           {
             key: 'delete',
             permission: 'ai:models:delete',
             icon: <DeleteOutlined />,
-            tooltip: tCommon('delete', { defaultValue: 'Delete' }),
+            tooltip: t('models.deleteTooltip', { defaultValue: 'Delete model' }),
             onClick: async () => deleteModel(record.id),
             danger: true,
           },
@@ -445,6 +488,25 @@ const AIModelSettings: React.FC = () => {
               schema={currentProviderDefinition.config_schema as unknown as Record<string, unknown>}
             />
           </Form.Item>)}
+
+          <Form.Item
+            name="max_chat_tokens"
+            label={t('models.maxChatTokens', { defaultValue: 'Max chat tokens (context / summarization)' })}
+            tooltip={t('models.maxChatTokensHelp', {
+              defaultValue: '0 uses provider config max_tokens only. Positive value sets WithChatMaxTokens for this model.',
+            })}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+          </Form.Item>
+          <Form.Item
+            name="max_chat_iterations"
+            label={t('models.maxChatIterations', { defaultValue: 'Max chat iterations (tool rounds)' })}
+            tooltip={t('models.maxChatIterationsHelp', {
+              defaultValue: '0 uses default. Positive value caps tool-call iterations for this model.',
+            })}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+          </Form.Item>
 
           <Form.Item
             name="is_default"

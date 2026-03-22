@@ -94,6 +94,10 @@ declare global {
       id: string;
       /** Whether this is the default model */
       is_default: boolean;
+      /** Max tool-call iterations; 0 uses client default */
+      max_chat_iterations: number;
+      /** Context window for auto-summarization; 0 uses config fallback only */
+      max_chat_tokens: number;
       /** Model name */
       name: string;
       /** Organization ID */
@@ -266,6 +270,8 @@ declare global {
       config: Record<string, any>;
       description?: string;
       is_default?: boolean;
+      max_chat_iterations?: number;
+      max_chat_tokens?: number;
       name: string;
       provider: AIModelProvider;
     }
@@ -2079,6 +2085,8 @@ declare global {
       config?: Record<string, any>;
       description?: string;
       is_default?: boolean;
+      max_chat_iterations?: number;
+      max_chat_tokens?: number;
       name: string;
       provider: AIModelProvider;
       status?: AIModelStatus;
