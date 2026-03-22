@@ -33,7 +33,7 @@ import {
 } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { isArray, has } from 'lodash-es';
 import { createStyles } from 'antd-style';
@@ -138,6 +138,8 @@ const RoleForm: React.FC = () => {
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
+  const [searchParams] = useSearchParams();
+  const cloneFrom = searchParams.get('cloneFrom') || undefined;
   const isEditMode = Boolean(id);
   const { enableMultiOrg, currentOrgId } = useSite();
   const { user } = useAuth();
@@ -249,11 +251,12 @@ const RoleForm: React.FC = () => {
   };
 
   const loadRole = useCallback(
-    async (roleId: string) => {
+    async (roleId: string, opts?: { clone?: boolean }) => {
       setPageLoading(true);
+      const isClone = opts?.clone === true;
       try {
         const detailedRole = await api.authorization.getRole({ id: roleId });
-        setIsSystemRole(detailedRole.role_type === 'system');
+        setIsSystemRole(!isClone && detailedRole.role_type === 'system');
         const permissions = detailedRole.permissions?.map((p: API.Permission) => p.id) || [];
         setCheckedKeys(permissions);
         form.setFieldsValue({ permissions });
@@ -261,16 +264,16 @@ const RoleForm: React.FC = () => {
         const currentRoleType = orgId ? 'organization' : 'global';
         setRoleType(currentRoleType);
 
-        const initialSelection = mapPermissionsToSelections(detailedRole.ai_tool_permissions);
+        const initialSelection = mapPermissionsToSelections(detailedRole.ai_tool_permissions || []);
         if (currentRoleType === 'organization' && orgId) {
           await fetchAiToolsets(orgId, initialSelection);
         } else {
           setAiToolsets([]);
-          setAiToolSelections({});
+          setAiToolSelections(isClone ? initialSelection : {});
         }
 
         form.setFieldsValue({
-          name: detailedRole.name,
+          name: isClone ? `${detailedRole.name} (copy)` : detailedRole.name,
           description: detailedRole.description,
           role_type: currentRoleType,
           organization_id: orgId || undefined,
@@ -292,6 +295,11 @@ const RoleForm: React.FC = () => {
       return;
     }
 
+    if (cloneFrom) {
+      void loadRole(cloneFrom, { clone: true });
+      return;
+    }
+
     const defaultOrgId =
       selectedOrgId || (organizations.length > 0 ? organizations[0].id : '');
     const defaultRoleType = enableMultiOrg && defaultOrgId ? 'organization' : 'global';
@@ -310,6 +318,7 @@ const RoleForm: React.FC = () => {
       setAiToolsets([]);
     }
   }, [
+    cloneFrom,
     fetchAiToolsets,
     form,
     id,

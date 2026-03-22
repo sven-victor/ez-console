@@ -264,6 +264,7 @@ export default {
     typeSystem: 'System',
     typeUser: 'Användare',
     systemRoleCannotModify: 'Systemroller kan inte ändras.',
+    cloneTooltip: 'Klona roll: öppna skapasidan med förifyllda behörigheter och inställningar',
     viewTitle: 'Visa roll',
     insertTemplate: 'Infoga mall',
     allowAll: 'Tillåt alla',

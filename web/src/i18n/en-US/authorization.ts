@@ -264,6 +264,7 @@ export default {
     typeSystem: 'System',
     typeUser: 'User',
     systemRoleCannotModify: 'System roles cannot be modified.',
+    cloneTooltip: 'Clone role: open create page with permissions and settings prefilled',
     viewTitle: 'View Role',
     insertTemplate: 'Insert Template',
     allowAll: 'Allow All',

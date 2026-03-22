@@ -16,7 +16,7 @@
 
 import React, { useRef } from 'react';
 import { Card, Button, Space, message, Popconfirm, Tag, Row, Col, Tooltip } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, LockOutlined, ReloadOutlined, TeamOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, LockOutlined, ReloadOutlined, TeamOutlined, CopyOutlined } from '@ant-design/icons';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import api from '@/service/api';
 import { Table } from '@/components/Table';
@@ -34,6 +34,10 @@ const RoleList: React.FC = () => {
   const tableRef = useRef<TableRef<API.Role>>(null);
   const handleEdit = (roleId: string) => {
     navigate(`/authorization/roles/${roleId}/edit`);
+  };
+
+  const handleClone = (roleId: string) => {
+    navigate(`/authorization/roles/create?cloneFrom=${encodeURIComponent(roleId)}`);
   };
 
   const handleDelete = async (id: string) => {
@@ -126,6 +130,16 @@ const RoleList: React.FC = () => {
                     />
                   </Tooltip>
                 </PermissionGuard>
+                <PermissionGuard permission="authorization:role:create">
+                  <Tooltip title={t('role.cloneTooltip', { defaultValue: 'Clone role to create page with prefilled form' })}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CopyOutlined />}
+                      onClick={() => handleClone(record.id)}
+                    />
+                  </Tooltip>
+                </PermissionGuard>
                 <PermissionGuard permission="authorization:role:delete">
                   <Tooltip title={t('role.delete', { defaultValue: 'Delete Role' })}>
                     <Popconfirm
@@ -146,11 +160,23 @@ const RoleList: React.FC = () => {
               </>
             )}
             {isSystemRole && (
-              <Tooltip title={t('role.systemRoleCannotModify', { defaultValue: 'System roles cannot be modified.' })}>
-                <span>
-                  <Button type="text" size="small" icon={<LockOutlined />} disabled />
-                </span>
-              </Tooltip>
+              <>
+                <Tooltip title={t('role.systemRoleCannotModify', { defaultValue: 'System roles cannot be modified.' })}>
+                  <span>
+                    <Button type="text" size="small" icon={<LockOutlined />} disabled />
+                  </span>
+                </Tooltip>
+                <PermissionGuard permission="authorization:role:create">
+                  <Tooltip title={t('role.cloneTooltip', { defaultValue: 'Clone role to create page with prefilled form' })}>
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CopyOutlined />}
+                      onClick={() => handleClone(record.id)}
+                    />
+                  </Tooltip>
+                </PermissionGuard>
+              </>
             )}
           </Space>
         );

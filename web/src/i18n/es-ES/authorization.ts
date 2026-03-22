@@ -264,6 +264,7 @@ export default {
     typeSystem: 'Sistema',
     typeUser: 'Usuario',
     systemRoleCannotModify: 'Los roles del sistema no se pueden modificar.',
+    cloneTooltip: 'Clonar rol: abrir la página de creación con permisos y ajustes rellenados',
     viewTitle: 'Ver rol',
     insertTemplate: 'Insertar plantilla',
     allowAll: 'Permitir todo',

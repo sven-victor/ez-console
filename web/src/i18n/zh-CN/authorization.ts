@@ -263,6 +263,7 @@ export default {
     typeSystem: '系统',
     typeUser: '用户',
     systemRoleCannotModify: '系统角色不可修改。',
+    cloneTooltip: '克隆角色：打开创建页并预填权限与设置',
     viewTitle: '查看角色',
     allowAll: '允许所有',
     denyAll: '拒绝所有',

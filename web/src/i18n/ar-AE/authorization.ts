@@ -264,6 +264,7 @@ export default {
     typeSystem: 'نظام',
     typeUser: 'مستخدم',
     systemRoleCannotModify: 'لا يمكن تعديل أدوار النظام.',
+    cloneTooltip: 'استنساخ الدور: فتح صفحة الإنشاء مع الأذونات والإعدادات المعبأة مسبقًا',
     viewTitle: 'عرض الدور',
     insertTemplate: 'إدراج قالب',
     allowAll: 'السماح للكل',
