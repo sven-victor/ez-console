@@ -43,6 +43,7 @@ func (c *SkillController) RegisterRoutes(router *gin.RouterGroup) {
 		skills.GET("", middleware.RequirePermission("system:skills:view"), c.ListSkills)
 		skills.GET("/domains", middleware.RequirePermission("system:skills:view"), c.ListSkillDomains)
 		skills.POST("", middleware.RequirePermission("system:skills:create"), c.CreateSkill)
+		skills.POST("/clone", middleware.RequirePermission("system:skills:create"), c.CloneSkill)
 		skills.GET("/:id/ai-tool-bindings", middleware.RequirePermission("system:skills:view"), c.ListSkillAIToolBindings)
 		skills.PUT("/:id/ai-tool-bindings", middleware.RequirePermission("system:skills:update"), c.ReplaceSkillAIToolBindings)
 		skills.GET("/:id", middleware.RequirePermission("system:skills:view"), c.GetSkill)
@@ -66,6 +67,15 @@ type CreateSkillRequest struct {
 	Category    string `json:"category"`
 	Domain      string `json:"domain"`
 	Content     string `json:"content"` // optional initial SKILL.md content
+}
+
+// CloneSkillRequest creates a skill by copying files (and optional org-scoped AI bindings) from a source skill.
+type CloneSkillRequest struct {
+	SourceID    string `json:"source_id" binding:"required"`
+	Name        string `json:"name" binding:"required"`
+	Description string `json:"description"`
+	Category    string `json:"category"`
+	Domain      string `json:"domain"`
 }
 
 // UpdateSkillRequest for updating skill metadata
@@ -203,6 +213,40 @@ func (c *SkillController) CreateSkill(ctx *gin.Context) {
 		Domain:      req.Domain,
 	}
 	created, err := c.service.SkillService.Create(ctx, skill, req.Content)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusCreated, created)
+}
+
+// CloneSkill creates a new skill by copying files from an existing skill
+//
+//	@Summary		Clone skill
+//	@Description	Copy all skill files from source_id into a new skill; metadata comes from the request body. When X-Scope-OrgID is set, AI tool bindings for that organization are copied from the source skill.
+//	@ID             cloneSkill
+//	@Tags			System Settings/Skills
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		CloneSkillRequest	true	"Target metadata and source skill id"
+//	@Success		201	{object}	util.Response[model.Skill]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/skills/clone [post]
+func (c *SkillController) CloneSkill(ctx *gin.Context) {
+	var req CloneSkillRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+	skill := &model.Skill{
+		Name:        req.Name,
+		Description: req.Description,
+		Category:    req.Category,
+		Domain:      req.Domain,
+	}
+	orgID := ctx.GetString("organization_id")
+	created, err := c.service.SkillService.CloneSkill(ctx, req.SourceID, skill, orgID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

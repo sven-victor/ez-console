@@ -4438,6 +4438,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/skills/clone": {
+            "post": {
+                "description": "Copy all skill files from source_id into a new skill; metadata comes from the request body. When X-Scope-OrgID is set, AI tool bindings for that organization are copied from the source skill.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Skills"
+                ],
+                "summary": "Clone skill",
+                "operationId": "cloneSkill",
+                "parameters": [
+                    {
+                        "description": "Target metadata and source skill id",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.CloneSkillRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_Skill"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/skills/domains": {
             "get": {
                 "description": "Get the list of registered skill domains",
@@ -9983,6 +10030,33 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.CloneSkillRequest": {
+            "type": "object",
+            "required": [
+                "category",
+                "description",
+                "domain",
+                "name",
+                "source_id"
+            ],
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "domain": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "source_id": {
+                    "type": "string"
+                }
+            }
+        },
         "systemapi.CreateOrganizationRequest": {
             "type": "object",
             "required": [
@@ -10619,6 +10693,12 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
@@ -10632,6 +10712,12 @@ const docTemplate = `{
                 "Hour",
                 "minDuration",
                 "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

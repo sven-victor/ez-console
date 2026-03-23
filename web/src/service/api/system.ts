@@ -659,6 +659,21 @@ export async function previewSkill(
   );
 }
 
+/** Clone skill Copy all skill files from source_id into a new skill; metadata comes from the request body. When X-Scope-OrgID is set, AI tool bindings for that organization are copied from the source skill. POST /api/system/skills/clone */
+export async function cloneSkill(
+  body: API.CloneSkillRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelSkill>("/api/system/skills/clone", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** List skill domains Get the list of registered skill domains GET /api/system/skills/domains */
 export async function listSkillDomains(options?: { [key: string]: any }) {
   return request<API.ResponseArrayString>("/api/system/skills/domains", {

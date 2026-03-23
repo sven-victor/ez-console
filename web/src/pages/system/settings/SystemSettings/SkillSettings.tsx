@@ -32,13 +32,14 @@ import {
   UploadOutlined,
   EyeOutlined,
   FileTextOutlined,
+  CopyOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { useNavigate } from 'react-router-dom';
 import api from '@/service/api';
 import type { Skill, SkillAIToolBinding, ToolSet } from '@/service/api/typing';
-import type { CreateSkillRequest, UpdateSkillRequest } from '@/service/api/typing';
+import type { CloneSkillRequest, CreateSkillRequest, UpdateSkillRequest } from '@/service/api/typing';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
 import { useSite } from '@/contexts/SiteContext';
@@ -173,6 +174,7 @@ const SkillSettings: React.FC = () => {
   const [domainFilter, setDomainFilter] = useState<string>();
   const [modalVisible, setModalVisible] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+  const [cloneSourceSkill, setCloneSourceSkill] = useState<Skill | null>(null);
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
   const [uploadForm] = Form.useForm();
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -301,6 +303,7 @@ const SkillSettings: React.FC = () => {
 
   const handleCreate = () => {
     setEditingSkill(null);
+    setCloneSourceSkill(null);
     form.resetFields();
     resetAiToolState();
     setModalVisible(true);
@@ -308,8 +311,22 @@ const SkillSettings: React.FC = () => {
 
   const handleEdit = (record: Skill) => {
     setEditingSkill(record);
+    setCloneSourceSkill(null);
     form.setFieldsValue({
       name: record.name,
+      description: record.description,
+      category: record.category,
+      domain: record.domain,
+    });
+    resetAiToolState();
+    setModalVisible(true);
+  };
+
+  const handleClone = (record: Skill) => {
+    setEditingSkill(null);
+    setCloneSourceSkill(record);
+    form.setFieldsValue({
+      name: t('settings.skills.cloneNameDefault', { name: record.name, defaultValue: '{{name}} (copy)' }),
       description: record.description,
       category: record.category,
       domain: record.domain,
@@ -338,6 +355,25 @@ const SkillSettings: React.FC = () => {
             );
           }
           message.success(t('settings.skills.updateSuccess', { defaultValue: 'Skill updated' }));
+        } else if (cloneSourceSkill) {
+          const body: CloneSkillRequest = {
+            source_id: cloneSourceSkill.id,
+            name: values.name,
+            description: values.description ?? '',
+            category: values.category ?? '',
+            domain: values.domain ?? '',
+          };
+          const { id: newId } = await api.system.cloneSkill(body);
+          message.success(t('settings.skills.cloneSuccess', { defaultValue: 'Skill cloned' }));
+          setModalVisible(false);
+          setCloneSourceSkill(null);
+          form.resetFields();
+          resetAiToolState();
+          refresh();
+          if (newId) {
+            navigate(`/system/settings/skills/${newId}/edit`);
+          }
+          return;
         } else {
           const body: CreateSkillRequest = {
             name: values.name,
@@ -351,6 +387,7 @@ const SkillSettings: React.FC = () => {
         }
         setModalVisible(false);
         setEditingSkill(null);
+        setCloneSourceSkill(null);
         form.resetFields();
         resetAiToolState();
         refresh();
@@ -358,7 +395,9 @@ const SkillSettings: React.FC = () => {
         message.error(
           editingSkill
             ? t('settings.skills.updateFailed', { defaultValue: 'Failed to update skill' })
-            : t('settings.skills.createFailed', { defaultValue: 'Failed to create skill' }),
+            : cloneSourceSkill
+              ? t('settings.skills.cloneFailed', { defaultValue: 'Failed to clone skill' })
+              : t('settings.skills.createFailed', { defaultValue: 'Failed to create skill' }),
         );
       } finally {
         setSubmitLoading(false);
@@ -380,6 +419,7 @@ const SkillSettings: React.FC = () => {
 
   const showAiToolsSection = enableSkillToolBinding && editingSkill;
   const modalWidth = showAiToolsSection ? 720 : 560;
+  const isCreateOnlyModal = !editingSkill && !cloneSourceSkill;
 
   const columns: ColumnsType<Skill> = [
     { title: t('settings.skills.name', { defaultValue: 'Name' }), dataIndex: 'name', key: 'name' },
@@ -389,34 +429,50 @@ const SkillSettings: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'actions',
-      width: 150,
+      width: 220,
       render: (_, record) => (
         <Actions
           actions={[
             {
               key: 'edit_files',
               icon: <FileTextOutlined />,
+              tooltip: t('settings.skills.actionManageFiles', { defaultValue: 'Manage files' }),
               onClick: async () => navigate(`/system/settings/skills/${record.id}/edit`),
               permission: 'system:skills:edit_files',
             },
             {
               key: 'view',
               icon: <EyeOutlined />,
+              tooltip: t('settings.skills.actionPreview', { defaultValue: 'Preview' }),
               onClick: async () => navigate(`/system/settings/skills/${record.id}/preview`),
               permission: 'system:skills:view',
             },
             {
               key: 'update',
               icon: <EditOutlined />,
+              tooltip: t('settings.skills.actionEditMetadata', { defaultValue: 'Edit metadata' }),
               onClick: async () => handleEdit(record),
               permission: 'system:skills:update',
             },
             {
+              key: 'clone',
+              icon: <CopyOutlined />,
+              tooltip: t('settings.skills.actionClone', { defaultValue: 'Clone' }),
+              onClick: async () => handleClone(record),
+              permission: 'system:skills:create',
+            },
+            {
               key: 'delete',
               icon: <DeleteOutlined />,
+              tooltip: t('settings.skills.actionDelete', { defaultValue: 'Delete' }),
               danger: true,
               confirm: {
-                title: tCommon('confirmDelete', { defaultValue: 'Confirm delete?' }),
+                title: t('settings.skills.deleteSkillConfirm', { defaultValue: 'Delete this skill?' }),
+                description: t('settings.skills.deleteSkillConfirmDescription', {
+                  defaultValue: 'The skill and all its files will be removed. This cannot be undone.',
+                }),
+                okText: tCommon('confirm', { defaultValue: 'Confirm' }),
+                cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
                 onConfirm: async () => deleteSkill(record.id),
               },
               permission: 'system:skills:delete',
@@ -471,12 +527,19 @@ const SkillSettings: React.FC = () => {
       />
 
       <Modal
-        title={editingSkill ? t('settings.skills.editSkill', { defaultValue: 'Edit skill' }) : t('settings.skills.createSkill', { defaultValue: 'Create skill' })}
+        title={
+          editingSkill
+            ? t('settings.skills.editSkill', { defaultValue: 'Edit skill' })
+            : cloneSourceSkill
+              ? t('settings.skills.cloneSkill', { defaultValue: 'Clone skill' })
+              : t('settings.skills.createSkill', { defaultValue: 'Create skill' })
+        }
         open={modalVisible}
         onOk={handleSubmit}
         onCancel={() => {
           setModalVisible(false);
           setEditingSkill(null);
+          setCloneSourceSkill(null);
           resetAiToolState();
         }}
         confirmLoading={submitLoading}
@@ -495,7 +558,7 @@ const SkillSettings: React.FC = () => {
           <Form.Item name="domain" label={t('settings.skills.domain', { defaultValue: 'Domain' })}>
             <Select allowClear placeholder={tCommon('optional', { defaultValue: 'Optional' })} options={domainOptions.map((d) => ({ value: d, label: d }))} />
           </Form.Item>
-          {!editingSkill && (
+          {isCreateOnlyModal && (
             <Form.Item name="content" label={t('settings.skills.initialContent', { defaultValue: 'Initial SKILL.md content (optional)' })}>
               <TextArea rows={6} placeholder="---&#10;name: my-skill&#10;description: ...&#10;---&#10;&#10;# My Skill" />
             </Form.Item>

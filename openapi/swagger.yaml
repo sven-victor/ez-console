@@ -2649,6 +2649,25 @@ definitions:
     required:
     - is_valid
     type: object
+  systemapi.CloneSkillRequest:
+    properties:
+      category:
+        type: string
+      description:
+        type: string
+      domain:
+        type: string
+      name:
+        type: string
+      source_id:
+        type: string
+    required:
+    - category
+    - description
+    - domain
+    - name
+    - source_id
+    type: object
   systemapi.CreateOrganizationRequest:
     properties:
       description:
@@ -3103,6 +3122,12 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3115,6 +3140,12 @@ definitions:
     - Hour
     - minDuration
     - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -7709,6 +7740,39 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Preview skill
+      tags:
+      - System Settings/Skills
+  /api/system/skills/clone:
+    post:
+      consumes:
+      - application/json
+      description: Copy all skill files from source_id into a new skill; metadata
+        comes from the request body. When X-Scope-OrgID is set, AI tool bindings for
+        that organization are copied from the source skill.
+      operationId: cloneSkill
+      parameters:
+      - description: Target metadata and source skill id
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.CloneSkillRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/util.Response-model_Skill'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Clone skill
       tags:
       - System Settings/Skills
   /api/system/skills/domains:

@@ -262,6 +262,14 @@ export interface ClientToolResult {
   tool_call_id: string;
 }
 
+export interface CloneSkillRequest {
+  category: string;
+  description: string;
+  domain: string;
+  name: string;
+  source_id: string;
+}
+
 export type Condition = true;
 
 export interface CreateAIModelRequest {

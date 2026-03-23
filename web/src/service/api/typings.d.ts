@@ -264,6 +264,14 @@ declare global {
       tool_call_id: string;
     }
   
+    interface CloneSkillRequest {
+      category: string;
+      description: string;
+      domain: string;
+      name: string;
+      source_id: string;
+    }
+  
     type Condition = true;
   
     interface CreateAIModelRequest {

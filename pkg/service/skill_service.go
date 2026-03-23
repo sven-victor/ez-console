@@ -401,6 +401,125 @@ func (s *SkillService) Create(ctx context.Context, skill *model.Skill, initialCo
 	return skill, nil
 }
 
+// copySkillDirectoryContents copies all allowed files (.md, .txt) from sourceSkillID/ to destSkillID/ recursively.
+func (s *SkillService) copySkillDirectoryContents(sourceSkillID, destSkillID string) error {
+	root := s.getSkillsRootFs()
+	src := afero.NewBasePathFs(root, sourceSkillID)
+	dst := afero.NewBasePathFs(root, destSkillID)
+
+	var walk func(rel string) error
+	walk = func(rel string) error {
+		infos, err := afero.ReadDir(src, rel)
+		if err != nil {
+			return fmt.Errorf("failed to list %q: %w", rel, err)
+		}
+		for _, e := range infos {
+			p := e.Name()
+			if rel != "" {
+				p = filepath.ToSlash(rel) + "/" + filepath.ToSlash(e.Name())
+			} else {
+				p = filepath.ToSlash(e.Name())
+			}
+			if e.IsDir() {
+				if err := dst.MkdirAll(p, 0o755); err != nil {
+					return fmt.Errorf("failed to mkdir %q: %w", p, err)
+				}
+				if err := walk(p); err != nil {
+					return err
+				}
+				continue
+			}
+			ext := strings.ToLower(filepath.Ext(e.Name()))
+			if !allowedFileExtensions[ext] {
+				continue
+			}
+			b, err := afero.ReadFile(src, p)
+			if err != nil {
+				return fmt.Errorf("failed to read %q: %w", p, err)
+			}
+			pdir := filepath.Dir(p)
+			if pdir != "." && pdir != "" {
+				if err := dst.MkdirAll(filepath.ToSlash(pdir), 0o755); err != nil {
+					return fmt.Errorf("failed to mkdir parent %q: %w", pdir, err)
+				}
+			}
+			if err := afero.WriteFile(dst, p, b, 0o644); err != nil {
+				return fmt.Errorf("failed to write %q: %w", p, err)
+			}
+		}
+		return nil
+	}
+	return walk("")
+}
+
+// CloneSkill creates a new skill by copying files from sourceSkillID and applying metadata from newSkill.
+// When organizationID is non-empty, copies AI tool bindings from the source skill for that organization.
+func (s *SkillService) CloneSkill(ctx context.Context, sourceSkillID string, newSkill *model.Skill, organizationID string) (*model.Skill, error) {
+	if sourceSkillID == "" {
+		return nil, fmt.Errorf("source skill id is required")
+	}
+	source, err := s.GetByID(ctx, sourceSkillID)
+	if err != nil {
+		return nil, fmt.Errorf("source skill not found: %w", err)
+	}
+	if newSkill == nil || newSkill.Name == "" {
+		return nil, fmt.Errorf("skill name is required")
+	}
+
+	err = db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(newSkill).Error; err != nil {
+			return fmt.Errorf("failed to create skill: %w", err)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	fs := s.getSkillsRootFs()
+	if err := fs.MkdirAll(newSkill.ResourceID, 0o755); err != nil {
+		_ = db.Session(ctx).Delete(newSkill)
+		return nil, fmt.Errorf("failed to create skill directory: %w", err)
+	}
+
+	if err := s.copySkillDirectoryContents(source.ResourceID, newSkill.ResourceID); err != nil {
+		_ = fs.RemoveAll(newSkill.ResourceID)
+		_ = db.Session(ctx).Delete(newSkill)
+		return nil, err
+	}
+
+	if err := s.UpdateSkillFrontmatter(ctx, newSkill); err != nil {
+		_ = fs.RemoveAll(newSkill.ResourceID)
+		_ = db.Session(ctx).Delete(newSkill)
+		return nil, fmt.Errorf("failed to update cloned skill frontmatter: %w", err)
+	}
+
+	if organizationID != "" {
+		var srcBindings []model.SkillAIToolBinding
+		if err := db.Session(ctx).Where("skill_id = ? AND organization_id = ?", source.ResourceID, organizationID).Find(&srcBindings).Error; err != nil {
+			_ = fs.RemoveAll(newSkill.ResourceID)
+			_ = db.Session(ctx).Delete(newSkill)
+			return nil, fmt.Errorf("failed to list source skill bindings: %w", err)
+		}
+		if len(srcBindings) > 0 {
+			rows := make([]model.SkillAIToolBinding, 0, len(srcBindings))
+			for _, b := range srcBindings {
+				rows = append(rows, model.SkillAIToolBinding{
+					ToolSetID: b.ToolSetID,
+					ToolName:  b.ToolName,
+				})
+			}
+			if err := s.ReplaceSkillAIToolBindings(ctx, newSkill.ResourceID, organizationID, rows); err != nil {
+				_ = fs.RemoveAll(newSkill.ResourceID)
+				_ = db.Session(ctx).Delete(newSkill)
+				return nil, fmt.Errorf("failed to copy skill AI tool bindings: %w", err)
+			}
+		}
+	}
+
+	return newSkill, nil
+}
+
 func (s *SkillService) UpdateSkillFrontmatter(ctx context.Context, skill *model.Skill) error {
 	_, skillFs, err := s.getSkillFs(ctx, skill.ResourceID)
 	if err != nil {
