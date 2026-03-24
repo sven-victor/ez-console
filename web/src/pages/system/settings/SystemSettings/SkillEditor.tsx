@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, Button, Space, Input, message, Tree, Modal, Form, Menu } from 'antd';
+import { Card, Button, Space, Input, message, Tree, Modal, Form, Menu, Alert } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { FolderOutlined, FileOutlined, SaveOutlined, PlusOutlined, DeleteOutlined, EditOutlined, FolderAddOutlined, FileAddOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -103,6 +103,7 @@ const SkillEditor: React.FC = () => {
   );
 
   const skillData = (skill as any)?.data ?? skill;
+  const isPreset = !!(skillData as { is_preset?: boolean })?.is_preset;
   const rawTree: SkillTreeNode[] = (treeData as any)?.data ?? treeData ?? [];
   const treeDataNodes = useMemo(() => treeNodesFromSkillTree(rawTree), [rawTree]);
 
@@ -127,7 +128,7 @@ const SkillEditor: React.FC = () => {
   }, [id, selectedFile, t]);
 
   const handleSave = () => {
-    if (!id || !selectedFile) return;
+    if (!id || !selectedFile || isPreset) return;
     api.system.putSkillFile({ id, path: selectedFile }, content).then(() => {
       message.success(t('settings.skills.editor.saved', { defaultValue: 'Saved' }));
       setDirty(false);
@@ -160,7 +161,7 @@ const SkillEditor: React.FC = () => {
 
   const handleContextAction = useCallback(
     (action: string) => {
-      if (!id || !contextMenu) return;
+      if (!id || !contextMenu || isPreset) return;
       const { path, isDir } = contextMenu;
       closeContextMenu();
       switch (action) {
@@ -211,11 +212,11 @@ const SkillEditor: React.FC = () => {
           break;
       }
     },
-    [id, contextMenu, closeContextMenu, refreshFiles, selectedFile, selectedNodeKey, renameForm, t]
+    [id, contextMenu, closeContextMenu, refreshFiles, selectedFile, selectedNodeKey, renameForm, t, isPreset]
   );
 
   const handleRenameOk = () => {
-    if (!id || !renameTarget) return;
+    if (!id || !renameTarget || isPreset) return;
     const name = (renameForm.getFieldValue('name') ?? renameValue).trim();
     if (!name) {
       message.error(t('settings.skills.editor.nameRequired', { defaultValue: 'Name is required' }));
@@ -244,7 +245,7 @@ const SkillEditor: React.FC = () => {
   };
 
   const handleDrop = (info: { node: DataNode; dragNode: DataNode; dropToGap: boolean }) => {
-    if (!id) return;
+    if (!id || isPreset) return;
     const fromPath = String(info.dragNode.key);
     const dragName = String(info.dragNode.title);
     let toPath: string;
@@ -268,7 +269,7 @@ const SkillEditor: React.FC = () => {
 
   const handleCreateFile = () => {
     const name = newName.trim();
-    if (!name || !id) return;
+    if (!name || !id || isPreset) return;
     const fullPath = createBasePath ? `${createBasePath}/${name}` : name;
     if (!/\.(md|txt)$/i.test(name)) {
       message.error(t('settings.skills.editor.onlyMdTxtAllowed', { defaultValue: 'Only .md and .txt files are allowed' }));
@@ -286,7 +287,7 @@ const SkillEditor: React.FC = () => {
 
   const handleCreateDir = () => {
     const name = dirForm.getFieldValue('name')?.trim();
-    if (!name || !id) return;
+    if (!name || !id || isPreset) return;
     const fullPath = createBasePath ? `${createBasePath}/${name}` : name;
     api.system.createSkillDir({ id }, { path: fullPath }).then(() => {
       message.success(t('settings.skills.editor.folderCreated', { defaultValue: 'Folder created' }));
@@ -298,7 +299,7 @@ const SkillEditor: React.FC = () => {
 
   const handleDelete = () => {
     const pathToDelete = selectedNodeKey || selectedFile;
-    if (!id || !pathToDelete) return;
+    if (!id || !pathToDelete || isPreset) return;
     Modal.confirm({
       title: t('settings.skills.editor.deleteConfirm', { defaultValue: 'Delete?' }),
       content: t('settings.skills.editor.deleteConfirmContent', { path: pathToDelete, defaultValue: `Delete ${pathToDelete}?` }),
@@ -333,23 +334,37 @@ const SkillEditor: React.FC = () => {
         body: { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }
       }}
     >
+      {isPreset ? (
+        <Alert
+          type="info"
+          showIcon
+          style={{ marginBottom: 12 }}
+          message={t('settings.skills.editor.presetReadOnly', {
+            defaultValue: 'This is a built-in skill. Files are read-only; use Preview to view content.',
+          })}
+        />
+      ) : null}
       <div style={{ display: 'flex', gap: 16, flex: 1, minHeight: 0 }}>
         <div style={{ width: 260, border: '1px solid #d9d9d9', borderRadius: 8, padding: 8, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           <Space style={{ marginBottom: 8, flexShrink: 0 }}>
-            <Button size="small" icon={<PlusOutlined />} onClick={() => setNewFileModal(true)}>{t('settings.skills.editor.file', { defaultValue: 'File' })}</Button>
-            <Button size="small" icon={<FolderOutlined />} onClick={() => setNewDirModal(true)}>{t('settings.skills.editor.folder', { defaultValue: 'Folder' })}</Button>
+            <Button size="small" icon={<PlusOutlined />} disabled={isPreset} onClick={() => setNewFileModal(true)}>
+              {t('settings.skills.editor.file', { defaultValue: 'File' })}
+            </Button>
+            <Button size="small" icon={<FolderOutlined />} disabled={isPreset} onClick={() => setNewDirModal(true)}>
+              {t('settings.skills.editor.folder', { defaultValue: 'Folder' })}
+            </Button>
           </Space>
           {filesLoading ? <div>{t('settings.skills.editor.loading', { defaultValue: 'Loading...' })}</div> : (
             <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
               <Tree
                 showIcon
                 blockNode
-                draggable
+                draggable={!isPreset}
                 expandedKeys={expandedKeys}
                 onExpand={(keys) => setExpandedKeys(keys)}
                 selectedKeys={selectedNodeKey ? [selectedNodeKey] : []}
                 onSelect={onTreeSelect}
-                onRightClick={onTreeRightClick}
+                onRightClick={isPreset ? undefined : onTreeRightClick}
                 onDrop={handleDrop}
                 className={styles.fileTree}
                 treeData={treeDataNodes}
@@ -362,14 +377,19 @@ const SkillEditor: React.FC = () => {
             <>
               <Space style={{ marginBottom: 8, flexShrink: 0 }}>
                 <span>{selectedFile}</span>
-                <Button type="primary" icon={<SaveOutlined />} disabled={!dirty} onClick={handleSave}>{t('settings.skills.editor.save', { defaultValue: 'Save' })}</Button>
-                <Button danger icon={<DeleteOutlined />} onClick={handleDelete}>{t('settings.skills.editor.delete', { defaultValue: 'Delete' })}</Button>
+                <Button type="primary" icon={<SaveOutlined />} disabled={isPreset || !dirty} onClick={handleSave}>
+                  {t('settings.skills.editor.save', { defaultValue: 'Save' })}
+                </Button>
+                <Button danger icon={<DeleteOutlined />} disabled={isPreset} onClick={handleDelete}>
+                  {t('settings.skills.editor.delete', { defaultValue: 'Delete' })}
+                </Button>
               </Space>
               {isMarkdownFile(selectedFile) ? (
                 <div style={{ flex: 1, minHeight: 0, minWidth: 0, display: 'flex', gap: 16 }}>
                   <div style={{ flex: 1, minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                     <TextArea
                       value={content}
+                      readOnly={isPreset}
                       onChange={(e) => { setContent(e.target.value); setDirty(true); }}
                       style={{ flex: 1, minHeight: 0, fontFamily: 'monospace', resize: 'none' }}
                       spellCheck={false}
@@ -382,6 +402,7 @@ const SkillEditor: React.FC = () => {
               ) : (
                 <TextArea
                   value={content}
+                  readOnly={isPreset}
                   onChange={(e) => { setContent(e.target.value); setDirty(true); }}
                   style={{ flex: 1, minHeight: 0, fontFamily: 'monospace', resize: 'none' }}
                   spellCheck={false}
@@ -389,7 +410,11 @@ const SkillEditor: React.FC = () => {
               )}
             </>
           )}
-          {!selectedFile && <div style={{ color: '#999' }}>{t('settings.skills.editor.selectFileToEdit', { defaultValue: 'Select a file to edit' })}</div>}
+          {!selectedFile && (
+            <div style={{ color: '#999' }}>
+              {t('settings.skills.editor.selectFileToEdit', { defaultValue: 'Select a file to edit' })}
+            </div>
+          )}
         </div>
       </div>
 

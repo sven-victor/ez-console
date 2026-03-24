@@ -5188,6 +5188,60 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/skills/{id}/status": {
+            "put": {
+                "description": "Set skill status to enabled or disabled",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Skills"
+                ],
+                "summary": "Update skill status",
+                "operationId": "updateSkillStatus",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Skill ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.UpdateSkillStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_Skill"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/smtp-settings": {
             "get": {
                 "security": [
@@ -8786,7 +8840,10 @@ const docTemplate = `{
                 "description",
                 "domain",
                 "id",
+                "is_preset",
                 "name",
+                "preset_key",
+                "status",
                 "updated_at"
             ],
             "properties": {
@@ -8805,8 +8862,17 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_preset": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "preset_key": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/model.SkillStatus"
                 },
                 "updated_at": {
                     "type": "string"
@@ -8847,6 +8913,17 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.SkillStatus": {
+            "type": "string",
+            "enum": [
+                "enabled",
+                "disabled"
+            ],
+            "x-enum-varnames": [
+                "SkillStatusEnabled",
+                "SkillStatusDisabled"
+            ]
         },
         "model.StatementEntry": {
             "type": "object",
@@ -9139,8 +9216,10 @@ const docTemplate = `{
                 "created_by",
                 "description",
                 "id",
+                "is_preset",
                 "name",
                 "organization_id",
+                "preset_key",
                 "status",
                 "tools",
                 "type",
@@ -9166,12 +9245,20 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "is_preset": {
+                    "description": "Created/managed by preset sync (immutable metadata)",
+                    "type": "boolean"
+                },
                 "name": {
                     "description": "Toolset name",
                     "type": "string"
                 },
                 "organization_id": {
                     "description": "Organization ID",
+                    "type": "string"
+                },
+                "preset_key": {
+                    "description": "Stable key within an org (e.g. utils)",
                     "type": "string"
                 },
                 "status": {
@@ -10626,6 +10713,17 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.UpdateSkillStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/model.SkillStatus"
+                }
+            }
+        },
         "systemapi.UpdateToolSetRequest": {
             "type": "object",
             "required": [
@@ -10694,6 +10792,22 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
                 1,
                 1000,
                 1000000,
@@ -10702,6 +10816,22 @@ const docTemplate = `{
                 3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",

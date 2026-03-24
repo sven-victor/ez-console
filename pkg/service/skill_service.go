@@ -18,6 +18,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -37,6 +38,13 @@ import (
 const (
 	skillMainFile    = "SKILL.md"
 	skillMainFileAlt = "SKILLS.md"
+)
+
+var (
+	// ErrPresetSkillReadOnly is returned when mutating a built-in preset skill via the API.
+	ErrPresetSkillReadOnly = errors.New("preset skills cannot be modified or deleted")
+	// ErrSkillDisabled is returned when loading skill content for a disabled skill.
+	ErrSkillDisabled = errors.New("skill is disabled")
 )
 
 // defaultSkillDomains is the initial list of skill domains (returned by ListDomains).
@@ -521,6 +529,13 @@ func (s *SkillService) CloneSkill(ctx context.Context, sourceSkillID string, new
 }
 
 func (s *SkillService) UpdateSkillFrontmatter(ctx context.Context, skill *model.Skill) error {
+	existing, err := s.GetByID(ctx, skill.ResourceID)
+	if err != nil {
+		return err
+	}
+	if existing.IsPreset {
+		return ErrPresetSkillReadOnly
+	}
 	_, skillFs, err := s.getSkillFs(ctx, skill.ResourceID)
 	if err != nil {
 		return err
@@ -542,9 +557,42 @@ func (s *SkillService) UpdateSkillFrontmatter(ctx context.Context, skill *model.
 	return fmt.Errorf("failed to update skill frontmatter")
 }
 
+// EnsurePresetSkillMarkdown writes SKILL.md from markdown only when the file is missing (startup repair / initial body).
+func (s *SkillService) EnsurePresetSkillMarkdown(ctx context.Context, skillID string, markdown string) error {
+	if markdown == "" {
+		return nil
+	}
+	_, skillFs, err := s.getSkillFs(ctx, skillID)
+	if err != nil {
+		return err
+	}
+	if _, err := afero.ReadFile(skillFs, skillMainFile); err == nil {
+		return nil
+	}
+	return afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644)
+}
+
+// UpdateSkillStatus sets skill enabled/disabled (allowed for preset skills).
+func (s *SkillService) UpdateSkillStatus(ctx context.Context, id string, status model.SkillStatus) error {
+	if status != model.SkillStatusEnabled && status != model.SkillStatusDisabled {
+		return fmt.Errorf("invalid skill status")
+	}
+	if _, err := s.GetByID(ctx, id); err != nil {
+		return err
+	}
+	return db.Session(ctx).Model(&model.Skill{}).Where("resource_id = ?", id).Update("status", status).Error
+}
+
 // Update updates skill metadata (name, description, category, domain) and syncs them to SKILL.md/SKILLS.md.
 // Only these four fields are updated in the file; other frontmatter keys (e.g. license) are preserved.
 func (s *SkillService) Update(ctx context.Context, skill *model.Skill) error {
+	existing, err := s.GetByID(ctx, skill.ResourceID)
+	if err != nil {
+		return err
+	}
+	if existing.IsPreset {
+		return ErrPresetSkillReadOnly
+	}
 	if err := db.Session(ctx).Model(skill).Updates(map[string]interface{}{
 		"name":        skill.Name,
 		"description": skill.Description,
@@ -561,6 +609,9 @@ func (s *SkillService) Delete(ctx context.Context, id string) error {
 	skill, err := s.GetByID(ctx, id)
 	if err != nil {
 		return err
+	}
+	if skill.IsPreset {
+		return ErrPresetSkillReadOnly
 	}
 	fs := s.getSkillsRootFs()
 	if err := fs.RemoveAll(skill.ResourceID); err != nil {
@@ -592,6 +643,9 @@ func (s *SkillService) GetSkillContent(ctx context.Context, skillID string) (str
 	skill, skillFs, err := s.getSkillFs(ctx, skillID)
 	if err != nil {
 		return "", err
+	}
+	if !model.SkillIsEnabled(skill) {
+		return "", ErrSkillDisabled
 	}
 
 	var parts []string
@@ -731,9 +785,12 @@ func (s *SkillService) ListFiles(ctx context.Context, skillID, relativePath stri
 
 // GetFile returns the content of a file under the skill. Path must be relative; only .md and .txt allowed.
 func (s *SkillService) GetFile(ctx context.Context, skillID, relativePath string) ([]byte, error) {
-	_, skillFs, err := s.getSkillFs(ctx, skillID)
+	skill, skillFs, err := s.getSkillFs(ctx, skillID)
 	if err != nil {
 		return nil, err
+	}
+	if !model.SkillIsEnabled(skill) {
+		return nil, ErrSkillDisabled
 	}
 	path, err := validateSkillPath(relativePath, true)
 	if err != nil {
@@ -748,6 +805,9 @@ func (s *SkillService) PutFile(ctx context.Context, skillID, relativePath string
 	skill, skillFs, err := s.getSkillFs(ctx, skillID)
 	if err != nil {
 		return err
+	}
+	if skill.IsPreset {
+		return ErrPresetSkillReadOnly
 	}
 	path, err := validateSkillPath(relativePath, true)
 	if err != nil {
@@ -779,9 +839,12 @@ func (s *SkillService) PutFile(ctx context.Context, skillID, relativePath string
 
 // CreateDir creates a subdirectory under the skill. Path must be relative and must not escape.
 func (s *SkillService) CreateDir(ctx context.Context, skillID, relativePath string) error {
-	_, skillFs, err := s.getSkillFs(ctx, skillID)
+	skill, skillFs, err := s.getSkillFs(ctx, skillID)
 	if err != nil {
 		return err
+	}
+	if skill.IsPreset {
+		return ErrPresetSkillReadOnly
 	}
 	path, err := validateSkillPath(relativePath, false)
 	if err != nil {
@@ -816,9 +879,12 @@ func removeDirRecursive(fs afero.Fs, path string) error {
 
 // DeletePath deletes a file or directory. For directories, removes recursively. Root and ".." are forbidden.
 func (s *SkillService) DeletePath(ctx context.Context, skillID, relativePath string) error {
-	_, skillFs, err := s.getSkillFs(ctx, skillID)
+	skill, skillFs, err := s.getSkillFs(ctx, skillID)
 	if err != nil {
 		return err
+	}
+	if skill.IsPreset {
+		return ErrPresetSkillReadOnly
 	}
 	path, err := validateSkillPath(relativePath, false)
 	if err != nil {
@@ -840,9 +906,12 @@ func (s *SkillService) DeletePath(ctx context.Context, skillID, relativePath str
 // MovePath moves a file or directory from fromPath to toPath within the same skill. Rename is supported (same parent, new name).
 // Rejects if toPath is under fromPath or if target already exists.
 func (s *SkillService) MovePath(ctx context.Context, skillID, fromPath, toPath string) error {
-	_, skillFs, err := s.getSkillFs(ctx, skillID)
+	skill, skillFs, err := s.getSkillFs(ctx, skillID)
 	if err != nil {
 		return err
+	}
+	if skill.IsPreset {
+		return ErrPresetSkillReadOnly
 	}
 	from, err := validateSkillPath(fromPath, false)
 	if err != nil {
@@ -949,6 +1018,9 @@ func (s *SkillService) LoadSkillsForDomains(ctx context.Context, domains []strin
 	}
 	var parts []string
 	for _, sk := range skills {
+		if !model.SkillIsEnabled(&sk) {
+			continue
+		}
 		content, err := s.GetSkillContent(ctx, sk.ResourceID)
 		if err != nil {
 			continue
@@ -992,6 +1064,9 @@ func (s *SkillService) LoadSkillsByIDs(ctx context.Context, ids []string) (strin
 		if !ok {
 			continue
 		}
+		if !model.SkillIsEnabled(sk) {
+			continue
+		}
 		content, err := s.GetSkillContent(ctx, sk.ResourceID)
 		if err != nil {
 			continue
@@ -1016,6 +1091,9 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 		if err != nil {
 			continue
 		}
+		if !model.SkillIsEnabled(sk) {
+			continue
+		}
 		seen[sk.ResourceID] = true
 		ordered = append(ordered, sk)
 	}
@@ -1033,6 +1111,9 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 	for i := range domainSkills {
 		sk := &domainSkills[i]
 		if seen[sk.ResourceID] {
+			continue
+		}
+		if !model.SkillIsEnabled(sk) {
 			continue
 		}
 		seen[sk.ResourceID] = true
@@ -1069,6 +1150,13 @@ func (s *SkillService) LoadSkillsForChat(ctx context.Context, domains []string, 
 		if id == "" || seen[id] {
 			continue
 		}
+		sk, err := s.GetByID(ctx, id)
+		if err != nil {
+			continue
+		}
+		if !model.SkillIsEnabled(sk) {
+			continue
+		}
 		seen[id] = true
 		ordered = append(ordered, id)
 	}
@@ -1086,6 +1174,9 @@ func (s *SkillService) LoadSkillsForChat(ctx context.Context, domains []string, 
 	}
 	for _, sk := range domainSkills {
 		if seen[sk.ResourceID] {
+			continue
+		}
+		if !model.SkillIsEnabled(&sk) {
 			continue
 		}
 		seen[sk.ResourceID] = true

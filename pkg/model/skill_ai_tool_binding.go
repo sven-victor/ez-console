@@ -6,7 +6,7 @@
 package model
 
 // SkillAIToolBinding links a skill to AI tools (per organization), mirroring RoleAIToolPermission semantics.
-// ToolSetID is the toolset resource_id or "*" for any authorized toolset in the org.
+// ToolSetID is the toolset resource_id, the toolset implementation type (e.g. "utils"), or "*" for any authorized toolset in the org.
 // ToolName is the logical tool name (as in role AI permissions) or "*" for all tools in the matched toolset.
 type SkillAIToolBinding struct {
 	Base

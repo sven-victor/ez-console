@@ -186,7 +186,7 @@ async function $(t, a) {
     }
   );
 }
-async function q(t, a) {
+async function j(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/organizations/${n}/users`,
@@ -203,7 +203,7 @@ async function q(t, a) {
     }
   );
 }
-async function j(t, a, n) {
+async function q(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/organizations/${e}/users`,
@@ -466,13 +466,38 @@ async function Q(t, a) {
     }
   );
 }
-async function V(t) {
+async function V(t, a, n) {
+  const { id: e, ...i } = t;
+  return s(
+    `/api/system/skills/${e}/status`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...i },
+      data: a,
+      ...n || {}
+    }
+  );
+}
+async function W(t, a) {
+  return s("/api/system/skills/clone", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: t,
+    ...a || {}
+  });
+}
+async function X(t) {
   return s("/api/system/skills/domains", {
     method: "GET",
     ...t || {}
   });
 }
-async function W(t, a, n) {
+async function Y(t, a, n) {
   const e = new FormData();
   return a && e.append("file", a), Object.keys(t).forEach((i) => {
     const o = t[i];
@@ -484,13 +509,13 @@ async function W(t, a, n) {
     ...n || {}
   });
 }
-async function X(t) {
+async function Z(t) {
   return s("/api/system/smtp-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function Y(t, a) {
+async function tt(t, a) {
   return s("/api/system/smtp-settings", {
     method: "PUT",
     headers: {
@@ -500,7 +525,7 @@ async function Y(t, a) {
     ...a || {}
   });
 }
-async function Z(t, a) {
+async function at(t, a) {
   return s(
     "/api/system/smtp-settings/test",
     {
@@ -513,13 +538,13 @@ async function Z(t, a) {
     }
   );
 }
-async function tt(t) {
+async function st(t) {
   return s("/api/system/task-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function at(t, a) {
+async function et(t, a) {
   return s("/api/system/task-settings", {
     method: "PUT",
     headers: {
@@ -529,7 +554,7 @@ async function at(t, a) {
     ...a || {}
   });
 }
-async function st(t) {
+async function nt(t) {
   return s(
     "/api/system/task-settings/log-storage-backends",
     {
@@ -538,7 +563,7 @@ async function st(t) {
     }
   );
 }
-async function et(t, a) {
+async function it(t, a) {
   return s("/api/system/toolsets", {
     method: "GET",
     params: {
@@ -551,7 +576,7 @@ async function et(t, a) {
     ...a || {}
   });
 }
-async function nt(t, a) {
+async function ot(t, a) {
   return s("/api/system/toolsets", {
     method: "POST",
     headers: {
@@ -561,7 +586,7 @@ async function nt(t, a) {
     ...a || {}
   });
 }
-async function it(t, a) {
+async function rt(t, a) {
   const { id: n, ...e } = t;
   return s(`/api/system/toolsets/${n}`, {
     method: "GET",
@@ -569,7 +594,7 @@ async function it(t, a) {
     ...a || {}
   });
 }
-async function ot(t, a, n) {
+async function pt(t, a, n) {
   const { id: e, ...i } = t;
   return s(`/api/system/toolsets/${e}`, {
     method: "PUT",
@@ -581,7 +606,7 @@ async function ot(t, a, n) {
     ...n || {}
   });
 }
-async function rt(t, a) {
+async function mt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}`,
@@ -592,7 +617,7 @@ async function rt(t, a) {
     }
   );
 }
-async function pt(t, a, n) {
+async function ct(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/toolsets/${e}/status`,
@@ -607,7 +632,7 @@ async function pt(t, a, n) {
     }
   );
 }
-async function mt(t, a) {
+async function ut(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/test`,
@@ -618,7 +643,7 @@ async function mt(t, a) {
     }
   );
 }
-async function ct(t, a) {
+async function yt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/tools`,
@@ -629,7 +654,7 @@ async function ct(t, a) {
     }
   );
 }
-async function ut(t) {
+async function dt(t) {
   return s(
     "/api/system/toolsets/types",
     {
@@ -638,18 +663,19 @@ async function ut(t) {
     }
   );
 }
-const dt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ht = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  addUserToOrganization: j,
+  addUserToOrganization: q,
   checkPasswordComplexity: L,
+  cloneSkill: W,
   createOrganization: E,
   createSkill: F,
   createSkillDir: J,
-  createToolSet: nt,
+  createToolSet: ot,
   deleteOrganization: $,
   deleteSkill: A,
   deleteSkillPath: H,
-  deleteToolSet: rt,
+  deleteToolSet: mt,
   getAuditLogs: m,
   getLdapSettings: l,
   getOauthSettings: g,
@@ -658,24 +684,24 @@ const dt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getSiteConfig: D,
   getSkill: w,
   getSkillFile: N,
-  getSmtpSettings: X,
+  getSmtpSettings: Z,
   getSystemBaseSettings: c,
   getSystemInfo: d,
-  getTaskSettings: tt,
-  getToolSet: it,
-  getToolSetTools: ct,
-  getToolSetTypeDefinitions: ut,
+  getTaskSettings: st,
+  getToolSet: rt,
+  getToolSetTools: yt,
+  getToolSetTypeDefinitions: dt,
   getUserOrganizations: U,
   healthCheck: y,
   importLdapUsers: T,
-  listLogStorageBackends: st,
-  listOrganizationUsers: q,
+  listLogStorageBackends: nt,
+  listOrganizationUsers: j,
   listOrganizations: k,
   listSkillAiToolBindings: x,
-  listSkillDomains: V,
+  listSkillDomains: X,
   listSkillFilesTree: M,
   listSkills: v,
-  listToolSets: et,
+  listToolSets: it,
   moveSkillPath: K,
   previewSkill: Q,
   putSkillFile: R,
@@ -684,27 +710,28 @@ const dt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   testLdapConnection: p,
   testOauthCallback: P,
   testOauthConnection: S,
-  testSmtpConnection: Z,
-  testToolSet: mt,
+  testSmtpConnection: at,
+  testToolSet: ut,
   updateLdapSettings: h,
   updateOauthSettings: f,
   updateOrganization: O,
   updateSecuritySettings: b,
   updateSkill: B,
-  updateSmtpSettings: Y,
+  updateSkillStatus: V,
+  updateSmtpSettings: tt,
   updateSystemBaseSettings: u,
-  updateTaskSettings: at,
-  updateToolSet: ot,
-  updateToolSetStatus: pt,
+  updateTaskSettings: et,
+  updateToolSet: pt,
+  updateToolSetStatus: ct,
   updateUserOrganizationRoles: G,
-  uploadSkill: W
+  uploadSkill: Y
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  dt as a,
-  q as b,
+  ht as a,
+  j as b,
   E as c,
   $ as d,
-  j as e,
+  q as e,
   G as f,
   C as g,
   k as l,

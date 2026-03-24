@@ -47,6 +47,7 @@ func (c *SkillController) RegisterRoutes(router *gin.RouterGroup) {
 		skills.GET("/:id/ai-tool-bindings", middleware.RequirePermission("system:skills:view"), c.ListSkillAIToolBindings)
 		skills.PUT("/:id/ai-tool-bindings", middleware.RequirePermission("system:skills:update"), c.ReplaceSkillAIToolBindings)
 		skills.GET("/:id", middleware.RequirePermission("system:skills:view"), c.GetSkill)
+		skills.PUT("/:id/status", middleware.RequirePermission("system:skills:update"), c.UpdateSkillStatus)
 		skills.PUT("/:id", middleware.RequirePermission("system:skills:update"), c.UpdateSkill)
 		skills.DELETE("/:id", middleware.RequirePermission("system:skills:delete"), c.DeleteSkill)
 		skills.POST("/upload", middleware.RequirePermission("system:skills:create"), c.UploadSkill)
@@ -86,7 +87,12 @@ type UpdateSkillRequest struct {
 	Domain      string `json:"domain"`
 }
 
-// SkillAIToolBindingItem is one tool binding for a skill (toolset resource_id or "*", tool name or "*").
+// UpdateSkillStatusRequest sets enabled or disabled for a skill (allowed for preset skills).
+type UpdateSkillStatusRequest struct {
+	Status model.SkillStatus `json:"status" binding:"required"`
+}
+
+// SkillAIToolBindingItem is one tool binding for a skill (toolset resource_id, toolset type such as "utils", "*", tool name or "*").
 type SkillAIToolBindingItem struct {
 	ToolSetID string `json:"toolset_id" binding:"required"`
 	ToolName  string `json:"tool_name" binding:"required"`
@@ -254,6 +260,43 @@ func (c *SkillController) CloneSkill(ctx *gin.Context) {
 	util.RespondWithSuccess(ctx, http.StatusCreated, created)
 }
 
+// UpdateSkillStatus sets skill enabled or disabled (including preset skills).
+//
+//	@Summary		Update skill status
+//	@Description	Set skill status to enabled or disabled
+//	@ID             updateSkillStatus
+//	@Tags			System Settings/Skills
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string					true	"Skill ID"
+//	@Param			request	body		UpdateSkillStatusRequest	true	"Status"
+//	@Success		200		{object}	util.Response[model.Skill]
+//	@Failure		400		{object}	util.ErrorResponse
+//	@Failure		500		{object}	util.ErrorResponse
+//	@Router			/api/system/skills/{id}/status [put]
+func (c *SkillController) UpdateSkillStatus(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
+		return
+	}
+	var req UpdateSkillStatusRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+	if err := c.service.SkillService.UpdateSkillStatus(ctx, id, req.Status); err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	skill, err := c.service.SkillService.GetByID(ctx, id)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, skill)
+}
+
 // UpdateSkill updates skill metadata
 //
 //	@Summary		Update skill
@@ -282,6 +325,10 @@ func (c *SkillController) UpdateSkill(ctx *gin.Context) {
 	skill, err := c.service.SkillService.GetByID(ctx, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	if skill.IsPreset {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Preset skills cannot be modified"))
 		return
 	}
 	skill.Name = req.Name
@@ -316,6 +363,15 @@ func (c *SkillController) DeleteSkill(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
+		return
+	}
+	skill, err := c.service.SkillService.GetByID(ctx, id)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	if skill.IsPreset {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Preset skills cannot be deleted"))
 		return
 	}
 	if err := c.service.SkillService.Delete(ctx, id); err != nil {

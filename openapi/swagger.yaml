@@ -1768,8 +1768,14 @@ definitions:
         type: string
       id:
         type: string
+      is_preset:
+        type: boolean
       name:
         type: string
+      preset_key:
+        type: string
+      status:
+        $ref: '#/definitions/model.SkillStatus'
       updated_at:
         type: string
     required:
@@ -1778,7 +1784,10 @@ definitions:
     - description
     - domain
     - id
+    - is_preset
     - name
+    - preset_key
+    - status
     - updated_at
     type: object
   model.SkillAIToolBinding:
@@ -1806,6 +1815,14 @@ definitions:
     - toolset_id
     - updated_at
     type: object
+  model.SkillStatus:
+    enum:
+    - enabled
+    - disabled
+    type: string
+    x-enum-varnames:
+    - SkillStatusEnabled
+    - SkillStatusDisabled
   model.StatementEntry:
     properties:
       Action:
@@ -2029,11 +2046,17 @@ definitions:
         type: string
       id:
         type: string
+      is_preset:
+        description: Created/managed by preset sync (immutable metadata)
+        type: boolean
       name:
         description: Toolset name
         type: string
       organization_id:
         description: Organization ID
+        type: string
+      preset_key:
+        description: Stable key within an org (e.g. utils)
         type: string
       status:
         allOf:
@@ -2059,8 +2082,10 @@ definitions:
     - created_by
     - description
     - id
+    - is_preset
     - name
     - organization_id
+    - preset_key
     - status
     - tools
     - type
@@ -3072,6 +3097,13 @@ definitions:
     - domain
     - name
     type: object
+  systemapi.UpdateSkillStatusRequest:
+    properties:
+      status:
+        $ref: '#/definitions/model.SkillStatus'
+    required:
+    - status
+    type: object
   systemapi.UpdateToolSetRequest:
     properties:
       config:
@@ -3122,6 +3154,22 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     - 1
     - 1000
     - 1000000
@@ -3130,6 +3178,22 @@ definitions:
     - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -7740,6 +7804,42 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Preview skill
+      tags:
+      - System Settings/Skills
+  /api/system/skills/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Set skill status to enabled or disabled
+      operationId: updateSkillStatus
+      parameters:
+      - description: Skill ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.UpdateSkillStatusRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_Skill'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update skill status
       tags:
       - System Settings/Skills
   /api/system/skills/clone:

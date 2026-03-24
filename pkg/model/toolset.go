@@ -38,6 +38,13 @@ const (
 	ToolSetStatusDisabled ToolSetStatus = "disabled"
 )
 
+// ToolSetConfigKeyDisabledTools lists logical tool names (as returned by the toolset implementation)
+// to hide from the model and block execution. Used for preset/built-in toolsets.
+const ToolSetConfigKeyDisabledTools = "disabled_tools"
+
+// PresetSystemActorID is stored as created_by/updated_by for rows synced from code.
+const PresetSystemActorID = "00000000-0000-0000-0000-000000000001"
+
 // ToolSetConfig represents the configuration for an AI toolset
 type ToolSetConfig map[string]interface{}
 
@@ -73,6 +80,8 @@ type ToolSet struct {
 	Type           toolset.ToolSetType `gorm:"size:50;not null" json:"type" binding:"required"`  // Toolset type (mcp, etc.)
 	Config         ToolSetConfig       `gorm:"type:text" json:"config" swaggertype:"object"`     // Additional configuration
 	Status         ToolSetStatus       `gorm:"size:20;not null;default:'enabled'" json:"status"` // Status
+	IsPreset       bool                `gorm:"not null;default:false" json:"is_preset"`          // Created/managed by preset sync (immutable metadata)
+	PresetKey      string              `gorm:"size:64" json:"preset_key,omitempty"`             // Stable key within an org (e.g. utils)
 	CreatedBy      string              `gorm:"size:36;not null" json:"created_by"`               // Creator user ID
 	UpdatedBy      string              `gorm:"size:36" json:"updated_by"`                        // Last updater user ID
 	Tools          []ToolDefinition    `gorm:"-" json:"tools,omitempty"`                         // Available tools (runtime only)

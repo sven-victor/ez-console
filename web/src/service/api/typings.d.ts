@@ -1820,7 +1820,10 @@ declare global {
       description: string;
       domain: string;
       id: string;
+      is_preset: boolean;
       name: string;
+      preset_key: string;
+      status: SkillStatus;
       updated_at: string;
     }
   
@@ -1838,6 +1841,8 @@ declare global {
       tool_name: string;
       toolset_id: string;
     }
+  
+    type SkillStatus = "enabled" | "disabled";
   
     interface SkillTreeNode {
       children: SkillTreeNode[];
@@ -2041,10 +2046,14 @@ declare global {
       /** Toolset description */
       description: string;
       id: string;
+      /** Created/managed by preset sync (immutable metadata) */
+      is_preset: boolean;
       /** Toolset name */
       name: string;
       /** Organization ID */
       organization_id: string;
+      /** Stable key within an org (e.g. utils) */
+      preset_key: string;
       /** Status */
       status: ToolSetStatus;
       /** Available tools (runtime only) */
@@ -2223,6 +2232,15 @@ declare global {
       description: string;
       domain: string;
       name: string;
+    }
+  
+    interface updateSkillStatusParams {
+      /** Skill ID */
+      id: string;
+    }
+  
+    interface UpdateSkillStatusRequest {
+      status: SkillStatus;
     }
   
     interface updateToolSetParams {

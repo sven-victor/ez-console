@@ -46,8 +46,12 @@ func (s *SkillService) ReplaceSkillAIToolBindings(ctx context.Context, skillID, 
 	if skillID == "" {
 		return fmt.Errorf("skill id is required")
 	}
-	if _, err := s.GetByID(ctx, skillID); err != nil {
+	sk, err := s.GetByID(ctx, skillID)
+	if err != nil {
 		return fmt.Errorf("skill not found: %w", err)
+	}
+	if sk.IsPreset {
+		return fmt.Errorf("preset skills use system-managed AI tool bindings and cannot be replaced")
 	}
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("skill_id = ? AND organization_id = ?", skillID, organizationID).Unscoped().Delete(&model.SkillAIToolBinding{}).Error; err != nil {

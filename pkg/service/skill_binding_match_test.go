@@ -18,19 +18,34 @@ func TestSkillBindingMatches(t *testing.T) {
 		{ToolSetID: "ts-2", ToolName: "ping"},
 	}
 
-	if !SkillBindingMatches(bindings, "any-ts", "sleep") {
+	if !SkillBindingMatches(bindings, "any-ts", "", "sleep") {
 		t.Fatal("expected *:sleep to match any toolset")
 	}
-	if !SkillBindingMatches(bindings, "ts-1", "anything") {
+	if !SkillBindingMatches(bindings, "ts-1", "", "anything") {
 		t.Fatal("expected ts-1:* to match any tool name")
 	}
-	if !SkillBindingMatches(bindings, "ts-2", "ping") {
+	if !SkillBindingMatches(bindings, "ts-2", "", "ping") {
 		t.Fatal("expected concrete binding to match")
 	}
-	if SkillBindingMatches(bindings, "ts-2", "other") {
+	if SkillBindingMatches(bindings, "ts-2", "", "other") {
 		t.Fatal("expected no match for wrong tool name")
 	}
-	if !SkillBindingMatches(bindings, "ts-3", "sleep") {
+	if !SkillBindingMatches(bindings, "ts-3", "", "sleep") {
 		t.Fatal("expected *:sleep to match any toolset with tool sleep")
+	}
+}
+
+func TestSkillBindingMatchesByToolSetType(t *testing.T) {
+	bindings := []model.SkillAIToolBinding{
+		{ToolSetID: "utils", ToolName: "sleep"},
+	}
+	if !SkillBindingMatches(bindings, "uuid-of-utils-row", "utils", "sleep") {
+		t.Fatal("expected toolset type utils to match binding toolset_id utils")
+	}
+	if SkillBindingMatches(bindings, "other-uuid", "mcp", "sleep") {
+		t.Fatal("expected no match for wrong toolset type")
+	}
+	if !SkillBindingMatches(bindings, "other-uuid", "utils", "sleep") {
+		t.Fatal("expected type match even when resource id differs")
 	}
 }

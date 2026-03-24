@@ -183,6 +183,10 @@ export declare interface AIModel {
     id: string;
     /** Whether this is the default model */
     is_default: boolean;
+    /** Max tool-call iterations; 0 uses client default */
+    max_chat_iterations: number;
+    /** Context window for auto-summarization; 0 uses config fallback only */
+    max_chat_tokens: number;
     /** Model name */
     name: string;
     /** Organization ID */
@@ -387,6 +391,12 @@ export declare const api: {
     previewSkill(params: API.previewSkillParams, options?: {
         [key: string]: any;
     }): Promise<API.PreviewSkillResponse>;
+    updateSkillStatus(params: API.updateSkillStatusParams, body: API.UpdateSkillStatusRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.Skill>;
+    cloneSkill(body: API.CloneSkillRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.Skill>;
     listSkillDomains(options?: {
         [key: string]: any;
     }): Promise<string[]>;
@@ -804,12 +814,22 @@ export declare interface ClientToolResult {
     tool_call_id: string;
 }
 
+export declare interface CloneSkillRequest {
+    category: string;
+    description: string;
+    domain: string;
+    name: string;
+    source_id: string;
+}
+
 export declare type Condition = true;
 
 export declare interface CreateAIModelRequest {
     config: Record<string, any>;
     description?: string;
     is_default?: boolean;
+    max_chat_iterations?: number;
+    max_chat_tokens?: number;
     name: string;
     provider: AIModelProvider;
 }
@@ -2601,7 +2621,10 @@ export declare interface Skill {
     description: string;
     domain: string;
     id: string;
+    is_preset: boolean;
     name: string;
+    preset_key: string;
+    status: SkillStatus;
     updated_at: string;
 }
 
@@ -2619,6 +2642,8 @@ export declare interface SkillAIToolBindingItem {
     tool_name: string;
     toolset_id: string;
 }
+
+export declare type SkillStatus = "enabled" | "disabled";
 
 export declare interface SkillTreeNode {
     children: SkillTreeNode[];
@@ -2862,10 +2887,14 @@ export declare interface ToolSet {
     /** Toolset description */
     description: string;
     id: string;
+    /** Created/managed by preset sync (immutable metadata) */
+    is_preset: boolean;
     /** Toolset name */
     name: string;
     /** Organization ID */
     organization_id: string;
+    /** Stable key within an org (e.g. utils) */
+    preset_key: string;
     /** Status */
     status: ToolSetStatus;
     /** Available tools (runtime only) */
@@ -2914,6 +2943,8 @@ export declare interface UpdateAIModelRequest {
     config?: Record<string, any>;
     description?: string;
     is_default?: boolean;
+    max_chat_iterations?: number;
+    max_chat_tokens?: number;
     name: string;
     provider: AIModelProvider;
     status?: AIModelStatus;
@@ -3042,6 +3073,15 @@ export declare interface UpdateSkillRequest {
     description: string;
     domain: string;
     name: string;
+}
+
+export declare interface updateSkillStatusParams {
+    /** Skill ID */
+    id: string;
+}
+
+export declare interface UpdateSkillStatusRequest {
+    status: SkillStatus;
 }
 
 export declare interface updateToolSetParams {

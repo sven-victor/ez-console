@@ -71,11 +71,48 @@ func (s *ToolSetService) UpdateToolSet(ctx context.Context, organizationID, id s
 		return nil, fmt.Errorf("failed to find toolset: %w", err)
 	}
 
+	if existingToolSet.IsPreset {
+		return s.updatePresetToolSet(ctx, organizationID, &existingToolSet, req)
+	}
+
 	if err := conn.Model(&model.ToolSet{}).Where("resource_id = ?", id).Select("config", "name", "description", "type", "status").Updates(req).Error; err != nil {
 		return nil, fmt.Errorf("failed to update toolset: %w", err)
 	}
 
 	return req, nil
+}
+
+// updatePresetToolSet only updates config (e.g. disabled_tools) and status; name/type/description stay managed by sync.
+func (s *ToolSetService) updatePresetToolSet(ctx context.Context, organizationID string, existing, req *model.ToolSet) (*model.ToolSet, error) {
+	merged := make(model.ToolSetConfig)
+	if existing.Config != nil {
+		for k, v := range existing.Config {
+			merged[k] = v
+		}
+	}
+	if req.Config != nil {
+		for k, v := range req.Config {
+			merged[k] = v
+		}
+	}
+	status := existing.Status
+	if req.Status != "" {
+		status = req.Status
+	}
+	updates := map[string]interface{}{
+		"config":     merged,
+		"status":     status,
+		"updated_by": req.UpdatedBy,
+	}
+	if err := db.Session(ctx).Model(&model.ToolSet{}).Where("organization_id = ? AND resource_id = ?", organizationID, existing.ResourceID).Updates(updates).Error; err != nil {
+		return nil, fmt.Errorf("failed to update preset toolset: %w", err)
+	}
+	existing.Config = merged
+	existing.Status = status
+	if req.UpdatedBy != "" {
+		existing.UpdatedBy = req.UpdatedBy
+	}
+	return existing, nil
 }
 
 // UpdateToolSetStatus updates a toolset's status
@@ -98,6 +135,9 @@ func (s *ToolSetService) DeleteToolSet(ctx context.Context, organizationID, id s
 	var toolset model.ToolSet
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
 		return fmt.Errorf("failed to find toolset: %w", err)
+	}
+	if toolset.IsPreset {
+		return fmt.Errorf("preset toolsets cannot be deleted")
 	}
 
 	if err := db.Session(ctx).Delete(&toolset).Error; err != nil {
@@ -208,7 +248,15 @@ func (s *ToolSetService) CreateToolSetInstance(toolSet *model.ToolSet) (toolset.
 		return nil, fmt.Errorf("failed to marshal toolset config: %w", err)
 	}
 
-	return factory.CreateToolSet(string(configJSON))
+	inst, err := factory.CreateToolSet(string(configJSON))
+	if err != nil {
+		return nil, err
+	}
+	disabled := model.DisabledToolNamesFromConfig(toolSet.Config)
+	if len(disabled) > 0 {
+		inst = newToolSetDisabledToolsFilter(inst, disabled)
+	}
+	return inst, nil
 }
 
 // GetAllEnabledToolSetInstances gets all enabled toolset instances
@@ -317,9 +365,10 @@ func convertOpenAITools(tools []openai.Tool) []model.ToolDefinition {
 
 // authorizedToolSetItem is one RBAC-authorized toolset instance with stable map key and toolset resource_id.
 type authorizedToolSetItem struct {
-	ResourceID string
-	MapKey     string
-	ToolSet    toolset.ToolSet
+	ResourceID   string
+	ToolSetType  string
+	MapKey       string
+	ToolSet      toolset.ToolSet
 }
 
 func toolSetsFromAuthorizedItems(items []authorizedToolSetItem) toolset.ToolSets {
@@ -362,9 +411,10 @@ func (s *ToolSetService) buildAuthorizedToolSetItems(ctx context.Context, organi
 				}
 				key := fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)
 				items = append(items, authorizedToolSetItem{
-					ResourceID: toolSet.ResourceID,
-					MapKey:     key,
-					ToolSet:    newFilteredToolSet(instance, toolNames),
+					ResourceID:  toolSet.ResourceID,
+					ToolSetType: string(toolSet.Type),
+					MapKey:      key,
+					ToolSet:     newFilteredToolSet(instance, toolNames),
 				})
 			}
 		} else {
@@ -378,9 +428,10 @@ func (s *ToolSetService) buildAuthorizedToolSetItems(ctx context.Context, organi
 			}
 			key := fmt.Sprintf("%s%d", toolSet.Type, toolSet.ID)
 			items = append(items, authorizedToolSetItem{
-				ResourceID: toolSet.ResourceID,
-				MapKey:     key,
-				ToolSet:    newFilteredToolSet(instance, toolNames),
+				ResourceID:  toolSet.ResourceID,
+				ToolSetType: string(toolSet.Type),
+				MapKey:      key,
+				ToolSet:     newFilteredToolSet(instance, toolNames),
 			})
 		}
 	}
@@ -396,9 +447,13 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 }
 
 // SkillBindingMatches reports whether a tool in a toolset matches any skill binding pattern.
-func SkillBindingMatches(bindings []model.SkillAIToolBinding, toolSetResourceID, toolName string) bool {
+// toolSetType is the toolset implementation type (e.g. "utils"); bindings may use it in ToolSetID instead of resource_id.
+func SkillBindingMatches(bindings []model.SkillAIToolBinding, toolSetResourceID, toolSetType, toolName string) bool {
 	for _, b := range bindings {
 		tsOK := b.ToolSetID == "*" || b.ToolSetID == toolSetResourceID
+		if !tsOK && toolSetType != "" && b.ToolSetID == toolSetType {
+			tsOK = true
+		}
 		tnOK := b.ToolName == "*" || b.ToolName == toolName
 		if tsOK && tnOK {
 			return true
@@ -423,7 +478,7 @@ func (s *ToolSetService) applySkillAIToolBindings(ctx context.Context, bindings 
 				continue
 			}
 			name := tool.Function.Name
-			if SkillBindingMatches(bindings, it.ResourceID, name) {
+			if SkillBindingMatches(bindings, it.ResourceID, it.ToolSetType, name) {
 				allowed[name] = struct{}{}
 			}
 		}
@@ -431,9 +486,10 @@ func (s *ToolSetService) applySkillAIToolBindings(ctx context.Context, bindings 
 			continue
 		}
 		out = append(out, authorizedToolSetItem{
-			ResourceID: it.ResourceID,
-			MapKey:     it.MapKey,
-			ToolSet:    newFilteredToolSet(it.ToolSet, allowed),
+			ResourceID:  it.ResourceID,
+			ToolSetType: it.ToolSetType,
+			MapKey:      it.MapKey,
+			ToolSet:     newFilteredToolSet(it.ToolSet, allowed),
 		})
 	}
 	return out, nil
@@ -510,4 +566,51 @@ func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map
 	}
 
 	return result
+}
+
+type toolSetDisabledToolsFilter struct {
+	inner    toolset.ToolSet
+	disabled map[string]struct{}
+}
+
+func newToolSetDisabledToolsFilter(inner toolset.ToolSet, disabled map[string]struct{}) toolset.ToolSet {
+	if len(disabled) == 0 {
+		return inner
+	}
+	return &toolSetDisabledToolsFilter{inner: inner, disabled: disabled}
+}
+
+func (t *toolSetDisabledToolsFilter) GetName() string            { return t.inner.GetName() }
+func (t *toolSetDisabledToolsFilter) GetDescription() string     { return t.inner.GetDescription() }
+func (t *toolSetDisabledToolsFilter) Validate() error            { return t.inner.Validate() }
+func (t *toolSetDisabledToolsFilter) Test(ctx context.Context) error {
+	return t.inner.Test(ctx)
+}
+
+func (t *toolSetDisabledToolsFilter) Call(ctx context.Context, name string, parameters string) (string, error) {
+	if _, off := t.disabled[name]; off {
+		return "", fmt.Errorf("tool %s is disabled", name)
+	}
+	return t.inner.Call(ctx, name, parameters)
+}
+
+func (t *toolSetDisabledToolsFilter) ListTools(ctx context.Context) ([]openai.Tool, error) {
+	tools, err := t.inner.ListTools(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if len(t.disabled) == 0 {
+		return tools, nil
+	}
+	var out []openai.Tool
+	for _, tool := range tools {
+		if tool.Function == nil {
+			continue
+		}
+		if _, off := t.disabled[tool.Function.Name]; off {
+			continue
+		}
+		out = append(out, tool)
+	}
+	return out, nil
 }

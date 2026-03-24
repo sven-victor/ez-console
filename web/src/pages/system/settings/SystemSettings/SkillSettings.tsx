@@ -22,6 +22,8 @@ import {
   Checkbox,
   Spin,
   Empty,
+  Switch,
+  Tooltip,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -178,6 +180,7 @@ const SkillSettings: React.FC = () => {
   const [uploadModalVisible, setUploadModalVisible] = useState(false);
   const [uploadForm] = Form.useForm();
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
 
   const [aiToolsets, setAiToolsets] = useState<ToolSet[]>([]);
   const [aiToolSelections, setAiToolSelections] = useState<Record<string, string[]>>({});
@@ -236,6 +239,22 @@ const SkillSettings: React.FC = () => {
         message.error(t('settings.skills.deleteFailed', { defaultValue: 'Failed to delete skill' }));
       },
     }
+  );
+
+  const handleSkillStatusChange = useCallback(
+    async (record: Skill, enabled: boolean) => {
+      setStatusUpdatingId(record.id);
+      try {
+        await api.system.updateSkillStatus({ id: record.id }, { status: enabled ? 'enabled' : 'disabled' });
+        message.success(t('settings.skills.statusUpdateSuccess', { defaultValue: 'Skill status updated' }));
+        refresh();
+      } catch {
+        message.error(t('settings.skills.statusUpdateFailed', { defaultValue: 'Failed to update skill status' }));
+      } finally {
+        setStatusUpdatingId(null);
+      }
+    },
+    [t, refresh],
   );
 
   const { loading: uploading, run: doUpload } = useRequest(
@@ -422,10 +441,58 @@ const SkillSettings: React.FC = () => {
   const isCreateOnlyModal = !editingSkill && !cloneSourceSkill;
 
   const columns: ColumnsType<Skill> = [
-    { title: t('settings.skills.name', { defaultValue: 'Name' }), dataIndex: 'name', key: 'name' },
+    {
+      title: t('settings.skills.name', { defaultValue: 'Name' }),
+      dataIndex: 'name',
+      key: 'name',
+      ellipsis: true,
+      render: (name: string, record) => (
+        <Space size={8} wrap>
+          <span>{name}</span>
+          {record.is_preset ? (
+            <Tag color="default">{t('settings.skills.presetTag', { defaultValue: 'Preset' })}</Tag>
+          ) : null}
+        </Space>
+      ),
+    },
     { title: t('settings.skills.description', { defaultValue: 'Description' }), dataIndex: 'description', key: 'description', ellipsis: true },
     { title: t('settings.skills.category', { defaultValue: 'Category' }), dataIndex: 'category', key: 'category', render: (v) => (v ? <Tag>{v}</Tag> : '-') },
     { title: t('settings.skills.domain', { defaultValue: 'Domain' }), dataIndex: 'domain', key: 'domain', render: (v) => (v ? <Tag color="blue">{v}</Tag> : '-') },
+    {
+      title: t('settings.skills.statusForAi', { defaultValue: 'AI chat' }),
+      key: 'status',
+      width: 120,
+      render: (_, record) => {
+        const enabled = record.status !== 'disabled';
+        return (
+          <PermissionGuard
+            permission="system:skills:update"
+            fallback={
+              <Tag color={enabled ? 'green' : 'red'}>
+                {enabled ? tCommon('enabled', { defaultValue: 'Enabled' }) : tCommon('disabled', { defaultValue: 'Disabled' })}
+              </Tag>
+            }
+          >
+            <Tooltip
+              title={
+                enabled
+                  ? t('settings.skills.tooltipDisableSkillForAi', { defaultValue: 'Disable this skill for AI chat' })
+                  : t('settings.skills.tooltipEnableSkillForAi', { defaultValue: 'Enable this skill for AI chat' })
+              }
+            >
+              <span>
+                <Switch
+                  size="small"
+                  checked={enabled}
+                  loading={statusUpdatingId === record.id}
+                  onChange={(checked) => void handleSkillStatusChange(record, checked)}
+                />
+              </span>
+            </Tooltip>
+          </PermissionGuard>
+        );
+      },
+    },
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'actions',
@@ -436,9 +503,14 @@ const SkillSettings: React.FC = () => {
             {
               key: 'edit_files',
               icon: <FileTextOutlined />,
-              tooltip: t('settings.skills.actionManageFiles', { defaultValue: 'Manage files' }),
+              tooltip: record.is_preset
+                ? t('settings.skills.presetDisabledManageFiles', {
+                  defaultValue: 'Built-in skills cannot edit files.',
+                })
+                : t('settings.skills.actionManageFiles', { defaultValue: 'Manage files' }),
               onClick: async () => navigate(`/system/settings/skills/${record.id}/edit`),
               permission: 'system:skills:edit_files',
+              disabled: !!record.is_preset,
             },
             {
               key: 'view',
@@ -450,9 +522,14 @@ const SkillSettings: React.FC = () => {
             {
               key: 'update',
               icon: <EditOutlined />,
-              tooltip: t('settings.skills.actionEditMetadata', { defaultValue: 'Edit metadata' }),
+              tooltip: record.is_preset
+                ? t('settings.skills.presetDisabledEditMetadata', {
+                  defaultValue: 'Built-in skills cannot change metadata.',
+                })
+                : t('settings.skills.actionEditMetadata', { defaultValue: 'Edit metadata' }),
               onClick: async () => handleEdit(record),
               permission: 'system:skills:update',
+              disabled: !!record.is_preset,
             },
             {
               key: 'clone',
@@ -464,17 +541,24 @@ const SkillSettings: React.FC = () => {
             {
               key: 'delete',
               icon: <DeleteOutlined />,
-              tooltip: t('settings.skills.actionDelete', { defaultValue: 'Delete' }),
+              tooltip: record.is_preset
+                ? t('settings.skills.presetDisabledDelete', {
+                  defaultValue: 'Built-in skills cannot be deleted.',
+                })
+                : t('settings.skills.actionDelete', { defaultValue: 'Delete' }),
               danger: true,
-              confirm: {
-                title: t('settings.skills.deleteSkillConfirm', { defaultValue: 'Delete this skill?' }),
-                description: t('settings.skills.deleteSkillConfirmDescription', {
-                  defaultValue: 'The skill and all its files will be removed. This cannot be undone.',
-                }),
-                okText: tCommon('confirm', { defaultValue: 'Confirm' }),
-                cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
-                onConfirm: async () => deleteSkill(record.id),
-              },
+              disabled: !!record.is_preset,
+              confirm: record.is_preset
+                ? undefined
+                : {
+                  title: t('settings.skills.deleteSkillConfirm', { defaultValue: 'Delete this skill?' }),
+                  description: t('settings.skills.deleteSkillConfirmDescription', {
+                    defaultValue: 'The skill and all its files will be removed. This cannot be undone.',
+                  }),
+                  okText: tCommon('confirm', { defaultValue: 'Confirm' }),
+                  cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
+                  onConfirm: async () => deleteSkill(record.id),
+                },
               permission: 'system:skills:delete',
             },
           ]}

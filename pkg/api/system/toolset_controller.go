@@ -264,6 +264,16 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 		return
 	}
 
+	existing, err := c.service.GetToolSet(ctx, organizationID, id)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	if existing.IsPreset && req.Type != existing.Type {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Cannot change toolset type for a preset toolset"))
+		return
+	}
+
 	// Get current user ID from context
 	userID, exists := ctx.Get("user_id")
 	if !exists {
@@ -305,7 +315,7 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 		UpdatedBy:   userID.(string),
 	}
 
-	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
+	err = c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
 		updatedToolSet, err := c.service.UpdateToolSet(ctx, organizationID, id, toolset)
 		if err != nil {
 			return util.NewError("E5001", err)

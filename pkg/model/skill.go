@@ -14,13 +14,24 @@
 
 package model
 
+// SkillStatus controls whether a skill is offered to AI chat flows.
+type SkillStatus string
+
+const (
+	SkillStatusEnabled  SkillStatus = "enabled"
+	SkillStatusDisabled SkillStatus = "disabled"
+)
+
 // Skill represents an AI Agent Skill (metadata stored in DB; files under skills_path/{ResourceID}/)
 type Skill struct {
 	Base
-	Name        string `gorm:"type:varchar(256);not null" json:"name"`
-	Description string `gorm:"type:varchar(1024)" json:"description"`
-	Category    string `gorm:"type:varchar(128)" json:"category"`
-	Domain      string `gorm:"type:varchar(64)" json:"domain"`
+	Name        string      `gorm:"type:varchar(256);not null" json:"name"`
+	Description string      `gorm:"type:varchar(1024)" json:"description"`
+	Category    string      `gorm:"type:varchar(128)" json:"category"`
+	Domain      string      `gorm:"type:varchar(64)" json:"domain"`
+	Status      SkillStatus `gorm:"type:varchar(20);not null;default:'enabled'" json:"status"`
+	IsPreset    bool        `gorm:"not null;default:false" json:"is_preset"`
+	PresetKey   string      `gorm:"type:varchar(64)" json:"preset_key,omitempty"`
 }
 
 // TableName returns the table name for Skill

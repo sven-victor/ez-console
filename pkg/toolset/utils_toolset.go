@@ -22,6 +22,7 @@ import (
 
 	openai "github.com/sashabaranov/go-openai"
 	openaijsonschema "github.com/sashabaranov/go-openai/jsonschema"
+	"github.com/sven-victor/ez-console/pkg/preset"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
@@ -164,4 +165,11 @@ const (
 func init() {
 	// Register the MCP toolset factory
 	RegisterToolSet(ToolSetTypeUtils, &UtilsToolSetFactory{})
+	preset.RegisterPresetTools(preset.PresetToolSetSpec{
+		PresetKey:     "utils",
+		Type:          string(ToolSetTypeUtils),
+		Name:          "Utils (built-in)",
+		Description:   "Built-in utility tools (time, sleep, random string).",
+		DefaultConfig: nil,
+	})
 }

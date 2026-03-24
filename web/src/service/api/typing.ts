@@ -1818,7 +1818,10 @@ export interface Skill {
   description: string;
   domain: string;
   id: string;
+  is_preset: boolean;
   name: string;
+  preset_key: string;
+  status: SkillStatus;
   updated_at: string;
 }
 
@@ -1836,6 +1839,8 @@ export interface SkillAIToolBindingItem {
   tool_name: string;
   toolset_id: string;
 }
+
+export type SkillStatus = "enabled" | "disabled";
 
 export interface SkillTreeNode {
   children: SkillTreeNode[];
@@ -2039,10 +2044,14 @@ export interface ToolSet {
   /** Toolset description */
   description: string;
   id: string;
+  /** Created/managed by preset sync (immutable metadata) */
+  is_preset: boolean;
   /** Toolset name */
   name: string;
   /** Organization ID */
   organization_id: string;
+  /** Stable key within an org (e.g. utils) */
+  preset_key: string;
   /** Status */
   status: ToolSetStatus;
   /** Available tools (runtime only) */
@@ -2221,6 +2230,15 @@ export interface UpdateSkillRequest {
   description: string;
   domain: string;
   name: string;
+}
+
+export interface updateSkillStatusParams {
+  /** Skill ID */
+  id: string;
+}
+
+export interface UpdateSkillStatusRequest {
+  status: SkillStatus;
 }
 
 export interface updateToolSetParams {

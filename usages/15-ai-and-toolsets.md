@@ -13,6 +13,7 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
   - [AIClientFactoryV2 (JSON Schema)](#aiclientfactoryv2-json-schema)
 - [Toolsets](#toolsets)
   - [Built-in Toolsets](#built-in-toolsets)
+  - [Default (preset) toolsets and skills](#default-preset-toolsets-and-skills)
   - [Using Toolsets](#using-toolsets)
   - [Registering Custom Toolsets](#registering-custom-toolsets)
   - [ToolSetFactoryV2 (JSON Schema)](#toolsetfactoryv2-json-schema)
@@ -546,6 +547,7 @@ A simple toolset providing utility functions.
 
 - `now`: Get current time in a specified format (default: RFC3339)
 - `sleep`: Sleep for a specified duration (max 60 seconds)
+- `random_string`: Generate a random string; parameter `string_length`
 
 **Configuration:** No configuration required.
 
@@ -571,6 +573,46 @@ An internal toolset injected at runtime when skills are loaded via domains or sk
 - `get_skill_content`: Read the content of a skill by ID, optionally specifying a sub-path. Exposed to the model as **`skill_loader_get_skill_content`** (map key `skill_loader` + tool name).
 
 Production code may pass **`SkillLoaderOptions.OnSkillContentLoaded`** so a successful load updates session **`activated_skill_ids`** and the in-memory **`SkillActivationTracker`** when **`system_enable_skill_tool_binding`** is used. See **`usages/16-skills.md`** → *Skills and organization tools loading*.
+
+### Default (preset) toolsets and skills
+
+Besides registering a **factory** with `RegisterToolSet`, the product can declare **preset rows** that are created or reconciled automatically:
+
+- **Per organization**: Each org gets matching **`t_tool_set`** rows for every registered preset toolset (e.g. the built-in **utils** toolset).
+- **Global**: Preset **skills** live once in **`t_skill`** (not per org); per-org **AI tool bindings** for those skills are created when missing.
+
+#### When sync runs
+
+- **Server startup**: `Service.SyncPresetResources` runs after the app is up (`server/server.go`). It syncs all preset skills globally, then for **each organization** ensures preset toolsets and default skill bindings exist (`pkg/service/preset_sync.go`).
+- **New organization**: After an organization is created, `SyncPresetResourcesForOrganization` runs for that org so preset toolsets and bindings appear without a full restart (`pkg/api/system/organization_controller.go`).
+
+#### How to register presets in code
+
+| API | Purpose |
+|-----|---------|
+| `preset.RegisterPresetToolSet` / `preset.RegisterPresetTools` | Declare a built-in toolset row (`PresetKey`, `Type`, `Name`, `Description`, optional `DefaultConfig`). Call from `init()` next to `RegisterToolSet` for the same type. |
+| `preset.RegisterPresetSkill` | Declare a global preset skill (`PresetKey`, metadata, optional `DefaultBindings` by **toolset type** + tool name or `*`). Call from `init()` (e.g. `pkg/preset/skills_builtin.go`). |
+
+Specs are defined in `pkg/preset/spec.go`; the registry is in `pkg/preset/registry.go`.
+
+#### Shipped defaults (current tree)
+
+1. **Utils toolset (per org)** — registered in `pkg/toolset/utils_toolset.go`:
+   - `PresetKey`: `utils`
+   - `Type`: `utils`
+   - Display name/description: built-in utilities (time, sleep, random string).
+   - Rows have **`is_preset = true`**; name, description, type, and missing **DefaultConfig** keys are reconciled on each sync while keeping existing org-specific config values. In the console you can still **enable or disable** the toolset (status); edit and delete are disabled for preset rows (with explanatory tooltips).
+
+2. **“Built-in utilities” skill (global)** — registered in `pkg/preset/skills_builtin.go`:
+   - `PresetKey`: `builtin-utils`
+   - Domain **`core`**, category **`system`**.
+   - Default bindings (when **`system_enable_skill_tool_binding`** is used): toolset type **`utils`**, tool **`*`** (all utils tools). Bindings are stored in **`t_skill_ai_tool_bindings`** with **`toolset_id`** set to the **type string** `utils` (the same column also stores real toolset UUIDs for user-defined bindings). Resolution matches by toolset type or resource ID.
+
+Preset skills can be **enabled or disabled** for AI chat via **`PUT /api/system/skills/:id/status`**; disabled skills are not offered in metadata. See [AI Agent Skills](./16-skills.md) → *Default (preset) skills* for model fields, API summary, and console behavior.
+
+#### Extending
+
+Add another `preset.RegisterPresetTools(...)` (or `RegisterPresetToolSet`) in the same `init()` as your `RegisterToolSet`, and/or `RegisterPresetSkill` in a new `init()` file under `pkg/preset/`. Use a unique `PresetKey` per spec. After code changes, deploy/restart so sync runs.
 
 ### Using Toolsets
 
@@ -993,7 +1035,9 @@ category: "database"
 You are a database expert. When the user asks about SQL...
 ```
 
-Skills are persisted in the database (`model.Skill`) for metadata (name, description, category, domain) and on the filesystem for content.
+Skills are persisted in the database (`model.Skill`) for metadata (name, description, category, domain, **status**, **preset** flags) and on the filesystem for content.
+
+**Preset skills** (built-ins synced from `pkg/preset`) are covered under [Default (preset) toolsets and skills](#default-preset-toolsets-and-skills) in this guide and in [AI Agent Skills](./16-skills.md#default-preset-skills).
 
 ### Skill Domains
 

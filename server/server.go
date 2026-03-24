@@ -362,6 +362,11 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 
 	initSettings(ctx, cfg, svc)
 
+	if err := svc.SyncPresetResources(ctx); err != nil {
+		level.Error(logger).Log("msg", "Failed to sync preset skills and toolsets", "err", err)
+		os.Exit(1)
+	}
+
 	authorizationapi.RegisterUserExportTask(svc)
 	svc.TaskService.Start(ctx)
 

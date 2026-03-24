@@ -12,6 +12,7 @@ This guide describes the AI Agent Skills feature in EZ-Console: how skills are s
 - [APIs](#apis)
 - [AI Integration](#ai-integration)
   - [Skills and organization tools loading](#skills-and-organization-tools-loading)
+- [Default (preset) skills](#default-preset-skills)
 - [Registering Custom Domains](#registering-custom-domains)
 
 ## Overview
@@ -41,6 +42,9 @@ The `Skill` model (see `pkg/model/skill.go`) has:
 | Description| string | Short description                    |
 | Category   | string | Category for grouping/filtering      |
 | Domain     | string | Domain for scenario-based filtering (e.g. `core`, `document`) |
+| Status     | string | `enabled` or `disabled`; disabled skills are omitted from AI chat metadata |
+| IsPreset   | bool   | Managed by preset sync; immutable user metadata and files in the console |
+| PresetKey  | string | Stable key from code (e.g. `builtin-utils`), empty for user-created skills |
 
 The table name is `t_skill`.
 
@@ -99,7 +103,8 @@ Ensure the process has read/write permissions to the chosen directory.
 
 Under **System Settings**, the **Skills** tab provides:
 
-- **List**: Paginated table with search and domain filter; columns include name, description, category, domain, and actions.
+- **List**: Paginated table with search and domain filter; columns include name, description, category, domain, **AI chat** (enable/disable switch when you have `system:skills:update`), and actions.
+- **Preset rows**: Skills synced from code show a **Preset** tag. **Edit metadata**, **manage files**, and **delete** are disabled with tooltips; **Preview** and **Clone** remain available. **Enable/disable** for AI chat uses the same permission as metadata updates.
 - **Create**: Modal to create a skill (name, description, category, domain) with optional initial SKILL.md content.
 - **Edit**: Update metadata (name, description, category, domain).
 - **Upload**: Upload a single `.md` file or a `.zip` containing a skill (root must contain SKILL.md or SKILLS.md); name/description are taken from frontmatter.
@@ -108,6 +113,7 @@ Under **System Settings**, the **Skills** tab provides:
   - Tree of files and folders; only `.md` and `.txt` are allowed.
   - Create file/folder, rename, delete, drag-and-drop to move.
   - For Markdown files, split view: editor + live preview.
+  - **Preset skills**: The file tree is read-only (info alert); files cannot be changed from the UI.
 
 Routes and components:
 
@@ -132,6 +138,7 @@ make clean-openapi clean-openapi2ts openapi2ts
 | POST | `/api/system/skills` | Create skill (body: name, description, category, domain, optional content) |
 | GET | `/api/system/skills/:id` | Get skill by ID |
 | PUT | `/api/system/skills/:id` | Update skill metadata |
+| PUT | `/api/system/skills/:id/status` | Set skill status (`enabled` / `disabled`) for AI chat |
 | DELETE | `/api/system/skills/:id` | Delete skill and its files |
 | POST | `/api/system/skills/upload` | Upload skill (.md or .zip) |
 | GET | `/api/system/skills/:id/preview` | Get concatenated skill content for preview |
@@ -148,7 +155,7 @@ make clean-openapi clean-openapi2ts openapi2ts
 
 - `system:skills:view` – list, get, preview, list domains
 - `system:skills:create` – create skill, upload
-- `system:skills:update` – update metadata
+- `system:skills:update` – update metadata and skill status (enable/disable for AI chat)
 - `system:skills:delete` – delete skill
 - `system:skills:edit_files` – list/edit/delete/move files and dirs
 
@@ -228,10 +235,32 @@ This injects metadata and the skill loader. If **`system_enable_skill_tool_bindi
 
 When **`system_enable_skill_tool_binding`** is enabled:
 
-- **Bindings** are stored per organization in **`t_skill_ai_tool_bindings`** (`skill_id`, `organization_id`, `toolset_id`, `tool_name`). **`toolset_id`** is the toolset **resource ID** or **`*`** (any authorized toolset in that org). **`tool_name`** is the logical tool name (as in role AI permissions) or **`*`**. Examples: `*:sleep`, `<uuid>:*`, `<uuid>:sleep`.
+- **Bindings** are stored per organization in **`t_skill_ai_tool_bindings`** (`skill_id`, `organization_id`, `toolset_id`, `tool_name`). **`toolset_id`** is the toolset **resource ID**, the registered toolset **type** string (e.g. `utils`) for rows created by **preset sync**, or **`*`** (any authorized toolset in that org). **`tool_name`** is the logical tool name (as in role AI permissions) or **`*`**. Examples: `*:sleep`, `<uuid>:*`, `<uuid>:sleep`, `utils:*` for “all tools in the utils toolset type”.
 - **UI**: Base system settings expose the toggle. The Skills edit modal shows the tool picker when the feature is on (`listToolSets?include_tools=true`, `X-Scope-OrgID`), same pattern as role AI tool permissions.
 
 When the setting is **off**, bindings are ignored and the Skills UI does not show tool linking. See [Skills and organization tools loading](#skills-and-organization-tools-loading) for the full decision table and persistence behavior.
+
+## Default (preset) skills
+
+The server maintains **global** skills declared in code via **`preset.RegisterPresetSkill`** (`pkg/preset/spec.go`, `pkg/preset/registry.go`). On startup, **`Service.SyncPresetResources`** creates or updates them and ensures each organization has the configured **default AI tool bindings** (see [Default (preset) toolsets and skills](./15-ai-and-toolsets.md#default-preset-toolsets-and-skills)).
+
+### Current built-in preset skill
+
+| PresetKey      | Name                 | Domain | Default bindings (per org, when binding is enabled) |
+|----------------|----------------------|--------|--------------------------------------------------------|
+| `builtin-utils`| Built-in utilities   | `core` | Toolset type **`utils`**, tool **`*`** (all utils tools) |
+
+The skill description explains access to utility tools when skill–tool binding is on. Files on disk are maintained by the sync path (`EnsurePresetSkillMarkdown`).
+
+### Behavior vs user-created skills
+
+- **Metadata and files**: API and UI block changing preset **name/description/category/domain** and **file** mutations; use **Preview** to read content.
+- **Status**: **`PUT /api/system/skills/:id/status`** with `{"status":"enabled"|"disabled"}` toggles whether the skill appears in chat skill lists. Disabled preset skills behave like disabled user skills for loading.
+- **Deletion**: Preset skills cannot be deleted from the API/UI; they are product-managed.
+
+### Adding more preset skills
+
+Call **`preset.RegisterPresetSkill`** from an `init()` in `pkg/preset/` (or an existing file such as `skills_builtin.go`). Use a unique **`PresetKey`**, set **`DefaultBindings`** with **`ToolSetType`** matching a registered toolset **type** (e.g. `utils`) and **`ToolName`** or `*`. Deploy and restart so sync runs.
 
 ## Registering Custom Domains
 

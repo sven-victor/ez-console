@@ -15,6 +15,7 @@
 package systemapi
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -196,6 +197,9 @@ func (c *OrganizationController) CreateOrganization(ctx *gin.Context) {
 		func(auditLog *model.AuditLog) error {
 			if err := c.service.OrganizationService.CreateOrganization(ctx, org); err != nil {
 				return err
+			}
+			if err := c.service.SyncPresetResourcesForOrganization(ctx, org.ResourceID); err != nil {
+				return fmt.Errorf("sync preset resources: %w", err)
 			}
 
 			util.RespondWithSuccess(ctx, http.StatusOK, org)

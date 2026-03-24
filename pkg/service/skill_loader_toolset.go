@@ -13,6 +13,7 @@ import (
 
 	openai "github.com/sashabaranov/go-openai"
 	"github.com/sashabaranov/go-openai/jsonschema"
+	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 )
 
@@ -100,17 +101,24 @@ func (t *SkillLoaderToolSet) Call(ctx context.Context, name string, parameters s
 		if _, allowed := t.allowedIDs[params.SkillID]; !allowed {
 			return "", fmt.Errorf("skill %s is not in the allowed list for this chat", params.SkillID)
 		}
+		sk, err := t.skillService.GetByID(ctx, params.SkillID)
+		if err != nil {
+			return "", fmt.Errorf("skill not found: %w", err)
+		}
+		if !model.SkillIsEnabled(sk) {
+			return "", fmt.Errorf("skill %s is disabled", params.SkillID)
+		}
 		var out string
-		var err error
+		var loadErr error
 		if params.Path == "" {
-			out, err = t.skillService.GetSkillContent(ctx, params.SkillID)
+			out, loadErr = t.skillService.GetSkillContent(ctx, params.SkillID)
 		} else {
 			var body []byte
-			body, err = t.skillService.GetFile(ctx, params.SkillID, strings.TrimSpace(params.Path))
+			body, loadErr = t.skillService.GetFile(ctx, params.SkillID, strings.TrimSpace(params.Path))
 			out = string(body)
 		}
-		if err != nil {
-			return "", err
+		if loadErr != nil {
+			return "", loadErr
 		}
 		if t.onLoaded != nil {
 			if err := t.onLoaded(ctx, params.SkillID); err != nil {

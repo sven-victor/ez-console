@@ -57,6 +57,8 @@ interface ToolSet {
   type: API.ToolSetType | string;
   config?: Record<string, any>;
   status: 'enabled' | 'disabled';
+  is_preset?: boolean;
+  preset_key?: string;
   created_at: string;
   updated_at: string;
 }
@@ -264,6 +266,15 @@ const ToolSetSettings: React.FC = () => {
       title: t('settings.toolsets.name', { defaultValue: 'Name' }),
       dataIndex: 'name',
       key: 'name',
+      ellipsis: true,
+      render: (name: string, record) => (
+        <Space size={8} wrap>
+          <span>{name}</span>
+          {record.is_preset ? (
+            <Tag color="default">{t('settings.toolsets.presetTag', { defaultValue: 'Preset' })}</Tag>
+          ) : null}
+        </Space>
+      ),
     },
     {
       title: t('settings.toolsets.type', { defaultValue: 'Type' }),
@@ -314,9 +325,14 @@ const ToolSetSettings: React.FC = () => {
           {
             key: 'edit',
             permission: 'system:toolsets:update',
-            tooltip: t('settings.toolsets.edit', { defaultValue: 'Edit' }),
+            tooltip: record.is_preset
+              ? t('settings.toolsets.presetDisabledEdit', {
+                defaultValue: 'Built-in toolsets cannot be edited here.',
+              })
+              : t('settings.toolsets.edit', { defaultValue: 'Edit' }),
             icon: <EditOutlined />,
             onClick: async () => handleEdit(record),
+            disabled: !!record.is_preset,
           }, {
             key: 'toggleStatus',
             icon: record.status === 'enabled' ? <LockOutlined /> : <CheckCircleOutlined />,
@@ -328,15 +344,22 @@ const ToolSetSettings: React.FC = () => {
             key: 'delete',
             icon: <DeleteOutlined />,
             permission: 'system:toolsets:delete',
-            tooltip: tCommon('delete', { defaultValue: 'Delete' }),
+            tooltip: record.is_preset
+              ? t('settings.toolsets.presetDisabledDelete', {
+                defaultValue: 'Built-in toolsets cannot be deleted.',
+              })
+              : tCommon('delete', { defaultValue: 'Delete' }),
             onClick: async () => handleDelete(record.id),
             danger: true,
-            confirm: {
-              title: t('settings.toolsets.deleteConfirm', { defaultValue: 'Are you sure you want to delete this toolset?' }),
-              onConfirm: async () => handleDelete(record.id),
-              okText: tCommon('confirm', { defaultValue: 'Confirm' }),
-              cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
-            }
+            disabled: !!record.is_preset,
+            confirm: record.is_preset
+              ? undefined
+              : {
+                title: t('settings.toolsets.deleteConfirm', { defaultValue: 'Are you sure you want to delete this toolset?' }),
+                onConfirm: async () => handleDelete(record.id),
+                okText: tCommon('confirm', { defaultValue: 'Confirm' }),
+                cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
+              },
           }
         ]
         } />

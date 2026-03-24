@@ -1,7 +1,7 @@
 import { r as p } from "./client.js";
 import f from "i18next";
 import { initReactI18next as v } from "react-i18next";
-import b from "i18next-browser-languagedetector";
+import k from "i18next-browser-languagedetector";
 const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   const i = e instanceof Date ? e : new Date(e), r = i.getFullYear(), o = String(i.getMonth() + 1).padStart(2, "0"), s = String(i.getDate()).padStart(2, "0"), l = String(i.getHours()).padStart(2, "0"), a = String(i.getMinutes()).padStart(2, "0"), n = String(i.getSeconds()).padStart(2, "0");
   return t.replace("YYYY", String(r)).replace("MM", o).replace("DD", s).replace("HH", l).replace("mm", a).replace("ss", n);
@@ -40,11 +40,11 @@ const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
     return "";
   const [t, i] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + i : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + i;
-}, be = (e) => {
+}, ke = (e) => {
   const t = "/";
   return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
 };
-async function k(e, t) {
+async function b(e, t) {
   return p("/api/files", {
     method: "GET",
     params: {
@@ -79,13 +79,13 @@ async function S(e) {
     ...e || {}
   });
 }
-const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: y,
   getStatistics: S,
-  listFiles: k,
+  listFiles: b,
   uploadFile: A
-}, Symbol.toStringTag, { value: "Module" })), P = {
+}, Symbol.toStringTag, { value: "Module" })), T = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -199,7 +199,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, T = {
+}, P = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -629,6 +629,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "System",
     typeUser: "User",
     systemRoleCannotModify: "System roles cannot be modified.",
+    cloneTooltip: "Clone role: open create page with permissions and settings prefilled",
     viewTitle: "View Role",
     insertTemplate: "Insert Template",
     allowAll: "Allow All",
@@ -880,7 +881,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, z = {
+}, D = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -924,6 +925,17 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       editSkill: "Edit skill",
       upload: "Upload",
       editFiles: "Edit files",
+      cloneSkill: "Clone skill",
+      cloneNameDefault: "{{name}} (copy)",
+      cloneSuccess: "Skill cloned",
+      cloneFailed: "Failed to clone skill",
+      actionManageFiles: "Manage files",
+      actionPreview: "Preview",
+      actionEditMetadata: "Edit metadata",
+      actionClone: "Clone",
+      actionDelete: "Delete",
+      deleteSkillConfirm: "Delete this skill?",
+      deleteSkillConfirmDescription: "The skill and all its files will be removed. This cannot be undone.",
       fetchFailed: "Failed to fetch skills",
       createSuccess: "Skill created",
       createFailed: "Failed to create skill",
@@ -931,6 +943,15 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Failed to update skill",
       deleteSuccess: "Skill deleted",
       deleteFailed: "Failed to delete skill",
+      presetTag: "Preset",
+      presetDisabledManageFiles: "Built-in skills cannot edit files.",
+      presetDisabledEditMetadata: "Built-in skills cannot change metadata.",
+      presetDisabledDelete: "Built-in skills cannot be deleted.",
+      statusForAi: "AI chat",
+      statusUpdateSuccess: "Skill status updated",
+      statusUpdateFailed: "Failed to update skill status",
+      tooltipEnableSkillForAi: "Enable this skill for AI chat",
+      tooltipDisableSkillForAi: "Disable this skill for AI chat",
       uploadSuccess: "Skill uploaded",
       uploadFailed: "Upload failed",
       previewFailed: "Failed to load preview",
@@ -990,7 +1011,8 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         previewTitle: "Skill Preview",
         placeholderNewFile: "filename.md or filename.txt",
         placeholderFolder: "folder-name",
-        placeholderFileName: "name.md"
+        placeholderFileName: "name.md",
+        presetReadOnly: "This is a built-in skill. Files are read-only; use Preview to view content."
       }
     },
     days: "days",
@@ -1375,6 +1397,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Failed to update toolset",
       deleteSuccess: "Toolset deleted successfully",
       deleteFailed: "Failed to delete toolset",
+      presetTag: "Preset",
+      presetDisabledEdit: "Built-in toolsets cannot be edited.",
+      presetDisabledDelete: "Built-in toolsets cannot be deleted.",
       testSuccess: "Toolset connection test successful",
       testFailed: "Toolset connection test failed",
       deleteConfirm: "Are you sure you want to delete this toolset?",
@@ -1420,7 +1445,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, D = {
+}, z = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1435,6 +1460,16 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefault: "Set as Default",
     defaultModel: "Default Model",
     searchPlaceholder: "Search AI models...",
+    fetchTypeDefinitionsFailed: "Failed to fetch AI type definitions",
+    clone: "Clone",
+    cloneTooltip: "Clone as new model (re-enter API key if needed)",
+    cloneLoadFailed: "Failed to load model for clone",
+    editTooltip: "Edit model",
+    deleteTooltip: "Delete model",
+    maxChatTokens: "Max chat tokens (context / summarization)",
+    maxChatTokensHelp: "0 uses provider config max_tokens only. A positive value sets the context window for summarization for this model.",
+    maxChatIterations: "Max chat iterations (tool rounds)",
+    maxChatIterationsHelp: "0 uses default. A positive value caps tool-call iterations for this model.",
     namePlaceholder: "Enter model name",
     descriptionPlaceholder: "Enter model description",
     providerPlaceholder: "Select provider",
@@ -1517,7 +1552,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Skills (optional)",
     skillDomain: "Skill domain"
   }
-}, E = {
+}, C = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1579,7 +1614,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       task_log_cleanup_task: "Task Log Cleanup"
     }
   }
-}, C = {
+}, E = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1793,7 +1828,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, L = {
+}, I = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -1900,7 +1935,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, I = {
+}, L = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -2439,6 +2474,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "系统",
     typeUser: "用户",
     systemRoleCannotModify: "系统角色不可修改。",
+    cloneTooltip: "克隆角色：打开创建页并预填权限与设置",
     viewTitle: "查看角色",
     allowAll: "允许所有",
     denyAll: "拒绝所有",
@@ -2756,6 +2792,17 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       editSkill: "编辑技能",
       upload: "上传",
       editFiles: "编辑文件",
+      cloneSkill: "克隆技能",
+      cloneNameDefault: "{{name}}（副本）",
+      cloneSuccess: "技能已克隆",
+      cloneFailed: "克隆技能失败",
+      actionManageFiles: "管理文件",
+      actionPreview: "预览",
+      actionEditMetadata: "编辑信息",
+      actionClone: "克隆",
+      actionDelete: "删除",
+      deleteSkillConfirm: "确定删除该技能？",
+      deleteSkillConfirmDescription: "将删除该技能及其所有文件，此操作不可恢复。",
       fetchFailed: "获取技能列表失败",
       createSuccess: "技能已创建",
       createFailed: "创建技能失败",
@@ -2763,6 +2810,15 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "更新技能失败",
       deleteSuccess: "技能已删除",
       deleteFailed: "删除技能失败",
+      presetTag: "内置",
+      presetDisabledManageFiles: "内置技能不能编辑文件。",
+      presetDisabledEditMetadata: "内置技能不能修改元数据。",
+      presetDisabledDelete: "内置技能不能删除。",
+      statusForAi: "AI 对话",
+      statusUpdateSuccess: "技能状态已更新",
+      statusUpdateFailed: "更新技能状态失败",
+      tooltipEnableSkillForAi: "在 AI 对话中启用此技能",
+      tooltipDisableSkillForAi: "在 AI 对话中禁用此技能",
       uploadSuccess: "技能已上传",
       uploadFailed: "上传失败",
       previewFailed: "加载预览失败",
@@ -2822,7 +2878,8 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         previewTitle: "技能预览",
         placeholderNewFile: "filename.md 或 filename.txt",
         placeholderFolder: "folder-name",
-        placeholderFileName: "name.md"
+        placeholderFileName: "name.md",
+        presetReadOnly: "此为内置技能，文件为只读；请使用预览查看内容。"
       }
     },
     days: "天",
@@ -3209,6 +3266,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "更新工具集失败",
       deleteSuccess: "工具集删除成功",
       deleteFailed: "删除工具集失败",
+      presetTag: "内置",
+      presetDisabledEdit: "内置工具集不能编辑。",
+      presetDisabledDelete: "内置工具集不能删除。",
       testSuccess: "工具集连接测试成功",
       testFailed: "工具集连接测试失败",
       deleteConfirm: "确定要删除此工具集吗？",
@@ -3269,6 +3329,16 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefault: "设为默认",
     defaultModel: "默认模型",
     searchPlaceholder: "搜索AI模型...",
+    fetchTypeDefinitionsFailed: "获取 AI 类型定义失败",
+    clone: "克隆",
+    cloneTooltip: "复制为新模型（必要时请重新填写 API 密钥）",
+    cloneLoadFailed: "加载模型以克隆失败",
+    editTooltip: "编辑模型",
+    deleteTooltip: "删除模型",
+    maxChatTokens: "最大对话 Token（上下文 / 摘要）",
+    maxChatTokensHelp: "0 表示仅使用提供商配置中的 max_tokens；大于 0 时为该模型设置摘要用的上下文窗口。",
+    maxChatIterations: "最大对话轮次（工具调用）",
+    maxChatIterationsHelp: "0 表示使用默认值；大于 0 时限制该模型的工具调用迭代次数。",
     namePlaceholder: "请输入模型名称",
     descriptionPlaceholder: "请输入模型描述",
     providerPlaceholder: "请选择提供商",
@@ -3351,7 +3421,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, B = {
+}, x = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3413,7 +3483,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       task_log_cleanup_task: "任务日志清理任务"
     }
   }
-}, x = {
+}, B = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3732,6 +3802,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "System",
     typeUser: "Benutzer",
     systemRoleCannotModify: "Systemrollen können nicht geändert werden.",
+    cloneTooltip: "Rolle klonen: Erstellungsseite mit vorausgefüllten Berechtigungen und Einstellungen öffnen",
     viewTitle: "Rolle anzeigen",
     insertTemplate: "Vorlage einfügen",
     allowAll: "Alle zulassen",
@@ -4046,6 +4117,17 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       editSkill: "Fähigkeit bearbeiten",
       upload: "Hochladen",
       editFiles: "Dateien bearbeiten",
+      cloneSkill: "Fähigkeit klonen",
+      cloneNameDefault: "{{name}} (Kopie)",
+      cloneSuccess: "Fähigkeit geklont",
+      cloneFailed: "Fähigkeit konnte nicht geklont werden",
+      actionManageFiles: "Dateien verwalten",
+      actionPreview: "Vorschau",
+      actionEditMetadata: "Metadaten bearbeiten",
+      actionClone: "Klonen",
+      actionDelete: "Löschen",
+      deleteSkillConfirm: "Diese Fähigkeit löschen?",
+      deleteSkillConfirmDescription: "Die Fähigkeit und alle Dateien werden entfernt. Dies kann nicht rückgängig gemacht werden.",
       fetchFailed: "Fähigkeiten konnten nicht geladen werden",
       createSuccess: "Fähigkeit erstellt",
       createFailed: "Fähigkeit konnte nicht erstellt werden",
@@ -4053,6 +4135,15 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Fähigkeit konnte nicht aktualisiert werden",
       deleteSuccess: "Fähigkeit gelöscht",
       deleteFailed: "Fähigkeit konnte nicht gelöscht werden",
+      presetTag: "Voreinstellung",
+      presetDisabledManageFiles: "Integrierte Fähigkeiten können keine Dateien bearbeiten.",
+      presetDisabledEditMetadata: "Metadaten integrierter Fähigkeiten können nicht geändert werden.",
+      presetDisabledDelete: "Integrierte Fähigkeiten können nicht gelöscht werden.",
+      statusForAi: "KI-Chat",
+      statusUpdateSuccess: "Fähigkeitsstatus aktualisiert",
+      statusUpdateFailed: "Fähigkeitsstatus konnte nicht aktualisiert werden",
+      tooltipEnableSkillForAi: "Diese Fähigkeit für den KI-Chat aktivieren",
+      tooltipDisableSkillForAi: "Diese Fähigkeit für den KI-Chat deaktivieren",
       uploadSuccess: "Fähigkeit hochgeladen",
       uploadFailed: "Hochladen fehlgeschlagen",
       previewFailed: "Vorschau konnte nicht geladen werden",
@@ -4112,7 +4203,8 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         previewTitle: "Fähigkeitsvorschau",
         placeholderNewFile: "filename.md oder filename.txt",
         placeholderFolder: "ordner-name",
-        placeholderFileName: "name.md"
+        placeholderFileName: "name.md",
+        presetReadOnly: "Dies ist eine eingebaute Fähigkeit. Dateien sind schreibgeschützt; nutzen Sie die Vorschau."
       }
     },
     days: "Tage",
@@ -4452,6 +4544,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Toolset konnte nicht aktualisiert werden",
       deleteSuccess: "Toolset erfolgreich gelöscht",
       deleteFailed: "Toolset konnte nicht gelöscht werden",
+      presetTag: "Voreinstellung",
+      presetDisabledEdit: "Integrierte Toolsets können nicht bearbeitet werden.",
+      presetDisabledDelete: "Integrierte Toolsets können nicht gelöscht werden.",
       testSuccess: "Toolset-Verbindungstest erfolgreich",
       testFailed: "Toolset-Verbindungstest fehlgeschlagen",
       deleteConfirm: "Sind Sie sicher, dass Sie dieses Toolset löschen möchten?",
@@ -4559,6 +4654,16 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefault: "Als Standard festlegen",
     defaultModel: "Standardmodell",
     searchPlaceholder: "KI-Modelle suchen...",
+    fetchTypeDefinitionsFailed: "KI-Typdefinitionen konnten nicht abgerufen werden",
+    clone: "Klonen",
+    cloneTooltip: "Als neues Modell klonen (API-Schlüssel ggf. erneut eingeben)",
+    cloneLoadFailed: "Modell zum Klonen konnte nicht geladen werden",
+    editTooltip: "Modell bearbeiten",
+    deleteTooltip: "Modell löschen",
+    maxChatTokens: "Max. Chat-Tokens (Kontext / Zusammenfassung)",
+    maxChatTokensHelp: "0 nutzt nur max_tokens der Anbieterkonfiguration. Ein positiver Wert setzt das Kontextfenster für die Zusammenfassung dieses Modells.",
+    maxChatIterations: "Max. Chat-Iterationen (Tool-Runden)",
+    maxChatIterationsHelp: "0 nutzt den Standard. Ein positiver Wert begrenzt Tool-Aufruf-Iterationen für dieses Modell.",
     namePlaceholder: "Modellname eingeben",
     descriptionPlaceholder: "Modellbeschreibung eingeben",
     providerPlaceholder: "Anbieter auswählen",
@@ -5022,6 +5127,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "Sistema",
     typeUser: "Usuario",
     systemRoleCannotModify: "Los roles del sistema no se pueden modificar.",
+    cloneTooltip: "Clonar rol: abrir la página de creación con permisos y ajustes rellenados",
     viewTitle: "Ver rol",
     insertTemplate: "Insertar plantilla",
     allowAll: "Permitir todo",
@@ -5336,6 +5442,17 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       editSkill: "Editar habilidad",
       upload: "Subir",
       editFiles: "Editar archivos",
+      cloneSkill: "Clonar habilidad",
+      cloneNameDefault: "{{name}} (copia)",
+      cloneSuccess: "Habilidad clonada",
+      cloneFailed: "No se pudo clonar la habilidad",
+      actionManageFiles: "Administrar archivos",
+      actionPreview: "Vista previa",
+      actionEditMetadata: "Editar metadatos",
+      actionClone: "Clonar",
+      actionDelete: "Eliminar",
+      deleteSkillConfirm: "¿Eliminar esta habilidad?",
+      deleteSkillConfirmDescription: "Se eliminará la habilidad y todos sus archivos. Esta acción no se puede deshacer.",
       fetchFailed: "Error al obtener habilidades",
       createSuccess: "Habilidad creada",
       createFailed: "Error al crear habilidad",
@@ -5343,6 +5460,15 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Error al actualizar habilidad",
       deleteSuccess: "Habilidad eliminada",
       deleteFailed: "Error al eliminar habilidad",
+      presetTag: "Predefinida",
+      presetDisabledManageFiles: "Las habilidades integradas no permiten editar archivos.",
+      presetDisabledEditMetadata: "No se pueden cambiar los metadatos de las habilidades integradas.",
+      presetDisabledDelete: "No se pueden eliminar las habilidades integradas.",
+      statusForAi: "Chat de IA",
+      statusUpdateSuccess: "Estado de la habilidad actualizado",
+      statusUpdateFailed: "Error al actualizar el estado",
+      tooltipEnableSkillForAi: "Habilitar esta habilidad para el chat de IA",
+      tooltipDisableSkillForAi: "Deshabilitar esta habilidad para el chat de IA",
       uploadSuccess: "Habilidad subida",
       uploadFailed: "Error al subir",
       previewFailed: "Error al cargar la vista previa",
@@ -5402,7 +5528,8 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         previewTitle: "Vista previa de habilidad",
         placeholderNewFile: "filename.md o filename.txt",
         placeholderFolder: "folder-name",
-        placeholderFileName: "name.md"
+        placeholderFileName: "name.md",
+        presetReadOnly: "Habilidad integrada: los archivos son de solo lectura; use Vista previa."
       }
     },
     days: "días",
@@ -5742,6 +5869,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Error al actualizar conjunto de herramientas",
       deleteSuccess: "Conjunto de herramientas eliminado exitosamente",
       deleteFailed: "Error al eliminar conjunto de herramientas",
+      presetTag: "Predefinida",
+      presetDisabledEdit: "Los conjuntos integrados no se pueden editar.",
+      presetDisabledDelete: "Los conjuntos integrados no se pueden eliminar.",
       testSuccess: "Prueba de conexión del conjunto de herramientas exitosa",
       testFailed: "Prueba de conexión del conjunto de herramientas fallida",
       deleteConfirm: "¿Está seguro de que desea eliminar este conjunto de herramientas?",
@@ -5834,7 +5964,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, J = {
+}, Z = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -5849,6 +5979,16 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefault: "Establecer como predeterminado",
     defaultModel: "Modelo predeterminado",
     searchPlaceholder: "Buscar modelos de IA...",
+    fetchTypeDefinitionsFailed: "Error al obtener definiciones de tipos de IA",
+    clone: "Clonar",
+    cloneTooltip: "Clonar como nuevo modelo (vuelva a introducir la clave API si hace falta)",
+    cloneLoadFailed: "No se pudo cargar el modelo para clonar",
+    editTooltip: "Editar modelo",
+    deleteTooltip: "Eliminar modelo",
+    maxChatTokens: "Máx. tokens de chat (contexto / resumen)",
+    maxChatTokensHelp: "0 usa solo max_tokens de la configuración del proveedor. Un valor positivo fija la ventana de contexto para el resumen de este modelo.",
+    maxChatIterations: "Máx. iteraciones de chat (rondas de herramientas)",
+    maxChatIterationsHelp: "0 usa el valor predeterminado. Un valor positivo limita las iteraciones de llamadas a herramientas para este modelo.",
     namePlaceholder: "Ingrese el nombre del modelo",
     descriptionPlaceholder: "Ingrese la descripción del modelo",
     providerPlaceholder: "Seleccione el proveedor",
@@ -5931,7 +6071,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Habilidades (opcional)",
     skillDomain: "Dominio de habilidad"
   }
-}, Z = {
+}, J = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -6312,6 +6452,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "Système",
     typeUser: "Utilisateur",
     systemRoleCannotModify: "Les rôles système ne peuvent pas être modifiés.",
+    cloneTooltip: "Cloner le rôle : ouvrir la page de création avec permissions et paramètres préremplis",
     viewTitle: "Voir le rôle",
     insertTemplate: "Insérer un modèle",
     allowAll: "Tout autoriser",
@@ -6626,6 +6767,17 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       editSkill: "Modifier la compétence",
       upload: "Téléverser",
       editFiles: "Modifier les fichiers",
+      cloneSkill: "Dupliquer la compétence",
+      cloneNameDefault: "{{name}} (copie)",
+      cloneSuccess: "Compétence dupliquée",
+      cloneFailed: "Échec de la duplication de la compétence",
+      actionManageFiles: "Gérer les fichiers",
+      actionPreview: "Aperçu",
+      actionEditMetadata: "Modifier les métadonnées",
+      actionClone: "Dupliquer",
+      actionDelete: "Supprimer",
+      deleteSkillConfirm: "Supprimer cette compétence ?",
+      deleteSkillConfirmDescription: "La compétence et tous ses fichiers seront supprimés. Cette action est irréversible.",
       fetchFailed: "Échec de la récupération des compétences",
       createSuccess: "Compétence créée",
       createFailed: "Échec de la création de la compétence",
@@ -6633,6 +6785,15 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Échec de la mise à jour de la compétence",
       deleteSuccess: "Compétence supprimée",
       deleteFailed: "Échec de la suppression de la compétence",
+      presetTag: "Préréglage",
+      presetDisabledManageFiles: "Les compétences intégrées ne permettent pas de modifier les fichiers.",
+      presetDisabledEditMetadata: "Les métadonnées des compétences intégrées ne peuvent pas être modifiées.",
+      presetDisabledDelete: "Les compétences intégrées ne peuvent pas être supprimées.",
+      statusForAi: "Chat IA",
+      statusUpdateSuccess: "Statut de la compétence mis à jour",
+      statusUpdateFailed: "Échec de la mise à jour du statut",
+      tooltipEnableSkillForAi: "Activer cette compétence pour le chat IA",
+      tooltipDisableSkillForAi: "Désactiver cette compétence pour le chat IA",
       uploadSuccess: "Compétence téléversée",
       uploadFailed: "Échec du téléversement",
       previewFailed: "Échec du chargement de l'aperçu",
@@ -6692,7 +6853,8 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         previewTitle: "Aperçu de la compétence",
         placeholderNewFile: "filename.md ou filename.txt",
         placeholderFolder: "folder-name",
-        placeholderFileName: "name.md"
+        placeholderFileName: "name.md",
+        presetReadOnly: "Compétence intégrée : les fichiers sont en lecture seule ; utilisez Aperçu."
       }
     },
     days: "jours",
@@ -7032,6 +7194,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Échec de la mise à jour de l'ensemble d'outils",
       deleteSuccess: "Ensemble d'outils supprimé avec succès",
       deleteFailed: "Échec de la suppression de l'ensemble d'outils",
+      presetTag: "Préréglage",
+      presetDisabledEdit: "Les ensembles d'outils intégrés ne peuvent pas être modifiés.",
+      presetDisabledDelete: "Les ensembles d'outils intégrés ne peuvent pas être supprimés.",
       testSuccess: "Test de connexion de l'ensemble d'outils réussi",
       testFailed: "Test de connexion de l'ensemble d'outils échoué",
       deleteConfirm: "Êtes-vous sûr de vouloir supprimer cet ensemble d'outils ?",
@@ -7139,6 +7304,16 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefault: "Définir par défaut",
     defaultModel: "Modèle par défaut",
     searchPlaceholder: "Rechercher des modèles IA...",
+    fetchTypeDefinitionsFailed: "Échec de la récupération des définitions de types IA",
+    clone: "Cloner",
+    cloneTooltip: "Cloner en nouveau modèle (saisir à nouveau la clé API si nécessaire)",
+    cloneLoadFailed: "Échec du chargement du modèle pour le clonage",
+    editTooltip: "Modifier le modèle",
+    deleteTooltip: "Supprimer le modèle",
+    maxChatTokens: "Jetons de conversation max. (contexte / résumé)",
+    maxChatTokensHelp: "0 n'utilise que max_tokens de la configuration du fournisseur. Une valeur positive définit la fenêtre de contexte pour le résumé de ce modèle.",
+    maxChatIterations: "Itérations de conversation max. (tours d'outils)",
+    maxChatIterationsHelp: "0 utilise la valeur par défaut. Une valeur positive limite les itérations d'appels d'outils pour ce modèle.",
     namePlaceholder: "Entrez le nom du modèle",
     descriptionPlaceholder: "Entrez la description du modèle",
     providerPlaceholder: "Sélectionnez le fournisseur",
@@ -7602,6 +7777,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "نظام",
     typeUser: "مستخدم",
     systemRoleCannotModify: "لا يمكن تعديل أدوار النظام.",
+    cloneTooltip: "استنساخ الدور: فتح صفحة الإنشاء مع الأذونات والإعدادات المعبأة مسبقًا",
     viewTitle: "عرض الدور",
     insertTemplate: "إدراج قالب",
     allowAll: "السماح للكل",
@@ -7916,6 +8092,17 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       editSkill: "تحرير المهارة",
       upload: "رفع",
       editFiles: "تحرير الملفات",
+      cloneSkill: "استنساخ المهارة",
+      cloneNameDefault: "{{name}} (نسخة)",
+      cloneSuccess: "تم استنساخ المهارة",
+      cloneFailed: "فشل استنساخ المهارة",
+      actionManageFiles: "إدارة الملفات",
+      actionPreview: "معاينة",
+      actionEditMetadata: "تعديل البيانات الوصفية",
+      actionClone: "استنساخ",
+      actionDelete: "حذف",
+      deleteSkillConfirm: "حذف هذه المهارة؟",
+      deleteSkillConfirmDescription: "ستُزال المهارة وجميع ملفاتها. لا يمكن التراجع عن هذا الإجراء.",
       fetchFailed: "فشل جلب المهارات",
       createSuccess: "تم إنشاء المهارة",
       createFailed: "فشل إنشاء المهارة",
@@ -7923,6 +8110,15 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "فشل تحديث المهارة",
       deleteSuccess: "تم حذف المهارة",
       deleteFailed: "فشل حذف المهارة",
+      presetTag: "مدمجة",
+      presetDisabledManageFiles: "لا يمكن تعديل ملفات المهارات المدمجة.",
+      presetDisabledEditMetadata: "لا يمكن تغيير بيانات المهارات المدمجة.",
+      presetDisabledDelete: "لا يمكن حذف المهارات المدمجة.",
+      statusForAi: "محادثة الذكاء الاصطناعي",
+      statusUpdateSuccess: "تم تحديث حالة المهارة",
+      statusUpdateFailed: "فشل تحديث حالة المهارة",
+      tooltipEnableSkillForAi: "تفعيل هذه المهارة لمحادثة الذكاء الاصطناعي",
+      tooltipDisableSkillForAi: "تعطيل هذه المهارة لمحادثة الذكاء الاصطناعي",
       uploadSuccess: "تم رفع المهارة",
       uploadFailed: "فشل الرفع",
       previewFailed: "فشل تحميل المعاينة",
@@ -7982,7 +8178,8 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         previewTitle: "معاينة المهارة",
         placeholderNewFile: "filename.md أو filename.txt",
         placeholderFolder: "folder-name",
-        placeholderFileName: "name.md"
+        placeholderFileName: "name.md",
+        presetReadOnly: "مهارة مدمجة: الملفات للقراءة فقط؛ استخدم المعاينة لعرض المحتوى."
       }
     },
     days: "أيام",
@@ -8322,6 +8519,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "فشل في تحديث مجموعة الأدوات",
       deleteSuccess: "تم حذف مجموعة الأدوات بنجاح",
       deleteFailed: "فشل في حذف مجموعة الأدوات",
+      presetTag: "مدمجة",
+      presetDisabledEdit: "لا يمكن تحرير مجموعات الأدوات المدمجة.",
+      presetDisabledDelete: "لا يمكن حذف مجموعات الأدوات المدمجة.",
       testSuccess: "نجح اختبار اتصال مجموعة الأدوات",
       testFailed: "فشل اختبار اتصال مجموعة الأدوات",
       deleteConfirm: "هل أنت متأكد من أنك تريد حذف مجموعة الأدوات هذه؟",
@@ -8429,6 +8629,16 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefault: "تعيين كافتراضي",
     defaultModel: "النموذج الافتراضي",
     searchPlaceholder: "البحث في النماذج الذكية...",
+    fetchTypeDefinitionsFailed: "فشل جلب تعريفات أنواع الذكاء الاصطناعي",
+    clone: "استنساخ",
+    cloneTooltip: "استنساخ كنموذج جديد (أعد إدخال مفتاح API إن لزم)",
+    cloneLoadFailed: "فشل تحميل النموذج للاستنساخ",
+    editTooltip: "تحرير النموذج",
+    deleteTooltip: "حذف النموذج",
+    maxChatTokens: "الحد الأقصى لرموز المحادثة (السياق / التلخيص)",
+    maxChatTokensHelp: "0 يستخدم فقط max_tokens من إعدادات المزود. قيمة موجبة تحدد نافذة السياق للتلخيص لهذا النموذج.",
+    maxChatIterations: "الحد الأقصى لتكرارات المحادثة (جولات الأدوات)",
+    maxChatIterationsHelp: "0 يستخدم الافتراضي. قيمة موجبة تحد أقصى تكرارات استدعاء الأدوات لهذا النموذج.",
     namePlaceholder: "أدخل اسم النموذج",
     descriptionPlaceholder: "أدخل وصف النموذج",
     providerPlaceholder: "اختر المزود",
@@ -8892,6 +9102,7 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     typeSystem: "System",
     typeUser: "Användare",
     systemRoleCannotModify: "Systemroller kan inte ändras.",
+    cloneTooltip: "Klona roll: öppna skapasidan med förifyllda behörigheter och inställningar",
     viewTitle: "Visa roll",
     insertTemplate: "Infoga mall",
     allowAll: "Tillåt alla",
@@ -9206,6 +9417,17 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       editSkill: "Redigera färdighet",
       upload: "Ladda upp",
       editFiles: "Redigera filer",
+      cloneSkill: "Klona färdighet",
+      cloneNameDefault: "{{name}} (kopia)",
+      cloneSuccess: "Färdighet klonad",
+      cloneFailed: "Det gick inte att klona färdigheten",
+      actionManageFiles: "Hantera filer",
+      actionPreview: "Förhandsvisa",
+      actionEditMetadata: "Redigera metadata",
+      actionClone: "Klona",
+      actionDelete: "Ta bort",
+      deleteSkillConfirm: "Ta bort denna färdighet?",
+      deleteSkillConfirmDescription: "Färdigheten och alla filer tas bort. Detta kan inte ångras.",
       fetchFailed: "Kunde inte hämta färdigheter",
       createSuccess: "Färdighet skapad",
       createFailed: "Kunde inte skapa färdighet",
@@ -9213,6 +9435,15 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Kunde inte uppdatera färdighet",
       deleteSuccess: "Färdighet borttagen",
       deleteFailed: "Kunde inte ta bort färdighet",
+      presetTag: "Förinställd",
+      presetDisabledManageFiles: "Inbyggda färdigheter kan inte redigera filer.",
+      presetDisabledEditMetadata: "Inbyggda färdigheter kan inte ändra metadata.",
+      presetDisabledDelete: "Inbyggda färdigheter kan inte tas bort.",
+      statusForAi: "AI-chatt",
+      statusUpdateSuccess: "Färdighetsstatus uppdaterad",
+      statusUpdateFailed: "Kunde inte uppdatera färdighetsstatus",
+      tooltipEnableSkillForAi: "Aktivera denna färdighet för AI-chatt",
+      tooltipDisableSkillForAi: "Inaktivera denna färdighet för AI-chatt",
       uploadSuccess: "Färdighet uppladdad",
       uploadFailed: "Uppladdning misslyckades",
       previewFailed: "Kunde inte ladda förhandsgranskning",
@@ -9272,7 +9503,8 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         previewTitle: "Förhandsgranskning av färdighet",
         placeholderNewFile: "filename.md eller filename.txt",
         placeholderFolder: "folder-name",
-        placeholderFileName: "name.md"
+        placeholderFileName: "name.md",
+        presetReadOnly: "Detta är en inbyggd färdighet. Filer är skrivskyddade; använd förhandsgranskning."
       }
     },
     days: "dagar",
@@ -9612,6 +9844,9 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       updateFailed: "Misslyckades med att uppdatera verktygsset",
       deleteSuccess: "Verktygsset borttaget framgångsrikt",
       deleteFailed: "Misslyckades med att ta bort verktygsset",
+      presetTag: "Förinställd",
+      presetDisabledEdit: "Inbyggda verktygsset kan inte redigeras.",
+      presetDisabledDelete: "Inbyggda verktygsset kan inte tas bort.",
       testSuccess: "Verktygsset-anslutningstest lyckades",
       testFailed: "Verktygsset-anslutningstest misslyckades",
       deleteConfirm: "Är du säker på att du vill ta bort detta verktygsset?",
@@ -9719,6 +9954,16 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setDefault: "Ange som standard",
     defaultModel: "Standardmodell",
     searchPlaceholder: "Sök AI-modeller...",
+    fetchTypeDefinitionsFailed: "Kunde inte hämta AI-typdefinitioner",
+    clone: "Klona",
+    cloneTooltip: "Klona som ny modell (ange API-nyckel igen vid behov)",
+    cloneLoadFailed: "Kunde inte ladda modell för kloning",
+    editTooltip: "Redigera modell",
+    deleteTooltip: "Ta bort modell",
+    maxChatTokens: "Max chattokens (kontext / sammanfattning)",
+    maxChatTokensHelp: "0 använder endast max_tokens från leverantörskonfigurationen. Ett positivt värde anger kontextfönster för sammanfattning för denna modell.",
+    maxChatIterations: "Max chattiterationer (verktygsrundor)",
+    maxChatIterationsHelp: "0 använder standard. Ett positivt värde begränsar verktygsanropsiterationer för denna modell.",
     namePlaceholder: "Ange modellnamn",
     descriptionPlaceholder: "Ange modellbeskrivning",
     providerPlaceholder: "Välj leverantör",
@@ -9864,29 +10109,29 @@ const ke = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     }
   }
 };
-f.use(b).use(v).init({
+f.use(k).use(v).init({
   ns: ["common", "authorization", "system", "ai", "task"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: P,
+      translation: T,
       common: q,
       authorization: U,
       system: N,
       ai: O,
-      task: B
+      task: x
     },
     "en-US": {
-      translation: T,
+      translation: P,
       common: w,
       authorization: R,
-      system: z,
-      ai: D,
-      task: E
+      system: D,
+      ai: z,
+      task: C
     },
     "de-DE": {
-      translation: C,
-      common: x,
+      translation: E,
+      common: B,
       authorization: V,
       system: _,
       ai: K,
@@ -9897,11 +10142,11 @@ f.use(b).use(v).init({
       common: G,
       authorization: W,
       system: H,
-      ai: J,
-      task: Z
+      ai: Z,
+      task: J
     },
     "fr-FR": {
-      translation: L,
+      translation: I,
       common: Q,
       authorization: Y,
       system: $,
@@ -9909,7 +10154,7 @@ f.use(b).use(v).init({
       task: ee
     },
     "ar-AE": {
-      translation: I,
+      translation: L,
       common: te,
       authorization: ae,
       system: ie,
@@ -9991,9 +10236,9 @@ function Se(e) {
 export {
   Ae as P,
   ye as a,
-  ke as b,
+  be as b,
   he as f,
-  be as g,
+  ke as g,
   ve as m,
   Se as s,
   fe as t

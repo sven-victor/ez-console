@@ -659,6 +659,27 @@ export async function previewSkill(
   );
 }
 
+/** Update skill status Set skill status to enabled or disabled PUT /api/system/skills/${param0}/status */
+export async function updateSkillStatus(
+  params: API.updateSkillStatusParams,
+  body: API.UpdateSkillStatusRequest,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelSkill>(
+    `/api/system/skills/${param0}/status`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** Clone skill Copy all skill files from source_id into a new skill; metadata comes from the request body. When X-Scope-OrgID is set, AI tool bindings for that organization are copied from the source skill. POST /api/system/skills/clone */
 export async function cloneSkill(
   body: API.CloneSkillRequest,
