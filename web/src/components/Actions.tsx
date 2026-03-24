@@ -40,6 +40,7 @@ export interface ActionProps extends ButtonProps {
 const ActionButton: React.FC<ActionProps> = (action) => {
   const [loading, setLoading] = useState(false);
   const { permission, icon, tooltip, onClick, confirm, label, ...rest } = action;
+  const disabled = !!rest.disabled;
 
   const handleClick = onClick ? async () => {
     setLoading(true);
@@ -50,24 +51,20 @@ const ActionButton: React.FC<ActionProps> = (action) => {
     }
   } : undefined;
 
-  let button = (
+  let node: React.ReactNode = (
     <Button
       type='text'
       size='small'
       loading={loading}
       icon={icon}
-      onClick={confirm ? undefined : handleClick}
+      onClick={confirm && !disabled ? undefined : handleClick}
       {...rest}
     >
       {label && <span style={{ position: 'inherit', top: '-2px' }}>{label}</span>}
     </Button>
   );
 
-  if (tooltip) {
-    button = <Tooltip title={tooltip}>{button}</Tooltip>;
-  }
-
-  if (confirm) {
+  if (confirm && !disabled) {
     const confirmHandler = async () => {
       if (confirm.onConfirm) {
         confirm.onConfirm();
@@ -76,7 +73,7 @@ const ActionButton: React.FC<ActionProps> = (action) => {
       }
     };
 
-    button = (
+    node = (
       <Popconfirm
         title={confirm.title}
         description={confirm.description}
@@ -84,16 +81,26 @@ const ActionButton: React.FC<ActionProps> = (action) => {
         okText={confirm.okText}
         cancelText={confirm.cancelText}
       >
-        {button}
+        {node}
       </Popconfirm>
     );
   }
 
-  if (permission) {
-    button = <PermissionGuard permission={permission}>{button}</PermissionGuard>;
+  if (tooltip) {
+    node = disabled ? (
+      <Tooltip title={tooltip}>
+        <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>{node}</span>
+      </Tooltip>
+    ) : (
+      <Tooltip title={tooltip}>{node}</Tooltip>
+    );
   }
 
-  return button;
+  if (permission) {
+    node = <PermissionGuard permission={permission}>{node}</PermissionGuard>;
+  }
+
+  return node;
 };
 
 export interface ActionsProps {
