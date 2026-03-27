@@ -52,6 +52,7 @@ func CacheControl(c *gin.Context) {
 }
 
 var RegisterStaticRoutes = func(engine *gin.Engine) {
+	engine.GET("/logo.png", CacheControl, static.Serve("/", staticHandler))
 	engine.GET("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)
 	engine.HEAD("/console/*filepath", CacheControl, static.Serve("/console", staticHandler), IndexHandler)
 }
