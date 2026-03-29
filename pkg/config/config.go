@@ -386,7 +386,7 @@ func LoadConfig(appName, configPath string) (*Config, error) {
 	} else if os.Getenv(safe.SecretEnvName) != "" {
 		viper.Set("global.encrypt-key", os.Getenv(safe.SecretEnvName))
 	} else {
-		return nil, fmt.Errorf("encrypt key is not set")
+		return nil, fmt.Errorf("encrypt key is not set, use --global.encrypt-key or set %s environment variable", safe.SecretEnvName)
 	}
 
 	if err := viper.Unmarshal(&globalConfig, viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(

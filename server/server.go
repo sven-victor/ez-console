@@ -205,18 +205,7 @@ func NewCommandServer(serviceName string, version string, description string, op
 		Use:     serviceName,
 		Short:   description,
 		Version: version,
-		Run: func(cmd *cobra.Command, args []string) {
-			newServer(cmd.Context(), serviceName, serverOption.withEngine...)
-		},
 	}
-	for _, option := range serverOption.withCommand {
-		option(rootCmd)
-	}
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-	// initConfig reads in config file and ENV variables if set.
 	initConfig := func() {
 		viper.BindPFlags(rootCmd.Flags())
 		bindTracingEnv()
@@ -228,8 +217,15 @@ func NewCommandServer(serviceName string, version string, description string, op
 		viper.Set("service.version", version)
 		viper.Set("service.name", serviceName)
 	}
+	rootCmd.Run = func(cmd *cobra.Command, args []string) {
+		initConfig()
+		newServer(cmd.Context(), serviceName, serverOption.withEngine...)
+	}
+	for _, option := range serverOption.withCommand {
+		option(rootCmd)
+	}
+
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yaml)")
-	cobra.OnInitialize(initConfig)
 	initFlags(rootCmd)
 	rootCmd.Flags().SortFlags = false
 	return &CommandServer{Command: rootCmd}

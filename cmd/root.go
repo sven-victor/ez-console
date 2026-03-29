@@ -16,6 +16,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/spf13/cobra"
 	"github.com/sven-victor/ez-console/server"
 )
 
@@ -26,7 +27,12 @@ var (
 )
 
 // rootCmd represents the base command when called without any subcommands
-var rootCmd = server.NewCommandServer("ez-console", VERSION, "ez-console is a web console frame.")
+var rootCmd = &cobra.Command{}
+
+func init() {
+	serverCmd := server.NewCommandServer("ez-console", VERSION, "ez-console is a web console frame.")
+	rootCmd.AddCommand(serverCmd.Command)
+}
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
