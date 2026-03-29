@@ -15,9 +15,9 @@
  */
 
 import { Button, Card, Input } from "antd"
-import { useTranslation, apiPost } from 'ez-console'
+import { useTranslation, apiPost, useAI } from 'ez-console'
 import { useRequest } from 'ahooks';
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface TestResponse {
   body: string;
@@ -26,6 +26,7 @@ interface TestResponse {
 
 export const TestPage: React.FC = () => {
   const { i18n } = useTranslation();
+  const { registerPageAI } = useAI();
   const [body, setBody] = useState('');
   const { data, loading, runAsync } = useRequest(() => {
     return apiPost<TestResponse>('/test', body)
@@ -33,10 +34,27 @@ export const TestPage: React.FC = () => {
     manual: true,
   });
 
+  const getPageData = useCallback(() => ({
+    body,
+    response: data ?? null,
+  }), [body, data]);
+
+  useEffect(() => {
+    return registerPageAI({
+      ephemeralSystemPrompts: [
+        'The user is on the Test Page. They can send an HTTP POST request and view the response body and headers.',
+      ],
+      pageData: getPageData,
+      pageDataDescription: 'Returns the current test page state including the request body the user typed and the latest response (body + headers).',
+    });
+  }, [registerPageAI, getPageData]);
+
+
+
   return <Card loading={loading} title={i18n.t('common.testPage', { defaultValue: 'Test Page' })}>
     <div>Body: {data?.body}</div>
     <div>Headers: {JSON.stringify(data?.headers)}</div>
-    <Input onChange={(e) => setBody(e.target.value)} />
+    <Input.TextArea onChange={(e) => setBody(e.target.value)} />
     <Button onClick={() => runAsync()}>Test</Button>
   </Card>
 }
