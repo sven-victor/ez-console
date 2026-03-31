@@ -116,8 +116,9 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         {
           path: '/profile',
           element: withSuspense(Profile),
-          name: undefined,
-          index: true,
+          hideInMenu: true,
+          name: 'profile',
+          index: false,
         },
         ...extraPrivateRoutes,
         {
@@ -125,22 +126,24 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
           permissions: ['task:list', 'task:schedule:list'],
           children: [
             {
-              path: '/tasks',
+              // path: '/tasks',
               element: withSuspense(TaskList),
               permissions: ['task:list'],
+              name: 'tasks',
               index: true,
             },
             {
               path: '/tasks/schedules',
               element: withSuspense(TaskScheduleList),
               permissions: ['task:schedule:list'],
-              index: true,
+              name: 'taskSchedules',
+              index: false,
             },
             {
               path: '/tasks/:id',
               element: withSuspense(TaskDetail),
               permissions: ['task:view'],
-              index: true,
+              index: false,
             },
           ],
         },
@@ -164,18 +167,23 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                   element: withSuspense(RoleList),
                   permissions: ['authorization:role:view'],
                   index: true,
+                  name: 'roles',
                 },
                 {
                   path: '/authorization/roles/create',
                   element: withSuspense(RoleForm),
                   permissions: ['authorization:role:create'],
-                  index: true,
+                  index: false,
+                  hideInMenu: true,
+                  name: 'roleCreate',
                 },
                 {
                   path: '/authorization/roles/:id/edit',
                   element: withSuspense(RoleForm),
                   permissions: ['authorization:role:update'],
-                  index: true,
+                  index: false,
+                  hideInMenu: true,
+                  name: 'roleUpdate',
                 },
               ]
             },
@@ -191,24 +199,31 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                   element: withSuspense(UserList),
                   permissions: ['authorization:user:list'],
                   index: true,
+                  name: 'users',
                 },
                 {
                   path: '/authorization/users/create',
                   element: withSuspense(UserForm),
                   permissions: ['authorization:user:create'],
-                  index: true,
+                  index: false,
+                  hideInMenu: true,
+                  name: 'userCreate',
                 },
                 {
                   path: '/authorization/users/:id',
                   element: withSuspense(UserDetail),
                   permissions: ['authorization:user:view'],
-                  index: true,
+                  index: false,
+                  hideInMenu: true,
+                  name: 'userDetail',
                 },
                 {
                   path: '/authorization/users/:id/edit',
                   element: withSuspense(UserForm),
                   permissions: ['authorization:user:update'],
-                  index: true,
+                  index: false,
+                  hideInMenu: true,
+                  name: 'userUpdate',
                 },
               ]
             },
@@ -226,12 +241,16 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                   element: withSuspense(ServiceAccountList),
                   permissions: ['authorization:service_account:view'],
                   index: true,
+                  hideInMenu: true,
+                  name: 'serviceAccounts',
                 },
                 {
                   path: '/authorization/service-accounts/:id',
                   element: withSuspense(ServiceAccountDetail),
                   permissions: ['authorization:service_account:view'],
-                  index: true,
+                  hideInMenu: true,
+                  name: 'serviceAccountDetail',
+                  index: false,
                 },
               ]
             },
@@ -253,31 +272,41 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
                 {
                   path: '/system/settings',
                   index: true,
+                  hideInMenu: true,
                   element: withSuspense(SystemSettings, { transformItems: transformSettingTabs }),
+                  name: 'settings',
                 },
                 {
                   path: '/system/settings/organizations/:id',
                   permissions: ['system:organization:view'],
                   element: withSuspense(OrganizationDetail),
-                  index: true,
+                  name: 'organizationDetail',
+                  index: false,
+                  hideInMenu: true,
                 },
                 {
                   path: '/system/settings/skills/:id/edit',
                   permissions: ['system:skills:edit_files'],
                   element: withSuspense(SkillEditor),
-                  index: true,
+                  name: 'skillEditor',
+                  hideInMenu: true,
+                  index: false,
                 },
                 {
                   path: '/system/settings/skills/:id/preview',
                   permissions: ['system:skills:view'],
                   element: withSuspense(SkillPreview),
-                  index: true,
+                  name: 'skillPreview',
+                  hideInMenu: true,
+                  index: false,
                 },
                 {
                   path: '/system/settings/ai-trace',
                   permissions: ['ai:trace:manage'],
                   element: withSuspense(AITraceViewer),
-                  index: true,
+                  name: 'aiTraceViewer',
+                  hideInMenu: true,
+                  index: false,
                 }
               ],
             },
@@ -287,7 +316,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
               icon: <FileSearchOutlined />,
               name: 'audit',
               permissions: ['system:audit:view'],
-              index: true,
+              index: false,
               element: withSuspense(AuditLogs),
             },
           ]
@@ -314,10 +343,10 @@ export interface IRouteItem {
   element: React.ReactNode;
   name?: string;
   icon?: React.ReactNode;
-  children?: undefined;
   is_private?: boolean;
-  index: true;
+  index: boolean;
   permissions?: string[];
+  hideInMenu?: boolean;
 }
 
 export interface IRouteGroup {
@@ -329,4 +358,5 @@ export interface IRouteGroup {
   is_private?: boolean;
   index?: false;
   permissions?: string[];
+  hideInMenu?: boolean;
 }

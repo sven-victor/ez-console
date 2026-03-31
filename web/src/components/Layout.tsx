@@ -35,8 +35,8 @@ import TaskListDropdown from './TaskListDropdown';
 import { useTranslation } from 'react-i18next';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import usePermission from '@/hooks/usePermission';
-import { flatMapDeep } from 'lodash-es';
-import { getURL } from '@/utils';
+import { flatMapDeep, snakeCase } from 'lodash-es';
+import { getURL, toSmartTitle } from '@/utils';
 import { AIChatModal, AIChatButton, AIChatSider } from './AIChatLayout';
 import { useSite } from '@/contexts/SiteContext';
 import { useAI } from '@/contexts/AIContext';
@@ -230,10 +230,16 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           })
         } else if (match.route.name) {
           const names = matches.slice(0, idx + 1).map(match => match.route.name).filter(Boolean).join('.')
+          const lastRoutePath = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].path : undefined
+          if (lastRoutePath === (match.route.path || match.pathnameBase)) {
+            continue
+          }
           breadcrumbs.push({
-            path: match.route.path,
-            title: match.route.name ? t(`breadcrumbs.${names}`) : undefined,
-            key: match.route.path
+            path: match.pathnameBase,
+            title: match.route.name
+              ? t(`breadcrumbs.${names.replace(/\./g, '_')}`, { defaultValue: toSmartTitle(match.route.name) })
+              : undefined,
+            key: match.pathname || match.route.name,
           })
         }
       }
@@ -245,7 +251,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     return permissions.some(permission => hasPermission(permission));
   }
 
-  const defaultOpenKeys: string[] = flatMapDeep(routes, item => item.children).map(item => item?.name).filter(item => item !== undefined)
+  const defaultOpenKeys: string[] = flatMapDeep(routes, item => 'children' in item && item.children ? item.children : []).map(item => item?.name).filter(item => item !== undefined)
 
   const renderMenuItems = (routes: IRoute[], parent: (string | undefined)[] = []): React.ReactNode[] => {
     const toTitle = (name: string | undefined) => {
@@ -258,6 +264,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       }
       return [route];
     }).map((route) => {
+      if ('hideInMenu' in route && route.hideInMenu) {
+        return null
+      }
       if (route.permissions && !hasAnyPermission(route.permissions)) {
         return null;
       }
@@ -303,7 +312,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
     const matches = matchRoutes(routes, location.pathname)
     if (matches) {
       for (const match of matches.reverse()) {
-        if (match.route.path && match.route.name) {
+        if (match.route.path && match.route.name && !('hideInMenu' in match.route && match.route.hideInMenu)) {
           return match.route.path
         }
       }
@@ -352,10 +361,18 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       {themeMode === 'light' ? <SunOutlined /> : <MoonOutlined />}
     </HeaderDropdown>
   ]
+
+  const sanitizeClassName = (className?: string) => {
+    if (!className) return ''
+
+    return snakeCase(className).replace(/[^a-zA-Z0-9-]/g, '-')
+  }
+
+
   const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
     const [collapsed, setCollapsed] = useState(false);
-
-    return <Layout className={classNames("main-layout", styles.layout)}>
+    const pageClassName = sanitizeClassName(matchRoutes(routes, location.pathname)?.pop()?.route.name)
+    return <Layout className={classNames("main-layout", styles.layout, { [`page-${pageClassName}`]: pageClassName })}>
       <Sider width={siderWidth} collapsible collapsed={collapsed} onCollapse={setCollapsed} className={classNames(styles.menuSider, 'layout-menu-sider')} theme={isDarkMode ? 'light' : menuStyle} >
         <div className={classNames("logo", styles.layoutLogo)}>
           <div className={classNames("layout-logo-container", styles.layoutLogoContainer)}>

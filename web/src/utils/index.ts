@@ -302,3 +302,20 @@ export const getURL = (uri?: string): string => {
   }
   return baseURL + '/' + uri;
 }
+
+export const toSmartTitle = (str: string): string => {
+  const smallWords = ["of", "the", "and", "in", "on", "at", "to", "for"];
+
+  return str
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word, i) => {
+      if (i !== 0 && smallWords.includes(word)) {
+        return word;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    })
+    .join(" ");
+}

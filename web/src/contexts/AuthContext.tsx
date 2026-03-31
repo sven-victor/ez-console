@@ -24,7 +24,6 @@ import { getURL } from '@/utils';
 // Auth context type
 export interface AuthContextType {
   user: API.User | null | undefined;
-  token: string | null;
   loading: boolean;
   login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
   oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | void>;
@@ -36,7 +35,6 @@ export interface AuthContextType {
 // Create auth context
 export const AuthContext = createContext<AuthContextType>({
   user: undefined,
-  token: null,
   loading: false,
   login: async () => { },
   oauthLogin: async () => { },
@@ -70,7 +68,6 @@ const setAuthToken = (token: string | null, writeToLocalStorage: boolean = true)
 // Auth provider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<API.User | null | undefined>(undefined);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
 
   const { run: fetchCurrentUser, error } = useRequest(async () => {
@@ -112,7 +109,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw { password_expired: true, user: userData, token: token };
       }
       setAuthToken(token);
-      setToken(token);
       setUser(userData);
       return userData;
     } catch (error) {
@@ -159,7 +155,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
       setAuthToken(token);
-      setToken(token);
       setUser(userData);
 
       return userData;
@@ -179,7 +174,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     api.authorization.logout();
     setAuthToken(null); // Use unified token setting function
-    setToken(null);
     setUser(null);
   };
 
@@ -191,7 +185,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
-        token,
         loading: isLoading,
         login,
         oauthLogin,

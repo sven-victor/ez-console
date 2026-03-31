@@ -96,7 +96,7 @@ function App({
 
   const deepCopyRouters = (routes: IRoute[]): IRoute[] => {
     return routes.map((route) => {
-      if (route.children === undefined) {
+      if (!('children' in route) || route.children === undefined) {
         return route
       }
       return {
@@ -116,9 +116,6 @@ function App({
     return childrenRoutes.flatMap((route) => {
       if (route.is_private) {
         return [route];
-      }
-      if ('children' in route && route.children) {
-        return route.children;
       }
       return [route];
     }).map((route, index) => {
