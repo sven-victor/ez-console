@@ -53,7 +53,7 @@ const ActionButton: React.FC<ActionProps> = (action) => {
 
   let node: React.ReactNode = (
     <Button
-      type='text'
+      type='link'
       size='small'
       loading={loading}
       icon={icon}
