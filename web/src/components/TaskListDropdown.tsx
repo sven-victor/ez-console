@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UnorderedListOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -23,6 +23,9 @@ import HeaderDropdown from './HeaderDropdown';
 import { useSite } from '@/contexts/SiteContext';
 import api from '@/service/api';
 import { PermissionGuard } from './PermissionGuard';
+import { useRequest } from 'ahooks';
+import { useAuth } from '@/contexts/AuthContext';
+import { isEqualWith } from 'lodash-es';
 
 const statusColors: Record<API.TaskStatus, string> = {
   pending: 'default',
@@ -35,8 +38,32 @@ const statusColors: Record<API.TaskStatus, string> = {
 const TaskListDropdown: React.FC<{ className?: string }> = ({ className }) => {
   const { t } = useTranslation('task');
   const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const { tasks, tasksDropdownOpen, setTasksDropdownOpen } = useSite();
+  const { tasksDropdownOpen, setTasksDropdownOpen, tasks, setTasks } = useSite();
+
+  const { runAsync: fetchTasks, loading } = useRequest(async () => {
+    return api.tasks.listUserTasks({});
+  }, {
+    onSuccess: (res) => {
+      if (!isEqualWith(tasks, res, (a: API.Task, b: API.Task) => {
+        return a.id === b.id &&
+          a.status === b.status &&
+          a.progress === b.progress
+      })) {
+        setTasks(res);
+      }
+    },
+    pollingInterval: tasksDropdownOpen ? 3000 : 3000,
+    ready: !!user,
+    refreshDeps: [user],
+  });
+
+  useEffect(() => {
+    if (tasksDropdownOpen) {
+      fetchTasks();
+    }
+  }, [tasksDropdownOpen]);
 
   const handleDownload = async (fileKey: string) => {
     const res: { expires: number, signature: string } = await api.base.downloadFile({ fileKey }, { params: { method: 'sign' } });
@@ -48,6 +75,7 @@ const TaskListDropdown: React.FC<{ className?: string }> = ({ className }) => {
       <List
         size="small"
         dataSource={tasks}
+        loading={loading}
         renderItem={(item: API.Task) => (
           <List.Item
             key={item.id}

@@ -29,8 +29,9 @@ export interface SiteContextType {
   currentOrgId: string | null;
   setCurrentOrgId: (orgId: string) => void;
   clearCurrentOrgId: () => void;
-  tasks?: API.Task[];
   error?: Error;
+  tasks?: API.Task[];
+  setTasks: (tasks: API.Task[]) => void;
   addTask: (task: API.Task) => void;
   tasksDropdownOpen: boolean
   setTasksDropdownOpen: (open: boolean) => void;
@@ -47,6 +48,7 @@ export const SiteContext = createContext<SiteContextType>({
   setCurrentOrgId: () => { },
   clearCurrentOrgId: () => { },
   error: undefined,
+  setTasks: () => { },
   tasks: undefined,
   addTask: () => { },
   tasksDropdownOpen: false,
@@ -107,23 +109,6 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
 
   const [tasks, setTasks] = useState<API.Task[]>([]);
 
-  const { run: fetchTasks } = useRequest(async () => {
-    return api.tasks.listUserTasks({});
-  }, {
-    onSuccess: (res) => {
-      setTasks(res);
-    },
-    ready: !!user,
-    refreshDeps: [user],
-    pollingInterval: tasksDropdownOpen ? 3000 : 60000
-  });
-
-  useEffect(() => {
-    if (tasksDropdownOpen) {
-      fetchTasks();
-    }
-  }, [tasksDropdownOpen]);
-
   return (
     <SiteContext.Provider
       value={{
@@ -145,6 +130,9 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
           setTasksDropdownOpen(open);
         },
         tasksDropdownOpen,
+        setTasks: (tasks: API.Task[]) => {
+          setTasks(tasks);
+        },
         addTask: (task: API.Task) => {
           setTasks((tasks) => [task, ...tasks]);
           setTasksDropdownOpen(true)
