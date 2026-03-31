@@ -24,18 +24,16 @@ const AuditLogs: React.FC = () => {
   const { t } = useTranslation('system');
 
   return (
-    <Card title={t('audit.title', { defaultValue: 'Audit Logs' })}>
-      <UserAuditLogs request={api.system.getAuditLogs} columnsFilter={(columns) => {
-        return [
-          {
-            title: t('audit.columns.username', { defaultValue: 'Username' }),
-            dataIndex: 'username',
-            key: 'username',
-          },
-          ...columns
-        ]
-      }} />
-    </Card>
+    <UserAuditLogs request={api.system.getAuditLogs} columnsFilter={(columns) => {
+      return [
+        {
+          title: t('audit.columns.username', { defaultValue: 'Username' }),
+          dataIndex: 'username',
+          key: 'username',
+        },
+        ...columns
+      ]
+    }} />
   );
 };
 
