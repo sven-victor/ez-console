@@ -20,6 +20,9 @@ export default {
   typeLabel: '类型',
   type: {
     user_export: '用户导出',
+    audit_log_cleanup_task: '审计日志清理任务',
+    ai_chat_session_cleanup_task: 'AI 会话清理任务',
+    task_log_cleanup_task: '任务日志清理任务',
   },
   statusLabel: '状态',
   progress: '进度',
@@ -69,11 +72,4 @@ export default {
   viewHistory: '查看历史',
   triggerNow: '立即触发',
   executionHistory: '执行历史',
-  task: {
-    type: {
-      audit_log_cleanup_task: '审计日志清理任务',
-      ai_chat_session_cleanup_task: 'AI 会话清理任务',
-      task_log_cleanup_task: '任务日志清理任务',
-    },
-  },
 };

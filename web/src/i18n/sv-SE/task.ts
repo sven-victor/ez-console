@@ -20,6 +20,9 @@ export default {
   typeLabel: 'Typ',
   type: {
     user_export: 'Användarexport',
+    audit_log_cleanup_task: 'Rensning av granskningsloggar',
+    ai_chat_session_cleanup_task: 'Rensning av AI-chattsessioner',
+    task_log_cleanup_task: 'Rensning av uppgiftsloggar',
   },
   statusLabel: 'Status',
   progress: 'Framsteg',
@@ -69,11 +72,4 @@ export default {
   viewHistory: 'Visa historik',
   triggerNow: 'Kör nu',
   executionHistory: 'Körhistorik',
-  task: {
-    type: {
-      audit_log_cleanup_task: 'Rensning av granskningsloggar',
-      ai_chat_session_cleanup_task: 'Rensning av AI-chattsessioner',
-      task_log_cleanup_task: 'Rensning av uppgiftsloggar',
-    },
-  },
 };

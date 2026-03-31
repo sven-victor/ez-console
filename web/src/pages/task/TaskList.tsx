@@ -85,7 +85,7 @@ const TaskList: React.FC = () => {
       key: 'task_type',
       width: 300,
       render: (taskType: string) => {
-        const taskTypeLabel = t(`task.type.${taskType}`, { defaultValue: taskType });
+        const taskTypeLabel = t(`type.${taskType}`, { defaultValue: taskType });
         return <Tag color="blue">{taskTypeLabel}</Tag>;
       },
     },

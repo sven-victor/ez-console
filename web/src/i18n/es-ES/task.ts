@@ -20,6 +20,9 @@ export default {
   typeLabel: 'Tipo',
   type: {
     user_export: 'Exportar usuarios',
+    audit_log_cleanup_task: 'Limpieza de registros de auditoría',
+    ai_chat_session_cleanup_task: 'Limpieza de sesiones de chat de IA',
+    task_log_cleanup_task: 'Limpieza de registros de tareas',
   },
   statusLabel: 'Estado',
   progress: 'Progreso',
@@ -69,11 +72,4 @@ export default {
   viewHistory: 'Ver historial',
   triggerNow: 'Ejecutar ahora',
   executionHistory: 'Historial de ejecuciones',
-  task: {
-    type: {
-      audit_log_cleanup_task: 'Limpieza de registros de auditoría',
-      ai_chat_session_cleanup_task: 'Limpieza de sesiones de chat de IA',
-      task_log_cleanup_task: 'Limpieza de registros de tareas',
-    },
-  },
 };

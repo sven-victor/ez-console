@@ -20,6 +20,9 @@ export default {
   typeLabel: 'Type',
   type: {
     user_export: 'Export d\'utilisateurs',
+    audit_log_cleanup_task: 'Nettoyage des journaux d\'audit',
+    ai_chat_session_cleanup_task: 'Nettoyage des sessions de chat IA',
+    task_log_cleanup_task: 'Nettoyage des journaux de tâches',
   },
   statusLabel: 'Statut',
   progress: 'Progression',
@@ -69,11 +72,4 @@ export default {
   viewHistory: 'Voir l\'historique',
   triggerNow: 'Déclencher maintenant',
   executionHistory: 'Historique d\'exécution',
-  task: {
-    type: {
-      audit_log_cleanup_task: 'Nettoyage des journaux d\'audit',
-      ai_chat_session_cleanup_task: 'Nettoyage des sessions de chat IA',
-      task_log_cleanup_task: 'Nettoyage des journaux de tâches',
-    },
-  },
 };

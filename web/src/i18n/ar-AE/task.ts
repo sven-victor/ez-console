@@ -20,6 +20,9 @@ export default {
   typeLabel: 'النوع',
   type: {
     user_export: 'تصدير المستخدمين',
+    audit_log_cleanup_task: 'تنظيف سجلات التدقيق',
+    ai_chat_session_cleanup_task: 'تنظيف جلسات محادثات الذكاء الاصطناعي',
+    task_log_cleanup_task: 'تنظيف سجلات المهام',
   },
   statusLabel: 'الحالة',
   progress: 'التقدم',
@@ -69,11 +72,4 @@ export default {
   viewHistory: 'عرض السجل',
   triggerNow: 'شغّل الآن',
   executionHistory: 'سجل التنفيذ',
-  task: {
-    type: {
-      audit_log_cleanup_task: 'تنظيف سجلات التدقيق',
-      ai_chat_session_cleanup_task: 'تنظيف جلسات محادثات الذكاء الاصطناعي',
-      task_log_cleanup_task: 'تنظيف سجلات المهام',
-    },
-  },
 };

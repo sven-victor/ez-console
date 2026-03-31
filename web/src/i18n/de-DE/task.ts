@@ -20,6 +20,9 @@ export default {
   typeLabel: 'Typ',
   type: {
     user_export: 'Benutzerexport',
+    audit_log_cleanup_task: 'Bereinigung von Audit-Logs',
+    ai_chat_session_cleanup_task: 'Bereinigung von AI-Chat-Sitzungen',
+    task_log_cleanup_task: 'Bereinigung von Aufgaben-Logs',
   },
   statusLabel: 'Status',
   progress: 'Fortschritt',
@@ -69,11 +72,4 @@ export default {
   viewHistory: 'Verlauf anzeigen',
   triggerNow: 'Jetzt auslösen',
   executionHistory: 'Ausführungsverlauf',
-  task: {
-    type: {
-      audit_log_cleanup_task: 'Bereinigung von Audit-Logs',
-      ai_chat_session_cleanup_task: 'Bereinigung von AI-Chat-Sitzungen',
-      task_log_cleanup_task: 'Bereinigung von Aufgaben-Logs',
-    },
-  },
 };
