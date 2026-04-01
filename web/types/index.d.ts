@@ -715,7 +715,6 @@ export declare interface AuditLogDetail {
 
 declare interface AuthContextType {
     user: API.User | null | undefined;
-    token: string | null;
     loading: boolean;
     login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
     oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | void>;
@@ -1286,6 +1285,7 @@ export declare interface IRouteGroup {
     is_private?: boolean;
     index?: false;
     permissions?: string[];
+    hideInMenu?: boolean;
 }
 
 export declare interface IRouteItem {
@@ -1293,10 +1293,10 @@ export declare interface IRouteItem {
     element: default_2.ReactNode;
     name?: string;
     icon?: default_2.ReactNode;
-    children?: undefined;
     is_private?: boolean;
-    index: true;
+    index: boolean;
     permissions?: string[];
+    hideInMenu?: boolean;
 }
 
 /**
@@ -2608,8 +2608,9 @@ declare interface SiteContextType {
     currentOrgId: string | null;
     setCurrentOrgId: (orgId: string) => void;
     clearCurrentOrgId: () => void;
-    tasks?: API.Task[];
     error?: Error;
+    tasks?: API.Task[];
+    setTasks: (tasks: API.Task[]) => void;
     addTask: (task: API.Task) => void;
     tasksDropdownOpen: boolean;
     setTasksDropdownOpen: (open: boolean) => void;

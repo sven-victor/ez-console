@@ -15,7 +15,6 @@
  */
 
 import React from 'react';
-import { Card } from 'antd';
 import { useTranslation } from 'react-i18next';
 import UserAuditLogs from '@/components/authorization/UserAuditLogs';
 import api from '@/service/api';

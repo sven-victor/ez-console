@@ -1,15 +1,14 @@
-import { useContext as _, createContext as z, useState as u, useEffect as S, useCallback as T } from "react";
-import { j as L, i as B } from "./vendor.js";
-import { message as U } from "antd";
-import { a as w } from "./index.js";
-import { c as F } from "./client.js";
-import { useRequest as O } from "ahooks";
+import { useContext as P, createContext as O, useState as u, useEffect as k, useCallback as w } from "react";
+import { j as x, i as B } from "./vendor.js";
+import { message as L } from "antd";
+import { a as I } from "./index.js";
+import { c as z } from "./client.js";
+import { useRequest as D } from "ahooks";
 import { g as R } from "./base.js";
 import { useTranslation as V } from "react-i18next";
 import { isFunction as J } from "lodash-es";
-const x = z({
+const b = O({
   user: void 0,
-  token: null,
   loading: !1,
   login: async () => {
   },
@@ -20,88 +19,87 @@ const x = z({
   updateUser: () => {
   },
   error: void 0
-}), N = () => _(x), D = (i, r = !0) => {
-  i ? (r && localStorage.setItem("token", i), F.defaults.headers.common.Authorization = `Bearer ${i}`) : (r && localStorage.removeItem("token"), delete F.defaults.headers.common.Authorization);
+}), N = () => P(b), T = (i, n = !0) => {
+  i ? (n && localStorage.setItem("token", i), z.defaults.headers.common.Authorization = `Bearer ${i}`) : (n && localStorage.removeItem("token"), delete z.defaults.headers.common.Authorization);
 }, te = ({ children: i }) => {
-  const [r, o] = u(void 0), [v, d] = u(localStorage.getItem("token")), [A, y] = u(!0), { run: k, error: g } = O(async () => {
-    const s = localStorage.getItem("token");
-    return s ? (D(s, !1), w.authorization.getCurrentUser()) : null;
+  const [n, s] = u(void 0), [p, f] = u(!0), { run: A, error: h } = D(async () => {
+    const r = localStorage.getItem("token");
+    return r ? (T(r, !1), I.authorization.getCurrentUser()) : null;
   }, {
     manual: !0,
     onBefore: () => {
-      o(void 0);
+      s(void 0);
     },
-    onSuccess: (s) => {
-      o(s);
+    onSuccess: (r) => {
+      s(r);
     },
-    onError: (s) => {
-      console.error("Failed to get current user:", s), m();
+    onError: (r) => {
+      console.error("Failed to get current user:", r), o();
     },
     onFinally: () => {
-      y(!1);
+      f(!1);
     }
   });
-  S(() => {
-    k();
+  k(() => {
+    A();
   }, []);
-  const n = async (s) => {
+  const v = async (r) => {
     try {
-      const e = await w.authorization.login(s), { token: l, user: c, needs_mfa: p, password_expired: f, mfa_token: I, mfa_type: C } = e;
-      if (p)
-        throw { needsMFA: !0, mfaToken: I, mfaType: C, user: c };
-      if (f)
+      const e = await I.authorization.login(r), { token: l, user: c, needs_mfa: m, password_expired: d, mfa_token: g, mfa_type: y } = e;
+      if (m)
+        throw { needsMFA: !0, mfaToken: g, mfaType: y, user: c };
+      if (d)
         throw { password_expired: !0, user: c, token: l };
-      return D(l), d(l), o(c), c;
+      return T(l), s(c), c;
     } catch (e) {
-      throw e && e.needsMFA || e && e.password_expired || U.error("Login failed, please check your username and password"), e;
+      throw e && e.needsMFA || e && e.password_expired || L.error("Login failed, please check your username and password"), e;
     }
-  }, a = T(async (s) => {
+  }, C = w(async (r) => {
     try {
-      const e = await w.oauth.handleCallback(s, { headers: { "X-Base-Path": R() } });
+      const e = await I.oauth.handleCallback(r, { headers: { "X-Base-Path": R() } });
       let l = "", c = null;
       if (e && typeof e == "object")
         if ("code" in e && e.code === "0" && "data" in e) {
-          const { token: p, user: f, needs_mfa: I, mfa_token: C, mfa_type: P } = e.data;
-          if (I)
-            throw { needsMFA: !0, mfaToken: C, mfaType: P, user: f };
-          l = p, c = f;
+          const { token: m, user: d, needs_mfa: g, mfa_token: y, mfa_type: S } = e.data;
+          if (g)
+            throw { needsMFA: !0, mfaToken: y, mfaType: S, user: d };
+          l = m, c = d;
         } else {
-          const { token: p, user: f, needs_mfa: I, mfa_token: C, mfa_type: P } = e;
-          if (I)
-            throw { needsMFA: !0, mfaToken: C, mfaType: P, user: f };
-          l = p, c = f;
+          const { token: m, user: d, needs_mfa: g, mfa_token: y, mfa_type: S } = e;
+          if (g)
+            throw { needsMFA: !0, mfaToken: y, mfaType: S, user: d };
+          l = m, c = d;
         }
-      return D(l), d(l), o(c), c;
+      return T(l), s(c), c;
     } catch (e) {
-      throw o(void 0), e && e.needsMFA || e && e.passwordExpired, e;
+      throw s(void 0), e && e.needsMFA || e && e.passwordExpired, e;
     }
-  }, []), m = () => {
-    w.authorization.logout(), D(null), d(null), o(null);
-  }, h = (s) => {
-    o(s);
+  }, []), o = () => {
+    I.authorization.logout(), T(null), s(null);
+  }, a = (r) => {
+    s(r);
   };
-  return /* @__PURE__ */ L.jsx(
-    x.Provider,
+  return /* @__PURE__ */ x.jsx(
+    b.Provider,
     {
       value: {
-        user: r,
-        token: v,
-        loading: A,
-        login: n,
-        oauthLogin: a,
-        logout: m,
-        updateUser: h,
-        error: g
+        user: n,
+        loading: p,
+        login: v,
+        oauthLogin: C,
+        logout: o,
+        updateUser: a,
+        error: h
       },
       children: i
     }
   );
 }, se = () => {
-  const i = _(x);
+  const i = P(b);
   if (i === void 0)
     throw new Error("useAuth must be used within an AuthProvider");
   return i;
-}, M = z({
+}, F = O({
   siteConfig: null,
   enableMultiOrg: !1,
   enableSkillToolBinding: !1,
@@ -113,87 +111,83 @@ const x = z({
   clearCurrentOrgId: () => {
   },
   error: void 0,
+  setTasks: () => {
+  },
   tasks: void 0,
   addTask: () => {
   },
   tasksDropdownOpen: !1,
   setTasksDropdownOpen: () => {
   }
-}), $ = () => _(M), oe = ({ children: i }) => {
-  const { user: r } = N(), { data: o = null, loading: v, runAsync: d, error: A } = O(async () => w.system.getSiteConfig(), {
+}), $ = () => P(F), oe = ({ children: i }) => {
+  const { user: n } = N(), { data: s = null, loading: p, runAsync: f, error: A } = D(async () => I.system.getSiteConfig(), {
     manual: !0
   });
-  S(() => {
-    r !== void 0 && d();
-  }, [r]);
-  const [y, k] = u(localStorage.getItem("orgID"));
-  S(() => {
-    y ? localStorage.setItem("orgID", y) : localStorage.removeItem("orgID");
-  }, [y]), S(() => {
-    var s, e, l;
-    if (r) {
-      let c = localStorage.getItem("orgID");
-      if (c) {
-        const p = (s = r == null ? void 0 : r.organizations) == null ? void 0 : s.find((f) => f.id === c);
-        if (p) {
-          k(p.id);
+  k(() => {
+    n !== void 0 && f();
+  }, [n]);
+  const [h, v] = u(localStorage.getItem("orgID"));
+  k(() => {
+    h ? localStorage.setItem("orgID", h) : localStorage.removeItem("orgID");
+  }, [h]), k(() => {
+    var e, l, c;
+    if (n) {
+      let m = localStorage.getItem("orgID");
+      if (m) {
+        const d = (e = n == null ? void 0 : n.organizations) == null ? void 0 : e.find((g) => g.id === m);
+        if (d) {
+          v(d.id);
           return;
         }
       }
-      k(((l = (e = r == null ? void 0 : r.organizations) == null ? void 0 : e[0]) == null ? void 0 : l.id) ?? null);
+      v(((c = (l = n == null ? void 0 : n.organizations) == null ? void 0 : l[0]) == null ? void 0 : c.id) ?? null);
     }
-  }, [o, r == null ? void 0 : r.organizations]);
-  const [g, n] = u(!1), [a, m] = u([]), { run: h } = O(async () => w.tasks.listUserTasks({}), {
-    onSuccess: (s) => {
-      m(s);
-    },
-    ready: !!r,
-    refreshDeps: [r],
-    pollingInterval: g ? 3e3 : 6e4
-  });
-  return S(() => {
-    g && h();
-  }, [g]), /* @__PURE__ */ L.jsx(
-    M.Provider,
+  }, [s, n == null ? void 0 : n.organizations]);
+  const [C, o] = u(!1), [a, r] = u([]);
+  return /* @__PURE__ */ x.jsx(
+    F.Provider,
     {
       value: {
-        siteConfig: o,
-        loading: v,
-        enableMultiOrg: (o == null ? void 0 : o.enable_multi_org) ?? !1,
-        enableSkillToolBinding: (o == null ? void 0 : o.enable_skill_tool_binding) ?? !1,
-        fetchSiteConfig: d,
-        currentOrgId: y,
-        setCurrentOrgId: (s) => {
-          k(s);
+        siteConfig: s,
+        loading: p,
+        enableMultiOrg: (s == null ? void 0 : s.enable_multi_org) ?? !1,
+        enableSkillToolBinding: (s == null ? void 0 : s.enable_skill_tool_binding) ?? !1,
+        fetchSiteConfig: f,
+        currentOrgId: h,
+        setCurrentOrgId: (e) => {
+          v(e);
         },
         clearCurrentOrgId: () => {
-          k(null);
+          v(null);
         },
         error: A,
         tasks: a,
-        setTasksDropdownOpen: (s) => {
-          n(s);
+        setTasksDropdownOpen: (e) => {
+          o(e);
         },
-        tasksDropdownOpen: g,
-        addTask: (s) => {
-          m((e) => [s, ...e]), n(!0);
+        tasksDropdownOpen: C,
+        setTasks: (e) => {
+          r(e);
+        },
+        addTask: (e) => {
+          r((l) => [e, ...l]), o(!0);
         }
       },
       children: i
     }
   );
 }, re = () => {
-  var g;
-  const { user: i } = _(x), { currentOrgId: r } = $(), o = (g = i == null ? void 0 : i.roles) == null ? void 0 : g.filter((n) => !n.organization_id || n.organization_id === r), v = () => o ? o.some((n) => n.name === "admin" && !n.organization_id) : !1, d = (n) => o ? v() ? !0 : o.some((a) => a.permissions ? a.permissions.some((m) => m.code === n) : !1) : !1;
+  var C;
+  const { user: i } = P(b), { currentOrgId: n } = $(), s = (C = i == null ? void 0 : i.roles) == null ? void 0 : C.filter((o) => !o.organization_id || o.organization_id === n), p = () => s ? s.some((o) => o.name === "admin" && !o.organization_id) : !1, f = (o) => s ? p() ? !0 : s.some((a) => a.permissions ? a.permissions.some((r) => r.code === o) : !1) : !1;
   return {
-    hasPermission: d,
-    hasAllPermissions: (n) => n.every((a) => d(a)),
-    hasAnyPermission: (n) => n.some((a) => d(a)),
-    hasGlobalPermission: (n) => o ? v() ? !0 : o.some((a) => a.organization_id || !a.permissions ? !1 : a.permissions.some((m) => m.code === n)) : !1,
-    isAdmin: v(),
+    hasPermission: f,
+    hasAllPermissions: (o) => o.every((a) => f(a)),
+    hasAnyPermission: (o) => o.some((a) => f(a)),
+    hasGlobalPermission: (o) => s ? p() ? !0 : s.some((a) => a.organization_id || !a.permissions ? !1 : a.permissions.some((r) => r.code === o)) : !1,
+    isAdmin: p(),
     loading: !i
   };
-}, K = z({
+}, M = O({
   layout: "sidebar",
   setLayout: () => {
   },
@@ -219,68 +213,68 @@ const x = z({
   },
   resetPageAIContext: () => {
   }
-}), ne = () => _(K), ae = ({ children: i }) => {
-  const { t: r } = V("ai"), [o, v] = u("sidebar"), [d, A] = u(!1), [y, k] = u(!1), [g, n] = u(void 0), [a, m] = u(), [h, s] = u(null), [e, l] = u([]), [c, p] = u([]), f = T(() => {
-    l([]), p([]);
-  }, []), I = T((t) => {
-    t.ephemeralSystemPrompts && l(t.ephemeralSystemPrompts);
-    const b = t.pageData ? [{
+}), ne = () => P(M), ae = ({ children: i }) => {
+  const { t: n } = V("ai"), [s, p] = u("sidebar"), [f, A] = u(!1), [h, v] = u(!1), [C, o] = u(void 0), [a, r] = u(), [e, l] = u(null), [c, m] = u([]), [d, g] = u([]), y = w(() => {
+    m([]), g([]);
+  }, []), S = w((t) => {
+    t.ephemeralSystemPrompts && m(t.ephemeralSystemPrompts);
+    const _ = t.pageData ? [{
       name: "ui_get_page_data",
       description: `This is a browser/client-side method. If the user explicitly instructs you to retrieve page data or if you believe it is necessary to retrieve page data, you can try invoking this method. ${t.pageDataDescription || "Returns a JSON snapshot of the current page data."}`,
       parameters: { type: "object", properties: {}, required: [] },
       handler: () => B(t.pageData) ? t.pageData : J(t.pageData) ? JSON.stringify(t.pageData()) : JSON.stringify(t.pageData)
     }] : [];
-    return p([...b, ...t.tools ?? []]), () => {
-      f();
+    return g([..._, ...t.tools ?? []]), () => {
+      y();
     };
-  }, [f]);
-  S(() => {
+  }, [y]);
+  k(() => {
     const t = localStorage.getItem("activeConversationKey");
-    t && n(t);
+    t && o(t);
   }, []);
-  const C = T((t, b) => {
-    A(!0), h ? h(t, b) : m([t, b]);
-  }, [h, A]);
-  S(() => {
-    h && a && (h(a[0], a[1]), m(void 0));
-  }, [h, a]);
-  const { loading: P, runAsync: j, data: E } = O(async () => (await w.ai.listChatSessions({ current: 1, page_size: 20 })).data, {
-    ready: d,
+  const U = w((t, _) => {
+    A(!0), e ? e(t, _) : r([t, _]);
+  }, [e, A]);
+  k(() => {
+    e && a && (e(a[0], a[1]), r(void 0));
+  }, [e, a]);
+  const { loading: K, runAsync: j, data: E } = D(async () => (await I.ai.listChatSessions({ current: 1, page_size: 20 })).data, {
+    ready: f,
     onError: (t) => {
-      U.error(r("chat.fetchConversationsFailed", { defaultValue: "Failed to fetch conversations: {{errmsg}}", errmsg: t.message ?? t }));
+      L.error(n("chat.fetchConversationsFailed", { defaultValue: "Failed to fetch conversations: {{errmsg}}", errmsg: t.message ?? t }));
     }
   });
-  return /* @__PURE__ */ L.jsx(
-    K.Provider,
+  return /* @__PURE__ */ x.jsx(
+    M.Provider,
     {
       value: {
-        layout: o,
+        layout: s,
         setLayout: (t) => {
-          v(t);
+          p(t);
         },
-        visible: d,
+        visible: f,
         setVisible: (t) => {
           A(t);
         },
-        callAI: C,
-        onCallAI: T((t) => {
-          s(() => t);
-        }, [s]),
-        loaded: y,
+        callAI: U,
+        onCallAI: w((t) => {
+          l(() => t);
+        }, [l]),
+        loaded: h,
         setLoaded: (t) => {
-          k(t);
+          v(t);
         },
         fetchConversations: j,
-        fetchConversationsLoading: P,
+        fetchConversationsLoading: K,
         conversations: E,
-        activeConversationKey: g,
+        activeConversationKey: C,
         setActiveConversationKey: (t) => {
-          n(t), localStorage.setItem("activeConversationKey", t);
+          o(t), localStorage.setItem("activeConversationKey", t);
         },
-        ephemeralSystemPrompts: e,
-        clientTools: c,
-        registerPageAI: I,
-        resetPageAIContext: f
+        ephemeralSystemPrompts: c,
+        clientTools: d,
+        registerPageAI: S,
+        resetPageAIContext: y
       },
       children: i
     }
@@ -292,7 +286,7 @@ export {
   se as a,
   re as b,
   $ as c,
-  ae as d,
-  N as e,
+  N as d,
+  ae as e,
   ne as u
 };

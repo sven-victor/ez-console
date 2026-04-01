@@ -45,7 +45,7 @@ const G = {
       key: "task_type",
       width: 300,
       render: (t) => {
-        const e = s(`task.type.${t}`, { defaultValue: t });
+        const e = s(`type.${t}`, { defaultValue: t });
         return /* @__PURE__ */ a.jsx(k, { color: "blue", children: e });
       }
     },

@@ -2,9 +2,9 @@ import { j as t } from "./vendor.js";
 import { useState as z, useRef as R, useEffect as E } from "react";
 import { message as r, Tag as h, Switch as A, Space as f, Tooltip as y, Button as l, Progress as D, Card as g, Table as F } from "antd";
 import { HistoryOutlined as N, PlayCircleOutlined as P, EyeOutlined as $, DownloadOutlined as O, ReloadOutlined as H } from "@ant-design/icons";
-import { useTranslation as k } from "react-i18next";
+import { useTranslation as m } from "react-i18next";
 import { a as n } from "./index.js";
-import { f as m, i as U } from "./components.js";
+import { f as k, i as U } from "./components.js";
 import { P as w } from "./base.js";
 import { useRequest as q } from "ahooks";
 import { useNavigate as v } from "react-router-dom";
@@ -15,7 +15,7 @@ const G = {
   failed: "error",
   cancelled: "default"
 }, te = () => {
-  const { t: s } = k("task"), { t: u } = k("common"), T = v(), [i, o] = z(null), p = R(null), { data: d, loading: j, refresh: x } = q(
+  const { t: s } = m("task"), { t: u } = m("common"), T = v(), [i, o] = z(null), p = R(null), { data: d, loading: j, refresh: x } = q(
     () => n.tasks.listTaskSchedules(),
     {
       onError: (e) => {
@@ -49,7 +49,7 @@ const G = {
       key: "task_type",
       width: 300,
       render: (e) => {
-        const a = s(`task.type.${e}`, { defaultValue: e });
+        const a = s(`type.${e}`, { defaultValue: e });
         return /* @__PURE__ */ t.jsx(h, { color: "blue", children: a });
       }
     },
@@ -58,7 +58,7 @@ const G = {
       dataIndex: "enabled",
       key: "enabled",
       width: 90,
-      render: (e, a) => /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(A, { checked: e, onChange: (c) => _(a.id, c), size: "small" }) })
+      render: (e, a) => /* @__PURE__ */ t.jsx(k, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(A, { checked: e, onChange: (c) => _(a.id, c), size: "small" }) })
     },
     {
       title: s("scheduleNextRun", { defaultValue: "Next Run" }),
@@ -91,7 +91,7 @@ const G = {
             }
           }
         ) }),
-        /* @__PURE__ */ t.jsx(m, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(y, { title: s("triggerNow", { defaultValue: "Trigger now" }), children: /* @__PURE__ */ t.jsx(
+        /* @__PURE__ */ t.jsx(k, { permission: "task:schedule:update", children: /* @__PURE__ */ t.jsx(y, { title: s("triggerNow", { defaultValue: "Trigger now" }), children: /* @__PURE__ */ t.jsx(
           l,
           {
             type: "text",
@@ -123,7 +123,7 @@ const G = {
       key: "task_type",
       width: 300,
       render: (e) => {
-        const a = s(`task.type.${e}`, { defaultValue: e });
+        const a = s(`type.${e}`, { defaultValue: e });
         return /* @__PURE__ */ t.jsx(h, { color: "blue", children: a });
       }
     },

@@ -1,19 +1,18 @@
-import { j as e } from "./vendor.js";
-import { Card as r } from "antd";
-import { useTranslation as a } from "react-i18next";
-import { U as o } from "./components.js";
-import { a as u } from "./index.js";
-const f = () => {
-  const { t } = a("system");
-  return /* @__PURE__ */ e.jsx(r, { title: t("audit.title", { defaultValue: "Audit Logs" }), children: /* @__PURE__ */ e.jsx(o, { request: u.system.getAuditLogs, columnsFilter: (s) => [
+import { j as s } from "./vendor.js";
+import { useTranslation as r } from "react-i18next";
+import { U as a } from "./components.js";
+import { a as o } from "./index.js";
+const d = () => {
+  const { t } = r("system");
+  return /* @__PURE__ */ s.jsx(a, { request: o.system.getAuditLogs, columnsFilter: (e) => [
     {
       title: t("audit.columns.username", { defaultValue: "Username" }),
       dataIndex: "username",
       key: "username"
     },
-    ...s
-  ] }) });
+    ...e
+  ] });
 };
 export {
-  f as default
+  d as default
 };

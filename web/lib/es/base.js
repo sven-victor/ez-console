@@ -43,6 +43,9 @@ const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
 }, ke = (e) => {
   const t = "/";
   return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
+}, be = (e) => {
+  const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
+  return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((i, r) => r !== 0 && t.includes(i) ? i : i.charAt(0).toUpperCase() + i.slice(1)).join(" ");
 };
 async function b(e, t) {
   return p("/api/files", {
@@ -79,7 +82,7 @@ async function S(e) {
     ...e || {}
   });
 }
-const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: y,
   getStatistics: S,
@@ -170,18 +173,33 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit: "审计"
   },
   breadcrumbs: {
-    "authorization.users": "用户",
-    "authorization.roles": "角色",
     authorization: "授权管理",
-    "system.settings": "系统设置",
-    "system.audit": "审计日志",
+    authorization_roles: "角色",
+    authorization_roles_roles: "角色",
+    authorization_roles_roleCreate: "新建角色",
+    authorization_roles_roleUpdate: "编辑角色",
+    authorization_users: "用户",
+    authorization_users_users: "用户",
+    authorization_users_userCreate: "新建用户",
+    authorization_users_userDetail: "用户详情",
+    authorization_users_userUpdate: "编辑用户",
+    authorization_serviceAccounts: "服务账户",
+    authorization_serviceAccounts_serviceAccounts: "服务账户",
+    authorization_serviceAccounts_serviceAccountDetail: "服务账户详情",
     system: "系统管理",
-    settings: "设置",
+    system_settings: "系统设置",
+    system_settings_settings: "系统设置",
+    system_settings_organizationDetail: "组织详情",
+    system_settings_skillEditor: "技能编辑器",
+    system_settings_skillPreview: "技能预览",
+    system_settings_aiTraceViewer: "AI 链路追踪",
+    system_audit: "审计日志",
     dashboard: "仪表盘",
     profile: "个人中心",
-    "authorization.serviceAccounts": "服务账户",
+    settings: "设置",
     tasks: "任务",
-    "tasks.taskList": "任务列表"
+    taskSchedules: "定时任务",
+    tasks_taskList: "任务列表"
   },
   error: {
     notFound: "抱歉，您访问的页面不存在。",
@@ -280,18 +298,33 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     console: "Console"
   },
   breadcrumbs: {
-    "authorization.users": "User",
-    "authorization.roles": "Role",
     authorization: "Authorization Management",
-    settings: "Setting",
+    authorization_roles: "Roles",
+    authorization_roles_roles: "Roles",
+    authorization_roles_roleCreate: "Create Role",
+    authorization_roles_roleUpdate: "Role Update",
+    authorization_users: "Users",
+    authorization_users_users: "Users",
+    authorization_users_userCreate: "User Create",
+    authorization_users_userDetail: "User Detail",
+    authorization_users_userUpdate: "User Update",
+    authorization_serviceAccounts: "Service Accounts",
+    authorization_serviceAccounts_serviceAccounts: "Service Accounts",
+    authorization_serviceAccounts_serviceAccountDetail: "Service Account Detail",
+    system: "System",
+    system_settings: "System Settings",
+    system_settings_settings: "System Settings",
+    system_settings_organizationDetail: "Organization Detail",
+    system_settings_skillEditor: "Skill Editor",
+    system_settings_skillPreview: "Skill Preview",
+    system_settings_aiTraceViewer: "AI Trace",
+    system_audit: "Audit Log",
     dashboard: "Dashboard",
     profile: "Profile",
-    system: "System",
-    "system.settings": "System Settings",
-    "system.audit": "Audit Log",
-    "authorization.serviceAccounts": "Service Account",
+    settings: "Setting",
     tasks: "Tasks",
-    "tasks.taskList": "Task List"
+    taskSchedules: "Task Schedules",
+    tasks_taskList: "Task List"
   },
   error: {
     notFound: "Sorry, the page you visited does not exist.",
@@ -692,6 +725,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       Skill_Management: "Skill Management",
       Task_Management: "Task Management",
       Task_Scheduler: "Task Scheduler",
+      AI_Trace_Management: "AI Trace Management",
+      "ai.trace.manage": "Manage AI trace",
       "system.skills.view": "View skills",
       "system.skills.create": "Create skill",
       "system.skills.update": "Update skill",
@@ -761,6 +796,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     global: "Global",
     scope: "Scope",
     filterByOrg: "All organizations",
+    selectOrganization: "Select organization",
+    organizationRequired: "Please select an organization.",
     organizationScoped: "Organization",
     name: "Service Account",
     description: "Service Account Description",
@@ -1557,7 +1594,10 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   detailTitle: "Task Detail",
   typeLabel: "Type",
   type: {
-    user_export: "User Export"
+    user_export: "User Export",
+    audit_log_cleanup_task: "Audit Log Cleanup",
+    ai_chat_session_cleanup_task: "AI Chat Session Cleanup",
+    task_log_cleanup_task: "Task Log Cleanup"
   },
   statusLabel: "Status",
   progress: "Progress",
@@ -1606,14 +1646,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Last Run",
   viewHistory: "View history",
   triggerNow: "Trigger now",
-  executionHistory: "Execution History",
-  task: {
-    type: {
-      audit_log_cleanup_task: "Audit Log Cleanup",
-      ai_chat_session_cleanup_task: "AI Chat Session Cleanup",
-      task_log_cleanup_task: "Task Log Cleanup"
-    }
-  }
+  executionHistory: "Execution History"
 }, E = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
@@ -1694,16 +1727,33 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     console: "Konsole"
   },
   breadcrumbs: {
-    "authorization.users": "Benutzer",
-    "authorization.roles": "Rolle",
     authorization: "Berechtigungsverwaltung",
-    settings: "Einstellung",
+    authorization_roles: "Rollen",
+    authorization_roles_roles: "Rollen",
+    authorization_roles_roleCreate: "Rolle erstellen",
+    authorization_roles_roleUpdate: "Rolle bearbeiten",
+    authorization_users: "Benutzer",
+    authorization_users_users: "Benutzer",
+    authorization_users_userCreate: "Benutzer erstellen",
+    authorization_users_userDetail: "Benutzerdetails",
+    authorization_users_userUpdate: "Benutzer bearbeiten",
+    authorization_serviceAccounts: "Dienstkonten",
+    authorization_serviceAccounts_serviceAccounts: "Dienstkonten",
+    authorization_serviceAccounts_serviceAccountDetail: "Dienstkontodetails",
+    system: "System",
+    system_settings: "Systemeinstellungen",
+    system_settings_settings: "Systemeinstellungen",
+    system_settings_organizationDetail: "Organisationsdetails",
+    system_settings_skillEditor: "Skill-Editor",
+    system_settings_skillPreview: "Skill-Vorschau",
+    system_settings_aiTraceViewer: "KI-Trace",
+    system_audit: "Audit-Protokoll",
     dashboard: "Dashboard",
     profile: "Profil",
-    system: "System",
-    "system.settings": "Systemeinstellungen",
-    "system.audit": "Audit-Protokoll",
-    "authorization.serviceAccounts": "Dienstkonto"
+    settings: "Einstellung",
+    tasks: "Aufgaben",
+    taskSchedules: "Geplante Aufgaben",
+    tasks_taskList: "Aufgabenliste"
   },
   error: {
     notFound: "Entschuldigung, die von Ihnen besuchte Seite existiert nicht.",
@@ -1801,16 +1851,33 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     console: "Consola"
   },
   breadcrumbs: {
-    "authorization.users": "Usuario",
-    "authorization.roles": "Rol",
     authorization: "Gestión de autorizaciones",
-    settings: "Ajustes",
+    authorization_roles: "Roles",
+    authorization_roles_roles: "Roles",
+    authorization_roles_roleCreate: "Crear rol",
+    authorization_roles_roleUpdate: "Editar rol",
+    authorization_users: "Usuarios",
+    authorization_users_users: "Usuarios",
+    authorization_users_userCreate: "Crear usuario",
+    authorization_users_userDetail: "Detalle de usuario",
+    authorization_users_userUpdate: "Editar usuario",
+    authorization_serviceAccounts: "Cuentas de servicio",
+    authorization_serviceAccounts_serviceAccounts: "Cuentas de servicio",
+    authorization_serviceAccounts_serviceAccountDetail: "Detalle de cuenta de servicio",
+    system: "Sistema",
+    system_settings: "Ajustes del sistema",
+    system_settings_settings: "Ajustes del sistema",
+    system_settings_organizationDetail: "Detalle de organización",
+    system_settings_skillEditor: "Editor de habilidad",
+    system_settings_skillPreview: "Vista previa de habilidad",
+    system_settings_aiTraceViewer: "Trazas de IA",
+    system_audit: "Registro de auditoría",
     dashboard: "Dashboard",
     profile: "Perfil",
-    system: "Sistema",
-    "system.settings": "Ajustes del sistema",
-    "system.audit": "Registro de auditoría",
-    "authorization.serviceAccounts": "Cuenta de servicio"
+    settings: "Ajustes",
+    tasks: "Tareas",
+    taskSchedules: "Tareas programadas",
+    tasks_taskList: "Lista de tareas"
   },
   error: {
     notFound: "Lo sentimos, la página que visitaste no existe.",
@@ -1908,16 +1975,33 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     console: "Console"
   },
   breadcrumbs: {
-    "authorization.users": "Utilisateur",
-    "authorization.roles": "Rôle",
     authorization: "Gestion des autorisations",
-    settings: "Paramètres",
+    authorization_roles: "Rôles",
+    authorization_roles_roles: "Rôles",
+    authorization_roles_roleCreate: "Créer un rôle",
+    authorization_roles_roleUpdate: "Modifier le rôle",
+    authorization_users: "Utilisateurs",
+    authorization_users_users: "Utilisateurs",
+    authorization_users_userCreate: "Créer un utilisateur",
+    authorization_users_userDetail: "Détail de l'utilisateur",
+    authorization_users_userUpdate: "Modifier l'utilisateur",
+    authorization_serviceAccounts: "Comptes de service",
+    authorization_serviceAccounts_serviceAccounts: "Comptes de service",
+    authorization_serviceAccounts_serviceAccountDetail: "Détail du compte de service",
+    system: "Système",
+    system_settings: "Paramètres système",
+    system_settings_settings: "Paramètres système",
+    system_settings_organizationDetail: "Détail de l'organisation",
+    system_settings_skillEditor: "Éditeur de compétence",
+    system_settings_skillPreview: "Aperçu de la compétence",
+    system_settings_aiTraceViewer: "Trace IA",
+    system_audit: "Journal d'audit",
     dashboard: "Tableau de bord",
     profile: "Profil",
-    system: "Système",
-    "system.settings": "Paramètres système",
-    "system.audit": "Journal d'audit",
-    "authorization.serviceAccounts": "Compte de service"
+    settings: "Paramètres",
+    tasks: "Tâches",
+    taskSchedules: "Tâches planifiées",
+    tasks_taskList: "Liste des tâches"
   },
   error: {
     notFound: "Désolé, la page que vous avez visitée n'existe pas.",
@@ -2015,16 +2099,33 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     console: "وحدة التحكم"
   },
   breadcrumbs: {
-    "authorization.users": "المستخدم",
-    "authorization.roles": "الدور",
     authorization: "إدارة التفويض",
-    settings: "الإعدادات",
+    authorization_roles: "الأدوار",
+    authorization_roles_roles: "الأدوار",
+    authorization_roles_roleCreate: "إنشاء دور",
+    authorization_roles_roleUpdate: "تحديث الدور",
+    authorization_users: "المستخدمون",
+    authorization_users_users: "المستخدمون",
+    authorization_users_userCreate: "إنشاء مستخدم",
+    authorization_users_userDetail: "تفاصيل المستخدم",
+    authorization_users_userUpdate: "تحديث المستخدم",
+    authorization_serviceAccounts: "حسابات الخدمة",
+    authorization_serviceAccounts_serviceAccounts: "حسابات الخدمة",
+    authorization_serviceAccounts_serviceAccountDetail: "تفاصيل حساب الخدمة",
+    system: "النظام",
+    system_settings: "إعدادات النظام",
+    system_settings_settings: "إعدادات النظام",
+    system_settings_organizationDetail: "تفاصيل المنظمة",
+    system_settings_skillEditor: "محرر المهارة",
+    system_settings_skillPreview: "معاينة المهارة",
+    system_settings_aiTraceViewer: "تتبع الذكاء الاصطناعي",
+    system_audit: "سجل التدقيق",
     dashboard: "لوحة التحكم",
     profile: "الملف الشخصي",
-    system: "النظام",
-    "system.settings": "إعدادات النظام",
-    "system.audit": "سجل التدقيق",
-    "authorization.serviceAccounts": "حساب الخدمة"
+    settings: "الإعدادات",
+    tasks: "المهام",
+    taskSchedules: "المهام المجدولة",
+    tasks_taskList: "قائمة المهام"
   },
   error: {
     notFound: "عذرًا ، الصفحة التي زرتها غير موجودة.",
@@ -2122,16 +2223,33 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     console: "Konsol"
   },
   breadcrumbs: {
-    "authorization.users": "Användare",
-    "authorization.roles": "Roll",
     authorization: "Auktoriseringshantering",
-    settings: "Inställningar",
+    authorization_roles: "Roller",
+    authorization_roles_roles: "Roller",
+    authorization_roles_roleCreate: "Skapa roll",
+    authorization_roles_roleUpdate: "Uppdatera roll",
+    authorization_users: "Användare",
+    authorization_users_users: "Användare",
+    authorization_users_userCreate: "Skapa användare",
+    authorization_users_userDetail: "Användardetaljer",
+    authorization_users_userUpdate: "Uppdatera användare",
+    authorization_serviceAccounts: "Tjänstekonton",
+    authorization_serviceAccounts_serviceAccounts: "Tjänstekonton",
+    authorization_serviceAccounts_serviceAccountDetail: "Tjänstekontodetaljer",
+    system: "System",
+    system_settings: "Systeminställningar",
+    system_settings_settings: "Systeminställningar",
+    system_settings_organizationDetail: "Organisationsdetaljer",
+    system_settings_skillEditor: "Kompetensredigerare",
+    system_settings_skillPreview: "Kompetensförhandsvisning",
+    system_settings_aiTraceViewer: "AI-spår",
+    system_audit: "Granskningslogg",
     dashboard: "Instrumentpanel",
     profile: "Profil",
-    system: "System",
-    "system.settings": "Systeminställningar",
-    "system.audit": "Granskningslogg",
-    "authorization.serviceAccounts": "Tjänstekonto"
+    settings: "Inställningar",
+    tasks: "Uppgifter",
+    taskSchedules: "Schemalagda uppgifter",
+    tasks_taskList: "Uppgiftslista"
   },
   error: {
     notFound: "Tyvärr, sidan du besökte finns inte.",
@@ -2149,7 +2267,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, q = {
+}, U = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2227,7 +2345,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, U = {
+}, q = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2557,6 +2675,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       Skill_Management: "技能管理",
       Task_Management: "任务管理",
       Task_Scheduler: "任务调度",
+      AI_Trace_Management: "AI 链路追踪",
+      "ai.trace.manage": "管理 AI 链路追踪",
       "system.skills.view": "查看技能",
       "system.skills.create": "创建技能",
       "system.skills.update": "更新技能",
@@ -2626,6 +2746,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     global: "全局",
     scope: "范围",
     filterByOrg: "全部组织",
+    selectOrganization: "选择组织",
+    organizationRequired: "请选择组织。",
     organizationScoped: "组织",
     insertTemplate: "插入模板",
     allowAll: "允许所有",
@@ -2748,7 +2870,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, N = {
+}, _ = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -3314,7 +3436,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, O = {
+}, N = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3421,12 +3543,15 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, x = {
+}, O = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
   type: {
-    user_export: "用户导出"
+    user_export: "用户导出",
+    audit_log_cleanup_task: "审计日志清理任务",
+    ai_chat_session_cleanup_task: "AI 会话清理任务",
+    task_log_cleanup_task: "任务日志清理任务"
   },
   statusLabel: "状态",
   progress: "进度",
@@ -3475,15 +3600,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "上一次运行",
   viewHistory: "查看历史",
   triggerNow: "立即触发",
-  executionHistory: "执行历史",
-  task: {
-    type: {
-      audit_log_cleanup_task: "审计日志清理任务",
-      ai_chat_session_cleanup_task: "AI 会话清理任务",
-      task_log_cleanup_task: "任务日志清理任务"
-    }
-  }
-}, B = {
+  executionHistory: "执行历史"
+}, x = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3554,7 +3672,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, V = {
+}, B = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -3865,6 +3983,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       Skill_Management: "Skill-Verwaltung",
       Task_Management: "Aufgabenverwaltung",
       Task_Scheduler: "Aufgabenplaner",
+      AI_Trace_Management: "KI-Trace-Verwaltung",
+      "ai.trace.manage": "KI-Trace verwalten",
       "system.skills.view": "Skills anzeigen",
       "system.skills.create": "Skill erstellen",
       "system.skills.update": "Skill aktualisieren",
@@ -3953,6 +4073,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     global: "Global",
     scope: "Geltungsbereich",
     filterByOrg: "Alle Organisationen",
+    selectOrganization: "Organisation auswählen",
+    organizationRequired: "Bitte wählen Sie eine Organisation.",
     organizationScoped: "Organisation",
     name: "Dienstkonto",
     description: "Beschreibung des Dienstkontos",
@@ -4073,7 +4195,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, _ = {
+}, V = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -4751,7 +4873,10 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   detailTitle: "Aufgabendetails",
   typeLabel: "Typ",
   type: {
-    user_export: "Benutzerexport"
+    user_export: "Benutzerexport",
+    audit_log_cleanup_task: "Bereinigung von Audit-Logs",
+    ai_chat_session_cleanup_task: "Bereinigung von AI-Chat-Sitzungen",
+    task_log_cleanup_task: "Bereinigung von Aufgaben-Logs"
   },
   statusLabel: "Status",
   progress: "Fortschritt",
@@ -4800,14 +4925,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Letzter Lauf",
   viewHistory: "Verlauf anzeigen",
   triggerNow: "Jetzt auslösen",
-  executionHistory: "Ausführungsverlauf",
-  task: {
-    type: {
-      audit_log_cleanup_task: "Bereinigung von Audit-Logs",
-      ai_chat_session_cleanup_task: "Bereinigung von AI-Chat-Sitzungen",
-      task_log_cleanup_task: "Bereinigung von Aufgaben-Logs"
-    }
-  }
+  executionHistory: "Ausführungsverlauf"
 }, G = {
   loading: "Cargando...",
   success: "Operación exitosa",
@@ -5190,6 +5308,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       Skill_Management: "Gestión de habilidades",
       Task_Management: "Gestión de tareas",
       Task_Scheduler: "Programador de tareas",
+      AI_Trace_Management: "Gestión de trazas de IA",
+      "ai.trace.manage": "Gestionar trazas de IA",
       "system.skills.view": "Ver habilidades",
       "system.skills.create": "Crear habilidad",
       "system.skills.update": "Actualizar habilidad",
@@ -5278,6 +5398,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     global: "Global",
     scope: "Ámbito",
     filterByOrg: "Todas las organizaciones",
+    selectOrganization: "Seleccionar organización",
+    organizationRequired: "Seleccione una organización.",
     organizationScoped: "Organización",
     name: "Cuenta de servicio",
     description: "Descripción de la cuenta de servicio",
@@ -6076,7 +6198,10 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
   type: {
-    user_export: "Exportar usuarios"
+    user_export: "Exportar usuarios",
+    audit_log_cleanup_task: "Limpieza de registros de auditoría",
+    ai_chat_session_cleanup_task: "Limpieza de sesiones de chat de IA",
+    task_log_cleanup_task: "Limpieza de registros de tareas"
   },
   statusLabel: "Estado",
   progress: "Progreso",
@@ -6125,14 +6250,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Última ejecución",
   viewHistory: "Ver historial",
   triggerNow: "Ejecutar ahora",
-  executionHistory: "Historial de ejecuciones",
-  task: {
-    type: {
-      audit_log_cleanup_task: "Limpieza de registros de auditoría",
-      ai_chat_session_cleanup_task: "Limpieza de sesiones de chat de IA",
-      task_log_cleanup_task: "Limpieza de registros de tareas"
-    }
-  }
+  executionHistory: "Historial de ejecuciones"
 }, Q = {
   loading: "Chargement...",
   success: "Opération réussie",
@@ -6515,6 +6633,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       Skill_Management: "Gestion des compétences",
       Task_Management: "Gestion des tâches",
       Task_Scheduler: "Planificateur de tâches",
+      AI_Trace_Management: "Gestion des traces IA",
+      "ai.trace.manage": "Gérer les traces IA",
       "system.skills.view": "Voir les compétences",
       "system.skills.create": "Créer une compétence",
       "system.skills.update": "Mettre à jour une compétence",
@@ -6603,6 +6723,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     global: "Global",
     scope: "Périmètre",
     filterByOrg: "Toutes les organisations",
+    selectOrganization: "Sélectionner une organisation",
+    organizationRequired: "Veuillez sélectionner une organisation.",
     organizationScoped: "Organisation",
     name: "Compte de service",
     description: "Description du compte de service",
@@ -7401,7 +7523,10 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   detailTitle: "Détail de la tâche",
   typeLabel: "Type",
   type: {
-    user_export: "Export d'utilisateurs"
+    user_export: "Export d'utilisateurs",
+    audit_log_cleanup_task: "Nettoyage des journaux d'audit",
+    ai_chat_session_cleanup_task: "Nettoyage des sessions de chat IA",
+    task_log_cleanup_task: "Nettoyage des journaux de tâches"
   },
   statusLabel: "Statut",
   progress: "Progression",
@@ -7450,14 +7575,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Dernière exécution",
   viewHistory: "Voir l'historique",
   triggerNow: "Déclencher maintenant",
-  executionHistory: "Historique d'exécution",
-  task: {
-    type: {
-      audit_log_cleanup_task: "Nettoyage des journaux d'audit",
-      ai_chat_session_cleanup_task: "Nettoyage des sessions de chat IA",
-      task_log_cleanup_task: "Nettoyage des journaux de tâches"
-    }
-  }
+  executionHistory: "Historique d'exécution"
 }, te = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
@@ -7840,6 +7958,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       Skill_Management: "إدارة المهارات",
       Task_Management: "إدارة المهام",
       Task_Scheduler: "جدولة المهام",
+      AI_Trace_Management: "إدارة تتبع الذكاء الاصطناعي",
+      "ai.trace.manage": "إدارة تتبعات الذكاء الاصطناعي",
       "system.skills.view": "عرض المهارات",
       "system.skills.create": "إنشاء مهارة",
       "system.skills.update": "تحديث مهارة",
@@ -7928,6 +8048,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     global: "عام",
     scope: "النطاق",
     filterByOrg: "جميع المنظمات",
+    selectOrganization: "اختر منظمة",
+    organizationRequired: "يرجى اختيار منظمة.",
     organizationScoped: "المنظمة",
     name: "حساب الخدمة",
     description: "وصف حساب الخدمة",
@@ -8726,7 +8848,10 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   detailTitle: "تفاصيل المهمة",
   typeLabel: "النوع",
   type: {
-    user_export: "تصدير المستخدمين"
+    user_export: "تصدير المستخدمين",
+    audit_log_cleanup_task: "تنظيف سجلات التدقيق",
+    ai_chat_session_cleanup_task: "تنظيف جلسات محادثات الذكاء الاصطناعي",
+    task_log_cleanup_task: "تنظيف سجلات المهام"
   },
   statusLabel: "الحالة",
   progress: "التقدم",
@@ -8775,14 +8900,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "آخر تشغيل",
   viewHistory: "عرض السجل",
   triggerNow: "شغّل الآن",
-  executionHistory: "سجل التنفيذ",
-  task: {
-    type: {
-      audit_log_cleanup_task: "تنظيف سجلات التدقيق",
-      ai_chat_session_cleanup_task: "تنظيف جلسات محادثات الذكاء الاصطناعي",
-      task_log_cleanup_task: "تنظيف سجلات المهام"
-    }
-  }
+  executionHistory: "سجل التنفيذ"
 }, oe = {
   loading: "Laddar...",
   success: "Operationen lyckades",
@@ -9165,6 +9283,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       Skill_Management: "Kompetenshantering",
       Task_Management: "Uppgiftshantering",
       Task_Scheduler: "Uppgiftsschemaläggare",
+      AI_Trace_Management: "Hantering av AI-spår",
+      "ai.trace.manage": "Hantera AI-spår",
       "system.skills.view": "Visa kompetenser",
       "system.skills.create": "Skapa kompetens",
       "system.skills.update": "Uppdatera kompetens",
@@ -9253,6 +9373,8 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     global: "Global",
     scope: "Omfattning",
     filterByOrg: "Alla organisationer",
+    selectOrganization: "Välj organisation",
+    organizationRequired: "Välj en organisation.",
     organizationScoped: "Organisation",
     name: "Tjänstekonto",
     description: "Beskrivning av tjänstekonto",
@@ -10051,7 +10173,10 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   detailTitle: "Uppgiftsdetaljer",
   typeLabel: "Typ",
   type: {
-    user_export: "Användarexport"
+    user_export: "Användarexport",
+    audit_log_cleanup_task: "Rensning av granskningsloggar",
+    ai_chat_session_cleanup_task: "Rensning av AI-chattsessioner",
+    task_log_cleanup_task: "Rensning av uppgiftsloggar"
   },
   statusLabel: "Status",
   progress: "Framsteg",
@@ -10100,14 +10225,7 @@ const be = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Senaste körning",
   viewHistory: "Visa historik",
   triggerNow: "Kör nu",
-  executionHistory: "Körhistorik",
-  task: {
-    type: {
-      audit_log_cleanup_task: "Rensning av granskningsloggar",
-      ai_chat_session_cleanup_task: "Rensning av AI-chattsessioner",
-      task_log_cleanup_task: "Rensning av uppgiftsloggar"
-    }
-  }
+  executionHistory: "Körhistorik"
 };
 f.use(k).use(v).init({
   ns: ["common", "authorization", "system", "ai", "task"],
@@ -10115,11 +10233,11 @@ f.use(k).use(v).init({
   resources: {
     "zh-CN": {
       translation: T,
-      common: q,
-      authorization: U,
-      system: N,
-      ai: O,
-      task: x
+      common: U,
+      authorization: q,
+      system: _,
+      ai: N,
+      task: O
     },
     "en-US": {
       translation: P,
@@ -10131,9 +10249,9 @@ f.use(k).use(v).init({
     },
     "de-DE": {
       translation: E,
-      common: B,
-      authorization: V,
-      system: _,
+      common: x,
+      authorization: B,
+      system: V,
       ai: K,
       task: j
     },
@@ -10176,7 +10294,7 @@ f.use(k).use(v).init({
     escapeValue: !1
   }
 });
-const Ae = {
+const ye = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
@@ -10195,7 +10313,7 @@ function h(e) {
 function m(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function ye(e) {
+function Se(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
@@ -10212,7 +10330,7 @@ function ye(e) {
 
 ` + s;
 }
-function Se(e) {
+function Te(e) {
   if (!e || !e.trim()) return e;
   let t = e;
   const i = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
@@ -10234,12 +10352,13 @@ function Se(e) {
   return t;
 }
 export {
-  Ae as P,
-  ye as a,
-  be as b,
+  ye as P,
+  be as a,
+  Ae as b,
+  Se as c,
   he as f,
   ke as g,
   ve as m,
-  Se as s,
+  Te as s,
   fe as t
 };
