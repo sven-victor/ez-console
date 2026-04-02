@@ -604,6 +604,9 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	}
 	defer stream.Close()
 
+	ctx.Writer.Header().Set("Content-Type", "text/event-stream")
+	ctx.Writer.Header().Set("Cache-Control", "no-cache")
+	ctx.Writer.Header().Set("Connection", "keep-alive")
 	ctx.Stream(func(w io.Writer) bool {
 		event, err := stream.Recv(ctx)
 		if err != nil {
