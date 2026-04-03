@@ -31,7 +31,6 @@ import {
   Select,
 } from 'antd';
 import {
-  SearchOutlined,
   ReloadOutlined,
   PlusOutlined,
   EditOutlined,
@@ -113,17 +112,6 @@ const ServiceAccountList: React.FC = () => {
       current: PAGINATION.DEFAULT_CURRENT,
       search: values.search,
       organization_id: values.organization_id || undefined,
-    });
-  };
-
-  // Reset search form
-  const handleReset = () => {
-    searchForm.resetFields();
-    setQueryParams({
-      current: PAGINATION.DEFAULT_CURRENT,
-      page_size: PAGINATION.DEFAULT_PAGE_SIZE,
-      search: undefined,
-      organization_id: undefined,
     });
   };
 
@@ -318,50 +306,61 @@ const ServiceAccountList: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Form
           form={searchForm}
-          layout="inline"
+          layout='vertical'
           onFinish={handleSearch}
+          name='serviceAccountSearchForm'
           initialValues={{
             search: queryParams.search,
             organization_id: queryParams.organization_id,
           }}
           style={{ marginBottom: 0 }}
         >
-          <Row gutter={16} style={{ width: '100%' }}>
-            <Col xs={24} sm={12} md={8} lg={6}>
-              <Form.Item name="search">
-                <Input
-                  placeholder={t('serviceAccount.searchPlaceholder', { defaultValue: 'Search by name or description' })}
-                  allowClear
-                  prefix={<SearchOutlined />}
-                />
-              </Form.Item>
-            </Col>
-            {enableMultiOrg && (
-              <Col xs={24} sm={12} md={8} lg={6}>
-                <Form.Item name="organization_id">
-                  <Select
-                    placeholder={t('serviceAccount.filterByOrg', { defaultValue: 'All organizations' })}
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col >
+              <Space>
+                <Form.Item name="search" noStyle>
+                  <Input.Search
+                    placeholder={t('serviceAccount.searchPlaceholder', { defaultValue: 'Search by name or description' })}
                     allowClear
-                    style={{ minWidth: 160 }}
-                    options={[
-                      { value: '', label: t('serviceAccount.global', { defaultValue: 'Global' }) },
-                      ...organizations.map((org) => ({ value: org.id, label: org.name })),
-                    ]}
+                    onSearch={() => {
+                      handleSearch(searchForm.getFieldsValue())
+                    }}
+                    style={{ width: 300 }}
                   />
                 </Form.Item>
-              </Col>
-            )}
-            <Col xs={24} sm={12} md={8} lg={6} style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <Form.Item>
-                <Space>
-                  <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
-                    {tCommon('search', { defaultValue: 'Search' })}
+                {!enableMultiOrg && (
+                  <Form.Item name="organization_id" noStyle>
+                    <Select
+                      placeholder={t('serviceAccount.filterByOrg', { defaultValue: 'All organizations' })}
+                      allowClear
+                      style={{ minWidth: 160 }}
+                      options={[
+                        { value: '', label: t('serviceAccount.global', { defaultValue: 'Global' }) },
+                        ...organizations.map((org) => ({ value: org.id, label: org.name })),
+                      ]}
+                    />
+                  </Form.Item>
+                )}
+              </Space>
+            </Col>
+            <Col >
+              <Space>
+                <Button
+                  onClick={() => { handleSearch(searchForm.getFieldsValue()) }}
+                  icon={<ReloadOutlined />}
+                >
+                  {tCommon('refresh', { defaultValue: 'Refresh' })}
+                </Button>
+                <PermissionGuard permission="authorization:service_account:create">
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={showCreateModal}
+                  >
+                    {t('serviceAccount.create', { defaultValue: 'Create Service Account' })}
                   </Button>
-                  <Button onClick={handleReset} icon={<ReloadOutlined />}>
-                    {tCommon('reset', { defaultValue: 'Reset' })}
-                  </Button>
-                </Space>
-              </Form.Item>
+                </PermissionGuard>
+              </Space>
             </Col>
           </Row>
         </Form>
@@ -369,32 +368,6 @@ const ServiceAccountList: React.FC = () => {
 
       {/* Data Table */}
       <Card>
-        {/* Table Toolbar */}
-        <div style={{ marginBottom: 16 }}>
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Button
-                type="primary"
-                onClick={handleReset}
-                icon={<ReloadOutlined />}
-              >
-                {tCommon('refresh', { defaultValue: 'Refresh' })}
-              </Button>
-            </Col>
-            <Col>
-              <PermissionGuard permission="authorization:service_account:create">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={showCreateModal}
-                >
-                  {t('serviceAccount.create', { defaultValue: 'Create Service Account' })}
-                </Button>
-              </PermissionGuard>
-            </Col>
-          </Row>
-        </div>
-
         <Table
           rowKey="id"
           dataSource={serviceAccounts}

@@ -24,6 +24,8 @@ import {
   Empty,
   Switch,
   Tooltip,
+  Row,
+  Col,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -568,251 +570,259 @@ const SkillSettings: React.FC = () => {
   ];
 
   return (
-    <Card
-      title={t('settings.skills.title', { defaultValue: 'AI Agent Skills' })}
-      extra={
-        <Space>
-          <Input.Search
-            placeholder={tCommon('search', { defaultValue: 'Search' })}
-            allowClear
-            onSearch={setSearchText}
-            style={{ width: 200 }}
-          />
-          <Select
-            placeholder={t('settings.skills.domain', { defaultValue: 'Domain' })}
-            allowClear
-            style={{ width: 120 }}
-            value={domainFilter}
-            onChange={setDomainFilter}
-            options={domainOptions.map((d) => ({ value: d, label: d }))}
-          />
-          <Button icon={<ReloadOutlined />} onClick={() => refresh()}>
-            {tCommon('refresh', { defaultValue: 'Refresh' })}
-          </Button>
-          <PermissionGuard permission="system:skills:create">
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-              {t('settings.skills.create', { defaultValue: 'Create skill' })}
-            </Button>
-          </PermissionGuard>
-          <PermissionGuard permission="system:skills:create">
-            <Button icon={<UploadOutlined />} onClick={() => setUploadModalVisible(true)}>
-              {t('settings.skills.upload', { defaultValue: 'Upload skill' })}
-            </Button>
-          </PermissionGuard>
-        </Space>
-      }
-    >
-      <Table
-        rowKey="id"
-        loading={loading}
-        columns={columns}
-        dataSource={listData}
-        pagination={{ total, pageSize: 10, showSizeChanger: true }}
-      />
+    <div>
+      <Card style={{ marginBottom: 16 }}>
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Space>
+              <Input.Search
+                placeholder={tCommon('search', { defaultValue: 'Search' })}
+                allowClear
+                onSearch={setSearchText}
+                style={{ width: 300 }}
+              />
+              <Select
+                placeholder={t('settings.skills.domain', { defaultValue: 'Domain' })}
+                allowClear
+                style={{ width: 120 }}
+                value={domainFilter}
+                onChange={setDomainFilter}
+                options={domainOptions.map((d) => ({ value: d, label: d }))}
+              />
+            </Space>
+          </Col>
+          <Col>
+            <Space>
+              <Button icon={<ReloadOutlined />} onClick={() => refresh()}>
+                {tCommon('refresh', { defaultValue: 'Refresh' })}
+              </Button>
+              <PermissionGuard permission="system:skills:create">
+                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+                  {t('settings.skills.create', { defaultValue: 'Create skill' })}
+                </Button>
+              </PermissionGuard>
+              <PermissionGuard permission="system:skills:create">
+                <Button icon={<UploadOutlined />} onClick={() => setUploadModalVisible(true)}>
+                  {t('settings.skills.upload', { defaultValue: 'Upload skill' })}
+                </Button>
+              </PermissionGuard>
+            </Space>
+          </Col>
+        </Row>
+      </Card>
+      <Card>
+        <Table
+          rowKey="id"
+          loading={loading}
+          columns={columns}
+          dataSource={listData}
+          pagination={{ total, pageSize: 10, showSizeChanger: true }}
+        />
 
-      <Modal
-        title={
-          editingSkill
-            ? t('settings.skills.editSkill', { defaultValue: 'Edit skill' })
-            : cloneSourceSkill
-              ? t('settings.skills.cloneSkill', { defaultValue: 'Clone skill' })
-              : t('settings.skills.createSkill', { defaultValue: 'Create skill' })
-        }
-        open={modalVisible}
-        onOk={handleSubmit}
-        onCancel={() => {
-          setModalVisible(false);
-          setEditingSkill(null);
-          setCloneSourceSkill(null);
-          resetAiToolState();
-        }}
-        confirmLoading={submitLoading}
-        width={modalWidth}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item name="name" label={t('settings.skills.name', { defaultValue: 'Name' })} rules={[{ required: true }]}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="description" label={t('settings.skills.description', { defaultValue: 'Description' })}>
-            <TextArea rows={2} />
-          </Form.Item>
-          <Form.Item name="category" label={t('settings.skills.category', { defaultValue: 'Category' })}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="domain" label={t('settings.skills.domain', { defaultValue: 'Domain' })}>
-            <Select allowClear placeholder={tCommon('optional', { defaultValue: 'Optional' })} options={domainOptions.map((d) => ({ value: d, label: d }))} />
-          </Form.Item>
-          {isCreateOnlyModal && (
-            <Form.Item name="content" label={t('settings.skills.initialContent', { defaultValue: 'Initial SKILL.md content (optional)' })}>
-              <TextArea rows={6} placeholder="---&#10;name: my-skill&#10;description: ...&#10;---&#10;&#10;# My Skill" />
+        <Modal
+          title={
+            editingSkill
+              ? t('settings.skills.editSkill', { defaultValue: 'Edit skill' })
+              : cloneSourceSkill
+                ? t('settings.skills.cloneSkill', { defaultValue: 'Clone skill' })
+                : t('settings.skills.createSkill', { defaultValue: 'Create skill' })
+          }
+          open={modalVisible}
+          onOk={handleSubmit}
+          onCancel={() => {
+            setModalVisible(false);
+            setEditingSkill(null);
+            setCloneSourceSkill(null);
+            resetAiToolState();
+          }}
+          confirmLoading={submitLoading}
+          width={modalWidth}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item name="name" label={t('settings.skills.name', { defaultValue: 'Name' })} rules={[{ required: true }]}>
+              <Input />
             </Form.Item>
-          )}
-          {showAiToolsSection && (
-            <>
-              <Spin spinning={aiToolsetsLoading}>
-                {aiToolsets.length > 0 ? (
-                  <div>
-                    <Space direction="vertical" size="middle" style={{
-                      width: '100%',
-                      overflow: 'auto',
-                      maxHeight: 'calc(100vh - 800px)',
-                      minHeight: 'calc(300px)'
-                    }}>
-                      {aiToolsets.map((toolset) => {
-                        const allToolNames = (toolset.tools || []).map((tool) => tool.name);
-                        const selectedToolNames = aiToolSelections[toolset.id] || [];
-                        const allSelected = allToolNames.length > 0 && selectedToolNames.length === allToolNames.length;
-                        const someSelected = selectedToolNames.length > 0 && selectedToolNames.length < allToolNames.length;
-                        return (
-                          <Card
-                            key={toolset.id}
-                            size="small"
-                            title={
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <Checkbox
-                                  checked={allSelected}
-                                  indeterminate={someSelected}
-                                  onChange={(e) => handleToolsetSelectAll(toolset.id, allToolNames, e.target.checked)}
-                                />
-                                <span>{toolset.name}</span>
-                              </div>
-                            }
-                            extra={toolset.description ? <span>{toolset.description}</span> : undefined}
-                          >
-                            {(toolset.tools || []).length > 0 ? (
-                              <Checkbox.Group style={{ width: '100%' }} value={selectedToolNames} onChange={(v) => handleAiToolSelectionChange(toolset.id, v as string[])}>
-                                <Space direction="vertical" style={{ width: '100%' }}>
-                                  {(toolset.tools || []).map((tool) => (
-                                    <Checkbox value={tool.name} key={tool.name}>
-                                      <div>
-                                        <div>{tool.name}</div>
-                                        {tool.description && (
-                                          <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}>{tool.description}</div>
-                                        )}
-                                      </div>
-                                    </Checkbox>
-                                  ))}
-                                </Space>
-                              </Checkbox.Group>
-                            ) : (
-                              <Empty
-                                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                description={t('settings.skills.aiToolsetNoTools', { defaultValue: 'No tools available in this toolset.' })}
-                              />
-                            )}
-                          </Card>
-                        );
-                      })}
-                    </Space>
-                    <div style={{ marginTop: 12 }}>
-                      <div style={{ marginBottom: 8 }}>{t('settings.skills.wildcardPatterns', { defaultValue: 'Wildcard patterns (optional)' })}</div>
-                      <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: 12, marginBottom: 8 }}>
-                        {t('settings.skills.wildcardPatternsHelp', {
-                          defaultValue: 'Use * for toolset_id or tool_name (e.g. *:sleep for all toolsets, uuid:* for all tools in one toolset).',
-                        })}
-                      </div>
-                      <Space direction="vertical" style={{ width: '100%' }}>
-                        {extraPatterns.map((row, idx) => (
-                          <div
-                            key={idx}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 8,
-                              width: '100%',
-                            }}
-                          >
-                            <AutoComplete
-                              allowClear
-                              style={{ flex: 1, minWidth: 0 }}
-                              placeholder={t('settings.skills.patternToolsetPlaceholder', { defaultValue: 'Toolset ID' })}
-                              value={row.toolset_id}
-                              options={withAdHocOption(patternToolsetBaseOptions, row.toolset_id)}
-                              filterOption={(input, option) => {
-                                const opt = option as { value?: string; label?: string };
-                                const hay = `${opt?.value ?? ''} ${opt?.label ?? ''}`.toLowerCase();
-                                return hay.includes(input.toLowerCase());
-                              }}
-                              onChange={(v) => {
-                                const next = typeof v === 'string' ? v : '';
-                                setExtraPatterns((prev) =>
-                                  prev.map((r, i) => (i === idx ? { ...r, toolset_id: next } : r)),
-                                );
-                              }}
-                            />
-                            <AutoComplete
-                              allowClear
-                              style={{ flex: 1, minWidth: 0 }}
-                              placeholder={t('settings.skills.patternToolNamePlaceholder', { defaultValue: 'Tool name' })}
-                              value={row.tool_name}
-                              options={buildPatternToolNameOptions(
-                                aiToolsets,
-                                row.toolset_id,
-                                row.tool_name,
-                                t('settings.skills.patternToolNameAll', { defaultValue: '* (all tools)' }),
-                              )}
-                              filterOption={(input, option) => {
-                                const opt = option as { value?: string; label?: string };
-                                const hay = `${opt?.value ?? ''} ${opt?.label ?? ''}`.toLowerCase();
-                                return hay.includes(input.toLowerCase());
-                              }}
-                              onChange={(v) => {
-                                const next = typeof v === 'string' ? v : '';
-                                setExtraPatterns((prev) =>
-                                  prev.map((r, i) => (i === idx ? { ...r, tool_name: next } : r)),
-                                );
-                              }}
-                            />
-                            <Button
-                              type="default"
-                              danger
-                              style={{ flexShrink: 0 }}
-                              onClick={() => setExtraPatterns((prev) => prev.filter((_, i) => i !== idx))}
+            <Form.Item name="description" label={t('settings.skills.description', { defaultValue: 'Description' })}>
+              <TextArea rows={2} />
+            </Form.Item>
+            <Form.Item name="category" label={t('settings.skills.category', { defaultValue: 'Category' })}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="domain" label={t('settings.skills.domain', { defaultValue: 'Domain' })}>
+              <Select allowClear placeholder={tCommon('optional', { defaultValue: 'Optional' })} options={domainOptions.map((d) => ({ value: d, label: d }))} />
+            </Form.Item>
+            {isCreateOnlyModal && (
+              <Form.Item name="content" label={t('settings.skills.initialContent', { defaultValue: 'Initial SKILL.md content (optional)' })}>
+                <TextArea rows={6} placeholder="---&#10;name: my-skill&#10;description: ...&#10;---&#10;&#10;# My Skill" />
+              </Form.Item>
+            )}
+            {showAiToolsSection && (
+              <>
+                <Spin spinning={aiToolsetsLoading}>
+                  {aiToolsets.length > 0 ? (
+                    <div>
+                      <Space direction="vertical" size="middle" style={{
+                        width: '100%',
+                        overflow: 'auto',
+                        maxHeight: 'calc(100vh - 800px)',
+                        minHeight: 'calc(300px)'
+                      }}>
+                        {aiToolsets.map((toolset) => {
+                          const allToolNames = (toolset.tools || []).map((tool) => tool.name);
+                          const selectedToolNames = aiToolSelections[toolset.id] || [];
+                          const allSelected = allToolNames.length > 0 && selectedToolNames.length === allToolNames.length;
+                          const someSelected = selectedToolNames.length > 0 && selectedToolNames.length < allToolNames.length;
+                          return (
+                            <Card
+                              key={toolset.id}
+                              size="small"
+                              title={
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <Checkbox
+                                    checked={allSelected}
+                                    indeterminate={someSelected}
+                                    onChange={(e) => handleToolsetSelectAll(toolset.id, allToolNames, e.target.checked)}
+                                  />
+                                  <span>{toolset.name}</span>
+                                </div>
+                              }
+                              extra={toolset.description ? <span>{toolset.description}</span> : undefined}
                             >
-                              {tCommon('delete', { defaultValue: 'Delete' })}
-                            </Button>
-                          </div>
-                        ))}
-                        <Button type="dashed" onClick={() => setExtraPatterns((prev) => [...prev, { toolset_id: '', tool_name: '' }])} block>
-                          {t('settings.skills.addWildcardRow', { defaultValue: 'Add pattern row' })}
-                        </Button>
+                              {(toolset.tools || []).length > 0 ? (
+                                <Checkbox.Group style={{ width: '100%' }} value={selectedToolNames} onChange={(v) => handleAiToolSelectionChange(toolset.id, v as string[])}>
+                                  <Space direction="vertical" style={{ width: '100%' }}>
+                                    {(toolset.tools || []).map((tool) => (
+                                      <Checkbox value={tool.name} key={tool.name}>
+                                        <div>
+                                          <div>{tool.name}</div>
+                                          {tool.description && (
+                                            <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: 12 }}>{tool.description}</div>
+                                          )}
+                                        </div>
+                                      </Checkbox>
+                                    ))}
+                                  </Space>
+                                </Checkbox.Group>
+                              ) : (
+                                <Empty
+                                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                  description={t('settings.skills.aiToolsetNoTools', { defaultValue: 'No tools available in this toolset.' })}
+                                />
+                              )}
+                            </Card>
+                          );
+                        })}
                       </Space>
+                      <div style={{ marginTop: 12 }}>
+                        <div style={{ marginBottom: 8 }}>{t('settings.skills.wildcardPatterns', { defaultValue: 'Wildcard patterns (optional)' })}</div>
+                        <div style={{ color: 'rgba(0,0,0,0.45)', fontSize: 12, marginBottom: 8 }}>
+                          {t('settings.skills.wildcardPatternsHelp', {
+                            defaultValue: 'Use * for toolset_id or tool_name (e.g. *:sleep for all toolsets, uuid:* for all tools in one toolset).',
+                          })}
+                        </div>
+                        <Space direction="vertical" style={{ width: '100%' }}>
+                          {extraPatterns.map((row, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                width: '100%',
+                              }}
+                            >
+                              <AutoComplete
+                                allowClear
+                                style={{ flex: 1, minWidth: 0 }}
+                                placeholder={t('settings.skills.patternToolsetPlaceholder', { defaultValue: 'Toolset ID' })}
+                                value={row.toolset_id}
+                                options={withAdHocOption(patternToolsetBaseOptions, row.toolset_id)}
+                                filterOption={(input, option) => {
+                                  const opt = option as { value?: string; label?: string };
+                                  const hay = `${opt?.value ?? ''} ${opt?.label ?? ''}`.toLowerCase();
+                                  return hay.includes(input.toLowerCase());
+                                }}
+                                onChange={(v) => {
+                                  const next = typeof v === 'string' ? v : '';
+                                  setExtraPatterns((prev) =>
+                                    prev.map((r, i) => (i === idx ? { ...r, toolset_id: next } : r)),
+                                  );
+                                }}
+                              />
+                              <AutoComplete
+                                allowClear
+                                style={{ flex: 1, minWidth: 0 }}
+                                placeholder={t('settings.skills.patternToolNamePlaceholder', { defaultValue: 'Tool name' })}
+                                value={row.tool_name}
+                                options={buildPatternToolNameOptions(
+                                  aiToolsets,
+                                  row.toolset_id,
+                                  row.tool_name,
+                                  t('settings.skills.patternToolNameAll', { defaultValue: '* (all tools)' }),
+                                )}
+                                filterOption={(input, option) => {
+                                  const opt = option as { value?: string; label?: string };
+                                  const hay = `${opt?.value ?? ''} ${opt?.label ?? ''}`.toLowerCase();
+                                  return hay.includes(input.toLowerCase());
+                                }}
+                                onChange={(v) => {
+                                  const next = typeof v === 'string' ? v : '';
+                                  setExtraPatterns((prev) =>
+                                    prev.map((r, i) => (i === idx ? { ...r, tool_name: next } : r)),
+                                  );
+                                }}
+                              />
+                              <Button
+                                type="default"
+                                danger
+                                style={{ flexShrink: 0 }}
+                                onClick={() => setExtraPatterns((prev) => prev.filter((_, i) => i !== idx))}
+                              >
+                                {tCommon('delete', { defaultValue: 'Delete' })}
+                              </Button>
+                            </div>
+                          ))}
+                          <Button type="dashed" onClick={() => setExtraPatterns((prev) => [...prev, { toolset_id: '', tool_name: '' }])} block>
+                            {t('settings.skills.addWildcardRow', { defaultValue: 'Add pattern row' })}
+                          </Button>
+                        </Space>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <Empty
-                    image={Empty.PRESENTED_IMAGE_SIMPLE}
-                    description={t('settings.skills.aiToolsetsEmpty', { defaultValue: 'No AI toolsets available for this organization.' })}
-                  />
-                )}
-              </Spin>
-            </>
-          )}
-        </Form>
-      </Modal>
+                  ) : (
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={t('settings.skills.aiToolsetsEmpty', { defaultValue: 'No AI toolsets available for this organization.' })}
+                    />
+                  )}
+                </Spin>
+              </>
+            )}
+          </Form>
+        </Modal>
 
-      <Modal
-        title={t('settings.skills.upload', { defaultValue: 'Upload skill' })}
-        open={uploadModalVisible}
-        onOk={handleUpload}
-        onCancel={() => setUploadModalVisible(false)}
-        confirmLoading={uploading}
-      >
-        <Form form={uploadForm} layout="vertical">
-          <Form.Item name="file" label={t('settings.skills.file', { defaultValue: 'File (.md or .zip)' })} rules={[{ required: true }]}>
-            <Upload maxCount={1} beforeUpload={() => false} accept=".md,.zip">
-              <Button icon={<UploadOutlined />}>{tCommon('selectFile', { defaultValue: 'Select file' })}</Button>
-            </Upload>
-          </Form.Item>
-          <Form.Item name="category" label={t('settings.skills.category', { defaultValue: 'Category' })}>
-            <Input />
-          </Form.Item>
-          <Form.Item name="domain" label={t('settings.skills.domain', { defaultValue: 'Domain' })}>
-            <Select allowClear placeholder={tCommon('optional', { defaultValue: 'Optional' })} options={domainOptions.map((d) => ({ value: d, label: d }))} />
-          </Form.Item>
-        </Form>
-      </Modal>
-    </Card>
+        <Modal
+          title={t('settings.skills.upload', { defaultValue: 'Upload skill' })}
+          open={uploadModalVisible}
+          onOk={handleUpload}
+          onCancel={() => setUploadModalVisible(false)}
+          confirmLoading={uploading}
+        >
+          <Form form={uploadForm} layout="vertical">
+            <Form.Item name="file" label={t('settings.skills.file', { defaultValue: 'File (.md or .zip)' })} rules={[{ required: true }]}>
+              <Upload maxCount={1} beforeUpload={() => false} accept=".md,.zip">
+                <Button icon={<UploadOutlined />}>{tCommon('selectFile', { defaultValue: 'Select file' })}</Button>
+              </Upload>
+            </Form.Item>
+            <Form.Item name="category" label={t('settings.skills.category', { defaultValue: 'Category' })}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="domain" label={t('settings.skills.domain', { defaultValue: 'Domain' })}>
+              <Select allowClear placeholder={tCommon('optional', { defaultValue: 'Optional' })} options={domainOptions.map((d) => ({ value: d, label: d }))} />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </Card>
+    </div>
   );
 };
 
