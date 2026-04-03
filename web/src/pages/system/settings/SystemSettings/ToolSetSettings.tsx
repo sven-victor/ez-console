@@ -404,7 +404,6 @@ const ToolSetSettings: React.FC = () => {
           <Col>
             <Space>
               <Button
-                type="primary"
                 icon={<ReloadOutlined />}
                 onClick={refresh}
                 loading={loading}
