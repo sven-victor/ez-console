@@ -566,7 +566,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 		}
 	}
 	mergedOptions := []ai.WithChatOptions{
-		ai.WithChatToolSetsFactory(func(ctx context.Context) (toolset.ToolSets, error) {
+		ai.WithChatToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
 			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
 		}),
 	}
@@ -602,7 +602,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 
 // CreateChatCompletionStream creates a streaming chat completion.
 // skillParams is nil for chats without skill metadata; when set, organization tools may load only after get_skill_content (see system_enable_skill_tool_binding).
-func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillParams *SkillChatStreamToolParams, options ...ai.WithChatOptions) (ai.ChatStream, error) {
+func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) (ai.ChatStream, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -620,31 +620,28 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 
 	enableSkillToolBinding, _ := s.settingService.GetBoolSetting(ctx, model.SettingSystemEnableSkillToolBinding, false)
 
-	orgToolSetsFactory := func(ctx context.Context) (toolset.ToolSets, error) {
-		if !enableSkillToolBinding {
-			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingDisabled)
-		}
-		if skillParams == nil || !skillParams.SkillMetadataActive {
-			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingNoMetadata)
-		}
-		var activated []string
-		if skillParams.Activation != nil {
-			activated = skillParams.Activation.Snapshot()
-		}
-		if len(activated) == 0 {
-			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingAwaitingActivation)
-		}
-		if organizationID == "" {
-			return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, nil, SkillChatBindingApply)
-		}
-		bindings, errBind := s.skillService.ListSkillAIToolBindingsForChat(ctx, organizationID, activated)
-		if errBind != nil {
-			return nil, fmt.Errorf("failed to load skill AI tool bindings: %w", errBind)
-		}
-		return s.toolSetService.GetAuthorizedToolSetsForChat(ctx, organizationID, bindings, SkillChatBindingApply)
+	var skillLoaderOptions ai.WithChatOptions
+
+	allOptions := []ai.WithChatOptions{
+		ai.WithChatToolSetsProvider(toolset.NewCachedToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
+			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
+		})),
+	}
+	if skillLoader != nil && skillLoader.HasSkills() {
+		skillLoaderOptions = ai.WithChatToolSetsProviderChan(func(ctx context.Context, oriProvider toolset.ToolSetsProvider) (toolset.ToolSets, error) {
+			ts, err := oriProvider(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if ts == nil {
+				ts = make(toolset.ToolSets)
+			}
+			ts[ai.SkillLoaderToolSetKey] = ai.NewSkillLoaderChatToolSet(skillLoader)
+			return ts, nil
+		})
 	}
 
-	refreshToolSets := enableSkillToolBinding && skillParams != nil && skillParams.SkillMetadataActive
+	refreshToolSets := enableSkillToolBinding && skillLoader != nil
 
 	// Prepend global prompts for stream calls
 	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryStream)
@@ -665,7 +662,6 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
-	allOptions := []ai.WithChatOptions{ai.WithChatUncachedToolSetsFactory(orgToolSetsFactory)}
 	if refreshToolSets {
 		allOptions = append(allOptions, ai.WithChatRefreshToolSetsEachIteration(true))
 	}
@@ -704,6 +700,13 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 				origOnSummary(ctx, messages)
 			}
 		}))
+	}
+	if skillLoader != nil {
+		allOptions = append(allOptions, ai.WithChatSkillLoader(skillLoader))
+	}
+
+	if skillLoaderOptions != nil {
+		allOptions = append(allOptions, skillLoaderOptions)
 	}
 
 	// Call ExchangeStream

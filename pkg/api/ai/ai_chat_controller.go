@@ -32,7 +32,6 @@ import (
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
-	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/log"
 )
@@ -439,8 +438,32 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	roles, _ := ctx.Get("roles")
 
 	userIDStr := userID.(string)
-	var skillStreamParams *service.SkillChatStreamToolParams
-	var activation *service.SkillActivationTracker
+
+	skills, err := c.service.SkillService.LoadSkillsForChat(ctx, organizationID, req.Domains, req.SkillIDs)
+	if err != nil {
+		level.Error(logger).Log("msg", "Failed to load skills metadata", "error", err)
+		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to load skills metadata", err)))
+		return
+	}
+	skillLoader := ai.NewSkillLoader(skills, func(ctx context.Context, skillID string, path string) (string, error) {
+		if strings.TrimSpace(path) == "" {
+			content, err := c.service.SkillService.GetSkillContent(ctx, skillID)
+			if err != nil {
+				return "", fmt.Errorf("failed to get skill content: %w", err)
+			}
+			return content, nil
+		}
+		body, err := c.service.SkillService.GetFile(ctx, skillID, path)
+		if err != nil {
+			return "", fmt.Errorf("failed to get skill file: %w", err)
+		}
+		return string(body), nil
+	})
+	skillLoader.OnContentLoaded = func(ctx context.Context, skillID string) {
+		if err := c.service.AppendSessionActivatedSkill(ctx, organizationID, userIDStr, sessionID, skillID); err != nil {
+			level.Error(logger).Log("msg", "Failed to append session activated skill", "error", err)
+		}
+	}
 
 	options := []ai.WithChatOptions{
 		ai.WithChatOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
@@ -500,10 +523,9 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 				}
 			}
 		}),
-
 		ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
-			if activation != nil {
-				activation.Clear()
+			if skillLoader != nil {
+				skillLoader.Clear()
 				if err := c.service.ClearSessionActivatedSkills(ctx, organizationID, userIDStr, sessionID); err != nil {
 					level.Error(logger).Log("msg", "Failed to clear activated skills after summary", "error", err)
 				}
@@ -563,41 +585,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}
 	}
 
-	// Progressive skill loading: when domains/skillIDs are set, inject metadata only
-	// and add skill_loader toolset so the model can load content on demand.
-	// Organization tools gated by skill bindings load only after get_skill_content succeeds (session activated_skill_ids).
-	if len(req.Domains) > 0 || len(req.SkillIDs) > 0 {
-		metadataContent, skillIDs, err := c.service.SkillService.LoadSkillsMetadataForChat(ctx, req.Domains, req.SkillIDs)
-		if err != nil {
-			level.Error(logger).Log("msg", "Failed to load skills metadata", "error", err)
-			return
-		}
-		if metadataContent != "" {
-			activation = service.NewSkillActivationTracker(session.ActivatedSkillIDs)
-			skillStreamParams = &service.SkillChatStreamToolParams{
-				SkillMetadataActive: true,
-				Activation:          activation,
-			}
-			loaderOpts := &service.SkillLoaderOptions{
-				OnSkillContentLoaded: func(ctx context.Context, skillID string) error {
-					if err := c.service.AppendSessionActivatedSkill(ctx, organizationID, userIDStr, sessionID, skillID); err != nil {
-						return err
-					}
-					activation.Add(skillID)
-					return nil
-				},
-			}
-			skillLoaderToolSet := service.NewSkillLoaderToolSet(ctx, c.service.SkillService, skillIDs, loaderOpts)
-			chatMessages = append([]ai.ChatMessage{{
-				Role:    model.AIChatMessageRoleSystem,
-				Content: metadataContent,
-			}}, chatMessages...)
-			options = append(options, ai.WithChatToolSetsFactory(toolset.NewStaticToolSetsFactory(toolset.ToolSets{"skill_loader": skillLoaderToolSet})))
-		}
-	}
-
 	// Create streaming chat completion
-	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, chatMessages, skillStreamParams, options...)
+	stream, err := c.service.CreateChatCompletionStream(ctx, organizationID, session.ModelID, chatMessages, skillLoader, options...)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", fmt.Sprintf("Failed to create chat completion stream: %s", err))))
 		return

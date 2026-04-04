@@ -106,41 +106,47 @@ type ChatStream interface {
 	Close() error
 }
 
-func WithChatToolSets(toolSets toolset.ToolSets) WithChatOptions {
+func WithChatToolSetsProvider(factory toolset.ToolSetsProvider) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
-		if toolSets != nil {
-			if options.ToolSetsFactory == nil {
-				options.ToolSetsFactory = toolset.NewStaticToolSetsFactory(toolSets)
-			} else {
-				options.ToolSetsFactory = toolset.NewToolSetsFactoryChain(options.ToolSetsFactory, toolset.NewStaticToolSetsFactory(toolSets))
-			}
+		options.ToolSetsProvider = toolset.NewCachedToolSetsProvider(factory)
+	}
+}
+
+func WithChatToolSetsProviderChan(factory func(ctx context.Context, oriProvider toolset.ToolSetsProvider) (toolset.ToolSets, error)) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		oriProvider := options.ToolSetsProvider
+		options.ToolSetsProvider = func(ctx context.Context) (toolset.ToolSets, error) {
+			return factory(ctx, oriProvider)
 		}
 	}
 }
 
-func WithChatToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatOptions {
+func WithChatAppendToolSetsProvider(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
-		if factory != nil {
-			if options.ToolSetsFactory == nil {
-				options.ToolSetsFactory = toolset.NewCachedToolSetsFactory(factory)
-			} else {
-				options.ToolSetsFactory = toolset.NewToolSetsFactoryChain(options.ToolSetsFactory, toolset.NewCachedToolSetsFactory(factory))
+		oriToolSetsProvider := options.ToolSetsProvider
+		options.ToolSetsProvider = func(ctx context.Context) (toolset.ToolSets, error) {
+			originalToolSets, err := oriToolSetsProvider(ctx)
+			if err != nil {
+				return nil, err
 			}
+			if originalToolSets == nil {
+				originalToolSets = make(toolset.ToolSets)
+			}
+			appendToolSets, err := factory(ctx)
+			if err != nil {
+				return nil, err
+			}
+			for k, v := range appendToolSets {
+				originalToolSets[k] = v
+			}
+			return originalToolSets, nil
 		}
 	}
 }
 
-// WithChatUncachedToolSetsFactory appends a tool-sets factory without caching (invoked on every factory call).
-func WithChatUncachedToolSetsFactory(factory func(ctx context.Context) (toolset.ToolSets, error)) WithChatOptions {
+func WithoutChatCompletionToolSets() WithChatOptions {
 	return func(options *ChatCompletionOptions) {
-		if factory == nil {
-			return
-		}
-		if options.ToolSetsFactory == nil {
-			options.ToolSetsFactory = factory
-			return
-		}
-		options.ToolSetsFactory = toolset.NewToolSetsFactoryChain(options.ToolSetsFactory, factory)
+		options.ToolSetsProvider = nil
 	}
 }
 
@@ -151,13 +157,14 @@ func WithChatRefreshToolSetsEachIteration(refresh bool) WithChatOptions {
 	}
 }
 
-func WithoutChatCompletionToolSets() WithChatOptions {
+func WithChatSkillLoader(skillLoader *SkillLoader) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
-		options.ToolSetsFactory = nil
+		options.SkillLoader = skillLoader
 	}
 }
 
 type ChatCompletionOptions struct {
+	SkillLoader             *SkillLoader
 	MaxIterations           int
 	MaxTokens               int
 	EnableAutoSummarization bool
@@ -165,7 +172,7 @@ type ChatCompletionOptions struct {
 	ToolResultMaxSize       int    // Maximum size of tool result in bytes, default 32KB
 	ResponseJsonSchema      string // JSON Schema for expected response format
 
-	ToolSetsFactory func(ctx context.Context) (toolset.ToolSets, error)
+	ToolSetsProvider toolset.ToolSetsProvider
 	// RefreshToolSetsEachIteration, when true, re-invokes ToolSetsFactory before each LLM stream iteration (after tool rounds).
 	RefreshToolSetsEachIteration bool
 	ClientTools                  []openai.Tool // Tools to be executed on the client side (browser)

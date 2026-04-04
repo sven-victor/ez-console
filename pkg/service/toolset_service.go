@@ -377,7 +377,7 @@ func toolSetsFromAuthorizedItems(items []authorizedToolSetItem) toolset.ToolSets
 	}
 	out := make(toolset.ToolSets, len(items))
 	for _, it := range items {
-		out[it.MapKey] = it.ToolSet
+		out[it.MapKey] = toolset.NewBindingAwareToolSet(it.ToolSet, it.ResourceID, it.ToolSetType)
 	}
 	return out
 }
@@ -450,12 +450,7 @@ func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organization
 // toolSetType is the toolset implementation type (e.g. "utils"); bindings may use it in ToolSetID instead of resource_id.
 func SkillBindingMatches(bindings []model.SkillAIToolBinding, toolSetResourceID, toolSetType, toolName string) bool {
 	for _, b := range bindings {
-		tsOK := b.ToolSetID == "*" || b.ToolSetID == toolSetResourceID
-		if !tsOK && toolSetType != "" && b.ToolSetID == toolSetType {
-			tsOK = true
-		}
-		tnOK := b.ToolName == "*" || b.ToolName == toolName
-		if tsOK && tnOK {
+		if b.MatchesTarget(toolSetResourceID, toolSetType, toolName) {
 			return true
 		}
 	}

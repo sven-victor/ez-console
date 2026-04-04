@@ -1141,9 +1141,10 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 }
 
 // LoadSkillsForChat loads skills by domains and/or skill IDs, merges and dedupes by skill id, returns concatenated content.
-func (s *SkillService) LoadSkillsForChat(ctx context.Context, domains []string, skillIDs []string) (string, error) {
+func (s *SkillService) LoadSkillsForChat(ctx context.Context, organizationID string, domains []string, skillIDs []string) ([]*model.Skill, error) {
 	seen := make(map[string]bool)
-	var ordered []string
+	var seenSkillIDs []string
+	var skills []*model.Skill
 
 	// Collect skill IDs first (order preserved)
 	for _, id := range skillIDs {
@@ -1158,43 +1159,45 @@ func (s *SkillService) LoadSkillsForChat(ctx context.Context, domains []string, 
 			continue
 		}
 		seen[id] = true
-		ordered = append(ordered, id)
+		skills = append(skills, sk)
+		seenSkillIDs = append(seenSkillIDs, id)
 	}
 
 	// Query skills by domain (same logic as LoadSkillsForDomains: core only when domains empty, else core + domains)
-	query := db.Session(ctx).Model(&model.Skill{})
+	query := db.Session(ctx).Model(&model.Skill{}).Where("organization_id = ?", organizationID)
 	if len(domains) == 0 {
 		query = query.Where("domain = ?", "core")
 	} else {
 		query = query.Where("domain = ? OR domain IN ?", "core", domains)
 	}
-	var domainSkills []model.Skill
+	var domainSkills []*model.Skill
 	if err := query.Order("name").Find(&domainSkills).Error; err != nil {
-		return "", fmt.Errorf("failed to load skills by domains: %w", err)
+		return nil, fmt.Errorf("failed to load skills by domains: %w", err)
 	}
 	for _, sk := range domainSkills {
 		if seen[sk.ResourceID] {
 			continue
 		}
-		if !model.SkillIsEnabled(&sk) {
+		if !model.SkillIsEnabled(sk) {
 			continue
 		}
 		seen[sk.ResourceID] = true
-		ordered = append(ordered, sk.ResourceID)
+		skills = append(skills, sk)
+		seenSkillIDs = append(seenSkillIDs, sk.ResourceID)
 	}
-
-	if len(ordered) == 0 {
-		return "", nil
+	bindings, err := s.ListSkillAIToolBindingsForChat(ctx, organizationID, seenSkillIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tools for skills: %w", err)
 	}
-	var parts []string
-	for _, id := range ordered {
-		content, err := s.GetSkillContent(ctx, id)
-		if err != nil {
-			continue
+	for _, binding := range bindings {
+		for _, sk := range skills {
+			if sk.ResourceID == binding.SkillID {
+				sk.Tools = append(sk.Tools, model.SkillTool{
+					ToolSetID: binding.ToolSetID,
+					ToolName:  binding.ToolName,
+				})
+			}
 		}
-		if content != "" {
-			parts = append(parts, content)
-		}
 	}
-	return strings.Join(parts, "\n\n---\n\n"), nil
+	return skills, nil
 }

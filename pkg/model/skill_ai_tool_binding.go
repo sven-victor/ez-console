@@ -16,6 +16,17 @@ type SkillAIToolBinding struct {
 	OrganizationID string `gorm:"size:36;not null;uniqueIndex:idx_skill_ai_tool_binding_unique,priority:4;index:idx_skill_ai_tool_skill_org,priority:2" json:"organization_id"`
 }
 
+// MatchesTarget reports whether this binding matches the given toolset instance and logical tool name.
+// toolSetImplType is the implementation type (e.g. "utils"); ToolSetID in bindings may be resource_id, that type, or "*".
+func (b SkillAIToolBinding) MatchesTarget(toolSetResourceID, toolSetImplType, toolName string) bool {
+	tsOK := b.ToolSetID == "*" || b.ToolSetID == toolSetResourceID
+	if !tsOK && toolSetImplType != "" && b.ToolSetID == toolSetImplType {
+		tsOK = true
+	}
+	tnOK := b.ToolName == "*" || b.ToolName == toolName
+	return tsOK && tnOK
+}
+
 // TableName returns the database table name for SkillAIToolBinding.
 func (SkillAIToolBinding) TableName() string {
 	return "t_skill_ai_tool_bindings"

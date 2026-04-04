@@ -133,34 +133,15 @@ func GetRegisteredToolSets() map[ToolSetType]ToolSetFactory {
 	return toolSets
 }
 
-type ToolSetsFactory func(ctx context.Context) (ToolSets, error)
+type ToolSetsProvider func(ctx context.Context) (ToolSets, error)
 
-func NewStaticToolSetsFactory(toolSets ToolSets) ToolSetsFactory {
+func NewStaticToolSetsProvider(toolSets ToolSets) ToolSetsProvider {
 	return func(ctx context.Context) (ToolSets, error) {
 		return toolSets, nil
 	}
 }
 
-func NewToolSetsFactoryChain(base ToolSetsFactory, factories ...ToolSetsFactory) ToolSetsFactory {
-	return func(ctx context.Context) (ToolSets, error) {
-		toolSets, err := base(ctx)
-		if err != nil {
-			return nil, err
-		}
-		for _, factory := range factories {
-			factoryToolSets, err := factory(ctx)
-			if err != nil {
-				return nil, err
-			}
-			for k, v := range factoryToolSets {
-				toolSets[k] = v
-			}
-		}
-		return toolSets, nil
-	}
-}
-
-func NewCachedToolSetsFactory(factory func(ctx context.Context) (ToolSets, error)) func(ctx context.Context) (ToolSets, error) {
+func NewCachedToolSetsProvider(factory func(ctx context.Context) (ToolSets, error)) func(ctx context.Context) (ToolSets, error) {
 	once := sync.Once{}
 	var cachedToolSets ToolSets
 	var err error
@@ -169,5 +150,156 @@ func NewCachedToolSetsFactory(factory func(ctx context.Context) (ToolSets, error
 			cachedToolSets, err = factory(ctx)
 		})
 		return cachedToolSets, err
+	}
+}
+
+// BindingAwareToolSet wraps a ToolSet with organization toolset identity for skill–AI-tool binding resolution.
+type BindingAwareToolSet struct {
+	Inner      ToolSet
+	ResourceID string
+	ImplType   string
+}
+
+// NewBindingAwareToolSet returns inner wrapped with resource_id and implementation type (e.g. "utils").
+func NewBindingAwareToolSet(inner ToolSet, resourceID, implType string) ToolSet {
+	if inner == nil {
+		return nil
+	}
+	return &BindingAwareToolSet{Inner: inner, ResourceID: resourceID, ImplType: implType}
+}
+
+func (b *BindingAwareToolSet) GetName() string        { return b.Inner.GetName() }
+func (b *BindingAwareToolSet) GetDescription() string { return b.Inner.GetDescription() }
+func (b *BindingAwareToolSet) Validate() error        { return b.Inner.Validate() }
+func (b *BindingAwareToolSet) Test(ctx context.Context) error {
+	return b.Inner.Test(ctx)
+}
+func (b *BindingAwareToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
+	return b.Inner.Call(ctx, name, parameters)
+}
+func (b *BindingAwareToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
+	return b.Inner.ListTools(ctx)
+}
+
+type allowedToolNamesToolSet struct {
+	inner   ToolSet
+	allowed map[string]struct{}
+}
+
+// NewAllowedToolNamesToolSet returns a ToolSet that exposes only the given logical tool names from inner.
+// If allowed contains "*", all tools from inner are visible (same convention as role AI tool permissions).
+func NewAllowedToolNamesToolSet(inner ToolSet, allowed map[string]struct{}) ToolSet {
+	if inner == nil {
+		return nil
+	}
+	if len(allowed) == 0 {
+		return inner
+	}
+	return &allowedToolNamesToolSet{inner: inner, allowed: allowed}
+}
+
+func (f *allowedToolNamesToolSet) GetName() string        { return f.inner.GetName() }
+func (f *allowedToolNamesToolSet) GetDescription() string { return f.inner.GetDescription() }
+func (f *allowedToolNamesToolSet) Validate() error        { return f.inner.Validate() }
+func (f *allowedToolNamesToolSet) Test(ctx context.Context) error {
+	return f.inner.Test(ctx)
+}
+
+func (f *allowedToolNamesToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
+	if _, all := f.allowed["*"]; !all {
+		if _, ok := f.allowed[name]; !ok {
+			return "", fmt.Errorf("tool %s is not allowed", name)
+		}
+	}
+	return f.inner.Call(ctx, name, parameters)
+}
+
+func (f *allowedToolNamesToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
+	tools, err := f.inner.ListTools(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if _, all := f.allowed["*"]; all {
+		return tools, nil
+	}
+	filtered := make([]openai.Tool, 0, len(tools))
+	for _, tool := range tools {
+		if tool.Function == nil {
+			continue
+		}
+		if _, ok := f.allowed[tool.Function.Name]; ok {
+			filtered = append(filtered, tool)
+		}
+	}
+	return filtered, nil
+}
+
+type AdHocTool struct {
+	openai.Tool
+	call func(ctx context.Context, name string, parameters string) (string, error)
+}
+
+func NewAdHocTool(tool openai.Tool, call func(ctx context.Context, name string, parameters string) (string, error)) AdHocTool {
+	return AdHocTool{
+		Tool: tool,
+		call: call,
+	}
+}
+
+type adHocToolSet struct {
+	name        string
+	description string
+	tools       []AdHocTool
+}
+
+// Call implements ToolSet.
+func (a *adHocToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
+	for _, tool := range a.tools {
+		if tool.Tool.Function.Name == name {
+			return tool.call(ctx, name, parameters)
+		}
+	}
+	return "", fmt.Errorf("tool %s not found", name)
+}
+
+// GetDescription implements ToolSet.
+func (a *adHocToolSet) GetDescription() string {
+	return a.description
+}
+
+// GetName implements ToolSet.
+func (a *adHocToolSet) GetName() string {
+	return a.name
+}
+
+// ListTools implements ToolSet.
+func (a *adHocToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
+	tools := make([]openai.Tool, len(a.tools))
+	for i, tool := range a.tools {
+		tools[i] = tool.Tool
+	}
+	return tools, nil
+}
+
+// Test implements ToolSet.
+func (a *adHocToolSet) Test(ctx context.Context) error {
+	return nil
+}
+
+// Validate implements ToolSet.
+func (a *adHocToolSet) Validate() error {
+	return nil
+}
+
+func (a *adHocToolSet) AddTool(tool AdHocTool) *adHocToolSet {
+	a.tools = append(a.tools, tool)
+	return a
+}
+
+func NewAdHocToolSet(tools ...AdHocTool) *adHocToolSet {
+	return &adHocToolSet{
+		name:        "ad_hoc",
+		description: "Ad-hoc toolset",
+		tools:       tools,
 	}
 }

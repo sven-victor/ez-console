@@ -108,9 +108,9 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 	}
 
 	toolSets := make(toolset.ToolSets)
-	if opts.ToolSetsFactory != nil {
+	if opts.ToolSetsProvider != nil {
 		var err error
-		toolSets, err = opts.ToolSetsFactory(ctx)
+		toolSets, err = opts.ToolSetsProvider(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get tool sets: %w", err)
 		}
@@ -460,7 +460,7 @@ type ClassicChatStream struct {
 	client                       AIClient
 	messages                     []ChatMessage
 	toolSets                     toolset.ToolSets
-	toolSetsFactory              func(context.Context) (toolset.ToolSets, error)
+	toolSetsProvider             func(context.Context) (toolset.ToolSets, error)
 	clientTools                  []openai.Tool
 	refreshToolSetsEachIteration bool
 	// tools                   []openai.Tool
@@ -1029,17 +1029,17 @@ func (stream *ClassicChatStream) applyChatCompletionOptions(o ChatCompletionOpti
 	stream.enableAutoSummarization = o.EnableAutoSummarization
 	stream.toolResultMaxSize = o.ToolResultMaxSize
 	stream.refreshToolSetsEachIteration = o.RefreshToolSetsEachIteration
-	stream.toolSetsFactory = o.ToolSetsFactory
+	stream.toolSetsProvider = o.ToolSetsProvider
 	if len(o.ClientTools) > 0 {
 		stream.clientTools = slices.Clone(o.ClientTools)
 	}
 }
 
 func (o *ClassicChatStream) rebuildToolSetsIfNeeded() error {
-	if !o.refreshToolSetsEachIteration || o.toolSetsFactory == nil {
+	if !o.refreshToolSetsEachIteration || o.toolSetsProvider == nil {
 		return nil
 	}
-	ts, err := o.toolSetsFactory(o.ctx)
+	ts, err := o.toolSetsProvider(o.ctx)
 	if err != nil {
 		return fmt.Errorf("failed to refresh tool sets: %w", err)
 	}
@@ -1140,7 +1140,7 @@ func segmentedSummarize(ctx context.Context, client AIClient, messages []ChatMes
 
 	exchangeClient := &classicChatClient{aiClient: client}
 	_, err := exchangeClient.Exchange(ctx, summarizeMessages,
-		WithChatToolSets(ts),
+		WithChatToolSetsProvider(toolset.NewStaticToolSetsProvider(ts)),
 		WithChatMaxIterations(50),
 		WithChatToolResultMaxSize(1024*1024),
 	)
@@ -1172,10 +1172,41 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 
 	toolSets := make(toolset.ToolSets)
 	var err error
-	if opts.ToolSetsFactory != nil {
-		toolSets, err = opts.ToolSetsFactory(ctx)
+	if opts.ToolSetsProvider != nil {
+		toolSets, err = opts.ToolSetsProvider(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get tool sets: %w", err)
+		}
+	}
+	if opts.SkillLoader != nil && opts.SkillLoader.HasSkills() {
+		var skillLoaderMetadata string
+		if opts.RefreshToolSetsEachIteration {
+			toolsetProvider := NewSkillDrivenToolset(opts.SkillLoader, opts.ToolSetsProvider)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get skill loader metadata: %w", err)
+			}
+
+			skillLoaderMetadata, err = toolsetProvider.GetMetadata(ctx)
+			if err != nil {
+				return nil, fmt.Errorf("failed to get skill loader metadata: %w", err)
+			}
+			opts.ToolSetsProvider = func(ctx context.Context) (toolset.ToolSets, error) {
+				return toolsetProvider.ListTools(ctx)
+			}
+		} else {
+			skillLoaderMetadata, err = opts.SkillLoader.GetMetadata()
+			if err != nil {
+				return nil, fmt.Errorf("failed to get skill loader metadata: %w", err)
+			}
+		}
+
+		if len(messages) > 0 && messages[0].Role == model.AIChatMessageRoleSystem {
+			messages[0].Content += "\n\n" + skillLoaderMetadata
+		} else {
+			messages = append([]ChatMessage{{
+				Role:    model.AIChatMessageRoleSystem,
+				Content: skillLoaderMetadata,
+			}}, messages...)
 		}
 	}
 
@@ -1192,7 +1223,7 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 		client:                       aiClient,
 		messages:                     messages,
 		toolSets:                     toolSets,
-		toolSetsFactory:              opts.ToolSetsFactory,
+		toolSetsProvider:             opts.ToolSetsProvider,
 		clientTools:                  slices.Clone(opts.ClientTools),
 		refreshToolSetsEachIteration: opts.RefreshToolSetsEachIteration,
 		messageID:                    uuid.Must(uuid.NewV4()).String(),
