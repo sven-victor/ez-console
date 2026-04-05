@@ -386,7 +386,6 @@ const AIModelSettings: React.FC = () => {
                 </Button>
               </PermissionGuard>
               <Button
-                type="primary"
                 icon={<ReloadOutlined />}
                 onClick={refresh}
                 loading={loading}

@@ -16,7 +16,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal, message } from 'antd';
-import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { formatDate } from '@/utils';
@@ -176,15 +176,15 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
           onFinish={handleFilterSubmit}
           initialValues={filters}
         >
-          <Row gutter={24}>
-            <Col span={6}>
-              <Form.Item name="search" label={t('auditLog.search')}>
+          <Row gutter={[16, 16]}>
+            <Col xxl={6} xl={6} lg={8} sm={12} xs={24} >
+              <Form.Item name="search" noStyle>
                 <Input placeholder={t('auditLog.searchPlaceholder')} />
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item name="action" label={t('auditLog.action')}>
-                <Select allowClear placeholder={t('auditLog.selectAction')}>
+            <Col xxl={4} xl={6} lg={8} sm={12} xs={24} >
+              <Form.Item name="action" noStyle>
+                <Select allowClear placeholder={t('auditLog.selectAction')} style={{ width: '100%' }}>
                   <Option value="login">{t('actions.login')}</Option>
                   <Option value="logout">{t('actions.logout')}</Option>
                   <Option value="password_reset">{t('actions.passwordReset')}</Option>
@@ -192,22 +192,20 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item name="status" label={t('auditLog.status')}>
-                <Select allowClear placeholder={t('auditLog.selectStatus')}>
+            <Col xxl={3} xl={6} lg={8} sm={12} xs={24} >
+              <Form.Item name="status" noStyle>
+                <Select allowClear placeholder={t('auditLog.selectStatus')} style={{ width: '100%' }}>
                   <Option value="success">{t('statuses.success')}</Option>
                   <Option value="failed">{t('statuses.failed')}</Option>
                 </Select>
               </Form.Item>
             </Col>
-            <Col span={6}>
-              <Form.Item name="dateRange" label={t('auditLog.dateRange')}>
+            <Col xxl={6} xl={6} lg={10} md={12} sm={12} xs={24} >
+              <Form.Item name="dateRange" noStyle>
                 <RangePicker style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-          </Row>
-          <Row>
-            <Col span={24} style={{ textAlign: 'right' }}>
+            <Col xxl={5} xl={24} lg={14} md={24} sm={24} xs={24} style={{ textAlign: 'right' }}>
               <Space>
                 <Button onClick={handleReset}>{tCommon('reset')}</Button>
                 <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
@@ -221,16 +219,6 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
 
       {/* Audit log table */}
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <Button
-            type="primary"
-            icon={<ReloadOutlined />}
-            onClick={handleReset}
-            style={{ marginRight: 8 }}
-          >
-            {tCommon('refresh')}
-          </Button>
-        </div>
         <Table
           rowKey="id"
           columns={columnsFilter(columns)}
