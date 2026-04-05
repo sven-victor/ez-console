@@ -34,7 +34,6 @@ import {
   Spin,
 } from 'antd';
 import {
-  SearchOutlined,
   ReloadOutlined,
   UserAddOutlined,
   EditOutlined,
@@ -235,16 +234,6 @@ const UserList: React.FC = () => {
     });
   };
 
-  // Reset search form
-  const handleReset = () => {
-    searchForm.resetFields();
-    setQueryParams({
-      current: PAGINATION.DEFAULT_CURRENT,
-      page_size: PAGINATION.DEFAULT_PAGE_SIZE,
-      keywords: undefined,
-      status: undefined,
-    });
-  };
 
   // Page change event
   const handlePageChange = (page: number, pageSize: number) => {
@@ -538,49 +527,62 @@ const UserList: React.FC = () => {
       <Card style={{ marginBottom: 16 }}>
         <Form
           form={searchForm}
-          layout="inline"
+          layout="vertical"
           onFinish={handleSearch}
+          name='userSearchForm'
         >
-          <Row gutter={16} style={{ width: '100%' }}>
-            <Col span={6}>
-              <Form.Item name="keywords">
-                <Input
-                  prefix={<SearchOutlined />}
-                  placeholder={t('user.keywords', { defaultValue: 'Search by username, full name, or email' })}
-                  allowClear
-                />
-              </Form.Item>
-            </Col>
-            <Col span={6}>
-              <Form.Item name="status">
-                <Select
-                  placeholder={t('user.status', { defaultValue: 'Status' })}
-                  allowClear
-                  style={{ width: '100%' }}
-                >
-                  <Option value="active">{t('user.statusEnum.active', { defaultValue: 'Active' })}</Option>
-                  <Option value="disabled">{t('user.statusEnum.disabled', { defaultValue: 'Disabled' })}</Option>
-                  <Option value="deleted">{t('user.statusEnum.deleted', { defaultValue: 'Deleted' })}</Option>
-                  <Option value="locked">{t('user.statusEnum.locked', { defaultValue: 'Locked' })}</Option>
-                  <Option value="password_expired">{t('user.statusEnum.password_expired', { defaultValue: 'Password Expired' })}</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col span={6}>
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col >
               <Space>
-                <Button
-                  type="primary"
-                  icon={<SearchOutlined />}
-                  htmlType="submit"
-                >
-                  {tCommon('search', { defaultValue: 'Search' })}
-                </Button>
-                <Button
-                  icon={<ReloadOutlined />}
-                  onClick={handleReset}
-                >
-                  {tCommon('reset', { defaultValue: 'Reset' })}
-                </Button>
+                <Form.Item name="keywords" noStyle>
+                  <Input.Search
+                    placeholder={t('user.keywords', { defaultValue: 'Search by username, full name, or email' })}
+                    allowClear
+                    onSearch={() => {
+                      handleSearch(searchForm.getFieldsValue())
+                    }}
+                    style={{ width: 300 }}
+                  />
+                </Form.Item>
+                <Form.Item name="status" noStyle>
+                  <Select
+                    placeholder={t('user.status', { defaultValue: 'Status' })}
+                    allowClear
+                    onChange={() => {
+                      handleSearch(searchForm.getFieldsValue())
+                    }}
+                    style={{ width: 220 }}
+                  >
+                    <Option value="active">{t('user.statusEnum.active', { defaultValue: 'Active' })}</Option>
+                    <Option value="disabled">{t('user.statusEnum.disabled', { defaultValue: 'Disabled' })}</Option>
+                    <Option value="deleted">{t('user.statusEnum.deleted', { defaultValue: 'Deleted' })}</Option>
+                    <Option value="locked">{t('user.statusEnum.locked', { defaultValue: 'Locked' })}</Option>
+                    <Option value="password_expired">{t('user.statusEnum.password_expired', { defaultValue: 'Password Expired' })}</Option>
+                  </Select>
+                </Form.Item>
+              </Space>
+            </Col>
+            <Col >
+              <Space>
+                <Button icon={<ReloadOutlined />} onClick={fetchUsers}>{tCommon('refresh', { defaultValue: 'Refresh' })}</Button>
+                <PermissionGuard permission="authorization:user:export">
+                  <Button
+                    icon={<ExportOutlined />}
+                    loading={exportLoading}
+                    onClick={() => handleExport()}
+                  >
+                    {t('user.export', { defaultValue: 'Export' })}
+                  </Button>
+                </PermissionGuard>
+                <PermissionGuard permission="authorization:user:create">
+                  <Button
+                    type="primary"
+                    icon={<UserAddOutlined />}
+                    onClick={() => navigate('/authorization/users/create')}
+                  >
+                    {t('user.create', { defaultValue: 'Create User' })}
+                  </Button>
+                </PermissionGuard>
               </Space>
             </Col>
           </Row>
@@ -589,31 +591,10 @@ const UserList: React.FC = () => {
       <Card>
         <Row justify="space-between" align="middle" gutter={[0, 16]}>
           <Col>
-            <Button type='primary' icon={<ReloadOutlined />} onClick={fetchUsers}>{tCommon('refresh', { defaultValue: 'Refresh' })}</Button>
+
           </Col>
           <Col>
-            <Space>
-              <PermissionGuard permission="authorization:user:export">
-                <Button
-                  icon={<ExportOutlined />}
-                  loading={exportLoading}
-                  style={{ marginBottom: 16 }}
-                  onClick={() => handleExport()}
-                >
-                  {t('user.export', { defaultValue: 'Export' })}
-                </Button>
-              </PermissionGuard>
-              <PermissionGuard permission="authorization:user:create">
-                <Button
-                  type="primary"
-                  icon={<UserAddOutlined />}
-                  style={{ marginBottom: 16 }}
-                  onClick={() => navigate('/authorization/users/create')}
-                >
-                  {t('user.create', { defaultValue: 'Create User' })}
-                </Button>
-              </PermissionGuard>
-            </Space>
+
           </Col>
         </Row>
 
