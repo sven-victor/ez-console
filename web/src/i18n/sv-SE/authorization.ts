@@ -431,6 +431,8 @@ export default {
     create: 'Skapa tjänstekonto',
     edit: 'Redigera tjänstekonto',
     delete: 'Ta bort tjänstekonto',
+    actionTooltipEnable: 'Aktivera detta tjänstekonto',
+    actionTooltipDisable: 'Inaktivera detta tjänstekonto',
     viewDetail: 'Visa detaljer för tjänstekonto',
     deleteConfirm: 'Är du säker på att du vill ta bort det här tjänstekontot?',
     loadError: 'Det gick inte att ladda listan över tjänstekonton',

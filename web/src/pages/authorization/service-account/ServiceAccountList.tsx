@@ -269,18 +269,24 @@ const ServiceAccountList: React.FC = () => {
             {
               key: 'view',
               icon: <EyeOutlined />,
+              tooltip: t('serviceAccount.viewDetail', { defaultValue: 'View Service Account Details' }),
               onClick: async () => navigate(`/authorization/service-accounts/${record.id}`),
               permission: 'authorization:service_account:view',
             },
             {
               key: 'edit',
               icon: <EditOutlined />,
+              tooltip: t('serviceAccount.edit', { defaultValue: 'Edit Service Account' }),
               onClick: async () => showEditModal(record),
               permission: 'authorization:service_account:update',
             },
             {
               key: 'toggleStatus',
               icon: record.status === 'active' ? <LockOutlined /> : <CheckCircleOutlined />,
+              tooltip:
+                record.status === 'active'
+                  ? t('serviceAccount.actionTooltipDisable', { defaultValue: 'Disable this service account' })
+                  : t('serviceAccount.actionTooltipEnable', { defaultValue: 'Enable this service account' }),
               onClick: async () => handleToggleStatus(record),
               permission: 'authorization:service_account:update',
             },
@@ -288,9 +294,12 @@ const ServiceAccountList: React.FC = () => {
               key: 'delete',
               icon: <DeleteOutlined />,
               danger: true,
+              tooltip: t('serviceAccount.delete', { defaultValue: 'Delete Service Account' }),
               confirm: {
                 title: t('serviceAccount.deleteConfirm', { defaultValue: 'Are you sure you want to delete this service account?' }),
                 onConfirm: async () => handleDelete(record.id),
+                okText: tCommon('confirm', { defaultValue: 'Confirm' }),
+                cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
               },
               permission: 'authorization:service_account:delete',
             },

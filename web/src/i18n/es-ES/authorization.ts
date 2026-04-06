@@ -431,6 +431,8 @@ export default {
     create: 'Crear cuenta de servicio',
     edit: 'Editar cuenta de servicio',
     delete: 'Eliminar cuenta de servicio',
+    actionTooltipEnable: 'Habilitar esta cuenta de servicio',
+    actionTooltipDisable: 'Deshabilitar esta cuenta de servicio',
     viewDetail: 'Ver detalles de la cuenta de servicio',
     deleteConfirm: '¿Estás seguro de que quieres eliminar esta cuenta de servicio?',
     loadError: 'Error al cargar la lista de cuentas de servicio',

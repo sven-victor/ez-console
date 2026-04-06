@@ -437,6 +437,8 @@ export default {
     create: '创建服务账户',
     edit: '编辑服务账户',
     delete: '删除服务账户',
+    actionTooltipEnable: '启用此服务账户',
+    actionTooltipDisable: '禁用此服务账户',
     viewDetail: '查看服务账户详情',
     deleteConfirm: '确定要删除这个服务账户吗？',
     loadError: '加载服务账户列表失败',

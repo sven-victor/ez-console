@@ -431,6 +431,8 @@ export default {
     create: 'Dienstkonto erstellen',
     edit: 'Dienstkonto bearbeiten',
     delete: 'Dienstkonto löschen',
+    actionTooltipEnable: 'Dieses Dienstkonto aktivieren',
+    actionTooltipDisable: 'Dieses Dienstkonto deaktivieren',
     viewDetail: 'Details des Dienstkontos anzeigen',
     deleteConfirm: 'Sind Sie sicher, dass Sie dieses Dienstkonto löschen möchten?',
     loadError: 'Dienstkontenliste konnte nicht geladen werden',

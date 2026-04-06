@@ -412,6 +412,8 @@ export default {
     create: 'Create Service Account',
     edit: 'Edit Service Account',
     delete: 'Delete Service Account',
+    actionTooltipEnable: 'Enable this service account',
+    actionTooltipDisable: 'Disable this service account',
     viewDetail: 'View Service Account Details',
     deleteConfirm: 'Are you sure you want to delete this service account?',
     loadError: 'Failed to load service account list',

@@ -431,6 +431,8 @@ export default {
     create: 'Créer un compte de service',
     edit: 'Modifier le compte de service',
     delete: 'Supprimer le compte de service',
+    actionTooltipEnable: 'Activer ce compte de service',
+    actionTooltipDisable: 'Désactiver ce compte de service',
     viewDetail: 'Voir les détails du compte de service',
     deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce compte de service ?',
     loadError: 'Échec du chargement de la liste des comptes de service',

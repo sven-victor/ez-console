@@ -431,6 +431,8 @@ export default {
     create: 'إنشاء حساب خدمة',
     edit: 'تعديل حساب الخدمة',
     delete: 'حذف حساب الخدمة',
+    actionTooltipEnable: 'تفعيل حساب الخدمة هذا',
+    actionTooltipDisable: 'تعطيل حساب الخدمة هذا',
     viewDetail: 'عرض تفاصيل حساب الخدمة',
     deleteConfirm: 'هل أنت متأكد أنك تريد حذف حساب الخدمة هذا؟',
     loadError: 'فشل تحميل قائمة حسابات الخدمة',
