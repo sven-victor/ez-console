@@ -75,7 +75,7 @@ func (s *SkillLoader) GetMetadata() (string, error) {
 		return "", fmt.Errorf("skill loader is not configured")
 	}
 	var b strings.Builder
-	b.WriteString("Available skills (use get_skill_content to load content on demand):\n\n")
+	b.WriteString("<skill_loader>\nAvailable skills (use get_skill_content to load content on demand):\n\n")
 	for _, sk := range s.skills {
 		b.WriteString(fmt.Sprintf("- id: %s | name: %s | domain: %s\n", sk.ResourceID, sk.Name, sk.Domain))
 		if sk.Description != "" {
@@ -83,7 +83,7 @@ func (s *SkillLoader) GetMetadata() (string, error) {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("Use the tool get_skill_content(skill_id, path) to load full SKILL.md or a specific file (e.g. REFERENCE/foo.md).\n")
+	b.WriteString("Use the tool get_skill_content(skill_id, path) to load full SKILL.md or a specific file (e.g. REFERENCE/foo.md).\n</skill_loader>")
 	return b.String(), nil
 }
 
@@ -280,7 +280,7 @@ func (s *SkillDrivenToolset) GetMetadata(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("skill loader is not configured")
 	}
 	var b strings.Builder
-	b.WriteString("Available skills (use get_skill_content to load content on demand):\n\n")
+	b.WriteString("<skill_loader>\nAvailable skills (use get_skill_content to load content on demand):\n\n")
 	for _, sk := range s.skillLoader.skills {
 		b.WriteString(fmt.Sprintf("- id: %s | name: %s | domain: %s\n", sk.ResourceID, sk.Name, sk.Domain))
 		if sk.Description != "" {
@@ -293,7 +293,7 @@ func (s *SkillDrivenToolset) GetMetadata(ctx context.Context) (string, error) {
 		}
 		b.WriteString("\n")
 	}
-	b.WriteString("Use the tool get_skill_content(skill_id, path) to load full SKILL.md or a specific file (e.g. REFERENCE/foo.md).\n")
+	b.WriteString("Use the tool get_skill_content(skill_id, path) to load full SKILL.md or a specific file (e.g. REFERENCE/foo.md).\n</skill_loader>")
 	return b.String(), nil
 }
 

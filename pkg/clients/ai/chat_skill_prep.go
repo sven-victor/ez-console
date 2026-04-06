@@ -8,6 +8,8 @@ package ai
 import (
 	"context"
 	"fmt"
+	"regexp"
+	"strings"
 
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
@@ -39,6 +41,10 @@ func PrepareChatCompletionSkillLoader(ctx context.Context, opts *ChatCompletionO
 		}
 	}
 	if len(messages) > 0 && messages[0].Role == model.AIChatMessageRoleSystem {
+		if strings.Contains(messages[0].Content, "<skill_loader>") {
+			re := regexp.MustCompile(`(?s)<skill_loader>.*?</skill_loader>`)
+			messages[0].Content = re.ReplaceAllString(messages[0].Content, "")
+		}
 		messages[0].Content += "\n\n" + skillLoaderMetadata
 		return messages, nil
 	}

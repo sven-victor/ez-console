@@ -283,7 +283,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		// Check token limit and summarize if needed
 		if opts.MaxTokens > 0 {
 			currentTokens := EstimateTokens(messages)
-			tokenThreshold := int(float64(opts.MaxTokens) * 0.9) // 90% threshold
+			summarizationTokenThreshold := int(float64(opts.MaxTokens) * 0.5) // 50% threshold
 
 			if currentTokens >= opts.MaxTokens {
 				if !opts.EnableAutoSummarization {
@@ -292,7 +292,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 				if err := summarizeMessages(); err != nil {
 					return nil, fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, opts.MaxTokens, err)
 				}
-			} else if currentTokens >= tokenThreshold && opts.EnableAutoSummarization {
+			} else if currentTokens >= summarizationTokenThreshold && opts.EnableAutoSummarization {
 				if err := summarizeMessages(); err != nil {
 					level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
 				}
@@ -614,16 +614,19 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 		return nil
 	}
 
-	var systemMessage *ChatMessage
+	var systemMessage []ChatMessage
 	var messagesToSummarize []ChatMessage
-	firstSystemFound := false
-
+	var lastUserMessage ChatMessage
+	var systemdMessageEnd bool
 	for i, msg := range o.messages {
-		if !firstSystemFound && msg.Role == model.AIChatMessageRoleSystem {
-			systemMessage = &o.messages[i]
-			firstSystemFound = true
+		if !systemdMessageEnd && len(systemMessage) < 3 && msg.Role == model.AIChatMessageRoleSystem {
+			systemMessage = append(systemMessage, o.messages[i])
 		} else {
+			systemdMessageEnd = true
 			messagesToSummarize = append(messagesToSummarize, msg)
+		}
+		if msg.Role == model.AIChatMessageRoleUser {
+			lastUserMessage = o.messages[i]
 		}
 	}
 
@@ -650,12 +653,12 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 		o.recordSideCallUsage(response, estPrompt)
 		o.messages = make([]ChatMessage, 0, 2)
 		if systemMessage != nil {
-			o.messages = append(o.messages, *systemMessage)
+			o.messages = append(o.messages, systemMessage...)
 		}
 		o.messages = append(o.messages, ChatMessage{
 			Role:    model.AIChatMessageRoleUser,
 			Content: fmt.Sprintf("[Previous conversation summary]: %s", response.Content),
-		})
+		}, lastUserMessage)
 		if o.onSummary != nil {
 			o.onSummary(ctx, o.messages)
 		}
@@ -1083,7 +1086,7 @@ func (o *ClassicChatStream) smartChatStream(ctx context.Context) error {
 	// Check token limit and summarize if needed
 	if o.maxTokens > 0 {
 		currentTokens := EstimateTokens(o.messages)
-		tokenThreshold := int(float64(o.maxTokens) * 0.9) // 90% threshold
+		summarizationTokenThreshold := int(float64(o.maxTokens) * 0.5) // 50% threshold
 
 		if currentTokens >= o.maxTokens {
 			if !o.enableAutoSummarization {
@@ -1092,7 +1095,7 @@ func (o *ClassicChatStream) smartChatStream(ctx context.Context) error {
 			if err := o.summarizeMessages(ctx); err != nil {
 				return fmt.Errorf("token limit exceeded (%d/%d) and failed to summarize: %w", currentTokens, o.maxTokens, err)
 			}
-		} else if currentTokens >= tokenThreshold && o.enableAutoSummarization {
+		} else if currentTokens >= summarizationTokenThreshold && o.enableAutoSummarization {
 			if err := o.summarizeMessages(ctx); err != nil {
 				logger := log.GetContextLogger(ctx)
 				level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
@@ -1122,12 +1125,32 @@ func (o *ClassicChatStream) smartChatStream(ctx context.Context) error {
 			}
 			o.summaryAttempts++
 			level.Info(logger).Log("msg", "Max tokens exceeded, starting segmented summarization", "attempt", o.summaryAttempts)
+
+			var systemMessage []ChatMessage
+			var lastUserMessage ChatMessage
+			var systemdMessageEnd bool
+			for i, msg := range o.messages {
+				if !systemdMessageEnd && len(systemMessage) < 3 && msg.Role == model.AIChatMessageRoleSystem {
+					systemMessage = append(systemMessage, o.messages[i])
+				} else {
+					systemdMessageEnd = true
+				}
+				if msg.Role == model.AIChatMessageRoleUser {
+					lastUserMessage = o.messages[i]
+				}
+			}
+
 			summarizedMessages, serr := o.segmentedSummarize(ctx, aiErr.Detail)
 			if serr != nil {
 				return fmt.Errorf("segmented summarization failed: %w", serr)
 			}
 			// Replace the original messages with the summarized messages
-			o.messages = summarizedMessages
+			o.messages = make([]ChatMessage, 0, 2)
+			if systemMessage != nil {
+				o.messages = append(o.messages, systemMessage...)
+			}
+			o.messages = append(o.messages, summarizedMessages...)
+			o.messages = append(o.messages, lastUserMessage)
 			if o.onSummary != nil {
 				o.onSummary(ctx, o.messages)
 			}
