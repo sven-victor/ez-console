@@ -493,6 +493,10 @@ export default {
       presetDisabledDelete: 'Los conjuntos integrados no se pueden eliminar.',
       testSuccess: 'Prueba de conexión del conjunto de herramientas exitosa',
       testFailed: 'Prueba de conexión del conjunto de herramientas fallida',
+      statusUpdateSuccess: 'Estado actualizado correctamente',
+      statusUpdateFailed: 'No se pudo actualizar el estado',
+      tooltipEnableToolSet: 'Habilitar este conjunto de herramientas',
+      tooltipDisableToolSet: 'Deshabilitar este conjunto de herramientas',
       deleteConfirm: '¿Está seguro de que desea eliminar este conjunto de herramientas?',
       parameters: 'Parámetros',
       mcp: {

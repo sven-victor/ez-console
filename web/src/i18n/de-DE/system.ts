@@ -493,6 +493,10 @@ export default {
       presetDisabledDelete: 'Integrierte Toolsets können nicht gelöscht werden.',
       testSuccess: 'Toolset-Verbindungstest erfolgreich',
       testFailed: 'Toolset-Verbindungstest fehlgeschlagen',
+      statusUpdateSuccess: 'Status erfolgreich aktualisiert',
+      statusUpdateFailed: 'Status konnte nicht aktualisiert werden',
+      tooltipEnableToolSet: 'Dieses Toolset aktivieren',
+      tooltipDisableToolSet: 'Dieses Toolset deaktivieren',
       deleteConfirm: 'Sind Sie sicher, dass Sie dieses Toolset löschen möchten?',
       parameters: 'Parameter',
       mcp: {

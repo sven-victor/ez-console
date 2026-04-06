@@ -539,6 +539,10 @@ export default {
       presetDisabledDelete: 'Built-in toolsets cannot be deleted.',
       testSuccess: 'Toolset connection test successful',
       testFailed: 'Toolset connection test failed',
+      statusUpdateSuccess: 'Status updated successfully',
+      statusUpdateFailed: 'Failed to update status',
+      tooltipEnableToolSet: 'Enable this toolset',
+      tooltipDisableToolSet: 'Disable this toolset',
       deleteConfirm: 'Are you sure you want to delete this toolset?',
       parameters: 'Parameters',
       mcp: {

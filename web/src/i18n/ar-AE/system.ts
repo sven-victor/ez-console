@@ -492,6 +492,10 @@ export default {
       presetDisabledDelete: 'لا يمكن حذف مجموعات الأدوات المدمجة.',
       testSuccess: 'نجح اختبار اتصال مجموعة الأدوات',
       testFailed: 'فشل اختبار اتصال مجموعة الأدوات',
+      statusUpdateSuccess: 'تم تحديث الحالة بنجاح',
+      statusUpdateFailed: 'فشل تحديث الحالة',
+      tooltipEnableToolSet: 'تفعيل مجموعة الأدوات هذه',
+      tooltipDisableToolSet: 'تعطيل مجموعة الأدوات هذه',
       deleteConfirm: 'هل أنت متأكد من أنك تريد حذف مجموعة الأدوات هذه؟',
       parameters: 'المعلمات',
       mcp: {

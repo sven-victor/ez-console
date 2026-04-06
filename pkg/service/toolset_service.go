@@ -156,8 +156,7 @@ func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string
 
 	// Apply search filter
 	if search != "" {
-		query = query.Where("name LIKE ? OR description LIKE ? OR endpoint LIKE ?",
-			"%"+search+"%", "%"+search+"%", "%"+search+"%")
+		query = query.Where("name LIKE ? OR description LIKE ?", "%"+search+"%", "%"+search+"%")
 	}
 
 	if toolSetType != "" {
@@ -365,10 +364,10 @@ func convertOpenAITools(tools []openai.Tool) []model.ToolDefinition {
 
 // authorizedToolSetItem is one RBAC-authorized toolset instance with stable map key and toolset resource_id.
 type authorizedToolSetItem struct {
-	ResourceID   string
-	ToolSetType  string
-	MapKey       string
-	ToolSet      toolset.ToolSet
+	ResourceID  string
+	ToolSetType string
+	MapKey      string
+	ToolSet     toolset.ToolSet
 }
 
 func toolSetsFromAuthorizedItems(items []authorizedToolSetItem) toolset.ToolSets {
@@ -575,9 +574,9 @@ func newToolSetDisabledToolsFilter(inner toolset.ToolSet, disabled map[string]st
 	return &toolSetDisabledToolsFilter{inner: inner, disabled: disabled}
 }
 
-func (t *toolSetDisabledToolsFilter) GetName() string            { return t.inner.GetName() }
-func (t *toolSetDisabledToolsFilter) GetDescription() string     { return t.inner.GetDescription() }
-func (t *toolSetDisabledToolsFilter) Validate() error            { return t.inner.Validate() }
+func (t *toolSetDisabledToolsFilter) GetName() string        { return t.inner.GetName() }
+func (t *toolSetDisabledToolsFilter) GetDescription() string { return t.inner.GetDescription() }
+func (t *toolSetDisabledToolsFilter) Validate() error        { return t.inner.Validate() }
 func (t *toolSetDisabledToolsFilter) Test(ctx context.Context) error {
 	return t.inner.Test(ctx)
 }

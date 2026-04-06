@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useMemo, } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Card,
   Table,
@@ -28,17 +28,17 @@ import {
   Tag,
   Row,
   Col,
+  Switch,
+  Tooltip,
 } from 'antd';
 import {
   PlusOutlined,
   EditOutlined,
   DeleteOutlined,
   ReloadOutlined,
-  CheckCircleOutlined,
   SettingOutlined,
   ToolOutlined,
   ThunderboltOutlined,
-  LockOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
@@ -83,6 +83,7 @@ const ToolSetSettings: React.FC = () => {
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
   const [toolSetType, setToolSetType] = useState<string>();
+  const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
 
   // Fetch toolsets
   const { loading, data, refresh } = useRequest(
@@ -202,20 +203,24 @@ const ToolSetSettings: React.FC = () => {
     }
   );
 
-  // Update toolset status
-  const { runAsync: updateToolSetStatus } = useRequest(
-    ({ id, status }: { id: string; status: API.ToolSetStatus }) => api.system.updateToolSetStatus({ id }, { status }),
-    {
-      manual: true,
-      onSuccess: () => {
+  const handleToolSetStatusChange = useCallback(
+    async (record: ToolSet, enabled: boolean) => {
+      setStatusUpdatingId(record.id);
+      try {
+        await api.system.updateToolSetStatus(
+          { id: record.id },
+          { status: enabled ? 'enabled' : 'disabled' },
+        );
         message.success(t('settings.toolsets.statusUpdateSuccess', { defaultValue: 'Status updated successfully' }));
         refresh();
-      },
-      onError: (error) => {
+      } catch (error) {
         message.error(t('settings.toolsets.statusUpdateFailed', { defaultValue: 'Failed to update status' }));
         console.error('Failed to update status:', error);
-      },
-    }
+      } finally {
+        setStatusUpdatingId(null);
+      }
+    },
+    [t, refresh],
   );
 
   const handleCreate = () => {
@@ -256,11 +261,6 @@ const ToolSetSettings: React.FC = () => {
     setConfigModalVisible(true);
   };
 
-  const handleToggleStatus = (record: ToolSet) => {
-    const newStatus = record.status === 'enabled' ? 'disabled' : 'enabled';
-    return updateToolSetStatus({ id: record.id, status: newStatus });
-  };
-
   const columns: ColumnsType<ToolSet> = [
     {
       title: t('settings.toolsets.name', { defaultValue: 'Name' }),
@@ -284,18 +284,43 @@ const ToolSetSettings: React.FC = () => {
     },
     {
       title: t('settings.toolsets.status', { defaultValue: 'Status' }),
-      dataIndex: 'status',
       key: 'status',
-      render: (status) => (
-        <Tag color={status === 'enabled' ? 'green' : 'red'}>
-          {status === 'enabled' ? tCommon('enabled', { defaultValue: 'Enabled' }) : tCommon('disabled', { defaultValue: 'Disabled' })}
-        </Tag>
-      ),
+      width: 120,
+      render: (_, record) => {
+        const enabled = record.status === 'enabled';
+        return (
+          <PermissionGuard
+            permission="system:toolsets:update"
+            fallback={
+              <Tag color={enabled ? 'green' : 'red'}>
+                {enabled ? tCommon('enabled', { defaultValue: 'Enabled' }) : tCommon('disabled', { defaultValue: 'Disabled' })}
+              </Tag>
+            }
+          >
+            <Tooltip
+              title={
+                enabled
+                  ? t('settings.toolsets.tooltipDisableToolSet', { defaultValue: 'Disable this toolset' })
+                  : t('settings.toolsets.tooltipEnableToolSet', { defaultValue: 'Enable this toolset' })
+              }
+            >
+              <span>
+                <Switch
+                  size="small"
+                  checked={enabled}
+                  loading={statusUpdatingId === record.id}
+                  onChange={(checked) => void handleToolSetStatusChange(record, checked)}
+                />
+              </span>
+            </Tooltip>
+          </PermissionGuard>
+        );
+      },
     },
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'actions',
-      width: 200,
+      width: 168,
       render: (_, record) => {
         return <Actions key='actions' actions={[
           {
@@ -333,12 +358,6 @@ const ToolSetSettings: React.FC = () => {
             icon: <EditOutlined />,
             onClick: async () => handleEdit(record),
             disabled: !!record.is_preset,
-          }, {
-            key: 'toggleStatus',
-            icon: record.status === 'enabled' ? <LockOutlined /> : <CheckCircleOutlined />,
-            onClick: async () => handleToggleStatus(record),
-            permission: 'system:toolsets:update',
-            tooltip: record.status === 'enabled' ? tCommon('disable', { defaultValue: 'Disable' }) : tCommon('enable', { defaultValue: 'Enable' }),
           },
           {
             key: 'delete',
@@ -377,8 +396,7 @@ const ToolSetSettings: React.FC = () => {
               <Input.Search
                 placeholder={t('settings.toolsets.searchPlaceholder', { defaultValue: 'Search toolsets...' })}
                 style={{ width: 300 }}
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
+                onSearch={(value) => setSearchText(value)}
                 allowClear
               />
               <Select

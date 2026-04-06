@@ -493,6 +493,10 @@ export default {
       presetDisabledDelete: 'Les ensembles d\'outils intégrés ne peuvent pas être supprimés.',
       testSuccess: 'Test de connexion de l\'ensemble d\'outils réussi',
       testFailed: 'Test de connexion de l\'ensemble d\'outils échoué',
+      statusUpdateSuccess: 'Statut mis à jour avec succès',
+      statusUpdateFailed: 'Échec de la mise à jour du statut',
+      tooltipEnableToolSet: 'Activer cet ensemble d\'outils',
+      tooltipDisableToolSet: 'Désactiver cet ensemble d\'outils',
       deleteConfirm: 'Êtes-vous sûr de vouloir supprimer cet ensemble d\'outils ?',
       parameters: 'Paramètres',
       mcp: {
