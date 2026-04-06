@@ -445,7 +445,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to load skills metadata", err)))
 		return
 	}
-	skillLoader := ai.NewSkillLoader(skills, func(ctx context.Context, skillID string, path string) (string, error) {
+	skillLoader := ai.NewSkillLoader(skills, session.ActivatedSkillIDs, func(ctx context.Context, skillID string, path string) (string, error) {
 		if strings.TrimSpace(path) == "" {
 			content, err := c.service.SkillService.GetSkillContent(ctx, skillID)
 			if err != nil {

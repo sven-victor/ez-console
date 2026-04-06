@@ -88,8 +88,8 @@ func (s *SkillLoader) GetMetadata() (string, error) {
 }
 
 // NewSkillLoader creates a skill loader for the given skills and content callback.
-func NewSkillLoader(skills []*model.Skill, loadContent func(ctx context.Context, skillID string, path string) (string, error)) *SkillLoader {
-	return &SkillLoader{skills: skills, loadContent: loadContent}
+func NewSkillLoader(skills []*model.Skill, loadedSkills []string, loadContent func(ctx context.Context, skillID string, path string) (string, error)) *SkillLoader {
+	return &SkillLoader{skills: skills, loadedSkills: loadedSkills, loadContent: loadContent}
 }
 
 func (s *SkillLoader) loadedSkillIDSet() map[string]struct{} {
