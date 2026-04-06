@@ -331,7 +331,44 @@ func (f *OpenAIClientFactory) GetDescription() string {
 
 // GetConfigSchema implements AIClientFactoryV2.
 func (f *OpenAIClientFactory) GetConfigSchema() (*jsonschema.Schema, map[string]any, error) {
-	return jsonschema.Reflect(&OpenAIConfig{}), nil, nil
+	schema := jsonschema.Reflect(&OpenAIConfig{})
+	uiSchema := map[string]any{
+		"ui:width": 800,
+		"ui:field": "LayoutGridField",
+		"ui:layoutGrid": map[string]any{
+			"ui:row": map[string]any{
+				"gutter":    []int{12, 0},
+				"className": "row",
+				"children": []map[string]map[string]any{{
+					"ui:col": {
+						"xs":       16,
+						"children": []string{"api_key"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       8,
+						"children": []string{"model_id"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       12,
+						"children": []string{"base_url"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       12,
+						"children": []string{"organization_id"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       24,
+						"children": []string{"system_prompt"},
+					},
+				}},
+			},
+		},
+	}
+	return schema, uiSchema, nil
 }
 
 var _ AIClientFactoryV2 = (*OpenAIClientFactory)(nil)

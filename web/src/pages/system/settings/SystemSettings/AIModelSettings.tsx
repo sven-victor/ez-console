@@ -439,7 +439,7 @@ const AIModelSettings: React.FC = () => {
           setEditingModel(null);
         }}
         footer={null}
-        width={600}
+        width={currentProviderDefinition?.ui_schema?.['ui:width'] || 600}
       >
         <Form
           form={form}
@@ -481,31 +481,41 @@ const AIModelSettings: React.FC = () => {
             />
           </Form.Item>
 
-          {currentProviderDefinition && (<Form.Item name={['config']}>
+          {currentProviderDefinition && (<Form.Item name={['config']} style={{
+            minHeight: 300,
+            maxHeight: 'calc(100vh - 800px)',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+          }}>
             <JsonSchemaConfigForm
               schema={currentProviderDefinition.config_schema as unknown as Record<string, unknown>}
+              uiSchema={currentProviderDefinition.ui_schema as unknown as Record<string, unknown>}
             />
           </Form.Item>)}
-
-          <Form.Item
-            name="max_chat_tokens"
-            label={t('models.maxChatTokens', { defaultValue: 'Max chat tokens (context / summarization)' })}
-            tooltip={t('models.maxChatTokensHelp', {
-              defaultValue: '0 uses provider config max_tokens only. Positive value sets WithChatMaxTokens for this model.',
-            })}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-          </Form.Item>
-          <Form.Item
-            name="max_chat_iterations"
-            label={t('models.maxChatIterations', { defaultValue: 'Max chat iterations (tool rounds)' })}
-            tooltip={t('models.maxChatIterationsHelp', {
-              defaultValue: '0 uses default. Positive value caps tool-call iterations for this model.',
-            })}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-          </Form.Item>
-
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="max_chat_tokens"
+                label={t('models.maxChatTokens', { defaultValue: 'Max chat tokens (context / summarization)' })}
+                tooltip={t('models.maxChatTokensHelp', {
+                  defaultValue: '0 uses provider config max_tokens only. Positive value sets WithChatMaxTokens for this model.',
+                })}
+              >
+                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="max_chat_iterations"
+                label={t('models.maxChatIterations', { defaultValue: 'Max chat iterations (tool rounds)' })}
+                tooltip={t('models.maxChatIterationsHelp', {
+                  defaultValue: '0 uses default. Positive value caps tool-call iterations for this model.',
+                })}
+              >
+                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+              </Form.Item>
+            </Col>
+          </Row>
           <Form.Item
             name="is_default"
             valuePropName="checked"
