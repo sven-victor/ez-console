@@ -541,6 +541,7 @@ func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context,
 	}
 
 	callOptions := append(withAIModelChatTokenAndIterationOptions(aiModel), options...)
+	callOptions = s.appendTraceChatOptionsIfEnabled(ctx, callOptions)
 	responseMessages, err := client.Exchange(ctx, messages, callOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)
@@ -572,6 +573,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 	}
 	mergedOptions = append(mergedOptions, withAIModelChatTokenAndIterationOptions(aiModel)...)
 	mergedOptions = append(mergedOptions, options...)
+	mergedOptions = s.appendTraceChatOptionsIfEnabled(ctx, mergedOptions)
 
 	// Prepend global prompts for non-stream calls
 	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryNonStream)
@@ -667,40 +669,8 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	}
 	allOptions = append(allOptions, withAIModelChatTokenAndIterationOptions(aiModel)...)
 	allOptions = append(allOptions, options...)
-
-	// Inject tracing wrapper when AI debug is enabled.
-	// Appended after caller options so tracing callbacks wrap (not get overwritten by) the originals.
-	if s.aiTraceService.IsTraceEnabled(ctx) {
-		writer := s.aiTraceService.NewTraceEventWriter()
-		counter := &ai.TraceCounter{}
-		allOptions = append(allOptions, ai.WithChatAIClientWrapper(func(c ai.AIClient) ai.AIClient {
-			return ai.NewTracingAIClient(c, writer, counter)
-		}))
-
-		origOnTokenUsage := findOnTokenUsage(allOptions)
-		allOptions = append(allOptions, ai.WithChatOnTokenUsage(func(ctx context.Context, stats ai.TokenUsageStats) {
-			ai.WriteTraceTokenUsage(ctx, writer, counter, stats)
-			if origOnTokenUsage != nil {
-				origOnTokenUsage(ctx, stats)
-			}
-		}))
-
-		origOnToolResult := findOnToolCallResultChanged(allOptions)
-		allOptions = append(allOptions, ai.WithChatOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
-			ai.WriteTraceToolResult(ctx, writer, counter, toolCallID, result)
-			if origOnToolResult != nil {
-				origOnToolResult(ctx, toolCallID, result)
-			}
-		}))
-
-		origOnSummary := findOnSummary(allOptions)
-		allOptions = append(allOptions, ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
-			ai.WriteTraceSummary(ctx, writer, counter, messages)
-			if origOnSummary != nil {
-				origOnSummary(ctx, messages)
-			}
-		}))
-	}
+	// Appended after caller options so tracing callbacks chain with (not replace) the originals.
+	allOptions = s.appendTraceChatOptionsIfEnabled(ctx, allOptions)
 	if skillLoader != nil {
 		allOptions = append(allOptions, ai.WithChatSkillLoader(skillLoader))
 	}
@@ -716,6 +686,41 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	}
 
 	return stream, nil
+}
+
+// appendTraceChatOptionsIfEnabled appends tracing wrappers when AI debug tracing is enabled.
+func (s *AIChatService) appendTraceChatOptionsIfEnabled(ctx context.Context, options []ai.WithChatOptions) []ai.WithChatOptions {
+	if !s.aiTraceService.IsTraceEnabled(ctx) {
+		return options
+	}
+	origOnTokenUsage := findOnTokenUsage(options)
+	origOnToolResult := findOnToolCallResultChanged(options)
+	origOnSummary := findOnSummary(options)
+
+	writer := s.aiTraceService.NewTraceEventWriter()
+	counter := &ai.TraceCounter{}
+	options = append(options, ai.WithChatAIClientWrapper(func(c ai.AIClient) ai.AIClient {
+		return ai.NewTracingAIClient(c, writer, counter)
+	}))
+	options = append(options, ai.WithChatOnTokenUsage(func(ctx context.Context, stats ai.TokenUsageStats) {
+		ai.WriteTraceTokenUsage(ctx, writer, counter, stats)
+		if origOnTokenUsage != nil {
+			origOnTokenUsage(ctx, stats)
+		}
+	}))
+	options = append(options, ai.WithChatOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
+		ai.WriteTraceToolResult(ctx, writer, counter, toolCallID, result)
+		if origOnToolResult != nil {
+			origOnToolResult(ctx, toolCallID, result)
+		}
+	}))
+	options = append(options, ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
+		ai.WriteTraceSummary(ctx, writer, counter, messages)
+		if origOnSummary != nil {
+			origOnSummary(ctx, messages)
+		}
+	}))
+	return options
 }
 
 // findOnTokenUsage extracts the OnTokenUsage callback from options if present.
