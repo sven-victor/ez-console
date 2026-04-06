@@ -54,7 +54,7 @@ const TaskListDropdown: React.FC<{ className?: string }> = ({ className }) => {
         setTasks(res);
       }
     },
-    pollingInterval: tasksDropdownOpen ? 3000 : 3000,
+    pollingInterval: tasksDropdownOpen ? 3000 : 60000,
     ready: !!user,
     refreshDeps: [user],
   });
