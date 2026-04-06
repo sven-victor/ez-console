@@ -1137,10 +1137,6 @@ declare global {
       id: string;
     }
   
-    interface PreviewSkillResponse {
-      content: string;
-    }
-  
     interface putSkillFileParams {
       /** Skill ID */
       id: string;
@@ -1271,6 +1267,13 @@ declare global {
     interface ResponseArrayServiceSessionInfo {
       code: string;
       data: SessionInfo[];
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseArrayServiceSkillFilePreview {
+      code: string;
+      data: SkillFilePreview[];
       err: string;
       trace_id: string;
     }
@@ -1516,13 +1519,6 @@ declare global {
     interface ResponseSystemapiLDAPSettings {
       code: string;
       data: LDAPSettings;
-      err: string;
-      trace_id: string;
-    }
-  
-    interface ResponseSystemapiPreviewSkillResponse {
-      code: string;
-      data: PreviewSkillResponse;
       err: string;
       trace_id: string;
     }
@@ -1822,8 +1818,10 @@ declare global {
       id: string;
       is_preset: boolean;
       name: string;
+      organization_id: string;
       preset_key: string;
       status: SkillStatus;
+      tools: SkillTool[];
       updated_at: string;
     }
   
@@ -1842,7 +1840,17 @@ declare global {
       toolset_id: string;
     }
   
+    interface SkillFilePreview {
+      content: string;
+      file_name: string;
+    }
+  
     type SkillStatus = "enabled" | "disabled";
+  
+    interface SkillTool {
+      tool_name: string;
+      toolset_id: string;
+    }
   
     interface SkillTreeNode {
       children: SkillTreeNode[];

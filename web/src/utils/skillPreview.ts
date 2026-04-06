@@ -63,33 +63,3 @@ export function markdownWithMetadataAsTable(content: string): string {
 
   return table + '\n\n' + afterFrontmatter;
 }
-
-/**
- * Transforms full skill preview content: replaces every frontmatter block
- * (---\n...\n---) that appears at the start of a section with a markdown table.
- * Used when the preview may contain multiple concatenated markdown parts (e.g. SKILL.md + other files).
- */
-export function skillPreviewContentWithMetadataAsTable(content: string): string {
-  if (!content || !content.trim()) return content;
-
-  let result = content;
-  const frontmatterRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
-  let match = result.match(frontmatterRegex);
-  while (match) {
-    const yamlBlock = match[1].trim();
-    const afterFrontmatter = result.slice((match.index ?? 0) + match[0].length);
-    const meta = parseSimpleYamlFrontmatter(yamlBlock);
-    const keys = Object.keys(meta);
-    if (keys.length > 0) {
-      const header = '| Field | Value |';
-      const separator = '| --- | --- |';
-      const rows = keys.map((k) => '| ' + escapeTableCell(k) + ' | ' + escapeTableCell(meta[k] ?? '') + ' |').join('\n');
-      const table = header + '\n' + separator + '\n' + rows;
-      result = result.slice(0, match.index) + table + '\n\n' + afterFrontmatter;
-    } else {
-      result = result.slice(0, match.index) + afterFrontmatter;
-    }
-    match = result.match(frontmatterRegex);
-  }
-  return result;
-}

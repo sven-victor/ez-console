@@ -5170,7 +5170,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-systemapi_PreviewSkillResponse"
+                            "$ref": "#/definitions/util.Response-array_service_SkillFilePreview"
                         }
                     },
                     "400": {
@@ -8842,8 +8842,10 @@ const docTemplate = `{
                 "id",
                 "is_preset",
                 "name",
+                "organization_id",
                 "preset_key",
                 "status",
+                "tools",
                 "updated_at"
             ],
             "properties": {
@@ -8868,11 +8870,20 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "organization_id": {
+                    "type": "string"
+                },
                 "preset_key": {
                     "type": "string"
                 },
                 "status": {
                     "$ref": "#/definitions/model.SkillStatus"
+                },
+                "tools": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SkillTool"
+                    }
                 },
                 "updated_at": {
                     "type": "string"
@@ -8924,6 +8935,21 @@ const docTemplate = `{
                 "SkillStatusEnabled",
                 "SkillStatusDisabled"
             ]
+        },
+        "model.SkillTool": {
+            "type": "object",
+            "required": [
+                "tool_name",
+                "toolset_id"
+            ],
+            "properties": {
+                "tool_name": {
+                    "type": "string"
+                },
+                "toolset_id": {
+                    "type": "string"
+                }
+            }
         },
         "model.StatementEntry": {
             "type": "object",
@@ -9929,6 +9955,21 @@ const docTemplate = `{
                 }
             }
         },
+        "service.SkillFilePreview": {
+            "type": "object",
+            "required": [
+                "content",
+                "file_name"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "file_name": {
+                    "type": "string"
+                }
+            }
+        },
         "service.SkillTreeNode": {
             "type": "object",
             "required": [
@@ -10421,17 +10462,6 @@ const docTemplate = `{
                 }
             }
         },
-        "systemapi.PreviewSkillResponse": {
-            "type": "object",
-            "required": [
-                "content"
-            ],
-            "properties": {
-                "content": {
-                    "type": "string"
-                }
-            }
-        },
         "systemapi.ReplaceSkillAIToolBindingsRequest": {
             "type": "object",
             "required": [
@@ -10784,8 +10814,6 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -10795,9 +10823,7 @@ const docTemplate = `{
                 1,
                 1000,
                 1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                1000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -10808,8 +10834,6 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -10819,9 +10843,7 @@ const docTemplate = `{
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "Second"
             ]
         },
         "toolset.ToolSetType": {
@@ -11668,6 +11690,32 @@ const docTemplate = `{
                 }
             }
         },
+        "util.Response-array_service_SkillFilePreview": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.SkillFilePreview"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-array_service_SkillTreeNode": {
             "type": "object",
             "required": [
@@ -12482,29 +12530,6 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/systemapi.LDAPSettings"
-                },
-                "err": {
-                    "type": "string"
-                },
-                "trace_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "util.Response-systemapi_PreviewSkillResponse": {
-            "type": "object",
-            "required": [
-                "code",
-                "data",
-                "err",
-                "trace_id"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "data": {
-                    "$ref": "#/definitions/systemapi.PreviewSkillResponse"
                 },
                 "err": {
                     "type": "string"

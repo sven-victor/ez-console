@@ -638,21 +638,27 @@ func (s *SkillService) getSkillsRootFs() afero.Fs {
 	return config.GetConfig().Server.SkillsPath
 }
 
+// PreviewSkillResponse for skill preview content
+type SkillFilePreview struct {
+	FileName string `json:"file_name"`
+	Content  string `json:"content"`
+}
+
 // GetSkillContent reads SKILL.md (or SKILLS.md) and optionally other .md files, returns combined markdown
-func (s *SkillService) GetSkillContent(ctx context.Context, skillID string) (string, error) {
+func (s *SkillService) GetSkillPreview(ctx context.Context, skillID string) ([]SkillFilePreview, error) {
 	skill, skillFs, err := s.getSkillFs(ctx, skillID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if !model.SkillIsEnabled(skill) {
-		return "", ErrSkillDisabled
+		return nil, ErrSkillDisabled
 	}
 
-	var parts []string
+	var previews []SkillFilePreview
 	// Main file first: SKILL.md or SKILLS.md
 	for _, name := range []string{skillMainFile, skillMainFileAlt} {
 		if b, err := afero.ReadFile(skillFs, name); err == nil {
-			parts = append(parts, string(b))
+			previews = append(previews, SkillFilePreview{FileName: name, Content: string(b)})
 			break
 		}
 	}
@@ -678,15 +684,32 @@ func (s *SkillService) GetSkillContent(ctx context.Context, skillID string) (str
 		if err != nil {
 			continue
 		}
-		parts = append(parts, "\n\n## "+p+"\n\n"+string(b))
+		previews = append(previews, SkillFilePreview{FileName: p, Content: string(b)})
 	}
 
-	if len(parts) == 0 {
-		return "", nil
+	if len(previews) == 0 {
+		return nil, nil
 	}
-	out := "## Skill: " + skill.Name + "\n\n"
-	out += strings.Join(parts, "\n\n")
-	return out, nil
+	return previews, nil
+}
+
+// GetSkillContent reads SKILL.md (or SKILLS.md)
+func (s *SkillService) GetSkillContent(ctx context.Context, skillID string) (string, error) {
+	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+	if err != nil {
+		return "", err
+	}
+	if !model.SkillIsEnabled(skill) {
+		return "", ErrSkillDisabled
+	}
+
+	// Main file first: SKILL.md or SKILLS.md
+	for _, name := range []string{skillMainFile, skillMainFileAlt} {
+		if b, err := afero.ReadFile(skillFs, name); err == nil {
+			return string(b), nil
+		}
+	}
+	return "", fmt.Errorf("failed to read skill content")
 }
 
 // SkillFileEntry represents a file or directory entry in a skill

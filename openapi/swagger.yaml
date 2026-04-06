@@ -1772,10 +1772,16 @@ definitions:
         type: boolean
       name:
         type: string
+      organization_id:
+        type: string
       preset_key:
         type: string
       status:
         $ref: '#/definitions/model.SkillStatus'
+      tools:
+        items:
+          $ref: '#/definitions/model.SkillTool'
+        type: array
       updated_at:
         type: string
     required:
@@ -1786,8 +1792,10 @@ definitions:
     - id
     - is_preset
     - name
+    - organization_id
     - preset_key
     - status
+    - tools
     - updated_at
     type: object
   model.SkillAIToolBinding:
@@ -1823,6 +1831,16 @@ definitions:
     x-enum-varnames:
     - SkillStatusEnabled
     - SkillStatusDisabled
+  model.SkillTool:
+    properties:
+      tool_name:
+        type: string
+      toolset_id:
+        type: string
+    required:
+    - tool_name
+    - toolset_id
+    type: object
   model.StatementEntry:
     properties:
       Action:
@@ -2545,6 +2563,16 @@ definitions:
     - name_i18n
     - navigation
     type: object
+  service.SkillFilePreview:
+    properties:
+      content:
+        type: string
+      file_name:
+        type: string
+    required:
+    - content
+    - file_name
+    type: object
   service.SkillTreeNode:
     properties:
       children:
@@ -2890,13 +2918,6 @@ definitions:
     - from_path
     - to_path
     type: object
-  systemapi.PreviewSkillResponse:
-    properties:
-      content:
-        type: string
-    required:
-    - content
-    type: object
   systemapi.ReplaceSkillAIToolBindingsRequest:
     properties:
       bindings:
@@ -3146,8 +3167,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3158,8 +3177,6 @@ definitions:
     - 1000
     - 1000000
     - 1000000000
-    - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3170,8 +3187,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -3182,8 +3197,6 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Hour
   toolset.ToolSetType:
     enum:
     - utils
@@ -3774,6 +3787,24 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-array_service_SkillFilePreview:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/service.SkillFilePreview'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-array_service_SkillTreeNode:
     properties:
       code:
@@ -4336,22 +4367,6 @@ definitions:
         type: string
       data:
         $ref: '#/definitions/systemapi.LDAPSettings'
-      err:
-        type: string
-      trace_id:
-        type: string
-    required:
-    - code
-    - data
-    - err
-    - trace_id
-    type: object
-  util.Response-systemapi_PreviewSkillResponse:
-    properties:
-      code:
-        type: string
-      data:
-        $ref: '#/definitions/systemapi.PreviewSkillResponse'
       err:
         type: string
       trace_id:
@@ -7762,7 +7777,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-systemapi_PreviewSkillResponse'
+            $ref: '#/definitions/util.Response-array_service_SkillFilePreview'
         "400":
           description: Bad Request
           schema:

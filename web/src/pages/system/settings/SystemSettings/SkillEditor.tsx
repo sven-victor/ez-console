@@ -118,7 +118,9 @@ const SkillEditor: React.FC = () => {
     if (selectedFile && id) {
       api.system
         .getSkillFile({ id, path: selectedFile })
-        .then((res: any) => setContent(res?.data ?? res ?? ''))
+        .then((res: any) => {
+          setContent(res.data)
+        })
         .catch(() => message.error(t('settings.skills.editor.failedToLoadFile', { defaultValue: 'Failed to load file' })));
       setDirty(false);
     } else {

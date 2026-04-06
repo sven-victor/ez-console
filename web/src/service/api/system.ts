@@ -649,7 +649,7 @@ export async function previewSkill(
   options?: { [key: string]: any }
 ) {
   const { id: param0, ...queryParams } = params;
-  return request<API.ResponseSystemapiPreviewSkillResponse>(
+  return request<API.ResponseArrayServiceSkillFilePreview>(
     `/api/system/skills/${param0}/preview`,
     {
       method: "GET",

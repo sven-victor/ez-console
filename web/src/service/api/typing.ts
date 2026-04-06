@@ -1135,10 +1135,6 @@ export interface previewSkillParams {
   id: string;
 }
 
-export interface PreviewSkillResponse {
-  content: string;
-}
-
 export interface putSkillFileParams {
   /** Skill ID */
   id: string;
@@ -1269,6 +1265,13 @@ export interface ResponseArrayServiceScheduledJobState {
 export interface ResponseArrayServiceSessionInfo {
   code: string;
   data: SessionInfo[];
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseArrayServiceSkillFilePreview {
+  code: string;
+  data: SkillFilePreview[];
   err: string;
   trace_id: string;
 }
@@ -1514,13 +1517,6 @@ export interface ResponseSystemapiCheckPasswordComplexityResponse {
 export interface ResponseSystemapiLDAPSettings {
   code: string;
   data: LDAPSettings;
-  err: string;
-  trace_id: string;
-}
-
-export interface ResponseSystemapiPreviewSkillResponse {
-  code: string;
-  data: PreviewSkillResponse;
   err: string;
   trace_id: string;
 }
@@ -1820,8 +1816,10 @@ export interface Skill {
   id: string;
   is_preset: boolean;
   name: string;
+  organization_id: string;
   preset_key: string;
   status: SkillStatus;
+  tools: SkillTool[];
   updated_at: string;
 }
 
@@ -1840,7 +1838,17 @@ export interface SkillAIToolBindingItem {
   toolset_id: string;
 }
 
+export interface SkillFilePreview {
+  content: string;
+  file_name: string;
+}
+
 export type SkillStatus = "enabled" | "disabled";
+
+export interface SkillTool {
+  tool_name: string;
+  toolset_id: string;
+}
 
 export interface SkillTreeNode {
   children: SkillTreeNode[];

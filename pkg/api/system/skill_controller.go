@@ -114,11 +114,6 @@ type MoveSkillPathRequest struct {
 	ToPath   string `json:"to_path" binding:"required"`
 }
 
-// PreviewSkillResponse for skill preview content
-type PreviewSkillResponse struct {
-	Content string `json:"content"`
-}
-
 // ListSkills lists skills with pagination
 //
 //	@Summary		List skills
@@ -427,7 +422,7 @@ func (c *SkillController) UploadSkill(ctx *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path		string	true	"Skill ID"
-//	@Success		200	{object}	util.Response[PreviewSkillResponse]
+//	@Success		200	{object}	util.Response[[]service.SkillFilePreview]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/skills/{id}/preview [get]
@@ -437,12 +432,13 @@ func (c *SkillController) PreviewSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
-	content, err := c.service.SkillService.GetSkillContent(ctx, id)
+	result, err := c.service.SkillService.GetSkillPreview(ctx, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
-	util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"content": content})
+
+	util.RespondWithSuccess(ctx, http.StatusOK, result)
 }
 
 // ListSkillFilesTree returns the full file tree for a skill
