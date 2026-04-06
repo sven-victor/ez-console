@@ -58,7 +58,14 @@ func NewTracingAIClient(inner AIClient, writer TraceEventWriter, counter *TraceC
 
 func (t *TracingAIClient) Chat(ctx context.Context, messages []ChatMessage, toolSets toolset.ToolSets) (*ChatMessage, error) {
 	traceID := log.GetTraceId(ctx)
-	reqJSON, _ := json.Marshal(messages)
+	tools, err := toolSets.GetTools(ctx)
+	if err != nil {
+		return nil, err
+	}
+	reqJSON, _ := json.Marshal(map[string]any{
+		"messages": messages,
+		"tools":    tools,
+	})
 
 	t.writer(ctx, model.AITraceEvent{
 		TraceID:   traceID,

@@ -19,6 +19,9 @@ func (s *SkillService) ListSkillAIToolBindings(ctx context.Context, skillID, org
 	if skillID == "" {
 		return nil, 0, fmt.Errorf("skill id is required")
 	}
+	if _, err := s.GetByID(ctx, organizationID, skillID); err != nil {
+		return nil, 0, err
+	}
 	q := db.Session(ctx).Model(&model.SkillAIToolBinding{}).Where("skill_id = ? AND organization_id = ?", skillID, organizationID)
 	if search != "" {
 		pat := "%" + search + "%"
@@ -46,7 +49,7 @@ func (s *SkillService) ReplaceSkillAIToolBindings(ctx context.Context, skillID, 
 	if skillID == "" {
 		return fmt.Errorf("skill id is required")
 	}
-	sk, err := s.GetByID(ctx, skillID)
+	sk, err := s.GetByID(ctx, organizationID, skillID)
 	if err != nil {
 		return fmt.Errorf("skill not found: %w", err)
 	}

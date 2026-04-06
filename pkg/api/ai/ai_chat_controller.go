@@ -439,26 +439,11 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 
 	userIDStr := userID.(string)
 
-	skills, err := c.service.SkillService.LoadSkillsForChat(ctx, organizationID, req.Domains, req.SkillIDs)
+	skillLoader, err := c.service.SkillService.CreateSkillLoader(ctx, organizationID, req.Domains, req.SkillIDs, session.ActivatedSkillIDs)
 	if err != nil {
-		level.Error(logger).Log("msg", "Failed to load skills metadata", "error", err)
-		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to load skills metadata", err)))
+		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
-	skillLoader := ai.NewSkillLoader(skills, session.ActivatedSkillIDs, func(ctx context.Context, skillID string, path string) (string, error) {
-		if strings.TrimSpace(path) == "" {
-			content, err := c.service.SkillService.GetSkillContent(ctx, skillID)
-			if err != nil {
-				return "", fmt.Errorf("failed to get skill content: %w", err)
-			}
-			return content, nil
-		}
-		body, err := c.service.SkillService.GetFile(ctx, skillID, path)
-		if err != nil {
-			return "", fmt.Errorf("failed to get skill file: %w", err)
-		}
-		return string(body), nil
-	})
 	skillLoader.OnContentLoaded = func(ctx context.Context, skillID string) {
 		if err := c.service.AppendSessionActivatedSkill(ctx, organizationID, userIDStr, sessionID, skillID); err != nil {
 			level.Error(logger).Log("msg", "Failed to append session activated skill", "error", err)

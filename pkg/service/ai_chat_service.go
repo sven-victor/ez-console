@@ -550,8 +550,48 @@ func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context,
 	return responseMessages, nil
 }
 
+// mergeAIChatClientOptions builds shared chat options for Exchange and ExchangeStream: cached authorized toolsets,
+// optional get_skill_content toolset, progressive refresh when skill–tool binding is enabled, model limits, trace hooks, and SkillLoader.
+func (s *AIChatService) mergeAIChatClientOptions(ctx context.Context, organizationID string, skillLoader *ai.SkillLoader, aiModel *model.AIModel, options []ai.WithChatOptions) []ai.WithChatOptions {
+	enableSkillToolBinding, _ := s.settingService.GetBoolSetting(ctx, model.SettingSystemEnableSkillToolBinding, false)
+
+	var skillLoaderOptions ai.WithChatOptions
+	allOptions := []ai.WithChatOptions{
+		ai.WithChatToolSetsProvider(toolset.NewCachedToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
+			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
+		})),
+	}
+	if skillLoader != nil && skillLoader.HasSkills() {
+		skillLoaderOptions = ai.WithChatToolSetsProviderChan(func(ctx context.Context, oriProvider toolset.ToolSetsProvider) (toolset.ToolSets, error) {
+			ts, err := oriProvider(ctx)
+			if err != nil {
+				return nil, err
+			}
+			if ts == nil {
+				ts = make(toolset.ToolSets)
+			}
+			ts[ai.SkillLoaderToolSetKey] = ai.NewSkillLoaderChatToolSet(skillLoader)
+			return ts, nil
+		})
+	}
+	if enableSkillToolBinding && skillLoader != nil {
+		allOptions = append(allOptions, ai.WithChatRefreshToolSetsEachIteration(true))
+	}
+	allOptions = append(allOptions, withAIModelChatTokenAndIterationOptions(aiModel)...)
+	allOptions = append(allOptions, options...)
+	allOptions = s.appendTraceChatOptionsIfEnabled(ctx, allOptions)
+	if skillLoader != nil {
+		allOptions = append(allOptions, ai.WithChatSkillLoader(skillLoader))
+	}
+	if skillLoaderOptions != nil {
+		allOptions = append(allOptions, skillLoaderOptions)
+	}
+	return allOptions
+}
+
 // CreateChatCompletion creates a chat completion using the specified model with toolSets.
-func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
+// Pass skillLoader when the chat includes skills; when system skill–tool binding is enabled, organization tools are exposed progressively like streaming completions.
+func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -566,14 +606,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 			return nil, fmt.Errorf("failed to get AI model: %w", err)
 		}
 	}
-	mergedOptions := []ai.WithChatOptions{
-		ai.WithChatToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
-			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
-		}),
-	}
-	mergedOptions = append(mergedOptions, withAIModelChatTokenAndIterationOptions(aiModel)...)
-	mergedOptions = append(mergedOptions, options...)
-	mergedOptions = s.appendTraceChatOptionsIfEnabled(ctx, mergedOptions)
+	mergedOptions := s.mergeAIChatClientOptions(ctx, organizationID, skillLoader, aiModel, options)
 
 	// Prepend global prompts for non-stream calls
 	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryNonStream)
@@ -620,31 +653,6 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		}
 	}
 
-	enableSkillToolBinding, _ := s.settingService.GetBoolSetting(ctx, model.SettingSystemEnableSkillToolBinding, false)
-
-	var skillLoaderOptions ai.WithChatOptions
-
-	allOptions := []ai.WithChatOptions{
-		ai.WithChatToolSetsProvider(toolset.NewCachedToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
-			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
-		})),
-	}
-	if skillLoader != nil && skillLoader.HasSkills() {
-		skillLoaderOptions = ai.WithChatToolSetsProviderChan(func(ctx context.Context, oriProvider toolset.ToolSetsProvider) (toolset.ToolSets, error) {
-			ts, err := oriProvider(ctx)
-			if err != nil {
-				return nil, err
-			}
-			if ts == nil {
-				ts = make(toolset.ToolSets)
-			}
-			ts[ai.SkillLoaderToolSetKey] = ai.NewSkillLoaderChatToolSet(skillLoader)
-			return ts, nil
-		})
-	}
-
-	refreshToolSets := enableSkillToolBinding && skillLoader != nil
-
 	// Prepend global prompts for stream calls
 	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryStream)
 
@@ -664,20 +672,7 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
-	if refreshToolSets {
-		allOptions = append(allOptions, ai.WithChatRefreshToolSetsEachIteration(true))
-	}
-	allOptions = append(allOptions, withAIModelChatTokenAndIterationOptions(aiModel)...)
-	allOptions = append(allOptions, options...)
-	// Appended after caller options so tracing callbacks chain with (not replace) the originals.
-	allOptions = s.appendTraceChatOptionsIfEnabled(ctx, allOptions)
-	if skillLoader != nil {
-		allOptions = append(allOptions, ai.WithChatSkillLoader(skillLoader))
-	}
-
-	if skillLoaderOptions != nil {
-		allOptions = append(allOptions, skillLoaderOptions)
-	}
+	allOptions := s.mergeAIChatClientOptions(ctx, organizationID, skillLoader, aiModel, options)
 
 	// Call ExchangeStream
 	stream, err := client.ExchangeStream(ctx, messages, allOptions...)

@@ -107,12 +107,34 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		option(&opts)
 	}
 
-	toolSets := make(toolset.ToolSets)
-	if opts.ToolSetsProvider != nil {
-		var err error
-		toolSets, err = opts.ToolSetsProvider(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("failed to get tool sets: %w", err)
+	var err error
+	messages, err = PrepareChatCompletionSkillLoader(ctx, &opts, messages)
+	if err != nil {
+		return nil, err
+	}
+
+	var toolSets toolset.ToolSets
+	loadToolSets := func() error {
+		if opts.ToolSetsProvider == nil {
+			toolSets = make(toolset.ToolSets)
+			return nil
+		}
+		ts, lerr := opts.ToolSetsProvider(ctx)
+		if lerr != nil {
+			return fmt.Errorf("failed to get tool sets: %w", lerr)
+		}
+		if ts == nil {
+			ts = make(toolset.ToolSets)
+		}
+		if len(opts.ClientTools) > 0 {
+			ts[clientToolSetKey] = NewClientToolsProxy(opts.ClientTools)
+		}
+		toolSets = ts
+		return nil
+	}
+	if !opts.RefreshToolSetsEachIteration {
+		if err := loadToolSets(); err != nil {
+			return nil, err
 		}
 	}
 
@@ -274,6 +296,12 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 				if err := summarizeMessages(); err != nil {
 					level.Error(logger).Log("msg", "Failed to summarize messages", "error", err)
 				}
+			}
+		}
+
+		if opts.RefreshToolSetsEachIteration {
+			if err := loadToolSets(); err != nil {
+				return nil, err
 			}
 		}
 
@@ -1178,36 +1206,9 @@ func NewClassicChatStream(ctx context.Context, client ClassicChatClient, message
 			return nil, fmt.Errorf("failed to get tool sets: %w", err)
 		}
 	}
-	if opts.SkillLoader != nil && opts.SkillLoader.HasSkills() {
-		var skillLoaderMetadata string
-		if opts.RefreshToolSetsEachIteration {
-			toolsetProvider := NewSkillDrivenToolset(opts.SkillLoader, opts.ToolSetsProvider)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get skill loader metadata: %w", err)
-			}
-
-			skillLoaderMetadata, err = toolsetProvider.GetMetadata(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("failed to get skill loader metadata: %w", err)
-			}
-			opts.ToolSetsProvider = func(ctx context.Context) (toolset.ToolSets, error) {
-				return toolsetProvider.ListTools(ctx)
-			}
-		} else {
-			skillLoaderMetadata, err = opts.SkillLoader.GetMetadata()
-			if err != nil {
-				return nil, fmt.Errorf("failed to get skill loader metadata: %w", err)
-			}
-		}
-
-		if len(messages) > 0 && messages[0].Role == model.AIChatMessageRoleSystem {
-			messages[0].Content += "\n\n" + skillLoaderMetadata
-		} else {
-			messages = append([]ChatMessage{{
-				Role:    model.AIChatMessageRoleSystem,
-				Content: skillLoaderMetadata,
-			}}, messages...)
-		}
+	messages, err = PrepareChatCompletionSkillLoader(ctx, &opts, messages)
+	if err != nil {
+		return nil, err
 	}
 
 	if len(opts.ClientTools) > 0 {

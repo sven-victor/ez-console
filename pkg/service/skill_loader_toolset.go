@@ -25,9 +25,10 @@ type SkillLoaderOptions struct {
 
 // SkillLoaderToolSet is a runtime-only toolset that exposes get_skill_content for skills allowed by domains/skillIDs.
 type SkillLoaderToolSet struct {
-	skillService *SkillService
-	allowedIDs   map[string]struct{}
-	onLoaded     func(ctx context.Context, skillID string) error
+	skillService     *SkillService
+	organizationID   string
+	allowedIDs       map[string]struct{}
+	onLoaded         func(ctx context.Context, skillID string) error
 }
 
 func (s SkillLoaderToolSet) GetAllowedIDs() []string {
@@ -38,8 +39,8 @@ func (s SkillLoaderToolSet) GetAllowedIDs() []string {
 	return keys
 }
 
-// NewSkillLoaderToolSet creates a toolset that allows loading only the given skills (resolved from domains + skillIDs).
-func NewSkillLoaderToolSet(ctx context.Context, skillService *SkillService, skillIDs []string, opts *SkillLoaderOptions) toolset.ToolSet {
+// NewSkillLoaderToolSet creates a toolset that allows loading only the given skills (resolved from domains + skillIDs) within an organization.
+func NewSkillLoaderToolSet(ctx context.Context, skillService *SkillService, organizationID string, skillIDs []string, opts *SkillLoaderOptions) toolset.ToolSet {
 	allowed := make(map[string]struct{})
 	for _, id := range skillIDs {
 		if id == "" {
@@ -51,7 +52,7 @@ func NewSkillLoaderToolSet(ctx context.Context, skillService *SkillService, skil
 	if opts != nil {
 		onLoaded = opts.OnSkillContentLoaded
 	}
-	return &SkillLoaderToolSet{skillService: skillService, allowedIDs: allowed, onLoaded: onLoaded}
+	return &SkillLoaderToolSet{skillService: skillService, organizationID: organizationID, allowedIDs: allowed, onLoaded: onLoaded}
 }
 
 func (t *SkillLoaderToolSet) GetName() string { return "skill_loader" }
@@ -101,7 +102,7 @@ func (t *SkillLoaderToolSet) Call(ctx context.Context, name string, parameters s
 		if _, allowed := t.allowedIDs[params.SkillID]; !allowed {
 			return "", fmt.Errorf("skill %s is not in the allowed list for this chat", params.SkillID)
 		}
-		sk, err := t.skillService.GetByID(ctx, params.SkillID)
+		sk, err := t.skillService.GetByID(ctx, t.organizationID, params.SkillID)
 		if err != nil {
 			return "", fmt.Errorf("skill not found: %w", err)
 		}
@@ -111,10 +112,10 @@ func (t *SkillLoaderToolSet) Call(ctx context.Context, name string, parameters s
 		var out string
 		var loadErr error
 		if params.Path == "" {
-			out, loadErr = t.skillService.GetSkillContent(ctx, params.SkillID)
+			out, loadErr = t.skillService.GetSkillContent(ctx, t.organizationID, params.SkillID)
 		} else {
 			var body []byte
-			body, loadErr = t.skillService.GetFile(ctx, params.SkillID, strings.TrimSpace(params.Path))
+			body, loadErr = t.skillService.GetFile(ctx, t.organizationID, params.SkillID, strings.TrimSpace(params.Path))
 			out = string(body)
 		}
 		if loadErr != nil {

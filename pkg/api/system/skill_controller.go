@@ -131,13 +131,18 @@ type MoveSkillPathRequest struct {
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/system/skills [get]
 func (c *SkillController) ListSkills(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
 	category := ctx.Query("category")
 	domain := ctx.Query("domain")
 
-	list, total, err := c.service.SkillService.List(ctx, current, pageSize, search, category, domain)
+	list, total, err := c.service.SkillService.List(ctx, organizationID, current, pageSize, search, category, domain)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -180,7 +185,12 @@ func (c *SkillController) GetSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, id)
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -207,11 +217,17 @@ func (c *SkillController) CreateSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	skill := &model.Skill{
-		Name:        req.Name,
-		Description: req.Description,
-		Category:    req.Category,
-		Domain:      req.Domain,
+		OrganizationID: organizationID,
+		Name:           req.Name,
+		Description:    req.Description,
+		Category:       req.Category,
+		Domain:         req.Domain,
 	}
 	created, err := c.service.SkillService.Create(ctx, skill, req.Content)
 	if err != nil {
@@ -224,7 +240,7 @@ func (c *SkillController) CreateSkill(ctx *gin.Context) {
 // CloneSkill creates a new skill by copying files from an existing skill
 //
 //	@Summary		Clone skill
-//	@Description	Copy all skill files from source_id into a new skill; metadata comes from the request body. When X-Scope-OrgID is set, AI tool bindings for that organization are copied from the source skill.
+//	@Description	Copy all skill files from source_id into a new skill; metadata comes from the request body. Requires organization scope (X-Scope-OrgID); AI tool bindings for that organization are copied from the source skill.
 //	@ID             cloneSkill
 //	@Tags			System Settings/Skills
 //	@Accept			json
@@ -247,6 +263,10 @@ func (c *SkillController) CloneSkill(ctx *gin.Context) {
 		Domain:      req.Domain,
 	}
 	orgID := ctx.GetString("organization_id")
+	if orgID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	created, err := c.service.SkillService.CloneSkill(ctx, req.SourceID, skill, orgID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
@@ -275,16 +295,21 @@ func (c *SkillController) UpdateSkillStatus(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	var req UpdateSkillStatusRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.UpdateSkillStatus(ctx, id, req.Status); err != nil {
+	if err := c.service.SkillService.UpdateSkillStatus(ctx, organizationID, id, req.Status); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, id)
+	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -312,12 +337,17 @@ func (c *SkillController) UpdateSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	var req UpdateSkillRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, id)
+	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -360,7 +390,12 @@ func (c *SkillController) DeleteSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, id)
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -369,7 +404,7 @@ func (c *SkillController) DeleteSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Preset skills cannot be deleted"))
 		return
 	}
-	if err := c.service.SkillService.Delete(ctx, id); err != nil {
+	if err := c.service.SkillService.Delete(ctx, organizationID, id); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -392,6 +427,11 @@ func (c *SkillController) DeleteSkill(ctx *gin.Context) {
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/system/skills/upload [post]
 func (c *SkillController) UploadSkill(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	file, err := ctx.FormFile("file")
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "file is required"))
@@ -405,7 +445,7 @@ func (c *SkillController) UploadSkill(ctx *gin.Context) {
 		return
 	}
 	defer f.Close()
-	created, err := c.service.SkillService.UploadSkill(ctx, f, file.Filename, category, domain)
+	created, err := c.service.SkillService.UploadSkill(ctx, organizationID, f, file.Filename, category, domain)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -432,7 +472,12 @@ func (c *SkillController) PreviewSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
-	result, err := c.service.SkillService.GetSkillPreview(ctx, id)
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	result, err := c.service.SkillService.GetSkillPreview(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -460,7 +505,12 @@ func (c *SkillController) ListSkillFilesTree(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
-	tree, err := c.service.SkillService.ListFilesTree(ctx, id)
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	tree, err := c.service.SkillService.ListFilesTree(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -488,9 +538,14 @@ func (c *SkillController) GetSkillFile(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	pathParam := ctx.Param("path")
 	path := strings.TrimPrefix(pathParam, "/")
-	content, err := c.service.SkillService.GetFile(ctx, id, path)
+	content, err := c.service.SkillService.GetFile(ctx, organizationID, id, path)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -519,6 +574,11 @@ func (c *SkillController) PutSkillFile(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	pathParam := ctx.Param("path")
 	path := strings.TrimPrefix(pathParam, "/")
 	body, err := ctx.GetRawData()
@@ -526,7 +586,7 @@ func (c *SkillController) PutSkillFile(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.PutFile(ctx, id, path, body); err != nil {
+	if err := c.service.SkillService.PutFile(ctx, organizationID, id, path, body); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -553,12 +613,17 @@ func (c *SkillController) CreateSkillDir(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	var req CreateSkillDirRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.CreateDir(ctx, id, req.Path); err != nil {
+	if err := c.service.SkillService.CreateDir(ctx, organizationID, id, req.Path); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -585,12 +650,17 @@ func (c *SkillController) MoveSkillPath(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	var req MoveSkillPathRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.MovePath(ctx, id, req.FromPath, req.ToPath); err != nil {
+	if err := c.service.SkillService.MovePath(ctx, organizationID, id, req.FromPath, req.ToPath); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -617,9 +687,14 @@ func (c *SkillController) DeleteSkillPath(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Skill ID is required"))
 		return
 	}
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
 	pathParam := ctx.Param("path")
 	path := strings.TrimPrefix(pathParam, "/")
-	if err := c.service.SkillService.DeletePath(ctx, id, path); err != nil {
+	if err := c.service.SkillService.DeletePath(ctx, organizationID, id, path); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -650,7 +725,7 @@ func (c *SkillController) ListSkillAIToolBindings(ctx *gin.Context) {
 	}
 	orgID := ctx.GetString("organization_id")
 	if orgID == "" {
-		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Organization ID is required (send X-Scope-OrgID header)"))
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
@@ -686,7 +761,7 @@ func (c *SkillController) ReplaceSkillAIToolBindings(ctx *gin.Context) {
 	}
 	orgID := ctx.GetString("organization_id")
 	if orgID == "" {
-		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Organization ID is required (send X-Scope-OrgID header)"))
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
 	var req ReplaceSkillAIToolBindingsRequest

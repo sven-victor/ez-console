@@ -33,7 +33,7 @@ type SimpleChatMessage struct {
 // ChatMessage represents a chat message in a unified format
 type ChatMessage struct {
 	Role       model.AIChatMessageRole `json:"role"`
-	Content    string                  `json:"content,omitempty"`
+	Content    string                  `json:"content"`
 	ToolCalls  []ToolCall              `json:"tool_calls,omitempty"`
 	ToolCallID string                  `json:"tool_call_id,omitempty"`
 	Usage      *TokenUsage             `json:"usage,omitempty"` // Populated from LLM API response when available

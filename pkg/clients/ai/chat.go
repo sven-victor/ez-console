@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"time"
 	"unicode"
 
@@ -370,3 +371,5 @@ func IsChatError(err error, t ChatErrorType) (*ChatError, bool) {
 	}
 	return nil, false
 }
+
+var ErrEndOfChat = NewChatError(io.EOF, ChatErrorTypeEndOfChat, "")

@@ -30,7 +30,7 @@ type SkillTool struct {
 // Skill represents an AI Agent Skill (metadata stored in DB; files under skills_path/{ResourceID}/)
 type Skill struct {
 	Base
-	OrganizationID string      `gorm:"size:36" json:"organization_id"`
+	OrganizationID string      `gorm:"size:36;not null;index;default:00000000000000000000000000000000" json:"organization_id"`
 	Name           string      `gorm:"type:varchar(256);not null" json:"name"`
 	Description    string      `gorm:"type:varchar(1024)" json:"description"`
 	Category       string      `gorm:"type:varchar(128)" json:"category"`

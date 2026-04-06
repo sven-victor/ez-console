@@ -28,6 +28,7 @@ import (
 	"sync"
 
 	"github.com/spf13/afero"
+	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -134,10 +135,13 @@ func extractSkillBody(content []byte) string {
 }
 
 // UploadSkill creates a skill from an uploaded file (single .md or .zip). Parses SKILL.md/SKILLS.md frontmatter for name/description.
-func (s *SkillService) UploadSkill(ctx context.Context, file io.Reader, filename string, category, domain string) (*model.Skill, error) {
+func (s *SkillService) UploadSkill(ctx context.Context, organizationID string, file io.Reader, filename string, category, domain string) (*model.Skill, error) {
+	if organizationID == "" {
+		return nil, fmt.Errorf("organization id is required")
+	}
 	ext := strings.ToLower(filepath.Ext(filename))
 	if ext == ".zip" {
-		return s.uploadSkillZip(ctx, file, category, domain)
+		return s.uploadSkillZip(ctx, organizationID, file, category, domain)
 	}
 	if ext != ".md" {
 		return nil, fmt.Errorf("upload must be .md or .zip file")
@@ -153,7 +157,7 @@ func (s *SkillService) UploadSkill(ctx context.Context, file io.Reader, filename
 	if category == "" {
 		category = categoryFromFile
 	}
-	skill := &model.Skill{Name: name, Description: description, Category: category, Domain: domain}
+	skill := &model.Skill{OrganizationID: organizationID, Name: name, Description: description, Category: category, Domain: domain}
 	created, err := s.Create(ctx, skill, string(content))
 	if err != nil {
 		return nil, err
@@ -162,7 +166,10 @@ func (s *SkillService) UploadSkill(ctx context.Context, file io.Reader, filename
 }
 
 // uploadSkillZip extracts zip, finds SKILL.md/SKILLS.md in root, parses frontmatter, creates skill, copies files safely
-func (s *SkillService) uploadSkillZip(ctx context.Context, r io.Reader, category, domain string) (*model.Skill, error) {
+func (s *SkillService) uploadSkillZip(ctx context.Context, organizationID string, r io.Reader, category, domain string) (*model.Skill, error) {
+	if organizationID == "" {
+		return nil, fmt.Errorf("organization id is required")
+	}
 	body, err := io.ReadAll(r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read zip: %w", err)
@@ -219,12 +226,12 @@ func (s *SkillService) uploadSkillZip(ctx context.Context, r io.Reader, category
 	if category == "" {
 		category = categoryFromFile
 	}
-	skill := &model.Skill{Name: name, Description: description, Category: category, Domain: domain}
+	skill := &model.Skill{OrganizationID: organizationID, Name: name, Description: description, Category: category, Domain: domain}
 	created, err := s.Create(ctx, skill, mainContent)
 	if err != nil {
 		return nil, err
 	}
-	_, skillFs, err := s.getSkillFs(ctx, created.ResourceID)
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, created.ResourceID)
 	if err != nil {
 		return nil, err
 	}
@@ -273,9 +280,12 @@ func (s *SkillService) ListDomains() []string {
 	return out
 }
 
-// List returns skills with pagination and optional filters
-func (s *SkillService) List(ctx context.Context, current, pageSize int, search, category, domain string) ([]model.Skill, int64, error) {
-	query := db.Session(ctx).Model(&model.Skill{})
+// List returns skills with pagination and optional filters for one organization.
+func (s *SkillService) List(ctx context.Context, organizationID string, current, pageSize int, search, category, domain string) ([]model.Skill, int64, error) {
+	if organizationID == "" {
+		return nil, 0, fmt.Errorf("organization id is required")
+	}
+	query := db.Session(ctx).Model(&model.Skill{}).Where("organization_id = ?", organizationID)
 	if search != "" {
 		term := "%" + search + "%"
 		query = query.Where("name LIKE ? OR description LIKE ?", term, term)
@@ -300,10 +310,16 @@ func (s *SkillService) List(ctx context.Context, current, pageSize int, search, 
 	return list, total, nil
 }
 
-// GetByID returns a skill by ResourceID
-func (s *SkillService) GetByID(ctx context.Context, id string) (*model.Skill, error) {
+// GetByID returns a skill by ResourceID scoped to the organization.
+func (s *SkillService) GetByID(ctx context.Context, organizationID, id string) (*model.Skill, error) {
+	if organizationID == "" {
+		return nil, fmt.Errorf("organization id is required")
+	}
+	if id == "" {
+		return nil, fmt.Errorf("skill id is required")
+	}
 	var skill model.Skill
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&skill).Error; err != nil {
+	if err := db.Session(ctx).Where("resource_id = ? AND organization_id = ?", id, organizationID).First(&skill).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, fmt.Errorf("skill not found")
 		}
@@ -379,6 +395,9 @@ func mergeSkillFrontmatter(existingContent []byte, skill *model.Skill) (string, 
 
 // Create creates a new skill and its directory; always creates SKILL.md (from initialContent or auto-generated metadata).
 func (s *SkillService) Create(ctx context.Context, skill *model.Skill, initialContent string) (*model.Skill, error) {
+	if skill == nil || skill.OrganizationID == "" {
+		return nil, fmt.Errorf("organization id is required")
+	}
 	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(skill).Error; err != nil {
 			return fmt.Errorf("failed to create skill: %w", err)
@@ -461,18 +480,22 @@ func (s *SkillService) copySkillDirectoryContents(sourceSkillID, destSkillID str
 }
 
 // CloneSkill creates a new skill by copying files from sourceSkillID and applying metadata from newSkill.
-// When organizationID is non-empty, copies AI tool bindings from the source skill for that organization.
+// Copies AI tool bindings from the source skill for the same organization.
 func (s *SkillService) CloneSkill(ctx context.Context, sourceSkillID string, newSkill *model.Skill, organizationID string) (*model.Skill, error) {
+	if organizationID == "" {
+		return nil, fmt.Errorf("organization id is required")
+	}
 	if sourceSkillID == "" {
 		return nil, fmt.Errorf("source skill id is required")
 	}
-	source, err := s.GetByID(ctx, sourceSkillID)
+	source, err := s.GetByID(ctx, organizationID, sourceSkillID)
 	if err != nil {
 		return nil, fmt.Errorf("source skill not found: %w", err)
 	}
 	if newSkill == nil || newSkill.Name == "" {
 		return nil, fmt.Errorf("skill name is required")
 	}
+	newSkill.OrganizationID = organizationID
 
 	err = db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(newSkill).Error; err != nil {
@@ -502,26 +525,24 @@ func (s *SkillService) CloneSkill(ctx context.Context, sourceSkillID string, new
 		return nil, fmt.Errorf("failed to update cloned skill frontmatter: %w", err)
 	}
 
-	if organizationID != "" {
-		var srcBindings []model.SkillAIToolBinding
-		if err := db.Session(ctx).Where("skill_id = ? AND organization_id = ?", source.ResourceID, organizationID).Find(&srcBindings).Error; err != nil {
+	var srcBindings []model.SkillAIToolBinding
+	if err := db.Session(ctx).Where("skill_id = ? AND organization_id = ?", source.ResourceID, organizationID).Find(&srcBindings).Error; err != nil {
+		_ = fs.RemoveAll(newSkill.ResourceID)
+		_ = db.Session(ctx).Delete(newSkill)
+		return nil, fmt.Errorf("failed to list source skill bindings: %w", err)
+	}
+	if len(srcBindings) > 0 {
+		rows := make([]model.SkillAIToolBinding, 0, len(srcBindings))
+		for _, b := range srcBindings {
+			rows = append(rows, model.SkillAIToolBinding{
+				ToolSetID: b.ToolSetID,
+				ToolName:  b.ToolName,
+			})
+		}
+		if err := s.ReplaceSkillAIToolBindings(ctx, newSkill.ResourceID, organizationID, rows); err != nil {
 			_ = fs.RemoveAll(newSkill.ResourceID)
 			_ = db.Session(ctx).Delete(newSkill)
-			return nil, fmt.Errorf("failed to list source skill bindings: %w", err)
-		}
-		if len(srcBindings) > 0 {
-			rows := make([]model.SkillAIToolBinding, 0, len(srcBindings))
-			for _, b := range srcBindings {
-				rows = append(rows, model.SkillAIToolBinding{
-					ToolSetID: b.ToolSetID,
-					ToolName:  b.ToolName,
-				})
-			}
-			if err := s.ReplaceSkillAIToolBindings(ctx, newSkill.ResourceID, organizationID, rows); err != nil {
-				_ = fs.RemoveAll(newSkill.ResourceID)
-				_ = db.Session(ctx).Delete(newSkill)
-				return nil, fmt.Errorf("failed to copy skill AI tool bindings: %w", err)
-			}
+			return nil, fmt.Errorf("failed to copy skill AI tool bindings: %w", err)
 		}
 	}
 
@@ -529,14 +550,17 @@ func (s *SkillService) CloneSkill(ctx context.Context, sourceSkillID string, new
 }
 
 func (s *SkillService) UpdateSkillFrontmatter(ctx context.Context, skill *model.Skill) error {
-	existing, err := s.GetByID(ctx, skill.ResourceID)
+	if skill == nil || skill.OrganizationID == "" {
+		return fmt.Errorf("organization id is required")
+	}
+	existing, err := s.GetByID(ctx, skill.OrganizationID, skill.ResourceID)
 	if err != nil {
 		return err
 	}
 	if existing.IsPreset {
 		return ErrPresetSkillReadOnly
 	}
-	_, skillFs, err := s.getSkillFs(ctx, skill.ResourceID)
+	_, skillFs, err := s.getSkillFs(ctx, skill.OrganizationID, skill.ResourceID)
 	if err != nil {
 		return err
 	}
@@ -558,11 +582,14 @@ func (s *SkillService) UpdateSkillFrontmatter(ctx context.Context, skill *model.
 }
 
 // EnsurePresetSkillMarkdown writes SKILL.md from markdown only when the file is missing (startup repair / initial body).
-func (s *SkillService) EnsurePresetSkillMarkdown(ctx context.Context, skillID string, markdown string) error {
+func (s *SkillService) EnsurePresetSkillMarkdown(ctx context.Context, organizationID, skillID string, markdown string) error {
 	if markdown == "" {
 		return nil
 	}
-	_, skillFs, err := s.getSkillFs(ctx, skillID)
+	if organizationID == "" {
+		return fmt.Errorf("organization id is required")
+	}
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return err
 	}
@@ -573,20 +600,26 @@ func (s *SkillService) EnsurePresetSkillMarkdown(ctx context.Context, skillID st
 }
 
 // UpdateSkillStatus sets skill enabled/disabled (allowed for preset skills).
-func (s *SkillService) UpdateSkillStatus(ctx context.Context, id string, status model.SkillStatus) error {
+func (s *SkillService) UpdateSkillStatus(ctx context.Context, organizationID, id string, status model.SkillStatus) error {
+	if organizationID == "" {
+		return fmt.Errorf("organization id is required")
+	}
 	if status != model.SkillStatusEnabled && status != model.SkillStatusDisabled {
 		return fmt.Errorf("invalid skill status")
 	}
-	if _, err := s.GetByID(ctx, id); err != nil {
+	if _, err := s.GetByID(ctx, organizationID, id); err != nil {
 		return err
 	}
-	return db.Session(ctx).Model(&model.Skill{}).Where("resource_id = ?", id).Update("status", status).Error
+	return db.Session(ctx).Model(&model.Skill{}).Where("resource_id = ? AND organization_id = ?", id, organizationID).Update("status", status).Error
 }
 
 // Update updates skill metadata (name, description, category, domain) and syncs them to SKILL.md/SKILLS.md.
 // Only these four fields are updated in the file; other frontmatter keys (e.g. license) are preserved.
 func (s *SkillService) Update(ctx context.Context, skill *model.Skill) error {
-	existing, err := s.GetByID(ctx, skill.ResourceID)
+	if skill == nil || skill.OrganizationID == "" {
+		return fmt.Errorf("organization id is required")
+	}
+	existing, err := s.GetByID(ctx, skill.OrganizationID, skill.ResourceID)
 	if err != nil {
 		return err
 	}
@@ -605,8 +638,11 @@ func (s *SkillService) Update(ctx context.Context, skill *model.Skill) error {
 }
 
 // Delete deletes the skill record and removes its directory
-func (s *SkillService) Delete(ctx context.Context, id string) error {
-	skill, err := s.GetByID(ctx, id)
+func (s *SkillService) Delete(ctx context.Context, organizationID, id string) error {
+	if organizationID == "" {
+		return fmt.Errorf("organization id is required")
+	}
+	skill, err := s.GetByID(ctx, organizationID, id)
 	if err != nil {
 		return err
 	}
@@ -617,6 +653,10 @@ func (s *SkillService) Delete(ctx context.Context, id string) error {
 	if err := fs.RemoveAll(skill.ResourceID); err != nil {
 		return fmt.Errorf("failed to remove skill directory: %w", err)
 	}
+	if err := db.Session(ctx).Where("skill_id = ? AND organization_id = ?", skill.ResourceID, skill.OrganizationID).
+		Unscoped().Delete(&model.SkillAIToolBinding{}).Error; err != nil {
+		return fmt.Errorf("failed to delete skill AI tool bindings: %w", err)
+	}
 	if err := db.Session(ctx).Delete(skill).Error; err != nil {
 		return fmt.Errorf("failed to delete skill: %w", err)
 	}
@@ -624,8 +664,8 @@ func (s *SkillService) Delete(ctx context.Context, id string) error {
 }
 
 // getSkillFs returns afero.Fs scoped to the skill's directory and the skill record
-func (s *SkillService) getSkillFs(ctx context.Context, skillID string) (*model.Skill, afero.Fs, error) {
-	skill, err := s.GetByID(ctx, skillID)
+func (s *SkillService) getSkillFs(ctx context.Context, organizationID, skillID string) (*model.Skill, afero.Fs, error) {
+	skill, err := s.GetByID(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -644,9 +684,9 @@ type SkillFilePreview struct {
 	Content  string `json:"content"`
 }
 
-// GetSkillContent reads SKILL.md (or SKILLS.md) and optionally other .md files, returns combined markdown
-func (s *SkillService) GetSkillPreview(ctx context.Context, skillID string) ([]SkillFilePreview, error) {
-	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+// GetSkillPreview returns concatenated preview fragments from SKILL.md/SKILLS.md and other .md files under the skill.
+func (s *SkillService) GetSkillPreview(ctx context.Context, organizationID, skillID string) ([]SkillFilePreview, error) {
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -694,8 +734,8 @@ func (s *SkillService) GetSkillPreview(ctx context.Context, skillID string) ([]S
 }
 
 // GetSkillContent reads SKILL.md (or SKILLS.md)
-func (s *SkillService) GetSkillContent(ctx context.Context, skillID string) (string, error) {
-	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) GetSkillContent(ctx context.Context, organizationID, skillID string) (string, error) {
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return "", err
 	}
@@ -727,8 +767,8 @@ type SkillTreeNode struct {
 }
 
 // ListFilesTree returns the full file tree for a skill (one shot). Only .md and .txt files are included.
-func (s *SkillService) ListFilesTree(ctx context.Context, skillID string) ([]SkillTreeNode, error) {
-	_, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) ListFilesTree(ctx context.Context, organizationID, skillID string) ([]SkillTreeNode, error) {
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -786,8 +826,8 @@ func buildSkillTree(paths []string, prefix string) []SkillTreeNode {
 }
 
 // ListFiles lists entries under skillID/relativePath (relativePath "" = root). Returns name and isDir.
-func (s *SkillService) ListFiles(ctx context.Context, skillID, relativePath string) ([]SkillFileEntry, error) {
-	_, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) ListFiles(ctx context.Context, organizationID, skillID, relativePath string) ([]SkillFileEntry, error) {
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -807,8 +847,8 @@ func (s *SkillService) ListFiles(ctx context.Context, skillID, relativePath stri
 }
 
 // GetFile returns the content of a file under the skill. Path must be relative; only .md and .txt allowed.
-func (s *SkillService) GetFile(ctx context.Context, skillID, relativePath string) ([]byte, error) {
-	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) GetFile(ctx context.Context, organizationID, skillID, relativePath string) ([]byte, error) {
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -824,8 +864,8 @@ func (s *SkillService) GetFile(ctx context.Context, skillID, relativePath string
 
 // PutFile writes content to a file under the skill. Creates parent dirs if needed. Only .md and .txt allowed.
 // If the file is SKILL.md or SKILLS.md, parses frontmatter and updates the skill DB record (name, description, category).
-func (s *SkillService) PutFile(ctx context.Context, skillID, relativePath string, content []byte) error {
-	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) PutFile(ctx context.Context, organizationID, skillID, relativePath string, content []byte) error {
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return err
 	}
@@ -861,8 +901,8 @@ func (s *SkillService) PutFile(ctx context.Context, skillID, relativePath string
 }
 
 // CreateDir creates a subdirectory under the skill. Path must be relative and must not escape.
-func (s *SkillService) CreateDir(ctx context.Context, skillID, relativePath string) error {
-	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) CreateDir(ctx context.Context, organizationID, skillID, relativePath string) error {
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return err
 	}
@@ -901,8 +941,8 @@ func removeDirRecursive(fs afero.Fs, path string) error {
 }
 
 // DeletePath deletes a file or directory. For directories, removes recursively. Root and ".." are forbidden.
-func (s *SkillService) DeletePath(ctx context.Context, skillID, relativePath string) error {
-	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) DeletePath(ctx context.Context, organizationID, skillID, relativePath string) error {
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return err
 	}
@@ -928,8 +968,8 @@ func (s *SkillService) DeletePath(ctx context.Context, skillID, relativePath str
 
 // MovePath moves a file or directory from fromPath to toPath within the same skill. Rename is supported (same parent, new name).
 // Rejects if toPath is under fromPath or if target already exists.
-func (s *SkillService) MovePath(ctx context.Context, skillID, fromPath, toPath string) error {
-	skill, skillFs, err := s.getSkillFs(ctx, skillID)
+func (s *SkillService) MovePath(ctx context.Context, organizationID, skillID, fromPath, toPath string) error {
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return err
 	}
@@ -1027,8 +1067,11 @@ func (s *SkillService) moveDir(fs afero.Fs, src, dst string) error {
 }
 
 // LoadSkillsForDomains loads all skills where domain is in domains OR domain = 'core', concatenates their content
-func (s *SkillService) LoadSkillsForDomains(ctx context.Context, domains []string) (string, error) {
-	query := db.Session(ctx).Model(&model.Skill{})
+func (s *SkillService) LoadSkillsForDomains(ctx context.Context, organizationID string, domains []string) (string, error) {
+	if organizationID == "" {
+		return "", fmt.Errorf("organization id is required")
+	}
+	query := db.Session(ctx).Model(&model.Skill{}).Where("organization_id = ?", organizationID)
 	if len(domains) == 0 {
 		query = query.Where("domain = ?", "core")
 	} else {
@@ -1044,7 +1087,7 @@ func (s *SkillService) LoadSkillsForDomains(ctx context.Context, domains []strin
 		if !model.SkillIsEnabled(&sk) {
 			continue
 		}
-		content, err := s.GetSkillContent(ctx, sk.ResourceID)
+		content, err := s.GetSkillContent(ctx, organizationID, sk.ResourceID)
 		if err != nil {
 			continue
 		}
@@ -1056,7 +1099,10 @@ func (s *SkillService) LoadSkillsForDomains(ctx context.Context, domains []strin
 }
 
 // LoadSkillsByIDs loads skills by resource_id (id), concatenates their content. Dedupes by id.
-func (s *SkillService) LoadSkillsByIDs(ctx context.Context, ids []string) (string, error) {
+func (s *SkillService) LoadSkillsByIDs(ctx context.Context, organizationID string, ids []string) (string, error) {
+	if organizationID == "" {
+		return "", fmt.Errorf("organization id is required")
+	}
 	if len(ids) == 0 {
 		return "", nil
 	}
@@ -1073,7 +1119,7 @@ func (s *SkillService) LoadSkillsByIDs(ctx context.Context, ids []string) (strin
 		return "", nil
 	}
 	var skills []model.Skill
-	if err := db.Session(ctx).Model(&model.Skill{}).Where("resource_id IN ?", unique).Find(&skills).Error; err != nil {
+	if err := db.Session(ctx).Model(&model.Skill{}).Where("organization_id = ? AND resource_id IN ?", organizationID, unique).Find(&skills).Error; err != nil {
 		return "", fmt.Errorf("failed to load skills by ids: %w", err)
 	}
 	// Preserve order of requested ids where possible
@@ -1090,7 +1136,7 @@ func (s *SkillService) LoadSkillsByIDs(ctx context.Context, ids []string) (strin
 		if !model.SkillIsEnabled(sk) {
 			continue
 		}
-		content, err := s.GetSkillContent(ctx, sk.ResourceID)
+		content, err := s.GetSkillContent(ctx, organizationID, sk.ResourceID)
 		if err != nil {
 			continue
 		}
@@ -1102,7 +1148,10 @@ func (s *SkillService) LoadSkillsByIDs(ctx context.Context, ids []string) (strin
 }
 
 // LoadSkillsMetadataForChat returns a text summary of available skills (id, name, description, domain) for use as system context. No file bodies. Instructs the model to use get_skill_content to load content on demand.
-func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []string, skillIDs []string) (string, []string, error) {
+func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, organizationID string, domains []string, skillIDs []string) (string, []string, error) {
+	if organizationID == "" {
+		return "", nil, fmt.Errorf("organization id is required")
+	}
 	seen := make(map[string]bool)
 	var ordered []*model.Skill
 
@@ -1110,7 +1159,7 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 		if id == "" || seen[id] {
 			continue
 		}
-		sk, err := s.GetByID(ctx, id)
+		sk, err := s.GetByID(ctx, organizationID, id)
 		if err != nil {
 			continue
 		}
@@ -1121,7 +1170,7 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 		ordered = append(ordered, sk)
 	}
 
-	query := db.Session(ctx).Model(&model.Skill{})
+	query := db.Session(ctx).Model(&model.Skill{}).Where("organization_id = ?", organizationID)
 	if len(domains) == 0 {
 		query = query.Where("domain = ?", "core")
 	} else {
@@ -1165,6 +1214,9 @@ func (s *SkillService) LoadSkillsMetadataForChat(ctx context.Context, domains []
 
 // LoadSkillsForChat loads skills by domains and/or skill IDs, merges and dedupes by skill id, returns concatenated content.
 func (s *SkillService) LoadSkillsForChat(ctx context.Context, organizationID string, domains []string, skillIDs []string) ([]*model.Skill, error) {
+	if organizationID == "" {
+		return nil, fmt.Errorf("organization id is required")
+	}
 	seen := make(map[string]bool)
 	var seenSkillIDs []string
 	var skills []*model.Skill
@@ -1174,7 +1226,7 @@ func (s *SkillService) LoadSkillsForChat(ctx context.Context, organizationID str
 		if id == "" || seen[id] {
 			continue
 		}
-		sk, err := s.GetByID(ctx, id)
+		sk, err := s.GetByID(ctx, organizationID, id)
 		if err != nil {
 			continue
 		}
@@ -1223,4 +1275,26 @@ func (s *SkillService) LoadSkillsForChat(ctx context.Context, organizationID str
 		}
 	}
 	return skills, nil
+}
+
+func (s *SkillService) CreateSkillLoader(ctx context.Context, organizationID string, domains, skillIDs, activatedSkillIDs []string) (*ai.SkillLoader, error) {
+	skills, err := s.LoadSkillsForChat(ctx, organizationID, domains, skillIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load skills: %w", err)
+	}
+	skillLoader := ai.NewSkillLoader(skills, activatedSkillIDs, func(ctx context.Context, skillID string, path string) (string, error) {
+		if strings.TrimSpace(path) == "" {
+			content, err := s.GetSkillContent(ctx, organizationID, skillID)
+			if err != nil {
+				return "", fmt.Errorf("failed to get skill content: %w", err)
+			}
+			return content, nil
+		}
+		body, err := s.GetFile(ctx, organizationID, skillID, path)
+		if err != nil {
+			return "", fmt.Errorf("failed to get skill file: %w", err)
+		}
+		return string(body), nil
+	})
+	return skillLoader, nil
 }

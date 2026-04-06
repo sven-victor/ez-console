@@ -18,14 +18,9 @@ import (
 	"gorm.io/gorm"
 )
 
-// SyncPresetResources ensures global preset skills and per-organization preset toolsets and bindings exist.
+// SyncPresetResources ensures per-organization preset toolsets, skills, and bindings exist.
 func (s *Service) SyncPresetResources(ctx context.Context) error {
 	logger := log.GetContextLogger(ctx)
-	for _, spec := range preset.RegisteredPresetSkills() {
-		if err := s.syncPresetSkillGlobal(ctx, spec); err != nil {
-			return fmt.Errorf("sync preset skill %q: %w", spec.PresetKey, err)
-		}
-	}
 	var orgs []model.Organization
 	if err := db.Session(ctx).Find(&orgs).Error; err != nil {
 		return fmt.Errorf("list organizations: %w", err)
@@ -39,7 +34,7 @@ func (s *Service) SyncPresetResources(ctx context.Context) error {
 	return nil
 }
 
-// SyncPresetResourcesForOrganization creates missing preset toolsets and default skill bindings for one organization.
+// SyncPresetResourcesForOrganization creates missing preset toolsets, skills, and default skill bindings for one organization.
 func (s *Service) SyncPresetResourcesForOrganization(ctx context.Context, organizationID string) error {
 	if organizationID == "" {
 		return nil
@@ -51,6 +46,9 @@ func (s *Service) SyncPresetResourcesForOrganization(ctx context.Context, organi
 		}
 	}
 	for _, skillSpec := range preset.RegisteredPresetSkills() {
+		if err := s.syncPresetSkillForOrg(ctx, organizationID, skillSpec); err != nil {
+			return fmt.Errorf("sync preset skill %q for org %s: %w", skillSpec.PresetKey, organizationID, err)
+		}
 		if err := s.syncPresetSkillBindingsForOrg(ctx, organizationID, skillSpec); err != nil {
 			return fmt.Errorf("sync preset bindings %q for org %s: %w", skillSpec.PresetKey, organizationID, err)
 		}
@@ -119,18 +117,19 @@ func (s *Service) syncPresetToolSetForOrg(ctx context.Context, organizationID st
 	return nil
 }
 
-func (s *Service) syncPresetSkillGlobal(ctx context.Context, spec preset.PresetSkillSpec) error {
+func (s *Service) syncPresetSkillForOrg(ctx context.Context, organizationID string, spec preset.PresetSkillSpec) error {
 	var row model.Skill
-	err := db.Session(ctx).Where("preset_key = ?", spec.PresetKey).First(&row).Error
+	err := db.Session(ctx).Where("organization_id = ? AND preset_key = ?", organizationID, spec.PresetKey).First(&row).Error
 	if err == gorm.ErrRecordNotFound {
 		sk := &model.Skill{
-			Name:        spec.Name,
-			Description: spec.Description,
-			Category:    spec.Category,
-			Domain:      spec.Domain,
-			Status:      model.SkillStatusEnabled,
-			IsPreset:    true,
-			PresetKey:   spec.PresetKey,
+			OrganizationID: organizationID,
+			Name:           spec.Name,
+			Description:    spec.Description,
+			Category:       spec.Category,
+			Domain:         spec.Domain,
+			Status:         model.SkillStatusEnabled,
+			IsPreset:       true,
+			PresetKey:      spec.PresetKey,
 		}
 		content := spec.InitialMarkdown
 		if _, err := s.SkillService.Create(ctx, sk, content); err != nil {
@@ -152,7 +151,7 @@ func (s *Service) syncPresetSkillGlobal(ctx context.Context, spec preset.PresetS
 	if err := db.Session(ctx).Model(&model.Skill{}).Where("resource_id = ?", row.ResourceID).Updates(updates).Error; err != nil {
 		return fmt.Errorf("update preset skill metadata: %w", err)
 	}
-	if err := s.SkillService.EnsurePresetSkillMarkdown(ctx, row.ResourceID, spec.InitialMarkdown); err != nil {
+	if err := s.SkillService.EnsurePresetSkillMarkdown(ctx, organizationID, row.ResourceID, spec.InitialMarkdown); err != nil {
 		return err
 	}
 	return nil
@@ -163,7 +162,7 @@ func (s *Service) syncPresetSkillBindingsForOrg(ctx context.Context, organizatio
 		return nil
 	}
 	var sk model.Skill
-	if err := db.Session(ctx).Where("preset_key = ?", spec.PresetKey).First(&sk).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND preset_key = ?", organizationID, spec.PresetKey).First(&sk).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil
 		}
