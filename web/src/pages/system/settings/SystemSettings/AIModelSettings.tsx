@@ -370,8 +370,7 @@ const AIModelSettings: React.FC = () => {
             <Input.Search
               placeholder={t('models.searchPlaceholder', { defaultValue: 'Search AI models...' })}
               style={{ width: 300 }}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onSearch={(value) => setSearchText(value)}
               allowClear
             />
           </Col>
