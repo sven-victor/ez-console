@@ -69,19 +69,17 @@ const (
 
 // TaskService handles task CRUD and worker pool.
 type TaskService struct {
-	settingService *SettingService
-	cancelChans    map[string]chan struct{}
-	cancelMu       sync.RWMutex
-	taskQueue      chan *model.Task
-	taskQueueMu    sync.Mutex
+	cancelChans map[string]chan struct{}
+	cancelMu    sync.RWMutex
+	taskQueue   chan *model.Task
+	taskQueueMu sync.Mutex
 }
 
 // NewTaskService creates a new TaskService.
-func NewTaskService(settingService *SettingService) *TaskService {
+func NewTaskService() *TaskService {
 	return &TaskService{
-		settingService: settingService,
-		cancelChans:    make(map[string]chan struct{}),
-		taskQueue:      make(chan *model.Task, defaultTaskQueueSize),
+		cancelChans: make(map[string]chan struct{}),
+		taskQueue:   make(chan *model.Task, defaultTaskQueueSize),
 	}
 }
 
@@ -288,12 +286,9 @@ func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskL
 	if _, err := s.GetTask(ctx, id); err != nil {
 		return nil, err
 	}
-	taskSettings, _ := s.settingService.GetTaskSettings(ctx)
-	backendName := "database"
-	if taskSettings != nil && taskSettings.LogStorageBackend != "" {
-		backendName = taskSettings.LogStorageBackend
-	}
-	be := taskscheduler.GetLogStoreBackend(backendName)
+	settingService := middleware.GetSettingService()
+	logStorageBackend, _ := settingService.GetStringSetting(ctx, model.SettingTaskLogStorageBackend, "database")
+	be := taskscheduler.GetLogStoreBackend(logStorageBackend)
 	if be == nil {
 		return nil, nil
 	}
@@ -333,7 +328,8 @@ func (s *TaskService) claimTaskByID(ctx context.Context, id string) (*model.Task
 // Start starts the worker pool and the fallback poller. Call once at server startup.
 func (s *TaskService) Start(ctx context.Context) {
 	logger := log.GetContextLogger(ctx)
-	maxConcurrent, _ := s.settingService.GetIntSetting(ctx, model.SettingTaskMaxConcurrent, 10)
+	settingService := middleware.GetSettingService()
+	maxConcurrent, _ := settingService.GetIntSetting(ctx, model.SettingTaskMaxConcurrent, 10)
 	if maxConcurrent < 1 {
 		maxConcurrent = 1
 	}
@@ -363,9 +359,10 @@ func (s *TaskService) worker(ctx context.Context, id int, logger interface{}) {
 	}
 }
 
-func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
+func (s *TaskService) runTask(pctx context.Context, t *model.Task) {
 	startTime := time.Now()
-	logger := log.GetContextLogger(ctx)
+	taskCtx, logger := log.NewContextLogger(pctx)
+	traceID := log.GetTraceId(taskCtx)
 	category := t.Category
 	taskType := string(t.Type)
 	taskStartedTotal.WithLabelValues(string(category), taskType).Inc()
@@ -386,18 +383,15 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 	}()
 
 	// Bridge task logs to log storage: get backend name from task settings and tee the context logger with a task logger.
-	taskSettings, _ := s.settingService.GetTaskSettings(ctx)
-	backendName := "database"
-	if taskSettings != nil && taskSettings.LogStorageBackend != "" {
-		backendName = taskSettings.LogStorageBackend
-	}
-	taskLogger := taskscheduler.NewTaskLogger(ctx, backendName, t.ResourceID)
+	settingService := middleware.GetSettingService()
+	logStorageBackend, _ := settingService.GetStringSetting(taskCtx, model.SettingTaskLogStorageBackend, "database")
+	taskLogger := taskscheduler.NewTaskLogger(taskCtx, logStorageBackend, t.ResourceID)
 	tee := log.NewTeeLogger(logger, taskLogger)
-	ctx, logger = log.NewContextLogger(ctx, log.WithLogger(tee))
+	taskCtx, logger = log.NewContextLogger(taskCtx, log.WithLogger(tee), log.WithTraceId(traceID))
 
-	runner, ok := taskscheduler.GetTaskRunner(ctx, t.Type)
+	runner, ok := taskscheduler.GetTaskRunner(taskCtx, t.Type)
 	if !ok {
-		_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusFailed), "", "task type not registered", 0)
+		_ = s.UpdateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusFailed), "", "task type not registered", 0)
 		taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusFailed)).Inc()
 		return
 	}
@@ -406,13 +400,13 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 		if progress < 0 || progress > 100 {
 			return
 		}
-		_ = s.UpdateTaskProgress(ctx, t.ResourceID, progress)
+		_ = s.UpdateTaskProgress(taskCtx, t.ResourceID, progress)
 	}
 	level.Info(logger).Log("msg", "Running task", "task_id", t.ResourceID, "task_type", t.Type)
-	result, err := runner.Run(ctx, t, progressCallback, cancelCh)
+	result, err := runner.Run(taskCtx, t, progressCallback, cancelCh)
 	if err != nil {
 		if errors.Is(err, taskscheduler.ErrCancelled) {
-			_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusCancelled), "", "cancelled", 0)
+			_ = s.UpdateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusCancelled), "", "cancelled", 0)
 			taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusCancelled)).Inc()
 		} else {
 			// Auto retry: increment auto_retry_count and if not exceeding max_retries, set task back to pending and enqueue.
@@ -426,7 +420,7 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 				t.Progress = 0
 				t.FinishedAt = nil
 				t.AutoRetryCount = nextAutoRetry
-				_ = db.Session(ctx).Model(&model.Task{}).
+				_ = db.Session(taskCtx).Model(&model.Task{}).
 					Where("resource_id = ?", t.ResourceID).
 					Select("status", "error", "result", "progress", "finished_at", "auto_retry_count").
 					Updates(t).Error
@@ -439,7 +433,7 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 				}
 			} else {
 				now := time.Now()
-				_ = db.Session(ctx).Model(&model.Task{}).Where("resource_id = ?", t.ResourceID).Updates(map[string]interface{}{
+				_ = db.Session(taskCtx).Model(&model.Task{}).Where("resource_id = ?", t.ResourceID).Updates(map[string]interface{}{
 					"status":           model.TaskStatusFailed,
 					"error":            err.Error(),
 					"progress":         0,
@@ -459,6 +453,6 @@ func (s *TaskService) runTask(ctx context.Context, t *model.Task) {
 			resultStr = string(b)
 		}
 	}
-	_ = s.UpdateTaskStatus(ctx, t.ResourceID, string(model.TaskStatusSuccess), resultStr, "", 100)
+	_ = s.UpdateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusSuccess), resultStr, "", 100)
 	taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusSuccess)).Inc()
 }

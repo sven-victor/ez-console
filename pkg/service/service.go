@@ -103,7 +103,7 @@ func NewService(ctx context.Context) *Service {
 		OrganizationService:   NewOrganizationService(),
 		SkillService:          NewSkillService(),
 	}
-	s.TaskService = NewTaskService(settingService)
+	s.TaskService = NewTaskService()
 	s.SchedulerService = NewSchedulerService(s.TaskService)
 	s.FileService = NewFileService(baseService)
 	s.AITraceService = NewAITraceService(settingService)

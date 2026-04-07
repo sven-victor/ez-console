@@ -150,6 +150,8 @@ type Service interface {
 	// GeoIP Service
 	GetLocation(ctx context.Context, ip string, language string) (string, error)
 	MustGetLocation(ctx context.Context, ip string, language string) string
+
+	CreateTask(ctx context.Context, taskType model.TaskType, opts ...service.CreateTaskOption) (*model.Task, error)
 }
 
 type ServerOption struct {
