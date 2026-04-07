@@ -76,7 +76,15 @@ export interface JsonSchemaConfigFormProps {
 }
 
 const ToolsetsSelectWidget: Widget = (props) => {
-  return <RemoteSelectWidget {...props} />;
+  return <RemoteSelectWidget {...props}
+    schema={{
+      ...(props.schema || {}),
+      'x-data-source': {
+        ...((props.schema as any)?.['x-data-source'] || {}),
+        type: 'toolsets'
+      }
+    }}
+  />;
 }
 
 
@@ -254,7 +262,7 @@ const RemoteSelectWidget: Widget = (props) => {
         return (await api.system.listToolSets({
           current: 1,
           page_size: 1000,
-        })).data.map((item: any) => ({ label: item[source.label_key], value: item[source.value_key] }));
+        })).data.map((item: any) => ({ label: item[source.label_key || 'name'], value: item[source.value_key || 'id'] }));
       case 'api':
         if (source.url.startsWith("/")) {
           return (await request(source.url, {
