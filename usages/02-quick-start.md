@@ -165,7 +165,7 @@ Create `web/package.json`:
   "dependencies": {
     "ahooks": "^3.9.6",
     "antd": "^5.14.1",
-    "ez-console": "github:sven-victor/ez-console.git#v1.12.0&path:web",
+    "ez-console": "github:sven-victor/ez-console.git#v1.13.0&path:web",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

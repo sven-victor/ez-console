@@ -4,7 +4,7 @@ go 1.24.4
 
 require (
 	github.com/gin-gonic/gin v1.11.0
-	github.com/sven-victor/ez-console v1.12.0
+	github.com/sven-victor/ez-console v1.13.0
 )
 
 require (
