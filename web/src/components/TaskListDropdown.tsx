@@ -25,7 +25,7 @@ import api from '@/service/api';
 import { PermissionGuard } from './PermissionGuard';
 import { useRequest } from 'ahooks';
 import { useAuth } from '@/contexts/AuthContext';
-import { isEqualWith } from 'lodash-es';
+import { isUnorderedEqual } from '@/utils';
 
 const statusColors: Record<API.TaskStatus, string> = {
   pending: 'default',
@@ -46,7 +46,7 @@ const TaskListDropdown: React.FC<{ className?: string }> = ({ className }) => {
     return api.tasks.listUserTasks({});
   }, {
     onSuccess: (res) => {
-      if (!isEqualWith(tasks, res, (a: API.Task, b: API.Task) => {
+      if (!isUnorderedEqual(tasks, res, (a: API.Task, b: API.Task) => {
         return a.id === b.id &&
           a.status === b.status &&
           a.progress === b.progress

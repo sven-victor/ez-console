@@ -319,3 +319,33 @@ export const toSmartTitle = (str: string): string => {
     })
     .join(" ");
 }
+
+type Comparator<T> = (a: T, b: T) => boolean;
+
+export const isUnorderedEqual = <T>(
+  listA: T[] | undefined,
+  listB: T[] | undefined,
+  comparator: Comparator<T>
+): boolean => {
+  if (listA === undefined && listB === undefined) return true;
+  if (listA === undefined || listB === undefined) return false;
+  if (listA.length !== listB.length) return false;
+
+  const used = new Array(listB.length).fill(false);
+
+  for (const a of listA) {
+    let found = false;
+
+    for (let i = 0; i < listB.length; i++) {
+      if (!used[i] && comparator(a, listB[i])) {
+        used[i] = true;
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) return false;
+  }
+
+  return true;
+}
