@@ -60,7 +60,7 @@ The Task Management module provides:
 
 - **Location**: Header (next to org switcher / language), shown when user has `task:list`. Rendered in `Layout` as `TaskListDropdown`.
 - **Data and state**: Task list and dropdown open state are held in **SiteContext** (`web/src/contexts/SiteContext.tsx`), not inside the dropdown component:
-  - **`tasks`**: Array of recent tasks for the current user (from `GET /api/userTasks`).
+  - **`tasks`**: Array of recent tasks for the current user (from `GET /api/user-tasks`).
   - **`tasksDropdownOpen` / `setTasksDropdownOpen`**: Whether the dropdown is open; used for controlled open state and to drive polling.
   - **`addTask(task)`**: Appends a task to the list and opens the dropdown. Call this when a new task is created (e.g. after starting an export) so the user sees it immediately in the header.
 - **Fetch and polling**: SiteContext uses `api.userTasks.listUserTasks()` with polling: **every 3 seconds** when the dropdown is open (`tasksDropdownOpen === true`), **every 60 seconds** when closed. Fetch also runs once when the dropdown is opened.
@@ -117,13 +117,13 @@ All task APIs require authentication.
 
 **List query parameters**: `current`, `page_size`, `search` (optional). Admins see all tasks; others see only their own.
 
-**Task logs** (`GET /api/tasks/:id/logs`): Returns an array of log entries for the task (same visibility as the task: admin or creator). Each entry has `id`, `ref_id`, `log_type`, `level`, `message`, `created_at`. The backend used is the one selected in Task Settings (log storage).
+**Task logs** (`GET /api/tasks/:id/logs`): Returns an array of log entries for the task (same visibility as the task: admin or creator). Each entry has `id`, `task_id`, `level`, `message`, `created_at`. The backend used is the one selected in Task Settings (log storage).
 
-### User tasks for header dropdown (`/api/userTasks`)
+### User tasks for header dropdown (`/api/user-tasks`)
 
 | Method | Path             | Permission | Description |
 |--------|------------------|------------|-------------|
-| GET    | `/api/userTasks` | (auth only)| List current user's recent tasks for the header dropdown. |
+| GET    | `/api/user-tasks` | (auth only)| List current user's recent tasks for the header dropdown. |
 
 - **Authentication**: Required (no separate permission; any logged-in user can call).
 - **Response**: Array of tasks (not paginated). Returns up to 10 tasks that are (a) created by the current user, (b) have **category** `"user"`, and (c) are either created in the last 24 hours or currently `running` or `pending`. Tasks with category `"system"` are not returned.
@@ -172,8 +172,9 @@ if err != nil {
 Options:
 
 - **WithPayload(payload string)**: Optional JSON or string stored on the task for the runner to read.
-- **WithMaxRetries(n int)**: Max retries (runner is invoked again on retry).
-- **WithCategory(category string)**: Set task category to `"user"` or `"system"`. Defaults to `"user"` when creator is not `"system"`, otherwise `"system"`.
+- **WithMaxRetries(n int)**: Max retries. When > 0, the worker automatically retries on failure (increments `auto_retry_count` and re-enqueues). The user can also manually retry from the UI.
+- **WithCategory(category model.TaskCategory)**: Set task category to `"user"` or `"system"` (`model.TaskCategoryUser` / `model.TaskCategorySystem`). Defaults to `"user"` when creator is not `"system"`, otherwise `"system"`.
+- **WithCronScheduleID(id string)**: Associates the task with a scheduled (cron) job. Set automatically when a cron job fires; not typically used directly.
 
 Creator is taken from `middleware.GetUserIDFromContext(ctx)`; if empty, `"system"` is used.
 
@@ -340,13 +341,15 @@ To add a new log storage backend (e.g. file, external service), implement `tasks
 | id (ResourceID)     | string    | UUID                                 |
 | type                | string    | Task type key for registry           |
 | status              | enum      | pending, running, success, failed, cancelled |
-| category            | string    | `"user"` or `"system"`. Only `user` tasks are returned by `GET /api/userTasks` (header dropdown). |
+| category            | string    | `"user"` or `"system"`. Only `user` tasks are returned by `GET /api/user-tasks` (header dropdown). |
 | progress            | int       | 0–100                                |
 | result              | string    | JSON or text result                  |
 | error               | string    | Last error message if failed         |
 | creator_id          | string    | User ID of creator                   |
 | artifact_file_key   | string    | Optional file key for download       |
-| retry_count         | int       | Number of retries                    |
+| artifact_file_name  | string    | Original file name for the artifact  |
+| retry_count         | int       | Number of manual retries             |
+| auto_retry_count    | int       | Number of automatic retries by the worker |
 | max_retries         | int       | Max retries allowed                  |
 | started_at          | *time     | When run started                    |
 | finished_at         | *time     | When run finished                   |
@@ -359,6 +362,7 @@ To add a new log storage backend (e.g. file, external service), implement `tasks
 - **Best-effort enqueue**: After persisting, `TaskService.CreateTask` tries to push the task into an in-memory buffered channel. This is a best-effort optimization for fast pickup by workers.
 - **Overflow behavior**: If the channel is full, the task remains in the DB as `pending` and is **not** enqueued. The service increments the Prometheus counter `task_queue_overflow_total{category=...}` for visibility.
 - **Worker claim-before-run**: A worker consumes tasks from the channel, then atomically "claims" the task in the DB (transitions `pending → running` and sets `started_at`). If the claim fails (already claimed, deleted, or no longer pending), the worker skips it. This prevents duplicate execution.
+- **Auto-retry on failure**: When a task runner returns an error (non-cancellation), if `max_retries > 0` and `auto_retry_count < max_retries`, the worker resets the task to `pending`, increments `auto_retry_count`, and re-enqueues it. This is distinct from manual retry (which increments `retry_count`). Tasks that exhaust auto-retries transition to `failed`.
 
 ## Prometheus metrics for tasks
 
@@ -376,8 +380,10 @@ The following metrics are exposed under `/metrics` for monitoring:
 
 ## Scheduled tasks (cron)
 
-- **Registry**: Scheduled jobs are defined in code via `pkg/taskscheduler`. Call `taskscheduler.RegisterScheduledJob(def)` with a `ScheduledJobDef` (ID, Name, Spec, Description, TaskType, PayloadBuilder, MaxRetries, Runner). Definitions are **not** persisted to the DB; they exist only in memory.
+- **Registry**: Scheduled jobs are defined in code via `pkg/taskscheduler`. Call `taskscheduler.RegisterScheduledJob(def)` with a `ScheduledJobDef` (ID, Name, Spec, Description, TaskType, PayloadBuilder, MaxRetries, Runner, Schedule). Definitions are **not** persisted to the DB; they exist only in memory. Note: `RegisterScheduledJob` panics if a job with the same ID is already registered.
+- **Schedule field**: `ScheduledJobDef.Schedule` is an optional pre-parsed `cron.Schedule`. If set, the `Spec` string is used only for display; the actual schedule is driven by the `Schedule` value. If nil, `Spec` is parsed at runtime.
 - **Runner field**: `ScheduledJobDef.Runner` is optional. If set, `RegisterScheduledJob` automatically registers the runner as the task type via `RegisterFuncTaskType`. If nil, the task type must be registered separately (e.g. via another `RegisterTaskType` call).
+- **Enabled**: All registered jobs start with `Enabled: true` by default. Users can toggle enabled/disabled via the UI or API.
 - **Execution**: The `SchedulerService` (in `pkg/service`) uses `github.com/robfig/cron/v3`. When a cron job fires, it calls `TaskService.CreateTask` with the job's task type, payload from `PayloadBuilder()`, category `"system"`, and `WithCronScheduleID(jobID)`. The created task is then processed like any other task (queue, workers, DB). Each run produces one task row, so execution history is the list of tasks with that `cron_schedule_id`.
 - **UI**: The **Scheduled Tasks** page (`/tasks/schedules`) lists all registered cron jobs (name, spec, description, task type, enabled, next run, last run) and allows viewing execution history for a selected job. Users with `task:schedule:update` can enable/disable a job and trigger a run immediately.
 

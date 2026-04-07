@@ -6,15 +6,35 @@ This guide covers using built-in components and creating custom components in EZ
 
 ### EZApp
 
-Main application component that provides the entire app structure:
+Main application component that provides the entire app structure. Exported as `EZApp` with type `EZAppProps`:
 
 ```typescript
 import { EZApp } from 'ez-console';
+import type { EZAppProps } from 'ez-console';
+```
 
+**Props** (`EZAppProps`):
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `basePath` | `string?` | Base path (declared but routing uses Vite `BASE_URL`) |
+| `extraPrivateRoutes` | `IRoute[]?` | Additional authenticated routes |
+| `extraPublicRoutes` | `IRoute[]?` | Additional public routes (e.g. custom login) |
+| `transformRouter` | `(routes: IRoute[]) => IRoute[]` | Transform the full route tree before rendering |
+| `transformSettingTabs` | `(items) => items` | Transform system settings tab items |
+| `transformLangConfig` | `(langs) => langs` | Transform language configuration |
+| `menuStyle` | `'dark' \| 'light'` | Sidebar menu style (default: `'dark'`) |
+| `transformHeaderItems` | `(items) => items` | Transform header action items |
+| `renderLayout` | `(siteIconUrl, menuItems, headerItems, breadcrumbs, content) => ReactNode` | Custom layout renderer |
+| `aiChatProps` | `AIChatProps?` | Props forwarded to the built-in AI chat component |
+
+```typescript
 <EZApp
   basePath='/'
   extraPrivateRoutes={[...]}
   extraPublicRoutes={[...]}
+  menuStyle="dark"
+  transformHeaderItems={(items) => [...items, <MyCustomButton />]}
 />
 ```
 
@@ -30,15 +50,37 @@ import { PermissionGuard } from 'ez-console';
 </PermissionGuard>
 ```
 
-### Layout
+**Props** (`PermissionGuardProps`):
 
-Pre-built layout with sidebar and header:
+| Prop | Type | Description |
+|------|------|-------------|
+| `permission` | `string?` | Single permission code to check |
+| `permissions` | `string[]?` | Multiple permission codes to check |
+| `checkAll` | `boolean?` | When using `permissions`, check all (true) or any (false, default) |
+| `fallback` | `ReactNode?` | Content to display when permission is denied (default: `null`) |
+| `children` | `ReactNode` | Content to display when permission is granted |
+
+### AdminGuard
+
+Only renders content for admin users:
 
 ```typescript
-import { Layout } from 'ez-console';
+import { AdminGuard } from 'ez-console';
+
+<AdminGuard fallback={<p>Admin access required</p>}>
+  <DangerousAdminPanel />
+</AdminGuard>
+```
+
+### AppLayout
+
+Pre-built layout with sidebar and header (exported as `AppLayout`, not `Layout`):
+
+```typescript
+import { AppLayout } from 'ez-console';
 
 // Already included in EZApp
-// Customize through theme configuration
+// Customize through theme configuration or renderLayout prop
 ```
 
 ### Loading
@@ -50,6 +92,54 @@ import { Loading } from 'ez-console';
 
 <Loading />
 ```
+
+### Other Exported Components
+
+The `ez-console` package also exports the following components:
+
+| Component | Description |
+|-----------|-------------|
+| `Actions` | Action buttons component |
+| `Avatar`, `AvatarUpload` | User avatar display and upload |
+| `DynamicIcon`, `getIconByName` | Dynamic Ant Design icon renderer |
+| `HeaderDropdown` | Dropdown for the header area |
+| `LabelCreater` | Label/tag creation component |
+| `LanguageSwitch` | Language switcher with `AllLangUIConfig` |
+| `PrivateRoute` | Route wrapper that requires authentication |
+| `Table` | Enhanced table component with refs (`TableRefProps`, `TableActionRefProps`) |
+| `AIChat`, `AIChatModal`, `AIChatButton`, `AIChatSider` | AI chat UI components |
+| `MarkdownViewer`, `MarkdownCode` | Markdown rendering components |
+| `Forbidden`, `NotFound` | Error page components (403, 404) |
+| `JsonSchemaConfigForm`, `JsonSchemaConfigFormItem` | JSON Schema-driven configuration forms |
+
+**Hooks:**
+
+| Hook | Description |
+|------|-------------|
+| `useAuth` | Authentication context (`{ user, loading, login, logout, ... }`) |
+| `usePermission` | Permission checking (`{ hasPermission, isAdmin, ... }`) |
+| `useSite` | Site configuration and org context |
+| `useAI` | AI chat context |
+| `useTranslation` | i18next translation hook (re-exported from `react-i18next`) |
+
+**Utilities:**
+
+| Export | Description |
+|--------|-------------|
+| `withSuspense` | Wraps a lazy component in `<Suspense>` with `<Loading />` fallback |
+| `i18n` | The i18next instance |
+| `apiGet`, `apiPost`, `apiPut`, `apiDelete` | Typed HTTP helpers (Axios-based) |
+| `client` | The Axios client instance |
+| `request`, `fetchSSE` | Lower-level request functions |
+| `api` | Merged API modules (authorization, base, oauth, system, tasks) |
+
+**Route types:**
+
+| Type | Description |
+|------|-------------|
+| `IRoute` | `IRouteItem \| IRouteGroup` |
+| `IRouteItem` | Route leaf: `{ path?, element, name?, icon?, index, permissions?, hideInMenu? }` |
+| `IRouteGroup` | Route group: `{ path?, children, name?, icon?, permissions?, hideInMenu? }` |
 
 ## Creating Reusable Components
 

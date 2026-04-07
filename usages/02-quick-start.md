@@ -165,7 +165,7 @@ Create `web/package.json`:
   "dependencies": {
     "ahooks": "^3.9.6",
     "antd": "^5.14.1",
-    "ez-console": "github:sven-victor/ez-console.git#v1.7.2&path:web",
+    "ez-console": "github:sven-victor/ez-console.git#v1.12.0&path:web",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -258,7 +258,7 @@ import { lazy } from 'react';
 
 const HelloPage = lazy(() => import('@/pages/HelloPage'));
 
-// Add translations
+// Add translations (use 'en' — i18next resolves 'en-US' -> 'en' via fallback)
 i18n.addResource('en', 'translation', 'menu.hello', "Hello Page");
 i18n.addResource('en', 'translation', 'hello.title', "Hello World");
 i18n.addResource('en', 'translation', 'hello.nameLabel', "Your Name");

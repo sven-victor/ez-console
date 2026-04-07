@@ -8,13 +8,17 @@ The frontend is built as a Single Page Application (SPA) with the following stru
 
 ```
 App Component (EZApp)
-├── Authentication Context
-├── Site Configuration Context
-├── Router
-│   ├── Public Routes (Login, OAuth Callback)
-│   └── Private Routes (Protected by Auth)
-│       ├── Layout (Sidebar, Header, Content)
-│       └── Pages
+├── QueryClientProvider (React Query)
+├── ThemeProvider (antd-style)
+├── ConfigProvider (Ant Design locale)
+├── AuthProvider (Authentication Context)
+│   ├── SiteProvider (Site Configuration Context)
+│   │   ├── AIProvider (AI Context)
+│   │   │   ├── Router
+│   │   │   │   ├── Public Routes (Login, OAuth Callback)
+│   │   │   │   └── Private Routes (Protected by Auth)
+│   │   │   │       ├── Layout (Sidebar, Header, Content)
+│   │   │   │       └── Pages
 └── API Client (Axios + Interceptors)
 ```
 
@@ -98,29 +102,33 @@ export default function App() {
             path: '/products',
             name: 'products',
             children: [
-              {
-                path: '',
-                element: withSuspense(ProductList),
-                name: 'productList',
-              },
-              {
-                path: 'create',
-                element: withSuspense(ProductForm),
-                name: 'productCreate',
-                hideInMenu: true,
-              },
-              {
-                path: ':id',
-                element: withSuspense(ProductDetail),
-                name: 'productDetail',
-                hideInMenu: true,
-              },
-              {
-                path: ':id/edit',
-                element: withSuspense(ProductForm),
-                name: 'productEdit',
-                hideInMenu: true,
-              },
+            {
+              path: '',
+              element: withSuspense(ProductList),
+              name: 'productList',
+              index: true,
+            },
+            {
+              path: 'create',
+              element: withSuspense(ProductForm),
+              name: 'productCreate',
+              hideInMenu: true,
+              index: false,
+            },
+            {
+              path: ':id',
+              element: withSuspense(ProductDetail),
+              name: 'productDetail',
+              hideInMenu: true,
+              index: false,
+            },
+            {
+              path: ':id/edit',
+              element: withSuspense(ProductForm),
+              name: 'productEdit',
+              hideInMenu: true,
+              index: false,
+            },
             ],
           },
         ]}
@@ -786,19 +794,25 @@ import { PermissionGuard } from 'ez-console';
 
 ### Authentication Hook
 
+`useAuth()` returns `{ user, loading, login, oauthLogin, logout, updateUser, error }`. The `user` field is `undefined` during initial loading, then becomes the `API.User` object or `null` (not logged in).
+
 ```typescript
 import { useAuth } from 'ez-console';
 
 const MyComponent: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
 
-  if (!isAuthenticated) {
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
     return <div>Please login</div>;
   }
 
   return (
     <div>
-      <p>Welcome, {user?.full_name}!</p>
+      <p>Welcome, {user.full_name}!</p>
       <Button onClick={logout}>Logout</Button>
     </div>
   );
@@ -807,19 +821,24 @@ const MyComponent: React.FC = () => {
 
 ### Permission Hook
 
+`usePermission()` takes no arguments and returns `{ hasPermission, hasAllPermissions, hasAnyPermission, hasGlobalPermission, isAdmin, loading }`.
+
 ```typescript
 import { usePermission } from 'ez-console';
 
 const MyComponent: React.FC = () => {
-  const hasCreatePermission = usePermission('product:create');
-  const hasDeletePermission = usePermission('product:delete');
+  const { hasPermission, isAdmin, loading } = usePermission();
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <div>
-      {hasCreatePermission && (
+      {hasPermission('product:create') && (
         <Button onClick={handleCreate}>Create</Button>
       )}
-      {hasDeletePermission && (
+      {hasPermission('product:delete') && (
         <Button onClick={handleDelete}>Delete</Button>
       )}
     </div>
@@ -831,20 +850,22 @@ const MyComponent: React.FC = () => {
 
 ### Adding Translations
 
+The exported `i18n` is the standard [i18next](https://www.i18next.com/) instance. Use `addResource` for a single key and `addResourceBundle` for bulk additions.
+
 ```typescript
-// In App.tsx or component
+// In App.tsx (top-level, before component render)
 import { i18n } from 'ez-console';
 
 // Add single translation
 i18n.addResource('en', 'translation', 'product.name', 'Product Name');
 i18n.addResource('zh-CN', 'translation', 'product.name', '产品名称');
 
-// Add multiple translations
-i18n.addResources('en', 'translation', {
+// Add multiple translations at once
+i18n.addResourceBundle('en', 'translation', {
   'product.name': 'Product Name',
   'product.price': 'Price',
   'product.stock': 'Stock',
-});
+}, true, true);
 ```
 
 ### Using Translations

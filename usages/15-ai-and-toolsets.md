@@ -191,7 +191,8 @@ func useAIModel(ctx context.Context, svc *service.Service) error {
     }
 
     // Non-streaming completion with toolsets (auto-injects authorized toolsets)
-    responses, err = svc.CreateChatCompletion(ctx, organizationID, "", messages)
+    // Pass nil for skillLoader when skills are not needed
+    responses, err = svc.CreateChatCompletion(ctx, organizationID, "", messages, nil)
     if err != nil {
         return err
     }
@@ -261,7 +262,8 @@ func streamAIChat(ctx context.Context, svc *service.Service) error {
         {Role: model.AIChatMessageRoleUser, Content: "Tell me a story"},
     }
 
-    stream, err := svc.CreateChatCompletionStream(ctx, organizationID, "", messages)
+    // Pass nil for skillLoader when skills are not needed
+    stream, err := svc.CreateChatCompletionStream(ctx, organizationID, "", messages, nil)
     if err != nil {
         return err
     }
@@ -566,13 +568,13 @@ Model Context Protocol (MCP) toolset for connecting to MCP-compatible servers.
 
 #### 3. Skill Loader Toolset (Runtime)
 
-An internal toolset injected at runtime when skills are loaded via domains or skill IDs. Not configurable from the admin UI — the production chat handler creates it when `LoadSkillsMetadataForChat` returns non-empty text for `domains` / `skill_ids` on the request.
+An internal toolset injected at runtime when skills are loaded via domains or skill IDs. Not configurable from the admin UI — the production chat handler calls **`SkillService.CreateSkillLoader`** which returns an **`*ai.SkillLoader`**; the skill loader's metadata and `get_skill_content` tool are wired into the chat automatically by `CreateChatCompletionStream` / `CreateChatCompletion`.
 
 **Available Tools:**
 
 - `get_skill_content`: Read the content of a skill by ID, optionally specifying a sub-path. Exposed to the model as **`skill_loader_get_skill_content`** (map key `skill_loader` + tool name).
 
-Production code may pass **`SkillLoaderOptions.OnSkillContentLoaded`** so a successful load updates session **`activated_skill_ids`** and the in-memory **`SkillActivationTracker`** when **`system_enable_skill_tool_binding`** is used. See **`usages/16-skills.md`** → *Skills and organization tools loading*.
+Production code sets **`skillLoader.OnContentLoaded`** so a successful load updates session **`activated_skill_ids`** (via `AppendSessionActivatedSkill`) when **`system_enable_skill_tool_binding`** is used. See **`usages/16-skills.md`** → *Skills and organization tools loading*.
 
 ### Default (preset) toolsets and skills
 
@@ -645,7 +647,8 @@ func useAIWithToolsets(ctx context.Context, svc *service.Service) error {
     }
 
     // Option A: Use CreateChatCompletion which auto-injects authorized toolsets
-    responses, err := svc.CreateChatCompletion(ctx, organizationID, "", messages,
+    // Pass nil for skillLoader when skills are not needed
+    responses, err := svc.CreateChatCompletion(ctx, organizationID, "", messages, nil,
         ai.WithChatMaxIterations(10),
     )
     if err != nil {
@@ -1052,13 +1055,13 @@ The frontend allows users to select skill domains or specific skills when chatti
 
 ### Progressive Skill Loading
 
-When the chat API receives `domains` or `skill_ids` and **`LoadSkillsMetadataForChat`** returns non-empty text, the backend uses **progressive loading** instead of dumping all skill content into the context:
+When the chat API receives `domains` or `skill_ids`, the backend calls **`SkillService.CreateSkillLoader(ctx, organizationID, domains, skillIDs, activatedSkillIDs)`** which returns an **`*ai.SkillLoader`**. If the loader has skills, the backend uses **progressive loading** instead of dumping all skill content into the context:
 
-1. A concise **metadata table** (ID, name, description, domain) is prepended as a **system** message.
-2. A **`SkillLoaderToolSet`** is merged into the chat tool map under key **`skill_loader`**, exposing **`get_skill_content`** (API name **`skill_loader_get_skill_content`**).
+1. A concise **metadata table** (ID, name, description, domain) is prepended as a **system** message (generated internally by `SkillLoader.GetMetadata()`).
+2. A `get_skill_content` tool is registered under key **`skill_loader`**, exposed to the model as **`skill_loader_get_skill_content`**.
 3. The model loads file bodies **on demand**, keeping the initial prompt small.
 
-**Organization tools vs skills:** For **streaming** completions, **`AIChatService.CreateChatCompletionStream`** builds organization toolsets through an internal factory (`GetAuthorizedToolSetsForChat` + **`SkillChatBindingMode`**). If **`system_enable_skill_tool_binding`** is on and this turn includes skill metadata, organization tools stay **empty** until **`get_skill_content`** succeeds at least once; bindings are then applied only for **activated** skill IDs stored on **`AIChatSession.activated_skill_ids`**. If the same chat request **does not** inject skill metadata, binding being on does **not** hide organization tools (full authorized set). Tool definitions are **refreshed between LLM iterations** when binding + metadata apply so newly activated skills take effect on the next model call.
+**Organization tools vs skills:** For both streaming and non-streaming completions, **`CreateChatCompletionStream`** / **`CreateChatCompletion`** accept a `skillLoader *ai.SkillLoader` parameter. When `skillLoader` is non-nil and has skills, and **`system_enable_skill_tool_binding`** is on, organization tools stay **empty** until **`get_skill_content`** succeeds at least once; bindings are then applied only for **activated** skill IDs stored on **`AIChatSession.activated_skill_ids`**. If `skillLoader` is nil or has no skills, binding being on does **not** hide organization tools (full authorized set). Tool definitions are **refreshed between LLM iterations** when binding + metadata apply so newly activated skills take effect on the next model call.
 
 **Summarization:** Auto-summary clears **`activated_skill_ids`** and redacts **`get_skill_content`** tool results in the summarizer prompt so large skill bodies are not folded into the summary verbatim.
 
@@ -1691,7 +1694,7 @@ registerPageAI({
 
 ### Example 1: AI Chat with Skills and Tool Calling
 
-This example is **simplified**: it uses **`NewSkillLoaderToolSet(..., nil)`** (no activation hook) and **`CreateChatCompletionStream(..., nil, ...)`** (no **`SkillChatStreamToolParams`**), so **skill–tool binding** and session **`activated_skill_ids`** behave like production **`StreamChat`** only after you mirror **`pkg/api/ai/ai_chat_controller.go`**. See **`usages/16-skills.md`**.
+This example is **simplified**: it passes `nil` for `skillLoader.OnContentLoaded` and does not wire `AppendSessionActivatedSkill`, so **skill–tool binding** and session **`activated_skill_ids`** behave like production **`StreamChat`** only after you mirror **`pkg/api/ai/ai_chat_controller.go`**. See **`usages/16-skills.md`**.
 
 ```go
 func HandleChat(svc *service.Service) gin.HandlerFunc {
@@ -1717,7 +1720,15 @@ func HandleChat(svc *service.Service) gin.HandlerFunc {
             {Role: model.AIChatMessageRoleUser, Content: req.Message},
         }
 
-        // Load skill metadata and create skill loader toolset
+        // Create skill loader (returns nil if no skills match the domains/IDs)
+        skillLoader, _ := svc.SkillService.CreateSkillLoader(ctx, organizationID,
+            req.Domains, req.SkillIDs, session.ActivatedSkillIDs)
+
+        // In production, wire OnContentLoaded to persist activated skills:
+        // skillLoader.OnContentLoaded = func(ctx context.Context, skillID string) {
+        //     svc.AppendSessionActivatedSkill(ctx, organizationID, userID.(string), session.ResourceID, skillID)
+        // }
+
         options := []ai.WithChatOptions{
             ai.WithChatMaxIterations(10),
             ai.WithChatOnMessageAdded(func(ctx context.Context, msg ai.ChatMessage) {
@@ -1726,22 +1737,8 @@ func HandleChat(svc *service.Service) gin.HandlerFunc {
             }),
         }
 
-        if len(req.Domains) > 0 || len(req.SkillIDs) > 0 {
-            metadata, skillIDs, _ := svc.SkillService.LoadSkillsMetadataForChat(ctx,
-                req.Domains, req.SkillIDs)
-            if metadata != "" {
-                messages = append([]ai.ChatMessage{{
-                    Role: model.AIChatMessageRoleSystem, Content: metadata,
-                }}, messages...)
-                loaderTS := service.NewSkillLoaderToolSet(ctx, svc.SkillService, skillIDs, nil)
-                options = append(options, ai.WithChatToolSetsFactory(
-                    toolset.NewStaticToolSetsFactory(toolset.ToolSets{"skill_loader": loaderTS}),
-                ))
-            }
-        }
-
-        // Stream response (nil = no progressive skill binding params; production chat passes SkillChatStreamToolParams when using metadata + activation)
-        stream, err := svc.CreateChatCompletionStream(ctx, organizationID, "", messages, nil, options...)
+        // Stream response; skillLoader handles metadata injection and get_skill_content toolset internally
+        stream, err := svc.CreateChatCompletionStream(ctx, organizationID, "", messages, skillLoader, options...)
         if err != nil {
             ctx.JSON(500, gin.H{"error": err.Error()})
             return
@@ -1788,7 +1785,7 @@ func ProcessAITask(ctx context.Context, svc *service.Service, orgID string) erro
         }),
     }
 
-    responses, err := svc.CreateChatCompletion(ctx, orgID, "", messages, options...)
+    responses, err := svc.CreateChatCompletion(ctx, orgID, "", messages, nil, options...)
     if err != nil {
         return err
     }

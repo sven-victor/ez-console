@@ -163,10 +163,11 @@ make clean-openapi clean-openapi2ts openapi2ts
 
 Implementation reference (streaming chat path):
 
-- `pkg/api/ai/ai_chat_controller.go` — `StreamChat`: when to inject metadata, `SkillLoaderToolSet`, `SkillChatStreamToolParams`, `OnSummary` clearing `activated_skill_ids`.
-- `pkg/service/ai_chat_service.go` — `CreateChatCompletionStream`: `orgToolSetsFactory`, `RefreshToolSetsEachIteration`, `skillParams *SkillChatStreamToolParams`.
-- `pkg/service/toolset_service.go` — `GetAuthorizedToolSetsForChat`, `SkillChatBindingMode`.
-- `pkg/service/skill_loader_toolset.go` — `NewSkillLoaderToolSet`, `SkillLoaderOptions.OnSkillContentLoaded`.
+- `pkg/api/ai/ai_chat_controller.go` — `StreamChat`: calls `SkillService.CreateSkillLoader`, wires `skillLoader.OnContentLoaded` to persist activated skills, passes `skillLoader` to `CreateChatCompletionStream`, clears activation on `OnSummary`.
+- `pkg/service/skill_service.go` — `CreateSkillLoader(ctx, organizationID, domains, skillIDs, activatedSkillIDs)`: loads skills and returns `*ai.SkillLoader`.
+- `pkg/service/ai_chat_service.go` — `CreateChatCompletionStream(ctx, organizationID, modelID, messages, skillLoader, options...)`: accepts `skillLoader *ai.SkillLoader`; internally wires `RefreshToolSetsEachIteration` when skill–tool binding is enabled.
+- `pkg/service/toolset_service.go` — `GetAuthorizedToolSets`, `SkillChatBindingMode`.
+- `pkg/clients/ai/skill_driven_toolset.go` — `SkillLoader`, `SkillDrivenToolset`: handles progressive tool visibility based on loaded skill IDs.
 - `pkg/model/ai_chat.go` — `AIChatSession.ActivatedSkillIDs` (`JSONStringSlice`).
 - `pkg/clients/ai/classic_client.go` — refreshes merged tool sets before each LLM iteration when the option is set.
 - `pkg/clients/ai/skill_content_redact.go` — redacts `skill_loader_get_skill_content` tool results for summarization.
@@ -174,20 +175,20 @@ Implementation reference (streaming chat path):
 There are **two tool layers** in chat:
 
 1. **Organization toolsets** (MCP, utils, custom toolsets, …): whatever the user’s roles allow in the current org, subject to skill–tool binding rules below.
-2. **Skill loader** (map key `skill_loader`): registered only when the chat request results in non-empty skill **metadata** (`domains` / `skill_ids` → `LoadSkillsMetadataForChat` produces text). The model sees tools as **`skill_loader_get_skill_content`** (namespace prefix + tool name).
+2. **Skill loader** (map key `skill_loader`): registered only when `CreateSkillLoader` returns a loader with skills. The model sees tools as **`skill_loader_get_skill_content`** (namespace prefix + tool name).
 
 ### Skills and organization tools loading
 
 **When the request does not load skills** (no `domains` and `skill_ids`, or metadata resolves empty):
 
 - **`skill_loader` is not** attached.
-- **`CreateChatCompletionStream`** is called with `skillParams == nil`.
-- **Organization tools**: always the **full** RBAC-authorized set for the org (`GetAuthorizedToolSetsForChat` with `SkillChatBindingDisabled` if binding is off, or `SkillChatBindingNoMetadata` if binding is on). **Turning on `system_enable_skill_tool_binding` does not restrict tools** unless the same request also injects skill metadata.
+- **`CreateChatCompletionStream`** is called with `skillLoader == nil`.
+- **Organization tools**: always the **full** RBAC-authorized set for the org. **Turning on `system_enable_skill_tool_binding` does not restrict tools** unless the same request also provides a non-nil skill loader with skills.
 
-**When the request loads skills** (non-empty metadata system message + `SkillLoaderToolSet`):
+**When the request loads skills** (non-nil `skillLoader` with skills):
 
-- **`SkillChatStreamToolParams`** is set with `SkillMetadataActive: true` and a **`SkillActivationTracker`** seeded from **`session.activated_skill_ids`** (persisted JSON array on `t_ai_chat_sessions`).
-- On each successful **`get_skill_content`** call, **`OnSkillContentLoaded`** runs: **`AppendSessionActivatedSkill`** (DB) and **`activation.Add`** (in-memory). Organization tool visibility can change **before the next LLM call** because the stream uses an **uncached** org tool factory and **`RefreshToolSetsEachIteration`** when binding is on and metadata is active.
+- The `*ai.SkillLoader` is created via **`SkillService.CreateSkillLoader(ctx, organizationID, domains, skillIDs, session.ActivatedSkillIDs)`**, which loads matching skills and seeds the loader with previously activated skill IDs.
+- Production code wires **`skillLoader.OnContentLoaded`** to call **`AppendSessionActivatedSkill`** (DB persist). Organization tool visibility can change **before the next LLM call** because the stream uses **`RefreshToolSetsEachIteration`** when binding is on and the skill loader has skills.
 
 **`system_enable_skill_tool_binding` and organization toolsets**
 
@@ -201,7 +202,7 @@ There are **two tool layers** in chat:
 
 **Summarization (token-driven auto-summary in the stream client)**
 
-- **`OnSummary`**: clears **`SkillActivationTracker`** and **`ClearSessionActivatedSkills`** (wipes `activated_skill_ids` in DB).
+- **`OnSummary`**: calls **`skillLoader.Clear()`** and **`ClearSessionActivatedSkills`** (wipes `activated_skill_ids` in DB).
 - Summarizer input uses **`RedactGetSkillContentToolResultsForSummary`**: large **`get_skill_content`** tool results are replaced with a short placeholder so summaries stay small. The model must call **`get_skill_content`** again after a summary if it needs file bodies.
 
 ### Chat request
@@ -211,10 +212,10 @@ When sending a message (e.g. `POST /api/ai/chat/sessions/:sessionId`), the reque
 - **domains** (optional): Slice of domain names. Loaded skills are those with `domain = 'core'` or `domain` in this list.
 - **skill_ids** (optional): Slice of skill resource IDs to include in addition to domain-based skills.
 
-If either `domains` or `skill_ids` is non-empty **and** `LoadSkillsMetadataForChat` returns non-empty text:
+If either `domains` or `skill_ids` is non-empty and `CreateSkillLoader` returns a loader with skills:
 
-1. **System context**: The backend appends the metadata (id, name, description, domain) and instructs the model to use **`get_skill_content`** to load bodies on demand.
-2. **Toolset**: A **`SkillLoaderToolSet`** is registered under key **`skill_loader`**, exposing **`get_skill_content(skill_id, path?)`**. Omit **`path`** for combined SKILL.md + other `.md` content.
+1. **System context**: The backend prepends the metadata (id, name, description, domain) as a system message (generated internally by `SkillLoader.GetMetadata()`) and instructs the model to use **`get_skill_content`** to load bodies on demand.
+2. **Toolset**: A `get_skill_content` tool is registered under key **`skill_loader`**, exposing **`get_skill_content(skill_id, path?)`**. Omit **`path`** for combined SKILL.md + other `.md` content.
 
 The model can load skill files only when needed, keeping initial context small.
 

@@ -186,7 +186,7 @@ GetServiceAccountByID(ctx context.Context, id string) (*model.ServiceAccount, er
 UpdateServiceAccount(ctx context.Context, id string, serviceAccount *model.ServiceAccount) error
 DeleteServiceAccount(ctx context.Context, id string) error
 UpdateServiceAccountStatus(ctx context.Context, id, status string) error
-GetServiceAccountList(ctx context.Context, page, pageSize int, search string) ([]model.ServiceAccount, int64, error)
+GetServiceAccountList(ctx context.Context, page, pageSize int, search string, organizationID *string) ([]model.ServiceAccount, int64, error)
 GetServiceAccountAccessKeys(ctx context.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error)
 CreateServiceAccountAccessKey(ctx context.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error)
 DeleteServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID string) error
@@ -205,6 +205,11 @@ SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, su
 ```go
 GetLocation(ctx context.Context, ip string, language string) (string, error)
 MustGetLocation(ctx context.Context, ip string, language string) string
+```
+
+#### Task Service
+```go
+CreateTask(ctx context.Context, taskType model.TaskType, opts ...service.CreateTaskOption) (*model.Task, error)
 ```
 
 ### Using server.Service in Controllers

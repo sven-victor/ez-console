@@ -391,19 +391,20 @@ import { PermissionGuard } from 'ez-console';
 
 ### Permission Hook
 
+`usePermission()` takes no arguments and returns `{ hasPermission, hasAllPermissions, hasAnyPermission, hasGlobalPermission, isAdmin, loading }`.
+
 ```typescript
 import { usePermission } from 'ez-console';
 
 const ProductList: React.FC = () => {
-  const canCreate = usePermission('product:create');
-  const canDelete = usePermission('product:delete');
+  const { hasPermission } = usePermission();
   
   return (
     <div>
-      {canCreate && (
+      {hasPermission('product:create') && (
         <Button onClick={handleCreate}>Create</Button>
       )}
-      {canDelete && (
+      {hasPermission('product:delete') && (
         <Button onClick={handleDelete}>Delete</Button>
       )}
     </div>
@@ -413,20 +414,26 @@ const ProductList: React.FC = () => {
 
 ### Auth Context
 
+`useAuth()` returns `{ user, loading, login, oauthLogin, logout, updateUser, error }`. Check `user` (not `isAuthenticated`) to determine login status.
+
 ```typescript
 import { useAuth } from 'ez-console';
 
 const UserProfile: React.FC = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
   
-  if (!isAuthenticated) {
-    return <Redirect to="/login" />;
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" />;
   }
   
   return (
     <div>
-      <h1>Welcome, {user?.full_name}!</h1>
-      <p>Email: {user?.email}</p>
+      <h1>Welcome, {user.full_name}!</h1>
+      <p>Email: {user.email}</p>
       <Button onClick={logout}>Logout</Button>
     </div>
   );

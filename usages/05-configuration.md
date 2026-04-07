@@ -14,7 +14,7 @@ EZ-Console supports three configuration methods (in order of precedence):
 
 ### Basic Configuration File
 
-Create `config.yml` in your project root:
+Create `config.yaml` (or `config.yml`) in your project root:
 
 ```yaml
 # Server configuration
@@ -26,20 +26,21 @@ server:
   write_timeout: 10s
   shutdown_timeout: 10s
   file_upload_path: "./uploads"
+  skills_path: "./skills"  # Optional: path for skill files (defaults to file_upload_path + "/skills")
   max_upload_size: 10485760  # 10MB in bytes
   geoip_db_path: "./dist/GeoLite2-City.mmdb"  # Optional
 
 # Database configuration
 database:
-  driver: "sqlite"  # sqlite, mysql, or postgresql
+  driver: "sqlite"  # sqlite, mysql, or clickhouse
   path: "ez-console.db"  # For SQLite only
   table_prefix: "t_"
   slow_threshold: "3s"
 
-# JWT configuration
+# JWT configuration (optional — auto-generated if not provided)
 jwt:
-  secret: "your-jwt-secret-key"  # Auto-generated if not provided
-  expiration: "24h"
+  algorithm: "ES256"                    # Signing algorithm (e.g. ES256, RS256)
+  private_key: "your-private-key-pem"   # PEM-encoded private key
 
 # Cache configuration
 cache:
@@ -83,19 +84,19 @@ database:
   slow_threshold: "3s"
 ```
 
-#### PostgreSQL
+#### ClickHouse
 
 ```yaml
 database:
-  driver: "postgres"
+  driver: "clickhouse"
   host: "localhost"
-  port: 5432
-  username: "postgres"
+  port: 9000
+  username: "default"
   password: "your-password"
   schema: "ez_console"
-  max_open_connections: 100
-  max_idle_connections: 10
-  max_connection_life_time: "30s"
+  read_timeout: "20s"
+  dial_timeout: "10s"
+  max_execution_time: 60
   table_prefix: "t_"
   slow_threshold: "3s"
 ```
@@ -105,17 +106,27 @@ database:
 ```yaml
 oauth:
   enabled: true
+  auto_create_user: false  # Automatically create users on first OAuth login
   providers:
     - name: "google"
       display_name: "Google"
+      enabled: true
       client_id: "your-client-id"
       client_secret: "your-client-secret"
       icon_url: "https://example.com/google-icon.png"
+      scopes: "openid,email,profile"
       token_url: "https://oauth2.googleapis.com/token"
       auth_url: "https://accounts.google.com/o/oauth2/v2/auth"
       user_info_url: "https://www.googleapis.com/oauth2/v2/userinfo"
       redirect_url: "http://localhost:5173/login?provider=google"
-      role_field: "role"  # Field in user info that contains role
+      email_field: "email"           # Field in user info for email
+      username_field: "email"        # Field in user info for username
+      full_name_field: "name"        # Field in user info for full name
+      avatar_field: "picture"        # Field in user info for avatar URL
+      role_field: "role"             # Field in user info for role
+      role_mapping_mode: ""          # Role mapping mode (optional)
+      wellknown_endpoint: ""         # OpenID Connect well-known endpoint (optional, auto-configures URLs)
+      auto_create_user: false        # Per-provider override
       
     - name: "azure_ad"
       display_name: "Azure AD"
@@ -189,13 +200,14 @@ tracing:
 --server.write_timeout=DURATION # Write timeout (default: "10s")
 --server.shutdown_timeout=DURATION # Shutdown timeout (default: "10s")
 --server.file_upload_path=PATH # File upload path (default: "./uploads")
+--server.skills_path=PATH      # Skills file path (default: "./skills")
 --server.geoip_db_path=PATH    # GeoIP database path
 ```
 
 #### Database Options
 
 ```bash
---database.driver=STRING           # Database driver: sqlite|mysql|postgres (default: "sqlite")
+--database.driver=STRING           # Database driver: sqlite|mysql|clickhouse (default: "sqlite")
 --database.path=PATH               # Database path (SQLite only, default: "ez-console.db")
 --database.host=STRING             # Database host (default: "localhost")
 --database.port=INT                # Database port
@@ -306,8 +318,8 @@ JWT tokens are used for authentication:
 
 ```yaml
 jwt:
-  secret: "your-secret-key"  # Use a strong random string
-  expiration: "24h"          # Token lifetime
+  algorithm: "ES256"                    # Signing algorithm (e.g. ES256, RS256)
+  private_key: "your-private-key-pem"   # PEM-encoded private key; auto-generated if omitted
 ```
 
 ### HTTPS Configuration
