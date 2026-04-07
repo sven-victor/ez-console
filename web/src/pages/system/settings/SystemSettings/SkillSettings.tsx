@@ -638,7 +638,7 @@ const SkillSettings: React.FC = () => {
           confirmLoading={submitLoading}
           width={modalWidth}
         >
-          <Form form={form} layout="vertical">
+          <Form form={form} layout="vertical" autoComplete='off'>
             <Form.Item name="name" label={t('settings.skills.name', { defaultValue: 'Name' })} rules={[{ required: true }]}>
               <Input />
             </Form.Item>

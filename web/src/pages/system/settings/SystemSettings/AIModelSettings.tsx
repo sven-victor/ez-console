@@ -445,6 +445,7 @@ const AIModelSettings: React.FC = () => {
           form={form}
           layout="vertical"
           onFinish={handleSubmit}
+          autoComplete='off'
         >
           <Form.Item
             name="name"

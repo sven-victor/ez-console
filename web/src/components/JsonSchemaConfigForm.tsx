@@ -464,6 +464,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       disabled={disabled}
       showErrorList={false}
       liveValidate="onChange"
+      autoComplete='off'
       fields={{
         objectEditor: ObjectField,
       }}
