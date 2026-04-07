@@ -29,7 +29,9 @@ import (
 )
 
 // ToolSetService handles toolset management
-type ToolSetService struct{}
+type ToolSetService struct {
+	skillService *SkillService
+}
 
 var (
 	toolSetServiceOnce sync.Once
@@ -39,7 +41,9 @@ var (
 // NewToolSetService creates a new toolset service
 func NewToolSetService() *ToolSetService {
 	toolSetServiceOnce.Do(func() {
-		toolSetService = &ToolSetService{}
+		toolSetService = &ToolSetService{
+			skillService: NewSkillService(),
+		}
 	})
 	return toolSetService
 }
@@ -50,6 +54,10 @@ func (s *ToolSetService) CreateToolSet(ctx context.Context, req *model.ToolSet) 
 		return nil, fmt.Errorf("failed to create toolset: %w", err)
 	}
 
+	if err := s.ensureToolsetCompanionSkill(ctx, req); err != nil {
+		_ = s.DeleteToolSet(ctx, req.OrganizationID, req.ResourceID)
+		return nil, fmt.Errorf("ensure toolset companion skill: %w", err)
+	}
 	return req, nil
 }
 
@@ -78,8 +86,14 @@ func (s *ToolSetService) UpdateToolSet(ctx context.Context, organizationID, id s
 	if err := conn.Model(&model.ToolSet{}).Where("resource_id = ?", id).Select("config", "name", "description", "type", "status").Updates(req).Error; err != nil {
 		return nil, fmt.Errorf("failed to update toolset: %w", err)
 	}
-
-	return req, nil
+	updated, err := s.GetToolSet(ctx, organizationID, id)
+	if err != nil {
+		return nil, err
+	}
+	if err := s.ensureToolsetCompanionSkill(ctx, updated); err != nil {
+		return nil, fmt.Errorf("refresh toolset companion skill: %w", err)
+	}
+	return updated, nil
 }
 
 // updatePresetToolSet only updates config (e.g. disabled_tools) and status; name/type/description stay managed by sync.
@@ -132,6 +146,9 @@ func (s *ToolSetService) UpdateToolSetStatus(ctx context.Context, organizationID
 
 // DeleteToolSet deletes an toolset
 func (s *ToolSetService) DeleteToolSet(ctx context.Context, organizationID, id string) error {
+	if err := s.deleteToolsetCompanionSkillIfAny(ctx, organizationID, id); err != nil {
+		return err
+	}
 	var toolset model.ToolSet
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
 		return fmt.Errorf("failed to find toolset: %w", err)

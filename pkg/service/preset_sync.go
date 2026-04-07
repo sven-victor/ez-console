@@ -53,6 +53,9 @@ func (s *Service) SyncPresetResourcesForOrganization(ctx context.Context, organi
 			return fmt.Errorf("sync preset bindings %q for org %s: %w", skillSpec.PresetKey, organizationID, err)
 		}
 	}
+	if err := s.SyncToolsetCompanionSkillsForOrganization(ctx, organizationID); err != nil {
+		return fmt.Errorf("sync toolset companion skills for org %s: %w", organizationID, err)
+	}
 	level.Debug(logger).Log("msg", "Preset resources synced for organization", "organization_id", organizationID)
 	return nil
 }

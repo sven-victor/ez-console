@@ -252,9 +252,17 @@ func (s *SkillService) uploadSkillZip(ctx context.Context, organizationID string
 // SkillService handles skill CRUD and file operations
 type SkillService struct{}
 
+var (
+	skillServiceOnce sync.Once
+	skillService     *SkillService
+)
+
 // NewSkillService creates a new SkillService
 func NewSkillService() *SkillService {
-	return &SkillService{}
+	skillServiceOnce.Do(func() {
+		skillService = &SkillService{}
+	})
+	return skillService
 }
 
 // ListDomains returns the list of skill domains: default (core) plus any registered via RegisterSkillsDomain.
@@ -599,6 +607,21 @@ func (s *SkillService) EnsurePresetSkillMarkdown(ctx context.Context, organizati
 	return afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644)
 }
 
+// SyncPresetSkillMainMarkdown overwrites SKILL.md for a skill (used for system-managed preset content such as toolset companion skills).
+func (s *SkillService) SyncPresetSkillMainMarkdown(ctx context.Context, organizationID, skillID, markdown string) error {
+	if organizationID == "" || skillID == "" {
+		return fmt.Errorf("organization id and skill id are required")
+	}
+	if markdown == "" {
+		return fmt.Errorf("markdown content is required")
+	}
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	if err != nil {
+		return err
+	}
+	return afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644)
+}
+
 // UpdateSkillStatus sets skill enabled/disabled (allowed for preset skills).
 func (s *SkillService) UpdateSkillStatus(ctx context.Context, organizationID, id string, status model.SkillStatus) error {
 	if organizationID == "" {
@@ -648,6 +671,30 @@ func (s *SkillService) Delete(ctx context.Context, organizationID, id string) er
 	}
 	if skill.IsPreset {
 		return ErrPresetSkillReadOnly
+	}
+	fs := s.getSkillsRootFs()
+	if err := fs.RemoveAll(skill.ResourceID); err != nil {
+		return fmt.Errorf("failed to remove skill directory: %w", err)
+	}
+	if err := db.Session(ctx).Where("skill_id = ? AND organization_id = ?", skill.ResourceID, skill.OrganizationID).
+		Unscoped().Delete(&model.SkillAIToolBinding{}).Error; err != nil {
+		return fmt.Errorf("failed to delete skill AI tool bindings: %w", err)
+	}
+	if err := db.Session(ctx).Delete(skill).Error; err != nil {
+		return fmt.Errorf("failed to delete skill: %w", err)
+	}
+	return nil
+}
+
+// ForceDeleteSkill removes the skill row, AI tool bindings, and skill directory regardless of IsPreset.
+// Used for system-managed skills whose lifecycle is tied to another resource (e.g. toolset companion skills).
+func (s *SkillService) ForceDeleteSkill(ctx context.Context, organizationID, id string) error {
+	if organizationID == "" {
+		return fmt.Errorf("organization id is required")
+	}
+	skill, err := s.GetByID(ctx, organizationID, id)
+	if err != nil {
+		return err
 	}
 	fs := s.getSkillsRootFs()
 	if err := fs.RemoveAll(skill.ResourceID); err != nil {
