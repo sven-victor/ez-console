@@ -49,7 +49,7 @@ var (
 )
 
 // defaultSkillDomains is the initial list of skill domains (returned by ListDomains).
-var defaultSkillDomains = []string{"core"}
+var defaultSkillDomains = []string{"core", "chat"}
 
 var (
 	registeredSkillDomains   []string

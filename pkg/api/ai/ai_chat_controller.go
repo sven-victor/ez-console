@@ -438,6 +438,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	roles, _ := ctx.Get("roles")
 
 	userIDStr := userID.(string)
+	req.Domains = append(req.Domains, "core", "chat")
 
 	skillLoader, err := c.service.SkillService.CreateSkillLoader(ctx, organizationID, req.Domains, req.SkillIDs, session.ActivatedSkillIDs)
 	if err != nil {
