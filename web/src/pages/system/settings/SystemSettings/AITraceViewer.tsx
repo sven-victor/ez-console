@@ -45,6 +45,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useRequest } from 'ahooks';
+import ReactJson from 'react-json-view'
 import api from '@/service/api';
 
 const { Text, Title } = Typography;
@@ -78,23 +79,23 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
   const { parsed, isJSON } = tryParseJSON(content);
   if (isJSON) {
     return (
-      <pre
-        style={{
-          background: 'var(--ant-color-bg-container)',
-          border: '1px solid var(--ant-color-border)',
-          borderRadius: 6,
-          padding: 12,
-          maxHeight,
-          overflow: 'auto',
-          fontSize: 12,
-          lineHeight: 1.5,
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-all',
-          margin: 0,
-        }}
-      >
-        {JSON.stringify(parsed, null, 2)}
-      </pre>
+      <>
+        <ReactJson
+          style={{
+
+            background: 'var(--ant-color-bg-container)',
+            border: '1px solid var(--ant-color-border)',
+            borderRadius: 6,
+            padding: 12,
+            maxHeight,
+            overflow: 'auto',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-all',
+            margin: 0,
+          }}
+          src={parsed}
+        />
+      </>
     );
   }
   return (
@@ -280,11 +281,11 @@ const AITraceViewer: React.FC = () => {
         message.success(
           enabled
             ? t('trace.enableSuccess', {
-                defaultValue: 'AI debug tracing enabled',
-              })
+              defaultValue: 'AI debug tracing enabled',
+            })
             : t('trace.disableSuccess', {
-                defaultValue: 'AI debug tracing disabled',
-              })
+              defaultValue: 'AI debug tracing disabled',
+            })
         );
         refreshStatus();
         if (!enabled) {
@@ -329,13 +330,13 @@ const AITraceViewer: React.FC = () => {
     (checked: boolean) => {
       const confirmMsg = checked
         ? t('trace.enableConfirm', {
-            defaultValue:
-              'Enable AI debug tracing? This will record detailed AI interaction data.',
-          })
+          defaultValue:
+            'Enable AI debug tracing? This will record detailed AI interaction data.',
+        })
         : t('trace.disableConfirm', {
-            defaultValue:
-              'Disable AI debug tracing? All stored trace data will be deleted.',
-          });
+          defaultValue:
+            'Disable AI debug tracing? All stored trace data will be deleted.',
+        });
 
       Modal.confirm({
         title: checked
@@ -455,11 +456,11 @@ const AITraceViewer: React.FC = () => {
             <Text>
               {debugEnabled
                 ? t('trace.debugEnabled', {
-                    defaultValue: 'AI Debug Enabled',
-                  })
+                  defaultValue: 'AI Debug Enabled',
+                })
                 : t('trace.debugDisabled', {
-                    defaultValue: 'AI Debug Disabled',
-                  })}
+                  defaultValue: 'AI Debug Disabled',
+                })}
             </Text>
             <Switch
               checked={debugEnabled}
