@@ -1,10 +1,10 @@
-import { r as p } from "./client.js";
-import f from "i18next";
-import { initReactI18next as v } from "react-i18next";
-import k from "i18next-browser-languagedetector";
+import { r as u } from "./client.js";
+import g from "i18next";
+import { initReactI18next as h } from "react-i18next";
+import f from "i18next-browser-languagedetector";
 const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const i = e instanceof Date ? e : new Date(e), r = i.getFullYear(), o = String(i.getMonth() + 1).padStart(2, "0"), s = String(i.getDate()).padStart(2, "0"), l = String(i.getHours()).padStart(2, "0"), a = String(i.getMinutes()).padStart(2, "0"), n = String(i.getSeconds()).padStart(2, "0");
-  return t.replace("YYYY", String(r)).replace("MM", o).replace("DD", s).replace("HH", l).replace("mm", a).replace("ss", n);
+  const i = e instanceof Date ? e : new Date(e), r = i.getFullYear(), o = String(i.getMonth() + 1).padStart(2, "0"), s = String(i.getDate()).padStart(2, "0"), n = String(i.getHours()).padStart(2, "0"), a = String(i.getMinutes()).padStart(2, "0"), l = String(i.getSeconds()).padStart(2, "0");
+  return t.replace("YYYY", String(r)).replace("MM", o).replace("DD", s).replace("HH", n).replace("mm", a).replace("ss", l);
 }, fe = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
@@ -13,24 +13,24 @@ const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
     let a = i.slice(1);
     if (a.length === 3 && (a = a[0] + a[0] + a[1] + a[1] + a[2] + a[2]), a.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const n = parseInt(a.slice(0, 2), 16), d = parseInt(a.slice(2, 4), 16), c = parseInt(a.slice(4, 6), 16);
-    if (isNaN(n) || isNaN(d) || isNaN(c))
+    const l = parseInt(a.slice(0, 2), 16), d = parseInt(a.slice(2, 4), 16), c = parseInt(a.slice(4, 6), 16);
+    if (isNaN(l) || isNaN(d) || isNaN(c))
       throw new Error("Invalid characters in HEX color value.");
-    return `rgba(${n}, ${d}, ${c}, ${t})`;
+    return `rgba(${l}, ${d}, ${c}, ${t})`;
   }
   const r = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = i.match(r);
   if (o) {
-    const a = parseInt(o[1], 10), n = parseInt(o[2], 10), d = parseInt(o[3], 10);
-    if (a < 0 || a > 255 || n < 0 || n > 255 || d < 0 || d > 255)
+    const a = parseInt(o[1], 10), l = parseInt(o[2], 10), d = parseInt(o[3], 10);
+    if (a < 0 || a > 255 || l < 0 || l > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${a}, ${n}, ${d}, ${t})`;
+    return `rgba(${a}, ${l}, ${d}, ${t})`;
   }
-  const s = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, l = i.match(s);
-  if (l) {
-    const a = parseInt(l[1], 10), n = parseInt(l[2], 10), d = parseInt(l[3], 10);
-    if (a < 0 || a > 255 || n < 0 || n > 255 || d < 0 || d > 255)
+  const s = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, n = i.match(s);
+  if (n) {
+    const a = parseInt(n[1], 10), l = parseInt(n[2], 10), d = parseInt(n[3], 10);
+    if (a < 0 || a > 255 || l < 0 || l > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${a}, ${n}, ${d}, ${t})`;
+    return `rgba(${a}, ${l}, ${d}, ${t})`;
   }
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
@@ -46,9 +46,23 @@ const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
 }, be = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((i, r) => r !== 0 && t.includes(i) ? i : i.charAt(0).toUpperCase() + i.slice(1)).join(" ");
+}, Ae = (e, t, i) => {
+  if (e === void 0 && t === void 0) return !0;
+  if (e === void 0 || t === void 0 || e.length !== t.length) return !1;
+  const r = new Array(t.length).fill(!1);
+  for (const o of e) {
+    let s = !1;
+    for (let n = 0; n < t.length; n++)
+      if (!r[n] && i(o, t[n])) {
+        r[n] = !0, s = !0;
+        break;
+      }
+    if (!s) return !1;
+  }
+  return !0;
 };
-async function b(e, t) {
-  return p("/api/files", {
+async function v(e, t) {
+  return u("/api/files", {
     method: "GET",
     params: {
       ...e
@@ -56,39 +70,39 @@ async function b(e, t) {
     ...t || {}
   });
 }
-async function A(e, t, i) {
+async function k(e, t, i) {
   const r = new FormData();
   return t && r.append("file", t), Object.keys(e).forEach((o) => {
     const s = e[o];
-    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((l) => r.append(o, l || "")) : r.append(o, JSON.stringify(s)) : r.append(o, s));
-  }), p("/api/files", {
+    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((n) => r.append(o, n || "")) : r.append(o, JSON.stringify(s)) : r.append(o, s));
+  }), u("/api/files", {
     method: "POST",
     data: r,
     requestType: "form",
     ...i || {}
   });
 }
-async function y(e, t) {
+async function b(e, t) {
   const { fileKey: i, ...r } = e;
-  return p(`/api/files/${i}`, {
+  return u(`/api/files/${i}`, {
     method: "GET",
     params: { ...r },
     ...t || {}
   });
 }
-async function S(e) {
-  return p("/api/statistics", {
+async function A(e) {
+  return u("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: y,
-  getStatistics: S,
-  listFiles: b,
-  uploadFile: A
-}, Symbol.toStringTag, { value: "Module" })), T = {
+  downloadFile: b,
+  getStatistics: A,
+  listFiles: v,
+  uploadFile: k
+}, Symbol.toStringTag, { value: "Module" })), S = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -217,7 +231,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, P = {
+}, y = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -342,7 +356,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, w = {
+}, T = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -414,7 +428,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, R = {
+}, P = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -806,6 +820,8 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     create: "Create Service Account",
     edit: "Edit Service Account",
     delete: "Delete Service Account",
+    actionTooltipEnable: "Enable this service account",
+    actionTooltipDisable: "Disable this service account",
     viewDetail: "View Service Account Details",
     deleteConfirm: "Are you sure you want to delete this service account?",
     loadError: "Failed to load service account list",
@@ -918,7 +934,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, D = {
+}, w = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1439,6 +1455,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledDelete: "Built-in toolsets cannot be deleted.",
       testSuccess: "Toolset connection test successful",
       testFailed: "Toolset connection test failed",
+      statusUpdateSuccess: "Status updated successfully",
+      statusUpdateFailed: "Failed to update status",
+      tooltipEnableToolSet: "Enable this toolset",
+      tooltipDisableToolSet: "Disable this toolset",
       deleteConfirm: "Are you sure you want to delete this toolset?",
       parameters: "Parameters",
       mcp: {
@@ -1482,7 +1502,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, z = {
+}, R = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1589,7 +1609,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Skills (optional)",
     skillDomain: "Skill domain"
   }
-}, C = {
+}, D = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1647,7 +1667,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   viewHistory: "View history",
   triggerNow: "Trigger now",
   executionHistory: "Execution History"
-}, E = {
+}, z = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1771,7 +1791,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, F = {
+}, C = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -1895,7 +1915,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, I = {
+}, E = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -2019,7 +2039,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, L = {
+}, F = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -2143,7 +2163,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, M = {
+}, I = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2267,7 +2287,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, U = {
+}, L = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2345,7 +2365,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, q = {
+}, M = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2762,6 +2782,8 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     create: "创建服务账户",
     edit: "编辑服务账户",
     delete: "删除服务账户",
+    actionTooltipEnable: "启用此服务账户",
+    actionTooltipDisable: "禁用此服务账户",
     viewDetail: "查看服务账户详情",
     deleteConfirm: "确定要删除这个服务账户吗？",
     loadError: "加载服务账户列表失败",
@@ -2870,7 +2892,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, _ = {
+}, U = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -3393,6 +3415,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledDelete: "内置工具集不能删除。",
       testSuccess: "工具集连接测试成功",
       testFailed: "工具集连接测试失败",
+      statusUpdateSuccess: "状态已更新",
+      statusUpdateFailed: "更新状态失败",
+      tooltipEnableToolSet: "启用此工具集",
+      tooltipDisableToolSet: "禁用此工具集",
       deleteConfirm: "确定要删除此工具集吗？",
       parameters: "参数",
       mcp: {
@@ -3436,7 +3462,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, N = {
+}, q = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3543,7 +3569,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, O = {
+}, _ = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3601,7 +3627,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   viewHistory: "查看历史",
   triggerNow: "立即触发",
   executionHistory: "执行历史"
-}, x = {
+}, N = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -3672,7 +3698,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, B = {
+}, O = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -4083,6 +4109,8 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     create: "Dienstkonto erstellen",
     edit: "Dienstkonto bearbeiten",
     delete: "Dienstkonto löschen",
+    actionTooltipEnable: "Dieses Dienstkonto aktivieren",
+    actionTooltipDisable: "Dieses Dienstkonto deaktivieren",
     viewDetail: "Details des Dienstkontos anzeigen",
     deleteConfirm: "Sind Sie sicher, dass Sie dieses Dienstkonto löschen möchten?",
     loadError: "Dienstkontenliste konnte nicht geladen werden",
@@ -4195,7 +4223,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, V = {
+}, x = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -4671,6 +4699,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledDelete: "Integrierte Toolsets können nicht gelöscht werden.",
       testSuccess: "Toolset-Verbindungstest erfolgreich",
       testFailed: "Toolset-Verbindungstest fehlgeschlagen",
+      statusUpdateSuccess: "Status erfolgreich aktualisiert",
+      statusUpdateFailed: "Status konnte nicht aktualisiert werden",
+      tooltipEnableToolSet: "Dieses Toolset aktivieren",
+      tooltipDisableToolSet: "Dieses Toolset deaktivieren",
       deleteConfirm: "Sind Sie sicher, dass Sie dieses Toolset löschen möchten?",
       parameters: "Parameter",
       mcp: {
@@ -4761,7 +4793,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, K = {
+}, B = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -4868,7 +4900,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Fähigkeiten (optional)",
     skillDomain: "Fähigkeitsbereich"
   }
-}, j = {
+}, V = {
   listTitle: "Aufgabenliste",
   detailTitle: "Aufgabendetails",
   typeLabel: "Typ",
@@ -4926,7 +4958,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   viewHistory: "Verlauf anzeigen",
   triggerNow: "Jetzt auslösen",
   executionHistory: "Ausführungsverlauf"
-}, G = {
+}, K = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -4997,7 +5029,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, W = {
+}, j = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -5408,6 +5440,8 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     create: "Crear cuenta de servicio",
     edit: "Editar cuenta de servicio",
     delete: "Eliminar cuenta de servicio",
+    actionTooltipEnable: "Habilitar esta cuenta de servicio",
+    actionTooltipDisable: "Deshabilitar esta cuenta de servicio",
     viewDetail: "Ver detalles de la cuenta de servicio",
     deleteConfirm: "¿Estás seguro de que quieres eliminar esta cuenta de servicio?",
     loadError: "Error al cargar la lista de cuentas de servicio",
@@ -5520,7 +5554,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, H = {
+}, G = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -5996,6 +6030,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledDelete: "Los conjuntos integrados no se pueden eliminar.",
       testSuccess: "Prueba de conexión del conjunto de herramientas exitosa",
       testFailed: "Prueba de conexión del conjunto de herramientas fallida",
+      statusUpdateSuccess: "Estado actualizado correctamente",
+      statusUpdateFailed: "No se pudo actualizar el estado",
+      tooltipEnableToolSet: "Habilitar este conjunto de herramientas",
+      tooltipDisableToolSet: "Deshabilitar este conjunto de herramientas",
       deleteConfirm: "¿Está seguro de que desea eliminar este conjunto de herramientas?",
       parameters: "Parámetros",
       mcp: {
@@ -6086,7 +6124,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, Z = {
+}, W = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -6193,7 +6231,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Habilidades (opcional)",
     skillDomain: "Dominio de habilidad"
   }
-}, J = {
+}, H = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -6251,7 +6289,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   viewHistory: "Ver historial",
   triggerNow: "Ejecutar ahora",
   executionHistory: "Historial de ejecuciones"
-}, Q = {
+}, Z = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -6322,7 +6360,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, Y = {
+}, J = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -6733,6 +6771,8 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     create: "Créer un compte de service",
     edit: "Modifier le compte de service",
     delete: "Supprimer le compte de service",
+    actionTooltipEnable: "Activer ce compte de service",
+    actionTooltipDisable: "Désactiver ce compte de service",
     viewDetail: "Voir les détails du compte de service",
     deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce compte de service ?",
     loadError: "Échec du chargement de la liste des comptes de service",
@@ -6845,7 +6885,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, $ = {
+}, Q = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -7321,6 +7361,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledDelete: "Les ensembles d'outils intégrés ne peuvent pas être supprimés.",
       testSuccess: "Test de connexion de l'ensemble d'outils réussi",
       testFailed: "Test de connexion de l'ensemble d'outils échoué",
+      statusUpdateSuccess: "Statut mis à jour avec succès",
+      statusUpdateFailed: "Échec de la mise à jour du statut",
+      tooltipEnableToolSet: "Activer cet ensemble d'outils",
+      tooltipDisableToolSet: "Désactiver cet ensemble d'outils",
       deleteConfirm: "Êtes-vous sûr de vouloir supprimer cet ensemble d'outils ?",
       parameters: "Paramètres",
       mcp: {
@@ -7411,7 +7455,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, X = {
+}, Y = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -7518,7 +7562,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Compétences (optionnel)",
     skillDomain: "Domaine de compétence"
   }
-}, ee = {
+}, $ = {
   listTitle: "Liste des tâches",
   detailTitle: "Détail de la tâche",
   typeLabel: "Type",
@@ -7576,7 +7620,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   viewHistory: "Voir l'historique",
   triggerNow: "Déclencher maintenant",
   executionHistory: "Historique d'exécution"
-}, te = {
+}, X = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -7647,7 +7691,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, ae = {
+}, ee = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -8058,6 +8102,8 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     create: "إنشاء حساب خدمة",
     edit: "تعديل حساب الخدمة",
     delete: "حذف حساب الخدمة",
+    actionTooltipEnable: "تفعيل حساب الخدمة هذا",
+    actionTooltipDisable: "تعطيل حساب الخدمة هذا",
     viewDetail: "عرض تفاصيل حساب الخدمة",
     deleteConfirm: "هل أنت متأكد أنك تريد حذف حساب الخدمة هذا؟",
     loadError: "فشل تحميل قائمة حسابات الخدمة",
@@ -8170,7 +8216,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, ie = {
+}, te = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -8646,6 +8692,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledDelete: "لا يمكن حذف مجموعات الأدوات المدمجة.",
       testSuccess: "نجح اختبار اتصال مجموعة الأدوات",
       testFailed: "فشل اختبار اتصال مجموعة الأدوات",
+      statusUpdateSuccess: "تم تحديث الحالة بنجاح",
+      statusUpdateFailed: "فشل تحديث الحالة",
+      tooltipEnableToolSet: "تفعيل مجموعة الأدوات هذه",
+      tooltipDisableToolSet: "تعطيل مجموعة الأدوات هذه",
       deleteConfirm: "هل أنت متأكد من أنك تريد حذف مجموعة الأدوات هذه؟",
       parameters: "المعلمات",
       mcp: {
@@ -8736,7 +8786,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, re = {
+}, ae = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -8843,7 +8893,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "المهارات (اختياري)",
     skillDomain: "مجال المهارة"
   }
-}, se = {
+}, ie = {
   listTitle: "قائمة المهام",
   detailTitle: "تفاصيل المهمة",
   typeLabel: "النوع",
@@ -8901,7 +8951,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   viewHistory: "عرض السجل",
   triggerNow: "شغّل الآن",
   executionHistory: "سجل التنفيذ"
-}, oe = {
+}, re = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -8972,7 +9022,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, ne = {
+}, se = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -9383,6 +9433,8 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     create: "Skapa tjänstekonto",
     edit: "Redigera tjänstekonto",
     delete: "Ta bort tjänstekonto",
+    actionTooltipEnable: "Aktivera detta tjänstekonto",
+    actionTooltipDisable: "Inaktivera detta tjänstekonto",
     viewDetail: "Visa detaljer för tjänstekonto",
     deleteConfirm: "Är du säker på att du vill ta bort det här tjänstekontot?",
     loadError: "Det gick inte att ladda listan över tjänstekonton",
@@ -9495,7 +9547,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policyhantering"
     }
   }
-}, le = {
+}, oe = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -9971,6 +10023,10 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledDelete: "Inbyggda verktygsset kan inte tas bort.",
       testSuccess: "Verktygsset-anslutningstest lyckades",
       testFailed: "Verktygsset-anslutningstest misslyckades",
+      statusUpdateSuccess: "Status uppdaterad",
+      statusUpdateFailed: "Det gick inte att uppdatera status",
+      tooltipEnableToolSet: "Aktivera detta verktygsset",
+      tooltipDisableToolSet: "Inaktivera detta verktygsset",
       deleteConfirm: "Är du säker på att du vill ta bort detta verktygsset?",
       parameters: "Parametrar",
       mcp: {
@@ -10061,7 +10117,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, de = {
+}, ne = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -10168,7 +10224,7 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "Färdigheter (valfritt)",
     skillDomain: "Färdighetsdomän"
   }
-}, ce = {
+}, le = {
   listTitle: "Uppgiftslista",
   detailTitle: "Uppgiftsdetaljer",
   typeLabel: "Typ",
@@ -10227,65 +10283,65 @@ const Ae = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "Kör nu",
   executionHistory: "Körhistorik"
 };
-f.use(k).use(v).init({
+g.use(f).use(h).init({
   ns: ["common", "authorization", "system", "ai", "task"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: T,
-      common: U,
-      authorization: q,
-      system: _,
-      ai: N,
-      task: O
+      translation: S,
+      common: L,
+      authorization: M,
+      system: U,
+      ai: q,
+      task: _
     },
     "en-US": {
-      translation: P,
-      common: w,
-      authorization: R,
-      system: D,
-      ai: z,
-      task: C
+      translation: y,
+      common: T,
+      authorization: P,
+      system: w,
+      ai: R,
+      task: D
     },
     "de-DE": {
-      translation: E,
-      common: x,
-      authorization: B,
-      system: V,
-      ai: K,
-      task: j
+      translation: z,
+      common: N,
+      authorization: O,
+      system: x,
+      ai: B,
+      task: V
     },
     "es-ES": {
-      translation: F,
-      common: G,
-      authorization: W,
-      system: H,
-      ai: Z,
-      task: J
+      translation: C,
+      common: K,
+      authorization: j,
+      system: G,
+      ai: W,
+      task: H
     },
     "fr-FR": {
-      translation: I,
-      common: Q,
-      authorization: Y,
-      system: $,
-      ai: X,
-      task: ee
+      translation: E,
+      common: Z,
+      authorization: J,
+      system: Q,
+      ai: Y,
+      task: $
     },
     "ar-AE": {
-      translation: L,
-      common: te,
-      authorization: ae,
-      system: ie,
-      ai: re,
-      task: se
+      translation: F,
+      common: X,
+      authorization: ee,
+      system: te,
+      ai: ae,
+      task: ie
     },
     "sv-SE": {
-      translation: M,
-      common: oe,
-      authorization: ne,
-      system: le,
-      ai: de,
-      task: ce
+      translation: I,
+      common: re,
+      authorization: se,
+      system: oe,
+      ai: ne,
+      task: le
     }
   },
   fallbackLng: "en-US",
@@ -10298,67 +10354,46 @@ const ye = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
-function h(e) {
+function de(e) {
   const t = {}, i = e.split(/\r?\n/);
   for (const r of i) {
     const o = r.trim();
     if (!o) continue;
     const s = o.indexOf(":");
     if (s <= 0) continue;
-    const l = o.slice(0, s).trim(), a = o.slice(s + 1).trim(), n = a.startsWith('"') && a.endsWith('"') || a.startsWith("'") && a.endsWith("'") ? a.slice(1, -1) : a;
-    t[l] = n;
+    const n = o.slice(0, s).trim(), a = o.slice(s + 1).trim(), l = a.startsWith('"') && a.endsWith('"') || a.startsWith("'") && a.endsWith("'") ? a.slice(1, -1) : a;
+    t[n] = l;
   }
   return t;
 }
-function m(e) {
+function p(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function Se(e) {
+function Te(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
   const i = t.slice(3), r = i.indexOf(`
 ---`);
   if (r === -1) return e;
-  const o = i.slice(0, r).trim(), s = i.slice(r + 4).trimStart(), l = h(o), a = Object.keys(l);
+  const o = i.slice(0, r).trim(), s = i.slice(r + 4).trimStart(), n = de(o), a = Object.keys(n);
   if (a.length === 0) return e;
-  const n = "| Field | Value |", d = "| --- | --- |", c = a.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = a.map((m) => "| " + p(m) + " | " + p(n[m] ?? "") + " |").join(`
 `);
-  return n + `
+  return l + `
 ` + d + `
 ` + c + `
 
 ` + s;
 }
-function Te(e) {
-  if (!e || !e.trim()) return e;
-  let t = e;
-  const i = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/m;
-  let r = t.match(i);
-  for (; r; ) {
-    const o = r[1].trim(), s = t.slice((r.index ?? 0) + r[0].length), l = h(o), a = Object.keys(l);
-    if (a.length > 0) {
-      const n = "| Field | Value |", d = "| --- | --- |", c = a.map((u) => "| " + m(u) + " | " + m(l[u] ?? "") + " |").join(`
-`), g = n + `
-` + d + `
-` + c;
-      t = t.slice(0, r.index) + g + `
-
-` + s;
-    } else
-      t = t.slice(0, r.index) + s;
-    r = t.match(i);
-  }
-  return t;
-}
 export {
   ye as P,
   be as a,
-  Ae as b,
-  Se as c,
+  Se as b,
+  Te as c,
   he as f,
   ke as g,
+  Ae as i,
   ve as m,
-  Te as s,
   fe as t
 };

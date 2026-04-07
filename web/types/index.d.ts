@@ -390,7 +390,7 @@ export declare const api: {
     }): Promise<API.MessageData>;
     previewSkill(params: API.previewSkillParams, options?: {
         [key: string]: any;
-    }): Promise<API.PreviewSkillResponse>;
+    }): Promise<API.SkillFilePreview[]>;
     updateSkillStatus(params: API.updateSkillStatusParams, body: API.UpdateSkillStatusRequest, options?: {
         [key: string]: any;
     }): Promise<API.Skill>;
@@ -1873,10 +1873,6 @@ export declare interface previewSkillParams {
     id: string;
 }
 
-export declare interface PreviewSkillResponse {
-    content: string;
-}
-
 /**
  * Private route component - protect routes that need authentication
  *
@@ -2052,6 +2048,13 @@ export declare interface ResponseArrayServiceScheduledJobState {
 export declare interface ResponseArrayServiceSessionInfo {
     code: string;
     data: SessionInfo[];
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseArrayServiceSkillFilePreview {
+    code: string;
+    data: SkillFilePreview[];
     err: string;
     trace_id: string;
 }
@@ -2297,13 +2300,6 @@ export declare interface ResponseSystemapiCheckPasswordComplexityResponse {
 export declare interface ResponseSystemapiLDAPSettings {
     code: string;
     data: LDAPSettings;
-    err: string;
-    trace_id: string;
-}
-
-export declare interface ResponseSystemapiPreviewSkillResponse {
-    code: string;
-    data: PreviewSkillResponse;
     err: string;
     trace_id: string;
 }
@@ -2624,8 +2620,10 @@ export declare interface Skill {
     id: string;
     is_preset: boolean;
     name: string;
+    organization_id: string;
     preset_key: string;
     status: SkillStatus;
+    tools: SkillTool[];
     updated_at: string;
 }
 
@@ -2644,7 +2642,17 @@ export declare interface SkillAIToolBindingItem {
     toolset_id: string;
 }
 
+export declare interface SkillFilePreview {
+    content: string;
+    file_name: string;
+}
+
 export declare type SkillStatus = "enabled" | "disabled";
+
+export declare interface SkillTool {
+    tool_name: string;
+    toolset_id: string;
+}
 
 export declare interface SkillTreeNode {
     children: SkillTreeNode[];

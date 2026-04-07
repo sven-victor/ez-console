@@ -3167,16 +3167,30 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
+    - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3187,16 +3201,30 @@ definitions:
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
   toolset.ToolSetType:
     enum:
     - utils
@@ -7830,8 +7858,8 @@ paths:
       consumes:
       - application/json
       description: Copy all skill files from source_id into a new skill; metadata
-        comes from the request body. When X-Scope-OrgID is set, AI tool bindings for
-        that organization are copied from the source skill.
+        comes from the request body. Requires organization scope (X-Scope-OrgID);
+        AI tool bindings for that organization are copied from the source skill.
       operationId: cloneSkill
       parameters:
       - description: Target metadata and source skill id
