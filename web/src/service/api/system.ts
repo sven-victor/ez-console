@@ -163,11 +163,18 @@ export async function testOauthConnection(
 }
 
 /** Test OAuth callback Test OAuth callback POST /api/system/oauth-settings/test-callback */
-export async function testOauthCallback(options?: { [key: string]: any }) {
+export async function testOauthCallback(
+  body: API.OAuthCallbackRequest,
+  options?: { [key: string]: any }
+) {
   return request<API.ResponseServiceTestOAuthCallbackResponse>(
     "/api/system/oauth-settings/test-callback",
     {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
       ...(options || {}),
     }
   );

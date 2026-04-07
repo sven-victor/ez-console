@@ -186,6 +186,7 @@ func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 //	@Tags			System Settings/OAuth
 //	@Accept			json
 //	@Produce		json
+//	@Param			request	body		service.OAuthCallbackRequest	true	"OAuth callback request"
 //	@Success		200	{object}	util.Response[service.TestOAuthCallbackResponse]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/oauth-settings/test-callback [post]
