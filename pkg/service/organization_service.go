@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -251,7 +252,7 @@ func (s *OrganizationService) AddUserToOrganization(ctx context.Context, organiz
 				}
 			}
 
-			defer middleware.DeleteUserCache(userID)
+			cache.InvalidateUserSessions(ctx, tx, userID)
 			// Replace all roles
 			if err := tx.Model(&user).Association("Roles").Replace(existingRoles); err != nil {
 				return err
@@ -322,7 +323,7 @@ func (s *OrganizationService) UpdateUserOrganizationRoles(ctx context.Context, o
 		// Add new organization roles
 		filteredRoles = append(filteredRoles, newOrgRoles...)
 
-		defer middleware.DeleteUserCache(userID)
+		cache.InvalidateUserSessions(ctx, tx, userID)
 		// Replace all roles
 		if err := tx.Model(&user).Association("Roles").Replace(filteredRoles); err != nil {
 			return err
@@ -376,7 +377,7 @@ func (s *OrganizationService) RemoveUserFromOrganization(ctx context.Context, or
 			}
 		}
 
-		defer middleware.DeleteUserCache(userID)
+		cache.InvalidateUserSessions(ctx, tx, userID)
 		// Replace all roles (removing organization roles)
 		if err := tx.Model(&user).Association("Roles").Replace(filteredRoles); err != nil {
 			return err

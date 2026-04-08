@@ -36,8 +36,28 @@ import (
 	w "github.com/sven-victor/ez-utils/wrapper"
 )
 
+// CacheConfig controls the cache backend.
+//   - Driver: "memory" (default). Future: "redis".
+//   - Size: maximum number of entries (used by memory backend).
 type CacheConfig struct {
-	Size int `yaml:"size"`
+	Driver string      `yaml:"driver" mapstructure:"driver"`
+	Size   int         `yaml:"size" mapstructure:"size"`
+	Redis  RedisConfig `yaml:"redis" mapstructure:"redis"`
+}
+
+// RedisConfig holds connection parameters for a Redis-backed cache (future use).
+type RedisConfig struct {
+	Addr     string `yaml:"addr" mapstructure:"addr"`
+	Password string `yaml:"password" mapstructure:"password"`
+	DB       int    `yaml:"db" mapstructure:"db"`
+	Prefix   string `yaml:"prefix" mapstructure:"prefix"`
+}
+
+func (c *CacheConfig) GetDriver() string {
+	if c.Driver == "" {
+		return "memory"
+	}
+	return c.Driver
 }
 
 func (c *CacheConfig) GetSize() int {

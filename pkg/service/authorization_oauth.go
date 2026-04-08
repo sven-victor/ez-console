@@ -35,6 +35,7 @@ import (
 	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
@@ -280,9 +281,7 @@ func (s *OAuthService) GetLoginURL(ctx *gin.Context, provider string) (*OAuthLog
 
 	// Generate authorization URL
 	authURL := oauth2Config.AuthCodeURL(state, oauth2Config.Nonce, oauth2Config.CodeVerifier)
-	// storage state
-	_, err := s.BaseService.CreateCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), w.JSONStringer(oauth2Config).String(), time.Now().Add(10*time.Minute))
-	if err != nil {
+	if err := cache.Store.Set(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), []byte(w.JSONStringer(oauth2Config).String()), 10*time.Minute); err != nil {
 		return nil, fmt.Errorf("failed to create oauth state: %w", err)
 	}
 
@@ -294,16 +293,15 @@ func (s *OAuthService) GetLoginURL(ctx *gin.Context, provider string) (*OAuthLog
 // HandleCallback handles OAuth callback
 func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequest) (*LoginResponse, error) {
 	logger := log.GetContextLogger(ctx)
-	// check state
-	cache, err := s.BaseService.GetCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+	stateKey := fmt.Sprintf("ez-console:oauth:state:%s", req.State)
+	cacheVal, err := cache.Store.Get(ctx, stateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oauth state: %w", err)
 	}
-	// delete state
-	s.BaseService.DeleteCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+	_ = cache.Store.Delete(ctx, stateKey)
 
 	var oauth2Config OAuth2ProviderConfig
-	if err := json.Unmarshal([]byte(cache.Value), &oauth2Config); err != nil {
+	if err := json.Unmarshal(cacheVal, &oauth2Config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal oauth2 config: %w", err)
 	}
 
@@ -768,7 +766,7 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 				if err := tx.Model(&user).Association("Roles").Replace(user.Roles); err != nil {
 					return fmt.Errorf("failed to update user roles: %w", err)
 				}
-				middleware.DeleteUserCache(user.ResourceID)
+				cache.InvalidateUserSessions(ctx, tx, user.ResourceID)
 			} else {
 				level.Info(logger).Log("msg", "Skipping role update", "user_id", user.ResourceID, "mode", provider.RoleMappingMode, "needs_update", needsRoleUpdate)
 			}
@@ -932,9 +930,7 @@ func (s *OAuthService) TestOAuthConnection(ctx context.Context, settings *model.
 	oauth2Config.Nonce = util.GenerateRandomString(16)
 	oauth2Config.CodeVerifier = util.GenerateRandomString(32)
 	authURL := oauth2Config.AuthCodeURL(state, oauth2Config.Nonce, oauth2Config.CodeVerifier)
-	// save state to cache
-	_, err = s.BaseService.CreateCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), w.JSONStringer(oauth2Config).String(), time.Now().Add(10*time.Minute))
-	if err != nil {
+	if err = cache.Store.Set(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), []byte(w.JSONStringer(oauth2Config).String()), 10*time.Minute); err != nil {
 		return nil, err
 	}
 	return &OAuthLoginURLResponse{
@@ -951,16 +947,15 @@ type TestOAuthCallbackResponse struct {
 // TestOAuthCallback tests OAuth callback
 func (s *OAuthService) TestOAuthCallback(ctx context.Context, req *OAuthCallbackRequest) (resp *TestOAuthCallbackResponse, err error) {
 	logger := log.GetContextLogger(ctx)
-	// check state
-	cache, err := s.BaseService.GetCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+	stateKey := fmt.Sprintf("ez-console:oauth:state:%s", req.State)
+	cacheVal, err := cache.Store.Get(ctx, stateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oauth state: %w", err)
 	}
-	// delete state
-	s.BaseService.DeleteCache(ctx, fmt.Sprintf("ez-console:oauth:state:%s", req.State))
+	_ = cache.Store.Delete(ctx, stateKey)
 
 	var oauth2Config OAuth2ProviderConfig
-	if err := json.Unmarshal([]byte(cache.Value), &oauth2Config); err != nil {
+	if err := json.Unmarshal(cacheVal, &oauth2Config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal oauth2 config: %w", err)
 	}
 

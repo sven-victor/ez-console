@@ -49,6 +49,7 @@ var migrateModels = []interface{}{
 	&model.Task{},
 	&model.TaskLog{},
 	&model.AITraceEvent{},
+	&model.CacheEntry{},
 }
 
 func RegisterModels(models ...interface{}) {

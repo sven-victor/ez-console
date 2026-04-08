@@ -19,12 +19,11 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
-	"time"
 
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
-	"github.com/sven-victor/ez-console/pkg/util/cache"
 	w "github.com/sven-victor/ez-utils/wrapper"
 	"gorm.io/gorm"
 )
@@ -41,21 +40,24 @@ func NewSettingService() *SettingService {
 
 // GetSetting gets the setting with the specified key name
 func (s *SettingService) GetSetting(ctx context.Context, key model.SettingKey) (*model.Setting, error) {
-	allSettings, err := cache.Get[[]model.Setting]("all_settings")
-	if err == nil && allSettings != nil && len(*allSettings) > 0 {
-		for _, setting := range *allSettings {
+	if allSettings, err := cache.AllSettings.Get(ctx, "all"); err == nil && len(allSettings) > 0 {
+		for _, setting := range allSettings {
 			if setting.Key == key {
 				return &setting, nil
 			}
 		}
 	}
-	return cache.Handle("setting_"+string(key), func() (*model.Setting, error) {
+	setting, err := cache.Settings.GetOrLoad(ctx, string(key), func() (model.Setting, error) {
 		var setting model.Setting
 		if err := db.Session(ctx).Where("key = ?", key).First(&setting).Error; err != nil {
-			return nil, err
+			return setting, err
 		}
-		return &setting, nil
-	}, time.Minute)
+		return setting, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &setting, nil
 }
 
 // GetSettingByStringKey gets the setting by string key name
@@ -65,17 +67,13 @@ func (s *SettingService) GetSettingByStringKey(ctx context.Context, key string) 
 
 // GetAllSettings gets all system settings
 func (s *SettingService) GetAllSettings(ctx context.Context) ([]model.Setting, error) {
-	result, err := cache.Handle("all_settings", func() (*[]model.Setting, error) {
+	return cache.AllSettings.GetOrLoad(ctx, "all", func() ([]model.Setting, error) {
 		var settings []model.Setting
 		if err := db.Session(ctx).Where("key IN ?", model.SettingKeys).Find(&settings).Error; err != nil {
 			return nil, err
 		}
-		return &settings, nil
-	}, time.Minute*10)
-	if err != nil || result == nil {
-		return nil, err
-	}
-	return *result, nil
+		return settings, nil
+	})
 }
 
 // GetSettingsMap gets all system settings and returns them as a map
@@ -96,16 +94,14 @@ func (s *SettingService) GetSettingsMap(ctx context.Context) (map[string]string,
 func (s *SettingService) UpdateSetting(ctx context.Context, key model.SettingKey, value, comment string) (*model.Setting, error) {
 	var setting model.Setting
 	if err := db.Session(ctx).Where("key = ?", key).First(&setting).Error; err != nil {
-		// Create new setting
 		setting = *model.NewSetting(key, value, comment)
 		if err := db.Session(ctx).Create(&setting).Error; err != nil {
 			return nil, err
 		}
-		cache.Delete("all_settings")
+		_ = cache.AllSettings.Delete(ctx, "all")
 		return &setting, nil
 	}
 
-	// Update setting
 	setting.Value = value
 	if comment != "" {
 		setting.Comment = comment
@@ -113,8 +109,8 @@ func (s *SettingService) UpdateSetting(ctx context.Context, key model.SettingKey
 	if err := db.Session(ctx).Save(&setting).Error; err != nil {
 		return nil, err
 	}
-	cache.Delete("all_settings")
-	cache.Set("setting_"+string(key), setting, time.Minute*10)
+	_ = cache.AllSettings.Delete(ctx, "all")
+	_ = cache.Settings.Set(ctx, string(key), setting)
 	return &setting, nil
 }
 
@@ -125,21 +121,19 @@ func (s *SettingService) UpdateSettings(ctx context.Context, settings map[string
 		for key, value := range settings {
 			var setting model.Setting
 			if err := tx.Where("key = ?", key).First(&setting).Error; err != nil {
-				// Create new setting
 				setting = *model.NewSetting(model.SettingKey(key), value, "")
 				if err := tx.Create(&setting).Error; err != nil {
 					return err
 				}
 			} else {
-				// Update setting
 				setting.Value = value
 				if err := tx.Select("value").Save(&setting).Error; err != nil {
 					return err
 				}
 			}
-			cache.Set("setting_"+string(key), setting, time.Minute*10)
+			_ = cache.Settings.Set(ctx, key, setting)
 		}
-		cache.Delete("all_settings")
+		_ = cache.AllSettings.Delete(ctx, "all")
 		return nil
 	})
 }
@@ -259,8 +253,8 @@ func (s *SettingService) InitDefaultSettings(ctx context.Context) error {
 // DeleteSetting deletes a setting
 func (s *SettingService) DeleteSetting(ctx context.Context, key model.SettingKey) error {
 	defer func() {
-		cache.Delete("all_settings")
-		cache.Delete("setting_" + string(key))
+		_ = cache.AllSettings.Delete(ctx, "all")
+		_ = cache.Settings.Delete(ctx, string(key))
 	}()
 	return db.Session(ctx).Where("key = ?", key).Delete(&model.Setting{}).Error
 }

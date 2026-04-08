@@ -30,12 +30,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"gorm.io/gorm"
-	"k8s.io/apimachinery/pkg/util/cache"
 )
 
 type JWTIssuer string
@@ -58,34 +58,6 @@ func GenerateToken(ctx context.Context, issuer JWTIssuer, userID string, usernam
 	}
 
 	return cfg.JWT.SignedString(&claims)
-}
-
-var userCache = cache.NewLRUExpireCache(100)
-
-func DeleteUserCache(userID string) {
-	userCache.Remove(userID)
-}
-
-func SetUserCache(userID string, user model.User, ttl time.Duration) {
-	if user.Roles == nil {
-		user.Roles = []model.Role{}
-	}
-	userCache.Add(userID, user, ttl)
-}
-
-func GetUserCache(userID string) (model.User, bool) {
-	user, ok := userCache.Get(userID)
-	if !ok {
-		return model.User{}, false
-	}
-	u, ok := user.(model.User)
-	return u, ok
-}
-
-func ClearUserCache() {
-	userCache.RemoveAll(func(key any) bool {
-		return true
-	})
 }
 
 func WithoutAuthentication(engine *gin.RouterGroup) *gin.RouterGroup {
@@ -315,146 +287,224 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 		return util.NewErrorMessage("E4011", "Session expired, please login again")
 	}
 
-	// Validate token
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// Check if token has expired
-		exp, err := claims.GetExpirationTime()
-		if err != nil {
-			return util.NewErrorMessage("E4011", "Invalid token", err)
-		}
-		if exp.Before(time.Now()) {
-			return util.NewErrorMessage("E4011", "Token expired")
-		}
-		// Get user information
-		userID, ok := claims["user_id"].(string)
-		if !ok {
-			return util.NewErrorMessage("E4012", "Invalid user ID")
-		}
-
-		// Check session validity
-		var session model.Session
-		if err := db.Session(ctx).Where("token = ? AND is_valid = ?", safe.NewHash(sha256.New, []byte(tokenString)).HexString(64), true).First(&session).Error; err == nil {
-			// Session exists, check if expired
-			if session.IsExpired() {
-				// Session has expired, mark as invalid
-				session.Invalidate()
-				db.Session(ctx).Select("IsValid").Save(&session)
-				return util.NewErrorMessage("E4011", "Session expired, please login again")
-			}
-
-			// Update last active time
-			session.UpdateLastActive()
-			db.Session(ctx).Select("LastActiveAt").Save(&session)
-
-			// Store session information in context
-			c.Set("session", &session)
-		} else {
-			return util.NewErrorMessage("E4011", "Session expired, please login again", err)
-		}
-
-		// Load user information from database
-		var user model.User
-
-		if cachedUser, ok := GetUserCache(userID); ok {
-			user = cachedUser
-		} else {
-			if err := db.Session(ctx).
-				Where("resource_id = ?", userID).
-				Preload("Roles.Permissions").
-				Preload("Roles.AIToolPermissions").
-				First(&user).Error; err != nil {
-				return util.NewErrorMessage("E4012", "User not found", err)
-			}
-			SetUserCache(userID, user, time.Minute*10)
-		}
-		passwordExpiryDays, err := settingService.GetIntSetting(ctx, model.SettingPasswordExpiryDays, 0)
-		if err != nil {
-			return util.NewErrorMessage("E4012", "System configuration error", err)
-		}
-
-		if user.IsLDAPUser() {
-			allowChangePassword, _ := settingService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
-			if !allowChangePassword {
-				passwordExpiryDays = 0
-			}
-		}
-		// When the user is not locked, and the password has expired, clear the user's roles/permissions,
-		if !user.IsLocked() && user.Status == model.UserStatusPasswordExpired || (passwordExpiryDays > 0 && user.IsPasswordExpired(passwordExpiryDays)) {
-			user.Roles = nil
-		} else if !user.IsActive() { // Check user status
-			return util.NewErrorMessage("E4012", "User is disabled")
-		}
-		{
-			mfaEnforced, err := settingService.GetBoolSetting(ctx, model.SettingMFAEnforced, false)
-			if err != nil && err != gorm.ErrRecordNotFound {
-				return util.NewErrorMessage("E4012", "System configuration error", err)
-			}
-			if mfaEnforced || user.MFAEnforced {
-				issuer, _ := claims.GetIssuer()
-				switch issuer {
-				case string(JWTIssuerOAuth):
-					var oauthMFAEnabled string
-					err := db.Session(ctx).Model(&model.Setting{}).Select("value").Where("key = ?", model.SettingOAuthMFAEnabled).First(&oauthMFAEnabled).Error
-					if err != nil && err != gorm.ErrRecordNotFound {
-						return util.NewErrorMessage("E4012", "System configuration error", err)
-					}
-					if oauthMFAEnabled == "true" {
-						user.MFAEnforced = true
-					} else {
-						user.MFAEnforced = false
-						user.MFAEnabled = false
-					}
-				default:
-					user.MFAEnforced = true
-				}
-			}
-		}
-		if user.MFAEnforced && !user.MFAEnabled {
-			user.Roles = nil
-		}
-		{
-			// fix user organizations
-			if user.Organizations == nil {
-				var isGlobalRole bool
-				var orgIds []string
-				for _, role := range user.Roles {
-					if role.OrganizationID == nil || *role.OrganizationID == "" && len(role.Permissions) > 0 {
-						// is a global role with permissions
-						isGlobalRole = true
-						break
-					}
-					if role.OrganizationID != nil && *role.OrganizationID != "" {
-						orgIds = append(orgIds, *role.OrganizationID)
-					}
-				}
-				user.Organizations = []model.Organization{}
-				orgQuery := db.Session(ctx).Model(&model.Organization{}).Limit(100)
-				if isGlobalRole {
-					orgQuery.Where("1 = 1")
-				} else {
-					orgQuery.Where("resource_id IN (?)", orgIds)
-				}
-
-				if err := orgQuery.Find(&user.Organizations).Error; err != nil {
-					return util.NewErrorMessage("E4012", "System configuration error", err)
-				}
-			}
-			SetUserCache(userID, user, time.Minute*10)
-		}
-
-		// Extract organization ID from header if multi-org is enabled
-		orgID := c.GetHeader("X-Scope-OrgID")
-		if orgID != "" {
-			c.Set("organization_id", orgID)
-		}
-
-		// Store user information in context
-		c.Set("user", user)
-		c.Set("user_id", user.ResourceID)
-		c.Set("roles", user.Roles)
-		c.Set("session_id", session.ResourceID)
-	} else {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
 		return util.NewErrorMessage("E4011", "Invalid token")
 	}
+
+	exp, err := claims.GetExpirationTime()
+	if err != nil {
+		return util.NewErrorMessage("E4011", "Invalid token", err)
+	}
+	if exp.Before(time.Now()) {
+		return util.NewErrorMessage("E4011", "Token expired")
+	}
+
+	userID, ok := claims["user_id"].(string)
+	if !ok {
+		return util.NewErrorMessage("E4012", "Invalid user ID")
+	}
+
+	tokenHash := safe.NewHash(sha256.New, []byte(tokenString)).HexString(64)
+
+	// --- Load or rebuild CachedSession ---
+	cs, err := cache.Sessions.Get(ctx, tokenHash)
+	if err != nil {
+		// Cache miss — rebuild from DB
+		cs, err = rebuildSessionCache(ctx, tokenHash, userID)
+		if err != nil {
+			return err
+		}
+	}
+
+	// --- Validate session ---
+	if !cs.IsValid {
+		return util.NewErrorMessage("E4011", "Session expired, please login again")
+	}
+	if time.Now().After(cs.ExpiredAt) {
+		_ = cache.Sessions.Delete(ctx, tokenHash)
+		db.Session(ctx).Model(&model.Session{}).Where("token = ?", tokenHash).Update("is_valid", false)
+		return util.NewErrorMessage("E4011", "Session expired, please login again")
+	}
+
+	// --- Check user security status ---
+	if cs.Status == model.UserStatusDisabled {
+		return util.NewErrorMessage("E4012", "User is disabled")
+	}
+	if time.Now().Before(cs.LockedUntil) && cs.Status != model.UserStatusPasswordExpired {
+		return util.NewErrorMessage("E4012", "User is disabled")
+	}
+
+	// --- Password expiry check ---
+	passwordExpiryDays, err := settingService.GetIntSetting(ctx, model.SettingPasswordExpiryDays, 0)
+	if err != nil {
+		return util.NewErrorMessage("E4012", "System configuration error", err)
+	}
+	isLDAPUser := model.UserSource(cs.Source) == model.UserSourceLDAP && cs.LDAPDN != ""
+	if isLDAPUser {
+		allowChangePassword, _ := settingService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
+		if !allowChangePassword {
+			passwordExpiryDays = 0
+		}
+	}
+	passwordExpired := cs.Status == model.UserStatusPasswordExpired ||
+		(passwordExpiryDays > 0 && !cs.PasswordChangedAt.IsZero() &&
+			time.Now().After(cs.PasswordChangedAt.AddDate(0, 0, passwordExpiryDays)))
+
+	// --- Load full roles from Roles cache ---
+	var roles []model.Role
+	if !passwordExpired {
+		roles = loadRolesFromCache(ctx, cs.RoleIDs)
+	}
+
+	// --- MFA enforcement ---
+	mfaEnforced := cs.MFAEnforced
+	{
+		globalMFAEnforced, mfaErr := settingService.GetBoolSetting(ctx, model.SettingMFAEnforced, false)
+		if mfaErr != nil && mfaErr != gorm.ErrRecordNotFound {
+			return util.NewErrorMessage("E4012", "System configuration error", mfaErr)
+		}
+		if globalMFAEnforced || mfaEnforced {
+			issuer, _ := claims.GetIssuer()
+			switch issuer {
+			case string(JWTIssuerOAuth):
+				var oauthMFAEnabled string
+				oauthErr := db.Session(ctx).Model(&model.Setting{}).Select("value").
+					Where("key = ?", model.SettingOAuthMFAEnabled).First(&oauthMFAEnabled).Error
+				if oauthErr != nil && oauthErr != gorm.ErrRecordNotFound {
+					return util.NewErrorMessage("E4012", "System configuration error", oauthErr)
+				}
+				mfaEnforced = oauthMFAEnabled == "true"
+			default:
+				mfaEnforced = true
+			}
+		}
+	}
+	if mfaEnforced && !cs.MFAEnabled {
+		roles = nil
+	}
+
+	// --- Load organizations if not yet cached ---
+	orgs := cs.Organizations
+	if orgs == nil {
+		orgs = loadOrganizations(ctx, roles)
+		cs.Organizations = orgs
+		_ = cache.Sessions.Set(ctx, tokenHash, cs)
+	}
+
+	// --- Reconstruct model.User for gin context ---
+	user := cs.ToUser(roles)
+	user.MFAEnforced = mfaEnforced
+	if mfaEnforced && !cs.MFAEnabled {
+		user.MFAEnabled = false
+	}
+
+	// --- Update LastActiveAt in cache + DB ---
+	now := time.Now()
+	cs.LastActiveAt = now
+	_ = cache.Sessions.Set(ctx, tokenHash, cs)
+	db.Session(ctx).Model(&model.Session{}).Where("token = ?", tokenHash).Update("last_active_at", now)
+
+	// --- Build a model.Session for context (lightweight, no DB load) ---
+	sessionObj := &model.Session{
+		Base:         model.Base{ResourceID: cs.SessionID},
+		UserID:       cs.UserID,
+		Token:        tokenHash,
+		LastActiveAt: now,
+		ExpiredAt:    cs.ExpiredAt,
+		IsValid:      cs.IsValid,
+	}
+
+	// --- Store in gin context ---
+	c.Set("session", sessionObj)
+	c.Set("user", user)
+	c.Set("user_id", user.ResourceID)
+	c.Set("roles", user.Roles)
+	c.Set("session_id", cs.SessionID)
+
+	orgID := c.GetHeader("X-Scope-OrgID")
+	if orgID != "" {
+		c.Set("organization_id", orgID)
+	}
+
 	return nil
+}
+
+// rebuildSessionCache loads session + user from DB and populates the cache.
+func rebuildSessionCache(ctx context.Context, tokenHash, userID string) (cache.CachedSession, error) {
+	var session model.Session
+	if err := db.Session(ctx).Where("token = ? AND is_valid = ?", tokenHash, true).
+		First(&session).Error; err != nil {
+		return cache.CachedSession{}, util.NewErrorMessage("E4011", "Session expired, please login again", err)
+	}
+	if session.IsExpired() {
+		session.Invalidate()
+		db.Session(ctx).Select("IsValid").Save(&session)
+		return cache.CachedSession{}, util.NewErrorMessage("E4011", "Session expired, please login again")
+	}
+
+	var user model.User
+	if err := db.Session(ctx).Where("resource_id = ?", userID).
+		Preload("Roles.Permissions").
+		Preload("Roles.AIToolPermissions").
+		First(&user).Error; err != nil {
+		return cache.CachedSession{}, util.NewErrorMessage("E4012", "User not found", err)
+	}
+
+	// Cache each role individually
+	for _, role := range user.Roles {
+		_ = cache.Roles.Set(ctx, role.ResourceID, role)
+	}
+
+	cs := cache.NewCachedSession(&session, &user)
+	_ = cache.Sessions.Set(ctx, tokenHash, cs)
+	return cs, nil
+}
+
+// loadRolesFromCache loads full Role objects from the Roles cache, falling back
+// to DB for misses. Roles that no longer exist are silently skipped.
+func loadRolesFromCache(ctx context.Context, roleIDs []string) []model.Role {
+	roles := make([]model.Role, 0, len(roleIDs))
+	for _, rid := range roleIDs {
+		role, err := cache.Roles.GetOrLoad(ctx, rid, func() (model.Role, error) {
+			var r model.Role
+			if err := db.Session(ctx).Where("resource_id = ?", rid).
+				Preload("Permissions").
+				Preload("AIToolPermissions").
+				First(&r).Error; err != nil {
+				return r, err
+			}
+			return r, nil
+		})
+		if err != nil {
+			continue
+		}
+		roles = append(roles, role)
+	}
+	return roles
+}
+
+// loadOrganizations resolves organizations based on the user's roles.
+func loadOrganizations(ctx context.Context, roles []model.Role) []model.Organization {
+	var isGlobalRole bool
+	var orgIDs []string
+	for _, role := range roles {
+		if (role.OrganizationID == nil || *role.OrganizationID == "") && len(role.Permissions) > 0 {
+			isGlobalRole = true
+			break
+		}
+		if role.OrganizationID != nil && *role.OrganizationID != "" {
+			orgIDs = append(orgIDs, *role.OrganizationID)
+		}
+	}
+
+	orgs := []model.Organization{}
+	q := db.Session(ctx).Model(&model.Organization{}).Limit(100)
+	if isGlobalRole {
+		q.Where("1 = 1")
+	} else {
+		q.Where("resource_id IN (?)", orgIDs)
+	}
+	_ = q.Find(&orgs).Error
+	return orgs
 }

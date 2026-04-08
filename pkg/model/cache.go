@@ -27,3 +27,11 @@ type TempData struct {
 func (t *TempData) IsExpired() bool {
 	return time.Now().After(t.ExpiredAt)
 }
+
+// CacheEntry is a lightweight key-value store for the DB-backed L2 cache.
+// It intentionally avoids Base (no soft delete, no auto-generated ResourceID).
+type CacheEntry struct {
+	Key       string    `gorm:"primaryKey;size:255" json:"key"`
+	Value     string    `gorm:"type:longtext" json:"value"`
+	ExpiredAt time.Time `gorm:"index" json:"expired_at"`
+}

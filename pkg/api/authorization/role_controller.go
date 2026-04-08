@@ -19,6 +19,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
@@ -259,7 +260,7 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			middleware.ClearUserCache()
+			_ = cache.Roles.Delete(ctx, id)
 
 			util.RespondWithSuccess(ctx, http.StatusOK, role)
 			return nil
@@ -310,7 +311,7 @@ func (c *RoleController) DeleteRole(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			middleware.ClearUserCache()
+			_ = cache.Roles.Delete(ctx, id)
 
 			util.RespondWithMessage(ctx, "Role deleted successfully")
 			return nil
@@ -372,7 +373,7 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			middleware.ClearUserCache()
+			_ = cache.Roles.Delete(ctx, id)
 
 			util.RespondWithMessage(ctx, "Permissions assigned successfully")
 			return nil
@@ -461,7 +462,7 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			middleware.ClearUserCache()
+			_ = cache.Roles.Delete(ctx, id)
 
 			util.RespondWithSuccess(ctx, http.StatusOK, role)
 			return nil

@@ -17,7 +17,9 @@ package service
 import (
 	"context"
 
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/config"
+	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-utils/log"
 	"go.opentelemetry.io/otel"
 )
@@ -33,7 +35,6 @@ type Service struct {
 	*SettingService
 	*ServiceAccountService
 	*LDAPService
-	*CacheService
 	*FileService
 	*StatsService
 	*BaseService
@@ -49,23 +50,26 @@ type Service struct {
 }
 
 type BaseService struct {
-	*CacheService
 	*SettingService
 	*EmailService
 	*GeoIPService
 }
 
 func NewService(ctx context.Context) *Service {
-	ctx, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(ctx, "Initialize Service")
+	cfg := config.GetConfig()
+	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(ctx, "Initialize Service")
 	defer span.End()
 	traceId := span.SpanContext().TraceID()
 	ctx, _ = log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
-	// Create settings service first, as user service depends on it
+
+	if err := cache.Init(&cfg.Cache, db.Session); err != nil {
+		panic("failed to initialize cache: " + err.Error())
+	}
+
 	settingService := NewSettingService()
 	geoipService := NewGeoIPService(ctx)
 
 	baseService := &BaseService{
-		CacheService:   new(CacheService),
 		SettingService: settingService,
 		EmailService:   &EmailService{settingService: settingService},
 		GeoIPService:   geoipService,
@@ -90,7 +94,6 @@ func NewService(ctx context.Context) *Service {
 		SystemService:         NewSystemService(baseService),
 		OAuthService:          oauthService,
 		SessionService:        &SessionService{geoipService: geoipService},
-		CacheService:          new(CacheService),
 		AuditLogService:       new(AuditLogService),
 		SettingService:        settingService,
 		ServiceAccountService: NewServiceAccountService(),

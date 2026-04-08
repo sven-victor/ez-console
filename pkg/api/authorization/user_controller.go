@@ -318,9 +318,6 @@ func (c *UserController) DeleteUser(ctx *gin.Context) {
 				return err
 			}
 
-			// Clear user cache
-			middleware.DeleteUserCache(id)
-
 			util.RespondWithMessage(ctx, "User deleted successfully")
 			return nil
 		},
@@ -513,9 +510,6 @@ func (c *UserController) AssignRoles(ctx *gin.Context) {
 			if err != nil {
 				return err
 			}
-
-			// Clear user cache
-			middleware.DeleteUserCache(id)
 
 			util.RespondWithMessage(ctx, "Role assignment successful")
 			return nil
@@ -785,7 +779,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 			if loginResponseData.User.ResourceID != "" {
 				auditLog.UserID = loginResponseData.User.ResourceID
 			}
-			_, err = c.service.CreateSession(ctx, loginResponseData.User.ResourceID, loginResponseData.Token, ctx.ClientIP(), ctx.Request.UserAgent(), loginResponseData.ExpiresAt)
+			_, err = c.service.CreateSession(ctx, &loginResponseData.User, loginResponseData.Token, ctx.ClientIP(), ctx.Request.UserAgent(), loginResponseData.ExpiresAt)
 			if err != nil {
 				level.Error(logger).Log("msg", "Failed to create session record", "err", err.Error())
 			}

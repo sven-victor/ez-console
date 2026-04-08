@@ -115,11 +115,6 @@ type Service interface {
 	DeleteSetting(ctx context.Context, key model.SettingKey) error
 	GetSMTPSettings(ctx context.Context) (*model.SMTPSettings, error)
 
-	// Cache Service
-	CreateCache(ctx context.Context, key, value string, expiredAt time.Time) (*model.TempData, error)
-	DeleteCache(ctx context.Context, key string) error
-	GetCache(ctx context.Context, key string) (*model.TempData, error)
-
 	// Authorization Service
 	ResetPassword(ctx context.Context, userID string, newPassword string) (bool, error)
 	RestoreUser(ctx context.Context, userID string) error

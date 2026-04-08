@@ -28,8 +28,8 @@ import (
 	w "github.com/sven-victor/ez-utils/wrapper"
 	"gorm.io/gorm"
 
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/db"
-	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
@@ -547,22 +547,17 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 
 	if existingUser.ResourceID != "" {
 		defer func() {
-			var user model.User
-			if err := conn.Model(&model.User{}).Where("resource_id = ?", existingUser.ResourceID).First(&user).Error; err == nil {
-				user.Roles = existingUser.Roles
-				middleware.SetUserCache(user.ResourceID, user, time.Minute*10)
-			}
+			cache.InvalidateUserSessions(ctx, db.Session(ctx), existingUser.ResourceID)
 		}()
 	}
 
 	userUpdateFields := []string{}
 	defer func() {
 		if len(userUpdateFields) > 0 {
-			// Update existing user information
 			if err := db.Session(ctx).Select(userUpdateFields).Save(&existingUser).Error; err != nil {
 				level.Error(logger).Log("msg", "Failed to update user", "err", err.Error())
 			}
-			middleware.DeleteUserCache(user.ResourceID)
+			cache.InvalidateUserSessions(ctx, db.Session(ctx), user.ResourceID)
 		}
 	}()
 

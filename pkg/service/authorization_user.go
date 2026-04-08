@@ -34,6 +34,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 
+	"github.com/sven-victor/ez-console/pkg/cache"
 	clientsldap "github.com/sven-victor/ez-console/pkg/clients/ldap"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -87,25 +88,35 @@ func NewUserService(ctx context.Context, baseService *BaseService, ldapService *
 		ldapService: ldapService,
 		userChangeHooks: []UserChangeHook{
 			func(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error {
-				if newUser != nil {
-					user, ok := middleware.GetUserCache(newUser.ResourceID)
-					if ok {
-						newUser.Roles = user.Roles
-						middleware.SetUserCache(user.ResourceID, *newUser, time.Minute*10)
-					}
-				} else {
-					middleware.DeleteUserCache(oldUser.ResourceID)
+				if newUser == nil {
+					// User deleted — invalidate all sessions and mark DB sessions invalid
+					cache.InvalidateAndDisableUserSessions(ctx, tx, oldUser.ResourceID)
+					return nil
 				}
+				if newUser.Status == model.UserStatusDisabled && oldUser.Status != model.UserStatusDisabled {
+					// Admin disabled user — terminate all sessions
+					cache.InvalidateAndDisableUserSessions(ctx, tx, newUser.ResourceID)
+					return nil
+				}
+				// Skip cache update for login-failure-only changes (LoginAttempts / LockedUntil)
+				if newUser.Email == oldUser.Email &&
+					newUser.FullName == oldUser.FullName &&
+					newUser.Phone == oldUser.Phone &&
+					newUser.Avatar == oldUser.Avatar &&
+					newUser.Status == oldUser.Status &&
+					newUser.MFAEnabled == oldUser.MFAEnabled &&
+					newUser.MFAEnforced == oldUser.MFAEnforced &&
+					newUser.Source == oldUser.Source {
+					return nil
+				}
+				// Meaningful user field changed — invalidate session caches so they rebuild on next request
+				cache.InvalidateUserSessions(ctx, tx, newUser.ResourceID)
 				return nil
 			},
 		},
 		userRoleChangeHooks: []UserRoleChangeHook{
 			func(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error {
-				user, ok := middleware.GetUserCache(userId)
-				if ok {
-					user.Roles = newRoles
-					middleware.SetUserCache(userId, user, time.Minute*10)
-				}
+				cache.InvalidateUserSessions(ctx, tx, userId)
 				return nil
 			},
 		},
@@ -242,12 +253,12 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 		}
 	}
 
-	cache, err := s.baseService.GetCache(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
-	if err != nil || cache == nil {
+	cacheVal, err := cache.Store.Get(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
+	if err != nil {
 		return nil, util.NewErrorMessage("E5001", "Failed to get MFA code", err)
 	}
 
-	safeToken := safe.NewEncryptedString(cache.Value, os.Getenv(safe.SecretEnvName))
+	safeToken := safe.NewEncryptedString(string(cacheVal), os.Getenv(safe.SecretEnvName))
 	rawTokenData, err := safeToken.UnsafeString()
 	if err != nil {
 		return nil, util.NewErrorMessage("E5001", "Failed to get MFA code", err)
@@ -271,7 +282,6 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 	if tokenData.MFAType == "email" && tokenData.Code != mfaCode {
 		user.Lock(time.Duration(time.Second * 30))
 		s.UserLoginFailed(ctx, user)
-		middleware.SetUserCache(user.ResourceID, *user, time.Minute*10)
 		return nil, util.NewErrorMessage("E40036", "MFA verification code is invalid")
 	}
 
@@ -294,7 +304,6 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 		if !valid {
 			user.Lock(time.Duration(time.Second * 30))
 			s.UserLoginFailed(ctx, user)
-			middleware.SetUserCache(user.ResourceID, *user, time.Minute*10)
 			return nil, util.NewErrorMessage("E40036", "MFA verification code is invalid")
 		}
 	case "email":
@@ -302,13 +311,12 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 		if !valid {
 			user.Lock(time.Duration(time.Second * 30))
 			s.UserLoginFailed(ctx, user)
-			middleware.SetUserCache(user.ResourceID, *user, time.Minute*10)
 			return nil, util.NewErrorMessage("E40036", "MFA verification code is invalid")
 		}
 	default:
 		return nil, util.NewErrorMessage("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
 	}
-	s.baseService.DeleteCache(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
+	_ = cache.Store.Delete(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
 	// Verify user status
 	if user.Status == model.UserStatusDisabled {
 		return nil, util.ErrorResponse{
@@ -396,8 +404,7 @@ func (s *UserService) GenerateMFA(ctx context.Context, user *model.User, source 
 		return nil, util.NewErrorMessage("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
 	}
 	safeToken := safe.NewEncryptedString(w.JSONStringer(token).String(), os.Getenv(safe.SecretEnvName))
-	_, err = s.baseService.CreateCache(ctx, fmt.Sprintf("ez-console:login:code:%s", token.Token), safeToken.String(), expiresAt)
-	if err != nil {
+	if err = cache.Store.Set(ctx, fmt.Sprintf("ez-console:login:code:%s", token.Token), []byte(safeToken.String()), time.Until(expiresAt)); err != nil {
 		return nil, util.NewErrorMessage("E5001", "Failed to create MFA code", err)
 	}
 	return &LoginResponse{
@@ -449,13 +456,7 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 
 		// Verify password
 		if !user.CheckPassword(password) {
-			// Record login failure and lock account according to configuration
 			s.UserLoginFailed(ctx, user)
-			if cacheUser, ok := middleware.GetUserCache(user.ResourceID); ok {
-				cacheUser.LoginAttempts = user.LoginAttempts
-				cacheUser.LockedUntil = user.LockedUntil
-				middleware.SetUserCache(user.ResourceID, cacheUser, time.Minute*10)
-			}
 
 			return nil, util.ErrorResponse{
 				HTTPCode: http.StatusUnauthorized,
@@ -694,24 +695,6 @@ func (s *UserService) GetUserByID(ctx context.Context, id string, opts ...WithGe
 	for _, opt := range opts {
 		opt(&option)
 	}
-	if option.WithCache {
-		// Try to get from cache first
-		if cacheUser, found := middleware.GetUserCache(id); found {
-			if !option.WithPermissions {
-				if !option.WithRoles {
-					cacheUser.Roles = []model.Role{}
-				} else {
-					cacheUser.Roles = w.Map(cacheUser.Roles, func(role model.Role) model.Role {
-						role.Permissions = []model.Permission{}
-						return role
-					})
-				}
-			}
-
-			return &cacheUser, nil
-		}
-	}
-
 	query := db.Session(ctx).Model(&model.User{}).Where("resource_id = ?", id)
 	if option.WithSoftDeleted {
 		query = query.Unscoped()
@@ -722,16 +705,11 @@ func (s *UserService) GetUserByID(ctx context.Context, id string, opts ...WithGe
 	} else if option.WithRoles {
 		query = query.Preload("Roles")
 	}
-	// If not found in cache, get from database
 	if err := query.First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, util.NewErrorMessage("E4041", "user not found", err)
 		}
 		return nil, err
-	}
-
-	if option.WithCache && option.WithPermissions {
-		middleware.SetUserCache(user.ResourceID, user, time.Minute*10)
 	}
 	return &user, nil
 }
@@ -1141,9 +1119,6 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
 			}
 		}
-		defer func() {
-			middleware.DeleteUserCache(user.ResourceID)
-		}()
 		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
 	})
 	return nil
@@ -1224,9 +1199,6 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 				return fmt.Errorf("failed to modify LDAP password: %w", err)
 			}
 		}
-		defer func() {
-			middleware.DeleteUserCache(user.ResourceID)
-		}()
 		return s.RunUserChangeHooks(ctx, tx, &oldUser, &user)
 	})
 	if err != nil {
@@ -1306,8 +1278,7 @@ func (s *UserService) EnableMFA(ctx context.Context, userID string, mfaType stri
 			return nil, fmt.Errorf("failed to send email: %w", err)
 		}
 		safeCode := safe.NewEncryptedString(code, os.Getenv(safe.SecretEnvName))
-		_, err = s.baseService.CreateCache(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token), safeCode.String(), expiresAt)
-		if err != nil {
+		if err = cache.Store.Set(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token), []byte(safeCode.String()), time.Until(expiresAt)); err != nil {
 			return nil, fmt.Errorf("failed to create cache: %w", err)
 		}
 		return &EnableMFAResponse{
@@ -1323,12 +1294,12 @@ func (s *UserService) VerifyAndActivateEmailMFA(ctx context.Context, userID stri
 	if err != nil {
 		return err
 	}
-	cache, err := s.baseService.GetCache(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token))
+	cacheVal, err := cache.Store.Get(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token))
 	if err != nil {
 		return fmt.Errorf("failed to get cache: %w", err)
 	}
-	s.baseService.DeleteCache(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token))
-	safeCode := safe.NewEncryptedString(cache.Value, os.Getenv(safe.SecretEnvName))
+	_ = cache.Store.Delete(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token))
+	safeCode := safe.NewEncryptedString(string(cacheVal), os.Getenv(safe.SecretEnvName))
 	if !safeCode.Equal(*safe.NewEncryptedString(code, os.Getenv(safe.SecretEnvName))) {
 		return errors.New("MFA verification code is invalid")
 	}
