@@ -29,10 +29,11 @@ type Session struct {
 	LastActiveAt time.Time `json:"last_active_at"`
 	ExpiredAt    time.Time `json:"expired_at"`
 	IsValid      bool      `gorm:"default:true" json:"is_valid"`
-	// OAuthRoleIDs stores role ResourceIDs for temporary OAuth role mapping.
+	// TemporaryRoleIDs stores role ResourceIDs for temporary OAuth role mapping.
 	// When non-empty, these roles override the user's persisted roles for
 	// the lifetime of this session only.
-	OAuthRoleIDs []string `gorm:"type:text;serializer:json" json:"-"`
+	TemporaryRoleIDs []string   `gorm:"type:text;serializer:json" json:"-"`
+	Source           UserSource `gorm:"size:20;not null;default:local" json:"source"`
 }
 
 // IsExpired checks if the session has expired

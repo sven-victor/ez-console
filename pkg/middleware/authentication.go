@@ -351,12 +351,6 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 		(passwordExpiryDays > 0 && !cs.PasswordChangedAt.IsZero() &&
 			time.Now().After(cs.PasswordChangedAt.AddDate(0, 0, passwordExpiryDays)))
 
-	// --- Load full roles from Roles cache ---
-	var roles []model.Role
-	if !passwordExpired {
-		roles = loadRolesFromCache(ctx, cs.RoleIDs)
-	}
-
 	// --- MFA enforcement ---
 	mfaEnforced := cs.MFAEnforced
 	{
@@ -380,8 +374,11 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 			}
 		}
 	}
-	if mfaEnforced && !cs.MFAEnabled {
-		roles = nil
+
+	// --- Load full roles from Roles cache ---
+	var roles []model.Role
+	if !(mfaEnforced && !cs.MFAEnabled) && (cs.Source == model.UserSourceOAuth || !passwordExpired) {
+		roles = loadRolesFromCache(ctx, cs.RoleIDs)
 	}
 
 	// --- Load organizations if not yet cached ---
@@ -395,6 +392,9 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 	// --- Reconstruct model.User for gin context ---
 	user := cs.ToUser(roles)
 	user.MFAEnforced = mfaEnforced
+	if cs.Source != model.UserSourceOAuth && passwordExpired {
+		user.Status = model.UserStatusPasswordExpired
+	}
 	if mfaEnforced && !cs.MFAEnabled {
 		user.MFAEnabled = false
 	}
@@ -446,26 +446,33 @@ func rebuildSessionCache(ctx context.Context, tokenHash, userID string) (cache.C
 	}
 
 	var user model.User
-	if err := db.Session(ctx).Where("resource_id = ?", userID).
-		Preload("Roles.Permissions").
-		Preload("Roles.AIToolPermissions").
-		First(&user).Error; err != nil {
-		return cache.CachedSession{}, util.NewErrorMessage("E4012", "User not found", err)
-	}
-
-	// Cache each role individually
-	for _, role := range user.Roles {
-		_ = cache.Roles.Set(ctx, role.ResourceID, role)
-	}
-
-	cs := cache.NewCachedSession(&session, &user)
 
 	// If session carries temporary OAuth role IDs, override the user's
 	// persisted roles so the session keeps using the OIDC-provided roles.
-	if len(session.OAuthRoleIDs) > 0 {
-		cs.RoleIDs = session.OAuthRoleIDs
-		cs.IsTemporaryRoles = true
+	if len(session.TemporaryRoleIDs) != 0 {
+		if err := db.Session(ctx).Where("resource_id = ?", userID).First(&user).Error; err != nil {
+			return cache.CachedSession{}, util.NewErrorMessage("E4012", "User not found", err)
+		}
+		user.Roles = loadRolesFromCache(ctx, session.TemporaryRoleIDs)
+	} else {
+		if err := db.Session(ctx).
+			Where("resource_id = ?", userID).
+			First(&user).Error; err != nil {
+			return cache.CachedSession{}, util.NewErrorMessage("E4012", "User not found", err)
+		}
+		var roleIDs []string
+		// SELECT t_role.resource_id FROM `t_user_roles` join `t_role` on `t_role`.id = t_user_roles.role_id where user_id = "1";
+		if err := db.Session(ctx).Table("t_user_roles").
+			Joins("join `t_role` on `t_role`.id = t_user_roles.role_id").
+			Select("t_role.resource_id").Where("user_id = ?", userID).Pluck("t_role.resource_id", &roleIDs).Error; err != nil {
+			return cache.CachedSession{}, util.NewErrorMessage("E4012", "User not found", err)
+		}
+		user.Roles = loadRolesFromCache(ctx, roleIDs)
 	}
+
+	user.Source = session.Source
+
+	cs := cache.NewCachedSession(&session, &user)
 
 	_ = cache.Sessions.Set(ctx, tokenHash, cs)
 	return cs, nil

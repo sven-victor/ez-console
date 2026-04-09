@@ -48,12 +48,7 @@ func Init(cfg *config.CacheConfig, dbSessionFn DBSessionFunc) error {
 
 	Store = backend
 
-	var sessionRemote Cache
-	if dbSessionFn != nil {
-		sessionRemote = NewDBCache(dbSessionFn)
-	}
-
-	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, sessionRemote, defaultGCInterval)
+	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, nil, defaultGCInterval)
 	Roles = NewTypedCache[model.Role]("role:", roleCacheTTL, nil, defaultGCInterval)
 	Settings = NewTypedCache[model.Setting]("setting:", settingCacheTTL, nil, defaultGCInterval)
 	AllSettings = NewTypedCache[[]model.Setting]("all_settings:", settingCacheTTL, nil, defaultGCInterval)

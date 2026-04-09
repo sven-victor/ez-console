@@ -20,22 +20,22 @@ type CachedSession struct {
 	IsValid      bool      `json:"is_valid"`
 
 	// User snapshot
-	UserID            string    `json:"user_id"`
-	Username          string    `json:"username"`
-	Email             string    `json:"email"`
-	FullName          string    `json:"full_name"`
-	Phone             string    `json:"phone"`
-	Avatar            string    `json:"avatar"`
-	Status            string    `json:"status"`
-	LockedUntil       time.Time `json:"locked_until"`
-	PasswordChangedAt time.Time `json:"password_changed_at"`
-	LastLogin         time.Time `json:"last_login"`
-	MFAEnabled        bool      `json:"mfa_enabled"`
-	MFAEnforced       bool      `json:"mfa_enforced"`
-	MFAType           string    `json:"mfa_type"`
-	Source            string    `json:"source"`
-	OAuthProvider     string    `json:"oauth_provider"`
-	LDAPDN            string    `json:"ldap_dn"`
+	UserID            string           `json:"user_id"`
+	Username          string           `json:"username"`
+	Email             string           `json:"email"`
+	FullName          string           `json:"full_name"`
+	Phone             string           `json:"phone"`
+	Avatar            string           `json:"avatar"`
+	Status            string           `json:"status"`
+	LockedUntil       time.Time        `json:"locked_until"`
+	PasswordChangedAt time.Time        `json:"password_changed_at"`
+	LastLogin         time.Time        `json:"last_login"`
+	MFAEnabled        bool             `json:"mfa_enabled"`
+	MFAEnforced       bool             `json:"mfa_enforced"`
+	MFAType           string           `json:"mfa_type"`
+	Source            model.UserSource `json:"source"`
+	OAuthProvider     string           `json:"oauth_provider"`
+	LDAPDN            string           `json:"ldap_dn"`
 
 	DisableChangePassword bool `json:"disable_change_password"`
 
@@ -77,7 +77,7 @@ func NewCachedSession(session *model.Session, user *model.User) CachedSession {
 		MFAEnabled:        user.MFAEnabled,
 		MFAEnforced:       user.MFAEnforced,
 		MFAType:           user.MFAType,
-		Source:            string(user.Source),
+		Source:            user.Source,
 		OAuthProvider:     user.OAuthProvider,
 		LDAPDN:            user.LDAPDN,
 
@@ -104,7 +104,7 @@ func (cs *CachedSession) ToUser(roles []model.Role) model.User {
 		MFAEnabled:        cs.MFAEnabled,
 		MFAEnforced:       cs.MFAEnforced,
 		MFAType:           cs.MFAType,
-		Source:            model.UserSource(cs.Source),
+		Source:            cs.Source,
 		OAuthProvider:     cs.OAuthProvider,
 		LDAPDN:            cs.LDAPDN,
 		Roles:             roles,

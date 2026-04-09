@@ -162,9 +162,10 @@ func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 			if err != nil {
 				return util.NewError("E4012", err)
 			}
+			loginResp.User.Source = model.UserSourceOAuth
 			auditLog.UserID = loginResp.User.ResourceID
 			auditLog.Username = loginResp.User.Username
-			_, err = c.service.CreateSession(ctx, &loginResp.User, loginResp.Token, ctx.ClientIP(), ctx.Request.UserAgent(), loginResp.ExpiresAt, loginResp.OAuthTemporaryRoleIDs)
+			_, err = c.service.CreateSession(ctx, &loginResp.User, loginResp.Token, ctx.ClientIP(), ctx.Request.UserAgent(), loginResp.ExpiresAt, loginResp.OAuthTemporaryRoleIDs...)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}

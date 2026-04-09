@@ -469,6 +469,7 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 				Message:  "Invalid username or password",
 			}
 		}
+		user.Source = model.UserSourceLocal
 	}
 
 	// Verify user status
