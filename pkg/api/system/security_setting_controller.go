@@ -39,13 +39,13 @@ func (c *SecuritySettingController) RegisterRoutes(router *gin.RouterGroup) {
 	security := router.Group("/security-settings")
 	{
 		// Get security settings
-		security.GET("", middleware.RequirePermission("system:settings:view"), c.GetSecuritySettings)
+		security.GET("", middleware.RequirePermission("system:security:view"), c.GetSecuritySettings)
 
 		// Update security settings
-		security.PUT("", middleware.RequirePermission("system:settings:update"), c.UpdateSecuritySettings)
+		security.PUT("", middleware.RequirePermission("system:security:update"), c.UpdateSecuritySettings)
 
 		// Check password complexity
-		security.POST("/check-password", middleware.RequirePermission("system:settings:view"), c.CheckPasswordComplexity)
+		security.POST("/check-password", middleware.RequirePermission("system:security:view"), c.CheckPasswordComplexity)
 	}
 }
 

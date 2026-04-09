@@ -153,7 +153,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
           permissions: [
             'authorization:user:list',
             'authorization:service_account:list',
-            'authorization:role:list',
+            'authorization:role:view',
           ],
           children: [
             // Role management
@@ -161,7 +161,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
               path: '/authorization/roles',
               name: 'roles',
               icon: <SolutionOutlined />,
-              permissions: ['authorization:role:list',],
+              permissions: ['authorization:role:view',],
               children: [
                 {
                   element: withSuspense(RoleList),
@@ -260,14 +260,14 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         {
           name: 'system',
           icon: <SettingOutlined />,
-          permissions: ['system:settings:view', 'system:settings:update', 'system:audit:view', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view', 'system:skills:view'],
+          permissions: ['system:settings:view', 'system:settings:update', 'system:security:view', 'system:security:update', 'system:audit_log:view', 'system:organization:view', 'ai:models:view', 'system:toolsets:view', 'system:skills:view'],
           children: [
             // System settings
             {
               path: '/system/settings',
               icon: <SafetyOutlined />,
               name: 'settings',
-              permissions: ['system:settings:view', 'system:settings:update', 'system:organization:view', 'ai:models:view', 'ai:toolsets:view', 'system:skills:view'],
+              permissions: ['system:settings:view', 'system:settings:update', 'system:security:view', 'system:security:update', 'system:organization:view', 'ai:models:view', 'system:toolsets:view', 'system:skills:view'],
               children: [
                 {
                   path: '/system/settings',
@@ -315,7 +315,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
               path: '/system/audit',
               icon: <FileSearchOutlined />,
               name: 'audit',
-              permissions: ['system:audit:view'],
+              permissions: ['system:audit_log:view'],
               index: false,
               element: withSuspense(AuditLogs),
             },

@@ -178,7 +178,7 @@ const SMTPSettingsForm: React.FC = () => {
           </Form.Item>
 
           <Form.Item>
-            <PermissionGuard permission="system:setting:update">
+            <PermissionGuard permission="system:settings:update">
               <Button type="primary" htmlType="submit" loading={submitLoading} style={{ marginRight: 8 }}>
                 {tCommon('save', { defaultValue: 'Save' })}
               </Button>
