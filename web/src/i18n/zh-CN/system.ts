@@ -180,6 +180,9 @@ export default {
       deleteFailed: '删除组织失败',
       name: '名称',
       nameRequired: '请输入组织名称',
+      slug: '标识符',
+      slugTooltip: '可选的唯一标识符，仅允许字母、数字、连字符、下划线和点。',
+      slugInvalid: '标识符仅允许字母、数字、连字符、下划线和点',
       description: '描述',
       status: '状态',
       active: '启用',
@@ -358,16 +361,20 @@ export default {
         infoTitle: '角色映射模式说明',
         options: {
           disabled: {
-            label: '关闭',
+            label: '不映射',
             description: '忽略OAuth2提供商的角色信息。新用户分配默认角色，现有用户保持其当前角色不变。',
           },
-          auto: {
-            label: '自动（推荐）',
-            description: '对于新用户或没有角色的现有用户使用OAuth2角色。对于已有角色的用户，保留其手动分配的角色。',
+          new_user_only: {
+            label: '仅新用户',
+            description: '仅对新创建的用户使用OAuth2角色。现有用户始终保持其当前角色分配，不受OAuth2提供商返回的角色信息影响。',
+          },
+          temporary: {
+            label: '临时（仅当前会话）',
+            description: '仅在当前会话中应用OAuth2角色，不写入数据库。如果用户通过其他方式（如本地密码）登录，则使用数据库中存储的角色。',
           },
           enforce: {
             label: '强制',
-            description: '当OAuth2提供角色信息时，始终覆盖用户角色。适用于OAuth2提供商是角色权威来源的场景。',
+            description: '当OAuth2提供角色信息时，始终覆盖用户角色并写入数据库。适用于OAuth2提供商是角色权威来源的场景。',
           },
         },
       },

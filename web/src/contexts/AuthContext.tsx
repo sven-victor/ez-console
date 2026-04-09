@@ -25,8 +25,8 @@ import { getURL } from '@/utils';
 export interface AuthContextType {
   user: API.User | null | undefined;
   loading: boolean;
-  login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
-  oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | void>;
+  login: (data: Partial<API.LoginRequest>) => Promise<API.User | null>;
+  oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | null>;
   logout: () => void;
   updateUser: (user: API.User) => void;
   error?: Error;
@@ -36,8 +36,8 @@ export interface AuthContextType {
 export const AuthContext = createContext<AuthContextType>({
   user: undefined,
   loading: false,
-  login: async () => { },
-  oauthLogin: async () => { },
+  login: async () => null,
+  oauthLogin: async () => null,
   logout: () => { },
   updateUser: () => { },
   error: undefined,
@@ -70,7 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<API.User | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { run: fetchCurrentUser, error } = useRequest(async () => {
+  const { run: fetchCurrentUser, runAsync: fetchCurrentUserAsync, error } = useRequest(async () => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
       setAuthToken(storedToken, false);
@@ -129,7 +129,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await api.oauth.handleCallback(data, { headers: { 'X-Base-Path': getURL() } });
       // Handle new API response format
       let token = '';
-      let userData = null;
 
       if (response && typeof response === 'object') {
         if ('code' in response && response.code === "0" && 'data' in response) {
@@ -141,7 +140,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
 
           token = respToken;
-          userData = respUser;
         } else {
           const { token: respToken, user: respUser, needs_mfa, mfa_token, mfa_type } = response as any;
 
@@ -151,13 +149,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
 
           token = respToken;
-          userData = respUser;
         }
       }
       setAuthToken(token);
-      setUser(userData);
-
-      return userData;
+      const userData = await fetchCurrentUserAsync()
+      setUser(userData || null);
+      return userData || null;
     } catch (error) {
       setUser(undefined);
       // If it's an MFA required error, rethrow

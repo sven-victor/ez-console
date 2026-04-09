@@ -358,13 +358,17 @@ export default {
             label: 'Inaktiverad',
             description: 'Ignorerar rollinformation från OAuth2-leverantören. Nya användare tilldelas standardrollen och befintliga användare behåller sina nuvarande roller.',
           },
-          auto: {
-            label: 'Automatisk (Rekommenderas)',
-            description: 'Använder OAuth2-roller för nya användare eller befintliga användare utan roller. Bevarar manuellt tilldelade roller för användare som redan har dem.',
+          new_user_only: {
+            label: 'Endast nya användare',
+            description: 'Använder OAuth2-roller endast för nyligen skapade användare. Befintliga användare behåller alltid sina nuvarande rolltilldelningar.',
+          },
+          temporary: {
+            label: 'Tillfällig (endast session)',
+            description: 'Tillämpar OAuth2-roller endast för den aktuella sessionen utan att spara dem i databasen. Om användaren loggar in via en annan metod används de i databasen lagrade rollerna.',
           },
           enforce: {
             label: 'Tvinga',
-            description: 'Skriver alltid över användarroller med OAuth2-roller när de är tillgängliga. Använd detta när OAuth2-leverantören är den auktoritativa källan för roller.',
+            description: 'Skriver alltid över användarroller med OAuth2-roller när de är tillgängliga och sparar dem i databasen. Använd detta när OAuth2-leverantören är den auktoritativa källan för roller.',
           },
         },
       },
@@ -535,6 +539,9 @@ export default {
       deleteFailed: 'Misslyckades med att ta bort organisation',
       name: 'Namn',
       nameRequired: 'Vänligen ange organisationens namn',
+      slug: 'Slug',
+      slugTooltip: 'Valfri unik identifierare. Endast bokstäver, siffror, bindestreck, understreck och punkter tillåtna.',
+      slugInvalid: 'Slug får bara innehålla bokstäver, siffror, bindestreck, understreck och punkter',
       description: 'Beskrivning',
       status: 'Status',
       active: 'Aktiv',

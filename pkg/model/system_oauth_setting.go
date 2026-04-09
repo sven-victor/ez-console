@@ -38,7 +38,7 @@ const (
 	SettingOAuthIconURL          SettingKey = "oauth_icon_url"          // OAuth icon URL
 	SettingOAuthDisplayName      SettingKey = "oauth_display_name"      // OAuth display name
 	SettingOAuthMFAEnabled       SettingKey = "oauth_mfa_enabled"       // Whether to enable MFA for OAuth authentication
-	SettingOAuthRoleMappingMode  SettingKey = "oauth_role_mapping_mode" // OAuth role mapping mode (disabled/auto/enforce)
+	SettingOAuthRoleMappingMode  SettingKey = "oauth_role_mapping_mode" // OAuth role mapping mode (disabled/new_user_only/temporary/enforce)
 
 	SettingOAuthWellknownEndpoint SettingKey = "oauth_wellknown_endpoint" // OAuth wellknown endpoint
 	SettingOAuthJWKsURI           SettingKey = "oauth_jwks_uri"           // OAuth JWKs URL
@@ -97,15 +97,31 @@ type RoleMappingMode string
 const (
 	// RoleMappingModeDisabled ignores roles from OAuth2 provider and uses default role for new users
 	RoleMappingModeDisabled RoleMappingMode = "disabled"
-	
-	// RoleMappingModeAuto uses OAuth2 roles for new users or existing users without roles,
-	// but keeps existing roles for users who already have roles assigned
-	RoleMappingModeAuto RoleMappingMode = "auto"
-	
+
+	// RoleMappingModeNewUserOnly uses OAuth2 roles only for new users;
+	// existing users keep their current role assignments
+	RoleMappingModeNewUserOnly RoleMappingMode = "new_user_only"
+
+	// RoleMappingModeTemporary applies OAuth2 roles for the current session only,
+	// without persisting them to the user_roles table. If the user logs in via
+	// another method, the database-stored roles are used instead.
+	RoleMappingModeTemporary RoleMappingMode = "temporary"
+
 	// RoleMappingModeEnforce forces update of user roles with OAuth2 roles whenever available,
-	// overwriting any existing role assignments
+	// overwriting any existing role assignments and persisting them to the database
 	RoleMappingModeEnforce RoleMappingMode = "enforce"
+
+	// RoleMappingModeAuto is a legacy alias for RoleMappingModeNewUserOnly
+	RoleMappingModeAuto RoleMappingMode = "auto"
 )
+
+// NormalizeRoleMappingMode converts legacy mode values to their current equivalents.
+func NormalizeRoleMappingMode(mode RoleMappingMode) RoleMappingMode {
+	if mode == RoleMappingModeAuto {
+		return RoleMappingModeNewUserOnly
+	}
+	return mode
+}
 
 // OAuthSettings OAuth settings request and response structure
 type OAuthSettings struct {

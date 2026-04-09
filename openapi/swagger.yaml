@@ -1384,6 +1384,10 @@ definitions:
         type: string
       name:
         type: string
+      slug:
+        description: optional unique friendly identifier
+        example: my-org
+        type: string
       status:
         description: active, disabled
         type: string
@@ -1548,13 +1552,17 @@ definitions:
   model.RoleMappingMode:
     enum:
     - disabled
-    - auto
+    - new_user_only
+    - temporary
     - enforce
+    - auto
     type: string
     x-enum-varnames:
     - RoleMappingModeDisabled
-    - RoleMappingModeAuto
+    - RoleMappingModeNewUserOnly
+    - RoleMappingModeTemporary
     - RoleMappingModeEnforce
+    - RoleMappingModeAuto
   model.SMTPSettings:
     properties:
       enabled:
@@ -2727,6 +2735,9 @@ definitions:
         type: string
       name:
         type: string
+      slug:
+        example: my-org
+        type: string
       status:
         type: string
     required:
@@ -3095,6 +3106,9 @@ definitions:
       description:
         type: string
       name:
+        type: string
+      slug:
+        example: my-org
         type: string
       status:
         type: string

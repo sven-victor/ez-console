@@ -42,6 +42,12 @@ type CachedSession struct {
 	// Role IDs (not full objects)
 	RoleIDs []string `json:"role_ids"`
 
+	// IsTemporaryRoles is true when RoleIDs were set from OAuth temporary
+	// role mapping rather than from the user_roles table. When true,
+	// rebuildSessionCache should restore roles from Session.OAuthRoleIDs
+	// instead of loading from the user's persisted roles.
+	IsTemporaryRoles bool `json:"is_temporary_roles,omitempty"`
+
 	// Organizations
 	Organizations []model.Organization `json:"organizations,omitempty"`
 }

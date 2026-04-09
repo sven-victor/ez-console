@@ -46,8 +46,11 @@ const { TextArea } = Input;
 
 
 
+const SLUG_PATTERN = /^[-_a-zA-Z0-9.]+$/;
+
 interface OrganizationFormData {
   name: string;
+  slug?: string;
   description?: string;
   status: 'active' | 'disabled';
 }
@@ -137,6 +140,7 @@ const OrganizationSettings: React.FC = () => {
     setEditingOrg(org);
     form.setFieldsValue({
       name: org.name,
+      slug: org.slug,
       description: org.description,
       status: org.status,
     });
@@ -168,6 +172,12 @@ const OrganizationSettings: React.FC = () => {
       title: t('settings.organizations.name', { defaultValue: 'Name' }),
       dataIndex: 'name',
       key: 'name',
+    },
+    {
+      title: t('settings.organizations.slug', { defaultValue: 'Slug' }),
+      dataIndex: 'slug',
+      key: 'slug',
+      render: (slug: string) => slug || '-',
     },
     {
       title: t('settings.organizations.description', { defaultValue: 'Description' }),
@@ -289,6 +299,17 @@ const OrganizationSettings: React.FC = () => {
             rules={[{ required: true, message: t('settings.organizations.nameRequired', { defaultValue: 'Please enter organization name' }) }]}
           >
             <Input />
+          </Form.Item>
+          <Form.Item
+            name="slug"
+            label={t('settings.organizations.slug', { defaultValue: 'Slug' })}
+            tooltip={t('settings.organizations.slugTooltip', { defaultValue: 'Optional unique identifier. Only letters, digits, hyphens, underscores, and dots are allowed.' })}
+            rules={[{
+              pattern: SLUG_PATTERN,
+              message: t('settings.organizations.slugInvalid', { defaultValue: 'Slug may only contain letters, digits, hyphens, underscores, and dots' }),
+            }]}
+          >
+            <Input placeholder="my-org" />
           </Form.Item>
           <Form.Item
             name="description"

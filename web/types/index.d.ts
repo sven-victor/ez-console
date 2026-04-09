@@ -2367,7 +2367,7 @@ export declare interface RoleAIToolPermissionRequest {
     toolset_id: string;
 }
 
-export declare type RoleMappingMode = "disabled" | "auto" | "enforce";
+export declare type RoleMappingMode = "disabled" | "new_user_only" | "temporary" | "enforce" | "auto";
 
 export declare interface ScheduledJobState {
     description: string;

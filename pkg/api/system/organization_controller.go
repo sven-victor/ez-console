@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/middleware"
@@ -156,9 +157,10 @@ func (c *OrganizationController) GetOrganization(ctx *gin.Context) {
 }
 
 type CreateOrganizationRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description" validate:"optional"`
-	Status      string `json:"status"`
+	Name        string  `json:"name" binding:"required"`
+	Slug        *string `json:"slug" validate:"optional" example:"my-org"`
+	Description string  `json:"description" validate:"optional"`
+	Status      string  `json:"status"`
 }
 
 // CreateOrganization creates a new organization
@@ -185,8 +187,15 @@ func (c *OrganizationController) CreateOrganization(ctx *gin.Context) {
 		req.Status = model.OrganizationStatusActive
 	}
 
+	slug := normalizeSlug(req.Slug)
+	if slug != nil && !model.SlugPattern.MatchString(*slug) {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Slug may only contain letters, digits, hyphens, underscores, and dots"))
+		return
+	}
+
 	org := &model.Organization{
 		Name:        req.Name,
+		Slug:        slug,
 		Description: req.Description,
 		Status:      req.Status,
 	}
@@ -219,9 +228,10 @@ func (c *OrganizationController) CreateOrganization(ctx *gin.Context) {
 }
 
 type UpdateOrganizationRequest struct {
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description" validate:"optional"`
-	Status      string `json:"status" binding:"required"`
+	Name        string  `json:"name" binding:"required"`
+	Slug        *string `json:"slug" validate:"optional" example:"my-org"`
+	Description string  `json:"description" validate:"optional"`
+	Status      string  `json:"status" binding:"required"`
 }
 
 // UpdateOrganization updates an organization
@@ -257,8 +267,15 @@ func (c *OrganizationController) UpdateOrganization(ctx *gin.Context) {
 		return
 	}
 
+	slug := normalizeSlug(req.Slug)
+	if slug != nil && !model.SlugPattern.MatchString(*slug) {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Slug may only contain letters, digits, hyphens, underscores, and dots"))
+		return
+	}
+
 	org := &model.Organization{
 		Name:        req.Name,
+		Slug:        slug,
 		Description: req.Description,
 		Status:      req.Status,
 	}
@@ -580,6 +597,19 @@ func (c *OrganizationController) RemoveUserFromOrganization(ctx *gin.Context) {
 	if err != nil {
 		util.RespondWithError(ctx, err)
 	}
+}
+
+// normalizeSlug returns nil when the pointer is nil or the string is empty,
+// otherwise returns the trimmed slug pointer.
+func normalizeSlug(s *string) *string {
+	if s == nil {
+		return nil
+	}
+	v := strings.TrimSpace(*s)
+	if v == "" {
+		return nil
+	}
+	return &v
 }
 
 func init() {

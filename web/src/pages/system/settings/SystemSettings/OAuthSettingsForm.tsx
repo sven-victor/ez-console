@@ -477,14 +477,17 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
           name="role_mapping_mode"
           label={t('settings.oauth.roleMappingMode.label', { defaultValue: 'Role Mapping Mode' })}
           tooltip={t('settings.oauth.roleMappingMode.tooltip', { defaultValue: 'Controls how user roles are synchronized from OAuth2 provider.' })}
-          initialValue="auto"
+          initialValue="new_user_only"
         >
           <Select disabled={!isEnabled}>
             <Select.Option value="disabled">
               {t('settings.oauth.roleMappingMode.options.disabled.label', { defaultValue: 'Disabled' })}
             </Select.Option>
-            <Select.Option value="auto">
-              {t('settings.oauth.roleMappingMode.options.auto.label', { defaultValue: 'Auto' })}
+            <Select.Option value="new_user_only">
+              {t('settings.oauth.roleMappingMode.options.new_user_only.label', { defaultValue: 'New User Only' })}
+            </Select.Option>
+            <Select.Option value="temporary">
+              {t('settings.oauth.roleMappingMode.options.temporary.label', { defaultValue: 'Temporary' })}
             </Select.Option>
             <Select.Option value="enforce">
               {t('settings.oauth.roleMappingMode.options.enforce.label', { defaultValue: 'Enforce' })}
@@ -501,7 +504,8 @@ const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRe
           description={
             <div>
               <p><strong>{t('settings.oauth.roleMappingMode.options.disabled.label', { defaultValue: 'Disabled' })}:</strong> {t('settings.oauth.roleMappingMode.options.disabled.description', { defaultValue: 'Ignores role information from OAuth2 provider. New users get the default role.' })}</p>
-              <p><strong>{t('settings.oauth.roleMappingMode.options.auto.label', { defaultValue: 'Auto' })}:</strong> {t('settings.oauth.roleMappingMode.options.auto.description', { defaultValue: 'Uses OAuth2 roles for new users or users without roles, but preserves existing role assignments.' })}</p>
+              <p><strong>{t('settings.oauth.roleMappingMode.options.new_user_only.label', { defaultValue: 'New User Only' })}:</strong> {t('settings.oauth.roleMappingMode.options.new_user_only.description', { defaultValue: 'Uses OAuth2 roles only for newly created users. Existing users keep their current roles.' })}</p>
+              <p><strong>{t('settings.oauth.roleMappingMode.options.temporary.label', { defaultValue: 'Temporary' })}:</strong> {t('settings.oauth.roleMappingMode.options.temporary.description', { defaultValue: 'Applies OAuth2 roles for the current session only without persisting them. Other login methods still use database roles.' })}</p>
               <p><strong>{t('settings.oauth.roleMappingMode.options.enforce.label', { defaultValue: 'Enforce' })}:</strong> {t('settings.oauth.roleMappingMode.options.enforce.description', { defaultValue: 'Always overwrites user roles with OAuth2 roles when available.' })}</p>
             </div>
           }

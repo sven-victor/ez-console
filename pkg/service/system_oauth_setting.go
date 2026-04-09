@@ -79,6 +79,8 @@ func (s *SettingService) GetOAuthSettings(ctx context.Context) (*model.OAuthSett
 	if err := json.Unmarshal(buf.Bytes(), result); err != nil {
 		return nil, err
 	}
+	// Normalize legacy "auto" mode to "new_user_only"
+	result.RoleMappingMode = model.NormalizeRoleMappingMode(result.RoleMappingMode)
 	return result, nil
 }
 
@@ -105,6 +107,7 @@ func (s *SettingService) UpdateOAuthSettings(ctx context.Context, settings *mode
 		string(model.SettingOAuthIconURL):          settings.IconURL,
 		string(model.SettingOAuthMFAEnabled):       boolToString(settings.MFAEnabled),
 
+		string(model.SettingOAuthRoleMappingMode):   string(model.NormalizeRoleMappingMode(settings.RoleMappingMode)),
 		string(model.SettingOAuthWellknownEndpoint): settings.WellknownEndpoint,
 	}
 	if settings.ClientSecret != nil {
@@ -134,7 +137,7 @@ func (s *SettingService) InitDefaultOAuthSettings(ctx context.Context) error {
 		model.SettingOAuthAutoCreateUser:   {"false", "Whether to automatically create users"},
 		model.SettingOAuthDefaultRole:      {"user", "OAuth user default role"},
 		model.SettingOAuthMFAEnabled:       {"false", "Whether to enable MFA for OAuth authentication"},
-		model.SettingOAuthRoleMappingMode:  {"auto", "OAuth role mapping mode (disabled/auto/enforce)"},
+		model.SettingOAuthRoleMappingMode:  {"new_user_only", "OAuth role mapping mode (disabled/new_user_only/temporary/enforce)"},
 	}
 	// Check if each setting already exists, if not, create it
 	for key, setting := range defaultSettings {

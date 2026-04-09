@@ -358,13 +358,17 @@ export default {
             label: 'Désactivé',
             description: 'Ignore les informations de rôle du fournisseur OAuth2. Les nouveaux utilisateurs reçoivent le rôle par défaut et les utilisateurs existants conservent leurs rôles actuels.',
           },
-          auto: {
-            label: 'Automatique (Recommandé)',
-            description: 'Utilise les rôles OAuth2 pour les nouveaux utilisateurs ou les utilisateurs existants sans rôles. Préserve les rôles attribués manuellement pour les utilisateurs qui en ont déjà.',
+          new_user_only: {
+            label: 'Nouveaux utilisateurs uniquement',
+            description: 'Utilise les rôles OAuth2 uniquement pour les utilisateurs nouvellement créés. Les utilisateurs existants conservent toujours leurs attributions de rôles actuelles.',
+          },
+          temporary: {
+            label: 'Temporaire (session uniquement)',
+            description: 'Applique les rôles OAuth2 uniquement pour la session en cours, sans les enregistrer dans la base de données. Si l\'utilisateur se connecte via une autre méthode, les rôles stockés en base de données sont utilisés.',
           },
           enforce: {
             label: 'Forcer',
-            description: 'Remplace toujours les rôles des utilisateurs par les rôles OAuth2 lorsqu\'ils sont disponibles. Utilisez ceci lorsque le fournisseur OAuth2 est la source faisant autorité pour les rôles.',
+            description: 'Remplace toujours les rôles des utilisateurs par les rôles OAuth2 lorsqu\'ils sont disponibles et les enregistre dans la base de données. Utilisez ceci lorsque le fournisseur OAuth2 est la source faisant autorité pour les rôles.',
           },
         },
       },
@@ -535,6 +539,9 @@ export default {
       deleteFailed: 'Échec de la suppression de l\'organisation',
       name: 'Nom',
       nameRequired: 'Veuillez entrer le nom de l\'organisation',
+      slug: 'Slug',
+      slugTooltip: 'Identifiant unique optionnel. Seuls les lettres, chiffres, tirets, underscores et points sont autorisés.',
+      slugInvalid: 'Le slug ne peut contenir que des lettres, chiffres, tirets, underscores et points',
       description: 'Description',
       status: 'Statut',
       active: 'Actif',

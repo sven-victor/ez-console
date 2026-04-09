@@ -42,7 +42,7 @@ func (s *OrganizationService) ListOrganizations(ctx context.Context, current, pa
 
 	// Apply search filter
 	if search != "" {
-		query = query.Where("name LIKE ? OR description LIKE ?", "%"+search+"%", "%"+search+"%")
+		query = query.Where("name LIKE ? OR slug LIKE ? OR description LIKE ?", "%"+search+"%", "%"+search+"%", "%"+search+"%")
 	}
 
 	// Get total count

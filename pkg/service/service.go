@@ -76,21 +76,22 @@ func NewService(ctx context.Context) *Service {
 	}
 	ldapService := NewLDAPService(ctx, baseService)
 	userService := NewUserService(ctx, baseService, ldapService)
+
+	// Create AI services
+	aiModelService := NewAIModelService()
+	toolSetService := NewToolSetService()
+	roleService := NewRoleService(toolSetService)
+	aiChatService := NewAIChatService()
+
 	// Create OAuth service and initialize it
 	oauthService := &OAuthService{
 		BaseService: baseService,
 		UserService: userService,
 	}
-
-	// Create AI services
-	aiModelService := NewAIModelService()
-	toolSetService := NewToolSetService()
-	aiChatService := NewAIChatService()
-
 	s := &Service{
 		UserService:           userService,
 		PermissionService:     new(PermissionService),
-		RoleService:           NewRoleService(toolSetService),
+		RoleService:           roleService,
 		SystemService:         NewSystemService(baseService),
 		OAuthService:          oauthService,
 		SessionService:        &SessionService{geoipService: geoipService},

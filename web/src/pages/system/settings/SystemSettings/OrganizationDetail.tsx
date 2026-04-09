@@ -290,6 +290,9 @@ const OrganizationDetail: React.FC = () => {
           <Descriptions.Item label={t('settings.organizations.name', { defaultValue: 'Name' })}>
             {orgData?.name}
           </Descriptions.Item>
+          <Descriptions.Item label={t('settings.organizations.slug', { defaultValue: 'Slug' })}>
+            {orgData?.slug || '-'}
+          </Descriptions.Item>
           <Descriptions.Item label={t('settings.organizations.status', { defaultValue: 'Status' })}>
             <Tag color={orgData?.status === 'active' ? 'green' : 'default'}>
               {orgData?.status === 'active' ? t('settings.organizations.active', { defaultValue: 'Active' }) : t('settings.organizations.disabled', { defaultValue: 'Disabled' })}

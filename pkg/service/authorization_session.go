@@ -52,7 +52,9 @@ func (s *SessionService) DeleteSession(ctx context.Context, userID, token string
 }
 
 // CreateSession creates a new session record and populates the session cache.
-func (s *SessionService) CreateSession(ctx context.Context, user *model.User, token, ipAddress, userAgent string, expiredAt time.Time) (*model.Session, error) {
+// oauthTemporaryRoleIDs, when non-empty, stores OAuth role IDs for the
+// temporary role mapping mode so they survive cache eviction.
+func (s *SessionService) CreateSession(ctx context.Context, user *model.User, token, ipAddress, userAgent string, expiredAt time.Time, oauthTemporaryRoleIDs ...[]string) (*model.Session, error) {
 	session := &model.Session{
 		UserID:       user.ResourceID,
 		Token:        safe.NewHash(sha256.New, []byte(token)).HexString(64),
@@ -63,11 +65,21 @@ func (s *SessionService) CreateSession(ctx context.Context, user *model.User, to
 		IsValid:      true,
 	}
 
+	var tempRoleIDs []string
+	if len(oauthTemporaryRoleIDs) > 0 && len(oauthTemporaryRoleIDs[0]) > 0 {
+		tempRoleIDs = oauthTemporaryRoleIDs[0]
+		session.OAuthRoleIDs = tempRoleIDs
+	}
+
 	if err := db.Session(ctx).Create(session).Error; err != nil {
 		return nil, fmt.Errorf("failed to create session record: %w", err)
 	}
 
 	cs := cache.NewCachedSession(session, user)
+	if len(tempRoleIDs) > 0 {
+		cs.RoleIDs = tempRoleIDs
+		cs.IsTemporaryRoles = true
+	}
 	_ = cache.Sessions.Set(ctx, session.Token, cs)
 
 	return session, nil

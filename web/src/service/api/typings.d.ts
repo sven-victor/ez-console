@@ -294,6 +294,7 @@ declare global {
     interface CreateOrganizationRequest {
       description?: string;
       name: string;
+      slug?: string;
       status: string;
     }
   
@@ -963,6 +964,8 @@ declare global {
       description: string;
       id: string;
       name: string;
+      /** optional unique friendly identifier */
+      slug?: string;
       /** active, disabled */
       status: string;
       updated_at: string;
@@ -1582,7 +1585,12 @@ declare global {
       toolset_id: string;
     }
   
-    type RoleMappingMode = "disabled" | "auto" | "enforce";
+    type RoleMappingMode =
+      | "disabled"
+      | "new_user_only"
+      | "temporary"
+      | "enforce"
+      | "auto";
   
     interface ScheduledJobState {
       description: string;
@@ -2180,6 +2188,7 @@ declare global {
     interface UpdateOrganizationRequest {
       description?: string;
       name: string;
+      slug?: string;
       status: string;
     }
   

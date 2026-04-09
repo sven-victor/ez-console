@@ -8350,6 +8350,11 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "slug": {
+                    "description": "optional unique friendly identifier",
+                    "type": "string",
+                    "example": "my-org"
+                },
                 "status": {
                     "description": "active, disabled",
                     "type": "string"
@@ -8560,13 +8565,17 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "disabled",
-                "auto",
-                "enforce"
+                "new_user_only",
+                "temporary",
+                "enforce",
+                "auto"
             ],
             "x-enum-varnames": [
                 "RoleMappingModeDisabled",
-                "RoleMappingModeAuto",
-                "RoleMappingModeEnforce"
+                "RoleMappingModeNewUserOnly",
+                "RoleMappingModeTemporary",
+                "RoleMappingModeEnforce",
+                "RoleMappingModeAuto"
             ]
         },
         "model.SMTPSettings": {
@@ -10209,6 +10218,10 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "slug": {
+                    "type": "string",
+                    "example": "my-org"
+                },
                 "status": {
                     "type": "string"
                 }
@@ -10725,6 +10738,10 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "slug": {
+                    "type": "string",
+                    "example": "my-org"
                 },
                 "status": {
                     "type": "string"

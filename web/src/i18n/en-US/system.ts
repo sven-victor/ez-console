@@ -183,6 +183,9 @@ export default {
       deleteFailed: 'Failed to delete organization',
       name: 'Name',
       nameRequired: 'Please enter organization name',
+      slug: 'Slug',
+      slugTooltip: 'Optional unique identifier. Only letters, digits, hyphens, underscores, and dots are allowed.',
+      slugInvalid: 'Slug may only contain letters, digits, hyphens, underscores, and dots',
       description: 'Description',
       status: 'Status',
       active: 'Active',
@@ -362,13 +365,17 @@ export default {
             label: 'Disabled',
             description: 'Ignores role information from OAuth2 provider. New users are assigned the default role, and existing users retain their current roles.',
           },
-          auto: {
-            label: 'Auto (Recommended)',
-            description: 'Uses OAuth2 roles for new users or existing users without roles. Preserves manually assigned roles for users who already have them.',
+          new_user_only: {
+            label: 'New User Only',
+            description: 'Uses OAuth2 roles only for newly created users. Existing users always keep their current role assignments regardless of what the OAuth2 provider returns.',
+          },
+          temporary: {
+            label: 'Temporary (Session Only)',
+            description: 'Applies OAuth2 roles for the current session only, without persisting them to the database. If the user logs in via another method (e.g. local password), the database-stored roles are used instead.',
           },
           enforce: {
             label: 'Enforce',
-            description: 'Always overwrites user roles with OAuth2 roles when available. Use this when the OAuth2 provider is the authoritative source for roles.',
+            description: 'Always overwrites user roles with OAuth2 roles when available and persists them to the database. Use this when the OAuth2 provider is the authoritative source for roles.',
           },
         },
       },

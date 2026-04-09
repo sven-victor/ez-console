@@ -140,6 +140,10 @@ type LoginResponse struct {
 	NeedsMFA        bool       `json:"needs_mfa"`
 	PasswordExpired bool       `json:"password_expired"`
 	ExpiresAt       time.Time  `json:"expires_at"`
+	// OAuthTemporaryRoleIDs holds role ResourceIDs when RoleMappingMode is "temporary".
+	// These are passed to CreateSession so they can be stored on the session row
+	// and used instead of the user's persisted roles for the session lifetime.
+	OAuthTemporaryRoleIDs []string `json:"-"`
 }
 
 // CreateUserRequest registration request parameters

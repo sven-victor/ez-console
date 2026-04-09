@@ -358,13 +358,17 @@ export default {
             label: 'Desactivado',
             description: 'Ignora la información de roles del proveedor OAuth2. Los nuevos usuarios reciben el rol predeterminado y los usuarios existentes conservan sus roles actuales.',
           },
-          auto: {
-            label: 'Automático (Recomendado)',
-            description: 'Utiliza roles de OAuth2 para nuevos usuarios o usuarios existentes sin roles. Conserva los roles asignados manualmente para usuarios que ya los tienen.',
+          new_user_only: {
+            label: 'Solo usuarios nuevos',
+            description: 'Utiliza roles de OAuth2 solo para usuarios recién creados. Los usuarios existentes siempre conservan sus asignaciones de roles actuales.',
+          },
+          temporary: {
+            label: 'Temporal (solo sesión)',
+            description: 'Aplica los roles de OAuth2 solo para la sesión actual, sin guardarlos en la base de datos. Si el usuario inicia sesión por otro método, se usan los roles almacenados en la base de datos.',
           },
           enforce: {
             label: 'Forzar',
-            description: 'Siempre sobrescribe los roles de usuario con roles de OAuth2 cuando están disponibles. Use esto cuando el proveedor OAuth2 sea la fuente autoritativa para roles.',
+            description: 'Siempre sobrescribe los roles de usuario con roles de OAuth2 cuando están disponibles y los guarda en la base de datos. Use esto cuando el proveedor OAuth2 sea la fuente autoritativa para roles.',
           },
         },
       },
@@ -535,6 +539,9 @@ export default {
       deleteFailed: 'Error al eliminar organización',
       name: 'Nombre',
       nameRequired: 'Por favor ingrese el nombre de la organización',
+      slug: 'Slug',
+      slugTooltip: 'Identificador único opcional. Solo se permiten letras, dígitos, guiones, guiones bajos y puntos.',
+      slugInvalid: 'El slug solo puede contener letras, dígitos, guiones, guiones bajos y puntos',
       description: 'Descripción',
       status: 'Estado',
       active: 'Activo',

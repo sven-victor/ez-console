@@ -431,6 +431,8 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 }
 
 // rebuildSessionCache loads session + user from DB and populates the cache.
+// If the session has OAuthRoleIDs (temporary role mapping), those are used
+// instead of the user's persisted roles.
 func rebuildSessionCache(ctx context.Context, tokenHash, userID string) (cache.CachedSession, error) {
 	var session model.Session
 	if err := db.Session(ctx).Where("token = ? AND is_valid = ?", tokenHash, true).
@@ -457,6 +459,14 @@ func rebuildSessionCache(ctx context.Context, tokenHash, userID string) (cache.C
 	}
 
 	cs := cache.NewCachedSession(&session, &user)
+
+	// If session carries temporary OAuth role IDs, override the user's
+	// persisted roles so the session keeps using the OIDC-provided roles.
+	if len(session.OAuthRoleIDs) > 0 {
+		cs.RoleIDs = session.OAuthRoleIDs
+		cs.IsTemporaryRoles = true
+	}
+
 	_ = cache.Sessions.Set(ctx, tokenHash, cs)
 	return cs, nil
 }
