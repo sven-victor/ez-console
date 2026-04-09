@@ -547,6 +547,7 @@ export default {
       active: 'Aktiv',
       disabled: 'Inaktiv',
       searchPlaceholder: 'Sök organisationer...',
+      createdAt: 'Skapad',
       detail: 'Organisationens detaljer',
       users: {
         title: 'Organisationens användare',

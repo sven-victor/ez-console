@@ -547,6 +547,7 @@ export default {
       active: 'Aktiv',
       disabled: 'Inaktiv',
       searchPlaceholder: 'Organisationen suchen...',
+      createdAt: 'Erstellt am',
       detail: 'Organisation Details',
       users: {
         title: 'Organisation Benutzer',

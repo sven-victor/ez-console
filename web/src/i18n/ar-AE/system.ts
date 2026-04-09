@@ -546,6 +546,7 @@ export default {
       active: 'مفعل',
       disabled: 'معطل',
       searchPlaceholder: 'بحث في المنظمات...',
+      createdAt: 'تاريخ الإنشاء',
       detail: 'تفاصيل المنظمة',
       users: {
         title: 'مستخدمي المنظمة',

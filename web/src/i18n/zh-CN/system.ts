@@ -188,6 +188,7 @@ export default {
       active: '启用',
       disabled: '禁用',
       searchPlaceholder: '搜索组织...',
+      createdAt: '创建时间',
       detail: '组织详情',
       users: {
         title: '组织用户',

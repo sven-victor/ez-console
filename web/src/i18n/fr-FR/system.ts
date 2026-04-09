@@ -547,6 +547,7 @@ export default {
       active: 'Actif',
       disabled: 'Inactif',
       searchPlaceholder: 'Rechercher des organisations...',
+      createdAt: 'Date de création',
       detail: 'Détails de l\'organisation',
       users: {
         title: 'Utilisateurs de l\'organisation',

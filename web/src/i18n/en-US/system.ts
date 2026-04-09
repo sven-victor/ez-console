@@ -191,6 +191,7 @@ export default {
       active: 'Active',
       disabled: 'Disabled',
       searchPlaceholder: 'Search organizations...',
+      createdAt: 'Created At',
       detail: 'Organization Detail',
       users: {
         title: 'Organization Users',

@@ -57,8 +57,18 @@ interface OrganizationFormData {
 
 const OrganizationSettings: React.FC = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation('system');
+  const { t, i18n } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
+
+  const formatCreatedAt = (value: string | undefined) => {
+    if (!value) return '-';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '-';
+    return d.toLocaleString(i18n.language, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
+  };
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingOrg, setEditingOrg] = useState<API.Organization | null>(null);
@@ -193,6 +203,13 @@ const OrganizationSettings: React.FC = () => {
           {status === 'active' ? t('settings.organizations.active', { defaultValue: 'Active' }) : t('settings.organizations.disabled', { defaultValue: 'Disabled' })}
         </Tag>
       ),
+    },
+    {
+      title: t('settings.organizations.createdAt', { defaultValue: 'Created At' }),
+      dataIndex: 'created_at',
+      key: 'created_at',
+      width: 200,
+      render: (value: string) => formatCreatedAt(value),
     },
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
