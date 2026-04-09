@@ -272,6 +272,10 @@ export default {
     allowWithAction: 'Autoriser avec action',
     denyWithCondition: 'Refuser avec condition',
     allowWithUri: 'Autoriser avec URI',
+    allOrganizations: 'Toutes les organisations',
+    loadDetailError: 'Échec du chargement des détails du rôle',
+    noPermissions: 'Aucune permission attribuée',
+    noPolicyDocument: 'Aucun document de politique',
   },
   permission: {
     title: {

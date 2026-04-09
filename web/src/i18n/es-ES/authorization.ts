@@ -272,6 +272,10 @@ export default {
     allowWithAction: 'Permitir con acción',
     denyWithCondition: 'Denegar con condición',
     allowWithUri: 'Permitir con URI',
+    allOrganizations: 'Todas las organizaciones',
+    loadDetailError: 'Error al cargar los detalles del rol',
+    noPermissions: 'Sin permisos asignados',
+    noPolicyDocument: 'Sin documento de política',
   },
   permission: {
     title: {

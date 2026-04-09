@@ -272,6 +272,10 @@ export default {
     allowWithAction: 'Tillåt med åtgärd',
     denyWithCondition: 'Neka med villkor',
     allowWithUri: 'Tillåt med URI',
+    allOrganizations: 'Alla organisationer',
+    loadDetailError: 'Kunde inte ladda rolldetaljer',
+    noPermissions: 'Inga behörigheter tilldelade',
+    noPolicyDocument: 'Inget policydokument',
   },
   permission: {
     title: {

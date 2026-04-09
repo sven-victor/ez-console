@@ -272,6 +272,10 @@ export default {
     allowWithUri: '允许特定URI',
     invalidJsonFormat: 'JSON格式错误',
     policyDocument: '策略文档',
+    allOrganizations: '所有组织',
+    loadDetailError: '加载角色详情失败',
+    noPermissions: '未分配权限',
+    noPolicyDocument: '无策略文档',
   },
   permission: {
     title: {

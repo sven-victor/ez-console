@@ -14,24 +14,79 @@
  * limitations under the License.
  */
 
-import React, { useRef } from 'react';
-import { Card, Button, Space, message, Popconfirm, Tag, Row, Col, Tooltip } from 'antd';
+import React, { useState } from 'react';
+import { Card, Button, Space, message, Popconfirm, Tag, Row, Col, Tooltip, Table, Form, Input, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, LockOutlined, ReloadOutlined, TeamOutlined, CopyOutlined } from '@ant-design/icons';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import api from '@/service/api';
-import { Table } from '@/components/Table';
-import { TableRef } from '@/components/Table';
 import { ColumnsType } from 'antd/es/table';
 import { useTranslation } from 'react-i18next';
 import { useSite } from '@/contexts/SiteContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import usePermission from '@/hooks/usePermission';
+import { PAGINATION } from '@/constants';
+import RoleDrawer from './RoleDrawer';
+import { useRequest } from 'ahooks';
 
 const RoleList: React.FC = () => {
   const { t } = useTranslation("authorization");
   const { t: tCommon } = useTranslation('common');
   const { siteConfig } = useSite();
+  const enableMultiOrg = siteConfig?.enable_multi_org ?? false;
   const navigate = useNavigate();
-  const tableRef = useRef<TableRef<API.Role>>(null);
+  const { user } = useAuth();
+  const { hasGlobalPermission } = usePermission();
+  const organizations = user?.organizations || [];
+
+  const [searchForm] = Form.useForm();
+
+  // Query parameters
+  const [queryParams, setQueryParams] = useState<{
+    current: number;
+    page_size: number;
+    search?: string;
+    organization_id?: string;
+  }>({
+    current: PAGINATION.DEFAULT_CURRENT,
+    page_size: PAGINATION.DEFAULT_PAGE_SIZE,
+    search: undefined,
+    organization_id: undefined,
+  });
+
+  // Drawer state
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+
+  const { run: fetchRoles, data, loading: loading } = useRequest(async () => {
+    return api.authorization.listRoles(queryParams)
+  }, {
+    debounceWait: 300,
+    refreshDeps: [queryParams],
+    onError: () => {
+      message.error(t('role.loadError', { defaultValue: 'Failed to load role list' }));
+    },
+  });
+
+
+
+  const handleSearch = (values: any) => {
+    setQueryParams({
+      ...queryParams,
+      current: PAGINATION.DEFAULT_CURRENT,
+      search: values.search,
+      organization_id: values.organization_id || undefined,
+    });
+  };
+
+  const handlePageChange = (page: number, pageSize: number) => {
+    setQueryParams(prev => ({
+      ...prev,
+      current: page,
+      page_size: pageSize,
+    }));
+  };
+
   const handleEdit = (roleId: string) => {
     navigate(`/authorization/roles/${roleId}/edit`);
   };
@@ -44,21 +99,28 @@ const RoleList: React.FC = () => {
     try {
       await api.authorization.deleteRole({ id });
       message.success(t('role.deleteSuccess', { defaultValue: 'Role deleted successfully.' }));
-      tableRef.current?.reload?.();
+      fetchRoles();
     } catch (error) {
       message.error(t('role.deleteError', { defaultValue: 'Failed to delete role: {{error}}', error }));
     }
   };
+
+  const handleNameClick = (roleId: string) => {
+    setSelectedRoleId(roleId);
+    setDrawerOpen(true);
+  };
+
+  const showOrgFilter = enableMultiOrg && hasGlobalPermission('authorization:role:view');
 
   const columns: ColumnsType<API.Role> = [
     {
       title: t('role.name', { defaultValue: 'Role Name' }),
       dataIndex: 'name',
       key: 'name',
-      render: (text: string) => (
+      render: (text: string, record: API.Role) => (
         <Space>
           <UserOutlined />
-          {text}
+          <a onClick={() => handleNameClick(record.id)}>{text}</a>
         </Space>
       ),
     },
@@ -80,7 +142,7 @@ const RoleList: React.FC = () => {
     {
       title: t('role.organization', { defaultValue: 'Organization' }),
       key: 'organization',
-      hidden: !siteConfig?.enable_multi_org,
+      hidden: !enableMultiOrg,
       render: (_: any, record: API.Role) => {
         if (record.organization_id) {
           return (
@@ -183,53 +245,100 @@ const RoleList: React.FC = () => {
       },
     },
   ];
+
   return (
     <div>
-      {/* Search Form */}
       <Card style={{ marginBottom: 16 }}>
-        <div style={{ marginBottom: 16 }}>
-          <Row justify="space-between" align="middle" gutter={16}>
+        <Form
+          form={searchForm}
+          layout="vertical"
+          onFinish={handleSearch}
+          name="roleSearchForm"
+          initialValues={{
+            search: queryParams.search,
+            organization_id: queryParams.organization_id,
+          }}
+          style={{ marginBottom: 0 }}
+        >
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col>
+              <Space>
+                <Form.Item name="search" noStyle>
+                  <Input.Search
+                    placeholder={t('role.searchPlaceholder', { defaultValue: 'Role name/description' })}
+                    allowClear
+                    onSearch={() => {
+                      handleSearch(searchForm.getFieldsValue());
+                    }}
+                    style={{ width: 300 }}
+                  />
+                </Form.Item>
+                {showOrgFilter && (
+                  <Form.Item name="organization_id" noStyle>
+                    <Select
+                      placeholder={t('role.allOrganizations', { defaultValue: 'All Organizations' })}
+                      allowClear
+                      onChange={() => {
+                        handleSearch(searchForm.getFieldsValue());
+                      }}
+                      style={{ minWidth: 180 }}
+                      options={[
+                        { value: '', label: t('role.global', { defaultValue: 'Global' }) },
+                        ...organizations.map((org) => ({ value: org.id, label: org.name })),
+                      ]}
+                    />
+                  </Form.Item>
+                )}
+              </Space>
+            </Col>
             <Col>
               <Space>
                 <Button
-                  type="primary"
-                  onClick={() => {
-                    tableRef.current?.reload?.();
-                  }}
+                  onClick={() => { handleSearch(searchForm.getFieldsValue()); }}
                   icon={<ReloadOutlined />}
                 >
                   {tCommon('refresh', { defaultValue: 'Refresh' })}
                 </Button>
+                <PermissionGuard permission="authorization:role:create">
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => navigate('/authorization/roles/create')}
+                  >
+                    {t('role.create', { defaultValue: 'Create Role' })}
+                  </Button>
+                </PermissionGuard>
               </Space>
             </Col>
-            <Col>
-              <PermissionGuard permission="authorization:role:create">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => navigate('/authorization/roles/create')}
-                >
-                  {t('role.create', { defaultValue: 'Create Role' })}
-                </Button>
-              </PermissionGuard>
-            </Col>
           </Row>
+        </Form>
+      </Card>
 
-        </div>
-
+      <Card>
         <Table<API.Role>
-          request={async ({ page_size, current }) => {
-            return api.authorization.listRoles({
-              current,
-              page_size
-            })
-          }}
+          rowKey="id"
+          loading={loading}
+          dataSource={data?.data ?? []}
           columns={columns}
-          actionRef={tableRef}
+          pagination={{
+            current: queryParams.current,
+            pageSize: queryParams.page_size,
+            total: data?.total ?? 0,
+            onChange: handlePageChange,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total) => tCommon('totalItems', { defaultValue: `Total ${total} items`, total }),
+          }}
         />
       </Card>
+
+      <RoleDrawer
+        roleId={selectedRoleId}
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
     </div>
   );
 };
 
-export default RoleList; 
+export default RoleList;

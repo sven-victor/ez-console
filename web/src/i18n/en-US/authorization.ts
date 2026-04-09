@@ -272,6 +272,10 @@ export default {
     allowWithAction: 'Allow with Action',
     denyWithCondition: 'Deny with Condition',
     allowWithUri: 'Allow with URI',
+    allOrganizations: 'All Organizations',
+    loadDetailError: 'Failed to load role details',
+    noPermissions: 'No permissions assigned',
+    noPolicyDocument: 'No policy document',
   },
   permission: {
     title: {

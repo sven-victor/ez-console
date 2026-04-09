@@ -272,6 +272,10 @@ export default {
     allowWithAction: 'السماح بالإجراء',
     denyWithCondition: 'الرفض بالشرط',
     allowWithUri: 'السماح بالمعرف الموحد للموارد (URI)',
+    allOrganizations: 'جميع المنظمات',
+    loadDetailError: 'فشل تحميل تفاصيل الدور',
+    noPermissions: 'لا توجد أذونات مخصصة',
+    noPolicyDocument: 'لا يوجد مستند سياسة',
   },
   permission: {
     title: {
