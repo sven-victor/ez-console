@@ -349,8 +349,12 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	engine.Use(gin.CustomRecovery(middleware.Recovery()), otelgin.Middleware(serviceName))
 	engine.Use(middleware.PrometheusMetrics(), middleware.Log(serviceName))
 	engine.Use(middleware.CORSMiddleware(), middleware.DelayMiddleware())
-	// Default middleware is provided by gin.Default()
-	// No need for additional logger and recovery middleware
+
+	// Apply custom engine options, example Middleware, Routes, etc.
+	for _, option := range options {
+		option(engine)
+	}
+
 	svc := service.NewService(ctx)
 
 	initSettings(ctx, cfg, svc)
@@ -369,10 +373,6 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	RegisterStaticRoutes(engine)
 
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	for _, option := range options {
-		option(engine)
-	}
 
 	svc.SchedulerService.Start(ctx)
 	// Start the server
