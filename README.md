@@ -107,7 +107,7 @@ The server will start on `http://localhost:8080` by default. Access the admin co
 
 **Default Credentials:**
 - Username: `admin`
-- Password: `admin123` (change immediately in production)
+- Password: `Admin@123` (change immediately in production)
 
 > **Security Note:** The `--global.encrypt-key` must be 8, 16, 24, or 32 bytes. This key is used for encrypting sensitive data. **Never change it after initial setup** or existing encrypted data will be unrecoverable.
 
