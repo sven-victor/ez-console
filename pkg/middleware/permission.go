@@ -16,6 +16,7 @@ package middleware
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -172,6 +173,37 @@ func HasPermission(c *gin.Context, code string) error {
 	return util.NewErrorMessage("E4031", "No permission to perform this operation")
 }
 
+// HasAnyPermission returns the first permission code in codes that the current user satisfies.
+func HasAnyPermission(c *gin.Context, codes []string) (matched string, err error) {
+	if len(codes) == 0 {
+		return "", util.NewErrorMessage("E4031", "No permission to perform this operation")
+	}
+	var lastErr error
+	for _, code := range codes {
+		if err := HasPermission(c, code); err == nil {
+			return code, nil
+		}
+		lastErr = err
+	}
+	if lastErr != nil {
+		return "", lastErr
+	}
+	return "", util.NewErrorMessage("E4031", "No permission to perform this operation")
+}
+
+// HasAllPermissions returns a comma-separated list of all codes when the current user satisfies every permission in codes (order preserved).
+func HasAllPermissions(c *gin.Context, codes []string) (matched string, err error) {
+	if len(codes) == 0 {
+		return "", util.NewErrorMessage("E4031", "No permission to perform this operation")
+	}
+	for _, code := range codes {
+		if err := HasPermission(c, code); err != nil {
+			return "", err
+		}
+	}
+	return strings.Join(codes, ","), nil
+}
+
 // RequirePermission permission check middleware
 func RequirePermission(code string) gin.HandlerFunc {
 	if GetPermission(code) == nil {
@@ -185,5 +217,49 @@ func RequirePermission(code string) gin.HandlerFunc {
 		}
 		c.Next()
 		return
+	}
+}
+
+// RequireAnyPermission allows the request if the user has at least one of the given permissions.
+// On success, it sets context key "permission_code" to the first matched code.
+func RequireAnyPermission(codes ...string) gin.HandlerFunc {
+	if len(codes) == 0 {
+		panic("RequireAnyPermission: at least one permission code is required")
+	}
+	for _, code := range codes {
+		if GetPermission(code) == nil {
+			panic(fmt.Sprintf("permission %s not found", code))
+		}
+	}
+	return func(c *gin.Context) {
+		matched, err := HasAnyPermission(c, codes)
+		if err != nil {
+			util.RespondWithError(c, err)
+			return
+		}
+		c.Set("permission_code", matched)
+		c.Next()
+	}
+}
+
+// RequireAllPermissions allows the request only if the user has every given permission.
+// On success, it sets context key "permission_code" to a comma-separated list of all codes (same order as arguments).
+func RequireAllPermissions(codes ...string) gin.HandlerFunc {
+	if len(codes) == 0 {
+		panic("RequireAllPermissions: at least one permission code is required")
+	}
+	for _, code := range codes {
+		if GetPermission(code) == nil {
+			panic(fmt.Sprintf("permission %s not found", code))
+		}
+	}
+	return func(c *gin.Context) {
+		matched, err := HasAllPermissions(c, codes)
+		if err != nil {
+			util.RespondWithError(c, err)
+			return
+		}
+		c.Set("permission_code", matched)
+		c.Next()
 	}
 }

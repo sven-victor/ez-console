@@ -16,6 +16,7 @@ package service
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -70,6 +71,18 @@ func (s *AuditLogService) StartAudit(ctx *gin.Context, resourceID string, handle
 	if ok {
 		actionCode := code.(string)
 		action := middleware.GetPermission(actionCode)
+		if action == nil && strings.Contains(actionCode, ",") {
+			for _, part := range strings.Split(actionCode, ",") {
+				part = strings.TrimSpace(part)
+				if part == "" {
+					continue
+				}
+				if p := middleware.GetPermission(part); p != nil {
+					action = p
+					break
+				}
+			}
+		}
 		if action != nil {
 			auditLog.Action = action.Code
 			auditLog.ActionName = action.Name
