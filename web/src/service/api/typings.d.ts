@@ -466,6 +466,10 @@ declare global {
       | 60000000000
       | 3600000000000;
   
+    interface EnableMFARequest {
+      mfa_type: string;
+    }
+  
     interface EnableMFAResponse {
       qr_code: string;
       secret: string;

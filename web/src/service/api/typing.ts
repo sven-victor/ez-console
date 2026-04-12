@@ -464,6 +464,10 @@ export type Duration =
   | 60000000000
   | 3600000000000;
 
+export interface EnableMFARequest {
+  mfa_type: string;
+}
+
 export interface EnableMFAResponse {
   qr_code: string;
   secret: string;

@@ -42,50 +42,6 @@ export async function getLdapUsers(
   });
 }
 
-/** Disable MFA Disable MFA POST /api/authorization/mfa/disable */
-export async function disableMfa(options?: { [key: string]: any }) {
-  return request<API.ResponseUtilMessageData>(
-    "/api/authorization/mfa/disable",
-    {
-      method: "POST",
-      ...(options || {}),
-    }
-  );
-}
-
-/** Enable MFA Enable MFA POST /api/authorization/mfa/enable */
-export async function enableMfa(
-  body: string,
-  options?: { [key: string]: any }
-) {
-  return request<API.ResponseServiceEnableMFAResponse>(
-    "/api/authorization/mfa/enable",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      data: body,
-      ...(options || {}),
-    }
-  );
-}
-
-/** Verify and activate MFA Verify and activate MFA POST /api/authorization/mfa/verify */
-export async function verifyAndActivateMfa(
-  body: API.VerifyAndActivateMFARequest,
-  options?: { [key: string]: any }
-) {
-  return request<API.ResponseUtilMessageData>("/api/authorization/mfa/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    data: body,
-    ...(options || {}),
-  });
-}
-
 /** Get a list of permissions Get a list of permissions GET /api/authorization/permissions */
 export async function listPermissions(options?: { [key: string]: any }) {
   return request<API.ResponseArrayModelPermissionGroup>(
@@ -136,6 +92,53 @@ export async function getCurrentUserLogs(
         page_size: "10",
         ...params,
       },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Disable MFA Disable MFA POST /api/authorization/profile/mfa/disable */
+export async function disableMfa(options?: { [key: string]: any }) {
+  return request<API.ResponseUtilMessageData>(
+    "/api/authorization/profile/mfa/disable",
+    {
+      method: "POST",
+      ...(options || {}),
+    }
+  );
+}
+
+/** Enable MFA Enable MFA POST /api/authorization/profile/mfa/enable */
+export async function enableMfa(
+  body: API.EnableMFARequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseServiceEnableMFAResponse>(
+    "/api/authorization/profile/mfa/enable",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Verify and activate MFA Verify and activate MFA POST /api/authorization/profile/mfa/verify */
+export async function verifyAndActivateMfa(
+  body: API.VerifyAndActivateMFARequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseUtilMessageData>(
+    "/api/authorization/profile/mfa/verify",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
       ...(options || {}),
     }
   );

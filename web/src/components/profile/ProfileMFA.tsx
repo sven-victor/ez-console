@@ -36,7 +36,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
   const [mfaType, setMfaType] = useState<'totp' | 'email'>('totp');
 
   const { run: handleEnableMFA, data: enableMFAData = { secret: '', qr_code: '', token: undefined } } = useRequest(
-    () => api.authorization.enableMfa(mfaType),
+    () => api.authorization.enableMfa({ mfa_type: mfaType }),
     {
       manual: true,
       onSuccess: () => {

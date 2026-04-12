@@ -394,6 +394,13 @@ definitions:
       status:
         type: string
     type: object
+  authorizationapi.EnableMFARequest:
+    properties:
+      mfa_type:
+        type: string
+    required:
+    - mfa_type
+    type: object
   authorizationapi.LoginRequest:
     properties:
       mfa_code:
@@ -3181,22 +3188,23 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3207,22 +3215,23 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
   toolset.ToolSetType:
     enum:
     - utils
@@ -5049,92 +5058,6 @@ paths:
       summary: Get LDAP users
       tags:
       - Authorization/Users
-  /api/authorization/mfa/disable:
-    post:
-      consumes:
-      - application/json
-      description: Disable MFA
-      operationId: disableMfa
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-util_MessageData'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Disable MFA
-      tags:
-      - Authorization/Profile/MFA
-  /api/authorization/mfa/enable:
-    post:
-      consumes:
-      - application/json
-      description: Enable MFA
-      operationId: enableMfa
-      parameters:
-      - description: MFA Type
-        in: body
-        name: mfa_type
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-service_EnableMFAResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Enable MFA
-      tags:
-      - Authorization/Profile/MFA
-  /api/authorization/mfa/verify:
-    post:
-      consumes:
-      - application/json
-      description: Verify and activate MFA
-      operationId: verifyAndActivateMfa
-      parameters:
-      - description: MFA Type
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/authorizationapi.VerifyAndActivateMFARequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/util.Response-util_MessageData'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/util.ErrorResponse'
-      summary: Verify and activate MFA
-      tags:
-      - Authorization/Profile/MFA
   /api/authorization/permissions:
     get:
       consumes:
@@ -5232,6 +5155,92 @@ paths:
       summary: Get current user's audit logs
       tags:
       - Authorization/Users
+  /api/authorization/profile/mfa/disable:
+    post:
+      consumes:
+      - application/json
+      description: Disable MFA
+      operationId: disableMfa
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Disable MFA
+      tags:
+      - Authorization/Profile/MFA
+  /api/authorization/profile/mfa/enable:
+    post:
+      consumes:
+      - application/json
+      description: Enable MFA
+      operationId: enableMfa
+      parameters:
+      - description: MFA Type
+        in: body
+        name: mfa_type
+        required: true
+        schema:
+          $ref: '#/definitions/authorizationapi.EnableMFARequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-service_EnableMFAResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Enable MFA
+      tags:
+      - Authorization/Profile/MFA
+  /api/authorization/profile/mfa/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify and activate MFA
+      operationId: verifyAndActivateMfa
+      parameters:
+      - description: MFA Type
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authorizationapi.VerifyAndActivateMFARequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Verify and activate MFA
+      tags:
+      - Authorization/Profile/MFA
   /api/authorization/profile/password:
     put:
       consumes:

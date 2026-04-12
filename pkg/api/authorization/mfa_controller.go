@@ -56,11 +56,11 @@ type EnableMFARequest struct {
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
 //	@Produce		json
-//	@Param			mfa_type	body		string	true	"MFA Type"
+//	@Param			mfa_type	body		EnableMFARequest	true	"MFA Type"
 //	@Success		200			{object}	util.Response[service.EnableMFAResponse]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/authorization/mfa/enable [post]
+//	@Router			/api/authorization/profile/mfa/enable [post]
 func (c *MFAController) EnableMFA(ctx *gin.Context) {
 	// Get current user from context
 	userInterface, _ := ctx.Get("user")
@@ -117,7 +117,7 @@ type VerifyAndActivateMFARequest struct {
 //	@Success		200			{object}	util.Response[util.MessageData]
 //	@Failure		400			{object}	util.ErrorResponse
 //	@Failure		500			{object}	util.ErrorResponse
-//	@Router			/api/authorization/mfa/verify [post]
+//	@Router			/api/authorization/profile/mfa/verify [post]
 func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 	// Get current user from context
 	userInterface, _ := ctx.Get("user")
@@ -173,7 +173,7 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 //	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		400	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
-//	@Router			/api/authorization/mfa/disable [post]
+//	@Router			/api/authorization/profile/mfa/disable [post]
 func (c *MFAController) DisableMFA(ctx *gin.Context) {
 	// Get current user from context
 	userInterface, _ := ctx.Get("user")
