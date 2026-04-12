@@ -4,7 +4,17 @@ This guide covers advanced features and customization options in EZ-Console.
 
 ## Custom Server Options
 
-### Adding Custom Routes
+### `WithServerOption`
+
+`NewCommandServer(serviceName, version, description, options ...WithServerOption)` accepts zero or more options. Each option is a `WithServerOption`: a function `func(*ServerOption)` applied in order when the command server is constructed. The public helpers below append hooks to that internal configuration; you pass them as variadic arguments to `NewCommandServer`.
+
+### `WithEngineOptions`
+
+`WithEngineOptions` registers one or more `func(*gin.Engine)` callbacks. They run after the framework creates the Gin engine and attaches its default middleware (recovery, OpenTelemetry, Prometheus, request logging, CORS, delay), and **before** the service layer is initialized and API controllers are registered. Use this for global middleware, extra top-level routes, or other engine-level setup.
+
+For middleware patterns, ordering, and examples beyond the snippets here, see the [Middleware Guide](./08-middleware.md).
+
+#### Example: custom routes
 
 ```go
 package main
@@ -34,7 +44,7 @@ func main() {
 }
 ```
 
-### Custom Middleware
+#### Example: global middleware
 
 ```go
 func rateLimitMiddleware(engine *gin.Engine) {
@@ -49,6 +59,34 @@ var rootCmd = consoleserver.NewCommandServer(
 	"My Application",
 	consoleserver.WithEngineOptions(rateLimitMiddleware),
 )
+```
+
+### `WithCommandOptions`
+
+`WithCommandOptions` registers one or more `func(*cobra.Command)` callbacks. They run on the root command after `Use`, `Short`, `Version`, and `Run` are wired, and **before** EZ-Console adds the built-in `--config` persistent flag and runs `initFlags`. Use this for extra flags, subcommands, or other command-line customization.
+
+```go
+package main
+
+import (
+	"github.com/spf13/cobra"
+	consoleserver "github.com/sven-victor/ez-console/server"
+)
+
+const VERSION = "1.0.0"
+
+var rootCmd = consoleserver.NewCommandServer(
+	"my-app",
+	VERSION,
+	"My Application",
+	consoleserver.WithCommandOptions(func(cmd *cobra.Command) {
+		cmd.PersistentFlags().String("extra", "", "optional extra flag")
+	}),
+)
+
+func main() {
+	rootCmd.Execute()
+}
 ```
 
 ## Extending the Service Layer

@@ -125,11 +125,34 @@ func APIKeyMiddleware(validKeys []string) gin.HandlerFunc {
 
 ### Global Middleware
 
-Applied to all routes:
+The Gin `*gin.Engine` is created inside the framework when the root command runs (`consoleserver.NewCommandServer` → internal server startup). You do not construct the engine in `main` for a normal EZ-Console binary.
+
+To attach middleware to **all** routes, pass one or more `func(*gin.Engine)` hooks via `consoleserver.WithEngineOptions` when calling `NewCommandServer`. Each hook receives the engine **after** built-in middleware (recovery, tracing, metrics, logging, CORS, delay) is registered and **before** services and API routes are wired. For the option type and related helpers, see [Advanced Topics](./13-advanced-topics.md#withserveroption).
 
 ```go
-engine := gin.New()
-engine.Use(MyMiddleware())
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	consoleserver "github.com/sven-victor/ez-console/server"
+)
+
+func useGlobalMiddleware(engine *gin.Engine) {
+	engine.Use(MyMiddleware())
+}
+
+const VERSION = "1.0.0"
+
+var rootCmd = consoleserver.NewCommandServer(
+	"my-app",
+	VERSION,
+	"My Application",
+	consoleserver.WithEngineOptions(useGlobalMiddleware),
+)
+
+func main() {
+	rootCmd.Execute()
+}
 ```
 
 ### Group Middleware
@@ -260,6 +283,7 @@ func TimeoutMiddleware(timeout time.Duration) gin.HandlerFunc {
 
 ## Next Steps
 
+- Customize the CLI and Gin engine with server options: [Advanced Topics](./13-advanced-topics.md#withserveroption)
 - Learn about [API Best Practices](./09-api-best-practices.md)
 - Explore [Backend Development](./03-backend-development.md)
 - Review [Authentication & Authorization](./07-auth-system.md)
