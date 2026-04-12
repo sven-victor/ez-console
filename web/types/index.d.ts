@@ -304,7 +304,7 @@ export declare const api: {
     testOauthConnection(body: API.UpdateOAuthSettingsRequest, options?: {
         [key: string]: any;
     }): Promise<API.OAuthLoginURLResponse>;
-    testOauthCallback(options?: {
+    testOauthCallback(body: API.OAuthCallbackRequest, options?: {
         [key: string]: any;
     }): Promise<API.TestOAuthCallbackResponse>;
     listOrganizations(params: API.listOrganizationsParams, options?: {
@@ -484,15 +484,6 @@ export declare const api: {
     getLdapUsers(params: API.getLdapUsersParams, options?: {
         [key: string]: any;
     }): Promise<API.User[]>;
-    disableMfa(options?: {
-        [key: string]: any;
-    }): Promise<API.MessageData>;
-    enableMfa(body: string, options?: {
-        [key: string]: any;
-    }): Promise<API.EnableMFAResponse>;
-    verifyAndActivateMfa(body: API.VerifyAndActivateMFARequest, options?: {
-        [key: string]: any;
-    }): Promise<API.MessageData>;
     listPermissions(options?: {
         [key: string]: any;
     }): Promise<API.PermissionGroup[]>;
@@ -505,6 +496,15 @@ export declare const api: {
     getCurrentUserLogs(params: API.getCurrentUserLogsParams, options?: {
         [key: string]: any;
     }): Promise<API.PaginationResponseModelAuditLog>;
+    disableMfa(options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    enableMfa(body: API.EnableMFARequest, options?: {
+        [key: string]: any;
+    }): Promise<API.EnableMFAResponse>;
+    verifyAndActivateMfa(body: API.VerifyAndActivateMFARequest, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
     changePassword(body: API.ChangePasswordRequest, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
@@ -716,8 +716,8 @@ export declare interface AuditLogDetail {
 declare interface AuthContextType {
     user: API.User | null | undefined;
     loading: boolean;
-    login: (data: Partial<API.LoginRequest>) => Promise<API.User | void>;
-    oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | void>;
+    login: (data: Partial<API.LoginRequest>) => Promise<API.User | null>;
+    oauthLogin: (data: API.OAuthCallbackRequest) => Promise<API.User | null>;
     logout: () => void;
     updateUser: (user: API.User) => void;
     error?: Error;
@@ -843,6 +843,7 @@ export declare interface CreateChatSessionRequest {
 export declare interface CreateOrganizationRequest {
     description?: string;
     name: string;
+    slug?: string;
     status: string;
 }
 
@@ -1010,6 +1011,10 @@ export declare const DynamicIcon: ({ iconName }: DynamicIconProps) => JSX_2.Elem
 
 export declare interface DynamicIconProps {
     iconName: string;
+}
+
+export declare interface EnableMFARequest {
+    mfa_type: string;
 }
 
 export declare interface EnableMFAResponse {
@@ -1665,10 +1670,16 @@ export declare interface Organization {
     description: string;
     id: string;
     name: string;
+    /** optional unique friendly identifier */
+    slug?: string;
     /** active, disabled */
     status: string;
     updated_at: string;
 }
+
+export declare const OrganizationSwitcher: default_2.FC<{
+    className?: string;
+}>;
 
 export declare interface OrganizationUser {
     avatar: string;
@@ -3022,6 +3033,7 @@ export declare interface updateOrganizationParams {
 export declare interface UpdateOrganizationRequest {
     description?: string;
     name: string;
+    slug?: string;
     status: string;
 }
 

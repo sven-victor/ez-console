@@ -41,13 +41,13 @@ async function u(t, a) {
     ...a || {}
   });
 }
-async function y(t) {
+async function d(t) {
   return s("/api/system/health", {
     method: "GET",
     ...t || {}
   });
 }
-async function d(t) {
+async function y(t) {
   return s("/api/system/info", {
     method: "GET",
     ...t || {}
@@ -114,12 +114,16 @@ async function S(t, a) {
     }
   );
 }
-async function P(t) {
+async function P(t, a) {
   return s(
     "/api/system/oauth-settings/test-callback",
     {
       method: "POST",
-      ...t || {}
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: t,
+      ...a || {}
     }
   );
 }
@@ -643,7 +647,7 @@ async function ut(t, a) {
     }
   );
 }
-async function yt(t, a) {
+async function dt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/tools`,
@@ -654,7 +658,7 @@ async function yt(t, a) {
     }
   );
 }
-async function dt(t) {
+async function yt(t) {
   return s(
     "/api/system/toolsets/types",
     {
@@ -686,13 +690,13 @@ const ht = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getSkillFile: N,
   getSmtpSettings: Z,
   getSystemBaseSettings: c,
-  getSystemInfo: d,
+  getSystemInfo: y,
   getTaskSettings: st,
   getToolSet: rt,
-  getToolSetTools: yt,
-  getToolSetTypeDefinitions: dt,
+  getToolSetTools: dt,
+  getToolSetTypeDefinitions: yt,
   getUserOrganizations: U,
-  healthCheck: y,
+  healthCheck: d,
   importLdapUsers: T,
   listLogStorageBackends: nt,
   listOrganizationUsers: j,

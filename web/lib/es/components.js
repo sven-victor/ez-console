@@ -1041,7 +1041,7 @@ const At = ({
   ] });
 }, js = ({ user: t, onSuccess: i }) => {
   const { t: n } = C("authorization"), { t: s } = C("common"), [r, o] = h(0), [a, c] = h(!1), [d, p] = h(!0), [u, m] = h(""), [l, x] = h("totp"), { run: g, data: k = { secret: "", qr_code: "", token: void 0 } } = F(
-    () => b.authorization.enableMfa(l),
+    () => b.authorization.enableMfa({ mfa_type: l }),
     {
       manual: !0,
       onSuccess: () => {

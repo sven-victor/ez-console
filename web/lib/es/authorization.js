@@ -29,38 +29,6 @@ async function u(a, t) {
 }
 async function p(a) {
   return r(
-    "/api/authorization/mfa/disable",
-    {
-      method: "POST",
-      ...a || {}
-    }
-  );
-}
-async function m(a, t) {
-  return r(
-    "/api/authorization/mfa/enable",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      data: a,
-      ...t || {}
-    }
-  );
-}
-async function d(a, t) {
-  return r("/api/authorization/mfa/verify", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    data: a,
-    ...t || {}
-  });
-}
-async function h(a) {
-  return r(
     "/api/authorization/permissions",
     {
       method: "GET",
@@ -68,13 +36,13 @@ async function h(a) {
     }
   );
 }
-async function y(a) {
+async function m(a) {
   return r("/api/authorization/profile", {
     method: "GET",
     ...a || {}
   });
 }
-async function l(a, t) {
+async function d(a, t) {
   return r("/api/authorization/profile", {
     method: "PUT",
     headers: {
@@ -84,7 +52,7 @@ async function l(a, t) {
     ...t || {}
   });
 }
-async function T(a, t) {
+async function h(a, t) {
   return r(
     "/api/authorization/profile/audit-logs",
     {
@@ -96,6 +64,41 @@ async function T(a, t) {
         page_size: "10",
         ...a
       },
+      ...t || {}
+    }
+  );
+}
+async function y(a) {
+  return r(
+    "/api/authorization/profile/mfa/disable",
+    {
+      method: "POST",
+      ...a || {}
+    }
+  );
+}
+async function l(a, t) {
+  return r(
+    "/api/authorization/profile/mfa/enable",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: a,
+      ...t || {}
+    }
+  );
+}
+async function T(a, t) {
+  return r(
+    "/api/authorization/profile/mfa/verify",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: a,
       ...t || {}
     }
   );
@@ -601,10 +604,10 @@ const na = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteServiceAccount: _,
   deleteServiceAccountAccessKey: w,
   deleteUser: Q,
-  disableMfa: p,
-  enableMfa: m,
-  getCurrentUser: y,
-  getCurrentUserLogs: T,
+  disableMfa: y,
+  enableMfa: l,
+  getCurrentUser: m,
+  getCurrentUserLogs: h,
   getLdapUsers: u,
   getRole: $,
   getRolePolicy: j,
@@ -616,7 +619,7 @@ const na = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getUser: J,
   getUserLogs: V,
   getUserSessions: P,
-  listPermissions: h,
+  listPermissions: p,
   listRoles: v,
   listUsers: F,
   login: i,
@@ -629,14 +632,14 @@ const na = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   terminateOtherSessions: S,
   terminateSession: z,
   unlockUser: aa,
-  updateCurrentUser: l,
+  updateCurrentUser: d,
   updateRole: q,
   updateServiceAccount: R,
   updateServiceAccountAccessKey: D,
   updateServiceAccountStatus: B,
   updateUser: N,
   updateUserStatus: Z,
-  verifyAndActivateMfa: d
+  verifyAndActivateMfa: T
 }, Symbol.toStringTag, { value: "Module" }));
 export {
   na as a,

@@ -96,13 +96,13 @@ async function A(e) {
     ...e || {}
   });
 }
-const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ye = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: b,
   getStatistics: A,
   listFiles: v,
   uploadFile: k
-}, Symbol.toStringTag, { value: "Module" })), S = {
+}, Symbol.toStringTag, { value: "Module" })), y = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -231,7 +231,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, y = {
+}, S = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -683,7 +683,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     denyAll: "Deny All",
     allowWithAction: "Allow with Action",
     denyWithCondition: "Deny with Condition",
-    allowWithUri: "Allow with URI"
+    allowWithUri: "Allow with URI",
+    allOrganizations: "All Organizations",
+    loadDetailError: "Failed to load role details",
+    noPermissions: "No permissions assigned",
+    noPolicyDocument: "No policy document"
   },
   permission: {
     title: {
@@ -1099,11 +1103,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       deleteFailed: "Failed to delete organization",
       name: "Name",
       nameRequired: "Please enter organization name",
+      slug: "Slug",
+      slugTooltip: "Optional unique identifier. Only letters, digits, hyphens, underscores, and dots are allowed.",
+      slugInvalid: "Slug may only contain letters, digits, hyphens, underscores, and dots",
       description: "Description",
       status: "Status",
       active: "Active",
       disabled: "Disabled",
       searchPlaceholder: "Search organizations...",
+      createdAt: "Created At",
       detail: "Organization Detail",
       users: {
         title: "Organization Users",
@@ -1278,13 +1286,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
             label: "Disabled",
             description: "Ignores role information from OAuth2 provider. New users are assigned the default role, and existing users retain their current roles."
           },
-          auto: {
-            label: "Auto (Recommended)",
-            description: "Uses OAuth2 roles for new users or existing users without roles. Preserves manually assigned roles for users who already have them."
+          new_user_only: {
+            label: "New User Only",
+            description: "Uses OAuth2 roles only for newly created users. Existing users always keep their current role assignments regardless of what the OAuth2 provider returns."
+          },
+          temporary: {
+            label: "Temporary (Session Only)",
+            description: "Applies OAuth2 roles for the current session only, without persisting them to the database. If the user logs in via another method (e.g. local password), the database-stored roles are used instead."
           },
           enforce: {
             label: "Enforce",
-            description: "Always overwrites user roles with OAuth2 roles when available. Use this when the OAuth2 provider is the authoritative source for roles."
+            description: "Always overwrites user roles with OAuth2 roles when available and persists them to the database. Use this when the OAuth2 provider is the authoritative source for roles."
           }
         }
       },
@@ -2620,7 +2632,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     denyWithCondition: "拒绝特定条件",
     allowWithUri: "允许特定URI",
     invalidJsonFormat: "JSON格式错误",
-    policyDocument: "策略文档"
+    policyDocument: "策略文档",
+    allOrganizations: "所有组织",
+    loadDetailError: "加载角色详情失败",
+    noPermissions: "未分配权限",
+    noPolicyDocument: "无策略文档"
   },
   permission: {
     title: {
@@ -3057,11 +3073,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       deleteFailed: "删除组织失败",
       name: "名称",
       nameRequired: "请输入组织名称",
+      slug: "标识符",
+      slugTooltip: "可选的唯一标识符，仅允许字母、数字、连字符、下划线和点。",
+      slugInvalid: "标识符仅允许字母、数字、连字符、下划线和点",
       description: "描述",
       status: "状态",
       active: "启用",
       disabled: "禁用",
       searchPlaceholder: "搜索组织...",
+      createdAt: "创建时间",
       detail: "组织详情",
       users: {
         title: "组织用户",
@@ -3235,16 +3255,20 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         infoTitle: "角色映射模式说明",
         options: {
           disabled: {
-            label: "关闭",
+            label: "不映射",
             description: "忽略OAuth2提供商的角色信息。新用户分配默认角色，现有用户保持其当前角色不变。"
           },
-          auto: {
-            label: "自动（推荐）",
-            description: "对于新用户或没有角色的现有用户使用OAuth2角色。对于已有角色的用户，保留其手动分配的角色。"
+          new_user_only: {
+            label: "仅新用户",
+            description: "仅对新创建的用户使用OAuth2角色。现有用户始终保持其当前角色分配，不受OAuth2提供商返回的角色信息影响。"
+          },
+          temporary: {
+            label: "临时（仅当前会话）",
+            description: "仅在当前会话中应用OAuth2角色，不写入数据库。如果用户通过其他方式（如本地密码）登录，则使用数据库中存储的角色。"
           },
           enforce: {
             label: "强制",
-            description: "当OAuth2提供角色信息时，始终覆盖用户角色。适用于OAuth2提供商是角色权威来源的场景。"
+            description: "当OAuth2提供角色信息时，始终覆盖用户角色并写入数据库。适用于OAuth2提供商是角色权威来源的场景。"
           }
         }
       },
@@ -3953,7 +3977,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     denyAll: "Alle verweigern",
     allowWithAction: "Mit Aktion zulassen",
     denyWithCondition: "Mit Bedingung verweigern",
-    allowWithUri: "Mit URI zulassen"
+    allowWithUri: "Mit URI zulassen",
+    allOrganizations: "Alle Organisationen",
+    loadDetailError: "Rollendetails konnten nicht geladen werden",
+    noPermissions: "Keine Berechtigungen zugewiesen",
+    noPolicyDocument: "Kein Richtliniendokument"
   },
   permission: {
     title: {
@@ -4564,13 +4592,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
             label: "Deaktiviert",
             description: "Ignoriert Rolleninformationen vom OAuth2-Anbieter. Neue Benutzer erhalten die Standardrolle und bestehende Benutzer behalten ihre aktuellen Rollen."
           },
-          auto: {
-            label: "Automatisch (Empfohlen)",
-            description: "Verwendet OAuth2-Rollen für neue Benutzer oder bestehende Benutzer ohne Rollen. Bewahrt manuell zugewiesene Rollen für Benutzer, die bereits welche haben."
+          new_user_only: {
+            label: "Nur neue Benutzer",
+            description: "Verwendet OAuth2-Rollen nur für neu erstellte Benutzer. Bestehende Benutzer behalten immer ihre aktuellen Rollenzuweisungen."
+          },
+          temporary: {
+            label: "Temporär (nur Sitzung)",
+            description: "Wendet OAuth2-Rollen nur für die aktuelle Sitzung an, ohne sie in der Datenbank zu speichern. Bei Anmeldung über andere Methoden werden die in der Datenbank gespeicherten Rollen verwendet."
           },
           enforce: {
             label: "Erzwingen",
-            description: "Überschreibt Benutzerrollen immer mit OAuth2-Rollen, wenn verfügbar. Verwenden Sie dies, wenn der OAuth2-Anbieter die maßgebliche Quelle für Rollen ist."
+            description: "Überschreibt Benutzerrollen immer mit OAuth2-Rollen, wenn verfügbar, und speichert sie in der Datenbank. Verwenden Sie dies, wenn der OAuth2-Anbieter die maßgebliche Quelle für Rollen ist."
           }
         }
       }
@@ -4741,11 +4773,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       deleteFailed: "Organisation konnte nicht gelöscht werden",
       name: "Name",
       nameRequired: "Bitte geben Sie den Namen der Organisation ein",
+      slug: "Slug",
+      slugTooltip: "Optionaler eindeutiger Bezeichner. Nur Buchstaben, Ziffern, Bindestriche, Unterstriche und Punkte erlaubt.",
+      slugInvalid: "Slug darf nur Buchstaben, Ziffern, Bindestriche, Unterstriche und Punkte enthalten",
       description: "Beschreibung",
       status: "Status",
       active: "Aktiv",
       disabled: "Inaktiv",
       searchPlaceholder: "Organisationen suchen...",
+      createdAt: "Erstellt am",
       detail: "Organisation Details",
       users: {
         title: "Organisation Benutzer",
@@ -5284,7 +5320,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     denyAll: "Denegar todo",
     allowWithAction: "Permitir con acción",
     denyWithCondition: "Denegar con condición",
-    allowWithUri: "Permitir con URI"
+    allowWithUri: "Permitir con URI",
+    allOrganizations: "Todas las organizaciones",
+    loadDetailError: "Error al cargar los detalles del rol",
+    noPermissions: "Sin permisos asignados",
+    noPolicyDocument: "Sin documento de política"
   },
   permission: {
     title: {
@@ -5895,13 +5935,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
             label: "Desactivado",
             description: "Ignora la información de roles del proveedor OAuth2. Los nuevos usuarios reciben el rol predeterminado y los usuarios existentes conservan sus roles actuales."
           },
-          auto: {
-            label: "Automático (Recomendado)",
-            description: "Utiliza roles de OAuth2 para nuevos usuarios o usuarios existentes sin roles. Conserva los roles asignados manualmente para usuarios que ya los tienen."
+          new_user_only: {
+            label: "Solo usuarios nuevos",
+            description: "Utiliza roles de OAuth2 solo para usuarios recién creados. Los usuarios existentes siempre conservan sus asignaciones de roles actuales."
+          },
+          temporary: {
+            label: "Temporal (solo sesión)",
+            description: "Aplica los roles de OAuth2 solo para la sesión actual, sin guardarlos en la base de datos. Si el usuario inicia sesión por otro método, se usan los roles almacenados en la base de datos."
           },
           enforce: {
             label: "Forzar",
-            description: "Siempre sobrescribe los roles de usuario con roles de OAuth2 cuando están disponibles. Use esto cuando el proveedor OAuth2 sea la fuente autoritativa para roles."
+            description: "Siempre sobrescribe los roles de usuario con roles de OAuth2 cuando están disponibles y los guarda en la base de datos. Use esto cuando el proveedor OAuth2 sea la fuente autoritativa para roles."
           }
         }
       }
@@ -6072,11 +6116,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       deleteFailed: "Error al eliminar organización",
       name: "Nombre",
       nameRequired: "Por favor ingrese el nombre de la organización",
+      slug: "Slug",
+      slugTooltip: "Identificador único opcional. Solo se permiten letras, dígitos, guiones, guiones bajos y puntos.",
+      slugInvalid: "El slug solo puede contener letras, dígitos, guiones, guiones bajos y puntos",
       description: "Descripción",
       status: "Estado",
       active: "Activo",
       disabled: "Inactivo",
       searchPlaceholder: "Buscar organizaciones...",
+      createdAt: "Fecha de creación",
       detail: "Detalles de la organización",
       users: {
         title: "Usuarios de la organización",
@@ -6615,7 +6663,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     denyAll: "Tout refuser",
     allowWithAction: "Autoriser avec action",
     denyWithCondition: "Refuser avec condition",
-    allowWithUri: "Autoriser avec URI"
+    allowWithUri: "Autoriser avec URI",
+    allOrganizations: "Toutes les organisations",
+    loadDetailError: "Échec du chargement des détails du rôle",
+    noPermissions: "Aucune permission attribuée",
+    noPolicyDocument: "Aucun document de politique"
   },
   permission: {
     title: {
@@ -7226,13 +7278,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
             label: "Désactivé",
             description: "Ignore les informations de rôle du fournisseur OAuth2. Les nouveaux utilisateurs reçoivent le rôle par défaut et les utilisateurs existants conservent leurs rôles actuels."
           },
-          auto: {
-            label: "Automatique (Recommandé)",
-            description: "Utilise les rôles OAuth2 pour les nouveaux utilisateurs ou les utilisateurs existants sans rôles. Préserve les rôles attribués manuellement pour les utilisateurs qui en ont déjà."
+          new_user_only: {
+            label: "Nouveaux utilisateurs uniquement",
+            description: "Utilise les rôles OAuth2 uniquement pour les utilisateurs nouvellement créés. Les utilisateurs existants conservent toujours leurs attributions de rôles actuelles."
+          },
+          temporary: {
+            label: "Temporaire (session uniquement)",
+            description: "Applique les rôles OAuth2 uniquement pour la session en cours, sans les enregistrer dans la base de données. Si l'utilisateur se connecte via une autre méthode, les rôles stockés en base de données sont utilisés."
           },
           enforce: {
             label: "Forcer",
-            description: "Remplace toujours les rôles des utilisateurs par les rôles OAuth2 lorsqu'ils sont disponibles. Utilisez ceci lorsque le fournisseur OAuth2 est la source faisant autorité pour les rôles."
+            description: "Remplace toujours les rôles des utilisateurs par les rôles OAuth2 lorsqu'ils sont disponibles et les enregistre dans la base de données. Utilisez ceci lorsque le fournisseur OAuth2 est la source faisant autorité pour les rôles."
           }
         }
       }
@@ -7403,11 +7459,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       deleteFailed: "Échec de la suppression de l'organisation",
       name: "Nom",
       nameRequired: "Veuillez entrer le nom de l'organisation",
+      slug: "Slug",
+      slugTooltip: "Identifiant unique optionnel. Seuls les lettres, chiffres, tirets, underscores et points sont autorisés.",
+      slugInvalid: "Le slug ne peut contenir que des lettres, chiffres, tirets, underscores et points",
       description: "Description",
       status: "Statut",
       active: "Actif",
       disabled: "Inactif",
       searchPlaceholder: "Rechercher des organisations...",
+      createdAt: "Date de création",
       detail: "Détails de l'organisation",
       users: {
         title: "Utilisateurs de l'organisation",
@@ -7946,7 +8006,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     denyAll: "رفض الكل",
     allowWithAction: "السماح بالإجراء",
     denyWithCondition: "الرفض بالشرط",
-    allowWithUri: "السماح بالمعرف الموحد للموارد (URI)"
+    allowWithUri: "السماح بالمعرف الموحد للموارد (URI)",
+    allOrganizations: "جميع المنظمات",
+    loadDetailError: "فشل تحميل تفاصيل الدور",
+    noPermissions: "لا توجد أذونات مخصصة",
+    noPolicyDocument: "لا يوجد مستند سياسة"
   },
   permission: {
     title: {
@@ -8557,13 +8621,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
             label: "معطل",
             description: "يتجاهل معلومات الدور من مزود OAuth2. يتم تعيين الدور الافتراضي للمستخدمين الجدد، ويحتفظ المستخدمون الحاليون بأدوارهم الحالية."
           },
-          auto: {
-            label: "تلقائي (موصى به)",
-            description: "يستخدم أدوار OAuth2 للمستخدمين الجدد أو المستخدمين الحاليين بدون أدوار. يحافظ على الأدوار المعينة يدويًا للمستخدمين الذين لديهم أدوار بالفعل."
+          new_user_only: {
+            label: "المستخدمون الجدد فقط",
+            description: "يستخدم أدوار OAuth2 فقط للمستخدمين المنشأين حديثًا. يحتفظ المستخدمون الحاليون دائمًا بتعيينات أدوارهم الحالية."
+          },
+          temporary: {
+            label: "مؤقت (الجلسة فقط)",
+            description: "يطبق أدوار OAuth2 للجلسة الحالية فقط دون حفظها في قاعدة البيانات. إذا سجل المستخدم الدخول بطريقة أخرى، يتم استخدام الأدوار المخزنة في قاعدة البيانات."
           },
           enforce: {
             label: "فرض",
-            description: "يستبدل دائمًا أدوار المستخدمين بأدوار OAuth2 عند توفرها. استخدم هذا عندما يكون مزود OAuth2 هو المصدر الموثوق للأدوار."
+            description: "يستبدل دائمًا أدوار المستخدمين بأدوار OAuth2 عند توفرها ويحفظها في قاعدة البيانات. استخدم هذا عندما يكون مزود OAuth2 هو المصدر الموثوق للأدوار."
           }
         }
       }
@@ -8734,11 +8802,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       deleteFailed: "فشل في حذف المنظمة",
       name: "الاسم",
       nameRequired: "يرجى إدخال اسم المنظمة",
+      slug: "المعرّف",
+      slugTooltip: "معرّف فريد اختياري. يُسمح فقط بالأحرف والأرقام والشرطات والشرطات السفلية والنقاط.",
+      slugInvalid: "يمكن أن يحتوي المعرّف فقط على أحرف وأرقام وشرطات وشرطات سفلية ونقاط",
       description: "الوصف",
       status: "الحالة",
       active: "مفعل",
       disabled: "معطل",
       searchPlaceholder: "بحث في المنظمات...",
+      createdAt: "تاريخ الإنشاء",
       detail: "تفاصيل المنظمة",
       users: {
         title: "مستخدمي المنظمة",
@@ -9277,7 +9349,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     denyAll: "Neka alla",
     allowWithAction: "Tillåt med åtgärd",
     denyWithCondition: "Neka med villkor",
-    allowWithUri: "Tillåt med URI"
+    allowWithUri: "Tillåt med URI",
+    allOrganizations: "Alla organisationer",
+    loadDetailError: "Kunde inte ladda rolldetaljer",
+    noPermissions: "Inga behörigheter tilldelade",
+    noPolicyDocument: "Inget policydokument"
   },
   permission: {
     title: {
@@ -9888,13 +9964,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
             label: "Inaktiverad",
             description: "Ignorerar rollinformation från OAuth2-leverantören. Nya användare tilldelas standardrollen och befintliga användare behåller sina nuvarande roller."
           },
-          auto: {
-            label: "Automatisk (Rekommenderas)",
-            description: "Använder OAuth2-roller för nya användare eller befintliga användare utan roller. Bevarar manuellt tilldelade roller för användare som redan har dem."
+          new_user_only: {
+            label: "Endast nya användare",
+            description: "Använder OAuth2-roller endast för nyligen skapade användare. Befintliga användare behåller alltid sina nuvarande rolltilldelningar."
+          },
+          temporary: {
+            label: "Tillfällig (endast session)",
+            description: "Tillämpar OAuth2-roller endast för den aktuella sessionen utan att spara dem i databasen. Om användaren loggar in via en annan metod används de i databasen lagrade rollerna."
           },
           enforce: {
             label: "Tvinga",
-            description: "Skriver alltid över användarroller med OAuth2-roller när de är tillgängliga. Använd detta när OAuth2-leverantören är den auktoritativa källan för roller."
+            description: "Skriver alltid över användarroller med OAuth2-roller när de är tillgängliga och sparar dem i databasen. Använd detta när OAuth2-leverantören är den auktoritativa källan för roller."
           }
         }
       }
@@ -10065,11 +10145,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       deleteFailed: "Misslyckades med att ta bort organisation",
       name: "Namn",
       nameRequired: "Vänligen ange organisationens namn",
+      slug: "Slug",
+      slugTooltip: "Valfri unik identifierare. Endast bokstäver, siffror, bindestreck, understreck och punkter tillåtna.",
+      slugInvalid: "Slug får bara innehålla bokstäver, siffror, bindestreck, understreck och punkter",
       description: "Beskrivning",
       status: "Status",
       active: "Aktiv",
       disabled: "Inaktiv",
       searchPlaceholder: "Sök organisationer...",
+      createdAt: "Skapad",
       detail: "Organisationens detaljer",
       users: {
         title: "Organisationens användare",
@@ -10288,7 +10372,7 @@ g.use(f).use(h).init({
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: S,
+      translation: y,
       common: L,
       authorization: M,
       system: U,
@@ -10296,7 +10380,7 @@ g.use(f).use(h).init({
       task: _
     },
     "en-US": {
-      translation: y,
+      translation: S,
       common: T,
       authorization: P,
       system: w,
@@ -10350,7 +10434,7 @@ g.use(f).use(h).init({
     escapeValue: !1
   }
 });
-const ye = {
+const Se = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
@@ -10387,9 +10471,9 @@ function Te(e) {
 ` + s;
 }
 export {
-  ye as P,
+  Se as P,
   be as a,
-  Se as b,
+  ye as b,
   Te as c,
   he as f,
   ke as g,
