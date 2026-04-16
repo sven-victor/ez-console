@@ -470,19 +470,6 @@ func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 	return title, nil
 }
 
-// // CreateChatCompletion creates a chat completion using the specified model
-// // It automatically gets authorized toolSets for the organization
-// func (s *AIChatService) {
-// 	// Get authorized toolSets for the organization
-// 	toolSets, err := s.getAuthorizedToolSets(ctx, organizationID)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to get authorized toolSets: %w", err)
-// 	}
-
-// 	// Call CreateChatCompletionWithToolSets with the obtained toolSets
-// 	return s.CreateChatCompletionWithToolSets(ctx, organizationID, modelID, messages, toolSets)
-// }
-
 // withAIModelChatTokenAndIterationOptions returns default MaxChatTokens / MaxChatIterations from the AIModel.
 // Apply caller-supplied WithChatOptions after this slice so callers can override these defaults.
 func withAIModelChatTokenAndIterationOptions(aiModel *model.AIModel) []ai.WithChatOptions {

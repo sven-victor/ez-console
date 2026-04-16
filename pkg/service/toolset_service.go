@@ -562,6 +562,13 @@ func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map
 				},
 			}
 		}
+		if role.Name == "admin" && role.OrganizationID != nil && *role.OrganizationID == organizationID {
+			return map[string]map[string]struct{}{
+				"*": {
+					"*": {},
+				},
+			}
+		}
 		if role.OrganizationID != nil && *role.OrganizationID != "" && *role.OrganizationID != organizationID {
 			continue
 		}
