@@ -268,33 +268,53 @@ const UserList: React.FC = () => {
     manual: true,
   });
 
+  const { runAsync: runResetPassword } = useRequest(
+    (p: { id: string; email: string }) =>
+      api.authorization.resetUserPassword({ id: p.id }, { password: '' }),
+    {
+      manual: true,
+      onSuccess: (res, params) => {
+        const p = params[0];
+        message.success(t('user.resetPasswordSuccess', { defaultValue: 'Password reset successfully' }));
+        if (res.new_password) {
+          Modal.info({
+            title: t('user.resetPasswordSuccess', { defaultValue: 'Password Reset Successfully' }),
+            content: (
+              <Typography.Text copyable={{ text: res.new_password }}>
+                {t('user.resetPasswordSuccessContent', {
+                  defaultValue: `New password: ${res.new_password}`,
+                  password: res.new_password,
+                })}
+              </Typography.Text>
+            ),
+          });
+        } else {
+          Modal.info({
+            title: t('user.resetPasswordSuccess', { defaultValue: 'Password Reset Successfully' }),
+            content: t('user.resetPasswordSuccessSendByEmail', {
+              defaultValue: 'The new password has been sent to the user email: {{email}}',
+              email: p.email,
+            }),
+          });
+        }
+      },
+      onError: () => {
+        message.error(t('user.resetPasswordError', { defaultValue: 'Failed to reset password' }));
+      },
+    },
+  );
+
   // Reset password
   const handleResetPassword = (id: string, username: string, email: string) => {
     Modal.confirm({
       title: t('user.resetPasswordTitle', { defaultValue: 'Reset Password' }),
-      content: t('user.resetPasswordConfirm', { defaultValue: `Are you sure you want to reset the password for ${username}?`, username }),
+      content: t('user.resetPasswordConfirm', {
+        defaultValue: `Are you sure you want to reset the password for ${username}?`,
+        username,
+      }),
       okText: tCommon('confirm', { defaultValue: 'Confirm' }),
       cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
-      onOk: async () => {
-        try {
-          const res = await api.authorization.resetUserPassword({ id }, { password: '' });  // Pass an empty password, the backend will generate a random password
-          message.success(t('user.resetPasswordSuccess', { defaultValue: 'Password reset successfully' }));
-          if (res.new_password) {
-            Modal.info({
-              title: t('user.resetPasswordSuccess', { defaultValue: 'Password Reset Successfully' }),
-              content: <Typography.Text copyable={{ text: res.new_password }}>{t('user.resetPasswordSuccessContent', { defaultValue: `New password: ${res.new_password}`, password: res.new_password })}</Typography.Text>,
-            });
-          } else {
-            Modal.info({
-              title: t('user.resetPasswordSuccess', { defaultValue: 'Password Reset Successfully' }),
-              content: t('user.resetPasswordSuccessSendByEmail', { defaultValue: 'The new password has been sent to the user email: {{email}}', email }),
-            });
-          }
-        } catch (error) {
-          console.error('Reset password error:', error);
-          message.error(t('user.resetPasswordError', { defaultValue: 'Failed to reset password' }));
-        }
-      },
+      onOk: () => runResetPassword({ id, email }),
     });
   };
 
@@ -331,19 +351,33 @@ const UserList: React.FC = () => {
     }
   );
 
+  const { runAsync: runUnlockUser } = useRequest(
+    (userId: string) => api.authorization.unlockUser({ id: userId }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('user.unlockSuccess', { defaultValue: 'User unlocked successfully' }));
+        fetchUsers();
+      },
+      onError: (error) => {
+        message.error(
+          t('user.unlockError', {
+            defaultValue: 'Failed to unlock user: {{error}}',
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      },
+    },
+  );
+
   const handleUnlock = (user: API.User) => {
     Modal.confirm({
       title: t('user.unlockTitle', { defaultValue: 'Unlock User' }),
-      content: t('user.unlockConfirm', { defaultValue: 'Are you sure you want to unlock this user?', username: user.username }),
-      onOk: async () => {
-        try {
-          await api.authorization.unlockUser({ id: user.id });
-          message.success(t('user.unlockSuccess', { defaultValue: 'User unlocked successfully' }));
-          fetchUsers();
-        } catch (error) {
-          message.error(t('user.unlockError', { defaultValue: 'Failed to unlock user: {{error}}', error: (error as any).message ?? String(error) }));
-        }
-      },
+      content: t('user.unlockConfirm', {
+        defaultValue: 'Are you sure you want to unlock this user?',
+        username: user.username,
+      }),
+      onOk: () => runUnlockUser(user.id),
     });
   };
 

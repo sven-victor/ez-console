@@ -41,6 +41,7 @@ import api from '@/service/api';
 import { useAuth } from '@/hooks/useAuth';
 import { useSite } from '@/contexts/SiteContext';
 import usePermission from '@/hooks/usePermission';
+import { useRequest } from 'ahooks';
 
 const { TextArea } = Input;
 
@@ -148,17 +149,13 @@ const RoleForm: React.FC = () => {
 
   const [form] = Form.useForm();
   const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
-  const [allPermissions, setAllPermissions] = useState<TreeDataNodeWithCode[]>([]);
   const [expandedKeys, setExpandedKeys] = useState<React.Key[]>([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [aiToolsets, setAiToolsets] = useState<API.ToolSet[]>([]);
   const [aiToolSelections, setAiToolSelections] = useState<Record<string, string[]>>({});
   const aiToolSelectionsRef = useRef<Record<string, string[]>>({});
-  const [aiToolsetsLoading, setAiToolsetsLoading] = useState(false);
   const [roleType, setRoleType] = useState<'global' | 'organization'>('global');
   const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined);
-  const [pageLoading, setPageLoading] = useState(false);
-  const [submitLoading, setSubmitLoading] = useState(false);
   const [isSystemRole, setIsSystemRole] = useState(false);
 
   useEffect(() => {
@@ -169,68 +166,28 @@ const RoleForm: React.FC = () => {
     setSelectedOrgId(currentOrgId || undefined);
   }, []);
 
-  const fetchPermissions = useCallback(async () => {
-    try {
-      const res = await api.authorization.listPermissions();
-      setAllPermissions(
-        res.map((item, idx) => {
-          const childNodes = (item.permissions || []).map((p) => ({
-            key: p.id,
-            code: p.code.replace(/:/g, '.'),
-            title: p.name,
-            orgPermission: p.org_permission || false,
-          })) as TreeDataNodeWithCode[];
-          return {
-            key: `[group]-${idx}`,
-            title: item.name,
-            code: item.name.replace(/ /g, '_'),
-            children: childNodes,
-          } as TreeDataNodeWithCode;
-        }),
-      );
-    } catch (error) {
+  const { data: allPermissions = [] } = useRequest<TreeDataNodeWithCode[], any>(async () => {
+    return api.authorization.listPermissions().then((res) => {
+      return res.map((item, idx) => {
+        const childNodes = (item.permissions || []).map((p) => ({
+          key: p.id,
+          code: p.code.replace(/:/g, '.'),
+          title: p.name,
+          orgPermission: p.org_permission || false,
+        })) as TreeDataNodeWithCode[];
+        return {
+          key: `[group]-${idx}`,
+          title: item.name,
+          code: item.name.replace(/ /g, '_'),
+          children: childNodes,
+        } as TreeDataNodeWithCode;
+      })
+    })
+  }, {
+    onError: () => {
       message.error(t('role.loadError', { defaultValue: 'Failed to load role list' }));
-    }
-  }, [t]);
-
-  useEffect(() => {
-    void fetchPermissions();
-  }, [fetchPermissions]);
-
-  const fetchAiToolsets = useCallback(
-    async (organizationId: string, initialSelection?: Record<string, string[]>) => {
-      if (!organizationId) {
-        setAiToolsets([]);
-        setAiToolSelections(initialSelection || {});
-        return;
-      }
-      setAiToolsetsLoading(true);
-      try {
-        const data = await api.system.listToolSets(
-          { page_size: 1000, include_tools: true },
-          { headers: { 'X-Scope-OrgID': organizationId } },
-        );
-        const toolsets = (data.data || []).filter((item) => item.status === 'enabled');
-        setAiToolsets(toolsets);
-        const sourceSelections = initialSelection || aiToolSelectionsRef.current || {};
-        const nextSelections: Record<string, string[]> = {};
-        toolsets.forEach((toolset) => {
-          const existing = sourceSelections[toolset.id] || [];
-          nextSelections[toolset.id] = existing.filter((tool) =>
-            (toolset.tools || []).some((definition) => definition.name === tool),
-          );
-        });
-        setAiToolSelections(nextSelections);
-      } catch (error) {
-        message.error(t('role.loadAiToolsetsError', { defaultValue: 'Failed to load AI toolsets.' }));
-        setAiToolsets([]);
-        setAiToolSelections(initialSelection || {});
-      } finally {
-        setAiToolsetsLoading(false);
-      }
     },
-    [t],
-  );
+  });
 
   const mapPermissionsToSelections = (permissions?: API.RoleAIToolPermission[]): Record<string, string[]> => {
     if (!permissions) {
@@ -250,53 +207,87 @@ const RoleForm: React.FC = () => {
     }, {});
   };
 
-  const loadRole = useCallback(
-    async (roleId: string, opts?: { clone?: boolean }) => {
-      setPageLoading(true);
-      const isClone = opts?.clone === true;
-      try {
-        const detailedRole = await api.authorization.getRole({ id: roleId });
-        setIsSystemRole(!isClone && detailedRole.role_type === 'system');
-        const permissions = detailedRole.permissions?.map((p: API.Permission) => p.id) || [];
-        setCheckedKeys(permissions);
-        form.setFieldsValue({ permissions });
-        const orgId = detailedRole.organization_id || '';
-        const currentRoleType = orgId ? 'organization' : 'global';
-        setRoleType(currentRoleType);
+  const { run: runFetchAiToolsets, loading: aiToolsetsLoading } = useRequest(
+    async (args: { organizationId: string; initialSelection?: Record<string, string[]> }) => {
+      const { organizationId, initialSelection } = args;
+      if (!organizationId) {
+        setAiToolsets([]);
+        setAiToolSelections(initialSelection || {});
+        return;
+      }
+      const data = await api.system.listToolSets(
+        { page_size: 1000, include_tools: true },
+        { headers: { 'X-Scope-OrgID': organizationId } },
+      );
+      const toolsets = (data.data || []).filter((item) => item.status === 'enabled');
+      setAiToolsets(toolsets);
+      const sourceSelections = initialSelection || aiToolSelectionsRef.current || {};
+      const nextSelections: Record<string, string[]> = {};
+      toolsets.forEach((toolset) => {
+        const existing = sourceSelections[toolset.id] || [];
+        nextSelections[toolset.id] = existing.filter((tool) =>
+          (toolset.tools || []).some((definition) => definition.name === tool),
+        );
+      });
+      setAiToolSelections(nextSelections);
+    },
+    {
+      manual: true,
+      onError: (_err, params) => {
+        message.error(t('role.loadAiToolsetsError', { defaultValue: 'Failed to load AI toolsets.' }));
+        setAiToolsets([]);
+        const p = params?.[0];
+        setAiToolSelections(p?.initialSelection || {});
+      },
+    },
+  );
 
-        const initialSelection = mapPermissionsToSelections(detailedRole.ai_tool_permissions || []);
-        if (currentRoleType === 'organization' && orgId) {
-          await fetchAiToolsets(orgId, initialSelection);
-        } else {
-          setAiToolsets([]);
-          setAiToolSelections(isClone ? initialSelection : {});
-        }
+  const { run: runLoadRole, loading: pageLoading } = useRequest(
+    async (params: { roleId: string; clone?: boolean }) => {
+      const { roleId, clone } = params;
+      const isClone = clone === true;
+      const detailedRole = await api.authorization.getRole({ id: roleId });
+      setIsSystemRole(!isClone && detailedRole.role_type === 'system');
+      const permissions = detailedRole.permissions?.map((p: API.Permission) => p.id) || [];
+      setCheckedKeys(permissions);
+      form.setFieldsValue({ permissions });
+      const orgId = detailedRole.organization_id || '';
+      const currentRoleType = orgId ? 'organization' : 'global';
+      setRoleType(currentRoleType);
 
-        form.setFieldsValue({
-          name: isClone ? `${detailedRole.name} (copy)` : detailedRole.name,
-          description: detailedRole.description,
-          role_type: currentRoleType,
-          organization_id: orgId || undefined,
-          policy_document: JSON.stringify(detailedRole.policy_document || { Statement: [] }, null, 2),
-        });
-      } catch (error) {
+      const initialSelection = mapPermissionsToSelections(detailedRole.ai_tool_permissions || []);
+      if (currentRoleType === 'organization' && orgId) {
+        await runFetchAiToolsets({ organizationId: orgId, initialSelection });
+      } else {
+        setAiToolsets([]);
+        setAiToolSelections(isClone ? initialSelection : {});
+      }
+
+      form.setFieldsValue({
+        name: isClone ? `${detailedRole.name} (copy)` : detailedRole.name,
+        description: detailedRole.description,
+        role_type: currentRoleType,
+        organization_id: orgId || undefined,
+        policy_document: JSON.stringify(detailedRole.policy_document || { Statement: [] }, null, 2),
+      });
+    },
+    {
+      manual: true,
+      onError: () => {
         message.error(t('role.detailLoadError', { defaultValue: 'Failed to load role details' }));
         navigate('/authorization/roles');
-      } finally {
-        setPageLoading(false);
-      }
+      },
     },
-    [fetchAiToolsets, form, navigate, t],
   );
 
   useEffect(() => {
     if (isEditMode && id) {
-      void loadRole(id);
+      void runLoadRole({ roleId: id });
       return;
     }
 
     if (cloneFrom) {
-      void loadRole(cloneFrom, { clone: true });
+      void runLoadRole({ roleId: cloneFrom, clone: true });
       return;
     }
 
@@ -313,20 +304,20 @@ const RoleForm: React.FC = () => {
     setCheckedKeys([]);
     setAiToolSelections({});
     if (defaultRoleType === 'organization' && defaultOrgId) {
-      void fetchAiToolsets(defaultOrgId, {});
+      void runFetchAiToolsets({ organizationId: defaultOrgId, initialSelection: {} });
     } else {
       setAiToolsets([]);
     }
   }, [
     cloneFrom,
-    fetchAiToolsets,
+    runFetchAiToolsets,
     form,
     id,
     isEditMode,
     organizations,
     selectedOrgId,
     enableMultiOrg,
-    loadRole,
+    runLoadRole,
   ]);
 
   const filteredPermissions = useMemo<TreeDataNodeWithCode[]>(() => {
@@ -383,6 +374,21 @@ const RoleForm: React.FC = () => {
     }));
   }, [aiToolsets]);
 
+  const applySelectAllAiTools = useCallback(
+    (selectAll: boolean) => {
+      setAiToolSelections((prev) => {
+        const next: Record<string, string[]> = { ...prev };
+        aiToolsets.forEach((toolset) => {
+          next[toolset.id] = selectAll
+            ? (toolset.tools || []).map((tool) => tool.name)
+            : [];
+        });
+        return next;
+      });
+    },
+    [aiToolsets],
+  );
+
   const validatePolicyDocument = (_: unknown, value: string) => {
     if (roleType === 'organization') {
       return Promise.resolve();
@@ -433,10 +439,10 @@ const RoleForm: React.FC = () => {
     };
   }, [t]);
 
-  const handleSubmit = async (values: any) => {
-    const payload = { ...values };
+  const { run: submitRole, loading: submitLoading } = useRequest(
+    async (values: any) => {
+      const payload: Record<string, unknown> = { ...values };
 
-    try {
       if (roleType === 'global') {
         payload.policy_document = JSON.parse(values.policy_document ?? '{}');
       } else {
@@ -462,29 +468,35 @@ const RoleForm: React.FC = () => {
       payload.ai_tool_permissions = aiAssignments;
       payload.permissions = checkedKeys.filter((key) => !key.startsWith('[group]-'));
 
-      setSubmitLoading(true);
       if (isEditMode && id) {
-        await api.authorization.updateRole({ id }, payload as API.UpdateRoleRequest);
-        message.success(t('role.updateSuccess', { defaultValue: 'Role updated successfully.' }));
+        await api.authorization.updateRole({ id }, payload as unknown as API.UpdateRoleRequest);
       } else {
-        await api.authorization.createRole(payload as API.CreateRoleRequest);
-        message.success(t('role.createSuccess', { defaultValue: 'Role created successfully.' }));
+        await api.authorization.createRole(payload as unknown as API.CreateRoleRequest);
       }
-      navigate('/authorization/roles');
-    } catch (error) {
-      message.error(
-        t('role.saveError', {
-          error: error instanceof Error ? error.message : `${error}`,
-          defaultValue: 'Failed to save role.',
-          action: isEditMode
-            ? tCommon('update', { defaultValue: 'Update' })
-            : tCommon('create', { defaultValue: 'Create' }),
-        }),
-      );
-    } finally {
-      setSubmitLoading(false);
-    }
-  };
+    },
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(
+          isEditMode
+            ? t('role.updateSuccess', { defaultValue: 'Role updated successfully.' })
+            : t('role.createSuccess', { defaultValue: 'Role created successfully.' }),
+        );
+        navigate('/authorization/roles');
+      },
+      onError: (error) => {
+        message.error(
+          t('role.saveError', {
+            error: error instanceof Error ? error.message : `${error}`,
+            defaultValue: 'Failed to save role.',
+            action: isEditMode
+              ? tCommon('update', { defaultValue: 'Update' })
+              : tCommon('create', { defaultValue: 'Create' }),
+          }),
+        );
+      },
+    },
+  );
 
   const readOnly = isEditMode && isSystemRole;
 
@@ -515,7 +527,7 @@ const RoleForm: React.FC = () => {
           policy_document: defaultPolicyDocument,
           permissions: [],
         }}
-        onFinish={handleSubmit}
+        onFinish={submitRole}
       >
         <Tabs
           items={[
@@ -585,7 +597,10 @@ const RoleForm: React.FC = () => {
                             selectedOrgId || (organizations.length > 0 ? organizations[0].id : '');
                           form.setFieldsValue({ organization_id: defaultOrgId });
                           if (defaultOrgId) {
-                            void fetchAiToolsets(defaultOrgId, aiToolSelectionsRef.current);
+                            void runFetchAiToolsets({
+                              organizationId: defaultOrgId,
+                              initialSelection: aiToolSelectionsRef.current,
+                            });
                           } else {
                             setAiToolsets([]);
                             setAiToolSelections({});
@@ -637,7 +652,7 @@ const RoleForm: React.FC = () => {
                             form.setFieldsValue({ permissions: [] });
                             const orgIdValue = value || '';
                             if (orgIdValue) {
-                              void fetchAiToolsets(orgIdValue, {});
+                              void runFetchAiToolsets({ organizationId: orgIdValue, initialSelection: {} });
                             } else {
                               setAiToolsets([]);
                               setAiToolSelections({});
@@ -760,89 +775,91 @@ const RoleForm: React.FC = () => {
               label: t('role.aiPermissions', { defaultValue: 'AI Tool Permissions' }),
               disabled: roleType === 'global',
               children: (
-                <Spin spinning={aiToolsetsLoading}>
-                  {roleType === 'organization' ? (
-                    aiToolsets.length > 0 ? (
-                      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                        {aiToolsets.map((toolset) => {
-                          const allToolNames = (toolset.tools || []).map((tool) => tool.name);
-                          const selectedToolNames = aiToolSelections[toolset.id] || [];
-                          const allSelected = allToolNames.length > 0 && selectedToolNames.length === allToolNames.length;
-                          const someSelected = selectedToolNames.length > 0 && selectedToolNames.length < allToolNames.length;
+                <div style={{ marginBottom: '24px' }}>
+                  <Spin spinning={aiToolsetsLoading}>
+                    {roleType === 'organization' ? (
+                      aiToolsets.length > 0 ? (
+                        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                          {aiToolsets.map((toolset) => {
+                            const allToolNames = (toolset.tools || []).map((tool) => tool.name);
+                            const selectedToolNames = aiToolSelections[toolset.id] || [];
+                            const allSelected = allToolNames.length > 0 && selectedToolNames.length === allToolNames.length;
+                            const someSelected = selectedToolNames.length > 0 && selectedToolNames.length < allToolNames.length;
 
-                          return (
-                            <Card
-                              key={toolset.id}
-                              size="small"
-                              title={
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <Checkbox
-                                    checked={allSelected}
-                                    indeterminate={someSelected}
-                                    onChange={(e) => handleToolsetSelectAll(toolset.id, e.target.checked)}
+                            return (
+                              <Card
+                                key={toolset.id}
+                                size="small"
+                                title={
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Checkbox
+                                      checked={allSelected}
+                                      indeterminate={someSelected}
+                                      onChange={(e) => handleToolsetSelectAll(toolset.id, e.target.checked)}
+                                    />
+                                    <span>{toolset.name}</span>
+                                  </div>
+                                }
+                                extra={toolset.description ? <span>{toolset.description}</span> : undefined}
+                              >
+                                {(toolset.tools || []).length > 0 ? (
+                                  <Checkbox.Group
+                                    style={{ width: '100%' }}
+                                    value={aiToolSelections[toolset.id] || []}
+                                    onChange={(checked) =>
+                                      handleAiToolSelectionChange(toolset.id, checked as string[])
+                                    }
+                                  >
+                                    <Space direction="vertical" style={{ width: '100%' }}>
+                                      {(toolset.tools || []).map((tool) => (
+                                        <Checkbox value={tool.name} key={tool.name}>
+                                          <div>
+                                            <div>{tool.name}</div>
+                                            {tool.description && (
+                                              <div
+                                                style={{
+                                                  color: 'rgba(0,0,0,0.45)',
+                                                  fontSize: 12,
+                                                }}
+                                              >
+                                                {tool.description}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </Checkbox>
+                                      ))}
+                                    </Space>
+                                  </Checkbox.Group>
+                                ) : (
+                                  <Empty
+                                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                                    description={t('role.aiToolsetNoTools', {
+                                      defaultValue: 'No tools available in this toolset.',
+                                    })}
                                   />
-                                  <span>{toolset.name}</span>
-                                </div>
-                              }
-                              extra={toolset.description ? <span>{toolset.description}</span> : undefined}
-                            >
-                              {(toolset.tools || []).length > 0 ? (
-                                <Checkbox.Group
-                                  style={{ width: '100%' }}
-                                  value={aiToolSelections[toolset.id] || []}
-                                  onChange={(checked) =>
-                                    handleAiToolSelectionChange(toolset.id, checked as string[])
-                                  }
-                                >
-                                  <Space direction="vertical" style={{ width: '100%' }}>
-                                    {(toolset.tools || []).map((tool) => (
-                                      <Checkbox value={tool.name} key={tool.name}>
-                                        <div>
-                                          <div>{tool.name}</div>
-                                          {tool.description && (
-                                            <div
-                                              style={{
-                                                color: 'rgba(0,0,0,0.45)',
-                                                fontSize: 12,
-                                              }}
-                                            >
-                                              {tool.description}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </Checkbox>
-                                    ))}
-                                  </Space>
-                                </Checkbox.Group>
-                              ) : (
-                                <Empty
-                                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                                  description={t('role.aiToolsetNoTools', {
-                                    defaultValue: 'No tools available in this toolset.',
-                                  })}
-                                />
-                              )}
-                            </Card>
-                          );
-                        })}
-                      </Space>
+                                )}
+                              </Card>
+                            );
+                          })}
+                        </Space>
+                      ) : (
+                        <Empty
+                          image={Empty.PRESENTED_IMAGE_SIMPLE}
+                          description={t('role.aiToolsetsEmpty', {
+                            defaultValue: 'No AI toolsets available for this organization.',
+                          })}
+                        />
+                      )
                     ) : (
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
-                        description={t('role.aiToolsetsEmpty', {
-                          defaultValue: 'No AI toolsets available for this organization.',
+                        description={t('role.aiPermissionsGlobalInfo', {
+                          defaultValue: 'AI tool permissions are only available for organization roles.',
                         })}
                       />
-                    )
-                  ) : (
-                    <Empty
-                      image={Empty.PRESENTED_IMAGE_SIMPLE}
-                      description={t('role.aiPermissionsGlobalInfo', {
-                        defaultValue: 'AI tool permissions are only available for organization roles.',
-                      })}
-                    />
-                  )}
-                </Spin>
+                    )}
+                  </Spin>
+                </div>
               ),
             },
             {

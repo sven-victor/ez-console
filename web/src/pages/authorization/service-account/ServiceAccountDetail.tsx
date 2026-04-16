@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Descriptions,
@@ -163,23 +163,19 @@ const ServiceAccountDetail: React.FC = () => {
 
   const [editMode, setEditMode] = useState(false);
 
-  if (!id) {
-    return <NotFound />;
-  }
-
-
-  // Load service account details
-  const { run: fetchServiceAccountDetail, loading } = useRequest(async () => {
-    if (!id) return;
-    return api.authorization.getServiceAccountById({ id });
-  }, {
-    onSuccess: (data) => {
-      setServiceAccount(data || null);
+  const { loading, refresh: refreshServiceAccountDetail } = useRequest(
+    () => api.authorization.getServiceAccountById({ id: id! }),
+    {
+      refreshDeps: [id],
+      ready: Boolean(id),
+      onSuccess: (data) => {
+        setServiceAccount(data || null);
+      },
+      onError: () => {
+        message.error(t('serviceAccount.loadError', { defaultValue: 'Failed to load service account.' }));
+      },
     },
-  });
-  useEffect(() => {
-    fetchServiceAccountDetail();
-  }, [id]);
+  );
 
 
   // Load different data based on the selected tab
@@ -187,24 +183,37 @@ const ServiceAccountDetail: React.FC = () => {
     navigate(`#${key}`);
   };
 
-  // Delete service account
-  const handleDelete = async () => {
-    if (!id) return;
+  const { run: deleteServiceAccount } = useRequest(
+    () => api.authorization.deleteServiceAccount({ id: id! }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(
+          t('serviceAccount.deleteSuccess', { defaultValue: 'Service account deleted successfully.' }),
+        );
+        navigate('/authorization/service-accounts');
+      },
+      onError: (error) => {
+        console.error(
+          t('serviceAccount.deleteError', { defaultValue: 'Failed to delete service account.' }),
+          error,
+        );
+        message.error(t('serviceAccount.deleteError', { defaultValue: 'Failed to delete service account.' }));
+      },
+    },
+  );
 
-    try {
-      await api.authorization.deleteServiceAccount({ id });
-      message.success(t('serviceAccount.deleteSuccess', { defaultValue: 'Service account deleted successfully.' }));
-      navigate('/authorization/service-accounts');
-    } catch (error) {
-      console.error(t('serviceAccount.deleteError', { defaultValue: 'Failed to delete service account.' }), error);
-      message.error(t('serviceAccount.deleteError', { defaultValue: 'Failed to delete service account.' }));
-    }
+  const handleDelete = () => {
+    if (!id) return;
+    deleteServiceAccount();
   };
 
   // Update service account status
   const { run: handleToggleStatus, loading: updateStatusLoading } = useRequest(async () => {
     if (!serviceAccount) return;
-    return api.authorization.updateServiceAccountStatus({ id }, { status: serviceAccount.status === 'active' ? 'disabled' : 'active' });
+    return api.authorization.updateServiceAccountStatus({ id: id! }, {
+      status: serviceAccount.status === 'active' ? 'disabled' : 'active',
+    });
   }, {
     onSuccess: (data) => {
       setServiceAccount(data || null);
@@ -218,28 +227,45 @@ const ServiceAccountDetail: React.FC = () => {
   });
 
 
-  // Update policy document
-  const handleUpdatePolicy = async (values: any) => {
+  const { run: saveServiceAccountPolicy } = useRequest(
+    (policyObj: API.PolicyDocument) =>
+      api.authorization.setServiceAccountPolicy({ id: id! }, { policy_document: policyObj }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(
+          t('serviceAccount.policyUpdateSuccess', { defaultValue: 'Policy document updated successfully.' }),
+        );
+        setPolicyModalVisible(false);
+        refreshServiceAccountDetail();
+      },
+      onError: (error) => {
+        console.error(
+          t('serviceAccount.policyUpdateError', { defaultValue: 'Failed to update policy document.' }),
+          error,
+        );
+        message.error(t('serviceAccount.policyUpdateError', { defaultValue: 'Failed to update policy document.' }));
+      },
+    },
+  );
+
+  const handleUpdatePolicy = (values: any) => {
     if (!id) return;
 
+    let policyObj: API.PolicyDocument;
     try {
-      let policyObj: API.PolicyDocument;
-      try {
-        policyObj = JSON.parse(values.policy_document);
-      } catch (e) {
-        message.error(t('serviceAccount.policyInvalidJson', { defaultValue: 'Invalid JSON format for policy document.' }));
-        return;
-      }
-
-      await api.authorization.setServiceAccountPolicy({ id }, { policy_document: policyObj });
-      message.success(t('serviceAccount.policyUpdateSuccess', { defaultValue: 'Policy document updated successfully.' }));
-      setPolicyModalVisible(false);
-      fetchServiceAccountDetail();
-    } catch (error) {
-      console.error(t('serviceAccount.policyUpdateError', { defaultValue: 'Failed to update policy document.' }), error);
-      message.error(t('serviceAccount.policyUpdateError', { defaultValue: 'Failed to update policy document.' }));
+      policyObj = JSON.parse(values.policy_document);
+    } catch {
+      message.error(t('serviceAccount.policyInvalidJson', { defaultValue: 'Invalid JSON format for policy document.' }));
+      return;
     }
+
+    saveServiceAccountPolicy(policyObj);
   };
+
+  if (!id) {
+    return <NotFound />;
+  }
 
   if (loading) {
     return <Spin size="large" style={{ display: 'flex', justifyContent: 'center', padding: '50px' }} />;
@@ -362,7 +388,7 @@ const ServiceAccountDetail: React.FC = () => {
         >
           <ServiceAccountAuthorization
             serviceAccount={serviceAccount}
-            onRefresh={fetchServiceAccountDetail}
+            onRefresh={refreshServiceAccountDetail}
           />
         </TabPane>
 

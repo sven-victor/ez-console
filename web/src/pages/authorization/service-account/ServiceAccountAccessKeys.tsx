@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Button,
@@ -57,33 +57,43 @@ const { TextArea } = Input;
 const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAccountID: serviceAccountId }) => {
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
-  const [accessKeys, setAccessKeys] = useState<API.ServiceAccountAccessKey[]>([]);
-  const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState<API.ServiceAccountAccessKey | null>(null);
   const [newKey, setNewKey] = useState<API.CreateServiceAccountAccessKeyResponse | null>(null);
   const [showSecretModal, setShowSecretModal] = useState(false);
 
-  // Load access key list
-  const fetchAccessKeys = async () => {
-    if (!serviceAccountId) return;
+  const {
+    data: accessKeys = [],
+    loading,
+    refresh: refreshAccessKeys,
+  } = useRequest(
+    () => api.authorization.getServiceAccountAccessKeys({ id: serviceAccountId }),
+    {
+      ready: !!serviceAccountId,
+      refreshDeps: [serviceAccountId],
+      onError: () => {
+        message.error(t('serviceAccount.loadKeysError', { defaultValue: 'Failed to load access keys.' }));
+      },
+    },
+  );
 
-    setLoading(true);
-    try {
-      const result = await api.authorization.getServiceAccountAccessKeys({ id: serviceAccountId });
-      setAccessKeys(result);
-    } catch (error) {
-      console.error('Failed to load access keys:', error);
-      message.error(t('serviceAccount.loadKeysError', { defaultValue: 'Failed to load access keys.' }));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAccessKeys();
-  }, [serviceAccountId]);
+  const { run: deleteAccessKey } = useRequest(
+    (keyId: string) =>
+      api.authorization.deleteServiceAccountAccessKey({ id: serviceAccountId, keyId }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(
+          t('serviceAccount.deleteKeySuccess', { defaultValue: 'Access key deleted successfully.' }),
+        );
+        refreshAccessKeys();
+      },
+      onError: () => {
+        message.error(t('serviceAccount.deleteKeyError', { defaultValue: 'Failed to delete access key.' }));
+      },
+    },
+  );
 
   // Copy to clipboard
   const copyToClipboard = (text: string) => {
@@ -150,24 +160,12 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
     manual: true,
     onSuccess: () => {
       message.success(t('serviceAccount.updateKeySuccess', { defaultValue: 'Access key updated successfully.' }));
-      fetchAccessKeys();
+      refreshAccessKeys();
     },
     onError: () => {
       message.error(t('serviceAccount.updateKeyError', { defaultValue: 'Failed to update access key.' }));
     },
   });
-
-  // Delete key
-  const handleDelete = async (keyId: string) => {
-    try {
-      await api.authorization.deleteServiceAccountAccessKey({ id: serviceAccountId, keyId });
-      message.success(t('serviceAccount.deleteKeySuccess', { defaultValue: 'Access key deleted successfully.' }));
-      fetchAccessKeys();
-    } catch (error) {
-      console.error('Failed to delete key:', error);
-      message.error(t('serviceAccount.deleteKeyError', { defaultValue: 'Failed to delete access key.' }));
-    }
-  };
 
   // Close Secret display dialog
   const handleSecretModalClose = () => {
@@ -239,7 +237,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
           </Tooltip>
           <Popconfirm
             title={t('serviceAccount.deleteKeyConfirm', { defaultValue: 'Are you sure you want to delete this access key?' })}
-            onConfirm={() => handleDelete(record.id)}
+            onConfirm={() => deleteAccessKey(record.id)}
             okText={tCommon('confirm', { defaultValue: 'Confirm' })}
             cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
           >
@@ -267,7 +265,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
           <Space>
             <Button
               icon={<SyncOutlined />}
-              onClick={fetchAccessKeys}
+              onClick={refreshAccessKeys}
               loading={loading}
             >
               {tCommon('refresh', { defaultValue: 'Refresh' })}

@@ -45,7 +45,6 @@ const ServiceAccountForm = ({
   const { t: tCommon } = useTranslation('common');
   const { currentOrgId } = useSite();
   const [form] = Form.useForm();
-  const [loadingServiceAccount, setLoadingServiceAccount] = useState(false);
   const [scopeType, setScopeType] = useState<'global' | 'organization'>('global');
   const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined);
   const [loadedOrgName, setLoadedOrgName] = useState<string | null>(null);
@@ -75,11 +74,11 @@ const ServiceAccountForm = ({
     manual: true,
   })
 
-  useEffect(() => {
-    const loadServiceAccount = async (id: string) => {
-      setLoadingServiceAccount(true);
-      try {
-        const res = await api.authorization.getServiceAccountById({ id });
+  const { run: loadServiceAccount, loading: loadingServiceAccount } = useRequest(
+    (id: string) => api.authorization.getServiceAccountById({ id }),
+    {
+      manual: true,
+      onSuccess: (res) => {
         const orgId = res.organization_id || '';
         setScopeType(orgId ? 'organization' : 'global');
         setSelectedOrgId(orgId || undefined);
@@ -89,12 +88,14 @@ const ServiceAccountForm = ({
           description: res.description,
           organization_id: orgId || undefined,
         });
-      } catch (error) {
+      },
+      onError: () => {
         message.error(t('serviceAccount.loadError', { defaultValue: 'Failed to load service account.' }));
-      } finally {
-        setLoadingServiceAccount(false);
-      }
-    }
+      },
+    },
+  );
+
+  useEffect(() => {
     if (open) {
       form.resetFields();
       const defaultOrgId = currentOrgId || (organizations.length > 0 ? organizations[0].id : '');
@@ -110,7 +111,7 @@ const ServiceAccountForm = ({
         });
       }
     }
-  }, [serviceAccountID, open, enableMultiOrg, organizations, currentOrgId]);
+  }, [serviceAccountID, open, enableMultiOrg, organizations, currentOrgId, form, loadServiceAccount, t]);
 
   return <Modal
     title={serviceAccountID ? t('serviceAccount.edit', { defaultValue: 'Edit Service Account' }) : t('serviceAccount.create', { defaultValue: 'Create Service Account' })}

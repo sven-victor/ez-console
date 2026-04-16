@@ -260,6 +260,8 @@ export default {
     aiToolsetNoTools: '该工具集中没有可用工具。',
     aiToolsetsEmpty: '该组织暂无可用的 AI 工具集。',
     aiPermissionsGlobalInfo: 'AI 工具权限仅适用于组织角色。',
+    aiSelectAllTools: '全选工具',
+    aiClearAllTools: '清空工具',
     typeSystem: '系统',
     typeUser: '用户',
     systemRoleCannotModify: '系统角色不可修改。',

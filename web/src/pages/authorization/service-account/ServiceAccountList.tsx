@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
+import { useRequest } from 'ahooks';
 import {
   Table,
   Card,
@@ -64,7 +65,6 @@ const ServiceAccountList: React.FC = () => {
   const enableMultiOrg = siteConfig?.enable_multi_org ?? false;
 
   // Data State
-  const [loading, setLoading] = useState(false);
   const [serviceAccounts, setServiceAccounts] = useState<API.ServiceAccount[]>([]);
   const [total, setTotal] = useState(0);
 
@@ -85,25 +85,58 @@ const ServiceAccountList: React.FC = () => {
     organization_id: undefined,
   });
 
-  // Load service account list
+  const { loading, refresh: refreshServiceAccounts } = useRequest(
+    () => api.authorization.getServiceAccounts(queryParams),
+    {
+      refreshDeps: [queryParams],
+      debounceWait: 300,
+      onSuccess: (response) => {
+        setServiceAccounts(response.data || []);
+        setTotal(response.total || 0);
+      },
+      onError: () => {
+        message.error(t('serviceAccount.loadError', { defaultValue: 'Failed to load service accounts' }));
+      },
+    },
+  );
 
-  const fetchServiceAccounts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await api.authorization.getServiceAccounts(queryParams);
-      setServiceAccounts(response.data || []);
-      setTotal(response.total || 0);
-    } catch (error) {
-      console.error(t('serviceAccount.loadError', { defaultValue: 'Failed to load service accounts' }), error);
-      message.error(t('serviceAccount.loadError', { defaultValue: 'Failed to load service accounts' }));
-    } finally {
-      setLoading(false);
-    }
-  }, [queryParams, t]);
+  const { run: deleteServiceAccount } = useRequest(
+    async ({ id }: { id: string }) => api.authorization.deleteServiceAccount({ id }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(
+          t('serviceAccount.deleteSuccess', { defaultValue: 'Service account deleted successfully' }),
+        );
+        refreshServiceAccounts();
+      },
+      onError: () => {
+        message.error(t('serviceAccount.deleteError', { defaultValue: 'Failed to delete service account' }));
+      },
+    },
+  );
 
-  useEffect(() => {
-    fetchServiceAccounts();
-  }, [fetchServiceAccounts]);
+  const { run: toggleServiceAccountStatus } = useRequest(
+    async (p: { id: string; status: API.ServiceAccount['status'] }) =>
+      api.authorization.updateServiceAccountStatus(
+        { id: p.id },
+        { status: p.status } as API.UpdateServiceAccountStatusRequest,
+      ),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(
+          t('serviceAccount.statusUpdateSuccess', { defaultValue: 'Status updated successfully' }),
+        );
+        refreshServiceAccounts();
+      },
+      onError: () => {
+        message.error(
+          t('serviceAccount.statusUpdateError', { defaultValue: 'Failed to update status' }),
+        );
+      },
+    },
+  );
 
   // Search form submission
   const handleSearch = (values: any) => {
@@ -143,28 +176,15 @@ const ServiceAccountList: React.FC = () => {
 
 
   // Delete service account
-  const handleDelete = async (id: string) => {
-    try {
-      await api.authorization.deleteServiceAccount({ id });
-      message.success(t('serviceAccount.deleteSuccess', { defaultValue: 'Service account deleted successfully' }));
-      fetchServiceAccounts();
-    } catch (error) {
-      console.error(t('serviceAccount.deleteError', { defaultValue: 'Failed to delete service account' }), error);
-      message.error(t('serviceAccount.deleteError', { defaultValue: 'Failed to delete service account' }));
-    }
+  const handleDelete = (id: string) => {
+    deleteServiceAccount({ id });
   };
 
   // Toggle service account status
-  const handleToggleStatus = async (record: API.ServiceAccount) => {
-    const newStatus = record.status === 'active' ? 'disabled' : 'active';
-    try {
-      await api.authorization.updateServiceAccountStatus({ id: record.id }, { status: newStatus });
-      message.success(t('serviceAccount.statusUpdateSuccess', { defaultValue: 'Status updated successfully' }));
-      fetchServiceAccounts();
-    } catch (error) {
-      console.error(t('serviceAccount.statusUpdateError', { defaultValue: 'Failed to update status' }), error);
-      message.error(t('serviceAccount.statusUpdateError', { defaultValue: 'Failed to update status' }));
-    }
+  const handleToggleStatus = (record: API.ServiceAccount) => {
+    const newStatus: API.ServiceAccount['status'] =
+      record.status === 'active' ? 'disabled' : 'active';
+    toggleServiceAccountStatus({ id: record.id, status: newStatus });
   };
 
   // Build table columns
@@ -402,7 +422,7 @@ const ServiceAccountList: React.FC = () => {
         enableMultiOrg={enableMultiOrg}
         organizations={organizations}
         onSuccess={() => {
-          fetchServiceAccounts();
+          refreshServiceAccounts();
         }}
       />
     </div>

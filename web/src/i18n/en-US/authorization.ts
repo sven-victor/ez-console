@@ -261,6 +261,8 @@ export default {
     aiToolsetNoTools: 'No tools available in this toolset.',
     aiToolsetsEmpty: 'No AI toolsets available for this organization.',
     aiPermissionsGlobalInfo: 'AI tool permissions are only available for organization roles.',
+    aiSelectAllTools: 'Select all tools',
+    aiClearAllTools: 'Clear all tools',
     typeSystem: 'System',
     typeUser: 'User',
     systemRoleCannotModify: 'System roles cannot be modified.',

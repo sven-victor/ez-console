@@ -91,65 +91,85 @@ const UserForm: React.FC = () => {
   });
 
   // If in edit mode, get user information
-  const { loading: userLoading } = useRequest(async () => {
-    if (!isEditMode || !form) {
-      return;
-    }
-
-    try {
-      const userData = await api.authorization.getUser({ id });
-
-      form.setFieldsValue({
-        username: userData.username,
-        email: userData.email,
-        full_name: userData.full_name,
-        status: userData.status,
-        role_ids: userData.roles ? userData.roles.map(role => role.id) : [],
-        mfa_enforced: userData.mfa_enforced,
-      });
-
-      return userData;
-    } catch (error) {
-      message.error(t('user.loadError', { defaultValue: 'Failed to load user data' }));
-    }
-  }, { refreshDeps: [id, form] });
+  const { loading: userLoading } = useRequest(
+    async () => api.authorization.getUser({ id }),
+    {
+      ready: isEditMode && !!id,
+      refreshDeps: [id, isEditMode],
+      onSuccess: (userData) => {
+        form.setFieldsValue({
+          username: userData.username,
+          email: userData.email,
+          full_name: userData.full_name,
+          status: userData.status,
+          role_ids: userData.roles ? userData.roles.map((role) => role.id) : [],
+          mfa_enforced: userData.mfa_enforced,
+        });
+      },
+      onError: () => {
+        message.error(t('user.loadError', { defaultValue: 'Failed to load user data' }));
+      },
+    },
+  );
 
   // Submit form
-  const { run: onSubmit, loading: submitLoading } = useRequest(async (values: UserFormValues) => {
-    try {
+  const { run: onSubmit, loading: submitLoading } = useRequest(
+    async (values: UserFormValues) => {
       if (isEditMode) {
-        // Update user basic information
-        await api.authorization.updateUser({ id }, {
-          email: values.email,
-          avatar: values.avatar,
-          full_name: values.full_name,
-          status: values.status,
-          mfa_enforced: values.mfa_enforced,
-          role_ids: values.role_ids,
-        });
-
-        message.success(t('user.updateSuccess', { defaultValue: 'User updated successfully' }));
-        navigate(`/authorization/users/${id}`);
-      } else {
-        // Create new user
-        const userData: API.CreateUserRequest = {
-          username: values.username!,
-          avatar: values.avatar,
-          password: values.password!,
-          email: values.email,
-          full_name: values.full_name,
-          mfa_enforced: values.mfa_enforced,
-          role_ids: values.role_ids,
-        };
-
-        const newUser = await api.authorization.createUser(userData);
-        message.success(t('user.createSuccess', { defaultValue: 'User created successfully' }));
-        navigate(`/authorization/users/${newUser.id}`);
+        await api.authorization.updateUser(
+          { id },
+          {
+            email: values.email,
+            avatar: values.avatar,
+            full_name: values.full_name,
+            status: values.status,
+            mfa_enforced: values.mfa_enforced,
+            role_ids: values.role_ids,
+          },
+        );
+        return { mode: 'update' as const };
       }
-    } catch (error) {
-      message.error(isEditMode ? t('user.updateError', { defaultValue: 'Failed to update user', error: error as string }) : t('user.createError', { defaultValue: 'Failed to create user', error: error as string }));
-    }
-  }, { manual: true });
+      const userData: API.CreateUserRequest = {
+        username: values.username!,
+        avatar: values.avatar,
+        password: values.password!,
+        email: values.email,
+        full_name: values.full_name,
+        mfa_enforced: values.mfa_enforced,
+        role_ids: values.role_ids,
+      };
+      const newUser = await api.authorization.createUser(userData);
+      return { mode: 'create' as const, newUser };
+    },
+    {
+      manual: true,
+      onSuccess: (result) => {
+        if (!result) {
+          return;
+        }
+        if (result.mode === 'update') {
+          message.success(t('user.updateSuccess', { defaultValue: 'User updated successfully' }));
+          navigate(`/authorization/users/${id}`);
+        } else {
+          message.success(t('user.createSuccess', { defaultValue: 'User created successfully' }));
+          navigate(`/authorization/users/${result.newUser.id}`);
+        }
+      },
+      onError: (error) => {
+        message.error(
+          isEditMode
+            ? t('user.updateError', {
+                defaultValue: 'Failed to update user',
+                error: error instanceof Error ? error.message : String(error),
+              })
+            : t('user.createError', {
+                defaultValue: 'Failed to create user',
+                error: error instanceof Error ? error.message : String(error),
+              }),
+        );
+      },
+    },
+  );
 
   // Form validation rules
   const validatePassword = (_: any, value: string) => {

@@ -95,15 +95,24 @@ const RoleList: React.FC = () => {
     navigate(`/authorization/roles/create?cloneFrom=${encodeURIComponent(roleId)}`);
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await api.authorization.deleteRole({ id });
-      message.success(t('role.deleteSuccess', { defaultValue: 'Role deleted successfully.' }));
-      fetchRoles();
-    } catch (error) {
-      message.error(t('role.deleteError', { defaultValue: 'Failed to delete role: {{error}}', error }));
-    }
-  };
+  const { run: deleteRole } = useRequest(
+    async ({ id }: { id: string }) => api.authorization.deleteRole({ id }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('role.deleteSuccess', { defaultValue: 'Role deleted successfully.' }));
+        fetchRoles();
+      },
+      onError: (error) => {
+        message.error(
+          t('role.deleteError', {
+            defaultValue: 'Failed to delete role: {{error}}',
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      },
+    },
+  );
 
   const handleNameClick = (roleId: string) => {
     setSelectedRoleId(roleId);
@@ -206,7 +215,7 @@ const RoleList: React.FC = () => {
                   <Tooltip title={t('role.delete', { defaultValue: 'Delete Role' })}>
                     <Popconfirm
                       title={t('role.deleteConfirm', { defaultValue: 'Are you sure you want to delete this role?' })}
-                      onConfirm={() => handleDelete(record.id)}
+                      onConfirm={() => deleteRole({ id: record.id })}
                       okText={tCommon('confirm', { defaultValue: 'Confirm' })}
                       cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
                     >

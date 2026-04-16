@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   Card,
   Descriptions,
@@ -51,8 +51,6 @@ const UserDetail: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation("authorization");
   const { t: tCommon } = useTranslation("common");
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<API.User | null>(null);
   const { hasPermission } = usePermission();
 
   const { enableMultiOrg } = useSite();
@@ -79,25 +77,16 @@ const UserDetail: React.FC = () => {
     return role.name;
   }, [organizations, organizationsLoading]);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (!id) return;
-      setLoading(true);
-      try {
-        const userData = await api.authorization.getUser({ id });
-        setUser(userData);
-      } catch (error) {
-        if (!(error instanceof ApiError && error.code === "E4041")) {
-          console.error('Failed to get user details:', error);
-          message.error(t('user.detailLoadError', { defaultValue: 'Failed to load user details' }));
-        }
-      } finally {
-        setLoading(false);
+  const { data: user, loading } = useRequest(() => api.authorization.getUser({ id: id! }), {
+    ready: !!id,
+    refreshDeps: [id],
+    onError: (error) => {
+      if (!(error instanceof ApiError && error.code === 'E4041')) {
+        console.error('Failed to get user details:', error);
+        message.error(t('user.detailLoadError', { defaultValue: 'Failed to load user details' }));
       }
-    };
-
-    fetchUser();
-  }, [id, t]);
+    },
+  });
 
   if (loading) {
     return (
