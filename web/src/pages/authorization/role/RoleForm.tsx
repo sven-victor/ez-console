@@ -474,7 +474,7 @@ const RoleForm: React.FC = () => {
     } catch (error) {
       message.error(
         t('role.saveError', {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : `${error}`,
           defaultValue: 'Failed to save role.',
           action: isEditMode
             ? tCommon('update', { defaultValue: 'Update' })
@@ -849,6 +849,7 @@ const RoleForm: React.FC = () => {
               key: 'policy',
               label: t('role.policyDocument', { defaultValue: 'Policy Document' }),
               disabled: roleType === 'organization',
+              forceRender: true,
               children: (
                 <Form.Item
                   name="policy_document"
