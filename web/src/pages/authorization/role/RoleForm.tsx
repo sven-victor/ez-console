@@ -374,21 +374,6 @@ const RoleForm: React.FC = () => {
     }));
   }, [aiToolsets]);
 
-  const applySelectAllAiTools = useCallback(
-    (selectAll: boolean) => {
-      setAiToolSelections((prev) => {
-        const next: Record<string, string[]> = { ...prev };
-        aiToolsets.forEach((toolset) => {
-          next[toolset.id] = selectAll
-            ? (toolset.tools || []).map((tool) => tool.name)
-            : [];
-        });
-        return next;
-      });
-    },
-    [aiToolsets],
-  );
-
   const validatePolicyDocument = (_: unknown, value: string) => {
     if (roleType === 'organization') {
       return Promise.resolve();

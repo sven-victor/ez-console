@@ -96,13 +96,13 @@ async function A(e) {
     ...e || {}
   });
 }
-const ye = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: b,
   getStatistics: A,
   listFiles: v,
   uploadFile: k
-}, Symbol.toStringTag, { value: "Module" })), y = {
+}, Symbol.toStringTag, { value: "Module" })), S = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -231,7 +231,7 @@ const ye = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, S = {
+}, y = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -673,6 +673,8 @@ const ye = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     aiToolsetNoTools: "No tools available in this toolset.",
     aiToolsetsEmpty: "No AI toolsets available for this organization.",
     aiPermissionsGlobalInfo: "AI tool permissions are only available for organization roles.",
+    aiSelectAllTools: "Select all tools",
+    aiClearAllTools: "Clear all tools",
     typeSystem: "System",
     typeUser: "User",
     systemRoleCannotModify: "System roles cannot be modified.",
@@ -2621,6 +2623,8 @@ const ye = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     aiToolsetNoTools: "该工具集中没有可用工具。",
     aiToolsetsEmpty: "该组织暂无可用的 AI 工具集。",
     aiPermissionsGlobalInfo: "AI 工具权限仅适用于组织角色。",
+    aiSelectAllTools: "全选工具",
+    aiClearAllTools: "清空工具",
     typeSystem: "系统",
     typeUser: "用户",
     systemRoleCannotModify: "系统角色不可修改。",
@@ -10372,7 +10376,7 @@ g.use(f).use(h).init({
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: y,
+      translation: S,
       common: L,
       authorization: M,
       system: U,
@@ -10380,7 +10384,7 @@ g.use(f).use(h).init({
       task: _
     },
     "en-US": {
-      translation: S,
+      translation: y,
       common: T,
       authorization: P,
       system: w,
@@ -10434,7 +10438,7 @@ g.use(f).use(h).init({
     escapeValue: !1
   }
 });
-const Se = {
+const ye = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
@@ -10471,9 +10475,9 @@ function Te(e) {
 ` + s;
 }
 export {
-  Se as P,
+  ye as P,
   be as a,
-  ye as b,
+  Se as b,
   Te as c,
   he as f,
   ke as g,
