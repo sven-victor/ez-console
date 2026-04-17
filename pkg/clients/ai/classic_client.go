@@ -204,8 +204,9 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 
 		summaryMsgs := []ChatMessage{
 			{
-				Role:    model.AIChatMessageRoleSystem,
-				Content: "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive.",
+				Role: model.AIChatMessageRoleSystem,
+				Content: "Please summarize the following conversation history, preserving important information and context. " +
+					"The summary should be concise but comprehensive. Prioritize details relevant to the most recent user message.",
 			},
 		}
 		summaryMsgs = append(summaryMsgs, messagesToSummarize...)
@@ -243,35 +244,18 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		return nil
 	}
 
-	// Helper function to summarize tool result
-	summarizeToolResult := func(toolCallID, toolName, originalResult string) (string, error) {
-		summarizePrompt := fmt.Sprintf(
-			"The tool '%s' returned a very large result. Please analyze and extract the key information from the following result. Focus on the most important data and provide a concise summary:\n\n%s",
-			toolName,
-			originalResult,
-		)
-
-		summarizeMessages := []ChatMessage{
-			{
-				Role:    model.AIChatMessageRoleUser,
-				Content: summarizePrompt,
-			},
-		}
-
-		level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult))
-		estPrompt := EstimateTokens(summarizeMessages)
-		response, err := aiClient.Chat(ctx, summarizeMessages, nil)
+	// Helper function to summarize tool result (chunked LLM + deterministic truncation fallback).
+	summarizeToolResult := func(_, toolName, originalResult string) (string, error) {
+		userCtx := lastUserMessageForToolSummary(messages)
+		level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult), "has_user_context", userCtx != "")
+		out, err := summarizeToolResultWithFallback(ctx, aiClient, toolName, originalResult, userCtx, opts.ToolResultMaxSize, opts.MaxTokens, func(resp *ChatMessage, est int) {
+			recordUsage(resp, est)
+		})
 		if err != nil {
-			return "", fmt.Errorf("failed to summarize tool result: %w", err)
+			return "", err
 		}
-
-		if response == nil {
-			return "", fmt.Errorf("no response")
-		}
-
-		recordUsage(response, estPrompt)
-		level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(response.Content))
-		return response.Content, nil
+		level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(out))
+		return out, nil
 	}
 
 	var resultMessages []ChatMessage
@@ -640,8 +624,9 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 
 	summaryMessages := []ChatMessage{
 		{
-			Role:    model.AIChatMessageRoleSystem,
-			Content: "Please summarize the following conversation history, preserving important information and context. The summary should be concise but comprehensive.",
+			Role: model.AIChatMessageRoleSystem,
+			Content: "Please summarize the following conversation history, preserving important information and context. " +
+				"The summary should be concise but comprehensive. Prioritize details relevant to the most recent user message.",
 		},
 	}
 	summaryMessages = append(summaryMessages, messagesToSummarize...)
@@ -679,37 +664,19 @@ func (o *ClassicChatStream) summarizeMessages(ctx context.Context) error {
 	return nil
 }
 
-// summarizeToolResult summarizes a large tool result
+// summarizeToolResult summarizes a large tool result (chunked LLM + deterministic truncation fallback).
 func (o *ClassicChatStream) summarizeToolResult(ctx context.Context, toolName, originalResult string) (string, error) {
 	logger := log.GetContextLogger(ctx)
-
-	summarizePrompt := fmt.Sprintf(
-		"The tool '%s' returned a very large result. Please analyze and extract the key information from the following result. Focus on the most important data and provide a concise summary:\n\n%s",
-		toolName,
-		originalResult,
-	)
-
-	summarizeMessages := []ChatMessage{
-		{
-			Role:    model.AIChatMessageRoleUser,
-			Content: summarizePrompt,
-		},
-	}
-
-	level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult))
-	estPrompt := EstimateTokens(summarizeMessages)
-	response, err := o.client.Chat(ctx, summarizeMessages, nil)
+	userCtx := lastUserMessageForToolSummary(o.messages)
+	level.Debug(logger).Log("msg", "Summarizing tool result", "tool", toolName, "original_size", len(originalResult), "has_user_context", userCtx != "")
+	out, err := summarizeToolResultWithFallback(ctx, o.client, toolName, originalResult, userCtx, o.toolResultMaxSize, o.maxTokens, func(resp *ChatMessage, est int) {
+		o.recordSideCallUsage(resp, est)
+	})
 	if err != nil {
-		return "", fmt.Errorf("failed to summarize tool result: %w", err)
+		return "", err
 	}
-
-	if response == nil {
-		return "", fmt.Errorf("no response")
-	}
-
-	o.recordSideCallUsage(response, estPrompt)
-	level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(response.Content))
-	return response.Content, nil
+	level.Debug(logger).Log("msg", "Tool result summarized", "tool", toolName, "original_size", len(originalResult), "new_size", len(out))
+	return out, nil
 }
 
 // recordSideCallUsage records token usage from auxiliary Chat calls
@@ -1176,6 +1143,10 @@ func segmentedSummarize(ctx context.Context, client AIClient, messages []ChatMes
 
 	summaryTS := newSummaryToolSet(messages, errorDetail)
 
+	userPrompt := "Begin segmented summarization. Start by fetching the first segment of messages using get_messages."
+	if u := lastUserMessageForToolSummary(messages); u != "" {
+		userPrompt += "\n\nWhen condensing, keep content aligned with the latest user intent. Latest user message (excerpt):\n" + u
+	}
 	summarizeMessages := []ChatMessage{
 		{
 			Role:    model.AIChatMessageRoleSystem,
@@ -1183,7 +1154,7 @@ func segmentedSummarize(ctx context.Context, client AIClient, messages []ChatMes
 		},
 		{
 			Role:    model.AIChatMessageRoleUser,
-			Content: "Begin segmented summarization. Start by fetching the first segment of messages using get_messages.",
+			Content: userPrompt,
 		},
 	}
 

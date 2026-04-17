@@ -82,6 +82,28 @@ func newOpenAIClientFromConfig(config map[string]interface{}) (*OpenAIClient, er
 	}, nil
 }
 
+// mapOpenAIRequestError maps OpenAI API errors from CreateChatCompletion / stream open so callers
+// can treat context and token limit failures as ChatErrorTypeMaxTokensExceeded (and 429 as rate limit).
+func mapOpenAIRequestError(err error) error {
+	var openaiErr *openai.APIError
+	if !errors.As(err, &openaiErr) {
+		return err
+	}
+	if openaiErr.HTTPStatusCode == 429 {
+		return NewChatError(err, ChatErrorTypeRateLimitExceeded, openaiErr.Message)
+	}
+	msg := strings.ToLower(openaiErr.Message)
+	if strings.Contains(msg, "maximum context length") ||
+		strings.Contains(msg, "context_length_exceeded") ||
+		strings.Contains(msg, "reduce the length of the messages") ||
+		strings.Contains(msg, "prompt is too long") ||
+		strings.Contains(msg, "this model's maximum context") ||
+		(strings.Contains(msg, "token") && strings.Contains(msg, "context")) {
+		return NewChatError(err, ChatErrorTypeMaxTokensExceeded, openaiErr.Message)
+	}
+	return err
+}
+
 // NewOpenAIClient creates a new OpenAI client from model configuration (backward compatibility)
 func NewOpenAIClient(aiModel *model.AIModel) (*OpenAIClient, error) {
 	if aiModel.Provider != model.AIModelProviderOpenAI {
@@ -142,8 +164,12 @@ func (c *OpenAIClient) ChatStream(ctx context.Context, messages []ChatMessage, t
 
 // Chat implements AIClient interface
 func (c *OpenAIClient) Chat(ctx context.Context, messages []ChatMessage, toolSets toolset.ToolSets) (*ChatMessage, error) {
-	messages = c.prependModelSystemPrompt(messages)
 
+	messages = c.prependModelSystemPrompt(messages)
+	estPrompt := EstimateTokens(messages)
+	if estPrompt > 128*1024 {
+		return nil, NewChatError(fmt.Errorf("prompt is too long %d tokens, max is 128*1024", estPrompt), ChatErrorTypeMaxTokensExceeded, fmt.Sprintf("prompt is too long: %d tokens", estPrompt))
+	}
 	// Convert ChatMessage to openai.ChatCompletionMessage
 	openaiMessages := make([]openai.ChatCompletionMessage, 0, len(messages))
 	for _, msg := range messages {
@@ -165,6 +191,10 @@ func (c *OpenAIClient) Chat(ctx context.Context, messages []ChatMessage, toolSet
 	// Call OpenAI API
 	response, err := c.client.CreateChatCompletion(ctx, request)
 	if err != nil {
+		mapped := mapOpenAIRequestError(err)
+		if mapped != err {
+			return nil, mapped
+		}
 		return nil, fmt.Errorf("failed to create chat completion: %w", err)
 	}
 
@@ -179,6 +209,7 @@ func (c *OpenAIClient) Chat(ctx context.Context, messages []ChatMessage, toolSet
 			CompletionTokens: response.Usage.CompletionTokens,
 		}
 	}
+
 	return &resultMessage, nil
 
 }
@@ -293,14 +324,9 @@ func NewOpenAIChatStream(ctx context.Context, client *OpenAIClient, messages []o
 	// Call OpenAI API
 	stream.stream, err = client.client.CreateChatCompletionStream(ctx, request)
 	if err != nil {
-		var openaiErr *openai.APIError
-		if errors.As(err, &openaiErr) {
-			if strings.Contains(openaiErr.Message, "maximum context length") {
-				return nil, &ChatError{Err: err, Type: ChatErrorTypeMaxTokensExceeded, Detail: openaiErr.Message}
-			}
-			if openaiErr.HTTPStatusCode == 429 {
-				return nil, &ChatError{Err: err, Type: ChatErrorTypeRateLimitExceeded, Detail: openaiErr.Message}
-			}
+		mapped := mapOpenAIRequestError(err)
+		if mapped != err {
+			return nil, mapped
 		}
 		return nil, err
 	}
