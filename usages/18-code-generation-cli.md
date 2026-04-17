@@ -52,7 +52,7 @@ ez-console init <target-dir> --name <service-name> --go-module <go-module-path> 
 | Flag | Default | Meaning |
 |------|---------|--------|
 | `--app-version` | `0.1.0` | Application version (written to `main.go` and `web/package.json`) |
-| `--ez-console-version` | `v1.13.0` | Version of the Go module `github.com/sven-victor/ez-console` |
+| `--ez-console-version` | `v1.14.0` | Version of the Go module `github.com/sven-victor/ez-console` |
 | `--description` | (built-in short text) | Short string passed to `NewCommandServer` |
 
 ### What gets generated

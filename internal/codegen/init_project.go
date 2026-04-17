@@ -28,8 +28,8 @@ type InitProjectOptions struct {
 	ServiceName    string // first argument to NewCommandServer (e.g. my-console-app)
 	GoModule       string // module path for backend/go.mod
 	AppVersion     string // app semver for main.go (e.g. 0.1.0)
-	EzConsoleGoMod string // require version e.g. v1.13.0
-	EzConsoleNPM   string // npm semver e.g. ^1.13.0 (derived from EzConsoleGoMod if empty)
+	EzConsoleGoMod string // require version e.g. v1.14.0
+	EzConsoleNPM   string // npm semver e.g. ^1.14.0 (derived from EzConsoleGoMod if empty)
 	AppDescription string
 }
 
@@ -48,7 +48,7 @@ func InitProject(opts InitProjectOptions) error {
 		opts.AppVersion = "0.1.0"
 	}
 	if opts.EzConsoleGoMod == "" {
-		opts.EzConsoleGoMod = "v1.13.0"
+		opts.EzConsoleGoMod = "v1.14.0"
 	}
 	npmVer := opts.EzConsoleNPM
 	if npmVer == "" {
@@ -109,7 +109,7 @@ func InitProject(opts InitProjectOptions) error {
 func npmCaretVersion(goModVer string) string {
 	v := strings.TrimPrefix(strings.TrimSpace(goModVer), "v")
 	if v == "" {
-		return "^1.13.0"
+		return "^1.14.0"
 	}
 	return "^" + v
 }
