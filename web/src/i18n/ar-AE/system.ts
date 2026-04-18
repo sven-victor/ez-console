@@ -165,6 +165,11 @@ export default {
       enableSkillToolBinding: 'ربط أدوات الذكاء الاصطناعي بالمهارات',
       enableSkillToolBindingTooltip:
         'عند التمكين، يحد محادثة الذكاء الاصطناعي الأدوات حسب ارتباطات المهارة (ضمن أذونات الأدوات للدور).',
+      clearSiteCache: 'مسح ذاكرة التخزين المؤقت للموقع',
+      clearSiteCacheConfirm:
+        'مسح جميع ذاكرات التخزين المؤقت للتطبيق على الخادم؟ قد تحتاج الجلسات النشطة إلى تسجيل الدخول مرة أخرى.',
+      clearSiteCacheSuccess: 'تم مسح ذاكرة التخزين المؤقت للموقع بنجاح',
+      clearSiteCacheFailed: 'فشل مسح ذاكرة التخزين المؤقت للموقع',
     },
     security: {
       mfa: {

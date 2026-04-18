@@ -18,6 +18,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
@@ -45,6 +46,8 @@ func (c *SettingController) RegisterRoutes(router *gin.RouterGroup) {
 
 		// Update settings
 		settings.PUT("", middleware.RequirePermission("system:settings:update"), c.UpdateSystemBaseSettings)
+
+		settings.POST("/clear-cache", middleware.RequirePermission("system:settings:update"), c.ClearSiteCache)
 	}
 }
 
@@ -67,6 +70,25 @@ func (c *SettingController) GetSystemBaseSettings(ctx *gin.Context) {
 	}
 
 	util.RespondWithSuccess(ctx, http.StatusOK, settings)
+}
+
+// ClearSiteCache clears in-process application caches (sessions, roles, settings, ephemeral store).
+//
+//	@Summary		Clear site application cache
+//	@Description	Clears all registered server-side caches. Active users may need to refresh or sign in again.
+//	@ID             clearSiteCache
+//	@Tags			System Settings/Base
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/base-settings/clear-cache [post]
+func (c *SettingController) ClearSiteCache(ctx *gin.Context) {
+	if err := cache.ClearSiteCache(ctx); err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	util.RespondWithMessage(ctx, "Site cache cleared successfully")
 }
 
 // UpdateSettings Batch update system settings

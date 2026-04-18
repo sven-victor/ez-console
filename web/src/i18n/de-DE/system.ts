@@ -166,6 +166,11 @@ export default {
       enableSkillToolBinding: 'KI-Tools mit Skills verknüpfen',
       enableSkillToolBindingTooltip:
         'Wenn aktiviert, schränkt der KI-Chat die Tools nach Skill-Bindings ein (weiterhin innerhalb der Rollen-KI-Tool-Berechtigungen).',
+      clearSiteCache: 'Website-Cache leeren',
+      clearSiteCacheConfirm:
+        'Alle serverseitigen Anwendungs-Caches leeren? Aktive Sitzungen müssen sich ggf. erneut anmelden.',
+      clearSiteCacheSuccess: 'Website-Cache erfolgreich geleert',
+      clearSiteCacheFailed: 'Website-Cache konnte nicht geleert werden',
     },
     security: {
       mfa: {

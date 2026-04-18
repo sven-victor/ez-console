@@ -3368,6 +3368,36 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/base-settings/clear-cache": {
+            "post": {
+                "description": "Clears all registered server-side caches. Active users may need to refresh or sign in again.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Base"
+                ],
+                "summary": "Clear site application cache",
+                "operationId": "clearSiteCache",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/health": {
             "get": {
                 "description": "Check the health of the system",
@@ -10857,14 +10887,10 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                60000000000,
-                3600000000000,
                 1,
                 1000,
                 1000000,
                 1000000000,
-                60000000000,
-                3600000000000,
                 1,
                 1000,
                 1000000,
@@ -10884,14 +10910,10 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

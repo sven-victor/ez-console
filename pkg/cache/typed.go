@@ -38,6 +38,10 @@ func NewTypedCache[T any](prefix string, ttl time.Duration, remote Cache, gcInte
 		ttl:    ttl,
 		stopGC: make(chan struct{}),
 	}
+	registerForClear(func(_ context.Context) error {
+		c.Clear()
+		return nil
+	})
 	go c.gc(gcInterval)
 	return c
 }

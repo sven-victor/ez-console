@@ -167,6 +167,11 @@ export default {
       enableSkillToolBinding: 'Link AI tools to skills',
       enableSkillToolBindingTooltip:
         'When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools.',
+      clearSiteCache: 'Clear site cache',
+      clearSiteCacheConfirm:
+        'Clear all server-side application caches? Active sessions may need to sign in again.',
+      clearSiteCacheSuccess: 'Site cache cleared successfully',
+      clearSiteCacheFailed: 'Failed to clear site cache',
     },
     organizations: {
       title: 'Organization Management',

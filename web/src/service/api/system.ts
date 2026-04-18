@@ -61,6 +61,17 @@ export async function updateSystemBaseSettings(
   });
 }
 
+/** Clear site application cache Clears all registered server-side caches. Active users may need to refresh or sign in again. POST /api/system/base-settings/clear-cache */
+export async function clearSiteCache(options?: { [key: string]: any }) {
+  return request<API.ResponseUtilMessageData>(
+    "/api/system/base-settings/clear-cache",
+    {
+      method: "POST",
+      ...(options || {}),
+    }
+  );
+}
+
 /** Health check Check the health of the system GET /api/system/health */
 export async function healthCheck(options?: { [key: string]: any }) {
   return request<API.ResponseServiceHealthResult>("/api/system/health", {

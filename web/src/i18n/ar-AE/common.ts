@@ -19,6 +19,7 @@ export default {
   success: 'نجحت العملية',
   error: 'فشلت العملية',
   confirm: 'تأكيد',
+  ok: 'موافق',
   cancel: 'إلغاء',
   save: 'حفظ',
   edit: 'تعديل',

@@ -3192,14 +3192,10 @@ definitions:
     - 1000
     - 1000000
     - 1000000000
-    - 60000000000
-    - 3600000000000
     - 1
     - 1000
     - 1000000
     - 1000000000
-    - 60000000000
-    - 3600000000000
     - 1
     - 1000
     - 1000000
@@ -3219,14 +3215,10 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
-    - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -6691,6 +6683,27 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Batch update system settings
+      tags:
+      - System Settings/Base
+  /api/system/base-settings/clear-cache:
+    post:
+      consumes:
+      - application/json
+      description: Clears all registered server-side caches. Active users may need
+        to refresh or sign in again.
+      operationId: clearSiteCache
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Clear site application cache
       tags:
       - System Settings/Base
   /api/system/health:

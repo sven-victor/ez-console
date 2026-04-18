@@ -19,6 +19,7 @@ export default {
   success: '操作成功',
   error: '操作失败',
   confirm: '确认',
+  ok: '确定',
   cancel: '取消',
   save: '保存',
   edit: '编辑',

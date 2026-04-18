@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -41,12 +42,20 @@ var (
 // dbSessionFn provides the DB connection for the L2 session cache; pass nil to
 // disable DB-backed L2 (useful in tests).
 func Init(cfg *config.CacheConfig, dbSessionFn DBSessionFunc) error {
+	resetClearRegistry()
+
 	backend, err := newBackend(cfg)
 	if err != nil {
 		return err
 	}
 
 	Store = backend
+	if mc, ok := Store.(*MemoryCache); ok {
+		registerForClear(func(_ context.Context) error {
+			mc.Clear()
+			return nil
+		})
+	}
 
 	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, nil, defaultGCInterval)
 	Roles = NewTypedCache[model.Role]("role:", roleCacheTTL, nil, defaultGCInterval)

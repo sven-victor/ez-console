@@ -57,6 +57,13 @@ func (c *MemoryCache) Delete(_ context.Context, key string) error {
 	return nil
 }
 
+// Clear removes all entries from the in-memory store.
+func (c *MemoryCache) Clear() {
+	c.mu.Lock()
+	c.data = make(map[string]memEntry)
+	c.mu.Unlock()
+}
+
 func (c *MemoryCache) Close() error {
 	close(c.stopGC)
 	return nil

@@ -166,6 +166,11 @@ export default {
       enableSkillToolBinding: 'Vincular herramientas de IA a habilidades',
       enableSkillToolBindingTooltip:
         'Si está habilitado, el chat de IA restringe las herramientas según los enlaces por habilidad (aún dentro de los permisos de rol).',
+      clearSiteCache: 'Vaciar caché del sitio',
+      clearSiteCacheConfirm:
+        '¿Vaciar todas las cachés de aplicación del servidor? Las sesiones activas puede que deban iniciar sesión de nuevo.',
+      clearSiteCacheSuccess: 'Caché del sitio vaciada correctamente',
+      clearSiteCacheFailed: 'No se pudo vaciar la caché del sitio',
     },
     security: {
       mfa: {

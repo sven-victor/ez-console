@@ -15,12 +15,13 @@
  */
 
 import React from 'react';
-import { Form, Button, message, Space, Spin, Input, Tabs, Switch } from 'antd';
+import { Form, Button, message, Space, Spin, Input, Tabs, Switch, Popconfirm } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
-import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, ClearOutlined } from '@ant-design/icons';
 import api from '@/service/api';
 import { AllLangUIConfig } from '@/components/LanguageSwitch';
+import { PermissionGuard } from '@/components/PermissionGuard';
 
 
 const BaseSettingsForm: React.FC = () => {
@@ -50,6 +51,19 @@ const BaseSettingsForm: React.FC = () => {
       message.error(t('settings.updateFailed', { defaultValue: 'Failed to update settings' }));
       console.error('Failed to update system settings', error);
     }
+  });
+
+  const { loading: clearingCache, run: runClearSiteCache } = useRequest(api.system.clearSiteCache, {
+    manual: true,
+    onSuccess: () => {
+      message.success(
+        t('settings.base.clearSiteCacheSuccess', { defaultValue: 'Site cache cleared successfully' })
+      );
+    },
+    onError: (error) => {
+      message.error(t('settings.base.clearSiteCacheFailed', { defaultValue: 'Failed to clear site cache' }));
+      console.error('Failed to clear site cache', error);
+    },
   });
 
   const handleSubmit = (values: API.SystemSettings) => {
@@ -132,6 +146,21 @@ const BaseSettingsForm: React.FC = () => {
           >
             {tCommon('refresh', { defaultValue: 'Refresh' })}
           </Button>
+          <PermissionGuard permission="system:settings:update">
+            <Popconfirm
+              title={t('settings.base.clearSiteCacheConfirm', {
+                defaultValue:
+                  'Clear all server-side application caches? Active sessions may need to sign in again.',
+              })}
+              okText={tCommon('ok', { defaultValue: 'OK' })}
+              cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
+              onConfirm={() => runClearSiteCache()}
+            >
+              <Button icon={<ClearOutlined />} loading={clearingCache}>
+                {t('settings.base.clearSiteCache', { defaultValue: 'Clear site cache' })}
+              </Button>
+            </Popconfirm>
+          </PermissionGuard>
         </Space>
       </Form.Item>
     </Form>

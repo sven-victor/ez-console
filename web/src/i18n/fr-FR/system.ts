@@ -166,6 +166,11 @@ export default {
       enableSkillToolBinding: 'Lier les outils IA aux compétences',
       enableSkillToolBindingTooltip:
         'Si activé, le chat IA restreint les outils selon les liaisons par compétence lorsque des compétences sont dans le périmètre (toujours dans les permissions des rôles).',
+      clearSiteCache: 'Vider le cache du site',
+      clearSiteCacheConfirm:
+        'Vider tous les caches applicatifs côté serveur ? Les sessions actives devront peut-être se reconnecter.',
+      clearSiteCacheSuccess: 'Cache du site vidé avec succès',
+      clearSiteCacheFailed: 'Échec du vidage du cache du site',
     },
     security: {
       mfa: {

@@ -166,6 +166,11 @@ export default {
       enableSkillToolBinding: 'Koppla AI-verktyg till färdigheter',
       enableSkillToolBindingTooltip:
         'När det är aktiverat begränsar AI-chatten verktyg enligt färdighetsbindningar (inom rollbehörigheter).',
+      clearSiteCache: 'Töm webbplatsens cache',
+      clearSiteCacheConfirm:
+        'Tömma alla programcacher på servern? Aktiva sessioner kan behöva logga in igen.',
+      clearSiteCacheSuccess: 'Webbplatsens cache har tömts',
+      clearSiteCacheFailed: 'Det gick inte att tömma webbplatsens cache',
     },
     security: {
       mfa: {
