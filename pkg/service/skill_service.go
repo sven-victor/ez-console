@@ -597,12 +597,15 @@ func (s *SkillService) EnsurePresetSkillMarkdown(ctx context.Context, organizati
 	if organizationID == "" {
 		return fmt.Errorf("organization id is required")
 	}
-	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return err
 	}
 	if _, err := afero.ReadFile(skillFs, skillMainFile); err == nil {
 		return nil
+	}
+	if err := s.ensureSkillDirectoryExists(skill); err != nil {
+		return err
 	}
 	return afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644)
 }
@@ -723,6 +726,18 @@ func (s *SkillService) getSkillFs(ctx context.Context, organizationID, skillID s
 // getSkillsRootFs returns the root afero.Fs for skills storage (from config or default under file_upload_path)
 func (s *SkillService) getSkillsRootFs() afero.Fs {
 	return config.GetConfig().Server.SkillsPath
+}
+
+// ensureSkillDirectoryExists creates the skill directory on the skills root FS if it is missing (e.g. removed from disk).
+func (s *SkillService) ensureSkillDirectoryExists(skill *model.Skill) error {
+	if skill == nil {
+		return fmt.Errorf("skill is required")
+	}
+	root := s.getSkillsRootFs()
+	if err := root.MkdirAll(skill.ResourceID, 0o755); err != nil {
+		return fmt.Errorf("failed to ensure skill directory exists: %w", err)
+	}
+	return nil
 }
 
 // PreviewSkillResponse for skill preview content
