@@ -49,4 +49,14 @@ func (d *DBCache) Delete(ctx context.Context, key string) error {
 	return d.session(ctx).Where("`key` = ?", key).Delete(&model.CacheEntry{}).Error
 }
 
+// Clear removes all entries from the DB cache table.
+func (d *DBCache) Clear() {
+	_ = d.session(context.Background()).Where("1 = 1").Delete(&model.CacheEntry{}).Error
+}
+
+// GC deletes expired entries from the DB cache table.
+func (d *DBCache) GC() {
+	_ = d.session(context.Background()).Where("expired_at <= ?", time.Now()).Delete(&model.CacheEntry{}).Error
+}
+
 func (d *DBCache) Close() error { return nil }

@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -42,32 +41,33 @@ var (
 // dbSessionFn provides the DB connection for the L2 session cache; pass nil to
 // disable DB-backed L2 (useful in tests).
 func Init(cfg *config.CacheConfig, dbSessionFn DBSessionFunc) error {
-	resetClearRegistry()
+	ResetCacheRegistry()
 
-	backend, err := newBackend(cfg)
+	rawCache, err := newRawCache(cfg)
 	if err != nil {
 		return err
 	}
 
-	Store = backend
-	if mc, ok := Store.(*MemoryCache); ok {
-		registerForClear(func(_ context.Context) error {
-			mc.Clear()
-			return nil
-		})
+	Store = rawCache
+	RegisterCache("store:"+cfg.GetDriver(), Store)
+
+	var dbCache Cache
+	if dbSessionFn != nil {
+		dbCache = NewDBCache(dbSessionFn)
+		RegisterCache("session:l2:db", dbCache)
 	}
 
-	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, nil, defaultGCInterval)
+	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, dbCache, defaultGCInterval)
 	Roles = NewTypedCache[model.Role]("role:", roleCacheTTL, nil, defaultGCInterval)
 	Settings = NewTypedCache[model.Setting]("setting:", settingCacheTTL, nil, defaultGCInterval)
 	AllSettings = NewTypedCache[[]model.Setting]("all_settings:", settingCacheTTL, nil, defaultGCInterval)
 	return nil
 }
 
-func newBackend(cfg *config.CacheConfig) (Cache, error) {
+func newRawCache(cfg *config.CacheConfig) (Cache, error) {
 	switch cfg.GetDriver() {
 	case "memory", "":
-		return NewMemoryCache(defaultGCInterval), nil
+		return NewMemoryCache(), nil
 	default:
 		return nil, fmt.Errorf("unsupported cache driver: %s", cfg.GetDriver())
 	}
