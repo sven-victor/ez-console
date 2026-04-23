@@ -72,14 +72,20 @@ func (c *TypedCache[T]) Get(ctx context.Context, key string) (T, error) {
 	}
 
 	if c.remote != nil {
-		raw, err := c.remote.Get(ctx, c.prefix+key)
+		raw, ttl, err := c.remote.GetWithTTL(ctx, c.prefix+key)
 		if err == nil {
 			var val T
-			if err := json.Unmarshal(raw, &val); err == nil {
-				c.set(key, val, c.ttl)
-				cacheHitTotal.WithLabelValues(c.metricName, "l2").Inc()
-				return val, nil
+			if err := json.Unmarshal(raw, &val); err != nil {
+				return zero, fmt.Errorf("cache: unmarshal remote value for key %q failed: %w", key, err)
 			}
+			if ttl > 0 {
+				c.set(key, val, c.clampBackfillTTL(ttl))
+			}
+			cacheHitTotal.WithLabelValues(c.metricName, "l2").Inc()
+			return val, nil
+		}
+		if !errors.Is(err, ErrCacheMiss) {
+			return zero, err
 		}
 	}
 
@@ -196,4 +202,17 @@ func (c *TypedCache[T]) withJitter(ttl time.Duration) time.Duration {
 	}
 	delta := time.Duration(rand.Int63n(int64(jitterBound)*2+1)) - jitterBound
 	return ttl + delta
+}
+
+func (c *TypedCache[T]) clampBackfillTTL(ttl time.Duration) time.Duration {
+	if c.ttl <= 0 {
+		return ttl
+	}
+	if ttl <= 0 {
+		return c.ttl
+	}
+	if ttl > c.ttl {
+		return c.ttl
+	}
+	return ttl
 }

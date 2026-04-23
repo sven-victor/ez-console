@@ -38,36 +38,40 @@ var (
 
 // Init creates the cache backend from config and wires up the global instances.
 // Must be called once at startup before any cache access.
-// dbSessionFn provides the DB connection for the L2 session cache; pass nil to
-// disable DB-backed L2 (useful in tests).
+// dbSessionFn provides the DB connection for DB-backed external cache; pass nil
+// when cache driver is not db (useful in tests).
 func Init(cfg *config.CacheConfig, dbSessionFn DBSessionFunc) error {
 	ResetCacheRegistry()
 
-	rawCache, err := newRawCache(cfg)
+	externalCache, err := newExternalCache(cfg, dbSessionFn)
 	if err != nil {
 		return err
 	}
 
-	Store = rawCache
-	RegisterCache("store:"+cfg.GetDriver(), Store)
-
-	var dbCache Cache
-	if dbSessionFn != nil {
-		dbCache = NewDBCache(dbSessionFn)
-		RegisterCache("session:l2:db", dbCache)
+	Store = NewLayeredCache(NewMemoryCache(), externalCache, sessionCacheTTL)
+	RegisterCache("store:l1+l2:"+cfg.GetDriver(), Store)
+	if externalCache != nil {
+		RegisterCache("external:"+cfg.GetDriver(), externalCache)
 	}
 
-	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, dbCache, defaultGCInterval)
+	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, externalCache, defaultGCInterval)
 	Roles = NewTypedCache[model.Role]("role:", roleCacheTTL, nil, defaultGCInterval)
 	Settings = NewTypedCache[model.Setting]("setting:", settingCacheTTL, nil, defaultGCInterval)
 	AllSettings = NewTypedCache[[]model.Setting]("all_settings:", settingCacheTTL, nil, defaultGCInterval)
 	return nil
 }
 
-func newRawCache(cfg *config.CacheConfig) (Cache, error) {
+func newExternalCache(cfg *config.CacheConfig, dbSessionFn DBSessionFunc) (Cache, error) {
 	switch cfg.GetDriver() {
 	case "memory", "":
-		return NewMemoryCache(), nil
+		return nil, nil
+	case "db":
+		if dbSessionFn == nil {
+			return nil, fmt.Errorf("cache driver db requires db session function")
+		}
+		return NewDBCache(dbSessionFn), nil
+	case "redis":
+		return NewRedisCache(cfg.Redis)
 	default:
 		return nil, fmt.Errorf("unsupported cache driver: %s", cfg.GetDriver())
 	}

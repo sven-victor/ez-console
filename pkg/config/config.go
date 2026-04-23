@@ -37,7 +37,7 @@ import (
 )
 
 // CacheConfig controls the cache backend.
-//   - Driver: "memory" (default). Future: "redis".
+//   - Driver: "memory" (default), "db", or "redis".
 //   - Size: maximum number of entries (used by memory backend).
 type CacheConfig struct {
 	Driver string      `yaml:"driver" mapstructure:"driver"`
@@ -45,7 +45,7 @@ type CacheConfig struct {
 	Redis  RedisConfig `yaml:"redis" mapstructure:"redis"`
 }
 
-// RedisConfig holds connection parameters for a Redis-backed cache (future use).
+// RedisConfig holds connection parameters for a Redis-backed cache.
 type RedisConfig struct {
 	Addr     string `yaml:"addr" mapstructure:"addr"`
 	Password string `yaml:"password" mapstructure:"password"`

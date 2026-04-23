@@ -29,15 +29,21 @@ func NewMemoryCache() *MemoryCache {
 	return c
 }
 
-func (c *MemoryCache) Get(_ context.Context, key string) ([]byte, error) {
+func (c *MemoryCache) Get(ctx context.Context, key string) ([]byte, error) {
+	val, _, err := c.GetWithTTL(ctx, key)
+	return val, err
+}
+
+func (c *MemoryCache) GetWithTTL(_ context.Context, key string) ([]byte, time.Duration, error) {
 	c.mu.RLock()
 	e, ok := c.data[key]
 	c.mu.RUnlock()
 	if !ok {
 		cacheMissTotal.WithLabelValues(c.metricName, "l1").Inc()
-		return nil, ErrCacheMiss
+		return nil, 0, ErrCacheMiss
 	}
-	if time.Now().After(e.expiresAt) {
+	remainingTTL := time.Until(e.expiresAt)
+	if remainingTTL <= 0 {
 		// Lazy delete expired entries to reduce stale data until next GC.
 		c.mu.Lock()
 		if current, exists := c.data[key]; exists && time.Now().After(current.expiresAt) {
@@ -46,12 +52,12 @@ func (c *MemoryCache) Get(_ context.Context, key string) ([]byte, error) {
 		}
 		c.mu.Unlock()
 		cacheMissTotal.WithLabelValues(c.metricName, "l1").Inc()
-		return nil, ErrCacheMiss
+		return nil, 0, ErrCacheMiss
 	}
 	cacheHitTotal.WithLabelValues(c.metricName, "l1").Inc()
 	dst := make([]byte, len(e.value))
 	copy(dst, e.value)
-	return dst, nil
+	return dst, remainingTTL, nil
 }
 
 func (c *MemoryCache) Set(_ context.Context, key string, value []byte, ttl time.Duration) error {

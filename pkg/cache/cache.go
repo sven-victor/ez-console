@@ -13,6 +13,7 @@ var ErrCacheMiss = errors.New("cache: key not found")
 // Implementations may be in-memory, Redis, database-backed, etc.
 type Cache interface {
 	Get(ctx context.Context, key string) ([]byte, error)
+	GetWithTTL(ctx context.Context, key string) ([]byte, time.Duration, error)
 	Set(ctx context.Context, key string, value []byte, ttl time.Duration) error
 	Delete(ctx context.Context, key string) error
 	CacheInterface

@@ -2,6 +2,8 @@ package cache
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -26,11 +28,24 @@ func NewDBCache(sessionFn DBSessionFunc) *DBCache {
 }
 
 func (d *DBCache) Get(ctx context.Context, key string) ([]byte, error) {
+	val, _, err := d.GetWithTTL(ctx, key)
+	return val, err
+}
+
+func (d *DBCache) GetWithTTL(ctx context.Context, key string) ([]byte, time.Duration, error) {
 	var entry model.CacheEntry
-	if err := d.session(ctx).Where("`key` = ? AND expired_at > ?", key, time.Now()).First(&entry).Error; err != nil {
-		return nil, ErrCacheMiss
+	now := time.Now()
+	if err := d.session(ctx).Where("`key` = ? AND expired_at > ?", key, now).First(&entry).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, 0, ErrCacheMiss
+		}
+		return nil, 0, fmt.Errorf("db cache get key %q: %w", key, err)
 	}
-	return []byte(entry.Value), nil
+	remainingTTL := time.Until(entry.ExpiredAt)
+	if remainingTTL <= 0 {
+		return nil, 0, ErrCacheMiss
+	}
+	return []byte(entry.Value), remainingTTL, nil
 }
 
 func (d *DBCache) Set(ctx context.Context, key string, value []byte, ttl time.Duration) error {
