@@ -606,8 +606,8 @@ func (s *RoleService) DeleteRole(ctx context.Context, id string) error {
 	}
 	// Check if the role is used by users
 	var count int64
-	if err := db.Session(ctx).Model(&model.User{}).Joins("JOIN t_user_roles ON t_user_roles.user_id = t_user.resource_id").
-		Where("t_user_roles.role_id = ?", id).Count(&count).Error; err != nil {
+	if err := db.Session(ctx).Model(&model.User{}).Joins("JOIN t_user_roles ON t_user_roles.user_id = t_user.id").
+		Where("t_user_roles.role_id = ?", role.ID).Count(&count).Error; err != nil {
 		return err
 	}
 	if count > 0 {

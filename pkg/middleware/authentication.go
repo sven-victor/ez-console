@@ -464,7 +464,7 @@ func rebuildSessionCache(ctx context.Context, tokenHash, userID string) (cache.C
 		// SELECT t_role.resource_id FROM `t_user_roles` join `t_role` on `t_role`.id = t_user_roles.role_id where user_id = "1";
 		if err := db.Session(ctx).Table("t_user_roles").
 			Joins("join `t_role` on `t_role`.id = t_user_roles.role_id").
-			Select("t_role.resource_id").Where("user_id = ?", userID).Pluck("t_role.resource_id", &roleIDs).Error; err != nil {
+			Select("t_role.resource_id").Where("user_id = ?", user.ID).Pluck("t_role.resource_id", &roleIDs).Error; err != nil {
 			return cache.CachedSession{}, util.NewErrorMessage("E4012", "User not found", err)
 		}
 		user.Roles = loadRolesFromCache(ctx, roleIDs)
