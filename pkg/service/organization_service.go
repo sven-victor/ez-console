@@ -105,8 +105,13 @@ func (s *OrganizationService) DeleteOrganization(ctx context.Context, id string)
 			return errors.New("cannot delete organization: organization has associated roles")
 		}
 
+		var org model.Organization
+		if err := tx.Where("resource_id = ?", id).First(&org).Error; err != nil {
+			return err
+		}
+
 		// Delete organization-user associations
-		if err := tx.Table("user_organizations").Where("organization_id = ?", id).Delete(nil).Error; err != nil {
+		if err := tx.Table("t_user_organizations").Where("organization_id = ?", org.ID).Delete(nil).Error; err != nil {
 			return err
 		}
 
@@ -206,7 +211,7 @@ func (s *OrganizationService) AddUserToOrganization(ctx context.Context, organiz
 		// Check if user is already in the organization
 		var count int64
 		if err := tx.Table("t_user_organizations").
-			Where("user_id = ? AND organization_id = ?", userID, organizationID).
+			Where("user_id = ? AND organization_id = ?", user.ID, org.ID).
 			Count(&count).Error; err != nil {
 			return err
 		}
@@ -350,7 +355,7 @@ func (s *OrganizationService) RemoveUserFromOrganization(ctx context.Context, or
 
 		var count int64
 		if err := tx.Table("t_user_organizations").
-			Where("user_id = ? AND organization_id = ?", userID, organizationID).
+			Where("user_id = ? AND organization_id = ?", user.ID, org.ID).
 			Count(&count).Error; err != nil {
 			return err
 		}
