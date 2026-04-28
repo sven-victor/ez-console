@@ -119,6 +119,20 @@ func (s *EmailService) SendEmailFromTemplate(ctx context.Context, to []string, s
 	return s.SendEmail(ctx, smtpSettings, to, subject, buf.String())
 }
 
+func (s *EmailService) SendEmailToAdmins(ctx context.Context, subject, body string) error {
+	smtpSettings, err := s.settingService.GetSMTPSettings(ctx)
+	if err != nil {
+		return err
+	}
+	if !smtpSettings.Enabled {
+		return errors.New("SMTP is not enabled")
+	}
+	if len(smtpSettings.AdminEmails) == 0 {
+		return errors.New("no admin emails configured")
+	}
+	return s.SendEmail(ctx, smtpSettings, smtpSettings.AdminEmails, subject, body)
+}
+
 func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) (err error) {
 	logger := log.GetContextLogger(ctx)
 	ctx, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(

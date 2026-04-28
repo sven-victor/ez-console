@@ -43,6 +43,12 @@ func (s *SettingService) GetSMTPSettings(ctx context.Context) (*model.SMTPSettin
 			name := strings.TrimPrefix(string(key), "smtp_")
 			emailSettingMap[name] = val
 			switch name {
+			case "admin_emails":
+				if val == "" {
+					emailSettingMap[name] = []string{}
+				} else {
+					emailSettingMap[name] = strings.Split(val, ",")
+				}
 			case "enabled":
 				emailSettingMap[name] = val == "1" || val == "true"
 			case "port":
@@ -71,6 +77,7 @@ func (s *SettingService) GetSMTPSettings(ctx context.Context) (*model.SMTPSettin
 // UpdateSMTPSettings saves SMTP settings to the database
 func (s *SettingService) UpdateSMTPSettings(ctx context.Context, settings *model.SMTPSettings) error {
 	settingsToUpdate := map[string]string{
+		string(model.SettingSMTPAdminEmails):           strings.Join(settings.AdminEmails, ","),
 		string(model.SettingSMTPEnabled):               strconv.FormatBool(settings.Enabled),
 		string(model.SettingSMTPHost):                  settings.Host,
 		string(model.SettingSMTPPort):                  strconv.Itoa(settings.Port),
@@ -96,6 +103,7 @@ func (s *SettingService) InitDefaultSMTPSettings(ctx context.Context) error {
 		Value   string
 		Comment string
 	}{
+		model.SettingSMTPAdminEmails:           {"", "Admin email addresses (comma-separated)"},
 		model.SettingSMTPEnabled:               {"false", "Whether to enable SMTP"},
 		model.SettingSMTPHost:                  {"", "SMTP server address"},
 		model.SettingSMTPPort:                  {"465", "SMTP server port"},

@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Switch, Button, message, Modal, Spin, Radio, Divider } from 'antd';
+import { Form, Input, Select, Switch, Button, message, Modal, Spin, Radio, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
@@ -152,6 +152,19 @@ const SMTPSettingsForm: React.FC = () => {
             name="from_name"
           >
             <Input disabled={!isEnabled} placeholder={t('settings.smtp.fromNamePlaceholder', { defaultValue: 'System Notifications' })} />
+          </Form.Item>
+
+          <Form.Item
+            label={t('settings.smtp.adminEmails', { defaultValue: 'Admin Emails' })}
+            name="admin_emails"
+            tooltip={t('settings.smtp.adminEmailsTooltip', { defaultValue: 'Email addresses that receive admin notifications.' })}
+          >
+            <Select
+              mode="tags"
+              tokenSeparators={[',']}
+              disabled={!isEnabled}
+              placeholder={t('settings.smtp.adminEmailsPlaceholder', { defaultValue: 'Enter email addresses' })}
+            />
           </Form.Item>
 
           <Divider>{t('settings.smtp.templateDivider', { defaultValue: 'Template Configuration' })}</Divider>

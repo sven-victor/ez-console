@@ -18,6 +18,7 @@ import "github.com/sven-victor/ez-utils/safe"
 
 // SMTP setting key constants
 const (
+	SettingSMTPAdminEmails           SettingKey = "smtp_admin_emails"            // Admin email addresses (comma-separated)
 	SettingSMTPEnabled               SettingKey = "smtp_enabled"                 // Whether to enable SMTP
 	SettingSMTPHost                  SettingKey = "smtp_host"                    // SMTP server host
 	SettingSMTPPort                  SettingKey = "smtp_port"                    // SMTP server port
@@ -32,6 +33,7 @@ const (
 )
 
 var SMTPSettingKeys = []SettingKey{
+	SettingSMTPAdminEmails,
 	SettingSMTPEnabled,
 	SettingSMTPHost,
 	SettingSMTPPort,
@@ -53,6 +55,7 @@ func init() {
 // Note: This structure is used for API request/response and for initializing setting keys.
 // The actual settings are stored as key-value pairs in the database using the Setting model.
 type SMTPSettings struct {
+	AdminEmails           []string     `json:"admin_emails"`
 	Enabled               bool         `json:"enabled"`
 	Host                  string       `json:"host"`
 	Port                  int          `json:"port"`

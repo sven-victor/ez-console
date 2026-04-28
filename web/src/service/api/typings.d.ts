@@ -1872,6 +1872,7 @@ declare global {
     }
   
     interface SMTPSettings {
+      admin_emails: string[];
       enabled: boolean;
       /** None, SSL/TLS, STARTTLS */
       encryption: string;
