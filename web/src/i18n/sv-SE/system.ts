@@ -46,6 +46,12 @@ export default {
       logStorage: {
         database: 'Databas',
       },
+      fields: {
+        task_max_concurrent: 'Max samtidiga uppgifter',
+        task_ai_chat_retention_days: 'AI-chatt-kvarhållning (dagar)',
+        task_log_retention_days: 'Kvarhållning av uppgiftsloggar (dagar)',
+        task_audit_log_retention_days: 'Kvarhållning av granskningsloggar (dagar)',
+      },
     },
     skills: {
       title: 'AI Agent-färdigheter',

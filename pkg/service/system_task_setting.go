@@ -16,6 +16,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -25,17 +26,15 @@ import (
 // InitDefaultTaskSettings initializes default task settings
 func (s *SettingService) InitDefaultTaskSettings(ctx context.Context) error {
 	dbConn := db.Session(ctx)
-	defaultSettings := map[model.SettingKey]struct {
+
+	// Fixed non-extensible setting.
+	fixedDefaults := map[model.SettingKey]struct {
 		Value   string
 		Comment string
 	}{
-		model.SettingTaskMaxConcurrent:         {"10", "Maximum number of tasks that can run concurrently"},
-		model.SettingTaskLogStorageBackend:     {"database", "Log storage backend for task logs (e.g. database)"},
-		model.SettingTaskAIChatRetentionDays:   {"90", "Retention days for AI chat sessions/messages"},
-		model.SettingTaskLogRetentionDays:      {"30", "Retention days for task logs and task run records"},
-		model.SettingTaskAuditLogRetentionDays: {"365", "Retention days for audit logs"},
+		model.SettingTaskLogStorageBackend: {"database", "Log storage backend for task logs (e.g. database)"},
 	}
-	for key, setting := range defaultSettings {
+	for key, setting := range fixedDefaults {
 		var count int64
 		dbConn.Model(&model.Setting{}).Where("key = ?", key).Count(&count)
 		if count == 0 {
@@ -44,36 +43,96 @@ func (s *SettingService) InitDefaultTaskSettings(ctx context.Context) error {
 			}
 		}
 	}
+
+	// Extensible registered settings.
+	for _, field := range model.GetRegisteredTaskSettingFields() {
+		key := model.SettingKey(field.Key)
+		var count int64
+		dbConn.Model(&model.Setting{}).Where("key = ?", key).Count(&count)
+		if count == 0 {
+			if err := dbConn.Create(model.NewSetting(key, field.DefaultValue, "Task setting: "+field.Key)).Error; err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 
-// GetTaskSettings returns current task settings
-func (s *SettingService) GetTaskSettings(ctx context.Context) (*model.TaskSettings, error) {
-	maxConcurrent, err := s.GetIntSetting(ctx, model.SettingTaskMaxConcurrent, 10)
+// GetTaskSettings returns current task settings as a flat map.
+// The map always contains "log_storage_backend" plus all registered extensible fields
+// (with their full task_-prefixed keys).
+func (s *SettingService) GetTaskSettings(ctx context.Context) (map[string]any, error) {
+	settingsMap, err := s.GetSettingsMap(ctx)
 	if err != nil {
 		return nil, err
 	}
-	logStorageBackend, _ := s.GetStringSetting(ctx, model.SettingTaskLogStorageBackend, "database")
-	aiChatRetentionDays, _ := s.GetIntSetting(ctx, model.SettingTaskAIChatRetentionDays, 90)
-	taskLogRetentionDays, _ := s.GetIntSetting(ctx, model.SettingTaskLogRetentionDays, 30)
-	auditLogRetentionDays, _ := s.GetIntSetting(ctx, model.SettingTaskAuditLogRetentionDays, 365)
-	return &model.TaskSettings{
-		MaxConcurrent:         maxConcurrent,
-		LogStorageBackend:     logStorageBackend,
-		AIChatRetentionDays:   aiChatRetentionDays,
-		LogRetentionDays:      taskLogRetentionDays,
-		AuditLogRetentionDays: auditLogRetentionDays,
-	}, nil
+
+	result := make(map[string]any)
+
+	// Fixed non-extensible setting.
+	if val, ok := settingsMap[string(model.SettingTaskLogStorageBackend)]; ok {
+		result["log_storage_backend"] = val
+	} else {
+		result["log_storage_backend"] = "database"
+	}
+
+	// Extensible registered settings — coerce to their declared value type.
+	for _, field := range model.GetRegisteredTaskSettingFields() {
+		raw, ok := settingsMap[field.Key]
+		if !ok {
+			raw = field.DefaultValue
+		}
+		switch field.ValueType {
+		case "int":
+			v, err := strconv.Atoi(raw)
+			if err != nil {
+				v, _ = strconv.Atoi(field.DefaultValue)
+			}
+			result[field.Key] = v
+		case "bool":
+			result[field.Key] = raw == "true" || raw == "1"
+		default:
+			result[field.Key] = raw
+		}
+	}
+
+	return result, nil
 }
 
-// UpdateTaskSettings updates task settings
-func (s *SettingService) UpdateTaskSettings(ctx context.Context, settings *model.TaskSettings) error {
-	settingsMap := map[string]string{
-		string(model.SettingTaskMaxConcurrent):         strconv.Itoa(settings.MaxConcurrent),
-		string(model.SettingTaskLogStorageBackend):     settings.LogStorageBackend,
-		string(model.SettingTaskAIChatRetentionDays):   strconv.Itoa(settings.AIChatRetentionDays),
-		string(model.SettingTaskLogRetentionDays):      strconv.Itoa(settings.LogRetentionDays),
-		string(model.SettingTaskAuditLogRetentionDays): strconv.Itoa(settings.AuditLogRetentionDays),
+// UpdateTaskSettings validates and persists the flat task settings map.
+func (s *SettingService) UpdateTaskSettings(ctx context.Context, settings map[string]any) error {
+	toSave := make(map[string]string)
+
+	// Fixed non-extensible setting.
+	if v, ok := settings["log_storage_backend"]; ok {
+		toSave[string(model.SettingTaskLogStorageBackend)] = fmt.Sprintf("%v", v)
 	}
-	return s.UpdateSettings(ctx, settingsMap)
+
+	// Extensible registered settings — validate type then persist.
+	registry := model.GetRegisteredTaskSettingFields()
+	registryIndex := make(map[string]model.TaskSettingField, len(registry))
+	for _, f := range registry {
+		registryIndex[f.Key] = f
+	}
+
+	for k, v := range settings {
+		field, ok := registryIndex[k]
+		if !ok {
+			continue
+		}
+		raw := fmt.Sprintf("%v", v)
+		switch field.ValueType {
+		case "int":
+			if _, err := strconv.Atoi(raw); err != nil {
+				return fmt.Errorf("field %s expects an integer value, got %q", k, raw)
+			}
+		case "bool":
+			if raw != "true" && raw != "false" && raw != "1" && raw != "0" {
+				return fmt.Errorf("field %s expects a boolean value, got %q", k, raw)
+			}
+		}
+		toSave[k] = raw
+	}
+
+	return s.UpdateSettings(ctx, toSave)
 }

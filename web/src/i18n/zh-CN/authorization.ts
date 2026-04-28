@@ -402,8 +402,15 @@ export default {
     authorization: {
       user: {
         login: '用户登录',
+        logout: '登出',
         update: '更新用户',
         delete: '删除用户',
+      },
+      oauth: {
+        callback: 'OAuth 回调/登录',
+      },
+      role: {
+        update: '更新角色',
       },
     },
   },

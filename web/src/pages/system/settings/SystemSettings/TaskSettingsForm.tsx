@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Form, InputNumber, Button, message, Space, Spin, Select } from 'antd';
+import { Form, Input, InputNumber, Switch, Button, message, Space, Spin, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined, CalendarOutlined } from '@ant-design/icons';
@@ -28,9 +28,11 @@ const TaskSettingsForm: React.FC = () => {
   const { t } = useTranslation('system');
   const { t: tTask } = useTranslation('task');
   const { t: tCommon } = useTranslation('common');
-  const [form] = Form.useForm<API.TaskSettings>();
+  const [form] = Form.useForm<Record<string, any>>();
 
   const { data: backendsList } = useRequest(api.system.listLogStorageBackends);
+  const { data: fieldDefs } = useRequest(api.system.getTaskSettingFields);
+
   const logStorageBackendOptions = (backendsList ?? []).map((b: API.LogStorageBackendOption) => ({
     value: b.id,
     label: t(`settings.task.logStorage.${b.id}`, { defaultValue: b.name }),
@@ -39,13 +41,7 @@ const TaskSettingsForm: React.FC = () => {
   const { loading, refresh } = useRequest(api.system.getTaskSettings, {
     onSuccess: (res) => {
       if (res) {
-        form.setFieldsValue({
-          max_concurrent: res.max_concurrent,
-          log_storage_backend: res.log_storage_backend ?? 'database',
-          ai_chat_retention_days: res.ai_chat_retention_days ?? 90,
-          log_retention_days: res.log_retention_days ?? 30,
-          audit_log_retention_days: res.audit_log_retention_days ?? 365,
-        });
+        form.setFieldsValue(res);
       }
     },
     onError: () => {
@@ -64,8 +60,35 @@ const TaskSettingsForm: React.FC = () => {
     },
   });
 
-  const handleSubmit = (values: API.TaskSettings) => {
+  const handleSubmit = (values: Record<string, any>) => {
     submitUpdate(values);
+  };
+
+  const renderFieldControl = (field: API.TaskSettingField) => {
+    switch (field.value_type) {
+      case 'int':
+        return (
+          <InputNumber
+            style={{ width: '100%' }}
+            addonAfter={
+              field.key.includes('retention_days')
+                ? t('settings.days', { defaultValue: 'Days' })
+                : undefined
+            }
+          />
+        );
+      case 'bool':
+        return <Switch />;
+      default:
+        return <Input />;
+    }
+  };
+
+  const getFieldRules = (field: API.TaskSettingField) => {
+    if (field.value_type === 'int') {
+      return [{ type: 'number' as const }];
+    }
+    return [];
   };
 
   return (
@@ -74,14 +97,8 @@ const TaskSettingsForm: React.FC = () => {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        initialValues={{
-          max_concurrent: 10,
-          log_storage_backend: 'database',
-          ai_chat_retention_days: 90,
-          task_log_retention_days: 30,
-          audit_log_retention_days: 365,
-        }}
       >
+        {/* Fixed non-extensible setting with dedicated UI */}
         <Form.Item
           name="log_storage_backend"
           label={t('settings.task.logStorageBackend', { defaultValue: 'Log storage' })}
@@ -95,49 +112,20 @@ const TaskSettingsForm: React.FC = () => {
             loading={backendsList === undefined}
           />
         </Form.Item>
-        <Form.Item
-          name="max_concurrent"
-          label={t('settings.task.maxConcurrent', { defaultValue: 'Max concurrent tasks' })}
-          tooltip={t('settings.task.maxConcurrentTooltip', {
-            defaultValue: 'Maximum number of tasks that can run at the same time.',
-          })}
-          rules={[{ type: 'number', min: 1, max: 100 }]}
-        >
-          <InputNumber min={1} max={100} style={{ width: '100%' }} />
-        </Form.Item>
 
-        <Form.Item
-          name="ai_chat_retention_days"
-          label={t('settings.task.aiChatRetentionDays', { defaultValue: 'AI chat retention (days)' })}
-          tooltip={t('settings.task.aiChatRetentionDaysTooltip', {
-            defaultValue: 'Retention period for AI chat sessions, based on the last conversation time.',
-          })}
-          rules={[{ type: 'number', min: 1, max: 3650 }]}
-        >
-          <InputNumber min={1} max={3650} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
-        </Form.Item>
+        {/* Dynamically rendered extensible fields */}
+        {(fieldDefs ?? []).map((field: API.TaskSettingField) => (
+          <Form.Item
+            key={field.key}
+            name={field.key}
+            label={t(`settings.task.fields.${field.key}`, { defaultValue: field.key })}
+            rules={getFieldRules(field)}
+            valuePropName={field.value_type === 'bool' ? 'checked' : 'value'}
+          >
+            {renderFieldControl(field)}
+          </Form.Item>
+        ))}
 
-        <Form.Item
-          name="task_log_retention_days"
-          label={t('settings.task.taskLogRetentionDays', { defaultValue: 'Task log retention (days)' })}
-          tooltip={t('settings.task.taskLogRetentionDaysTooltip', {
-            defaultValue: 'Retention period for task execution logs and historical task run records.',
-          })}
-          rules={[{ type: 'number', min: 1, max: 3650 }]}
-        >
-          <InputNumber min={1} max={3650} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
-        </Form.Item>
-
-        <Form.Item
-          name="audit_log_retention_days"
-          label={t('settings.task.auditLogRetentionDays', { defaultValue: 'Audit log retention (days)' })}
-          tooltip={t('settings.task.auditLogRetentionDaysTooltip', {
-            defaultValue: 'Retention period for audit logs.',
-          })}
-          rules={[{ type: 'number', min: 1, max: 3650 }]}
-        >
-          <InputNumber min={1} max={3650} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
-        </Form.Item>
         <Form.Item>
           <Space>
             <Button type="primary" htmlType="submit" loading={submitting} icon={<SaveOutlined />}>

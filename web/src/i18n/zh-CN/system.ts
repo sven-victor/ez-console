@@ -46,6 +46,12 @@ export default {
       logStorage: {
         database: '数据库',
       },
+      fields: {
+        task_max_concurrent: '最大并发任务数',
+        task_ai_chat_retention_days: 'AI 会话保留天数',
+        task_log_retention_days: '任务日志保留天数',
+        task_audit_log_retention_days: '审计日志保留天数',
+      },
     },
     skills: {
       title: 'AI Agent 技能',

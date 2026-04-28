@@ -1248,6 +1248,13 @@ export interface ResponseArrayModelTaskLog {
   trace_id: string;
 }
 
+export interface ResponseArrayModelTaskSettingField {
+  code: string;
+  data: TaskSettingField[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayModelUser {
   code: string;
   data: User[];
@@ -1426,13 +1433,6 @@ export interface ResponseModelSystemSettings {
 export interface ResponseModelTask {
   code: string;
   data: Task;
-  err: string;
-  trace_id: string;
-}
-
-export interface ResponseModelTaskSettings {
-  code: string;
-  data: TaskSettings;
   err: string;
   trace_id: string;
 }
@@ -1886,6 +1886,7 @@ export interface SMTPSettings {
 }
 
 export interface SMTPTestRequest {
+  admin_emails: string[];
   enabled: boolean;
   /** None, SSL/TLS, STARTTLS */
   encryption: string;
@@ -1979,16 +1980,20 @@ export interface TaskLog {
   updated_at: string;
 }
 
-export interface TaskSettings {
-  /** Retention days for AI chat sessions/messages */
-  ai_chat_retention_days: number;
-  /** Retention days for audit logs */
-  audit_log_retention_days: number;
-  /** Retention days for task logs and task run records */
-  log_retention_days: number;
-  /** Backend name for task log storage (e.g. "database"), empty for default */
-  log_storage_backend: string;
-  max_concurrent: number;
+export interface TaskSettingField {
+  /** Default value as string */
+  default_value: string;
+  /** Full key with task_ prefix */
+  key: string;
+  /** "int", "string", or "bool" */
+  value_type: string;
+}
+
+export interface TaskSettingResponse {
+  code: string;
+  data: Record<string, any>;
+  err: string;
+  trace_id: string;
 }
 
 export type TaskStatus = "pending" | "running" | "success" | "failed" | "cancelled";

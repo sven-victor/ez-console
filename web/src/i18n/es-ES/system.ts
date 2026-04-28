@@ -46,6 +46,12 @@ export default {
       logStorage: {
         database: 'Base de datos',
       },
+      fields: {
+        task_max_concurrent: 'Tareas simultáneas máximas',
+        task_ai_chat_retention_days: 'Retención de chat IA (días)',
+        task_log_retention_days: 'Retención de registros de tareas (días)',
+        task_audit_log_retention_days: 'Retención de registros de auditoría (días)',
+      },
     },
     skills: {
       title: 'Habilidades de agente AI',

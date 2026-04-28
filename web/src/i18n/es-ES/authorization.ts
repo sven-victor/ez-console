@@ -400,8 +400,15 @@ export default {
     authorization: {
       user: {
         login: 'Inicio de sesión de usuario',
+        logout: 'Cerrar sesión',
         update: 'Actualizar usuarios',
         delete: 'Eliminar usuarios',
+      },
+      oauth: {
+        callback: 'Devolución de llamada OAuth/Inicio de sesión',
+      },
+      role: {
+        update: 'Actualizar roles',
       },
     },
   },

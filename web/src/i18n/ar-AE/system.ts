@@ -46,6 +46,12 @@ export default {
       logStorage: {
         database: 'قاعدة البيانات',
       },
+      fields: {
+        task_max_concurrent: 'الحد الأقصى للمهام المتزامنة',
+        task_ai_chat_retention_days: 'مدة الاحتفاظ بمحادثات الذكاء الاصطناعي (أيام)',
+        task_log_retention_days: 'مدة الاحتفاظ بسجلات المهام (أيام)',
+        task_audit_log_retention_days: 'مدة الاحتفاظ بسجلات التدقيق (أيام)',
+      },
     },
     skills: {
       title: 'مهارات وكيل AI',

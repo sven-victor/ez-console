@@ -1572,6 +1572,10 @@ definitions:
     - RoleMappingModeAuto
   model.SMTPSettings:
     properties:
+      admin_emails:
+        items:
+          type: string
+        type: array
       enabled:
         type: boolean
       encryption:
@@ -1596,6 +1600,7 @@ definitions:
       username:
         type: string
     required:
+    - admin_emails
     - enabled
     - encryption
     - from_address
@@ -1610,6 +1615,10 @@ definitions:
     type: object
   model.SMTPTestRequest:
     properties:
+      admin_emails:
+        items:
+          type: string
+        type: array
       enabled:
         type: boolean
       encryption:
@@ -1636,6 +1645,7 @@ definitions:
       username:
         type: string
     required:
+    - admin_emails
     - enabled
     - encryption
     - from_address
@@ -2008,29 +2018,21 @@ definitions:
     - task_id
     - updated_at
     type: object
-  model.TaskSettings:
+  model.TaskSettingField:
     properties:
-      ai_chat_retention_days:
-        description: Retention days for AI chat sessions/messages
-        type: integer
-      audit_log_retention_days:
-        description: Retention days for audit logs
-        type: integer
-      log_retention_days:
-        description: Retention days for task logs and task run records
-        type: integer
-      log_storage_backend:
-        description: Backend name for task log storage (e.g. "database"), empty for
-          default
+      default_value:
+        description: Default value as string
         type: string
-      max_concurrent:
-        type: integer
+      key:
+        description: Full key with task_ prefix
+        type: string
+      value_type:
+        description: '"int", "string", or "bool"'
+        type: string
     required:
-    - ai_chat_retention_days
-    - audit_log_retention_days
-    - log_retention_days
-    - log_storage_backend
-    - max_concurrent
+    - default_value
+    - key
+    - value_type
     type: object
   model.TaskStatus:
     enum:
@@ -2965,6 +2967,23 @@ definitions:
     - tool_name
     - toolset_id
     type: object
+  systemapi.TaskSettingResponse:
+    properties:
+      code:
+        type: string
+      data:
+        additionalProperties: {}
+        type: object
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   systemapi.Tool:
     properties:
       function:
@@ -3188,21 +3207,30 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
+    - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -3215,15 +3243,8 @@ definitions:
     - Microsecond
     - Millisecond
     - Second
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
     - Minute
+    - Hour
   toolset.ToolSetType:
     enum:
     - utils
@@ -3742,6 +3763,24 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-array_model_TaskSettingField:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.TaskSettingField'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-array_model_User:
     properties:
       code:
@@ -4166,22 +4205,6 @@ definitions:
         type: string
       data:
         $ref: '#/definitions/model.Task'
-      err:
-        type: string
-      trace_id:
-        type: string
-    required:
-    - code
-    - data
-    - err
-    - trace_id
-    type: object
-  util.Response-model_TaskSettings:
-    properties:
-      code:
-        type: string
-      data:
-        $ref: '#/definitions/model.TaskSettings'
       err:
         type: string
       trace_id:
@@ -8065,7 +8088,9 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get task-related system settings (e.g. max concurrent tasks)
+      description: Get task-related system settings as a flat key-value map. Keys
+        include "log_storage_backend" and all registered extensible fields (task_*
+        prefixed).
       operationId: getTaskSettings
       produces:
       - application/json
@@ -8073,7 +8098,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/util.Response-model_TaskSettings'
+            $ref: '#/definitions/systemapi.TaskSettingResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -8084,15 +8109,17 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update task-related system settings
+      description: Update task-related system settings. Request body is a flat key-value
+        map identical to the GET response shape.
       operationId: updateTaskSettings
       parameters:
-      - description: Task settings
+      - description: Task settings flat map
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/model.TaskSettings'
+          additionalProperties: true
+          type: object
       produces:
       - application/json
       responses:
@@ -8100,11 +8127,36 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Update task settings
+      tags:
+      - System Settings/Task
+  /api/system/task-settings/fields:
+    get:
+      consumes:
+      - application/json
+      description: Returns the list of extensible task setting field definitions (key,
+        value_type, default_value).
+      operationId: getTaskSettingFields
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_model_TaskSettingField'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get registered task setting fields
       tags:
       - System Settings/Task
   /api/system/task-settings/log-storage-backends:

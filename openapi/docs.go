@@ -5422,7 +5422,7 @@ const docTemplate = `{
         },
         "/api/system/task-settings": {
             "get": {
-                "description": "Get task-related system settings (e.g. max concurrent tasks)",
+                "description": "Get task-related system settings as a flat key-value map. Keys include \"log_storage_backend\" and all registered extensible fields (task_* prefixed).",
                 "consumes": [
                     "application/json"
                 ],
@@ -5438,7 +5438,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/util.Response-model_TaskSettings"
+                            "$ref": "#/definitions/systemapi.TaskSettingResponse"
                         }
                     },
                     "500": {
@@ -5450,7 +5450,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update task-related system settings",
+                "description": "Update task-related system settings. Request body is a flat key-value map identical to the GET response shape.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5464,12 +5464,13 @@ const docTemplate = `{
                 "operationId": "updateTaskSettings",
                 "parameters": [
                     {
-                        "description": "Task settings",
+                        "description": "Task settings flat map",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/model.TaskSettings"
+                            "type": "object",
+                            "additionalProperties": true
                         }
                     }
                 ],
@@ -5478,6 +5479,42 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/task-settings/fields": {
+            "get": {
+                "description": "Returns the list of extensible task setting field definitions (key, value_type, default_value).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Task"
+                ],
+                "summary": "Get registered task setting fields",
+                "operationId": "getTaskSettingFields",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_model_TaskSettingField"
                         }
                     },
                     "500": {
@@ -8622,6 +8659,7 @@ const docTemplate = `{
         "model.SMTPSettings": {
             "type": "object",
             "required": [
+                "admin_emails",
                 "enabled",
                 "encryption",
                 "from_address",
@@ -8635,6 +8673,12 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
+                "admin_emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -8674,6 +8718,7 @@ const docTemplate = `{
         "model.SMTPTestRequest": {
             "type": "object",
             "required": [
+                "admin_emails",
                 "enabled",
                 "encryption",
                 "from_address",
@@ -8689,6 +8734,12 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
+                "admin_emails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "enabled": {
                     "type": "boolean"
                 },
@@ -9222,34 +9273,25 @@ const docTemplate = `{
                 }
             }
         },
-        "model.TaskSettings": {
+        "model.TaskSettingField": {
             "type": "object",
             "required": [
-                "ai_chat_retention_days",
-                "audit_log_retention_days",
-                "log_retention_days",
-                "log_storage_backend",
-                "max_concurrent"
+                "default_value",
+                "key",
+                "value_type"
             ],
             "properties": {
-                "ai_chat_retention_days": {
-                    "description": "Retention days for AI chat sessions/messages",
-                    "type": "integer"
-                },
-                "audit_log_retention_days": {
-                    "description": "Retention days for audit logs",
-                    "type": "integer"
-                },
-                "log_retention_days": {
-                    "description": "Retention days for task logs and task run records",
-                    "type": "integer"
-                },
-                "log_storage_backend": {
-                    "description": "Backend name for task log storage (e.g. \"database\"), empty for default",
+                "default_value": {
+                    "description": "Default value as string",
                     "type": "string"
                 },
-                "max_concurrent": {
-                    "type": "integer"
+                "key": {
+                    "description": "Full key with task_ prefix",
+                    "type": "string"
+                },
+                "value_type": {
+                    "description": "\"int\", \"string\", or \"bool\"",
+                    "type": "string"
                 }
             }
         },
@@ -10571,6 +10613,30 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.TaskSettingResponse": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
         "systemapi.Tool": {
             "type": "object",
             "required": [
@@ -10883,21 +10949,30 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
+                60000000000,
+                3600000000000,
                 1,
                 1000,
                 1000000,
                 1000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -10910,15 +10985,8 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute"
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {
@@ -11661,6 +11729,32 @@ const docTemplate = `{
                 }
             }
         },
+        "util.Response-array_model_TaskSettingField": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.TaskSettingField"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-array_model_User": {
             "type": "object",
             "required": [
@@ -12277,29 +12371,6 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/model.Task"
-                },
-                "err": {
-                    "type": "string"
-                },
-                "trace_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "util.Response-model_TaskSettings": {
-            "type": "object",
-            "required": [
-                "code",
-                "data",
-                "err",
-                "trace_id"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "data": {
-                    "$ref": "#/definitions/model.TaskSettings"
                 },
                 "err": {
                     "type": "string"

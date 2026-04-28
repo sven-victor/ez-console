@@ -42,19 +42,27 @@ func (c *TaskSettingController) RegisterRoutes(router *gin.RouterGroup) {
 	{
 		taskSettings.GET("", middleware.RequirePermission("system:settings:view"), c.GetTaskSettings)
 		taskSettings.PUT("", middleware.RequirePermission("system:settings:update"), c.UpdateTaskSettings)
+		taskSettings.GET("/fields", middleware.RequirePermission("system:settings:view"), c.GetTaskSettingFields)
 		taskSettings.GET("/log-storage-backends", middleware.RequirePermission("system:settings:view"), c.ListLogStorageBackends)
 	}
+}
+
+type TaskSettingResponse struct {
+	Code    string         `json:"code"`
+	Data    map[string]any `json:"data"`
+	Err     string         `json:"err,omitempty"`
+	TraceID string         `json:"trace_id,omitempty"`
 }
 
 // GetTaskSettings returns task settings
 //
 //	@Summary		Get task settings
-//	@Description	Get task-related system settings (e.g. max concurrent tasks)
+//	@Description	Get task-related system settings as a flat key-value map. Keys include "log_storage_backend" and all registered extensible fields (task_* prefixed).
 //	@ID             getTaskSettings
 //	@Tags			System Settings/Task
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	util.Response[model.TaskSettings]
+//	@Success		200	{object}	TaskSettingResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/task-settings [get]
 func (c *TaskSettingController) GetTaskSettings(ctx *gin.Context) {
@@ -69,26 +77,42 @@ func (c *TaskSettingController) GetTaskSettings(ctx *gin.Context) {
 // UpdateTaskSettings updates task settings
 //
 //	@Summary		Update task settings
-//	@Description	Update task-related system settings
+//	@Description	Update task-related system settings. Request body is a flat key-value map identical to the GET response shape.
 //	@ID             updateTaskSettings
 //	@Tags			System Settings/Task
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		model.TaskSettings	true	"Task settings"
+//	@Param			request	body		map[string]any	true	"Task settings flat map"
 //	@Success		200		{object}	util.Response[util.MessageData]
+//	@Failure		400		{object}	util.ErrorResponse
 //	@Failure		500		{object}	util.ErrorResponse
 //	@Router			/api/system/task-settings [put]
 func (c *TaskSettingController) UpdateTaskSettings(ctx *gin.Context) {
-	var req model.TaskSettings
+	var req map[string]any
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
-	if err := c.service.UpdateTaskSettings(ctx, &req); err != nil {
+	if err := c.service.UpdateTaskSettings(ctx, req); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, util.MessageData{Message: "Task settings updated successfully"})
+}
+
+// GetTaskSettingFields returns all registered extensible task setting field definitions.
+//
+//	@Summary		Get registered task setting fields
+//	@Description	Returns the list of extensible task setting field definitions (key, value_type, default_value).
+//	@ID             getTaskSettingFields
+//	@Tags			System Settings/Task
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response[[]model.TaskSettingField]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/task-settings/fields [get]
+func (c *TaskSettingController) GetTaskSettingFields(ctx *gin.Context) {
+	util.RespondWithSuccess(ctx, http.StatusOK, model.GetRegisteredTaskSettingFields())
 }
 
 // ListLogStorageBackends returns the list of registered log storage backends for task log storage selection.

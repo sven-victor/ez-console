@@ -141,6 +141,7 @@ type Service interface {
 	GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)
 
 	SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) error
+	SendEmailToAdmins(ctx context.Context, subject, body string) error
 
 	// GeoIP Service
 	GetLocation(ctx context.Context, ip string, language string) (string, error)

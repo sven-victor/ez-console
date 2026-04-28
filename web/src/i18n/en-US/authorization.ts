@@ -383,8 +383,15 @@ export default {
     authorization: {
       user: {
         login: 'User Login',
+        logout: 'Logout',
         update: 'Update users',
         delete: 'Delete users',
+      },
+      oauth: {
+        callback: 'OAuth Callback/Login',
+      },
+      role: {
+        update: 'Update roles',
       },
     },
   },

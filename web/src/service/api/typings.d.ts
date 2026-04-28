@@ -1250,6 +1250,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArrayModelTaskSettingField {
+      code: string;
+      data: TaskSettingField[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayModelUser {
       code: string;
       data: User[];
@@ -1428,13 +1435,6 @@ declare global {
     interface ResponseModelTask {
       code: string;
       data: Task;
-      err: string;
-      trace_id: string;
-    }
-  
-    interface ResponseModelTaskSettings {
-      code: string;
-      data: TaskSettings;
       err: string;
       trace_id: string;
     }
@@ -1888,6 +1888,7 @@ declare global {
     }
   
     interface SMTPTestRequest {
+      admin_emails: string[];
       enabled: boolean;
       /** None, SSL/TLS, STARTTLS */
       encryption: string;
@@ -1981,16 +1982,20 @@ declare global {
       updated_at: string;
     }
   
-    interface TaskSettings {
-      /** Retention days for AI chat sessions/messages */
-      ai_chat_retention_days: number;
-      /** Retention days for audit logs */
-      audit_log_retention_days: number;
-      /** Retention days for task logs and task run records */
-      log_retention_days: number;
-      /** Backend name for task log storage (e.g. "database"), empty for default */
-      log_storage_backend: string;
-      max_concurrent: number;
+    interface TaskSettingField {
+      /** Default value as string */
+      default_value: string;
+      /** Full key with task_ prefix */
+      key: string;
+      /** "int", "string", or "bool" */
+      value_type: string;
+    }
+  
+    interface TaskSettingResponse {
+      code: string;
+      data: Record<string, any>;
+      err: string;
+      trace_id: string;
     }
   
     type TaskStatus = "pending" | "running" | "success" | "failed" | "cancelled";

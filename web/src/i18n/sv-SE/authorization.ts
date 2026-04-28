@@ -400,8 +400,15 @@ export default {
     authorization: {
       user: {
         login: 'Användarinloggning',
+        logout: 'Logga ut',
         update: 'Uppdatera användare',
         delete: 'Ta bort användare',
+      },
+      oauth: {
+        callback: 'OAuth Callback/Inloggning',
+      },
+      role: {
+        update: 'Uppdatera roller',
       },
     },
   },

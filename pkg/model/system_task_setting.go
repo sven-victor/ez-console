@@ -15,32 +15,49 @@
 package model
 
 const (
-	SettingTaskMaxConcurrent         SettingKey = "task_max_concurrent"           // Max concurrent task executions
 	SettingTaskLogStorageBackend     SettingKey = "task_log_storage_backend"      // Log storage backend name (e.g. "database"), empty for default
+	SettingTaskMaxConcurrent         SettingKey = "task_max_concurrent"           // Max concurrent task executions
 	SettingTaskAIChatRetentionDays   SettingKey = "task_ai_chat_retention_days"   // Retention days for AI chat sessions/messages
 	SettingTaskLogRetentionDays      SettingKey = "task_log_retention_days"       // Retention days for task logs and task run records
 	SettingTaskAuditLogRetentionDays SettingKey = "task_audit_log_retention_days" // Retention days for audit logs
 )
 
-var TaskSettingKeys = []SettingKey{
-	SettingTaskMaxConcurrent,
-	SettingTaskLogStorageBackend,
-	SettingTaskAIChatRetentionDays,
-	SettingTaskLogRetentionDays,
-	SettingTaskAuditLogRetentionDays,
+// TaskSettingField describes a registered extensible task setting field.
+type TaskSettingField struct {
+	Key          string `json:"key"`           // Full key with task_ prefix
+	ValueType    string `json:"value_type"`    // "int", "string", or "bool"
+	DefaultValue string `json:"default_value"` // Default value as string
+}
+
+var taskSettingRegistry []TaskSettingField
+
+// RegisterTaskSetting registers an extensible task setting field.
+// The key is automatically prefixed with "task_".
+func RegisterTaskSetting(key, valueType, defaultValue string) {
+	fullKey := SettingKey("task_" + key)
+	taskSettingRegistry = append(taskSettingRegistry, TaskSettingField{
+		Key:          string(fullKey),
+		ValueType:    valueType,
+		DefaultValue: defaultValue,
+	})
+	// Expose the key to the global settings map so it is loaded from the DB.
+	SettingKeys = append(SettingKeys, fullKey)
+}
+
+// GetRegisteredTaskSettingFields returns all registered extensible task setting fields.
+func GetRegisteredTaskSettingFields() []TaskSettingField {
+	return taskSettingRegistry
 }
 
 func init() {
-	RegisterSettingKeys("task", TaskSettings{}, TaskSettingKeys...)
-}
+	// Keep log_storage_backend in the global key list (not extensible — it has a dedicated UI).
+	SettingKeys = append(SettingKeys, SettingTaskLogStorageBackend)
 
-// TaskSettings holds task-related system settings
-type TaskSettings struct {
-	MaxConcurrent         int    `json:"max_concurrent"`
-	LogStorageBackend     string `json:"log_storage_backend"`      // Backend name for task log storage (e.g. "database"), empty for default
-	AIChatRetentionDays   int    `json:"ai_chat_retention_days"`   // Retention days for AI chat sessions/messages
-	LogRetentionDays      int    `json:"log_retention_days"`       // Retention days for task logs and task run records
-	AuditLogRetentionDays int    `json:"audit_log_retention_days"` // Retention days for audit logs
+	// Register the four built-in extensible task settings.
+	RegisterTaskSetting("max_concurrent", "int", "10")
+	RegisterTaskSetting("ai_chat_retention_days", "int", "90")
+	RegisterTaskSetting("log_retention_days", "int", "30")
+	RegisterTaskSetting("audit_log_retention_days", "int", "365")
 }
 
 // LogStorageBackendOption represents a log storage backend option for the task settings UI.

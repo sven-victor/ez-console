@@ -803,17 +803,17 @@ export async function testSmtpConnection(
   );
 }
 
-/** Get task settings Get task-related system settings (e.g. max concurrent tasks) GET /api/system/task-settings */
+/** Get task settings Get task-related system settings as a flat key-value map. Keys include "log_storage_backend" and all registered extensible fields (task_* prefixed). GET /api/system/task-settings */
 export async function getTaskSettings(options?: { [key: string]: any }) {
-  return request<API.ResponseModelTaskSettings>("/api/system/task-settings", {
+  return request<API.TaskSettingResponse>("/api/system/task-settings", {
     method: "GET",
     ...(options || {}),
   });
 }
 
-/** Update task settings Update task-related system settings PUT /api/system/task-settings */
+/** Update task settings Update task-related system settings. Request body is a flat key-value map identical to the GET response shape. PUT /api/system/task-settings */
 export async function updateTaskSettings(
-  body: API.TaskSettings,
+  body: Record<string, any>,
   options?: { [key: string]: any }
 ) {
   return request<API.ResponseUtilMessageData>("/api/system/task-settings", {
@@ -824,6 +824,17 @@ export async function updateTaskSettings(
     data: body,
     ...(options || {}),
   });
+}
+
+/** Get registered task setting fields Returns the list of extensible task setting field definitions (key, value_type, default_value). GET /api/system/task-settings/fields */
+export async function getTaskSettingFields(options?: { [key: string]: any }) {
+  return request<API.ResponseArrayModelTaskSettingField>(
+    "/api/system/task-settings/fields",
+    {
+      method: "GET",
+      ...(options || {}),
+    }
+  );
 }
 
 /** List log storage backends Returns registered log storage backend options (e.g. database) for use in task settings. GET /api/system/task-settings/log-storage-backends */
