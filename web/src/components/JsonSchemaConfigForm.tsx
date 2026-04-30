@@ -479,7 +479,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
   );
 };
 
-interface JsonSchemaConfigFormItemProps extends FormItemProps {
+export interface JsonSchemaConfigFormItemProps extends FormItemProps {
   schema: RJSFSchema;
   uiSchema?: Record<string, unknown>;
 }

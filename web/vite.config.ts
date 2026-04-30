@@ -59,6 +59,8 @@ const baseConfig: UserConfig = {
           if (id.includes('/node_modules/highlight.js/')) return 'highlight';
           if (id.includes('/src/components/AIChat.tsx')) return 'ai-chat';
           if (id.includes('/src/components/AIChatLayout.tsx')) return 'ai-chat-layout';
+          if (id.includes('/src/components/JsonSchemaConfigForm.tsx')) return 'json-schema-config-form';
+          if (id.includes('/src/components/MarkdownViewer.tsx')) return 'markdown-viewer';
           if (id.includes('/node_modules/react-syntax-highlighter/')) return 'highlighter';
           if (id.includes('/node_modules/mermaid/')) return 'mermaid';
           if (id.includes('/node_modules/refractor/')) return 'refractor';

@@ -7,10 +7,12 @@ import { ComponentProps } from '@ant-design/x-markdown';
 import { ComponentType } from 'react';
 import { default as default_2 } from 'react';
 import { DropDownProps } from 'antd/es/dropdown';
+import { FC } from 'react';
 import { FormItemProps } from 'antd';
 import { default as i18n } from 'i18next';
 import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { LazyExoticComponent } from 'react';
 import { MessageInfo } from '@ant-design/x-sdk';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import { Popconfirm } from 'antd';
@@ -65,7 +67,7 @@ export declare interface AddUserToOrganizationRequest {
  */
 export declare const AdminGuard: default_2.FC<Omit<PermissionGuardProps, 'permission' | 'permissions' | 'checkAll'>>;
 
-export declare const AIChat: default_2.FC<AIChatProps>;
+export declare const AIChat: LazyExoticComponent<FC<AIChatProps>>;
 
 export declare const AIChatButton: default_2.FC;
 
@@ -280,6 +282,9 @@ export declare const api: {
     updateSystemBaseSettings(body: API.SystemSettings, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
+    clearSiteCache(options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
     healthCheck(options?: {
         [key: string]: any;
     }): Promise<API.HealthResult>;
@@ -417,10 +422,13 @@ export declare const api: {
     }): Promise<API.SMTPTestResponse>;
     getTaskSettings(options?: {
         [key: string]: any;
-    }): Promise<API.TaskSettings>;
-    updateTaskSettings(body: API.TaskSettings, options?: {
+    }): Promise<Record<string, any>>;
+    updateTaskSettings(body: Record<string, any>, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
+    getTaskSettingFields(options?: {
+        [key: string]: any;
+    }): Promise<API.TaskSettingField[]>;
     listLogStorageBackends(options?: {
         [key: string]: any;
     }): Promise<API.LogStorageBackendOption[]>;
@@ -1304,20 +1312,16 @@ export declare interface IRouteItem {
     hideInMenu?: boolean;
 }
 
-/**
- * Renders a form from a JSON Schema. Use inside Ant Design Form with
- * Form.Item name={['config']} so value/onChange are provided by the parent form.
- */
-export declare const JsonSchemaConfigForm: default_2.FC<JsonSchemaConfigFormProps>;
+export declare const JsonSchemaConfigForm: LazyExoticComponent<FC<JsonSchemaConfigFormProps>>;
 
-export declare const JsonSchemaConfigFormItem: ({ schema, uiSchema, ...props }: JsonSchemaConfigFormItemProps) => JSX_2.Element;
+export declare const JsonSchemaConfigFormItem: LazyExoticComponent<({ schema, uiSchema, ...props }: JsonSchemaConfigFormItemProps) => JSX_2.Element>;
 
-declare interface JsonSchemaConfigFormItemProps extends FormItemProps {
+export declare interface JsonSchemaConfigFormItemProps extends FormItemProps {
     schema: RJSFSchema;
     uiSchema?: Record<string, unknown>;
 }
 
-declare interface JsonSchemaConfigFormProps {
+export declare interface JsonSchemaConfigFormProps {
     /** JSON Schema for the config object (type: object with properties) */
     schema: RJSFSchema;
     /** Current config values */
@@ -1574,9 +1578,9 @@ export declare interface LogStorageBackendOption {
     name: string;
 }
 
-export declare const MarkdownCode: default_2.FC<ComponentProps>;
+export declare const MarkdownCode: LazyExoticComponent<FC<ComponentProps>>;
 
-export declare const MarkdownViewer: default_2.FC<MarkdownViewerProps>;
+export declare const MarkdownViewer: LazyExoticComponent<FC<MarkdownViewerProps>>;
 
 export declare interface MarkdownViewerProps {
     content: string;
@@ -2035,6 +2039,13 @@ export declare interface ResponseArrayModelTaskLog {
     trace_id: string;
 }
 
+export declare interface ResponseArrayModelTaskSettingField {
+    code: string;
+    data: TaskSettingField[];
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayModelUser {
     code: string;
     data: User[];
@@ -2213,13 +2224,6 @@ export declare interface ResponseModelSystemSettings {
 export declare interface ResponseModelTask {
     code: string;
     data: Task;
-    err: string;
-    trace_id: string;
-}
-
-export declare interface ResponseModelTaskSettings {
-    code: string;
-    data: TaskSettings;
     err: string;
     trace_id: string;
 }
@@ -2673,6 +2677,7 @@ export declare interface SkillTreeNode {
 }
 
 export declare interface SMTPSettings {
+    admin_emails: string[];
     enabled: boolean;
     /** None, SSL/TLS, STARTTLS */
     encryption: string;
@@ -2688,6 +2693,7 @@ export declare interface SMTPSettings {
 }
 
 export declare interface SMTPTestRequest {
+    admin_emails: string[];
     enabled: boolean;
     /** None, SSL/TLS, STARTTLS */
     encryption: string;
@@ -2817,16 +2823,20 @@ export declare interface TaskLog {
     updated_at: string;
 }
 
-export declare interface TaskSettings {
-    /** Retention days for AI chat sessions/messages */
-    ai_chat_retention_days: number;
-    /** Retention days for audit logs */
-    audit_log_retention_days: number;
-    /** Retention days for task logs and task run records */
-    log_retention_days: number;
-    /** Backend name for task log storage (e.g. "database"), empty for default */
-    log_storage_backend: string;
-    max_concurrent: number;
+export declare interface TaskSettingField {
+    /** Default value as string */
+    default_value: string;
+    /** Full key with task_ prefix */
+    key: string;
+    /** "int", "string", or "bool" */
+    value_type: string;
+}
+
+export declare interface TaskSettingResponse {
+    code: string;
+    data: Record<string, any>;
+    err: string;
+    trace_id: string;
 }
 
 export declare type TaskStatus = "pending" | "running" | "success" | "failed" | "cancelled";

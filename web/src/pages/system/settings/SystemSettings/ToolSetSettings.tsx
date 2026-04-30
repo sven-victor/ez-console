@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import {
   Card,
   Table,
@@ -46,7 +46,11 @@ import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import Actions from '@/components/Actions';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import { JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
+import Loading from '@/components/Loading';
+
+const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({
+  default: module.JsonSchemaConfigFormItem
+})));
 
 const { TextArea } = Input;
 
@@ -485,50 +489,53 @@ const ToolSetSettings: React.FC = () => {
           onFinish={handleSubmit}
           autoComplete='off'
         >
-          <Form.Item
-            name="name"
-            label={t('settings.toolsets.name', { defaultValue: 'Name' })}
-            rules={[{ required: true, message: t('settings.toolsets.nameRequired', { defaultValue: 'Please enter toolset name' }) }]}
-          >
-            <Input placeholder={t('settings.toolsets.namePlaceholder', { defaultValue: 'Enter toolset name' })} />
-          </Form.Item>
+          <div style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', overflowX: 'hidden' }}>
+            <Form.Item
+              name="name"
+              label={t('settings.toolsets.name', { defaultValue: 'Name' })}
+              rules={[{ required: true, message: t('settings.toolsets.nameRequired', { defaultValue: 'Please enter toolset name' }) }]}
+            >
+              <Input placeholder={t('settings.toolsets.namePlaceholder', { defaultValue: 'Enter toolset name' })} />
+            </Form.Item>
 
-          <Form.Item
-            name="description"
-            label={t('settings.toolsets.description', { defaultValue: 'Description' })}
-          >
-            <TextArea
-              rows={3}
-              placeholder={t('settings.toolsets.descriptionPlaceholder', { defaultValue: 'Enter toolset description' })}
-            />
-          </Form.Item>
+            <Form.Item
+              name="description"
+              label={t('settings.toolsets.description', { defaultValue: 'Description' })}
+            >
+              <TextArea
+                rows={3}
+                placeholder={t('settings.toolsets.descriptionPlaceholder', { defaultValue: 'Enter toolset description' })}
+              />
+            </Form.Item>
 
-          <Form.Item
-            name="type"
-            label={t('settings.toolsets.type', { defaultValue: 'Type' })}
-            rules={[{ required: true, message: t('settings.toolsets.typeRequired', { defaultValue: 'Please select type' }) }]}
-          >
-            <Select
-              loading={typeDefinitionsLoading}
-              placeholder={t('settings.toolsets.typePlaceholder', { defaultValue: 'Select type' })}
-              onChange={handleTypeChange}
-              value={selectedType}
-              options={typeDefinitions?.map((typeDefinition) => ({
-                label: typeDefinition.name,
-                value: typeDefinition.tool_set_type,
-              }))}
-            />
-          </Form.Item>
+            <Form.Item
+              name="type"
+              label={t('settings.toolsets.type', { defaultValue: 'Type' })}
+              rules={[{ required: true, message: t('settings.toolsets.typeRequired', { defaultValue: 'Please select type' }) }]}
+            >
+              <Select
+                loading={typeDefinitionsLoading}
+                placeholder={t('settings.toolsets.typePlaceholder', { defaultValue: 'Select type' })}
+                onChange={handleTypeChange}
+                value={selectedType}
+                options={typeDefinitions?.map((typeDefinition) => ({
+                  label: typeDefinition.name,
+                  value: typeDefinition.tool_set_type,
+                }))}
+              />
+            </Form.Item>
 
-          <JsonSchemaConfigFormItem
-            name="config"
-            schema={currentTypeDefinition?.config_schema as any}
-            uiSchema={currentTypeDefinition?.ui_schema as any}
-          />
-          <Form.Item hidden name="status" label={t('settings.toolsets.status', { defaultValue: 'Status' })}>
-            <Input />
-          </Form.Item>
-
+            <Suspense fallback={<Loading />}>
+              <JsonSchemaConfigFormItem
+                name="config"
+                schema={currentTypeDefinition?.config_schema as any}
+                uiSchema={currentTypeDefinition?.ui_schema as any}
+              />
+            </Suspense>
+            <Form.Item hidden name="status" label={t('settings.toolsets.status', { defaultValue: 'Status' })}>
+              <Input />
+            </Form.Item>
+          </div>
           <Form.Item>
             <Space>
               <Button

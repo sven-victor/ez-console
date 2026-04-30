@@ -42,18 +42,27 @@ async function u(t, a) {
   });
 }
 async function d(t) {
+  return s(
+    "/api/system/base-settings/clear-cache",
+    {
+      method: "POST",
+      ...t || {}
+    }
+  );
+}
+async function y(t) {
   return s("/api/system/health", {
     method: "GET",
     ...t || {}
   });
 }
-async function y(t) {
+async function l(t) {
   return s("/api/system/info", {
     method: "GET",
     ...t || {}
   });
 }
-async function l(t) {
+async function h(t) {
   return s(
     "/api/system/ldap-settings",
     {
@@ -62,7 +71,7 @@ async function l(t) {
     }
   );
 }
-async function h(t, a) {
+async function T(t, a) {
   return s("/api/system/ldap-settings", {
     method: "PUT",
     headers: {
@@ -72,7 +81,7 @@ async function h(t, a) {
     ...a || {}
   });
 }
-async function T(t, a) {
+async function g(t, a) {
   return s(
     "/api/system/ldap-settings/import",
     {
@@ -85,13 +94,13 @@ async function T(t, a) {
     }
   );
 }
-async function g(t) {
+async function f(t) {
   return s("/api/system/oauth-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function f(t, a) {
+async function S(t, a) {
   return s("/api/system/oauth-settings", {
     method: "PUT",
     headers: {
@@ -101,7 +110,7 @@ async function f(t, a) {
     ...a || {}
   });
 }
-async function S(t, a) {
+async function P(t, a) {
   return s(
     "/api/system/oauth-settings/test",
     {
@@ -114,7 +123,7 @@ async function S(t, a) {
     }
   );
 }
-async function P(t, a) {
+async function k(t, a) {
   return s(
     "/api/system/oauth-settings/test-callback",
     {
@@ -127,7 +136,7 @@ async function P(t, a) {
     }
   );
 }
-async function k(t, a) {
+async function E(t, a) {
   return s(
     "/api/system/organizations",
     {
@@ -143,7 +152,7 @@ async function k(t, a) {
     }
   );
 }
-async function E(t, a) {
+async function C(t, a) {
   return s("/api/system/organizations", {
     method: "POST",
     headers: {
@@ -153,7 +162,7 @@ async function E(t, a) {
     ...a || {}
   });
 }
-async function C(t, a) {
+async function O(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/organizations/${n}`,
@@ -164,7 +173,7 @@ async function C(t, a) {
     }
   );
 }
-async function O(t, a, n) {
+async function $(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/organizations/${e}`,
@@ -179,7 +188,7 @@ async function O(t, a, n) {
     }
   );
 }
-async function $(t, a) {
+async function j(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/organizations/${n}`,
@@ -190,7 +199,7 @@ async function $(t, a) {
     }
   );
 }
-async function j(t, a) {
+async function q(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/organizations/${n}/users`,
@@ -207,7 +216,7 @@ async function j(t, a) {
     }
   );
 }
-async function q(t, a, n) {
+async function z(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/organizations/${e}/users`,
@@ -222,7 +231,7 @@ async function q(t, a, n) {
     }
   );
 }
-async function z(t, a) {
+async function G(t, a) {
   const { id: n, user_id: e, ...i } = t;
   return s(
     `/api/system/organizations/${n}/users/${e}`,
@@ -233,7 +242,7 @@ async function z(t, a) {
     }
   );
 }
-async function G(t, a, n) {
+async function U(t, a, n) {
   const { id: e, user_id: i, ...o } = t;
   return s(
     `/api/system/organizations/${e}/users/${i}/roles`,
@@ -248,7 +257,7 @@ async function G(t, a, n) {
     }
   );
 }
-async function U(t, a) {
+async function b(t, a) {
   const { user_id: n, ...e } = t;
   return s(
     `/api/system/organizations/user/${n}`,
@@ -268,7 +277,7 @@ async function _(t) {
     }
   );
 }
-async function b(t, a) {
+async function L(t, a) {
   return s(
     "/api/system/security-settings",
     {
@@ -281,7 +290,7 @@ async function b(t, a) {
     }
   );
 }
-async function L(t, a) {
+async function D(t, a) {
   return s(
     "/api/system/security-settings/check-password",
     {
@@ -294,13 +303,13 @@ async function L(t, a) {
     }
   );
 }
-async function D(t) {
+async function v(t) {
   return s("/api/system/site", {
     method: "GET",
     ...t || {}
   });
 }
-async function v(t, a) {
+async function F(t, a) {
   return s("/api/system/skills", {
     method: "GET",
     params: {
@@ -313,7 +322,7 @@ async function v(t, a) {
     ...a || {}
   });
 }
-async function F(t, a) {
+async function w(t, a) {
   return s("/api/system/skills", {
     method: "POST",
     headers: {
@@ -323,7 +332,7 @@ async function F(t, a) {
     ...a || {}
   });
 }
-async function w(t, a) {
+async function B(t, a) {
   const { id: n, ...e } = t;
   return s(`/api/system/skills/${n}`, {
     method: "GET",
@@ -331,7 +340,7 @@ async function w(t, a) {
     ...a || {}
   });
 }
-async function B(t, a, n) {
+async function A(t, a, n) {
   const { id: e, ...i } = t;
   return s(`/api/system/skills/${e}`, {
     method: "PUT",
@@ -343,7 +352,7 @@ async function B(t, a, n) {
     ...n || {}
   });
 }
-async function A(t, a) {
+async function x(t, a) {
   const { id: n, ...e } = t;
   return s(`/api/system/skills/${n}`, {
     method: "DELETE",
@@ -351,7 +360,7 @@ async function A(t, a) {
     ...a || {}
   });
 }
-async function x(t, a) {
+async function I(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/skills/${n}/ai-tool-bindings`,
@@ -368,7 +377,7 @@ async function x(t, a) {
     }
   );
 }
-async function I(t, a, n) {
+async function J(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/skills/${e}/ai-tool-bindings`,
@@ -383,7 +392,7 @@ async function I(t, a, n) {
     }
   );
 }
-async function J(t, a, n) {
+async function M(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/skills/${e}/dirs`,
@@ -398,7 +407,7 @@ async function J(t, a, n) {
     }
   );
 }
-async function M(t, a) {
+async function N(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/skills/${n}/files`,
@@ -409,7 +418,7 @@ async function M(t, a) {
     }
   );
 }
-async function N(t, a) {
+async function R(t, a) {
   const { id: n, path: e, ...i } = t;
   return s(`/api/system/skills/${n}/files/${e}`, {
     method: "GET",
@@ -418,7 +427,7 @@ async function N(t, a) {
     ...a || {}
   });
 }
-async function R(t, a, n) {
+async function H(t, a, n) {
   const { id: e, path: i, ...o } = t;
   return s(
     `/api/system/skills/${e}/files/${i}`,
@@ -433,7 +442,7 @@ async function R(t, a, n) {
     }
   );
 }
-async function H(t, a) {
+async function K(t, a) {
   const { id: n, path: e, ...i } = t;
   return s(
     `/api/system/skills/${n}/files/${e}`,
@@ -444,7 +453,7 @@ async function H(t, a) {
     }
   );
 }
-async function K(t, a, n) {
+async function Q(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/skills/${e}/move-path`,
@@ -459,7 +468,7 @@ async function K(t, a, n) {
     }
   );
 }
-async function Q(t, a) {
+async function V(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/skills/${n}/preview`,
@@ -470,7 +479,7 @@ async function Q(t, a) {
     }
   );
 }
-async function V(t, a, n) {
+async function W(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/skills/${e}/status`,
@@ -485,7 +494,7 @@ async function V(t, a, n) {
     }
   );
 }
-async function W(t, a) {
+async function X(t, a) {
   return s("/api/system/skills/clone", {
     method: "POST",
     headers: {
@@ -495,13 +504,13 @@ async function W(t, a) {
     ...a || {}
   });
 }
-async function X(t) {
+async function Y(t) {
   return s("/api/system/skills/domains", {
     method: "GET",
     ...t || {}
   });
 }
-async function Y(t, a, n) {
+async function Z(t, a, n) {
   const e = new FormData();
   return a && e.append("file", a), Object.keys(t).forEach((i) => {
     const o = t[i];
@@ -513,13 +522,13 @@ async function Y(t, a, n) {
     ...n || {}
   });
 }
-async function Z(t) {
+async function tt(t) {
   return s("/api/system/smtp-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function tt(t, a) {
+async function at(t, a) {
   return s("/api/system/smtp-settings", {
     method: "PUT",
     headers: {
@@ -529,7 +538,7 @@ async function tt(t, a) {
     ...a || {}
   });
 }
-async function at(t, a) {
+async function st(t, a) {
   return s(
     "/api/system/smtp-settings/test",
     {
@@ -542,13 +551,13 @@ async function at(t, a) {
     }
   );
 }
-async function st(t) {
+async function et(t) {
   return s("/api/system/task-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function et(t, a) {
+async function nt(t, a) {
   return s("/api/system/task-settings", {
     method: "PUT",
     headers: {
@@ -558,7 +567,16 @@ async function et(t, a) {
     ...a || {}
   });
 }
-async function nt(t) {
+async function it(t) {
+  return s(
+    "/api/system/task-settings/fields",
+    {
+      method: "GET",
+      ...t || {}
+    }
+  );
+}
+async function ot(t) {
   return s(
     "/api/system/task-settings/log-storage-backends",
     {
@@ -567,7 +585,7 @@ async function nt(t) {
     }
   );
 }
-async function it(t, a) {
+async function rt(t, a) {
   return s("/api/system/toolsets", {
     method: "GET",
     params: {
@@ -580,7 +598,7 @@ async function it(t, a) {
     ...a || {}
   });
 }
-async function ot(t, a) {
+async function pt(t, a) {
   return s("/api/system/toolsets", {
     method: "POST",
     headers: {
@@ -590,7 +608,7 @@ async function ot(t, a) {
     ...a || {}
   });
 }
-async function rt(t, a) {
+async function mt(t, a) {
   const { id: n, ...e } = t;
   return s(`/api/system/toolsets/${n}`, {
     method: "GET",
@@ -598,7 +616,7 @@ async function rt(t, a) {
     ...a || {}
   });
 }
-async function pt(t, a, n) {
+async function ct(t, a, n) {
   const { id: e, ...i } = t;
   return s(`/api/system/toolsets/${e}`, {
     method: "PUT",
@@ -610,7 +628,7 @@ async function pt(t, a, n) {
     ...n || {}
   });
 }
-async function mt(t, a) {
+async function ut(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}`,
@@ -621,7 +639,7 @@ async function mt(t, a) {
     }
   );
 }
-async function ct(t, a, n) {
+async function dt(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/toolsets/${e}/status`,
@@ -636,7 +654,7 @@ async function ct(t, a, n) {
     }
   );
 }
-async function ut(t, a) {
+async function yt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/test`,
@@ -647,7 +665,7 @@ async function ut(t, a) {
     }
   );
 }
-async function dt(t, a) {
+async function lt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/tools`,
@@ -658,7 +676,7 @@ async function dt(t, a) {
     }
   );
 }
-async function yt(t) {
+async function ht(t) {
   return s(
     "/api/system/toolsets/types",
     {
@@ -667,78 +685,80 @@ async function yt(t) {
     }
   );
 }
-const ht = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  addUserToOrganization: q,
-  checkPasswordComplexity: L,
-  cloneSkill: W,
-  createOrganization: E,
-  createSkill: F,
-  createSkillDir: J,
-  createToolSet: ot,
-  deleteOrganization: $,
-  deleteSkill: A,
-  deleteSkillPath: H,
-  deleteToolSet: mt,
+  addUserToOrganization: z,
+  checkPasswordComplexity: D,
+  clearSiteCache: d,
+  cloneSkill: X,
+  createOrganization: C,
+  createSkill: w,
+  createSkillDir: M,
+  createToolSet: pt,
+  deleteOrganization: j,
+  deleteSkill: x,
+  deleteSkillPath: K,
+  deleteToolSet: ut,
   getAuditLogs: m,
-  getLdapSettings: l,
-  getOauthSettings: g,
-  getOrganization: C,
+  getLdapSettings: h,
+  getOauthSettings: f,
+  getOrganization: O,
   getSecuritySettings: _,
-  getSiteConfig: D,
-  getSkill: w,
-  getSkillFile: N,
-  getSmtpSettings: Z,
+  getSiteConfig: v,
+  getSkill: B,
+  getSkillFile: R,
+  getSmtpSettings: tt,
   getSystemBaseSettings: c,
-  getSystemInfo: y,
-  getTaskSettings: st,
-  getToolSet: rt,
-  getToolSetTools: dt,
-  getToolSetTypeDefinitions: yt,
-  getUserOrganizations: U,
-  healthCheck: d,
-  importLdapUsers: T,
-  listLogStorageBackends: nt,
-  listOrganizationUsers: j,
-  listOrganizations: k,
-  listSkillAiToolBindings: x,
-  listSkillDomains: X,
-  listSkillFilesTree: M,
-  listSkills: v,
-  listToolSets: it,
-  moveSkillPath: K,
-  previewSkill: Q,
-  putSkillFile: R,
-  removeUserFromOrganization: z,
-  replaceSkillAiToolBindings: I,
+  getSystemInfo: l,
+  getTaskSettingFields: it,
+  getTaskSettings: et,
+  getToolSet: mt,
+  getToolSetTools: lt,
+  getToolSetTypeDefinitions: ht,
+  getUserOrganizations: b,
+  healthCheck: y,
+  importLdapUsers: g,
+  listLogStorageBackends: ot,
+  listOrganizationUsers: q,
+  listOrganizations: E,
+  listSkillAiToolBindings: I,
+  listSkillDomains: Y,
+  listSkillFilesTree: N,
+  listSkills: F,
+  listToolSets: rt,
+  moveSkillPath: Q,
+  previewSkill: V,
+  putSkillFile: H,
+  removeUserFromOrganization: G,
+  replaceSkillAiToolBindings: J,
   testLdapConnection: p,
-  testOauthCallback: P,
-  testOauthConnection: S,
-  testSmtpConnection: at,
-  testToolSet: ut,
-  updateLdapSettings: h,
-  updateOauthSettings: f,
-  updateOrganization: O,
-  updateSecuritySettings: b,
-  updateSkill: B,
-  updateSkillStatus: V,
-  updateSmtpSettings: tt,
+  testOauthCallback: k,
+  testOauthConnection: P,
+  testSmtpConnection: st,
+  testToolSet: yt,
+  updateLdapSettings: T,
+  updateOauthSettings: S,
+  updateOrganization: $,
+  updateSecuritySettings: L,
+  updateSkill: A,
+  updateSkillStatus: W,
+  updateSmtpSettings: at,
   updateSystemBaseSettings: u,
-  updateTaskSettings: et,
-  updateToolSet: pt,
-  updateToolSetStatus: ct,
-  updateUserOrganizationRoles: G,
-  uploadSkill: Y
+  updateTaskSettings: nt,
+  updateToolSet: ct,
+  updateToolSetStatus: dt,
+  updateUserOrganizationRoles: U,
+  uploadSkill: Z
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  ht as a,
-  j as b,
-  E as c,
-  $ as d,
-  q as e,
-  G as f,
-  C as g,
-  k as l,
-  z as r,
-  O as u
+  gt as a,
+  q as b,
+  C as c,
+  j as d,
+  z as e,
+  U as f,
+  O as g,
+  E as l,
+  G as r,
+  $ as u
 };

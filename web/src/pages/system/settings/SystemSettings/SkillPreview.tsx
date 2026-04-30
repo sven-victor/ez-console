@@ -5,14 +5,16 @@
  * you may not use this file except in compliance with the License.
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, lazy, Suspense } from 'react';
 import { Card, Button, Spin, message } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import api from '@/service/api';
-import MarkdownViewer from '@/components/MarkdownViewer';
 import { markdownWithMetadataAsTable } from '@/utils/skillPreview';
+import { Loading } from '@/index';
+
+const MarkdownViewer = lazy(() => import('@/components/MarkdownViewer'));
 
 const SkillPreview: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -41,7 +43,9 @@ const SkillPreview: React.FC = () => {
       return {
         key: preview.file_name,
         label: preview.file_name,
-        children: <MarkdownViewer content={markdownWithMetadataAsTable(preview.content)} />
+        children: <Suspense fallback={<Loading />}>
+          <MarkdownViewer content={markdownWithMetadataAsTable(preview.content)} />
+        </Suspense>
       }
     })
   }, [previewRes])

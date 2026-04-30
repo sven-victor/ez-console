@@ -361,6 +361,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   success: "Operation successful",
   error: "Operation failed",
   confirm: "Confirm",
+  ok: "OK",
   cancel: "Cancel",
   save: "Save",
   edit: "Edit",
@@ -793,8 +794,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     authorization: {
       user: {
         login: "User Login",
+        logout: "Logout",
         update: "Update users",
         delete: "Delete users"
+      },
+      oauth: {
+        callback: "OAuth Callback/Login"
+      },
+      role: {
+        update: "Update roles"
       }
     }
   },
@@ -971,6 +979,12 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logStorageDatabase: "Database",
       logStorage: {
         database: "Database"
+      },
+      fields: {
+        task_max_concurrent: "Max concurrent tasks",
+        task_ai_chat_retention_days: "AI chat retention (days)",
+        task_log_retention_days: "Task log retention (days)",
+        task_audit_log_retention_days: "Audit log retention (days)"
       }
     },
     skills: {
@@ -1088,7 +1102,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       enableMultiOrg: "Enable Multi-Organization",
       enableMultiOrgTooltip: "Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab.",
       enableSkillToolBinding: "Link AI tools to skills",
-      enableSkillToolBindingTooltip: "When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools."
+      enableSkillToolBindingTooltip: "When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools.",
+      clearSiteCache: "Clear site cache",
+      clearSiteCacheConfirm: "Clear all server-side application caches? Active sessions may need to sign in again.",
+      clearSiteCacheSuccess: "Site cache cleared successfully",
+      clearSiteCacheFailed: "Failed to clear site cache"
     },
     organizations: {
       title: "Organization Management",
@@ -1421,6 +1439,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       fromAddressRequired: "From Address is required.",
       fromName: "From Name",
       fromNamePlaceholder: "System Notifications",
+      adminEmails: "Admin Emails",
+      adminEmailsTooltip: "Email addresses that receive admin notifications.",
+      adminEmailsPlaceholder: "Enter email addresses",
       hostRequired: "SMTP Host is required.",
       portRequired: "SMTP Port is required.",
       sendTestEmail: "Send Test Email",
@@ -2306,6 +2327,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   success: "操作成功",
   error: "操作失败",
   confirm: "确认",
+  ok: "确定",
   cancel: "取消",
   save: "保存",
   edit: "编辑",
@@ -2379,7 +2401,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, M = {
+}, _ = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2763,8 +2785,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     authorization: {
       user: {
         login: "用户登录",
+        logout: "登出",
         update: "更新用户",
         delete: "删除用户"
+      },
+      oauth: {
+        callback: "OAuth 回调/登录"
+      },
+      role: {
+        update: "更新角色"
       }
     }
   },
@@ -2912,7 +2941,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, U = {
+}, M = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -2943,6 +2972,12 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logStorageDatabase: "数据库",
       logStorage: {
         database: "数据库"
+      },
+      fields: {
+        task_max_concurrent: "最大并发任务数",
+        task_ai_chat_retention_days: "AI 会话保留天数",
+        task_log_retention_days: "任务日志保留天数",
+        task_audit_log_retention_days: "审计日志保留天数"
       }
     },
     skills: {
@@ -3060,7 +3095,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       enableMultiOrg: "启用多组织",
       enableMultiOrgTooltip: "启用多组织功能。启用后，可在“组织管理”标签中管理组织。",
       enableSkillToolBinding: "将 AI 工具与技能关联",
-      enableSkillToolBindingTooltip: "启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。"
+      enableSkillToolBindingTooltip: "启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。",
+      clearSiteCache: "清理站点缓存",
+      clearSiteCacheConfirm: "确定清理服务端所有应用缓存吗？已登录用户可能需要重新登录。",
+      clearSiteCacheSuccess: "站点缓存已清理",
+      clearSiteCacheFailed: "清理站点缓存失败"
     },
     organizations: {
       title: "组织管理",
@@ -3395,6 +3434,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       fromAddressRequired: "发件人地址是必需的。",
       fromName: "发件人名称",
       fromNamePlaceholder: "系统通知",
+      adminEmails: "管理员邮箱",
+      adminEmailsTooltip: "接收管理员通知的邮箱地址。",
+      adminEmailsPlaceholder: "输入邮箱地址",
       hostRequired: "SMTP服务器是必需的。",
       portRequired: "SMTP端口是必需的。",
       sendTestEmail: "发送测试邮件",
@@ -3490,7 +3532,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, q = {
+}, U = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3597,7 +3639,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsPlaceholder: "技能（可选）",
     skillDomain: "技能域"
   }
-}, _ = {
+}, q = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3660,6 +3702,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
   confirm: "Bestätigen",
+  ok: "OK",
   cancel: "Abbrechen",
   save: "Speichern",
   edit: "Bearbeiten",
@@ -4108,8 +4151,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     authorization: {
       user: {
         login: "Benutzeranmeldung",
+        logout: "Abmelden",
         update: "Benutzer aktualisieren",
         delete: "Benutzer löschen"
+      },
+      oauth: {
+        callback: "OAuth-Rückruf/Anmeldung"
+      },
+      role: {
+        update: "Rollen aktualisieren"
       }
     }
   },
@@ -4286,6 +4336,12 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logStorageDatabase: "Datenbank",
       logStorage: {
         database: "Datenbank"
+      },
+      fields: {
+        task_max_concurrent: "Maximale gleichzeitige Aufgaben",
+        task_ai_chat_retention_days: "KI-Chat-Aufbewahrung (Tage)",
+        task_log_retention_days: "Aufgabenprotokoll-Aufbewahrung (Tage)",
+        task_audit_log_retention_days: "Audit-Log-Aufbewahrung (Tage)"
       }
     },
     skills: {
@@ -4403,7 +4459,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       enableMultiOrg: "Multi-Organisation aktivieren",
       enableMultiOrgTooltip: "Multi-Organisations-Funktion aktivieren. Wenn aktiviert, können Organisationen im Tab Organisationsverwaltung verwaltet werden.",
       enableSkillToolBinding: "KI-Tools mit Skills verknüpfen",
-      enableSkillToolBindingTooltip: "Wenn aktiviert, schränkt der KI-Chat die Tools nach Skill-Bindings ein (weiterhin innerhalb der Rollen-KI-Tool-Berechtigungen)."
+      enableSkillToolBindingTooltip: "Wenn aktiviert, schränkt der KI-Chat die Tools nach Skill-Bindings ein (weiterhin innerhalb der Rollen-KI-Tool-Berechtigungen).",
+      clearSiteCache: "Website-Cache leeren",
+      clearSiteCacheConfirm: "Alle serverseitigen Anwendungs-Caches leeren? Aktive Sitzungen müssen sich ggf. erneut anmelden.",
+      clearSiteCacheSuccess: "Website-Cache erfolgreich geleert",
+      clearSiteCacheFailed: "Website-Cache konnte nicht geleert werden"
     },
     security: {
       mfa: {
@@ -4687,6 +4747,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       fromAddressRequired: "Absenderadresse ist erforderlich.",
       fromName: "Absendername",
       fromNamePlaceholder: "Systembenachrichtigungen",
+      adminEmails: "Admin-E-Mails",
+      adminEmailsTooltip: "E-Mail-Adressen, die Admin-Benachrichtigungen erhalten.",
+      adminEmailsPlaceholder: "E-Mail-Adressen eingeben",
       hostRequired: "SMTP-Host ist erforderlich.",
       portRequired: "SMTP-Port ist erforderlich.",
       sendTestEmail: "Test-E-Mail senden",
@@ -5003,6 +5066,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   success: "Operación exitosa",
   error: "Operación fallida",
   confirm: "Confirmar",
+  ok: "Aceptar",
   cancel: "Cancelar",
   save: "Guardar",
   edit: "Editar",
@@ -5451,8 +5515,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     authorization: {
       user: {
         login: "Inicio de sesión de usuario",
+        logout: "Cerrar sesión",
         update: "Actualizar usuarios",
         delete: "Eliminar usuarios"
+      },
+      oauth: {
+        callback: "Devolución de llamada OAuth/Inicio de sesión"
+      },
+      role: {
+        update: "Actualizar roles"
       }
     }
   },
@@ -5629,6 +5700,12 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logStorageDatabase: "Base de datos",
       logStorage: {
         database: "Base de datos"
+      },
+      fields: {
+        task_max_concurrent: "Tareas simultáneas máximas",
+        task_ai_chat_retention_days: "Retención de chat IA (días)",
+        task_log_retention_days: "Retención de registros de tareas (días)",
+        task_audit_log_retention_days: "Retención de registros de auditoría (días)"
       }
     },
     skills: {
@@ -5746,7 +5823,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       enableMultiOrg: "Habilitar multiorganización",
       enableMultiOrgTooltip: "Habilitar la función de multiorganización. Cuando está habilitado, las organizaciones se pueden gestionar en la pestaña Gestión de organizaciones.",
       enableSkillToolBinding: "Vincular herramientas de IA a habilidades",
-      enableSkillToolBindingTooltip: "Si está habilitado, el chat de IA restringe las herramientas según los enlaces por habilidad (aún dentro de los permisos de rol)."
+      enableSkillToolBindingTooltip: "Si está habilitado, el chat de IA restringe las herramientas según los enlaces por habilidad (aún dentro de los permisos de rol).",
+      clearSiteCache: "Vaciar caché del sitio",
+      clearSiteCacheConfirm: "¿Vaciar todas las cachés de aplicación del servidor? Las sesiones activas puede que deban iniciar sesión de nuevo.",
+      clearSiteCacheSuccess: "Caché del sitio vaciada correctamente",
+      clearSiteCacheFailed: "No se pudo vaciar la caché del sitio"
     },
     security: {
       mfa: {
@@ -6030,6 +6111,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       fromAddressRequired: "La dirección del remitente es obligatoria.",
       fromName: "Nombre del remitente",
       fromNamePlaceholder: "Notificaciones del sistema",
+      adminEmails: "Correos de administradores",
+      adminEmailsTooltip: "Direcciones de correo que reciben notificaciones de administrador.",
+      adminEmailsPlaceholder: "Introducir direcciones de correo",
       hostRequired: "El host de SMTP es obligatorio.",
       portRequired: "El puerto de SMTP es obligatorio.",
       sendTestEmail: "Enviar correo electrónico de prueba",
@@ -6346,6 +6430,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   success: "Opération réussie",
   error: "Opération échouée",
   confirm: "Confirmer",
+  ok: "OK",
   cancel: "Annuler",
   save: "Enregistrer",
   edit: "Modifier",
@@ -6794,8 +6879,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     authorization: {
       user: {
         login: "Connexion utilisateur",
+        logout: "Déconnexion",
         update: "Mettre à jour les utilisateurs",
         delete: "Supprimer les utilisateurs"
+      },
+      oauth: {
+        callback: "Rappel OAuth/Connexion"
+      },
+      role: {
+        update: "Mettre à jour les rôles"
       }
     }
   },
@@ -6972,6 +7064,12 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logStorageDatabase: "Base de données",
       logStorage: {
         database: "Base de données"
+      },
+      fields: {
+        task_max_concurrent: "Tâches simultanées max",
+        task_ai_chat_retention_days: "Rétention chat IA (jours)",
+        task_log_retention_days: "Rétention journaux tâches (jours)",
+        task_audit_log_retention_days: "Rétention journaux audit (jours)"
       }
     },
     skills: {
@@ -7089,7 +7187,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       enableMultiOrg: "Activer la multi-organisation",
       enableMultiOrgTooltip: "Activer la fonctionnalité multi-organisation. Lorsque activé, les organisations peuvent être gérées dans l'onglet Gestion des organisations.",
       enableSkillToolBinding: "Lier les outils IA aux compétences",
-      enableSkillToolBindingTooltip: "Si activé, le chat IA restreint les outils selon les liaisons par compétence lorsque des compétences sont dans le périmètre (toujours dans les permissions des rôles)."
+      enableSkillToolBindingTooltip: "Si activé, le chat IA restreint les outils selon les liaisons par compétence lorsque des compétences sont dans le périmètre (toujours dans les permissions des rôles).",
+      clearSiteCache: "Vider le cache du site",
+      clearSiteCacheConfirm: "Vider tous les caches applicatifs côté serveur ? Les sessions actives devront peut-être se reconnecter.",
+      clearSiteCacheSuccess: "Cache du site vidé avec succès",
+      clearSiteCacheFailed: "Échec du vidage du cache du site"
     },
     security: {
       mfa: {
@@ -7373,6 +7475,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       fromAddressRequired: "L'adresse de l'expéditeur est requise.",
       fromName: "Nom de l'expéditeur",
       fromNamePlaceholder: "Notifications système",
+      adminEmails: "E-mails administrateurs",
+      adminEmailsTooltip: "Adresses e-mail recevant les notifications administrateur.",
+      adminEmailsPlaceholder: "Saisir des adresses e-mail",
       hostRequired: "L'hôte SMTP est requis.",
       portRequired: "Le port SMTP est requis.",
       sendTestEmail: "Envoyer un e-mail de test",
@@ -7689,6 +7794,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   success: "نجحت العملية",
   error: "فشلت العملية",
   confirm: "تأكيد",
+  ok: "موافق",
   cancel: "إلغاء",
   save: "حفظ",
   edit: "تعديل",
@@ -8137,8 +8243,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     authorization: {
       user: {
         login: "تسجيل دخول المستخدم",
+        logout: "تسجيل الخروج",
         update: "تحديث المستخدمين",
         delete: "حذف المستخدمين"
+      },
+      oauth: {
+        callback: "معاودة الاتصال OAuth/تسجيل الدخول"
+      },
+      role: {
+        update: "تحديث الأدوار"
       }
     }
   },
@@ -8315,6 +8428,12 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logStorageDatabase: "قاعدة البيانات",
       logStorage: {
         database: "قاعدة البيانات"
+      },
+      fields: {
+        task_max_concurrent: "الحد الأقصى للمهام المتزامنة",
+        task_ai_chat_retention_days: "مدة الاحتفاظ بمحادثات الذكاء الاصطناعي (أيام)",
+        task_log_retention_days: "مدة الاحتفاظ بسجلات المهام (أيام)",
+        task_audit_log_retention_days: "مدة الاحتفاظ بسجلات التدقيق (أيام)"
       }
     },
     skills: {
@@ -8432,7 +8551,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       enableMultiOrg: "تمكين التنظيم المتعدد",
       enableMultiOrgTooltip: "تمكين ميزة التنظيم المتعدد. عند التمكين، يمكن إدارة المنظمات في علامة تبويب إدارة المنظمات.",
       enableSkillToolBinding: "ربط أدوات الذكاء الاصطناعي بالمهارات",
-      enableSkillToolBindingTooltip: "عند التمكين، يحد محادثة الذكاء الاصطناعي الأدوات حسب ارتباطات المهارة (ضمن أذونات الأدوات للدور)."
+      enableSkillToolBindingTooltip: "عند التمكين، يحد محادثة الذكاء الاصطناعي الأدوات حسب ارتباطات المهارة (ضمن أذونات الأدوات للدور).",
+      clearSiteCache: "مسح ذاكرة التخزين المؤقت للموقع",
+      clearSiteCacheConfirm: "مسح جميع ذاكرات التخزين المؤقت للتطبيق على الخادم؟ قد تحتاج الجلسات النشطة إلى تسجيل الدخول مرة أخرى.",
+      clearSiteCacheSuccess: "تم مسح ذاكرة التخزين المؤقت للموقع بنجاح",
+      clearSiteCacheFailed: "فشل مسح ذاكرة التخزين المؤقت للموقع"
     },
     security: {
       mfa: {
@@ -8716,6 +8839,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       fromAddressRequired: "عنوان المرسل مطلوب.",
       fromName: "اسم المرسل",
       fromNamePlaceholder: "إشعارات النظام",
+      adminEmails: "بريد المسؤولين",
+      adminEmailsTooltip: "عناوين البريد الإلكتروني التي تتلقى إشعارات المسؤول.",
+      adminEmailsPlaceholder: "أدخل عناوين البريد الإلكتروني",
       hostRequired: "مضيف SMTP مطلوب.",
       portRequired: "منفذ SMTP مطلوب.",
       sendTestEmail: "إرسال بريد إلكتروني اختباري",
@@ -9032,6 +9158,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
   confirm: "Bekräfta",
+  ok: "OK",
   cancel: "Avbryt",
   save: "Spara",
   edit: "Redigera",
@@ -9480,8 +9607,15 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     authorization: {
       user: {
         login: "Användarinloggning",
+        logout: "Logga ut",
         update: "Uppdatera användare",
         delete: "Ta bort användare"
+      },
+      oauth: {
+        callback: "OAuth Callback/Inloggning"
+      },
+      role: {
+        update: "Uppdatera roller"
       }
     }
   },
@@ -9658,6 +9792,12 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       logStorageDatabase: "Databas",
       logStorage: {
         database: "Databas"
+      },
+      fields: {
+        task_max_concurrent: "Max samtidiga uppgifter",
+        task_ai_chat_retention_days: "AI-chatt-kvarhållning (dagar)",
+        task_log_retention_days: "Kvarhållning av uppgiftsloggar (dagar)",
+        task_audit_log_retention_days: "Kvarhållning av granskningsloggar (dagar)"
       }
     },
     skills: {
@@ -9775,7 +9915,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       enableMultiOrg: "Aktivera multiorganisation",
       enableMultiOrgTooltip: "Aktivera multiorganisationsfunktionen. När den är aktiverad kan organisationer hanteras i fliken Organisationshantering.",
       enableSkillToolBinding: "Koppla AI-verktyg till färdigheter",
-      enableSkillToolBindingTooltip: "När det är aktiverat begränsar AI-chatten verktyg enligt färdighetsbindningar (inom rollbehörigheter)."
+      enableSkillToolBindingTooltip: "När det är aktiverat begränsar AI-chatten verktyg enligt färdighetsbindningar (inom rollbehörigheter).",
+      clearSiteCache: "Töm webbplatsens cache",
+      clearSiteCacheConfirm: "Tömma alla programcacher på servern? Aktiva sessioner kan behöva logga in igen.",
+      clearSiteCacheSuccess: "Webbplatsens cache har tömts",
+      clearSiteCacheFailed: "Det gick inte att tömma webbplatsens cache"
     },
     security: {
       mfa: {
@@ -10059,6 +10203,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       fromAddressRequired: "Från-adress krävs.",
       fromName: "Från-namn",
       fromNamePlaceholder: "Systemmeddelanden",
+      adminEmails: "Admin-e-postadresser",
+      adminEmailsTooltip: "E-postadresser som tar emot adminmeddelanden.",
+      adminEmailsPlaceholder: "Ange e-postadresser",
       hostRequired: "SMTP-värd krävs.",
       portRequired: "SMTP-port krävs.",
       sendTestEmail: "Skicka test-e-post",
@@ -10378,10 +10525,10 @@ g.use(f).use(h).init({
     "zh-CN": {
       translation: S,
       common: L,
-      authorization: M,
-      system: U,
-      ai: q,
-      task: _
+      authorization: _,
+      system: M,
+      ai: U,
+      task: q
     },
     "en-US": {
       translation: y,

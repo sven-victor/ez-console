@@ -35,10 +35,18 @@ export { default as AppLayout, type AppLayoutProps } from '@/components/Layout';
 export { PermissionGuard, type PermissionGuardProps, AdminGuard } from '@/components/PermissionGuard';
 export { default as PrivateRoute, type PrivateRouteProps } from '@/components/PrivateRoute';
 export { default as Table, type TableRefProps, type TableActionRefProps, type TableProps } from '@/components/Table';
-export { default as AIChat, type AIChatProps } from '@/components/AIChat';
+export { type AIChatProps } from '@/components/AIChat';
 export { AIChatModal, AIChatButton, AIChatSider } from '@/components/AIChatLayout';
-export { default as MarkdownViewer, Code as MarkdownCode, type MarkdownViewerProps } from '@/components/MarkdownViewer';
+export { type MarkdownViewerProps } from '@/components/MarkdownViewer';
+export { type JsonSchemaConfigFormItemProps, type JsonSchemaConfigFormProps } from '@/components/JsonSchemaConfigForm';
 
+import { lazy } from 'react';
+const AIChat = lazy(() => import('@/components/AIChat'));
+
+const JsonSchemaConfigForm = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({ default: module.JsonSchemaConfigForm })));
+const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({ default: module.JsonSchemaConfigFormItem })));
+const MarkdownViewer = lazy(() => import('@/components/MarkdownViewer'));
+const MarkdownCode = lazy(() => import('@/components/MarkdownViewer').then(module => ({ default: module.Code })));
 
 export { default as Forbidden } from '@/pages/Forbidden';
 export { default as NotFound } from '@/pages/NotFound';
@@ -56,8 +64,8 @@ import * as oauthapi from '@/service/api/oauth';
 import * as systemapi from '@/service/api/system';
 import * as aiapi from '@/service/api/system';
 import * as tasksapi from '@/service/api/tasks';
+
 export type * from '@/service/api/typing';
-export { JsonSchemaConfigForm, JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
 
 const api = {
   ...authorizationapi,
@@ -70,4 +78,9 @@ const api = {
 
 export {
   api,
+  JsonSchemaConfigForm,
+  JsonSchemaConfigFormItem,
+  MarkdownViewer,
+  MarkdownCode,
+  AIChat,
 }

@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { Card, Button, Space, Input, message, Tree, Modal, Form, Menu, Alert } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { FolderOutlined, FileOutlined, SaveOutlined, PlusOutlined, DeleteOutlined, EditOutlined, FolderAddOutlined, FileAddOutlined } from '@ant-design/icons';
@@ -13,9 +13,11 @@ import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import api from '@/service/api';
 import type { SkillTreeNode } from '@/service/api/typing';
-import MarkdownViewer from '@/components/MarkdownViewer';
 import { markdownWithMetadataAsTable } from '@/utils/skillPreview';
 import { createStyles } from 'antd-style';
+import Loading from '@/components/Loading';
+
+const MarkdownViewer = lazy(() => import('@/components/MarkdownViewer'));
 
 const useStyles = createStyles(({ css }) => {
   return {
@@ -398,7 +400,9 @@ const SkillEditor: React.FC = () => {
                     />
                   </div>
                   <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'auto', border: '1px solid #d9d9d9', borderRadius: 8, padding: 12 }}>
-                    <MarkdownViewer content={markdownWithMetadataAsTable(content)} />
+                    <Suspense fallback={<Loading />}>
+                      <MarkdownViewer content={markdownWithMetadataAsTable(content)} />
+                    </Suspense>
                   </div>
                 </div>
               ) : (

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import {
   Card,
   Table,
@@ -50,7 +50,9 @@ import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
-import JsonSchemaConfigForm from '@/components/JsonSchemaConfigForm';
+import Loading from '@/components/Loading';
+
+const JsonSchemaConfigForm = lazy(() => import('@/components/JsonSchemaConfigForm'));
 
 const { TextArea } = Input;
 
@@ -447,86 +449,84 @@ const AIModelSettings: React.FC = () => {
           onFinish={handleSubmit}
           autoComplete='off'
         >
-          <Form.Item
-            name="name"
-            label={t('models.name', { defaultValue: 'Name' })}
-            rules={[{ required: true, message: t('models.nameRequired', { defaultValue: 'Please enter model name' }) }]}
-          >
-            <Input placeholder={t('models.namePlaceholder', { defaultValue: 'Enter model name' })} />
-          </Form.Item>
+          <div style={{ maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', overflowX: 'hidden' }}>
+            <Form.Item
+              name="name"
+              label={t('models.name', { defaultValue: 'Name' })}
+              rules={[{ required: true, message: t('models.nameRequired', { defaultValue: 'Please enter model name' }) }]}
+            >
+              <Input placeholder={t('models.namePlaceholder', { defaultValue: 'Enter model name' })} />
+            </Form.Item>
 
-          <Form.Item
-            name="description"
-            label={t('models.description', { defaultValue: 'Description' })}
-          >
-            <TextArea
-              rows={3}
-              placeholder={t('models.descriptionPlaceholder', { defaultValue: 'Enter model description' })}
-            />
-          </Form.Item>
+            <Form.Item
+              name="description"
+              label={t('models.description', { defaultValue: 'Description' })}
+            >
+              <TextArea
+                rows={3}
+                placeholder={t('models.descriptionPlaceholder', { defaultValue: 'Enter model description' })}
+              />
+            </Form.Item>
 
-          <Form.Item
-            name="provider"
-            label={t('models.provider', { defaultValue: 'Provider' })}
-            rules={[{ required: true, message: t('models.providerRequired', { defaultValue: 'Please select provider' }) }]}
-          >
-            <Select
-              loading={typeDefinitionsLoading}
-              placeholder={t('models.providerPlaceholder', { defaultValue: 'Select provider' })}
-              onChange={handleProviderChange}
-              value={selectedProvider}
-              options={typeDefinitions?.map((typeDefinition) => ({
-                label: typeDefinition.name,
-                value: typeDefinition.provider,
-              }))}
-            />
-          </Form.Item>
+            <Form.Item
+              name="provider"
+              label={t('models.provider', { defaultValue: 'Provider' })}
+              rules={[{ required: true, message: t('models.providerRequired', { defaultValue: 'Please select provider' }) }]}
+            >
+              <Select
+                loading={typeDefinitionsLoading}
+                placeholder={t('models.providerPlaceholder', { defaultValue: 'Select provider' })}
+                onChange={handleProviderChange}
+                value={selectedProvider}
+                options={typeDefinitions?.map((typeDefinition) => ({
+                  label: typeDefinition.name,
+                  value: typeDefinition.provider,
+                }))}
+              />
+            </Form.Item>
 
-          {currentProviderDefinition && (<Form.Item name={['config']} style={{
-            minHeight: 300,
-            maxHeight: 'calc(100vh - 800px)',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-          }}>
-            <JsonSchemaConfigForm
-              schema={currentProviderDefinition.config_schema as unknown as Record<string, unknown>}
-              uiSchema={currentProviderDefinition.ui_schema as unknown as Record<string, unknown>}
-            />
-          </Form.Item>)}
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item
-                name="max_chat_tokens"
-                label={t('models.maxChatTokens', { defaultValue: 'Max chat tokens (context / summarization)' })}
-                tooltip={t('models.maxChatTokensHelp', {
-                  defaultValue: '0 uses provider config max_tokens only. Positive value sets WithChatMaxTokens for this model.',
-                })}
-              >
-                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item
-                name="max_chat_iterations"
-                label={t('models.maxChatIterations', { defaultValue: 'Max chat iterations (tool rounds)' })}
-                tooltip={t('models.maxChatIterationsHelp', {
-                  defaultValue: '0 uses default. Positive value caps tool-call iterations for this model.',
-                })}
-              >
-                <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item
-            name="is_default"
-            valuePropName="checked"
-          >
-            <Switch /> <span style={{ marginLeft: 8 }}>{t('models.setAsDefault', { defaultValue: 'Set as default model' })}</span>
-          </Form.Item>
-          <Form.Item hidden name="status" label={t('models.status', { defaultValue: 'Status' })}>
-            <Input />
-          </Form.Item>
-
+            {currentProviderDefinition && (<Form.Item name={['config']}>
+              <Suspense fallback={<Loading />}>
+                <JsonSchemaConfigForm
+                  schema={currentProviderDefinition.config_schema as unknown as Record<string, unknown>}
+                  uiSchema={currentProviderDefinition.ui_schema as unknown as Record<string, unknown>}
+                />
+              </Suspense>
+            </Form.Item>)}
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  name="max_chat_tokens"
+                  label={t('models.maxChatTokens', { defaultValue: 'Max chat tokens (context / summarization)' })}
+                  tooltip={t('models.maxChatTokensHelp', {
+                    defaultValue: '0 uses provider config max_tokens only. Positive value sets WithChatMaxTokens for this model.',
+                  })}
+                >
+                  <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                </Form.Item>
+              </Col>
+              <Col span={12}>
+                <Form.Item
+                  name="max_chat_iterations"
+                  label={t('models.maxChatIterations', { defaultValue: 'Max chat iterations (tool rounds)' })}
+                  tooltip={t('models.maxChatIterationsHelp', {
+                    defaultValue: '0 uses default. Positive value caps tool-call iterations for this model.',
+                  })}
+                >
+                  <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Form.Item
+              name="is_default"
+              valuePropName="checked"
+            >
+              <Switch /> <span style={{ marginLeft: 8 }}>{t('models.setAsDefault', { defaultValue: 'Set as default model' })}</span>
+            </Form.Item>
+            <Form.Item hidden name="status" label={t('models.status', { defaultValue: 'Status' })}>
+              <Input />
+            </Form.Item>
+          </div>
           <Form.Item>
             <Space>
               <Button
