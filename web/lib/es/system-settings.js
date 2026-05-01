@@ -1,9 +1,9 @@
-import { j as e } from "./vendor.js";
-import { Form as a, message as r, Spin as je, Switch as de, Select as B, Input as j, Alert as Ye, Divider as tt, Space as K, Button as T, InputNumber as he, Modal as ne, Skeleton as bt, Descriptions as ue, Steps as Vt, Tag as re, Table as ze, Radio as Be, Tabs as dt, Popconfirm as kt, Tooltip as st, Card as ae, Row as Ue, Col as ye, Checkbox as Ge, Empty as Re, AutoComplete as at, Upload as St, Tree as _t, Menu as vt, Collapse as wt, Typography as Ct, Timeline as Ft, Result as Tt } from "antd";
+import { j as e, J as Ye } from "./vendor.js";
+import { Form as a, message as r, Spin as je, Switch as de, Select as B, Input as j, Alert as Qe, Divider as tt, Space as K, Button as T, InputNumber as he, Modal as ne, Skeleton as bt, Descriptions as ue, Steps as Vt, Tag as re, Table as ze, Radio as Be, Tabs as dt, Popconfirm as kt, Tooltip as st, Card as ae, Row as Ue, Col as ye, Checkbox as Ge, Empty as Re, AutoComplete as at, Upload as St, Tree as _t, Menu as vt, Collapse as wt, Typography as Ct, Timeline as Ft, Result as Tt } from "antd";
 import { useTranslation as Z } from "react-i18next";
 import { useState as y, useEffect as Oe, useMemo as Te, Suspense as Ke, lazy as We, useCallback as ke } from "react";
 import { useRequest as v } from "ahooks";
-import { SaveOutlined as Ne, ReloadOutlined as be, LoadingOutlined as It, CheckCircleTwoTone as At, ClearOutlined as Et, StarFilled as zt, CheckCircleOutlined as Ot, StarOutlined as Pt, EditOutlined as Pe, CopyOutlined as ut, DeleteOutlined as Ie, BugOutlined as Mt, PlusOutlined as Me, ThunderboltOutlined as Lt, ToolOutlined as Qe, SettingOutlined as Rt, FileTextOutlined as He, EyeOutlined as ct, UploadOutlined as it, CalendarOutlined as Ut, ArrowLeftOutlined as mt, FolderOutlined as pt, FileOutlined as gt, FileAddOutlined as Nt, FolderAddOutlined as Dt, SearchOutlined as qt, DownloadOutlined as $t, WarningOutlined as Bt, DashboardOutlined as Ht, MessageOutlined as Kt, SendOutlined as Wt } from "@ant-design/icons";
+import { SaveOutlined as Ne, ReloadOutlined as be, LoadingOutlined as It, CheckCircleTwoTone as At, ClearOutlined as Et, StarFilled as zt, CheckCircleOutlined as Ot, StarOutlined as Pt, EditOutlined as Pe, CopyOutlined as ut, DeleteOutlined as Ie, BugOutlined as Mt, PlusOutlined as Me, ThunderboltOutlined as Lt, ToolOutlined as et, SettingOutlined as Rt, FileTextOutlined as He, EyeOutlined as ct, UploadOutlined as it, CalendarOutlined as Ut, ArrowLeftOutlined as mt, FolderOutlined as pt, FileOutlined as gt, FileAddOutlined as Nt, FolderAddOutlined as Dt, SearchOutlined as qt, DownloadOutlined as $t, WarningOutlined as Bt, DashboardOutlined as Ht, MessageOutlined as Kt, SendOutlined as Wt } from "@ant-design/icons";
 import { a as S } from "./index.js";
 import { g as nt, c as ft } from "./base.js";
 import { f as ce, e as Jt, b as De, L as qe } from "./components.js";
@@ -13,7 +13,6 @@ import { c as ht, b as Xt } from "./contexts.js";
 import { l as Yt, c as Qt, u as es, d as ts, g as ss, b as ls, e as as, f as is, r as ns } from "./system.js";
 import { l as os, b as rs } from "./authorization.js";
 import { createStyles as ds } from "antd-style";
-import et from "react-json-view";
 const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/, us = {
   github: {
     email_field: "email",
@@ -395,7 +394,7 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
           }
         ),
         /* @__PURE__ */ e.jsx(
-          Ye,
+          Qe,
           {
             style: { marginBottom: 16 },
             type: "info",
@@ -449,7 +448,7 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         ),
         /* @__PURE__ */ e.jsx(tt, { children: s("settings.oauth.fieldMapping.title", { defaultValue: "Field Mapping" }) }),
         /* @__PURE__ */ e.jsx(
-          Ye,
+          Qe,
           {
             style: { marginBottom: 16 },
             type: "info",
@@ -1990,7 +1989,7 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         },
         {
           key: "viewTools",
-          icon: /* @__PURE__ */ e.jsx(Qe, {}),
+          icon: /* @__PURE__ */ e.jsx(et, {}),
           permission: "system:toolsets:view",
           disabled: N.status !== "enabled",
           tooltip: t("settings.toolsets.viewTools", { defaultValue: "View Tools" }),
@@ -2236,7 +2235,7 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
             {
               style: { marginBottom: 16 },
               title: /* @__PURE__ */ e.jsxs(K, { children: [
-                /* @__PURE__ */ e.jsx(Qe, {}),
+                /* @__PURE__ */ e.jsx(et, {}),
                 /* @__PURE__ */ e.jsx("strong", { children: ((pe = m.function) == null ? void 0 : pe.name) || "Unknown" })
               ] }),
               children: /* @__PURE__ */ e.jsxs(Ue, { gutter: 16, children: [
@@ -3196,7 +3195,7 @@ description: ...
       items: t(o.filter((V) => !V.hidden), l)
     }
   ) });
-}, dl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, rl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: As
 }, Symbol.toStringTag, { value: "Module" })), Es = () => {
@@ -3516,7 +3515,7 @@ description: ...
       }
     )
   ] });
-}, ul = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, dl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Es
 }, Symbol.toStringTag, { value: "Module" })), zs = We(() => import("./markdown-viewer.js")), Os = ds(({ css: t }) => ({
@@ -3690,7 +3689,7 @@ const Ms = () => {
       },
       children: [
         ee ? /* @__PURE__ */ e.jsx(
-          Ye,
+          Qe,
           {
             type: "info",
             showIcon: !0,
@@ -3810,7 +3809,7 @@ const Ms = () => {
       ]
     }
   ) : null;
-}, cl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, ul = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Ms
 }, Symbol.toStringTag, { value: "Module" })), Ls = We(() => import("./markdown-viewer.js")), Rs = () => {
@@ -3840,14 +3839,14 @@ const Ms = () => {
       tabList: o
     }
   ) });
-}, ml = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, cl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Rs
 }, Symbol.toStringTag, { value: "Module" })), { Text: Ve, Title: Us } = Ct, Ns = {
   llm_request: { color: "blue", icon: /* @__PURE__ */ e.jsx(Wt, {}) },
   llm_response: { color: "green", icon: /* @__PURE__ */ e.jsx(Kt, {}) },
   token_usage: { color: "purple", icon: /* @__PURE__ */ e.jsx(Ht, {}) },
-  tool_call: { color: "orange", icon: /* @__PURE__ */ e.jsx(Qe, {}) },
+  tool_call: { color: "orange", icon: /* @__PURE__ */ e.jsx(et, {}) },
   tool_result: { color: "cyan", icon: /* @__PURE__ */ e.jsx(He, {}) },
   error: { color: "red", icon: /* @__PURE__ */ e.jsx(Bt, {}) },
   summary: { color: "geekblue", icon: /* @__PURE__ */ e.jsx(He, {}) }
@@ -3865,7 +3864,7 @@ const Ee = ({
 }) => {
   const { parsed: s, isJSON: i } = Je(t);
   return i ? /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(
-    et,
+    Ye,
     {
       style: {
         background: "var(--ant-color-bg-container)",
@@ -3878,7 +3877,7 @@ const Ee = ({
         wordBreak: "break-all",
         margin: 0
       },
-      src: s
+      value: s
     }
   ) }) : /* @__PURE__ */ e.jsx(
     "pre",
@@ -4207,7 +4206,7 @@ const Ee = ({
       }
     ) }) : E.length > 0 ? /* @__PURE__ */ e.jsx(ae, { children: /* @__PURE__ */ e.jsx(Ft, { items: z }) }) : null
   ] });
-}, pl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, ml = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Hs
 }, Symbol.toStringTag, { value: "Module" })), Ks = () => {
@@ -4242,20 +4241,20 @@ const Ee = ({
       title: o.message,
       subTitle: o.error,
       extra: /* @__PURE__ */ e.jsxs(K, { style: { display: !p || !n ? "none" : "inline-block", textAlign: "left" }, direction: "vertical", children: [
-        /* @__PURE__ */ e.jsx(ae, { title: t("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(et, { src: p || {} }) }),
-        /* @__PURE__ */ e.jsx(ae, { title: t("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(et, { src: n || {} }) })
+        /* @__PURE__ */ e.jsx(ae, { title: t("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(Ye, { value: p || {} }) }),
+        /* @__PURE__ */ e.jsx(ae, { title: t("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(Ye, { value: n || {} }) })
       ] })
     }
   ) }) : /* @__PURE__ */ e.jsx(qe, {});
-}, gl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, pl = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Ks
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  pl as A,
-  ul as O,
-  cl as S,
-  ml as a,
-  gl as b,
-  dl as i
+  ml as A,
+  dl as O,
+  ul as S,
+  cl as a,
+  pl as b,
+  rl as i
 };

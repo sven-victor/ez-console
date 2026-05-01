@@ -17,7 +17,7 @@
 import { useRequest } from "ahooks";
 import { Card, Result, Space } from "antd";
 import { useState } from "react";
-import ReactJson from 'react-json-view'
+import JsonView from '@uiw/react-json-view'
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import Loading from "@/components/Loading";
@@ -71,10 +71,10 @@ const OAuthTestCallback = () => {
         subTitle={message.error}
         extra={<Space style={{ display: !userInfo || !user ? 'none' : 'inline-block', textAlign: 'left' }} direction='vertical'>
           <Card title={t('settings.oauth.testConnection.oauthUserInfo', { defaultValue: 'OAuth User Info' })}>
-            <ReactJson src={userInfo || {}} />
+            <JsonView value={userInfo || {}} />
           </Card>
           <Card title={t('settings.oauth.testConnection.loginUserInfo', { defaultValue: 'Login User Info' })} style={{ marginTop: 16 }}>
-            <ReactJson src={user || {}} />
+            <JsonView value={user || {}} />
           </Card>
         </Space>}
       />

@@ -26,6 +26,7 @@
     "@rjsf/utils": "^6.2.5",
     "@rjsf/validator-ajv8": "^6.2.5",
     "@uiw/react-codemirror": "^4.25.7",
+    "@uiw/react-json-view": "2.0.0-alpha.42",
     "ahooks": ">=3.8.4",
     "antd": "~5.25.3",
     "antd-img-crop": ">=4.25.0",
@@ -42,7 +43,6 @@
     "react-dom": ">=18.3.1",
     "react-i18next": ">=15.4.1",
     "react-infinite-scroll-component": "^6.1.0",
-    "react-json-view": "^1.21.3",
     "react-query": ">=3.39.3",
     "react-quill": "^2.0.0",
     "react-router-dom": ">=6.30.3"

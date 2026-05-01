@@ -45,8 +45,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useRequest } from 'ahooks';
-import ReactJson from 'react-json-view'
+import JsonView from '@uiw/react-json-view';
 import api from '@/service/api';
+
 
 const { Text, Title } = Typography;
 
@@ -80,7 +81,7 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
   if (isJSON) {
     return (
       <>
-        <ReactJson
+        <JsonView
           style={{
 
             background: 'var(--ant-color-bg-container)',
@@ -93,7 +94,7 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
             wordBreak: 'break-all',
             margin: 0,
           }}
-          src={parsed}
+          value={parsed}
         />
       </>
     );
