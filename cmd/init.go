@@ -37,7 +37,7 @@ func init() {
 After scaffolding, run "make build" from the project root, "go run main.go" from backend/,
 and "pnpm run start" from web/.`,
 		Args: cobra.ExactArgs(1),
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			if initServiceName == "" {
 				return fmt.Errorf("--name is required")
 			}
@@ -57,7 +57,7 @@ and "pnpm run start" from web/.`,
 	initCmd.Flags().StringVar(&initServiceName, "name", "", "service name for NewCommandServer and sqlite db file (required)")
 	initCmd.Flags().StringVar(&initGoModule, "go-module", "", "Go module path for backend/go.mod (required)")
 	initCmd.Flags().StringVar(&initAppVersion, "app-version", "0.1.0", "application version string")
-	initCmd.Flags().StringVar(&initEzConsoleVersion, "ez-console-version", "v1.14.0", "github.com/sven-victor/ez-console module version")
+	initCmd.Flags().StringVar(&initEzConsoleVersion, "ez-console-version", "v1.15.0", "github.com/sven-victor/ez-console module version")
 	initCmd.Flags().StringVar(&initDescription, "description", "", "short description for NewCommandServer")
 
 	_ = initCmd.MarkFlagRequired("name")
