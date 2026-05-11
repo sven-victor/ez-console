@@ -750,6 +750,9 @@ func (o *ClassicChatStream) backgroundCallTool(ctx context.Context, toolCall *To
 			level.Error(logger).Log("msg", "Failed to call tool", "error", err)
 			toolStatus = ToolCallStatusFailed
 			toolCall.Result = err.Error()
+			if o.onToolCallResultChanged != nil {
+				o.onToolCallResultChanged(ctx, toolCall.ID, err.Error())
+			}
 		} else {
 			toolStatus = ToolCallStatusCompleted
 			toolCall.Result = resp
