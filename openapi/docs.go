@@ -5844,6 +5844,66 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/toolsets/{id}/call": {
+            "post": {
+                "description": "Call a specific tool in a toolset by name with JSON parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Call toolset tool",
+                "operationId": "callTool",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Toolset ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Tool call request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.CallToolRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-systemapi_CallToolResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/toolsets/{id}/status": {
             "put": {
                 "description": "Update a toolset's status",
@@ -10239,6 +10299,32 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.CallToolRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "parameters"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "string"
+                }
+            }
+        },
+        "systemapi.CallToolResponse": {
+            "type": "object",
+            "required": [
+                "result"
+            ],
+            "properties": {
+                "result": {
+                    "type": "string"
+                }
+            }
+        },
         "systemapi.CheckPasswordComplexityRequest": {
             "type": "object",
             "required": [
@@ -10949,8 +11035,6 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -10961,8 +11045,7 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                60000000000,
-                3600000000000
+                60000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -10973,8 +11056,6 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -10985,8 +11066,7 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute",
-                "Hour"
+                "Minute"
             ]
         },
         "toolset.ToolSetType": {
@@ -12630,6 +12710,29 @@ const docTemplate = `{
                 },
                 "data": {
                     "type": "string"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-systemapi_CallToolResponse": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/systemapi.CallToolResponse"
                 },
                 "err": {
                     "type": "string"

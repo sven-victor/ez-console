@@ -447,6 +447,9 @@ export declare const api: {
     deleteToolSet(params: API.deleteToolSetParams, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
+    callTool(params: API.callToolParams, body: API.CallToolRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.CallToolResponse>;
     updateToolSetStatus(params: API.updateToolSetStatusParams, body: API.UpdateToolSetStatusRequest, options?: {
         [key: string]: any;
     }): Promise<API.ToolSet>;
@@ -747,6 +750,20 @@ export declare interface AvatarUploadProps extends Omit<UploadProps, 'onChange'>
 
 declare interface BlobRequestConfig extends Omit<RequestConfig, 'responseType'> {
     responseType: 'blob';
+}
+
+export declare interface callToolParams {
+    /** Toolset ID */
+    id: string;
+}
+
+export declare interface CallToolRequest {
+    name: string;
+    parameters: string;
+}
+
+export declare interface CallToolResponse {
+    result: string;
 }
 
 export declare interface cancelTaskParams {
@@ -2301,6 +2318,13 @@ export declare interface ResponseServiceTestOAuthCallbackResponse {
 export declare interface ResponseString {
     code: string;
     data: string;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseSystemapiCallToolResponse {
+    code: string;
+    data: CallToolResponse;
     err: string;
     trace_id: string;
 }

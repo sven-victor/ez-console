@@ -929,6 +929,27 @@ export async function deleteToolSet(
   );
 }
 
+/** Call toolset tool Call a specific tool in a toolset by name with JSON parameters POST /api/system/toolsets/${param0}/call */
+export async function callTool(
+  params: API.callToolParams,
+  body: API.CallToolRequest,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseSystemapiCallToolResponse>(
+    `/api/system/toolsets/${param0}/call`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** Update toolset status Update a toolset's status PUT /api/system/toolsets/${param0}/status */
 export async function updateToolSetStatus(
   params: API.updateToolSetStatusParams,

@@ -15,6 +15,7 @@
  */
 
 import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   Table,
@@ -39,6 +40,7 @@ import {
   SettingOutlined,
   ToolOutlined,
   ThunderboltOutlined,
+  BugOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
@@ -77,6 +79,7 @@ interface ToolSetFormData {
 const ToolSetSettings: React.FC = () => {
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
+  const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingToolSet, setEditingToolSet] = useState<ToolSet | null>(null);
@@ -327,6 +330,14 @@ const ToolSetSettings: React.FC = () => {
       width: 168,
       render: (_, record) => {
         return <Actions key='actions' actions={[
+          {
+            key: 'debug',
+            permission: 'system:toolsets:test',
+            tooltip: t('settings.toolsets.debug', { defaultValue: 'Debug Tool' }),
+            icon: <BugOutlined />,
+            disabled: record.status !== 'enabled',
+            onClick: async () => navigate(`/system/settings/toolsets/${record.id}/debug`),
+          },
           {
             key: 'test',
             permission: 'system:toolsets:test',

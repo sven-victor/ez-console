@@ -642,6 +642,21 @@ async function ut(t, a) {
 async function dt(t, a, n) {
   const { id: e, ...i } = t;
   return s(
+    `/api/system/toolsets/${e}/call`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...i },
+      data: a,
+      ...n || {}
+    }
+  );
+}
+async function yt(t, a, n) {
+  const { id: e, ...i } = t;
+  return s(
     `/api/system/toolsets/${e}/status`,
     {
       method: "PUT",
@@ -654,7 +669,7 @@ async function dt(t, a, n) {
     }
   );
 }
-async function yt(t, a) {
+async function lt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/test`,
@@ -665,7 +680,7 @@ async function yt(t, a) {
     }
   );
 }
-async function lt(t, a) {
+async function ht(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/tools`,
@@ -676,7 +691,7 @@ async function lt(t, a) {
     }
   );
 }
-async function ht(t) {
+async function Tt(t) {
   return s(
     "/api/system/toolsets/types",
     {
@@ -685,9 +700,10 @@ async function ht(t) {
     }
   );
 }
-const gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ft = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   addUserToOrganization: z,
+  callTool: dt,
   checkPasswordComplexity: D,
   clearSiteCache: d,
   cloneSkill: X,
@@ -713,8 +729,8 @@ const gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getTaskSettingFields: it,
   getTaskSettings: et,
   getToolSet: mt,
-  getToolSetTools: lt,
-  getToolSetTypeDefinitions: ht,
+  getToolSetTools: ht,
+  getToolSetTypeDefinitions: Tt,
   getUserOrganizations: b,
   healthCheck: y,
   importLdapUsers: g,
@@ -735,7 +751,7 @@ const gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   testOauthCallback: k,
   testOauthConnection: P,
   testSmtpConnection: st,
-  testToolSet: yt,
+  testToolSet: lt,
   updateLdapSettings: T,
   updateOauthSettings: S,
   updateOrganization: $,
@@ -746,12 +762,12 @@ const gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateSystemBaseSettings: u,
   updateTaskSettings: nt,
   updateToolSet: ct,
-  updateToolSetStatus: dt,
+  updateToolSetStatus: yt,
   updateUserOrganizationRoles: U,
   uploadSkill: Z
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  gt as a,
+  ft as a,
   q as b,
   C as c,
   j as d,

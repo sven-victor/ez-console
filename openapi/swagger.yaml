@@ -2705,6 +2705,23 @@ definitions:
     - role_ids
     - user_id
     type: object
+  systemapi.CallToolRequest:
+    properties:
+      name:
+        type: string
+      parameters:
+        type: string
+    required:
+    - name
+    - parameters
+    type: object
+  systemapi.CallToolResponse:
+    properties:
+      result:
+        type: string
+    required:
+    - result
+    type: object
   systemapi.CheckPasswordComplexityRequest:
     properties:
       password:
@@ -3207,8 +3224,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3220,7 +3235,6 @@ definitions:
     - 1000000
     - 1000000000
     - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3231,8 +3245,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -3244,7 +3256,6 @@ definitions:
     - Millisecond
     - Second
     - Minute
-    - Hour
   toolset.ToolSetType:
     enum:
     - utils
@@ -4385,6 +4396,22 @@ definitions:
         type: string
       data:
         type: string
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-systemapi_CallToolResponse:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/systemapi.CallToolResponse'
       err:
         type: string
       trace_id:
@@ -8349,6 +8376,46 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Update toolset
+      tags:
+      - ToolSets
+  /api/system/toolsets/{id}/call:
+    post:
+      consumes:
+      - application/json
+      description: Call a specific tool in a toolset by name with JSON parameters
+      operationId: callTool
+      parameters:
+      - description: Toolset ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Tool call request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.CallToolRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-systemapi_CallToolResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Call toolset tool
       tags:
       - ToolSets
   /api/system/toolsets/{id}/status:

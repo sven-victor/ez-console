@@ -209,6 +209,20 @@ declare global {
       request: any;
     }
   
+    interface callToolParams {
+      /** Toolset ID */
+      id: string;
+    }
+  
+    interface CallToolRequest {
+      name: string;
+      parameters: string;
+    }
+  
+    interface CallToolResponse {
+      result: string;
+    }
+  
     interface cancelTaskParams {
       /** Task ID (UUID) */
       id: string;
@@ -1512,6 +1526,13 @@ declare global {
     interface ResponseString {
       code: string;
       data: string;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseSystemapiCallToolResponse {
+      code: string;
+      data: CallToolResponse;
       err: string;
       trace_id: string;
     }

@@ -64,7 +64,7 @@ func (s *ToolSetService) CreateToolSet(ctx context.Context, req *model.ToolSet) 
 // GetToolSet gets an toolset by ID
 func (s *ToolSetService) GetToolSet(ctx context.Context, organizationID, id string) (*model.ToolSet, error) {
 	var toolset model.ToolSet
-	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ? and status = ?", organizationID, id, model.ToolSetStatusEnabled).First(&toolset).Error; err != nil {
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
 	}
 

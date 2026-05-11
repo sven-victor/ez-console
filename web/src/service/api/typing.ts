@@ -207,6 +207,20 @@ export interface AuditLogDetail {
   request: any;
 }
 
+export interface callToolParams {
+  /** Toolset ID */
+  id: string;
+}
+
+export interface CallToolRequest {
+  name: string;
+  parameters: string;
+}
+
+export interface CallToolResponse {
+  result: string;
+}
+
 export interface cancelTaskParams {
   /** Task ID (UUID) */
   id: string;
@@ -1510,6 +1524,13 @@ export interface ResponseServiceTestOAuthCallbackResponse {
 export interface ResponseString {
   code: string;
   data: string;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseSystemapiCallToolResponse {
+  code: string;
+  data: CallToolResponse;
   err: string;
   trace_id: string;
 }

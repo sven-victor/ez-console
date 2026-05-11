@@ -49,6 +49,7 @@ func (c *ToolSetController) RegisterRoutes(router *gin.RouterGroup) {
 		toolsets.PUT("/:id", middleware.RequirePermission("system:toolsets:update"), c.UpdateToolSet)
 		toolsets.DELETE("/:id", middleware.RequirePermission("system:toolsets:delete"), c.DeleteToolSet)
 		toolsets.POST("/:id/test", middleware.RequirePermission("system:toolsets:test"), c.TestToolSet)
+		toolsets.POST("/:id/call", middleware.RequirePermission("system:toolsets:test"), c.CallTool)
 		toolsets.GET("/:id/tools", middleware.RequirePermission("system:toolsets:view"), c.GetToolSetTools)
 		toolsets.PUT("/:id/status", middleware.RequirePermission("system:toolsets:update"), c.UpdateToolSetStatus)
 		toolsets.GET("/types", middleware.RequirePermission("system:toolsets:view"), c.GetToolSetTypeDefinitions)
@@ -466,6 +467,66 @@ func (c *ToolSetController) TestToolSet(ctx *gin.Context) {
 	}
 
 	util.RespondWithMessage(ctx, "Toolset connection test successful")
+}
+
+// CallToolRequest represents the request to call a tool in a toolset
+type CallToolRequest struct {
+	Name       string `json:"name" binding:"required"`
+	Parameters string `json:"parameters"`
+}
+
+// CallToolResponse represents the response from calling a tool
+type CallToolResponse struct {
+	Result string `json:"result"`
+}
+
+// CallTool calls a specific tool in a toolset
+//
+//	@Summary		Call toolset tool
+//	@Description	Call a specific tool in a toolset by name with JSON parameters
+//	@ID             callTool
+//	@Tags			ToolSets
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string			true	"Toolset ID"
+//	@Param			request	body		CallToolRequest	true	"Tool call request"
+//	@Success		200	{object}	util.Response[CallToolResponse]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		404	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/toolsets/{id}/call [post]
+func (c *ToolSetController) CallTool(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Toolset ID is required"))
+		return
+	}
+
+	var req CallToolRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+
+	toolsetInstance, err := c.service.GetToolSetInstance(ctx, organizationID, id)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	result, err := toolsetInstance.Call(ctx, req.Name, req.Parameters)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	util.RespondWithSuccess(ctx, http.StatusOK, CallToolResponse{Result: result})
 }
 
 // Tool represents an OpenAI-compatible tool
