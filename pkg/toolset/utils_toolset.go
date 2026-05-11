@@ -102,7 +102,8 @@ func (t *UtilsToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 	}, {
 		Type: openai.ToolTypeFunction,
 		Function: &openai.FunctionDefinition{
-			Name: "random_string",
+			Name:        "random_string",
+			Description: "Generate a random string of a given length",
 			Parameters: openaijsonschema.Definition{
 				Type: openaijsonschema.Object,
 				Properties: map[string]openaijsonschema.Definition{
