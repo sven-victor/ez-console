@@ -476,6 +476,8 @@ export default {
       resetPasswordTemplate: 'Mall för återställning av lösenord',
       userLockedTemplate: 'Mall för låst användare',
       mfaCodeTemplate: 'Mall för MFA-kod',
+      activationTemplate: 'E-postmall för kontoaktivering',
+      activationTemplateTooltip: 'E-post som skickas till nya användare utan lösenord. Tillgängliga variabler: {{.ActivationURL}} (aktiveringslänk), {{.FullName}} (fullständigt namn), {{.Username}}.',
     },
     toolsets: {
       name: 'Namn',

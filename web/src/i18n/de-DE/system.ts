@@ -476,6 +476,8 @@ export default {
       resetPasswordTemplate: 'Vorlage zum Zurücksetzen des Passworts',
       userLockedTemplate: 'Vorlage für gesperrte Benutzer',
       mfaCodeTemplate: 'MFA-Code-Vorlage',
+      activationTemplate: 'Kontoaktivierungs-E-Mail-Vorlage',
+      activationTemplateTooltip: 'E-Mail, die an neue Benutzer gesendet wird, wenn kein Passwort gesetzt ist. Verfügbare Variablen: {{.ActivationURL}} (Aktivierungslink), {{.FullName}} (vollständiger Name), {{.Username}}.',
     },
     toolsets: {
       name: 'Name',

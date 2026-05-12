@@ -190,6 +190,14 @@ const SMTPSettingsForm: React.FC = () => {
             <ReactQuill theme="snow" />
           </Form.Item>
 
+          <Form.Item
+            label={t('settings.smtp.activationTemplate', { defaultValue: 'Account Activation Template' })}
+            name="activation_template"
+            tooltip={t('settings.smtp.activationTemplateTooltip', { defaultValue: 'Email template sent to new users when no password is set. Use {{.ActivationURL}} for the activation link, {{.FullName}} for the user\'s name.' })}
+          >
+            <ReactQuill theme="snow" />
+          </Form.Item>
+
           <Form.Item>
             <PermissionGuard permission="system:settings:update">
               <Button type="primary" htmlType="submit" loading={submitLoading} style={{ marginRight: 8 }}>

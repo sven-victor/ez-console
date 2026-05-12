@@ -814,6 +814,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/authorization/auth/activate": {
+            "post": {
+                "description": "Activate a pending user account by providing the activation token and new password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Activate user account",
+                "operationId": "activateUser",
+                "parameters": [
+                    {
+                        "description": "Activation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/service.ActivateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/authorization/auth/login": {
             "post": {
                 "description": "User login",
@@ -2753,6 +2800,51 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authorization/users/{id}/resend-activation": {
+            "post": {
+                "description": "Resend the activation email for a user with pending_activation status",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Resend activation email",
+                "operationId": "resendActivationEmail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
                         }
@@ -8719,6 +8811,7 @@ const docTemplate = `{
         "model.SMTPSettings": {
             "type": "object",
             "required": [
+                "activation_template",
                 "admin_emails",
                 "enabled",
                 "encryption",
@@ -8733,6 +8826,9 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
+                "activation_template": {
+                    "type": "string"
+                },
                 "admin_emails": {
                     "type": "array",
                     "items": {
@@ -8778,6 +8874,7 @@ const docTemplate = `{
         "model.SMTPTestRequest": {
             "type": "object",
             "required": [
+                "activation_template",
                 "admin_emails",
                 "enabled",
                 "encryption",
@@ -8794,6 +8891,9 @@ const docTemplate = `{
                 "username"
             ],
             "properties": {
+                "activation_template": {
+                    "type": "string"
+                },
                 "admin_emails": {
                     "type": "array",
                     "items": {
@@ -9639,6 +9739,21 @@ const docTemplate = `{
                 }
             }
         },
+        "service.ActivateUserRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "token"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "service.Chart": {
             "type": "object",
             "required": [
@@ -9686,7 +9801,6 @@ const docTemplate = `{
                 "email",
                 "full_name",
                 "mfa_enforced",
-                "password",
                 "role_ids",
                 "username"
             ],
@@ -11035,6 +11149,16 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -11045,9 +11169,31 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                60000000000
+                60000000000,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -11061,12 +11207,12 @@ const docTemplate = `{
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute"
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {

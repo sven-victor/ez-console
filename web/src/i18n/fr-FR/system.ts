@@ -476,6 +476,8 @@ export default {
       resetPasswordTemplate: 'Modèle de réinitialisation de mot de passe',
       userLockedTemplate: 'Modèle d\'utilisateur verrouillé',
       mfaCodeTemplate: 'Modèle de code AMF',
+      activationTemplate: 'Modèle d\'e-mail d\'activation de compte',
+      activationTemplateTooltip: 'E-mail envoyé aux nouveaux utilisateurs sans mot de passe. Variables disponibles : {{.ActivationURL}} (lien d\'activation), {{.FullName}} (nom complet), {{.Username}}.',
     },
     toolsets: {
       name: 'Nom',

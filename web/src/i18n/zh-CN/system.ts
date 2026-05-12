@@ -524,6 +524,8 @@ export default {
       resetPasswordTemplate: '重置密码模板',
       userLockedTemplate: '用户锁定模板',
       mfaCodeTemplate: 'MFA验证码模板',
+      activationTemplate: '账户激活邮件模板',
+      activationTemplateTooltip: '创建无密码用户时发送的激活邮件模板。可用变量：{{.ActivationURL}}（激活链接）、{{.FullName}}（用户姓名）、{{.Username}}。',
     },
     toolsets: {
       name: '名称',

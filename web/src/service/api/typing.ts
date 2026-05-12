@@ -1,5 +1,10 @@
 export type AccessType = "public" | "private" | "owner";
 
+export interface ActivateUserRequest {
+  password: string;
+  token: string;
+}
+
 export interface addUserToOrganizationParams {
   /** Organization ID */
   id: string;
@@ -385,7 +390,7 @@ export interface CreateUserRequest {
   email: string;
   full_name: string;
   mfa_enforced: boolean;
-  password: string;
+  password?: string;
   phone?: string;
   role_ids: string[];
   username: string;
@@ -1179,6 +1184,11 @@ export interface ReplaceSkillAIToolBindingsRequest {
   bindings: SkillAIToolBindingItem[];
 }
 
+export interface resendActivationEmailParams {
+  /** User ID */
+  id: string;
+}
+
 export interface resetUserPasswordParams {
   /** User ID */
   id: string;
@@ -1891,6 +1901,7 @@ export interface SkillTreeNode {
 }
 
 export interface SMTPSettings {
+  activation_template: string;
   admin_emails: string[];
   enabled: boolean;
   /** None, SSL/TLS, STARTTLS */
@@ -1907,6 +1918,7 @@ export interface SMTPSettings {
 }
 
 export interface SMTPTestRequest {
+  activation_template: string;
   admin_emails: string[];
   enabled: boolean;
   /** None, SSL/TLS, STARTTLS */

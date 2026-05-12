@@ -3,11 +3,11 @@ import { useState as n, useRef as ie, useEffect as L } from "react";
 import { Form as m, Result as ne, Card as se, Typography as le, Alert as M, Input as x, Button as B, Divider as de, Space as ge, Avatar as me, message as $ } from "antd";
 import { KeyOutlined as ce, UserOutlined as ue, LockOutlined as fe, GithubOutlined as pe } from "@ant-design/icons";
 import { useNavigate as he, useLocation as xe, useSearchParams as we } from "react-router-dom";
-import { a as je, c as ye } from "./contexts.js";
-import { useTranslation as Pe } from "react-i18next";
+import { b as je, u as ye } from "./contexts.js";
+import { useTranslation as be } from "react-i18next";
 import { a as D } from "./index.js";
 import { A as z } from "./client.js";
-import { L as G, a as be, j as _e } from "./components.js";
+import { L as G, a as Pe, j as _e } from "./components.js";
 import { m as Ne, g as Ve } from "./base.js";
 import { clearCache as Le } from "ahooks";
 import i from "classnames";
@@ -44,7 +44,7 @@ const { Title: ve } = le, Ae = ke(({ css: s }) => ({
       width: 100%;
     `
 })), ze = ({ transformLangConfig: s }) => {
-  const { styles: c } = Ae(), h = he(), K = xe(), [l] = we(), { login: k, oauthLogin: v, user: A } = je(), { t, i18n: P } = Pe(), [T, d] = n(null), [b, F] = n({}), [u, w] = n("login"), [W, X] = n(null), [_, Y] = n(null), [f, H] = n(null), [j] = m.useForm(), I = ie(!1), [J, E] = n(!1), [O, S] = n([]), [N, V] = n(0), { siteConfig: o, loading: Q, error: y } = ye(), [Z, C] = n("Loading..."), R = async (r) => {
+  const { styles: c } = Ae(), h = he(), K = xe(), [l] = we(), { login: k, oauthLogin: v, user: A } = je(), { t, i18n: b } = be(), [T, d] = n(null), [P, F] = n({}), [u, w] = n("login"), [W, X] = n(null), [_, Y] = n(null), [f, H] = n(null), [j] = m.useForm(), I = ie(!1), [J, E] = n(!1), [O, S] = n([]), [N, V] = n(0), { siteConfig: o, loading: Q, error: y } = ye(), [Z, C] = n("Loading..."), R = async (r) => {
     const g = async (a) => "username" in a ? await k({ username: a.username, password: a.password }) : "mfa_token" in a ? await k({ mfa_token: a.mfa_token, mfa_code: a.mfa_code }) : await v({ code: a.code, state: a.state, provider: a.provider });
     try {
       E(!0);
@@ -89,17 +89,17 @@ const { Title: ve } = le, Ae = ke(({ css: s }) => ({
       r && g && a ? R({ code: r, state: g, provider: a }) : U();
     }
   }, [l, v]), L(() => {
-    P.language && C((o == null ? void 0 : o.name_i18n[P.language]) || (o == null ? void 0 : o.name) || "");
-  }, [o, P.language]);
+    b.language && C((o == null ? void 0 : o.name_i18n[b.language]) || (o == null ? void 0 : o.name) || "");
+  }, [o, b.language]);
   const ee = async (r) => {
     try {
-      F({ ...b, [r]: !0 });
+      F({ ...P, [r]: !0 });
       const { url: g } = await D.oauth.getLoginUrl({ provider: r }, { headers: { "X-Base-Path": Ve() } });
       window.location.href = g;
     } catch (g) {
       $.error(t("login.oauthError", { defaultValue: "OAuth login failed" })), console.error("OAuth login error:", g);
     } finally {
-      F({ ...b, [r]: !1 });
+      F({ ...P, [r]: !1 });
     }
   }, ae = (r) => {
     switch (r.toLowerCase()) {
@@ -130,7 +130,7 @@ const { Title: ve } = le, Ae = ke(({ css: s }) => ({
     r ? window.location.href = r : o != null && o.home_page ? window.location.href = o.home_page : h("/");
   }
   return /* @__PURE__ */ e.jsx("div", { className: "login-page", children: /* @__PURE__ */ e.jsx("div", { className: i(c.loginPageContainer, "login-page-container"), children: /* @__PURE__ */ e.jsxs(se, { className: i(c.loginPageCard, "login-page-card"), children: [
-    /* @__PURE__ */ e.jsx("div", { className: i(c.languageSwitch, "language-switch"), children: /* @__PURE__ */ e.jsx(be, { transformLangConfig: s }) }),
+    /* @__PURE__ */ e.jsx("div", { className: i(c.languageSwitch, "language-switch"), children: /* @__PURE__ */ e.jsx(Pe, { transformLangConfig: s }) }),
     /* @__PURE__ */ e.jsxs("div", { className: i(c.loginPageTitle, "login-page-title"), children: [
       /* @__PURE__ */ e.jsx(ve, { className: "login-page-title-text", level: 2, children: Z }),
       /* @__PURE__ */ e.jsx("p", { className: "login-page-subtitle-text", children: t("login.subtitle", { defaultValue: "Enter your credentials to continue" }) })
@@ -220,7 +220,7 @@ const { Title: ve } = le, Ae = ke(({ css: s }) => ({
         {
           icon: ae(r.name),
           onClick: () => ee(r.name),
-          loading: b[r.name],
+          loading: P[r.name],
           block: !0,
           children: r.icon_url ? /* @__PURE__ */ e.jsx(me, { src: r.icon_url }) : t("login.continueWith", { defaultValue: "Continue with {{provider}}", provider: r.display_name })
         },

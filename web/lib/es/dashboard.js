@@ -1,6 +1,6 @@
 import { j as r } from "./vendor.js";
 import { message as p, Skeleton as c, Row as u, Col as f, Card as l, Statistic as b } from "antd";
-import { a as g } from "./contexts.js";
+import { b as g } from "./contexts.js";
 import { useTranslation as x } from "react-i18next";
 import { Chart as j, CategoryScale as h, LinearScale as C, BarElement as S, Title as v, Tooltip as E, Legend as y } from "chart.js";
 import { Bar as R } from "react-chartjs-2";

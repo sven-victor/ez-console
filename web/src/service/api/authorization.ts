@@ -2,6 +2,21 @@
 /* eslint-disable */
 import { request } from "@/service/client";
 
+/** Activate user account Activate a pending user account by providing the activation token and new password POST /api/authorization/auth/activate */
+export async function activateUser(
+  body: API.ActivateUserRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelUser>("/api/authorization/auth/activate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** User login User login POST /api/authorization/auth/login */
 export async function login(
   body: API.LoginRequest,
@@ -741,6 +756,22 @@ export async function resetUserPassword(
       },
       params: { ...queryParams },
       data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Resend activation email Resend the activation email for a user with pending_activation status POST /api/authorization/users/${param0}/resend-activation */
+export async function resendActivationEmail(
+  params: API.resendActivationEmailParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseString>(
+    `/api/authorization/users/${param0}/resend-activation`,
+    {
+      method: "POST",
+      params: { ...queryParams },
       ...(options || {}),
     }
   );

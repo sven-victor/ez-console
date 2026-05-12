@@ -30,6 +30,7 @@ const (
 	SettingSMTPResetPasswordTemplate SettingKey = "smtp_reset_password_template" // Reset password template
 	SettingSMTPUserLockedTemplate    SettingKey = "smtp_user_locked_template"    // User locked template
 	SettingSMTPMFACodeTemplate       SettingKey = "smtp_mfa_code_template"       // MFA code template
+	SettingSMTPActivationTemplate    SettingKey = "smtp_activation_template"     // Account activation email template
 )
 
 var SMTPSettingKeys = []SettingKey{
@@ -45,6 +46,7 @@ var SMTPSettingKeys = []SettingKey{
 	SettingSMTPResetPasswordTemplate,
 	SettingSMTPUserLockedTemplate,
 	SettingSMTPMFACodeTemplate,
+	SettingSMTPActivationTemplate,
 }
 
 func init() {
@@ -67,6 +69,7 @@ type SMTPSettings struct {
 	ResetPasswordTemplate string       `json:"reset_password_template,omitempty"`
 	UserLockedTemplate    string       `json:"user_locked_template,omitempty"`
 	MFACodeTemplate       string       `json:"mfa_code_template,omitempty"`
+	ActivationTemplate    string       `json:"activation_template,omitempty"`
 }
 
 // SMTPTestRequest defines the request structure for testing SMTP connection.

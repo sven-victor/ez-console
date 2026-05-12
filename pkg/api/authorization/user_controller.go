@@ -58,6 +58,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.GET("/:id/audit-logs", middleware.RequirePermission("authorization:user:view_audit_logs"), c.GetUserLogs)
 		users.POST("/:id/restore", middleware.RequirePermission("authorization:user:update"), c.RestoreUser)
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
+		users.POST("/:id/resend-activation", middleware.RequirePermission("authorization:user:update"), c.ResendActivationEmail)
 		users.GET("/ldap-users", middleware.RequirePermission("authorization:user:list"), c.GetLdapUsers)
 		users.POST("/export", middleware.RequirePermission("authorization:user:export"), c.CreateUserExportTask)
 	}
@@ -76,6 +77,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 	middleware.WithoutAuthentication(auth)
 	{
 		auth.POST("/login", c.Login)
+		auth.POST("/activate", c.ActivateUser)
 	}
 	router.POST("/auth/logout", c.Logout)
 }
@@ -188,7 +190,7 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 		ctx,
 		"", // No resourceID before creating the user
 		func(auditLog *model.AuditLog) error {
-			user, err := c.service.CreateUser(ctx, req)
+			user, err := c.service.CreateUser(ctx, req, util.GetBaseURL(ctx))
 			if err != nil {
 				return err
 			}
@@ -1174,4 +1176,61 @@ func init() {
 			DefaultRoleNames: []string{"operator", "viewer"},
 		},
 	})
+}
+
+// ResendActivationEmail resends the activation email to a pending user.
+//
+//	@Summary		Resend activation email
+//	@Description	Resend the activation email for a user with pending_activation status
+//	@ID             resendActivationEmail
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response[string]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		404	{object}	util.ErrorResponse
+//	@Router			/api/authorization/users/{id}/resend-activation [post]
+func (c *UserController) ResendActivationEmail(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid user ID"))
+		return
+	}
+
+	if err := c.service.ResendActivationEmail(ctx, id, util.GetBaseURL(ctx)); err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+
+	util.RespondWithSuccess(ctx, http.StatusOK, "Activation email sent")
+}
+
+// ActivateUser activates a user account by setting a new password using the activation token.
+//
+//	@Summary		Activate user account
+//	@Description	Activate a pending user account by providing the activation token and new password
+//	@ID             activateUser
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		service.ActivateUserRequest	true	"Activation request"
+//	@Success		200		{object}	util.Response[model.User]
+//	@Failure		400		{object}	util.ErrorResponse
+//	@Failure		404		{object}	util.ErrorResponse
+//	@Router			/api/authorization/auth/activate [post]
+func (c *UserController) ActivateUser(ctx *gin.Context) {
+	var req service.ActivateUserRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4002", err))
+		return
+	}
+
+	user, err := c.service.ActivateUser(ctx, req)
+	if err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+
+	util.RespondWithSuccess(ctx, http.StatusOK, user)
 }

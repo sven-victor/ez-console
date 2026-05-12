@@ -2,6 +2,11 @@ declare global {
   namespace API {
     type AccessType = "public" | "private" | "owner";
   
+    interface ActivateUserRequest {
+      password: string;
+      token: string;
+    }
+  
     interface addUserToOrganizationParams {
       /** Organization ID */
       id: string;
@@ -387,7 +392,7 @@ declare global {
       email: string;
       full_name: string;
       mfa_enforced: boolean;
-      password: string;
+      password?: string;
       phone?: string;
       role_ids: string[];
       username: string;
@@ -1181,6 +1186,11 @@ declare global {
       bindings: SkillAIToolBindingItem[];
     }
   
+    interface resendActivationEmailParams {
+      /** User ID */
+      id: string;
+    }
+  
     interface resetUserPasswordParams {
       /** User ID */
       id: string;
@@ -1893,6 +1903,7 @@ declare global {
     }
   
     interface SMTPSettings {
+      activation_template: string;
       admin_emails: string[];
       enabled: boolean;
       /** None, SSL/TLS, STARTTLS */
@@ -1909,6 +1920,7 @@ declare global {
     }
   
     interface SMTPTestRequest {
+      activation_template: string;
       admin_emails: string[];
       enabled: boolean;
       /** None, SSL/TLS, STARTTLS */

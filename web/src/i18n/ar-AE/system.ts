@@ -475,6 +475,8 @@ export default {
       resetPasswordTemplate: 'قالب إعادة تعيين كلمة المرور',
       userLockedTemplate: 'قالب المستخدم المقفل',
       mfaCodeTemplate: 'قالب رمز MFA',
+      activationTemplate: 'قالب بريد تفعيل الحساب',
+      activationTemplateTooltip: 'البريد المرسل للمستخدمين الجدد عند عدم تعيين كلمة مرور. المتغيرات المتاحة: {{.ActivationURL}} (رابط التفعيل)، {{.FullName}} (الاسم الكامل)، {{.Username}}.',
     },
     toolsets: {
       name: 'الاسم',

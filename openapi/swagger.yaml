@@ -1572,6 +1572,8 @@ definitions:
     - RoleMappingModeAuto
   model.SMTPSettings:
     properties:
+      activation_template:
+        type: string
       admin_emails:
         items:
           type: string
@@ -1600,6 +1602,7 @@ definitions:
       username:
         type: string
     required:
+    - activation_template
     - admin_emails
     - enabled
     - encryption
@@ -1615,6 +1618,8 @@ definitions:
     type: object
   model.SMTPTestRequest:
     properties:
+      activation_template:
+        type: string
       admin_emails:
         items:
           type: string
@@ -1645,6 +1650,7 @@ definitions:
       username:
         type: string
     required:
+    - activation_template
     - admin_emails
     - enabled
     - encryption
@@ -2241,6 +2247,16 @@ definitions:
     - provider
     - ui_schema
     type: object
+  service.ActivateUserRequest:
+    properties:
+      password:
+        type: string
+      token:
+        type: string
+    required:
+    - password
+    - token
+    type: object
   service.Chart:
     properties:
       color:
@@ -2294,7 +2310,6 @@ definitions:
     - email
     - full_name
     - mfa_enforced
-    - password
     - role_ids
     - username
     type: object
@@ -3224,6 +3239,16 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3235,8 +3260,30 @@ definitions:
     - 1000000
     - 1000000000
     - 60000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -3250,12 +3297,12 @@ definitions:
     - Millisecond
     - Second
     - Minute
-    - Hour
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
+    - Hour
   toolset.ToolSetType:
     enum:
     - utils
@@ -5027,6 +5074,38 @@ paths:
       summary: Toggle AI trace
       tags:
       - AI/Trace
+  /api/authorization/auth/activate:
+    post:
+      consumes:
+      - application/json
+      description: Activate a pending user account by providing the activation token
+        and new password
+      operationId: activateUser
+      parameters:
+      - description: Activation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/service.ActivateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Activate user account
+      tags:
+      - Authorization/Users
   /api/authorization/auth/login:
     post:
       consumes:
@@ -6301,6 +6380,37 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Reset a user's password
+      tags:
+      - Authorization/Users
+  /api/authorization/users/{id}/resend-activation:
+    post:
+      consumes:
+      - application/json
+      description: Resend the activation email for a user with pending_activation
+        status
+      operationId: resendActivationEmail
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-string'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Resend activation email
       tags:
       - Authorization/Users
   /api/authorization/users/{id}/restore:

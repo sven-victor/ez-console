@@ -110,6 +110,13 @@ func (s *EmailService) SendEmailFromTemplate(ctx context.Context, to []string, s
 		if err != nil {
 			return err
 		}
+	case model.SettingSMTPActivationTemplate:
+		tmpl, err = template.New("email").Parse(smtpSettings.ActivationTemplate)
+		if err != nil {
+			return err
+		}
+	default:
+		return errors.New("invalid template")
 	}
 
 	var buf bytes.Buffer

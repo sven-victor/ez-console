@@ -476,6 +476,8 @@ export default {
       resetPasswordTemplate: 'Plantilla para restablecer la contraseña',
       userLockedTemplate: 'Plantilla de usuario bloqueado',
       mfaCodeTemplate: 'Plantilla de código MFA',
+      activationTemplate: 'Plantilla de correo de activación de cuenta',
+      activationTemplateTooltip: 'Correo enviado a nuevos usuarios cuando no se establece contraseña. Variables disponibles: {{.ActivationURL}} (enlace de activación), {{.FullName}} (nombre completo), {{.Username}}.',
     },
     toolsets: {
       name: 'Nombre',

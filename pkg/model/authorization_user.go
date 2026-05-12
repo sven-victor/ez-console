@@ -23,11 +23,12 @@ import (
 )
 
 const (
-	UserStatusActive          = "active"
-	UserStatusDisabled        = "disabled"
-	UserStatusPasswordExpired = "password_expired"
-	UserStatusLocked          = "locked"
-	UserStatusDeleted         = "deleted"
+	UserStatusActive            = "active"
+	UserStatusDisabled          = "disabled"
+	UserStatusPasswordExpired   = "password_expired"
+	UserStatusLocked            = "locked"
+	UserStatusDeleted           = "deleted"
+	UserStatusPendingActivation = "pending_activation"
 )
 
 type UserSource string

@@ -88,6 +88,7 @@ func (s *SettingService) UpdateSMTPSettings(ctx context.Context, settings *model
 		string(model.SettingSMTPMFACodeTemplate):       settings.MFACodeTemplate,
 		string(model.SettingSMTPResetPasswordTemplate): settings.ResetPasswordTemplate,
 		string(model.SettingSMTPUserLockedTemplate):    settings.UserLockedTemplate,
+		string(model.SettingSMTPActivationTemplate):    settings.ActivationTemplate,
 	}
 	if settings.Password != nil {
 		settingsToUpdate[string(model.SettingSMTPPassword)] = settings.Password.String()
@@ -115,6 +116,7 @@ func (s *SettingService) InitDefaultSMTPSettings(ctx context.Context) error {
 		model.SettingSMTPResetPasswordTemplate: {"<p>Your password has been reset, the new password is: <strong>{{.Password}}</strong></p>", "Reset password template"},
 		model.SettingSMTPUserLockedTemplate:    {"Your account has been locked, please contact the administrator to unlock it.", "User locked template"},
 		model.SettingSMTPMFACodeTemplate:       {"<p>Your MFA verification code is: <strong>{{.Code}}</strong></p>", "Enable MFA template"},
+		model.SettingSMTPActivationTemplate:    {"<p>Hello {{.FullName}},</p><p>Your account has been created. Please click the link below to activate your account and set your password:</p><p><a href=\"{{.ActivationURL}}\">Activate Account</a></p><p>This link will expire in 48 hours.</p>", "Account activation email template"},
 	}
 	// Check if each setting already exists, if not, create it
 	for key, setting := range defaultSettings {

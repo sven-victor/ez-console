@@ -25,6 +25,7 @@ import {
   message,
   Switch,
   Spin,
+  Typography,
 } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/service/api';
@@ -132,7 +133,7 @@ const UserForm: React.FC = () => {
       const userData: API.CreateUserRequest = {
         username: values.username!,
         avatar: values.avatar,
-        password: values.password!,
+        password: values.password,
         email: values.email,
         full_name: values.full_name,
         mfa_enforced: values.mfa_enforced,
@@ -174,15 +175,17 @@ const UserForm: React.FC = () => {
   // Form validation rules
   const validatePassword = (_: any, value: string) => {
     if (isEditMode) return Promise.resolve();
-    if (!value) return Promise.reject(new Error(t('user.passwordRequired', { defaultValue: 'Password is required' })));
+    if (!value) return Promise.resolve(); // empty = send activation email
     if (value.length < 8) return Promise.reject(new Error(t('user.passwordTooShort', { defaultValue: 'Password must be at least 8 characters long' })));
     return Promise.resolve();
   };
 
   const validateConfirmPassword = (_: any, value: string) => {
     if (isEditMode) return Promise.resolve();
+    const password = form.getFieldValue('password');
+    if (!password) return Promise.resolve(); // no password set, no confirmation needed
     if (!value) return Promise.reject(new Error(t('user.confirmPasswordRequired', { defaultValue: 'Please confirm your password' })));
-    if (value !== form.getFieldValue('password')) {
+    if (value !== password) {
       return Promise.reject(new Error(t('user.passwordMismatch', { defaultValue: 'Passwords do not match' })));
     }
     return Promise.resolve();
@@ -269,8 +272,13 @@ const UserForm: React.FC = () => {
               name="password"
               label={t('user.password', { defaultValue: 'Password' })}
               rules={[{ validator: validatePassword }]}
+              extra={
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  {t('user.passwordHint', { defaultValue: 'Leave blank to send an activation email to the user.' })}
+                </Typography.Text>
+              }
             >
-              <Input.Password autoComplete='new-password' placeholder={t('user.passwordPlaceholder', { defaultValue: 'Enter password' })} />
+              <Input.Password autoComplete='new-password' placeholder={t('user.passwordPlaceholder', { defaultValue: 'Enter password (optional)' })} />
             </Form.Item>
             <Form.Item
               name="confirm_password"

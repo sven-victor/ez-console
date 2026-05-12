@@ -526,6 +526,8 @@ export default {
       resetPasswordTemplate: 'Reset Password Template',
       userLockedTemplate: 'User Locked Template',
       mfaCodeTemplate: 'MFA Code Template',
+      activationTemplate: 'Account Activation Template',
+      activationTemplateTooltip: 'Email sent to new users when no password is set. Available variables: {{.ActivationURL}} (activation link), {{.FullName}} (user\'s full name), {{.Username}}.',
     },
     toolsets: {
       name: 'Name',

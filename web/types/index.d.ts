@@ -52,6 +52,11 @@ declare interface ActionsProps {
     maxVisibleItems?: number;
 }
 
+export declare interface ActivateUserRequest {
+    password: string;
+    token: string;
+}
+
 export declare interface addUserToOrganizationParams {
     /** Organization ID */
     id: string;
@@ -486,6 +491,9 @@ export declare const api: {
     getStatistics(options?: {
         [key: string]: any;
     }): Promise<API.Chart[][]>;
+    activateUser(body: API.ActivateUserRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.User>;
     login(body: API.LoginRequest, options?: {
         [key: string]: any;
     }): Promise<API.LoginResponse>;
@@ -618,6 +626,9 @@ export declare const api: {
     resetUserPassword(params: API.resetUserPasswordParams, body: API.ResetUserPasswordRequest, options?: {
         [key: string]: any;
     }): Promise<API.ResetUserPasswordResponse>;
+    resendActivationEmail(params: API.resendActivationEmailParams, options?: {
+        [key: string]: any;
+    }): Promise<string>;
     restoreUser(params: API.restoreUserParams, options?: {
         [key: string]: any;
     }): Promise<string>;
@@ -947,7 +958,7 @@ export declare interface CreateUserRequest {
     email: string;
     full_name: string;
     mfa_enforced: boolean;
-    password: string;
+    password?: string;
     phone?: string;
     role_ids: string[];
     username: string;
@@ -1973,6 +1984,11 @@ declare interface RequestConfig extends AxiosRequestConfig {
     requestType?: 'form';
 }
 
+export declare interface resendActivationEmailParams {
+    /** User ID */
+    id: string;
+}
+
 export declare interface resetUserPasswordParams {
     /** User ID */
     id: string;
@@ -2701,6 +2717,7 @@ export declare interface SkillTreeNode {
 }
 
 export declare interface SMTPSettings {
+    activation_template: string;
     admin_emails: string[];
     enabled: boolean;
     /** None, SSL/TLS, STARTTLS */
@@ -2717,6 +2734,7 @@ export declare interface SMTPSettings {
 }
 
 export declare interface SMTPTestRequest {
+    activation_template: string;
     admin_emails: string[];
     enabled: boolean;
     /** None, SSL/TLS, STARTTLS */

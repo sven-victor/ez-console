@@ -124,6 +124,21 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       totp: "您已启用基于TOTP的MFA，请输入对应的一次性密码。"
     }
   },
+  activate: {
+    subtitle: "激活您的账户",
+    invalidToken: "无效或已过期的激活链接",
+    error: "激活失败：{{error}}",
+    description: "请设置密码以激活您的账户。",
+    newPassword: "新密码",
+    confirmPassword: "确认密码",
+    passwordRequired: "请输入密码",
+    confirmPasswordRequired: "请确认您的密码",
+    passwordMismatch: "两次输入的密码不一致",
+    activateButton: "激活账户",
+    success: "账户已成功激活",
+    successSubtitle: "您的账户已激活，现在可以登录了。",
+    goToLogin: "前往登录"
+  },
   register: {
     subtitle: "创建新账户",
     username: "用户名",
@@ -252,6 +267,21 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       email: "You have enabled email-based MFA, please enter the corresponding one-time password.",
       totp: "You have enabled MFA based on email. Please enter the one-time password you received."
     }
+  },
+  activate: {
+    subtitle: "Activate your account",
+    invalidToken: "Invalid or expired activation link",
+    error: "Activation failed: {{error}}",
+    description: "Please set a password to activate your account.",
+    newPassword: "New Password",
+    confirmPassword: "Confirm Password",
+    passwordRequired: "Password is required",
+    confirmPasswordRequired: "Please confirm your password",
+    passwordMismatch: "Passwords do not match",
+    activateButton: "Activate Account",
+    success: "Account activated successfully",
+    successSubtitle: "Your account has been activated. You can now log in.",
+    goToLogin: "Go to Login"
   },
   register: {
     subtitle: "Create a new account",
@@ -429,7 +459,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, P = {
+}, w = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -459,7 +489,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disabled: "Disabled",
       locked: "Locked",
       password_expired: "Password Expired",
-      deleted: "Deleted"
+      deleted: "Deleted",
+      pending_activation: "Pending Activation"
     },
     noRole: "No Role",
     mfaEnabled: "Enabled",
@@ -490,8 +521,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     emailPlaceholder: "Please enter email",
     fullNamePlaceholder: "Please enter full name",
     statusPlaceholder: "Please select status",
-    passwordPlaceholder: "Please enter password",
+    passwordPlaceholder: "Enter password (optional)",
     confirmPasswordPlaceholder: "Please confirm password",
+    passwordHint: "Leave blank to send an activation email to the user.",
     usernameRequired: "Please enter username",
     passwordRequired: "Please enter password",
     passwordTooShort: "Password must be at least 8 characters",
@@ -535,6 +567,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Unlock User",
     unlockSuccess: "User unlocked successfully",
     unlockError: "Failed to unlock user: {{error}}",
+    resendActivation: "Resend Activation Email",
+    resendActivationTitle: "Resend Activation Email",
+    resendActivationConfirm: "Resend activation email to {{email}}?",
+    resendActivationSuccess: "Activation email resent successfully",
+    resendActivationError: "Failed to resend activation email: {{error}}",
     ldapUserNotBound: "LDAP user is not bound to a local user, please bind.",
     export: "Export",
     exportTaskCreated: "Export task created. You can view progress and download the file from the task list.",
@@ -948,7 +985,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, w = {
+}, P = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1454,7 +1491,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       templateDivider: "Template Settings",
       resetPasswordTemplate: "Reset Password Template",
       userLockedTemplate: "User Locked Template",
-      mfaCodeTemplate: "MFA Code Template"
+      mfaCodeTemplate: "MFA Code Template",
+      activationTemplate: "Account Activation Template",
+      activationTemplateTooltip: "Email sent to new users when no password is set. Available variables: {{.ActivationURL}} (activation link), {{.FullName}} (user's full name), {{.Username}}."
     },
     toolsets: {
       name: "Name",
@@ -1737,6 +1776,21 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       totp: "Sie haben die MFA per E-Mail aktiviert. Bitte geben Sie das Einmalpasswort ein, das Sie erhalten haben."
     }
   },
+  activate: {
+    subtitle: "Konto aktivieren",
+    invalidToken: "Ungültiger oder abgelaufener Aktivierungslink",
+    error: "Aktivierung fehlgeschlagen: {{error}}",
+    description: "Bitte legen Sie ein Passwort fest, um Ihr Konto zu aktivieren.",
+    newPassword: "Neues Passwort",
+    confirmPassword: "Passwort bestätigen",
+    passwordRequired: "Passwort ist erforderlich",
+    confirmPasswordRequired: "Bitte bestätigen Sie Ihr Passwort",
+    passwordMismatch: "Die Passwörter stimmen nicht überein",
+    activateButton: "Konto aktivieren",
+    success: "Konto erfolgreich aktiviert",
+    successSubtitle: "Ihr Konto wurde aktiviert. Sie können sich jetzt anmelden.",
+    goToLogin: "Zur Anmeldung"
+  },
   register: {
     subtitle: "Ein neues Konto erstellen",
     username: "Benutzername",
@@ -1860,6 +1914,21 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       email: "Has habilitado la MFA por correo electrónico. Introduce la contraseña de un solo uso correspondiente.",
       totp: "Has habilitado la MFA por correo electrónico. Introduce la contraseña de un solo uso que has recibido."
     }
+  },
+  activate: {
+    subtitle: "Activa tu cuenta",
+    invalidToken: "Enlace de activación inválido o caducado",
+    error: "Activación fallida: {{error}}",
+    description: "Por favor, establece una contraseña para activar tu cuenta.",
+    newPassword: "Nueva contraseña",
+    confirmPassword: "Confirmar contraseña",
+    passwordRequired: "La contraseña es obligatoria",
+    confirmPasswordRequired: "Por favor, confirma tu contraseña",
+    passwordMismatch: "Las contraseñas no coinciden",
+    activateButton: "Activar cuenta",
+    success: "Cuenta activada correctamente",
+    successSubtitle: "Tu cuenta ha sido activada. Ya puedes iniciar sesión.",
+    goToLogin: "Ir al inicio de sesión"
   },
   register: {
     subtitle: "Crear una nueva cuenta",
@@ -1985,6 +2054,21 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       totp: "Vous avez activé l'AMF par e-mail. Veuillez saisir le mot de passe à usage unique que vous avez reçu."
     }
   },
+  activate: {
+    subtitle: "Activer votre compte",
+    invalidToken: "Lien d'activation invalide ou expiré",
+    error: "Échec de l'activation : {{error}}",
+    description: "Veuillez définir un mot de passe pour activer votre compte.",
+    newPassword: "Nouveau mot de passe",
+    confirmPassword: "Confirmer le mot de passe",
+    passwordRequired: "Le mot de passe est requis",
+    confirmPasswordRequired: "Veuillez confirmer votre mot de passe",
+    passwordMismatch: "Les mots de passe ne correspondent pas",
+    activateButton: "Activer le compte",
+    success: "Compte activé avec succès",
+    successSubtitle: "Votre compte a été activé. Vous pouvez maintenant vous connecter.",
+    goToLogin: "Aller à la connexion"
+  },
   register: {
     subtitle: "Créer un nouveau compte",
     username: "Nom d'utilisateur",
@@ -2109,6 +2193,21 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       totp: "لقد قمت بتمكين المصادقة متعددة العوامل المستندة إلى البريد الإلكتروني. يرجى إدخال كلمة المرور لمرة واحدة التي تلقيتها."
     }
   },
+  activate: {
+    subtitle: "تفعيل حسابك",
+    invalidToken: "رابط التفعيل غير صالح أو منتهي الصلاحية",
+    error: "فشل التفعيل: {{error}}",
+    description: "يرجى تعيين كلمة مرور لتفعيل حسابك.",
+    newPassword: "كلمة المرور الجديدة",
+    confirmPassword: "تأكيد كلمة المرور",
+    passwordRequired: "كلمة المرور مطلوبة",
+    confirmPasswordRequired: "يرجى تأكيد كلمة المرور",
+    passwordMismatch: "كلمتا المرور غير متطابقتين",
+    activateButton: "تفعيل الحساب",
+    success: "تم تفعيل الحساب بنجاح",
+    successSubtitle: "تم تفعيل حسابك. يمكنك الآن تسجيل الدخول.",
+    goToLogin: "الذهاب إلى تسجيل الدخول"
+  },
   register: {
     subtitle: "إنشاء حساب جديد",
     username: "اسم المستخدم",
@@ -2232,6 +2331,21 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       email: "Du har aktiverat e-postbaserad MFA. Vänligen ange motsvarande engångslösenord.",
       totp: "Du har aktiverat MFA baserad på e-post. Vänligen ange engångslösenordet du fick."
     }
+  },
+  activate: {
+    subtitle: "Aktivera ditt konto",
+    invalidToken: "Ogiltig eller utgången aktiveringslänk",
+    error: "Aktivering misslyckades: {{error}}",
+    description: "Ange ett lösenord för att aktivera ditt konto.",
+    newPassword: "Nytt lösenord",
+    confirmPassword: "Bekräfta lösenord",
+    passwordRequired: "Lösenord krävs",
+    confirmPasswordRequired: "Vänligen bekräfta ditt lösenord",
+    passwordMismatch: "Lösenorden stämmer inte överens",
+    activateButton: "Aktivera konto",
+    success: "Kontot aktiverades",
+    successSubtitle: "Ditt konto har aktiverats. Du kan nu logga in.",
+    goToLogin: "Gå till inloggning"
   },
   register: {
     subtitle: "Skapa ett nytt konto",
@@ -2444,7 +2558,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disabled: "已禁用",
       locked: "已锁定",
       password_expired: "密码已过期",
-      deleted: "已删除"
+      deleted: "已删除",
+      pending_activation: "待激活"
     },
     noRole: "无角色",
     mfaEnabled: "已启用",
@@ -2475,8 +2590,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     emailPlaceholder: "请输入邮箱",
     fullNamePlaceholder: "请输入姓名",
     statusPlaceholder: "请选择状态",
-    passwordPlaceholder: "请输入密码",
+    passwordPlaceholder: "请输入密码（可选）",
     confirmPasswordPlaceholder: "请再次输入密码",
+    passwordHint: "如不填写密码，系统将向用户发送激活邮件。",
     usernameRequired: "请输入用户名",
     passwordRequired: "请输入密码",
     passwordTooShort: "密码长度至少为8个字符",
@@ -2520,6 +2636,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "解锁用户",
     unlockSuccess: "用户解锁成功",
     unlockError: "解锁用户失败：{{error}}",
+    resendActivation: "重新发送激活邮件",
+    resendActivationTitle: "重新发送激活邮件",
+    resendActivationConfirm: "重新向 {{email}} 发送激活邮件？",
+    resendActivationSuccess: "激活邮件已重新发送",
+    resendActivationError: "重新发送激活邮件失败：{{error}}",
     ldapUserNotBound: "LDAP 用户未绑定到本地用户，请绑定。",
     export: "导出",
     exportTaskCreated: "导出任务已创建。您可以在任务列表中查看进度并下载文件。",
@@ -3462,7 +3583,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       templateDivider: "模板设置",
       resetPasswordTemplate: "重置密码模板",
       userLockedTemplate: "用户锁定模板",
-      mfaCodeTemplate: "MFA验证码模板"
+      mfaCodeTemplate: "MFA验证码模板",
+      activationTemplate: "账户激活邮件模板",
+      activationTemplateTooltip: "创建无密码用户时发送的激活邮件模板。可用变量：{{.ActivationURL}}（激活链接）、{{.FullName}}（用户姓名）、{{.Username}}。"
     },
     toolsets: {
       name: "名称",
@@ -3825,7 +3948,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disabled: "Deaktiviert",
       locked: "Gesperrt",
       password_expired: "Passwort abgelaufen",
-      deleted: "Gelöscht"
+      deleted: "Gelöscht",
+      pending_activation: "Ausstehende Aktivierung"
     },
     noRole: "Keine Rolle",
     mfaEnabled: "Aktiviert",
@@ -3856,8 +3980,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     emailPlaceholder: "Bitte E-Mail eingeben",
     fullNamePlaceholder: "Bitte vollständigen Namen eingeben",
     statusPlaceholder: "Bitte Status auswählen",
-    passwordPlaceholder: "Bitte Passwort eingeben",
+    passwordPlaceholder: "Passwort eingeben (optional)",
     confirmPasswordPlaceholder: "Bitte Passwort bestätigen",
+    passwordHint: "Leer lassen, um eine Aktivierungs-E-Mail an den Benutzer zu senden.",
     usernameRequired: "Bitte Benutzernamen eingeben",
     passwordRequired: "Bitte Passwort eingeben",
     passwordTooShort: "Passwort muss mindestens 8 Zeichen lang sein",
@@ -3901,6 +4026,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Benutzer entsperren",
     unlockSuccess: "Benutzer erfolgreich entsperrt",
     unlockError: "Benutzer konnte nicht entsperrt werden: {{error}}",
+    resendActivation: "Aktivierungs-E-Mail erneut senden",
+    resendActivationTitle: "Aktivierungs-E-Mail erneut senden",
+    resendActivationConfirm: "Aktivierungs-E-Mail erneut an {{email}} senden?",
+    resendActivationSuccess: "Aktivierungs-E-Mail erfolgreich erneut gesendet",
+    resendActivationError: "Aktivierungs-E-Mail konnte nicht erneut gesendet werden: {{error}}",
     ldapUserNotBound: "LDAP-Benutzer ist nicht an einen lokalen Benutzer gebunden, bitte binden.",
     export: "Exportieren",
     exportTaskCreated: "Exportaufgabe erstellt. Sie können den Fortschritt verfolgen und die Datei aus der Aufgabenliste herunterladen.",
@@ -4788,7 +4918,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       templateDivider: "Vorlageneinstellungen",
       resetPasswordTemplate: "Vorlage zum Zurücksetzen des Passworts",
       userLockedTemplate: "Vorlage für gesperrte Benutzer",
-      mfaCodeTemplate: "MFA-Code-Vorlage"
+      mfaCodeTemplate: "MFA-Code-Vorlage",
+      activationTemplate: "Kontoaktivierungs-E-Mail-Vorlage",
+      activationTemplateTooltip: "E-Mail, die an neue Benutzer gesendet wird, wenn kein Passwort gesetzt ist. Verfügbare Variablen: {{.ActivationURL}} (Aktivierungslink), {{.FullName}} (vollständiger Name), {{.Username}}."
     },
     toolsets: {
       name: "Name",
@@ -5202,7 +5334,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disabled: "Desactivado",
       locked: "Bloqueado",
       password_expired: "Contraseña caducada",
-      deleted: "Eliminado"
+      deleted: "Eliminado",
+      pending_activation: "Activación pendiente"
     },
     noRole: "Sin rol",
     mfaEnabled: "Habilitado",
@@ -5233,8 +5366,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     emailPlaceholder: "Por favor, introduce el correo electrónico",
     fullNamePlaceholder: "Por favor, introduce el nombre completo",
     statusPlaceholder: "Por favor, selecciona el estado",
-    passwordPlaceholder: "Por favor, introduce la contraseña",
+    passwordPlaceholder: "Introduce la contraseña (opcional)",
     confirmPasswordPlaceholder: "Por favor, confirma la contraseña",
+    passwordHint: "Déjalo en blanco para enviar un correo de activación al usuario.",
     usernameRequired: "Por favor, introduce el nombre de usuario",
     passwordRequired: "Por favor, introduce la contraseña",
     passwordTooShort: "La contraseña debe tener al menos 8 caracteres",
@@ -5278,6 +5412,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Desbloquear usuario",
     unlockSuccess: "Usuario desbloqueado correctamente",
     unlockError: "Error al desbloquear el usuario: {{error}}",
+    resendActivation: "Reenviar correo de activación",
+    resendActivationTitle: "Reenviar correo de activación",
+    resendActivationConfirm: "¿Reenviar correo de activación a {{email}}?",
+    resendActivationSuccess: "Correo de activación reenviado correctamente",
+    resendActivationError: "Error al reenviar el correo de activación: {{error}}",
     ldapUserNotBound: "El usuario LDAP no está enlazado a un usuario local, por favor enlaza.",
     export: "Exportar",
     exportTaskCreated: "Tarea de exportación creada. Puedes ver el progreso y descargar el archivo desde la lista de tareas.",
@@ -6165,7 +6304,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       templateDivider: "Ajustes de la plantilla",
       resetPasswordTemplate: "Plantilla para restablecer la contraseña",
       userLockedTemplate: "Plantilla de usuario bloqueado",
-      mfaCodeTemplate: "Plantilla de código MFA"
+      mfaCodeTemplate: "Plantilla de código MFA",
+      activationTemplate: "Plantilla de correo de activación de cuenta",
+      activationTemplateTooltip: "Correo enviado a nuevos usuarios cuando no se establece contraseña. Variables disponibles: {{.ActivationURL}} (enlace de activación), {{.FullName}} (nombre completo), {{.Username}}."
     },
     toolsets: {
       name: "Nombre",
@@ -6477,7 +6618,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   viewHistory: "Ver historial",
   triggerNow: "Ejecutar ahora",
   executionHistory: "Historial de ejecuciones"
-}, J = {
+}, Z = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -6549,7 +6690,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, Z = {
+}, J = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -6579,7 +6720,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disabled: "Désactivé",
       locked: "Verrouillé",
       password_expired: "Mot de passe expiré",
-      deleted: "Supprimé"
+      deleted: "Supprimé",
+      pending_activation: "Activation en attente"
     },
     noRole: "Aucun rôle",
     mfaEnabled: "Activé",
@@ -6610,8 +6752,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     emailPlaceholder: "Veuillez saisir l'e-mail",
     fullNamePlaceholder: "Veuillez saisir le nom complet",
     statusPlaceholder: "Veuillez sélectionner le statut",
-    passwordPlaceholder: "Veuillez saisir le mot de passe",
+    passwordPlaceholder: "Saisir le mot de passe (optionnel)",
     confirmPasswordPlaceholder: "Veuillez confirmer le mot de passe",
+    passwordHint: "Laisser vide pour envoyer un e-mail d'activation à l'utilisateur.",
     usernameRequired: "Veuillez saisir le nom d'utilisateur",
     passwordRequired: "Veuillez saisir le mot de passe",
     passwordTooShort: "Le mot de passe doit comporter au moins 8 caractères",
@@ -6655,6 +6798,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Déverrouiller l'utilisateur",
     unlockSuccess: "L'utilisateur a été déverrouillé avec succès",
     unlockError: "Échec du déverrouillage de l'utilisateur : {{error}}",
+    resendActivation: "Renvoyer l'e-mail d'activation",
+    resendActivationTitle: "Renvoyer l'e-mail d'activation",
+    resendActivationConfirm: "Renvoyer l'e-mail d'activation à {{email}} ?",
+    resendActivationSuccess: "E-mail d'activation renvoyé avec succès",
+    resendActivationError: "Échec de l'envoi de l'e-mail d'activation : {{error}}",
     ldapUserNotBound: "L'utilisateur LDAP n'est pas lié à un utilisateur local, veuillez le lier.",
     export: "Exporter",
     exportTaskCreated: "Tâche d'exportation créée. Vous pouvez suivre la progression et télécharger le fichier depuis la liste des tâches.",
@@ -7085,7 +7233,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, Q = {
+}, Y = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -7542,7 +7690,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       templateDivider: "Paramètres du modèle",
       resetPasswordTemplate: "Modèle de réinitialisation de mot de passe",
       userLockedTemplate: "Modèle d'utilisateur verrouillé",
-      mfaCodeTemplate: "Modèle de code AMF"
+      mfaCodeTemplate: "Modèle de code AMF",
+      activationTemplate: "Modèle d'e-mail d'activation de compte",
+      activationTemplateTooltip: "E-mail envoyé aux nouveaux utilisateurs sans mot de passe. Variables disponibles : {{.ActivationURL}} (lien d'activation), {{.FullName}} (nom complet), {{.Username}}."
     },
     toolsets: {
       name: "Nom",
@@ -7689,7 +7839,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, Y = {
+}, Q = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -7956,7 +8106,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disabled: "معطل",
       locked: "مقفل",
       password_expired: "كلمة المرور منتهية الصلاحية",
-      deleted: "محذوف"
+      deleted: "محذوف",
+      pending_activation: "في انتظار التفعيل"
     },
     noRole: "لا يوجد دور",
     mfaEnabled: "ممكّن",
@@ -7987,8 +8138,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     emailPlaceholder: "الرجاء إدخال البريد الإلكتروني",
     fullNamePlaceholder: "الرجاء إدخال الاسم الكامل",
     statusPlaceholder: "الرجاء تحديد الحالة",
-    passwordPlaceholder: "الرجاء إدخال كلمة المرور",
+    passwordPlaceholder: "أدخل كلمة المرور (اختياري)",
     confirmPasswordPlaceholder: "الرجاء تأكيد كلمة المرور",
+    passwordHint: "اتركه فارغاً لإرسال بريد تفعيل إلى المستخدم.",
     usernameRequired: "الرجاء إدخال اسم المستخدم",
     passwordRequired: "الرجاء إدخال كلمة المرور",
     passwordTooShort: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل",
@@ -8032,6 +8184,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "فتح المستخدم",
     unlockSuccess: "تم فتح المستخدم بنجاح",
     unlockError: "فشل فتح المستخدم: {{error}}",
+    resendActivation: "إعادة إرسال بريد التفعيل",
+    resendActivationTitle: "إعادة إرسال بريد التفعيل",
+    resendActivationConfirm: "إعادة إرسال بريد التفعيل إلى {{email}}؟",
+    resendActivationSuccess: "تم إعادة إرسال بريد التفعيل بنجاح",
+    resendActivationError: "فشل إعادة إرسال بريد التفعيل: {{error}}",
     ldapUserNotBound: "المستخدم LDAP غير مربوط إلى مستخدم محلي، يرجى الربط.",
     export: "تصدير",
     exportTaskCreated: "تم إنشاء مهمة التصدير. يمكنك عرض التقدم وتنزيل الملف من قائمة المهام.",
@@ -8919,7 +9076,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       templateDivider: "إعدادات القالب",
       resetPasswordTemplate: "قالب إعادة تعيين كلمة المرور",
       userLockedTemplate: "قالب المستخدم المقفل",
-      mfaCodeTemplate: "قالب رمز MFA"
+      mfaCodeTemplate: "قالب رمز MFA",
+      activationTemplate: "قالب بريد تفعيل الحساب",
+      activationTemplateTooltip: "البريد المرسل للمستخدمين الجدد عند عدم تعيين كلمة مرور. المتغيرات المتاحة: {{.ActivationURL}} (رابط التفعيل)، {{.FullName}} (الاسم الكامل)، {{.Username}}."
     },
     toolsets: {
       name: "الاسم",
@@ -9333,7 +9492,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disabled: "Inaktiverad",
       locked: "Låst",
       password_expired: "Lösenordet har gått ut",
-      deleted: "Borttagen"
+      deleted: "Borttagen",
+      pending_activation: "Väntar på aktivering"
     },
     noRole: "Ingen roll",
     mfaEnabled: "Aktiverad",
@@ -9364,8 +9524,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     emailPlaceholder: "Vänligen ange e-post",
     fullNamePlaceholder: "Vänligen ange fullständigt namn",
     statusPlaceholder: "Vänligen välj status",
-    passwordPlaceholder: "Vänligen ange lösenord",
+    passwordPlaceholder: "Ange lösenord (valfritt)",
     confirmPasswordPlaceholder: "Vänligen bekräfta lösenord",
+    passwordHint: "Lämna tomt för att skicka ett aktiveringsmejl till användaren.",
     usernameRequired: "Vänligen ange användarnamn",
     passwordRequired: "Vänligen ange lösenord",
     passwordTooShort: "Lösenordet måste vara minst 8 tecken långt",
@@ -9409,6 +9570,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     unlockTitle: "Lås upp användare",
     unlockSuccess: "Användaren har låsts upp",
     unlockError: "Det gick inte att låsa upp användaren: {{error}}",
+    resendActivation: "Skicka aktiveringsmejl igen",
+    resendActivationTitle: "Skicka aktiveringsmejl igen",
+    resendActivationConfirm: "Skicka aktiveringsmejl till {{email}} igen?",
+    resendActivationSuccess: "Aktiveringsmejl skickat igen",
+    resendActivationError: "Det gick inte att skicka aktiveringsmejlet igen: {{error}}",
     ldapUserNotBound: "LDAP-användaren är inte bunden till en lokal användare, vänligen binda.",
     export: "Exportera",
     exportTaskCreated: "Exportuppgift skapad. Du kan se framsteg och ladda ner filen från uppgiftslistan.",
@@ -10296,7 +10462,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       templateDivider: "Mallinställningar",
       resetPasswordTemplate: "Mall för återställning av lösenord",
       userLockedTemplate: "Mall för låst användare",
-      mfaCodeTemplate: "Mall för MFA-kod"
+      mfaCodeTemplate: "Mall för MFA-kod",
+      activationTemplate: "E-postmall för kontoaktivering",
+      activationTemplateTooltip: "E-post som skickas till nya användare utan lösenord. Tillgängliga variabler: {{.ActivationURL}} (aktiveringslänk), {{.FullName}} (fullständigt namn), {{.Username}}."
     },
     toolsets: {
       name: "Namn",
@@ -10624,8 +10792,8 @@ g.use(f).use(h).init({
     "en-US": {
       translation: y,
       common: T,
-      authorization: P,
-      system: w,
+      authorization: w,
+      system: P,
       ai: R,
       task: D
     },
@@ -10647,10 +10815,10 @@ g.use(f).use(h).init({
     },
     "fr-FR": {
       translation: E,
-      common: J,
-      authorization: Z,
-      system: Q,
-      ai: Y,
+      common: Z,
+      authorization: J,
+      system: Y,
+      ai: Q,
       task: $
     },
     "ar-AE": {

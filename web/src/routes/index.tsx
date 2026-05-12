@@ -23,6 +23,7 @@ import { LanguageConfig } from '@/components/LanguageSwitch';
 // Lazy load page components
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const Login = lazy(() => import('@/pages/Login'));
+const Activate = lazy(() => import('@/pages/Activate'));
 // Temporarily comment out non-existent components, create later
 const Profile = lazy(() => import('@/pages/Profile'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
@@ -97,6 +98,11 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
     {
       path: '/system/settings/oauth/test-callback',
       element: withSuspense(OAuthTestCallback),
+      index: true,
+    },
+    {
+      path: '/activate',
+      element: withSuspense(Activate, { transformLangConfig }),
       index: true,
     },
     ...extraPublicRoutes,

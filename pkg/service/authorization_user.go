@@ -93,6 +93,10 @@ func NewUserService(ctx context.Context, baseService *BaseService, ldapService *
 					cache.InvalidateAndDisableUserSessions(ctx, tx, oldUser.ResourceID)
 					return nil
 				}
+				if oldUser == nil {
+					// User created
+					return nil
+				}
 				if newUser.Status == model.UserStatusDisabled && oldUser.Status != model.UserStatusDisabled {
 					// Admin disabled user — terminate all sessions
 					cache.InvalidateAndDisableUserSessions(ctx, tx, newUser.ResourceID)
@@ -149,8 +153,8 @@ type LoginResponse struct {
 // CreateUserRequest registration request parameters
 type CreateUserRequest struct {
 	Username    string   `json:"username" binding:"required"`
-	Password    string   `json:"password" binding:"required"`
-	Email       string   `json:"email" binding:"required,email"`
+	Password    string   `json:"password" validate:"optional"`
+	Email       string   `json:"email" binding:"omitempty,email"`
 	FullName    string   `json:"full_name"`
 	Phone       string   `json:"phone" validate:"optional"`
 	Avatar      string   `json:"avatar" validate:"optional"`
@@ -482,6 +486,15 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 		}
 	}
 
+	if user.Status == model.UserStatusPendingActivation {
+		return nil, util.ErrorResponse{
+			HTTPCode: http.StatusUnauthorized,
+			Code:     "E4011",
+			Err:      err,
+			Message:  "Account is not activated, please check your activation email",
+		}
+	}
+
 	// Check user account lock status
 	if user.IsLocked() {
 		return nil, util.ErrorResponse{
@@ -568,13 +581,17 @@ func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*m
 	}
 
 	// Create user object
+	status := model.UserStatusActive
+	if req.Password == "" {
+		status = model.UserStatusPendingActivation
+	}
 	user := model.User{
 		Username:    req.Username,
 		Email:       req.Email,
 		FullName:    req.FullName,
 		Phone:       req.Phone,
 		Avatar:      req.Avatar,
-		Status:      model.UserStatusActive,
+		Status:      status,
 		MFAEnforced: req.MFAEnforced,
 	}
 
@@ -583,9 +600,11 @@ func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*m
 		user.Avatar = util.GenerateAvatar(req.Username)
 	}
 
-	// Set password
-	if err := user.SetPassword(req.Password); err != nil {
-		return nil, fmt.Errorf("failed to set password: %w", err)
+	// Set password only when provided
+	if req.Password != "" {
+		if err := user.SetPassword(req.Password); err != nil {
+			return nil, fmt.Errorf("failed to set password: %w", err)
+		}
 	}
 	err := dbConn.Transaction(func(tx *gorm.DB) error {
 		// Create user in database
@@ -615,9 +634,124 @@ func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*m
 }
 
 // CreateUser creates a new user
-func (s *UserService) CreateUser(ctx context.Context, req CreateUserRequest) (*model.User, error) {
+func (s *UserService) CreateUser(ctx context.Context, req CreateUserRequest, baseURL string) (*model.User, error) {
+	if req.Password == "" {
+		// No password provided: require email to send activation link
+		if req.Email == "" {
+			return nil, fmt.Errorf("password is required when email is not provided")
+		}
+	} else {
+		// Validate password complexity
+		isValid, err := s.baseService.IsPasswordComplexityMet(ctx, req.Password)
+		if err != nil {
+			return nil, fmt.Errorf("check password complexity failed: %w", err)
+		}
+		if !isValid {
+			minLength, _ := s.baseService.GetIntSetting(ctx, model.SettingPasswordMinLength, 8)
+			complexityType, _ := s.baseService.GetStringSetting(ctx, model.SettingPasswordComplexity, string(model.PasswordComplexityMedium))
+
+			var complexityMessage string
+			switch model.PasswordComplexity(complexityType) {
+			case model.PasswordComplexityLow:
+				complexityMessage = "can be any character"
+			case model.PasswordComplexityMedium:
+				complexityMessage = "must contain any two combinations of uppercase letters, lowercase letters, and numbers"
+			case model.PasswordComplexityHigh:
+				complexityMessage = "must contain uppercase letters, lowercase letters, and numbers"
+			case model.PasswordComplexityVeryHigh:
+				complexityMessage = "must contain uppercase letters, lowercase letters, numbers, and special characters"
+			}
+
+			return nil, fmt.Errorf("password does not meet complexity requirements, password length must be at least %d, %s", minLength, complexityMessage)
+		}
+	}
+
+	user, err := s.createUser(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Send activation email when no password was provided
+	if req.Password == "" {
+		if err := s.sendActivationEmail(ctx, user, baseURL); err != nil {
+			// Log the error but do not fail the request; admin can resend later
+			logger := log.GetContextLogger(ctx)
+			level.Error(logger).Log("msg", "Failed to send activation email", "user", user.Username, "err", err)
+		}
+	}
+
+	return user, nil
+}
+
+// ResendActivationEmail regenerates the activation token and resends the activation email.
+func (s *UserService) ResendActivationEmail(ctx context.Context, userID string, baseURL string) error {
+	user, err := s.GetUserByID(ctx, userID, WithCache(false), WithRoles(false), WithPermissions(false))
+	if err != nil {
+		return err
+	}
+	if user.Status != model.UserStatusPendingActivation {
+		return util.NewErrorMessage("E4093", "User is not pending activation")
+	}
+	if user.Email == "" {
+		return util.NewErrorMessage("E4002", "User has no email address")
+	}
+	return s.sendActivationEmail(ctx, user, baseURL)
+}
+
+// sendActivationEmail generates an activation token and sends the activation email.
+func (s *UserService) sendActivationEmail(ctx context.Context, user *model.User, baseURL string) error {
+	token := uuid.New().String()
+	expiresAt := time.Now().Add(48 * time.Hour)
+	safeToken := safe.NewEncryptedString(user.ResourceID, os.Getenv(safe.SecretEnvName))
+	if err := cache.Store.Set(ctx, fmt.Sprintf("ez-console:user:activation:%s", token), []byte(safeToken.String()), time.Until(expiresAt)); err != nil {
+		return fmt.Errorf("failed to cache activation token: %w", err)
+	}
+
+	activationURL := fmt.Sprintf("%s/activate?token=%s", baseURL, token)
+	fullName := user.FullName
+	if fullName == "" {
+		fullName = user.Username
+	}
+	return s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "Activate Your Account", model.SettingSMTPActivationTemplate, map[string]any{
+		"Username":      user.Username,
+		"FullName":      fullName,
+		"Email":         user.Email,
+		"Avatar":        user.Avatar,
+		"ActivationURL": activationURL,
+		"Expires":       expiresAt,
+	})
+}
+
+// ActivateUserRequest holds the token and new password for account activation.
+type ActivateUserRequest struct {
+	Token    string `json:"token" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+// ActivateUser validates the activation token and sets the user's password, activating the account.
+func (s *UserService) ActivateUser(ctx context.Context, req ActivateUserRequest) (*model.User, error) {
+	cacheKey := fmt.Sprintf("ez-console:user:activation:%s", req.Token)
+	data, err := cache.Store.Get(ctx, cacheKey)
+	if err != nil || len(data) == 0 {
+		return nil, util.NewErrorMessage("E4041", "Invalid or expired activation token")
+	}
+
+	safeToken := safe.NewEncryptedString(string(data), os.Getenv(safe.SecretEnvName))
+	userID, err := safeToken.UnsafeString()
+	if err != nil {
+		return nil, util.NewErrorMessage("E4041", "Invalid or expired activation token", err)
+	}
+
+	user, err := s.GetUserByID(ctx, userID, WithCache(false), WithRoles(false), WithPermissions(false))
+	if err != nil {
+		return nil, util.NewErrorMessage("E4041", "Invalid or expired activation token", err)
+	}
+
+	if user.Status != model.UserStatusPendingActivation {
+		return nil, util.NewErrorMessage("E4093", "Account is already activated")
+	}
+
 	// Validate password complexity
-	// Check password complexity
 	isValid, err := s.baseService.IsPasswordComplexityMet(ctx, req.Password)
 	if err != nil {
 		return nil, fmt.Errorf("check password complexity failed: %w", err)
@@ -625,7 +759,6 @@ func (s *UserService) CreateUser(ctx context.Context, req CreateUserRequest) (*m
 	if !isValid {
 		minLength, _ := s.baseService.GetIntSetting(ctx, model.SettingPasswordMinLength, 8)
 		complexityType, _ := s.baseService.GetStringSetting(ctx, model.SettingPasswordComplexity, string(model.PasswordComplexityMedium))
-
 		var complexityMessage string
 		switch model.PasswordComplexity(complexityType) {
 		case model.PasswordComplexityLow:
@@ -637,10 +770,31 @@ func (s *UserService) CreateUser(ctx context.Context, req CreateUserRequest) (*m
 		case model.PasswordComplexityVeryHigh:
 			complexityMessage = "must contain uppercase letters, lowercase letters, numbers, and special characters"
 		}
-
 		return nil, fmt.Errorf("password does not meet complexity requirements, password length must be at least %d, %s", minLength, complexityMessage)
 	}
-	return s.createUser(ctx, req)
+
+	now := time.Now()
+	if err := user.SetPassword(req.Password); err != nil {
+		return nil, fmt.Errorf("failed to set password: %w", err)
+	}
+
+	err = db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+		oldUser := *user
+		user.Status = model.UserStatusActive
+		user.PasswordChangedAt = now
+		if err := tx.Model(user).Select("Password", "Salt", "Status", "PasswordChangedAt").Save(user).Error; err != nil {
+			return fmt.Errorf("failed to activate user: %w", err)
+		}
+		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Remove the activation token from cache
+	_ = cache.Store.Delete(ctx, cacheKey)
+
+	return user, nil
 }
 
 // Register user registration, called internally
@@ -833,7 +987,7 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 		} else if user.IsLocked() {
 			user.Status = model.UserStatusLocked
 		} else if (user.IsLDAPUser() && allowChangePassword) || (!user.IsLDAPUser()) {
-			if user.IsPasswordExpired(passwordExpiryDays) {
+			if user.Status != model.UserStatusPendingActivation && user.IsPasswordExpired(passwordExpiryDays) {
 				user.Status = model.UserStatusPasswordExpired
 			}
 		}

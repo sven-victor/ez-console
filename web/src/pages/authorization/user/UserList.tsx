@@ -45,6 +45,7 @@ import {
   ToolOutlined,
   UnlockOutlined,
   ExportOutlined,
+  MailOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';
@@ -381,6 +382,35 @@ const UserList: React.FC = () => {
     });
   };
 
+  const { runAsync: runResendActivation } = useRequest(
+    (userId: string) => api.authorization.resendActivationEmail({ id: userId }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('user.resendActivationSuccess', { defaultValue: 'Activation email resent successfully' }));
+      },
+      onError: (error) => {
+        message.error(
+          t('user.resendActivationError', {
+            defaultValue: 'Failed to resend activation email: {{error}}',
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      },
+    },
+  );
+
+  const handleResendActivation = (user: API.User) => {
+    Modal.confirm({
+      title: t('user.resendActivationTitle', { defaultValue: 'Resend Activation Email' }),
+      content: t('user.resendActivationConfirm', {
+        defaultValue: 'Resend activation email to {{email}}?',
+        email: user.email,
+      }),
+      onOk: () => runResendActivation(user.id),
+    });
+  };
+
   // Build table columns
   const columns = [
     {
@@ -444,6 +474,8 @@ const UserList: React.FC = () => {
             return <Badge status="warning" text={t('user.statusEnum.locked', { defaultValue: 'Locked' })} />;
           case 'deleted':
             return <Badge status="error" text={t('user.statusEnum.deleted', { defaultValue: 'Deleted' })} />;
+          case 'pending_activation':
+            return <Badge status="processing" text={t('user.statusEnum.pending_activation', { defaultValue: 'Pending Activation' })} />;
           default:
             return <Badge status="default" text={t(`user.statusEnum.${status}`, { defaultValue: status.charAt(0).toUpperCase() + status.slice(1) })} />;
         }
@@ -513,12 +545,19 @@ const UserList: React.FC = () => {
           hidden: record.status !== 'locked',
           onClick: async () => handleUnlock(record),
         }, {
+          key: 'resendActivation',
+          permission: "authorization:user:update",
+          icon: <MailOutlined />,
+          tooltip: t('user.resendActivation', { defaultValue: 'Resend Activation Email' }),
+          hidden: record.status !== 'pending_activation' || !record.email,
+          onClick: async () => handleResendActivation(record),
+        }, {
           key: 'resetPassword',
           permission: "authorization:user:resetPassword",
           icon: <KeyOutlined />,
           disabled: record.disable_change_password,
           tooltip: record.disable_change_password ? t('user.resetPasswordDisabled', { defaultValue: 'The current system prohibits modifying the password of this user.' }) : t('user.resetPassword', { defaultValue: 'Reset Password' }),
-          hidden: !((record.source === 'local' || (record.source === 'ldap' && record.ldap_dn)) && record.status !== 'deleted'),
+          hidden: !((record.source === 'local' || (record.source === 'ldap' && record.ldap_dn)) && record.status !== 'deleted' && record.status !== 'pending_activation'),
           onClick: async () => handleResetPassword(record.id, record.username, record.email),
         }, {
           key: 'fixUser',
@@ -592,6 +631,7 @@ const UserList: React.FC = () => {
                     <Option value="deleted">{t('user.statusEnum.deleted', { defaultValue: 'Deleted' })}</Option>
                     <Option value="locked">{t('user.statusEnum.locked', { defaultValue: 'Locked' })}</Option>
                     <Option value="password_expired">{t('user.statusEnum.password_expired', { defaultValue: 'Password Expired' })}</Option>
+                    <Option value="pending_activation">{t('user.statusEnum.pending_activation', { defaultValue: 'Pending Activation' })}</Option>
                   </Select>
                 </Form.Item>
               </Space>
