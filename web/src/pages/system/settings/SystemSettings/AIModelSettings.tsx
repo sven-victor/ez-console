@@ -52,7 +52,9 @@ import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
 import Loading from '@/components/Loading';
 
-const JsonSchemaConfigForm = lazy(() => import('@/components/JsonSchemaConfigForm'));
+const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({
+  default: module.JsonSchemaConfigFormItem
+})));
 
 const { TextArea } = Input;
 
@@ -487,7 +489,8 @@ const AIModelSettings: React.FC = () => {
 
             {currentProviderDefinition && (<Form.Item name={['config']}>
               <Suspense fallback={<Loading />}>
-                <JsonSchemaConfigForm
+                <JsonSchemaConfigFormItem
+                  name="config"
                   schema={currentProviderDefinition.config_schema as unknown as Record<string, unknown>}
                   uiSchema={currentProviderDefinition.ui_schema as unknown as Record<string, unknown>}
                 />
