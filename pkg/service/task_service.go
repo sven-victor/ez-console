@@ -67,24 +67,49 @@ const (
 	taskFallbackInterval = 1 * time.Minute
 )
 
-// TaskService handles task CRUD and worker pool.
-type TaskService struct {
+type TaskService interface {
+	CreateTask(ctx context.Context, taskType model.TaskType, opts ...CreateTaskOption) (*model.Task, error)
+	GetTask(ctx context.Context, id string) (*model.Task, error)
+	ListTasks(ctx context.Context, current, pageSize int, search string) ([]*model.Task, int64, error)
+	ListTasksByCronScheduleID(ctx context.Context, cronScheduleID string, current, pageSize int) ([]*model.Task, int64, error)
+	ListUserTasks(ctx context.Context, userID string) ([]*model.Task, error)
+	RetryTask(ctx context.Context, id string) error
+	CancelTask(ctx context.Context, id string) error
+	SetTaskArtifact(ctx context.Context, id string, fileKey string, fileName string) error
+	GetTaskLogs(ctx context.Context, id string) ([]model.TaskLog, error)
+	DeleteTask(ctx context.Context, id string) error
+}
+
+// taskService handles task CRUD and worker pool.
+type taskService struct {
 	cancelChans map[string]chan struct{}
 	cancelMu    sync.RWMutex
 	taskQueue   chan *model.Task
 	taskQueueMu sync.Mutex
 }
 
+var (
+	taskServiceOnce sync.Once
+	taskSvc         *taskService
+)
+
 // NewTaskService creates a new TaskService.
-func NewTaskService() *TaskService {
-	return &TaskService{
-		cancelChans: make(map[string]chan struct{}),
-		taskQueue:   make(chan *model.Task, defaultTaskQueueSize),
-	}
+func NewTaskService(ctx context.Context) *taskService {
+	taskServiceOnce.Do(func() {
+		taskSvc = &taskService{
+			cancelChans: make(map[string]chan struct{}),
+			taskQueue:   make(chan *model.Task, defaultTaskQueueSize),
+		}
+		go func() {
+			time.Sleep(10 * time.Second)
+			taskSvc.startWorkerPool(ctx)
+		}()
+	})
+	return taskSvc
 }
 
 // CreateTask creates a new task. CreatorID is set from context. Not exposed via HTTP.
-func (s *TaskService) CreateTask(ctx context.Context, taskType model.TaskType, opts ...CreateTaskOption) (*model.Task, error) {
+func (s *taskService) CreateTask(ctx context.Context, taskType model.TaskType, opts ...CreateTaskOption) (*model.Task, error) {
 	creatorID := middleware.GetUserIDFromContext(ctx)
 	if creatorID == "" {
 		creatorID = "system"
@@ -117,7 +142,7 @@ func (s *TaskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 }
 
 // GetTask returns a task by ID. Enforces visibility: admin or creator.
-func (s *TaskService) GetTask(ctx context.Context, id string) (*model.Task, error) {
+func (s *taskService) GetTask(ctx context.Context, id string) (*model.Task, error) {
 	var t model.Task
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&t).Error; err != nil {
 		return nil, err
@@ -140,7 +165,7 @@ func isGlobalAdmin(ctx context.Context) bool {
 }
 
 // ListTasks returns paginated tasks. Non-admin users only see their own.
-func (s *TaskService) ListTasks(ctx context.Context, current, pageSize int, search string) ([]*model.Task, int64, error) {
+func (s *taskService) ListTasks(ctx context.Context, current, pageSize int, search string) ([]*model.Task, int64, error) {
 	query := db.Session(ctx).Model(&model.Task{})
 	if !isGlobalAdmin(ctx) {
 		userID := middleware.GetUserIDFromContext(ctx)
@@ -162,7 +187,7 @@ func (s *TaskService) ListTasks(ctx context.Context, current, pageSize int, sear
 }
 
 // ListTasksByCronScheduleID returns paginated tasks created by the given cron schedule (for schedule execution history).
-func (s *TaskService) ListTasksByCronScheduleID(ctx context.Context, cronScheduleID string, current, pageSize int) ([]*model.Task, int64, error) {
+func (s *taskService) ListTasksByCronScheduleID(ctx context.Context, cronScheduleID string, current, pageSize int) ([]*model.Task, int64, error) {
 	query := db.Session(ctx).Model(&model.Task{}).Where("cron_schedule_id = ?", cronScheduleID)
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
@@ -177,7 +202,7 @@ func (s *TaskService) ListTasksByCronScheduleID(ctx context.Context, cronSchedul
 }
 
 // ListUserTasks returns recent tasks for the header dropdown: only tasks with category "user" for the given user.
-func (s *TaskService) ListUserTasks(ctx context.Context, userID string) ([]*model.Task, error) {
+func (s *taskService) ListUserTasks(ctx context.Context, userID string) ([]*model.Task, error) {
 	query := db.Session(ctx).Model(&model.Task{}).
 		Where("creator_id = ?", userID).
 		Where("category = ?", model.TaskCategoryUser).
@@ -189,15 +214,15 @@ func (s *TaskService) ListUserTasks(ctx context.Context, userID string) ([]*mode
 	return list, nil
 }
 
-func (s *TaskService) canAccess(ctx context.Context, creatorID string) bool {
+func (s *taskService) canAccess(ctx context.Context, creatorID string) bool {
 	if middleware.HasGlobalRolePermission(ctx, "task:list") || middleware.HasGlobalRolePermission(ctx, "task:view") {
 		return true
 	}
 	return middleware.GetUserIDFromContext(ctx) == creatorID
 }
 
-// UpdateTaskStatus updates status, result, error, progress, and optionally finished_at.
-func (s *TaskService) UpdateTaskStatus(ctx context.Context, id, status, result, errMsg string, progress int) error {
+// updateTaskStatus updates status, result, error, progress, and optionally finished_at.
+func (s *taskService) updateTaskStatus(ctx context.Context, id, status, result, errMsg string, progress int) error {
 	updates := map[string]interface{}{
 		"status":   status,
 		"result":   result,
@@ -211,13 +236,13 @@ func (s *TaskService) UpdateTaskStatus(ctx context.Context, id, status, result, 
 	return db.Session(ctx).Model(&model.Task{}).Where("resource_id = ?", id).Updates(updates).Error
 }
 
-// UpdateTaskProgress updates only progress.
-func (s *TaskService) UpdateTaskProgress(ctx context.Context, id string, progress int) error {
+// updateTaskProgress updates only progress.
+func (s *taskService) updateTaskProgress(ctx context.Context, id string, progress int) error {
 	return db.Session(ctx).Model(&model.Task{}).Where("resource_id = ?", id).Update("progress", progress).Error
 }
 
 // SetTaskArtifact sets the artifact file key for download.
-func (s *TaskService) SetTaskArtifact(ctx context.Context, id string, fileKey string, fileName string) error {
+func (s *taskService) SetTaskArtifact(ctx context.Context, id string, fileKey string, fileName string) error {
 	return db.Session(ctx).Model(&model.Task{}).
 		Where("resource_id = ?", id).
 		Updates(map[string]interface{}{
@@ -227,7 +252,7 @@ func (s *TaskService) SetTaskArtifact(ctx context.Context, id string, fileKey st
 }
 
 // CancelTask signals the running task to cancel. The worker will set status to cancelled when it exits.
-func (s *TaskService) CancelTask(ctx context.Context, id string) error {
+func (s *taskService) CancelTask(ctx context.Context, id string) error {
 	t, err := s.GetTask(ctx, id)
 	if err != nil {
 		return err
@@ -244,13 +269,13 @@ func (s *TaskService) CancelTask(ctx context.Context, id string) error {
 		delete(s.cancelChans, id)
 		s.cancelMu.Unlock()
 	} else if t.Status == model.TaskStatusPending {
-		return s.UpdateTaskStatus(ctx, id, string(model.TaskStatusCancelled), "", "", 0)
+		return s.updateTaskStatus(ctx, id, string(model.TaskStatusCancelled), "", "", 0)
 	}
 	return nil
 }
 
 // RetryTask resets task to pending and clears error so it can be picked up again.
-func (s *TaskService) RetryTask(ctx context.Context, id string) error {
+func (s *taskService) RetryTask(ctx context.Context, id string) error {
 	t, err := s.GetTask(ctx, id)
 	if err != nil {
 		return err
@@ -272,7 +297,7 @@ func (s *TaskService) RetryTask(ctx context.Context, id string) error {
 }
 
 // DeleteTask soft-deletes a task. Enforces creator or admin.
-func (s *TaskService) DeleteTask(ctx context.Context, id string) error {
+func (s *taskService) DeleteTask(ctx context.Context, id string) error {
 	t, err := s.GetTask(ctx, id)
 	if err != nil {
 		return err
@@ -282,7 +307,7 @@ func (s *TaskService) DeleteTask(ctx context.Context, id string) error {
 
 // GetTaskLogs returns stored log entries for a task. Enforces same visibility as GetTask (admin or creator).
 // Uses the log storage backend selected in task settings.
-func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskLog, error) {
+func (s *taskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskLog, error) {
 	if _, err := s.GetTask(ctx, id); err != nil {
 		return nil, err
 	}
@@ -300,7 +325,7 @@ func (s *TaskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskL
 }
 
 // claimTaskByID atomically claims the given pending task by ID (sets status to running). Returns the task or nil if not found/not pending.
-func (s *TaskService) claimTaskByID(ctx context.Context, id string) (*model.Task, error) {
+func (s *taskService) claimTaskByID(ctx context.Context, id string) (*model.Task, error) {
 	var t model.Task
 	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Where("resource_id = ? AND status = ?", id, model.TaskStatusPending).First(&t).Error; err != nil {
@@ -326,7 +351,7 @@ func (s *TaskService) claimTaskByID(ctx context.Context, id string) (*model.Task
 }
 
 // Start starts the worker pool and the fallback poller. Call once at server startup.
-func (s *TaskService) Start(ctx context.Context) {
+func (s *taskService) startWorkerPool(ctx context.Context) {
 	logger := log.GetContextLogger(ctx)
 	settingService := middleware.GetSettingService()
 	maxConcurrent, _ := settingService.GetIntSetting(ctx, model.SettingTaskMaxConcurrent, 10)
@@ -339,7 +364,7 @@ func (s *TaskService) Start(ctx context.Context) {
 	level.Info(logger).Log("msg", "Task worker pool started", "workers", maxConcurrent)
 }
 
-func (s *TaskService) worker(ctx context.Context, id int, logger interface{}) {
+func (s *taskService) worker(ctx context.Context, id int, logger interface{}) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -359,7 +384,7 @@ func (s *TaskService) worker(ctx context.Context, id int, logger interface{}) {
 	}
 }
 
-func (s *TaskService) runTask(pctx context.Context, t *model.Task) {
+func (s *taskService) runTask(pctx context.Context, t *model.Task) {
 	startTime := time.Now()
 	taskCtx, logger := log.NewContextLogger(pctx)
 	traceID := log.GetTraceId(taskCtx)
@@ -391,7 +416,7 @@ func (s *TaskService) runTask(pctx context.Context, t *model.Task) {
 
 	runner, ok := taskscheduler.GetTaskRunner(taskCtx, t.Type)
 	if !ok {
-		_ = s.UpdateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusFailed), "", "task type not registered", 0)
+		_ = s.updateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusFailed), "", "task type not registered", 0)
 		taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusFailed)).Inc()
 		return
 	}
@@ -400,13 +425,13 @@ func (s *TaskService) runTask(pctx context.Context, t *model.Task) {
 		if progress < 0 || progress > 100 {
 			return
 		}
-		_ = s.UpdateTaskProgress(taskCtx, t.ResourceID, progress)
+		_ = s.updateTaskProgress(taskCtx, t.ResourceID, progress)
 	}
 	level.Info(logger).Log("msg", "Running task", "task_id", t.ResourceID, "task_type", t.Type)
 	result, err := runner.Run(taskCtx, t, progressCallback, cancelCh)
 	if err != nil {
 		if errors.Is(err, taskscheduler.ErrCancelled) {
-			_ = s.UpdateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusCancelled), "", "cancelled", 0)
+			_ = s.updateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusCancelled), "", "cancelled", 0)
 			taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusCancelled)).Inc()
 		} else {
 			// Auto retry: increment auto_retry_count and if not exceeding max_retries, set task back to pending and enqueue.
@@ -453,6 +478,6 @@ func (s *TaskService) runTask(pctx context.Context, t *model.Task) {
 			resultStr = string(b)
 		}
 	}
-	_ = s.UpdateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusSuccess), resultStr, "", 100)
+	_ = s.updateTaskStatus(taskCtx, t.ResourceID, string(model.TaskStatusSuccess), resultStr, "", 100)
 	taskCompletedTotal.WithLabelValues(string(category), taskType, string(model.TaskStatusSuccess)).Inc()
 }

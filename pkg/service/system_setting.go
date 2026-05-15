@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+	"sync"
 
 	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -31,11 +32,18 @@ import (
 // SettingService system settings service
 type SettingService struct{}
 
+var (
+	settingService     *SettingService
+	settingServiceOnce sync.Once
+)
+
 // NewSettingService creates a new system settings service
 func NewSettingService() *SettingService {
-	svc := &SettingService{}
-	middleware.RegisterSettingService(svc)
-	return svc
+	settingServiceOnce.Do(func() {
+		settingService = &SettingService{}
+		middleware.RegisterSettingService(settingService)
+	})
+	return settingService
 }
 
 // GetSetting gets the setting with the specified key name
@@ -292,9 +300,9 @@ func (s *SettingService) UpdateSystemSettings(ctx context.Context, settings mode
 		string(model.SettingSystemLogo):     settings.Logo,
 		string(model.SettingSystemHomePage): settings.HomePage,
 
-		string(model.SettingSystemDisableLocalUserLogin):    strconv.FormatBool(settings.DisableLocalUserLogin),
-		string(model.SettingSystemEnableMultiOrg):           strconv.FormatBool(settings.EnableMultiOrg),
-		string(model.SettingSystemEnableSkillToolBinding):   strconv.FormatBool(settings.EnableSkillToolBinding),
+		string(model.SettingSystemDisableLocalUserLogin):  strconv.FormatBool(settings.DisableLocalUserLogin),
+		string(model.SettingSystemEnableMultiOrg):         strconv.FormatBool(settings.EnableMultiOrg),
+		string(model.SettingSystemEnableSkillToolBinding): strconv.FormatBool(settings.EnableSkillToolBinding),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }

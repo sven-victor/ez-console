@@ -366,7 +366,6 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	}
 
 	authorizationapi.RegisterUserExportTask(svc)
-	svc.TaskService.Start(ctx)
 
 	// Setup API routes
 	api.RegisterControllers(ctx, engine, svc)
@@ -375,7 +374,6 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	svc.SchedulerService.Start(ctx)
 	// Start the server
 	serverAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	level.Info(logger).Log("msg", "Server starting on", "serverAddr", serverAddr)

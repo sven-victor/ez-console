@@ -1087,7 +1087,7 @@ func (c *UserController) CreateUserExportTask(ctx *gin.Context) {
 	}
 	payloadBytes, _ := json.Marshal(req)
 	payload := string(payloadBytes)
-	t, err := c.service.TaskService.CreateTask(ctx, "user_export",
+	t, err := c.service.CreateTask(ctx, "user_export",
 		service.WithPayload(payload),
 		service.WithMaxRetries(1),
 	)

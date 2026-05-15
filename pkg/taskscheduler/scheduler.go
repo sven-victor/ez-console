@@ -16,6 +16,8 @@ package taskscheduler
 
 import (
 	"fmt"
+	"slices"
+	"strings"
 	"sync"
 
 	"github.com/robfig/cron/v3"
@@ -79,5 +81,8 @@ func ListScheduledJobs() []*ScheduledJobDef {
 	for _, d := range schedulerRegistry {
 		list = append(list, d)
 	}
+	slices.SortFunc(list, func(a, b *ScheduledJobDef) int {
+		return strings.Compare(a.Name, b.Name)
+	})
 	return list
 }

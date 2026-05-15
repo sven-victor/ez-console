@@ -93,7 +93,7 @@ func (c *TaskController) ListUserTasks(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "User ID is required"))
 		return
 	}
-	list, err := c.service.TaskService.ListUserTasks(ctx, userID)
+	list, err := c.service.ListUserTasks(ctx, userID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to list user tasks", err))
 		return
@@ -125,7 +125,7 @@ func (c *TaskController) ListTasks(ctx *gin.Context) {
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 10
 	}
-	list, total, err := c.service.TaskService.ListTasks(ctx, current, pageSize, search)
+	list, total, err := c.service.ListTasks(ctx, current, pageSize, search)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to list tasks", err))
 		return
@@ -152,7 +152,7 @@ func (c *TaskController) GetTask(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Task ID is required"))
 		return
 	}
-	t, err := c.service.TaskService.GetTask(ctx, id)
+	t, err := c.service.GetTask(ctx, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get task", err))
 		return
@@ -179,7 +179,7 @@ func (c *TaskController) GetTaskLogs(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Task ID is required"))
 		return
 	}
-	logs, err := c.service.TaskService.GetTaskLogs(ctx, id)
+	logs, err := c.service.GetTaskLogs(ctx, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get task logs", err))
 		return
@@ -205,7 +205,7 @@ func (c *TaskController) CancelTask(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Task ID is required"))
 		return
 	}
-	if err := c.service.TaskService.CancelTask(ctx, id); err != nil {
+	if err := c.service.CancelTask(ctx, id); err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to cancel task", err))
 		return
 	}
@@ -230,7 +230,7 @@ func (c *TaskController) RetryTask(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Task ID is required"))
 		return
 	}
-	if err := c.service.TaskService.RetryTask(ctx, id); err != nil {
+	if err := c.service.RetryTask(ctx, id); err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to retry task", err))
 		return
 	}
@@ -255,7 +255,7 @@ func (c *TaskController) DeleteTask(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Task ID is required"))
 		return
 	}
-	if err := c.service.TaskService.DeleteTask(ctx, id); err != nil {
+	if err := c.service.DeleteTask(ctx, id); err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to delete task", err))
 		return
 	}
@@ -274,7 +274,7 @@ func (c *TaskController) DeleteTask(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/task-schedules [get]
 func (c *TaskController) ListTaskSchedules(ctx *gin.Context) {
-	list := c.service.SchedulerService.ListScheduledJobsWithState()
+	list := c.service.ListScheduledJobsWithState()
 	util.RespondWithSuccess(ctx, http.StatusOK, list)
 }
 
@@ -306,7 +306,7 @@ func (c *TaskController) GetTaskScheduleHistory(ctx *gin.Context) {
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 10
 	}
-	list, total, err := c.service.TaskService.ListTasksByCronScheduleID(ctx, id, current, pageSize)
+	list, total, err := c.service.ListTasksByCronScheduleID(ctx, id, current, pageSize)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to list schedule history", err))
 		return
@@ -341,7 +341,7 @@ func (c *TaskController) ToggleTaskSchedule(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Invalid request body", err))
 		return
 	}
-	if err := c.service.SchedulerService.ToggleEnabled(id, body.Enabled); err != nil {
+	if err := c.service.ToggleEnabled(id, body.Enabled); err != nil {
 		if errors.Is(err, service.ErrScheduledJobNotFound) {
 			util.RespondWithError(ctx, util.NewErrorMessage("E4041", "Scheduled job not found"))
 			return
@@ -371,7 +371,7 @@ func (c *TaskController) TriggerTaskSchedule(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Schedule ID is required"))
 		return
 	}
-	task, err := c.service.SchedulerService.TriggerNow(ctx, id)
+	task, err := c.service.TriggerNow(ctx, id)
 	if err != nil {
 		if errors.Is(err, service.ErrScheduledJobNotFound) {
 			util.RespondWithError(ctx, util.NewErrorMessage("E4041", "Scheduled job not found"))

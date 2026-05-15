@@ -80,9 +80,17 @@ const TaskScheduleList: React.FC = () => {
   };
 
   const scheduleColumns: ColumnsType<API.ScheduledJobState> = [
-    { title: t('scheduleName', { defaultValue: 'Name' }), dataIndex: 'name', key: 'name', width: 160 },
+    { title: t('scheduleName', { defaultValue: 'Name' }), dataIndex: 'name', key: 'name', width: 260 },
     { title: t('scheduleSpec', { defaultValue: 'Cron' }), dataIndex: 'spec', key: 'spec', width: 120 },
-    { title: t('scheduleDescription', { defaultValue: 'Description' }), dataIndex: 'description', key: 'description', ellipsis: true },
+    {
+      title: t('scheduleDescription', { defaultValue: 'Description' }),
+      dataIndex: 'description',
+      key: 'description',
+      ellipsis: true,
+      render: (description: string, task: API.ScheduledJobState) => {
+        return t(`description.${task.task_type}`, { defaultValue: description })
+      }
+    },
     {
       title: t('scheduleTaskType', { defaultValue: 'Task Type' }),
       dataIndex: 'task_type',

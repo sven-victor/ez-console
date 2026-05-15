@@ -37,27 +37,45 @@ type ScheduledJobState struct {
 	LastRun     *time.Time `json:"last_run,omitempty"`
 }
 
+type TaskSchedulerService interface {
+	ListScheduledJobsWithState() []ScheduledJobState
+	ToggleEnabled(id string, enabled bool) error
+	TriggerNow(ctx context.Context, id string) (*model.Task, error)
+}
+
 // SchedulerService runs registered cron jobs and creates tasks via TaskService.
-type SchedulerService struct {
-	taskService *TaskService
+type taskSchedulerService struct {
+	taskService TaskService
 	cron        *cron.Cron
 	entryIDs    map[string]cron.EntryID
 	lastRun     map[string]time.Time
 	mu          sync.RWMutex
 }
 
+var (
+	taskSchedulerServiceOnce sync.Once
+	taskSchedulerSvc         *taskSchedulerService
+)
+
 // NewSchedulerService creates a SchedulerService. Call Start to begin running schedules.
-func NewSchedulerService(taskService *TaskService) *SchedulerService {
-	return &SchedulerService{
-		taskService: taskService,
-		cron:        cron.New(),
-		entryIDs:    make(map[string]cron.EntryID),
-		lastRun:     make(map[string]time.Time),
-	}
+func NewSchedulerService(ctx context.Context, taskService TaskService) TaskSchedulerService {
+	taskSchedulerServiceOnce.Do(func() {
+		taskSchedulerSvc = &taskSchedulerService{
+			taskService: taskService,
+			cron:        cron.New(),
+			entryIDs:    make(map[string]cron.EntryID),
+			lastRun:     make(map[string]time.Time),
+		}
+		go func() {
+			time.Sleep(10 * time.Second)
+			taskSchedulerSvc.start(ctx)
+		}()
+	})
+	return taskSchedulerSvc
 }
 
 // Start starts the cron scheduler and adds all enabled registered jobs.
-func (s *SchedulerService) Start(ctx context.Context) {
+func (s *taskSchedulerService) start(ctx context.Context) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	for _, def := range taskscheduler.ListScheduledJobs() {
@@ -68,7 +86,7 @@ func (s *SchedulerService) Start(ctx context.Context) {
 	s.cron.Start()
 }
 
-func (s *SchedulerService) addJobLocked(def *taskscheduler.ScheduledJobDef) {
+func (s *taskSchedulerService) addJobLocked(def *taskscheduler.ScheduledJobDef) {
 	if _, ok := s.entryIDs[def.ID]; ok {
 		return
 	}
@@ -101,7 +119,7 @@ func (s *SchedulerService) addJobLocked(def *taskscheduler.ScheduledJobDef) {
 }
 
 // ListScheduledJobsWithState returns all scheduled job definitions with runtime state (next run, last run, enabled).
-func (s *SchedulerService) ListScheduledJobsWithState() []ScheduledJobState {
+func (s *taskSchedulerService) ListScheduledJobsWithState() []ScheduledJobState {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	defs := taskscheduler.ListScheduledJobs()
@@ -129,7 +147,7 @@ func (s *SchedulerService) ListScheduledJobsWithState() []ScheduledJobState {
 }
 
 // ToggleEnabled enables or disables a scheduled job by ID.
-func (s *SchedulerService) ToggleEnabled(id string, enabled bool) error {
+func (s *taskSchedulerService) ToggleEnabled(id string, enabled bool) error {
 	def := taskscheduler.GetScheduledJob(id)
 	if def == nil {
 		return ErrScheduledJobNotFound
@@ -150,7 +168,7 @@ func (s *SchedulerService) ToggleEnabled(id string, enabled bool) error {
 }
 
 // TriggerNow creates one task immediately for the given scheduled job ID.
-func (s *SchedulerService) TriggerNow(ctx context.Context, id string) (*model.Task, error) {
+func (s *taskSchedulerService) TriggerNow(ctx context.Context, id string) (*model.Task, error) {
 	def := taskscheduler.GetScheduledJob(id)
 	if def == nil {
 		return nil, ErrScheduledJobNotFound

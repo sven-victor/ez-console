@@ -44,8 +44,8 @@ type Service struct {
 	*AIChatService
 	*OrganizationService
 	*SkillService
-	*TaskService
-	*SchedulerService
+	TaskService
+	TaskSchedulerService
 	*AITraceService
 }
 
@@ -107,8 +107,8 @@ func NewService(ctx context.Context) *Service {
 		OrganizationService:   NewOrganizationService(),
 		SkillService:          NewSkillService(),
 	}
-	s.TaskService = NewTaskService()
-	s.SchedulerService = NewSchedulerService(s.TaskService)
+	s.TaskService = NewTaskService(ctx)
+	s.TaskSchedulerService = NewSchedulerService(ctx, s.TaskService)
 	s.FileService = NewFileService(baseService)
 	s.AITraceService = NewAITraceService(settingService)
 	return s
