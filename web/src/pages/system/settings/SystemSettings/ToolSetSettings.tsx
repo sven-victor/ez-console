@@ -327,7 +327,7 @@ const ToolSetSettings: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'actions',
-      width: 168,
+      width: 200,
       render: (_, record) => {
         return <Actions key='actions' actions={[
           {

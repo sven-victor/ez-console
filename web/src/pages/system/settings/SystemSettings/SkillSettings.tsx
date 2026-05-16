@@ -458,8 +458,8 @@ const SkillSettings: React.FC = () => {
       ),
     },
     { title: t('settings.skills.description', { defaultValue: 'Description' }), dataIndex: 'description', key: 'description', ellipsis: true },
-    { title: t('settings.skills.category', { defaultValue: 'Category' }), dataIndex: 'category', key: 'category', render: (v) => (v ? <Tag>{v}</Tag> : '-') },
-    { title: t('settings.skills.domain', { defaultValue: 'Domain' }), dataIndex: 'domain', key: 'domain', render: (v) => (v ? <Tag color="blue">{v}</Tag> : '-') },
+    { title: t('settings.skills.category', { defaultValue: 'Category' }), dataIndex: 'category', key: 'category', render: (v) => (v ? <Tag>{v}</Tag> : '-'), width: 180, },
+    { title: t('settings.skills.domain', { defaultValue: 'Domain' }), dataIndex: 'domain', key: 'domain', render: (v) => (v ? <Tag color="blue">{v}</Tag> : '-'), width: 180, },
     {
       title: t('settings.skills.statusForAi', { defaultValue: 'AI chat' }),
       key: 'status',
