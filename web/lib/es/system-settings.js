@@ -1446,7 +1446,9 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
       ]
     }
   ) });
-}, vs = $e(() => import("./json-schema-config-form.js")), { TextArea: _s } = V, ws = () => {
+}, vs = $e(() => import("./json-schema-config-form.js").then((t) => ({
+  default: t.JsonSchemaConfigFormItem
+}))), { TextArea: _s } = V, ws = () => {
   var M;
   const { t } = Y("ai"), { t: l } = Y("common"), s = je(), [i] = a.useForm(), [d, o] = y(!1), [f, g] = y(null), [p, n] = y(""), [b, u] = y(""), { loading: C, data: T } = w(
     () => S.ai.getAiTypeDefinitions(),
@@ -1761,6 +1763,7 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
                 A && /* @__PURE__ */ e.jsx(a.Item, { name: ["config"], children: /* @__PURE__ */ e.jsx(qe, { fallback: /* @__PURE__ */ e.jsx(Re, {}), children: /* @__PURE__ */ e.jsx(
                   vs,
                   {
+                    name: "config",
                     schema: A.config_schema,
                     uiSchema: A.ui_schema
                   }
@@ -1989,7 +1992,7 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
     {
       title: l("actions", { defaultValue: "Actions" }),
       key: "actions",
-      width: 168,
+      width: 200,
       render: (x, q) => /* @__PURE__ */ e.jsx(He, { actions: [
         {
           key: "debug",
@@ -2517,8 +2520,8 @@ const zs = () => {
       ] })
     },
     { title: t("settings.skills.description", { defaultValue: "Description" }), dataIndex: "description", key: "description", ellipsis: !0 },
-    { title: t("settings.skills.category", { defaultValue: "Category" }), dataIndex: "category", key: "category", render: (m) => m ? /* @__PURE__ */ e.jsx(re, { children: m }) : "-" },
-    { title: t("settings.skills.domain", { defaultValue: "Domain" }), dataIndex: "domain", key: "domain", render: (m) => m ? /* @__PURE__ */ e.jsx(re, { color: "blue", children: m }) : "-" },
+    { title: t("settings.skills.category", { defaultValue: "Category" }), dataIndex: "category", key: "category", render: (m) => m ? /* @__PURE__ */ e.jsx(re, { children: m }) : "-", width: 180 },
+    { title: t("settings.skills.domain", { defaultValue: "Domain" }), dataIndex: "domain", key: "domain", render: (m) => m ? /* @__PURE__ */ e.jsx(re, { color: "blue", children: m }) : "-", width: 180 },
     {
       title: t("settings.skills.statusForAi", { defaultValue: "AI chat" }),
       key: "status",

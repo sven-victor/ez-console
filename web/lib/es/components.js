@@ -1097,7 +1097,7 @@ const te = () => /* @__PURE__ */ e.jsx("div", { style: {
       title: n("auditLog.action"),
       dataIndex: "action",
       key: "action",
-      render: (h, I) => h ? n(`action.${h.replace(":", ".")}`, { defaultValue: I.action_name }) : I.action_name ?? I.action
+      render: (h, I) => h ? n(`action.${h.replace(/:/g, ".")}`, { defaultValue: I.action_name }) : I.action_name ?? I.action
     },
     {
       title: n("auditLog.user_agent"),

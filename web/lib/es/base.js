@@ -826,12 +826,27 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolsets: {
         update: "Update toolsets",
         create: "Create toolsets"
+      },
+      security_settings: {
+        update: "Update security settings"
+      },
+      oauth_settings: {
+        update: "Update OAuth settings"
+      },
+      settings: {
+        update: "Update settings"
+      },
+      organization: {
+        update: "Update organization",
+        create: "Create organization",
+        delete: "Delete organization"
       }
     },
     authorization: {
       user: {
         login: "User Login",
         logout: "Logout",
+        create: "Create users",
         update: "Update users",
         delete: "Delete users"
       },
@@ -1753,7 +1768,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Last Run",
   viewHistory: "View history",
   triggerNow: "Trigger now",
-  executionHistory: "Execution History"
+  executionHistory: "Execution History",
+  scheduleListFailed: "Failed to list schedules: {{error}}",
+  description: {
+    ai_chat_session_cleanup_task: "Cleanup AI chat sessions",
+    audit_log_cleanup_task: "Cleanup audit logs",
+    task_log_cleanup_task: "Cleanup task logs and historical task run records"
+  }
 }, z = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
@@ -2914,12 +2935,27 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolsets: {
         update: "更新工具集",
         create: "创建工具集"
+      },
+      security_settings: {
+        update: "更新安全设置"
+      },
+      oauth_settings: {
+        update: "更新 OAuth 设置"
+      },
+      settings: {
+        update: "更新系统设置"
+      },
+      organization: {
+        update: "更新组织",
+        create: "创建组织",
+        delete: "删除组织"
       }
     },
     authorization: {
       user: {
         login: "用户登录",
         logout: "登出",
+        create: "创建用户",
         update: "更新用户",
         delete: "删除用户"
       },
@@ -3845,7 +3881,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "上一次运行",
   viewHistory: "查看历史",
   triggerNow: "立即触发",
-  executionHistory: "执行历史"
+  executionHistory: "执行历史",
+  scheduleListFailed: "获取计划任务列表失败：{{error}}",
+  description: {
+    ai_chat_session_cleanup_task: "清理 AI 会话",
+    audit_log_cleanup_task: "清理审计日志",
+    task_log_cleanup_task: "清理任务日志及历史运行记录"
+  }
 }, N = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
@@ -4302,12 +4344,27 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolsets: {
         update: "Toolsets aktualisieren",
         create: "Toolsets erstellen"
+      },
+      security_settings: {
+        update: "Sicherheitseinstellungen aktualisieren"
+      },
+      oauth_settings: {
+        update: "OAuth-Einstellungen aktualisieren"
+      },
+      settings: {
+        update: "Einstellungen aktualisieren"
+      },
+      organization: {
+        update: "Organisation aktualisieren",
+        create: "Organisation erstellen",
+        delete: "Organisation löschen"
       }
     },
     authorization: {
       user: {
         login: "Benutzeranmeldung",
         logout: "Abmelden",
+        create: "Benutzer erstellen",
         update: "Benutzer aktualisieren",
         delete: "Benutzer löschen"
       },
@@ -5231,7 +5288,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Letzter Lauf",
   viewHistory: "Verlauf anzeigen",
   triggerNow: "Jetzt auslösen",
-  executionHistory: "Ausführungsverlauf"
+  executionHistory: "Ausführungsverlauf",
+  scheduleListFailed: "Zeitplanliste konnte nicht abgerufen werden: {{error}}",
+  description: {
+    ai_chat_session_cleanup_task: "AI-Chat-Sitzungen bereinigen",
+    audit_log_cleanup_task: "Audit-Logs bereinigen",
+    task_log_cleanup_task: "Aufgabenprotokolle und historische Ausführungseinträge bereinigen"
+  }
 }, K = {
   loading: "Cargando...",
   success: "Operación exitosa",
@@ -5688,12 +5751,27 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolsets: {
         update: "Actualizar conjuntos de herramientas",
         create: "Crear conjuntos de herramientas"
+      },
+      security_settings: {
+        update: "Actualizar configuración de seguridad"
+      },
+      oauth_settings: {
+        update: "Actualizar configuración de OAuth"
+      },
+      settings: {
+        update: "Actualizar configuración"
+      },
+      organization: {
+        update: "Actualizar organización",
+        create: "Crear organización",
+        delete: "Eliminar organización"
       }
     },
     authorization: {
       user: {
         login: "Inicio de sesión de usuario",
         logout: "Cerrar sesión",
+        create: "Crear usuarios",
         update: "Actualizar usuarios",
         delete: "Eliminar usuarios"
       },
@@ -6617,7 +6695,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Última ejecución",
   viewHistory: "Ver historial",
   triggerNow: "Ejecutar ahora",
-  executionHistory: "Historial de ejecuciones"
+  executionHistory: "Historial de ejecuciones",
+  scheduleListFailed: "Error al listar los planes: {{error}}",
+  description: {
+    ai_chat_session_cleanup_task: "Limpiar sesiones de chat de IA",
+    audit_log_cleanup_task: "Limpiar registros de auditoría",
+    task_log_cleanup_task: "Limpiar registros de tareas y registros de ejecución histórica"
+  }
 }, Z = {
   loading: "Chargement...",
   success: "Opération réussie",
@@ -7074,12 +7158,27 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolsets: {
         update: "Mettre à jour les ensembles d'outils",
         create: "Créer des ensembles d'outils"
+      },
+      security_settings: {
+        update: "Mettre à jour les paramètres de sécurité"
+      },
+      oauth_settings: {
+        update: "Mettre à jour les paramètres OAuth"
+      },
+      settings: {
+        update: "Mettre à jour les paramètres"
+      },
+      organization: {
+        update: "Mettre à jour l'organisation",
+        create: "Créer une organisation",
+        delete: "Supprimer l'organisation"
       }
     },
     authorization: {
       user: {
         login: "Connexion utilisateur",
         logout: "Déconnexion",
+        create: "Créer des utilisateurs",
         update: "Mettre à jour les utilisateurs",
         delete: "Supprimer les utilisateurs"
       },
@@ -8003,7 +8102,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Dernière exécution",
   viewHistory: "Voir l'historique",
   triggerNow: "Déclencher maintenant",
-  executionHistory: "Historique d'exécution"
+  executionHistory: "Historique d'exécution",
+  scheduleListFailed: "Impossible de lister les planifications : {{error}}",
+  description: {
+    ai_chat_session_cleanup_task: "Nettoyer les sessions de chat IA",
+    audit_log_cleanup_task: "Nettoyer les journaux d'audit",
+    task_log_cleanup_task: "Nettoyer les journaux de tâches et les enregistrements historiques"
+  }
 }, X = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
@@ -8460,12 +8565,27 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolsets: {
         update: "تحديث مجموعات الأدوات",
         create: "إنشاء مجموعات أدوات"
+      },
+      security_settings: {
+        update: "تحديث إعدادات الأمان"
+      },
+      oauth_settings: {
+        update: "تحديث إعدادات OAuth"
+      },
+      settings: {
+        update: "تحديث الإعدادات"
+      },
+      organization: {
+        update: "تحديث المنظمة",
+        create: "إنشاء منظمة",
+        delete: "حذف المنظمة"
       }
     },
     authorization: {
       user: {
         login: "تسجيل دخول المستخدم",
         logout: "تسجيل الخروج",
+        create: "إنشاء مستخدمين",
         update: "تحديث المستخدمين",
         delete: "حذف المستخدمين"
       },
@@ -9389,7 +9509,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "آخر تشغيل",
   viewHistory: "عرض السجل",
   triggerNow: "شغّل الآن",
-  executionHistory: "سجل التنفيذ"
+  executionHistory: "سجل التنفيذ",
+  scheduleListFailed: "فشل سرد الجداول الزمنية: {{error}}",
+  description: {
+    ai_chat_session_cleanup_task: "تنظيف جلسات محادثة الذكاء الاصطناعي",
+    audit_log_cleanup_task: "تنظيف سجلات التدقيق",
+    task_log_cleanup_task: "تنظيف سجلات المهام وسجلات التشغيل التاريخية"
+  }
 }, re = {
   loading: "Laddar...",
   success: "Operationen lyckades",
@@ -9846,12 +9972,27 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       toolsets: {
         update: "Uppdatera verktygsset",
         create: "Skapa verktygsuppsättningar"
+      },
+      security_settings: {
+        update: "Uppdatera säkerhetsinställningar"
+      },
+      oauth_settings: {
+        update: "Uppdatera OAuth-inställningar"
+      },
+      settings: {
+        update: "Uppdatera inställningar"
+      },
+      organization: {
+        update: "Uppdatera organisation",
+        create: "Skapa organisation",
+        delete: "Ta bort organisation"
       }
     },
     authorization: {
       user: {
         login: "Användarinloggning",
         logout: "Logga ut",
+        create: "Skapa användare",
         update: "Uppdatera användare",
         delete: "Ta bort användare"
       },
@@ -10775,7 +10916,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   scheduleLastRun: "Senaste körning",
   viewHistory: "Visa historik",
   triggerNow: "Kör nu",
-  executionHistory: "Körhistorik"
+  executionHistory: "Körhistorik",
+  scheduleListFailed: "Det gick inte att lista scheman: {{error}}",
+  description: {
+    ai_chat_session_cleanup_task: "Rensa AI-chattsessioner",
+    audit_log_cleanup_task: "Rensa granskningsloggar",
+    task_log_cleanup_task: "Rensa uppgiftsloggar och historiska körningsdata"
+  }
 };
 g.use(f).use(h).init({
   ns: ["common", "authorization", "system", "ai", "task"],
