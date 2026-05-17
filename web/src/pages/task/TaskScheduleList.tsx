@@ -74,6 +74,9 @@ const TaskScheduleList: React.FC = () => {
       await api.tasks.triggerTaskSchedule({ id });
       message.success(t('scheduleTriggered', { defaultValue: 'Task triggered.' }));
       setSelectedScheduleId(id);
+      if (id === selectedScheduleId) {
+        historyTableRef.current?.reload?.();
+      }
     } catch {
       message.error(t('scheduleTriggerFailed', { defaultValue: 'Failed to trigger schedule.' }));
     }
@@ -256,9 +259,14 @@ const TaskScheduleList: React.FC = () => {
         <Card
           title={t('executionHistory', { defaultValue: 'Execution History' })}
           extra={
-            <Button type="text" size="small" onClick={() => setSelectedScheduleId(null)}>
-              {tCommon('close', { defaultValue: 'Close' })}
-            </Button>
+            <Space size="small">
+              <Button type="text" size="small" icon={<ReloadOutlined />} onClick={() => historyTableRef.current?.reload?.()}>
+                {tCommon('refresh', { defaultValue: 'Refresh' })}
+              </Button>
+              <Button type="text" size="small" onClick={() => setSelectedScheduleId(null)}>
+                {tCommon('close', { defaultValue: 'Close' })}
+              </Button>
+            </Space>
           }
         >
           <ProTable<API.Task>
