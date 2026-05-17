@@ -403,11 +403,26 @@ export default {
         update: 'Toolsets aktualisieren',
         create: 'Toolsets erstellen',
       },
+      security_settings: {
+        update: 'Sicherheitseinstellungen aktualisieren',
+      },
+      oauth_settings: {
+        update: 'OAuth-Einstellungen aktualisieren',
+      },
+      settings: {
+        update: 'Einstellungen aktualisieren',
+      },
+      organization: {
+        update: 'Organisation aktualisieren',
+        create: 'Organisation erstellen',
+        delete: 'Organisation löschen',
+      },
     },
     authorization: {
       user: {
         login: 'Benutzeranmeldung',
         logout: 'Abmelden',
+        create: 'Benutzer erstellen',
         update: 'Benutzer aktualisieren',
         delete: 'Benutzer löschen',
       },

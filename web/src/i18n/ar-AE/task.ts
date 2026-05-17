@@ -72,4 +72,10 @@ export default {
   viewHistory: 'عرض السجل',
   triggerNow: 'شغّل الآن',
   executionHistory: 'سجل التنفيذ',
+  scheduleListFailed: 'فشل سرد الجداول الزمنية: {{error}}',
+  description: {
+    ai_chat_session_cleanup_task: 'تنظيف جلسات محادثة الذكاء الاصطناعي',
+    audit_log_cleanup_task: 'تنظيف سجلات التدقيق',
+    task_log_cleanup_task: 'تنظيف سجلات المهام وسجلات التشغيل التاريخية',
+  },
 };

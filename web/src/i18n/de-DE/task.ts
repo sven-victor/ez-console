@@ -72,4 +72,10 @@ export default {
   viewHistory: 'Verlauf anzeigen',
   triggerNow: 'Jetzt auslösen',
   executionHistory: 'Ausführungsverlauf',
+  scheduleListFailed: 'Zeitplanliste konnte nicht abgerufen werden: {{error}}',
+  description: {
+    ai_chat_session_cleanup_task: 'AI-Chat-Sitzungen bereinigen',
+    audit_log_cleanup_task: 'Audit-Logs bereinigen',
+    task_log_cleanup_task: 'Aufgabenprotokolle und historische Ausführungseinträge bereinigen',
+  },
 };

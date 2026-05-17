@@ -403,11 +403,26 @@ export default {
         update: 'تحديث مجموعات الأدوات',
         create: 'إنشاء مجموعات أدوات',
       },
+      security_settings: {
+        update: 'تحديث إعدادات الأمان',
+      },
+      oauth_settings: {
+        update: 'تحديث إعدادات OAuth',
+      },
+      settings: {
+        update: 'تحديث الإعدادات',
+      },
+      organization: {
+        update: 'تحديث المنظمة',
+        create: 'إنشاء منظمة',
+        delete: 'حذف المنظمة',
+      },
     },
     authorization: {
       user: {
         login: 'تسجيل دخول المستخدم',
         logout: 'تسجيل الخروج',
+        create: 'إنشاء مستخدمين',
         update: 'تحديث المستخدمين',
         delete: 'حذف المستخدمين',
       },

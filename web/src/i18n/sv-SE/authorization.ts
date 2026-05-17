@@ -403,11 +403,26 @@ export default {
         update: 'Uppdatera verktygsset',
         create: 'Skapa verktygsuppsättningar',
       },
+      security_settings: {
+        update: 'Uppdatera säkerhetsinställningar',
+      },
+      oauth_settings: {
+        update: 'Uppdatera OAuth-inställningar',
+      },
+      settings: {
+        update: 'Uppdatera inställningar',
+      },
+      organization: {
+        update: 'Uppdatera organisation',
+        create: 'Skapa organisation',
+        delete: 'Ta bort organisation',
+      },
     },
     authorization: {
       user: {
         login: 'Användarinloggning',
         logout: 'Logga ut',
+        create: 'Skapa användare',
         update: 'Uppdatera användare',
         delete: 'Ta bort användare',
       },

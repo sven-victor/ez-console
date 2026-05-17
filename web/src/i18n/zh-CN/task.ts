@@ -72,4 +72,10 @@ export default {
   viewHistory: '查看历史',
   triggerNow: '立即触发',
   executionHistory: '执行历史',
+  scheduleListFailed: '获取计划任务列表失败：{{error}}',
+  description: {
+    ai_chat_session_cleanup_task: '清理 AI 会话',
+    audit_log_cleanup_task: '清理审计日志',
+    task_log_cleanup_task: '清理任务日志及历史运行记录',
+  },
 };

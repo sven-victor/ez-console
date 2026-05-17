@@ -128,7 +128,7 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
       key: 'action',
       render: (action: string, record: API.AuditLog) => {
         if (action) {
-          return t(`action.${action.replace(':', '.')}`, { defaultValue: record.action_name });
+          return t(`action.${action.replace(/:/g, '.')}`, { defaultValue: record.action_name });
         }
         return record.action_name ?? record.action;
       },

@@ -72,4 +72,10 @@ export default {
   viewHistory: 'Ver historial',
   triggerNow: 'Ejecutar ahora',
   executionHistory: 'Historial de ejecuciones',
+  scheduleListFailed: 'Error al listar los planes: {{error}}',
+  description: {
+    ai_chat_session_cleanup_task: 'Limpiar sesiones de chat de IA',
+    audit_log_cleanup_task: 'Limpiar registros de auditoría',
+    task_log_cleanup_task: 'Limpiar registros de tareas y registros de ejecución histórica',
+  },
 };

@@ -72,4 +72,10 @@ export default {
   viewHistory: 'Visa historik',
   triggerNow: 'Kör nu',
   executionHistory: 'Körhistorik',
+  scheduleListFailed: 'Det gick inte att lista scheman: {{error}}',
+  description: {
+    ai_chat_session_cleanup_task: 'Rensa AI-chattsessioner',
+    audit_log_cleanup_task: 'Rensa granskningsloggar',
+    task_log_cleanup_task: 'Rensa uppgiftsloggar och historiska körningsdata',
+  },
 };

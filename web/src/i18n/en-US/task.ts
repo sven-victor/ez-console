@@ -72,4 +72,10 @@ export default {
   viewHistory: 'View history',
   triggerNow: 'Trigger now',
   executionHistory: 'Execution History',
+  scheduleListFailed: 'Failed to list schedules: {{error}}',
+  description: {
+    ai_chat_session_cleanup_task: 'Cleanup AI chat sessions',
+    audit_log_cleanup_task: 'Cleanup audit logs',
+    task_log_cleanup_task: 'Cleanup task logs and historical task run records',
+  },
 };

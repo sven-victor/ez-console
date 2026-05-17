@@ -405,11 +405,26 @@ export default {
         update: '更新工具集',
         create: '创建工具集',
       },
+      security_settings: {
+        update: '更新安全设置',
+      },
+      oauth_settings: {
+        update: '更新 OAuth 设置',
+      },
+      settings: {
+        update: '更新系统设置',
+      },
+      organization: {
+        update: '更新组织',
+        create: '创建组织',
+        delete: '删除组织',
+      },
     },
     authorization: {
       user: {
         login: '用户登录',
         logout: '登出',
+        create: '创建用户',
         update: '更新用户',
         delete: '删除用户',
       },

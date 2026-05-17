@@ -386,11 +386,26 @@ export default {
         update: 'Update toolsets',
         create: 'Create toolsets',
       },
+      security_settings: {
+        update: 'Update security settings',
+      },
+      oauth_settings: {
+        update: 'Update OAuth settings',
+      },
+      settings: {
+        update: 'Update settings',
+      },
+      organization: {
+        update: 'Update organization',
+        create: 'Create organization',
+        delete: 'Delete organization',
+      },
     },
     authorization: {
       user: {
         login: 'User Login',
         logout: 'Logout',
+        create: 'Create users',
         update: 'Update users',
         delete: 'Delete users',
       },

@@ -403,11 +403,26 @@ export default {
         update: 'Actualizar conjuntos de herramientas',
         create: 'Crear conjuntos de herramientas',
       },
+      security_settings: {
+        update: 'Actualizar configuración de seguridad',
+      },
+      oauth_settings: {
+        update: 'Actualizar configuración de OAuth',
+      },
+      settings: {
+        update: 'Actualizar configuración',
+      },
+      organization: {
+        update: 'Actualizar organización',
+        create: 'Crear organización',
+        delete: 'Eliminar organización',
+      },
     },
     authorization: {
       user: {
         login: 'Inicio de sesión de usuario',
         logout: 'Cerrar sesión',
+        create: 'Crear usuarios',
         update: 'Actualizar usuarios',
         delete: 'Eliminar usuarios',
       },
