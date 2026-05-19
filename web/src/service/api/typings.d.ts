@@ -475,15 +475,7 @@ declare global {
       fileKey: string;
     }
   
-    type Duration =
-      | -9223372036854776000
-      | 9223372036854776000
-      | 1
-      | 1000
-      | 1000000
-      | 1000000000
-      | 60000000000
-      | 3600000000000;
+    type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
   
     interface EnableMFARequest {
       mfa_type: string;
@@ -1686,9 +1678,9 @@ declare global {
       /** section 9.5 */
       examples: any[];
       /** section 6.2.3 */
-      exclusiveMaximum: string;
+      exclusiveMaximum: number;
       /** section 6.2.5 */
-      exclusiveMinimum: string;
+      exclusiveMinimum: number;
       /** RFC draft-bhutton-json-schema-validation-00, section 7 */
       format: string;
       /** RFC draft-bhutton-json-schema-00 section 10.2.2 (Apply sub-schemas conditionally) */
@@ -1704,7 +1696,7 @@ declare global {
       /** section 6.5.1 */
       maxProperties: number;
       /** section 6.2.2 */
-      maximum: string;
+      maximum: number;
       /** section 6.4.5 */
       minContains: number;
       /** section 6.4.2 */
@@ -1714,9 +1706,9 @@ declare global {
       /** section 6.5.2 */
       minProperties: number;
       /** section 6.2.4 */
-      minimum: string;
+      minimum: number;
       /** section 6.2.1 */
-      multipleOf: string;
+      multipleOf: number;
       /** section 10.2.1.4 */
       not: Schema;
       /** section 10.2.1.3 */

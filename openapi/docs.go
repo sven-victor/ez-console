@@ -7637,11 +7637,11 @@ const docTemplate = `{
                 },
                 "exclusiveMaximum": {
                     "description": "section 6.2.3",
-                    "type": "string"
+                    "type": "number"
                 },
                 "exclusiveMinimum": {
                     "description": "section 6.2.5",
-                    "type": "string"
+                    "type": "number"
                 },
                 "format": {
                     "description": "RFC draft-bhutton-json-schema-validation-00, section 7",
@@ -7681,7 +7681,7 @@ const docTemplate = `{
                 },
                 "maximum": {
                     "description": "section 6.2.2",
-                    "type": "string"
+                    "type": "number"
                 },
                 "minContains": {
                     "description": "section 6.4.5",
@@ -7701,11 +7701,11 @@ const docTemplate = `{
                 },
                 "minimum": {
                     "description": "section 6.2.4",
-                    "type": "string"
+                    "type": "number"
                 },
                 "multipleOf": {
                     "description": "section 6.2.1",
-                    "type": "string"
+                    "type": "number"
                 },
                 "not": {
                     "description": "section 10.2.1.4",
@@ -11141,30 +11141,11 @@ const docTemplate = `{
         "time.Duration": {
             "type": "integer",
             "enum": [
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
                 1,
                 1000,
                 1000000,
@@ -11178,30 +11159,11 @@ const docTemplate = `{
                 3600000000000
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
