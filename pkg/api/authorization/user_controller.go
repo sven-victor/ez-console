@@ -154,7 +154,7 @@ func (c *UserController) GetUser(ctx *gin.Context) {
 		user.Status = model.UserStatusDeleted
 	} else if user.IsLocked() {
 		user.Status = model.UserStatusLocked
-	} else if user.IsPasswordExpired(passwordExpiryDays) {
+	} else if user.IsPasswordExpired(passwordExpiryDays) && user.Status != model.UserStatusPendingActivation {
 		user.Status = model.UserStatusPasswordExpired
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, user)

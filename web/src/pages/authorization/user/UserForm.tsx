@@ -92,7 +92,7 @@ const UserForm: React.FC = () => {
   });
 
   // If in edit mode, get user information
-  const { loading: userLoading } = useRequest(
+  const { loading: userLoading, data: userData } = useRequest(
     async () => api.authorization.getUser({ id }),
     {
       ready: isEditMode && !!id,
@@ -160,13 +160,13 @@ const UserForm: React.FC = () => {
         message.error(
           isEditMode
             ? t('user.updateError', {
-                defaultValue: 'Failed to update user',
-                error: error instanceof Error ? error.message : String(error),
-              })
+              defaultValue: 'Failed to update user',
+              error: error instanceof Error ? error.message : String(error),
+            })
             : t('user.createError', {
-                defaultValue: 'Failed to create user',
-                error: error instanceof Error ? error.message : String(error),
-              }),
+              defaultValue: 'Failed to create user',
+              error: error instanceof Error ? error.message : String(error),
+            }),
         );
       },
     },
@@ -257,6 +257,7 @@ const UserForm: React.FC = () => {
               <Option value="active">{t('user.statusActive', { defaultValue: 'Active' })}</Option>
               <Option value="disabled">{t('user.statusDisabled', { defaultValue: 'Disabled' })}</Option>
               <Option value="password_expired">{t('user.statusEnum.password_expired', { defaultValue: 'Password Expired' })}</Option>
+              {userData?.status === 'pending_activation' && <Option value="pending_activation">{t('user.statusEnum.pending_activation', { defaultValue: 'Pending Activation' })}</Option>}
             </Select>
           </Form.Item>)}
         <Form.Item

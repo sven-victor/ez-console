@@ -230,6 +230,7 @@ export async function request<T extends { data: any; current?: number; total?: n
       headers: {
         'Accept': 'text/event-stream',
         'Content-Type': 'application/json',
+        'X-Base-Path': getURL(),
         'Accept-Language': localStorage.getItem('i18nextLng') || 'en-US',
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
         ...(orgID ? { 'X-Scope-OrgID': orgID } : {}),
@@ -244,7 +245,11 @@ export async function request<T extends { data: any; current?: number; total?: n
   const headers = requestType === 'form' ? {
     ...config?.headers,
     "Content-Type": "multipart/form-data",
-  } : config?.headers;
+    'X-Base-Path': getURL(),
+  } : {
+    ...config?.headers,
+    'X-Base-Path': getURL(),
+  };
   switch (responseType) {
     case 'arraybuffer':
       return client.request<T, AxiosResponse<ArrayBuffer>>({

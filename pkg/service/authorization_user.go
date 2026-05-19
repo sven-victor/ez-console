@@ -567,17 +567,17 @@ func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*m
 	var existingUser model.User
 	result := dbConn.Where("username = ?", req.Username).First(&existingUser)
 	if result.Error == nil {
-		return nil, fmt.Errorf("username %s already exists", req.Username)
+		return nil, util.NewErrorMessage("E4001", fmt.Sprintf("username %s already exists", req.Username))
 	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, result.Error
+		return nil, util.NewErrorMessage("E5001", "System error, please contact the administrator", result.Error)
 	}
 
 	// Check if email already exists
 	result = dbConn.Where("email = ?", req.Email).First(&existingUser)
 	if result.Error == nil {
-		return nil, fmt.Errorf("email %s already exists", req.Email)
+		return nil, util.NewErrorMessage("E4001", fmt.Sprintf("email %s already exists", req.Email))
 	} else if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		return nil, result.Error
+		return nil, util.NewErrorMessage("E5001", "System error, please contact the administrator", result.Error)
 	}
 
 	// Create user object
@@ -603,32 +603,35 @@ func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*m
 	// Set password only when provided
 	if req.Password != "" {
 		if err := user.SetPassword(req.Password); err != nil {
-			return nil, fmt.Errorf("failed to set password: %w", err)
+			return nil, util.NewErrorMessage("E5001", "Failed to set password", err)
 		}
 	}
 	err := dbConn.Transaction(func(tx *gorm.DB) error {
 		// Create user in database
 		if err := tx.Create(&user).Error; err != nil {
-			return fmt.Errorf("failed to create user: %w", err)
+			return util.NewErrorMessage("E5001", "Failed to create user: database error", err)
 		}
 		// Assign roles
 		if len(req.RoleIDs) > 0 {
 			if err := tx.Where("resource_id IN ?", req.RoleIDs).Find(&user.Roles).Error; err != nil {
-				return fmt.Errorf("update user roles failed: %w", err)
+				return util.NewErrorMessage("E5001", "Failed to update user roles: database error", err)
 			}
 			if err := tx.Model(&user).Association("Roles").Append(user.Roles); err != nil {
-				return fmt.Errorf("assign roles to user failed: %w", err)
+				return util.NewErrorMessage("E5001", "Failed to assign roles to user: database error", err)
 			}
 			if err := s.RunUserRoleChangeHooks(ctx, tx, user.ResourceID, nil, user.Roles); err != nil {
-				return err
+				return util.NewErrorMessage("E5001", "Failed to run user role change hooks: system error", err)
 			}
 		}
 		newUser := user
 		newUser.Roles = nil
-		return s.RunUserChangeHooks(ctx, tx, nil, &newUser)
+		if err := s.RunUserChangeHooks(ctx, tx, nil, &newUser); err != nil {
+			return util.NewErrorMessage("E5001", "Failed to run user change hooks: system error", err)
+		}
+		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, util.NewErrorMessage("E5001", "Failed to create user: system error", err)
 	}
 	return &user, nil
 }

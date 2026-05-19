@@ -45,22 +45,10 @@ func GetRootURL(c *gin.Context) string {
 
 // GetBaseURL returns the base URL (scheme + host) of the request, without path.
 func GetBaseURL(c *gin.Context) string {
-	rootURL := config.GetConfig().Server.RootURL
-	if rootURL != "" {
-		return strings.TrimSuffix(rootURL, "/")
+	baseURL := GetRootURL(c)
+	basePath := c.GetHeader("X-Base-Path")
+	if basePath != "" {
+		baseURL = fmt.Sprintf("%s/%s", baseURL, strings.TrimSuffix(strings.TrimPrefix(basePath, "/"), "/"))
 	}
-
-	scheme := "http"
-	if c.Request.TLS != nil {
-		scheme = "https"
-	} else if proto := c.GetHeader("X-Forwarded-Proto"); proto != "" {
-		scheme = proto
-	}
-
-	host := c.Request.Host
-	if forwardedHost := c.GetHeader("X-Forwarded-Host"); forwardedHost != "" {
-		host = forwardedHost
-	}
-
-	return fmt.Sprintf("%s://%s", scheme, host)
+	return baseURL
 }
