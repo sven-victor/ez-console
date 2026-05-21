@@ -76,6 +76,10 @@ The Task Management module provides:
 
 - **Location**: System Settings → Task Settings tab
 - **Permission**: `system:settings:view` to view, `system:settings:update` to save
+- **Rendering model**:
+  - `log_storage_backend` is a fixed field with dedicated UI (`Select`).
+  - Other task settings are dynamically rendered from `GET /api/system/task-settings/fields`.
+  - Frontend control mapping is by `value_type`: `int` -> `InputNumber`, `bool` -> `Switch`, `string` -> `Input`.
 
 **Max concurrent tasks**
 
@@ -87,6 +91,18 @@ The Task Management module provides:
 - **Setting key**: `task_log_storage_backend` (string, default `"database"`)
 - **Effect**: Backend used to store and read task execution logs. When a task runs, the context logger is teed with a task logger that writes each log line to this backend. `GetTaskLogs` also uses this backend so the task detail page shows logs from the same store.
 - **UI**: A dropdown lists available backends. The list is loaded from `GET /api/system/task-settings/log-storage-backends`, which returns registered backends from `pkg/taskscheduler` (e.g. `database`). Adding a new backend in code and registering it makes it appear in the dropdown without frontend changes.
+
+**Other extensible task settings**
+
+- **Keys**: Persisted as full keys with `task_` prefix (for example `task_ai_chat_retention_days`).
+- **Get/Update payload shape**: `GET /api/system/task-settings` and `PUT /api/system/task-settings` use a flat map where:
+  - fixed key is `log_storage_backend` (without `task_` prefix);
+  - extensible keys keep full `task_`-prefixed names.
+- **Type coercion on read**: Backend converts persisted string values to the declared `value_type` before returning:
+  - `int` -> number
+  - `bool` -> boolean (`true`/`1` are treated as true)
+  - `string` -> string
+- **Validation on update**: Backend validates only registered extensible keys by declared `value_type`; unregistered keys are ignored.
 
 ## Permissions
 
@@ -144,9 +160,21 @@ All task APIs require authentication.
 
 | Method | Path                                              | Permission           | Description |
 |--------|---------------------------------------------------|----------------------|-------------|
+| GET    | `/api/system/task-settings`                       | system:settings:view | Get task settings as a flat map (`log_storage_backend` + registered extensible fields). |
+| PUT    | `/api/system/task-settings`                       | system:settings:update | Update task settings using the same flat map shape as GET. |
+| GET    | `/api/system/task-settings/fields`                | system:settings:view | List registered extensible field definitions (`key`, `value_type`, `default_value`). |
 | GET    | `/api/system/task-settings/log-storage-backends` | system:settings:view | List registered log storage backends for the task settings dropdown. |
 
-- **Response**: Array of `{ "id": "database", "name": "Database" }` (and any other registered backends). Used by the Task Settings form to populate the "Log storage" select.
+- **`GET /api/system/task-settings/fields` response**: Array of field metadata, for example:
+
+```json
+[
+  { "key": "task_max_concurrent", "value_type": "int", "default_value": "10" },
+  { "key": "task_ai_chat_retention_days", "value_type": "int", "default_value": "90" }
+]
+```
+
+- **`GET /api/system/task-settings/log-storage-backends` response**: Array of `{ "id": "database", "name": "Database" }` (and any other registered backends). Used by the Task Settings form to populate the "Log storage" select.
 
 There is **no** HTTP API to create tasks; creation is done in code via `TaskService.CreateTask`. Modules that need to expose "create task" to the frontend (e.g. user export) provide their own POST endpoint that calls `TaskService.CreateTask` and returns the task.
 
@@ -436,6 +464,27 @@ The scheduler does not store cron definitions in the DB; adding or changing a jo
 
 - **Max concurrent tasks**: System Settings → Task Settings → "Max concurrent tasks" (default 10). Stored as `task_max_concurrent` in the settings table.
 - **Log storage backend**: System Settings → Task Settings → "Log storage" dropdown (default `database`). Stored as `task_log_storage_backend`. Determines where task execution logs are written and read from; options come from `pkg/taskscheduler` registry.
+
+### Registering a new extensible task setting (developer guide)
+
+Task settings support registry-driven extension from backend code. Register once in Go, then the field is automatically initialized, exposed via API, and rendered in frontend Task Settings.
+
+1. Register the field in `pkg/model/system_task_setting.go`:
+   - Call `model.RegisterTaskSetting(key, valueType, defaultValue)`.
+   - `key` should be provided **without** `task_`; backend auto-prefixes to full key `task_<key>`.
+   - Supported `valueType` values are `int`, `bool`, `string`.
+2. Ensure server startup runs default initialization (`SettingService.InitDefaultTaskSettings`):
+   - If no row exists for the setting key, it inserts `defaultValue`.
+3. Frontend discovers the field automatically:
+   - `TaskSettingsForm` calls `GET /api/system/task-settings/fields` and renders the control by `value_type`.
+4. Optional i18n label:
+   - Add `settings.task.fields.<full_key>` translation entry so UI shows a friendly label instead of raw key text.
+
+Built-in extensible settings are currently registered in `init()` as:
+- `task_max_concurrent` (int, default `10`)
+- `task_ai_chat_retention_days` (int, default `90`)
+- `task_log_retention_days` (int, default `30`)
+- `task_audit_log_retention_days` (int, default `365`)
 
 ## Troubleshooting
 
