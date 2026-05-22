@@ -4616,7 +4616,7 @@ definitions:
 info:
   contact: {}
   title: EZ Console API
-  version: v1.15.0
+  version: v1.16.0
 paths:
   /api/ai/chat/sessions:
     get:

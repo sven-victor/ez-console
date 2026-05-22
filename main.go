@@ -17,7 +17,7 @@ package main
 import "github.com/sven-victor/ez-console/cmd"
 
 // @title		EZ Console API
-// @version	v1.15.0
+// @version	v1.16.0
 func main() {
 	cmd.Execute()
 }
