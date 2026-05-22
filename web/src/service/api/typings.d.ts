@@ -475,7 +475,15 @@ declare global {
       fileKey: string;
     }
   
-    type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+    type Duration =
+      | -9223372036854776000
+      | 9223372036854776000
+      | 1
+      | 1000
+      | 1000000
+      | 1000000000
+      | 60000000000
+      | 3600000000000;
   
     interface EnableMFARequest {
       mfa_type: string;
@@ -1252,6 +1260,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArrayModelSettingFieldDefinition {
+      code: string;
+      data: SettingFieldDefinition[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayModelTask {
       code: string;
       data: Task[];
@@ -1748,6 +1763,7 @@ declare global {
       mfa_enforced: boolean;
       password_complexity: PasswordComplexity;
       password_expiry_days: number;
+      password_expiry_notify_days: number;
       password_min_length: number;
       session_idle_timeout_minutes: number;
       session_timeout_minutes: number;
@@ -1827,6 +1843,31 @@ declare global {
       policy_document: PolicyDocument;
     }
   
+    interface SettingFieldDefinition {
+      default_value: string;
+      enum_options: SettingFieldEnumOption[];
+      key: string;
+      label_key: string;
+      max: number;
+      min: number;
+      step: number;
+      tooltip_key: string;
+      value_type: SettingFieldType;
+    }
+  
+    interface SettingFieldEnumOption {
+      label: string;
+      value: string;
+    }
+  
+    type SettingFieldType =
+      | "string"
+      | "number"
+      | "percentage"
+      | "rich_text"
+      | "string_list"
+      | "enum";
+  
     interface SimpleChatMessage {
       content: string;
       role: AIChatMessageRole;
@@ -1903,11 +1944,13 @@ declare global {
       from_address: string;
       from_name: string;
       host: string;
+      inactive_lock_template: string;
+      login_failure_lock_template: string;
       mfa_code_template: string;
       password: string;
+      password_expiry_template: string;
       port: number;
       reset_password_template: string;
-      user_locked_template: string;
       username: string;
     }
   
@@ -1920,12 +1963,14 @@ declare global {
       from_address: string;
       from_name: string;
       host: string;
+      inactive_lock_template: string;
+      login_failure_lock_template: string;
       mfa_code_template: string;
       password: string;
+      password_expiry_template: string;
       port: number;
       reset_password_template: string;
       to: string;
-      user_locked_template: string;
       username: string;
     }
   

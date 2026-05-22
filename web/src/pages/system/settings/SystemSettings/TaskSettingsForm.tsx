@@ -22,6 +22,8 @@ import { SaveOutlined, ReloadOutlined, CalendarOutlined } from '@ant-design/icon
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import { useNavigate } from 'react-router-dom';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const TaskSettingsForm: React.FC = () => {
   const navigate = useNavigate();
@@ -67,6 +69,7 @@ const TaskSettingsForm: React.FC = () => {
   const renderFieldControl = (field: API.TaskSettingField) => {
     switch (field.value_type) {
       case 'int':
+      case 'number':
         return (
           <InputNumber
             style={{ width: '100%' }}
@@ -77,15 +80,23 @@ const TaskSettingsForm: React.FC = () => {
             }
           />
         );
+      case 'percentage':
+        return <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.01} addonAfter="%" />;
       case 'bool':
         return <Switch />;
+      case 'string_list':
+        return <Select mode="tags" tokenSeparators={[',']} />;
+      case 'enum':
+        return <Select options={(field as any).enum_options || []} />;
+      case 'rich_text':
+        return <ReactQuill theme="snow" />;
       default:
         return <Input />;
     }
   };
 
   const getFieldRules = (field: API.TaskSettingField) => {
-    if (field.value_type === 'int') {
+    if (field.value_type === 'int' || field.value_type === 'number' || field.value_type === 'percentage') {
       return [{ type: 'number' as const }];
     }
     return [];

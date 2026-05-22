@@ -38,6 +38,8 @@ const (
 	SettingPasswordMinLength    SettingKey = "password_min_length"    // Minimum password length
 	SettingPasswordExpiryDays   SettingKey = "password_expiry_days"   // Password expiry days (0 means never expires)
 
+	SettingPasswordExpiryNotifyDays SettingKey = "password_expiry_notify_days" // Password expiry notify days (0 means disabled)
+
 	// User policy related settings
 	SettingSessionTimeoutMinutes     SettingKey = "session_timeout_minutes"      // Session timeout in minutes
 	SettingSessionIdleTimeoutMinutes SettingKey = "session_idle_timeout_minutes" // Session idle timeout in minutes
@@ -59,6 +61,7 @@ var SecuritySettingKeys = []SettingKey{
 	SettingSessionIdleTimeoutMinutes,
 	SettingPasswordMinLength,
 	SettingPasswordExpiryDays,
+	SettingPasswordExpiryNotifyDays,
 	SettingUserInactiveDays,
 	SettingLoginFailureLockoutMinutes,
 }
@@ -73,6 +76,7 @@ type SecuritySettings struct {
 	PasswordComplexity         PasswordComplexity `json:"password_complexity"`
 	PasswordMinLength          int                `json:"password_min_length"`
 	PasswordExpiryDays         int                `json:"password_expiry_days"`
+	PasswordExpiryNotifyDays   int                `json:"password_expiry_notify_days"`
 	LoginFailureLock           bool               `json:"login_failure_lock"`
 	LoginFailureAttempts       int                `json:"login_failure_attempts"`
 	LoginFailureLockoutMinutes int                `json:"login_failure_lockout_minutes"`

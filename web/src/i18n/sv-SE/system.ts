@@ -201,6 +201,10 @@ export default {
         label: 'Lösenordets giltighetstid',
         tooltip: 'Ange giltighetstiden för användarlösenord, 0 betyder att det aldrig går ut',
       },
+      passwordExpiryNotify: {
+        label: 'Notis innan lösenord går ut',
+        tooltip: 'Antal dagar innan utgång för att skicka påminnelse via e-post. 0 inaktiverar notisen',
+      },
       loginFailureLock: {
         label: 'Automatisk kontolåsning efter inloggningsfel',
         tooltip: 'När detta är aktiverat låses konton tillfälligt efter upprepade inloggningsfel',
@@ -478,6 +482,16 @@ export default {
       mfaCodeTemplate: 'Mall för MFA-kod',
       activationTemplate: 'E-postmall för kontoaktivering',
       activationTemplateTooltip: 'E-post som skickas till nya användare utan lösenord. Tillgängliga variabler: {{.ActivationURL}} (aktiveringslänk), {{.FullName}} (fullständigt namn), {{.Username}}.',
+      passwordExpiryTemplate: 'Mall för lösenordsutgångspåminnelse',
+      loginFailureLockTemplate: 'Mall för låsning vid misslyckad inloggning',
+      inactiveLockTemplate: 'Mall för låsning av inaktivt konto',
+      loadError: 'Det gick inte att läsa SMTP-inställningar: {{error}}',
+      saveSuccess: 'SMTP-inställningarna har sparats.',
+      saveError: 'Det gick inte att spara SMTP-inställningarna: {{error}}',
+      testError: 'SMTP-anslutningstest misslyckades: {{error}}',
+      testResult: 'Testresultat',
+      testSuccess: 'Anslutningen lyckades!',
+      testFailed: 'Anslutningen misslyckades: {{error}}',
     },
     toolsets: {
       name: 'Namn',

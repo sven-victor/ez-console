@@ -1589,15 +1589,19 @@ definitions:
         type: string
       host:
         type: string
+      inactive_lock_template:
+        type: string
+      login_failure_lock_template:
+        type: string
       mfa_code_template:
         type: string
       password:
         type: string
+      password_expiry_template:
+        type: string
       port:
         type: integer
       reset_password_template:
-        type: string
-      user_locked_template:
         type: string
       username:
         type: string
@@ -1609,11 +1613,13 @@ definitions:
     - from_address
     - from_name
     - host
+    - inactive_lock_template
+    - login_failure_lock_template
     - mfa_code_template
     - password
+    - password_expiry_template
     - port
     - reset_password_template
-    - user_locked_template
     - username
     type: object
   model.SMTPTestRequest:
@@ -1635,17 +1641,21 @@ definitions:
         type: string
       host:
         type: string
+      inactive_lock_template:
+        type: string
+      login_failure_lock_template:
+        type: string
       mfa_code_template:
         type: string
       password:
+        type: string
+      password_expiry_template:
         type: string
       port:
         type: integer
       reset_password_template:
         type: string
       to:
-        type: string
-      user_locked_template:
         type: string
       username:
         type: string
@@ -1657,13 +1667,15 @@ definitions:
     - from_address
     - from_name
     - host
+    - inactive_lock_template
+    - login_failure_lock_template
     - mfa_code_template
     - password
     - password
+    - password_expiry_template
     - port
     - reset_password_template
     - to
-    - user_locked_template
     - username
     type: object
   model.SecuritySettings:
@@ -1684,6 +1696,8 @@ definitions:
         $ref: '#/definitions/model.PasswordComplexity'
       password_expiry_days:
         type: integer
+      password_expiry_notify_days:
+        type: integer
       password_min_length:
         type: integer
       session_idle_timeout_minutes:
@@ -1701,6 +1715,7 @@ definitions:
     - mfa_enforced
     - password_complexity
     - password_expiry_days
+    - password_expiry_notify_days
     - password_min_length
     - session_idle_timeout_minutes
     - session_timeout_minutes
@@ -1787,6 +1802,65 @@ definitions:
     - status
     - updated_at
     type: object
+  model.SettingFieldDefinition:
+    properties:
+      default_value:
+        type: string
+      enum_options:
+        items:
+          $ref: '#/definitions/model.SettingFieldEnumOption'
+        type: array
+      key:
+        type: string
+      label_key:
+        type: string
+      max:
+        type: number
+      min:
+        type: number
+      step:
+        type: number
+      tooltip_key:
+        type: string
+      value_type:
+        $ref: '#/definitions/model.SettingFieldType'
+    required:
+    - default_value
+    - enum_options
+    - key
+    - label_key
+    - max
+    - min
+    - step
+    - tooltip_key
+    - value_type
+    type: object
+  model.SettingFieldEnumOption:
+    properties:
+      label:
+        type: string
+      value:
+        type: string
+    required:
+    - label
+    - value
+    type: object
+  model.SettingFieldType:
+    enum:
+    - string
+    - number
+    - percentage
+    - rich_text
+    - string_list
+    - enum
+    type: string
+    x-enum-varnames:
+    - SettingFieldTypeString
+    - SettingFieldTypeNumber
+    - SettingFieldTypePercentage
+    - SettingFieldTypeRichText
+    - SettingFieldTypeStringList
+    - SettingFieldTypeEnum
   model.Skill:
     properties:
       category:
@@ -3231,40 +3305,66 @@ definitions:
     type: object
   time.Duration:
     enum:
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
     type: integer
     x-enum-varnames:
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
   toolset.ToolSetType:
     enum:
     - utils
@@ -3736,6 +3836,24 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.ServiceAccountAccessKey'
+        type: array
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-array_model_SettingFieldDefinition:
+    properties:
+      code:
+        type: string
+      data:
+        items:
+          $ref: '#/definitions/model.SettingFieldDefinition'
         type: array
       err:
         type: string
@@ -8146,6 +8264,28 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update SMTP settings
+      tags:
+      - System Settings/SMTP
+  /api/system/smtp-settings/fields:
+    get:
+      consumes:
+      - application/json
+      description: Returns the list of registered SMTP dynamic field definitions.
+      operationId: getSmtpSettingFields
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-array_model_SettingFieldDefinition'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get SMTP setting fields
       tags:
       - System Settings/SMTP
   /api/system/smtp-settings/test:

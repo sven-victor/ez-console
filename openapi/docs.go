@@ -5460,6 +5460,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/smtp-settings/fields": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns the list of registered SMTP dynamic field definitions.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/SMTP"
+                ],
+                "summary": "Get SMTP setting fields",
+                "operationId": "getSmtpSettingFields",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_model_SettingFieldDefinition"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/smtp-settings/test": {
             "post": {
                 "security": [
@@ -8818,11 +8853,13 @@ const docTemplate = `{
                 "from_address",
                 "from_name",
                 "host",
+                "inactive_lock_template",
+                "login_failure_lock_template",
                 "mfa_code_template",
                 "password",
+                "password_expiry_template",
                 "port",
                 "reset_password_template",
-                "user_locked_template",
                 "username"
             ],
             "properties": {
@@ -8851,19 +8888,25 @@ const docTemplate = `{
                 "host": {
                     "type": "string"
                 },
+                "inactive_lock_template": {
+                    "type": "string"
+                },
+                "login_failure_lock_template": {
+                    "type": "string"
+                },
                 "mfa_code_template": {
                     "type": "string"
                 },
                 "password": {
                     "type": "string"
                 },
+                "password_expiry_template": {
+                    "type": "string"
+                },
                 "port": {
                     "type": "integer"
                 },
                 "reset_password_template": {
-                    "type": "string"
-                },
-                "user_locked_template": {
                     "type": "string"
                 },
                 "username": {
@@ -8881,13 +8924,15 @@ const docTemplate = `{
                 "from_address",
                 "from_name",
                 "host",
+                "inactive_lock_template",
+                "login_failure_lock_template",
                 "mfa_code_template",
                 "password",
                 "password",
+                "password_expiry_template",
                 "port",
                 "reset_password_template",
                 "to",
-                "user_locked_template",
                 "username"
             ],
             "properties": {
@@ -8916,10 +8961,19 @@ const docTemplate = `{
                 "host": {
                     "type": "string"
                 },
+                "inactive_lock_template": {
+                    "type": "string"
+                },
+                "login_failure_lock_template": {
+                    "type": "string"
+                },
                 "mfa_code_template": {
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                },
+                "password_expiry_template": {
                     "type": "string"
                 },
                 "port": {
@@ -8929,9 +8983,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "to": {
-                    "type": "string"
-                },
-                "user_locked_template": {
                     "type": "string"
                 },
                 "username": {
@@ -8950,6 +9001,7 @@ const docTemplate = `{
                 "mfa_enforced",
                 "password_complexity",
                 "password_expiry_days",
+                "password_expiry_notify_days",
                 "password_min_length",
                 "session_idle_timeout_minutes",
                 "session_timeout_minutes",
@@ -8978,6 +9030,9 @@ const docTemplate = `{
                     "$ref": "#/definitions/model.PasswordComplexity"
                 },
                 "password_expiry_days": {
+                    "type": "integer"
+                },
+                "password_expiry_notify_days": {
                     "type": "integer"
                 },
                 "password_min_length": {
@@ -9103,6 +9158,86 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.SettingFieldDefinition": {
+            "type": "object",
+            "required": [
+                "default_value",
+                "enum_options",
+                "key",
+                "label_key",
+                "max",
+                "min",
+                "step",
+                "tooltip_key",
+                "value_type"
+            ],
+            "properties": {
+                "default_value": {
+                    "type": "string"
+                },
+                "enum_options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SettingFieldEnumOption"
+                    }
+                },
+                "key": {
+                    "type": "string"
+                },
+                "label_key": {
+                    "type": "string"
+                },
+                "max": {
+                    "type": "number"
+                },
+                "min": {
+                    "type": "number"
+                },
+                "step": {
+                    "type": "number"
+                },
+                "tooltip_key": {
+                    "type": "string"
+                },
+                "value_type": {
+                    "$ref": "#/definitions/model.SettingFieldType"
+                }
+            }
+        },
+        "model.SettingFieldEnumOption": {
+            "type": "object",
+            "required": [
+                "label",
+                "value"
+            ],
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.SettingFieldType": {
+            "type": "string",
+            "enum": [
+                "string",
+                "number",
+                "percentage",
+                "rich_text",
+                "string_list",
+                "enum"
+            ],
+            "x-enum-varnames": [
+                "SettingFieldTypeString",
+                "SettingFieldTypeNumber",
+                "SettingFieldTypePercentage",
+                "SettingFieldTypeRichText",
+                "SettingFieldTypeStringList",
+                "SettingFieldTypeEnum"
+            ]
         },
         "model.Skill": {
             "type": "object",
@@ -11141,40 +11276,66 @@ const docTemplate = `{
         "time.Duration": {
             "type": "integer",
             "enum": [
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000
+                3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour"
+                "Hour",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute"
             ]
         },
         "toolset.ToolSetType": {
@@ -11855,6 +12016,32 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.ServiceAccountAccessKey"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-array_model_SettingFieldDefinition": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.SettingFieldDefinition"
                     }
                 },
                 "err": {

@@ -229,7 +229,7 @@ func (s *UserService) UserLoginFailed(ctx context.Context, user *model.User) err
 		}
 
 		if user.Email != "" {
-			s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "User Locked", model.SettingSMTPUserLockedTemplate, map[string]any{
+			s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "User Locked", model.SettingSMTPLoginFailureLockTemplate, map[string]any{
 				"Username": user.Username,
 				"UserID":   user.ResourceID,
 				"Email":    user.Email,
@@ -788,6 +788,9 @@ func (s *UserService) ActivateUser(ctx context.Context, req ActivateUserRequest)
 		if err := tx.Model(user).Select("Password", "Salt", "Status", "PasswordChangedAt").Save(user).Error; err != nil {
 			return fmt.Errorf("failed to activate user: %w", err)
 		}
+		if err := s.resetPasswordExpiryNotifyAtTx(ctx, tx, user.ResourceID); err != nil {
+			return fmt.Errorf("failed to reset password expiry notification state: %w", err)
+		}
 		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
 	})
 	if err != nil {
@@ -1262,6 +1265,9 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 		if err := tx.Select("Password", "Salt", "PasswordChangedAt", "Status").Save(&user).Error; err != nil {
 			return fmt.Errorf("save user info failed: %w", err)
 		}
+		if err := s.resetPasswordExpiryNotifyAtTx(ctx, tx, user.ResourceID); err != nil {
+			return fmt.Errorf("failed to reset password expiry notification state: %w", err)
+		}
 		// If user is LDAP user, update LDAP password
 		if user.IsLDAPUser() {
 			if ok, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false); !ok {
@@ -1336,6 +1342,9 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 		// Save user info
 		if err := tx.Select("Password", "Salt", "PasswordChangedAt", "Status", "LockedUntil", "LoginAttempts").Save(&user).Error; err != nil {
 			return fmt.Errorf("save user info failed: %w", err)
+		}
+		if err := s.resetPasswordExpiryNotifyAtTx(ctx, tx, user.ResourceID); err != nil {
+			return fmt.Errorf("failed to reset password expiry notification state: %w", err)
 		}
 		// If user is LDAP user, update LDAP password
 		if user.Source == model.UserSourceLDAP {

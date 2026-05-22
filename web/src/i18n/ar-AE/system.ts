@@ -200,6 +200,10 @@ export default {
         label: 'وقت انتهاء صلاحية كلمة المرور',
         tooltip: 'تعيين وقت انتهاء صلاحية كلمات مرور المستخدمين ، 0 يعني عدم انتهاء الصلاحية أبدًا',
       },
+      passwordExpiryNotify: {
+        label: 'إشعار قبل انتهاء صلاحية كلمة المرور',
+        tooltip: 'عدد الأيام قبل الانتهاء لإرسال تذكير بالبريد الإلكتروني. 0 يعني تعطيل الإشعار',
+      },
       loginFailureLock: {
         label: 'قفل الحساب التلقائي بعد فشل تسجيل الدخول',
         tooltip: 'عند التمكين ، سيتم قفل الحسابات مؤقتًا بعد فشل تسجيل الدخول المتتالي',
@@ -477,6 +481,16 @@ export default {
       mfaCodeTemplate: 'قالب رمز MFA',
       activationTemplate: 'قالب بريد تفعيل الحساب',
       activationTemplateTooltip: 'البريد المرسل للمستخدمين الجدد عند عدم تعيين كلمة مرور. المتغيرات المتاحة: {{.ActivationURL}} (رابط التفعيل)، {{.FullName}} (الاسم الكامل)، {{.Username}}.',
+      passwordExpiryTemplate: 'قالب تذكير انتهاء صلاحية كلمة المرور',
+      loginFailureLockTemplate: 'قالب قفل الحساب بعد فشل تسجيل الدخول',
+      inactiveLockTemplate: 'قالب قفل الحساب غير النشط',
+      loadError: 'فشل تحميل إعدادات SMTP: {{error}}',
+      saveSuccess: 'تم حفظ إعدادات SMTP بنجاح.',
+      saveError: 'فشل حفظ إعدادات SMTP: {{error}}',
+      testError: 'فشل اختبار اتصال SMTP: {{error}}',
+      testResult: 'نتيجة الاختبار',
+      testSuccess: 'تم الاتصال بنجاح!',
+      testFailed: 'فشل الاتصال: {{error}}',
     },
     toolsets: {
       name: 'الاسم',

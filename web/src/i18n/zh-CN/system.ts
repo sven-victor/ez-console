@@ -250,6 +250,10 @@ export default {
         label: '密码过期时间',
         tooltip: '设置用户密码的过期时间，0表示永不过期',
       },
+      passwordExpiryNotify: {
+        label: '密码到期前通知时间',
+        tooltip: '设置密码到期前多少天发送邮件提醒，0表示不提醒',
+      },
       loginFailureLock: {
         label: '登录失败自动锁定',
         tooltip: '启用后，连续多次登录失败将导致账户被临时锁定',
@@ -526,6 +530,16 @@ export default {
       mfaCodeTemplate: 'MFA验证码模板',
       activationTemplate: '账户激活邮件模板',
       activationTemplateTooltip: '创建无密码用户时发送的激活邮件模板。可用变量：{{.ActivationURL}}（激活链接）、{{.FullName}}（用户姓名）、{{.Username}}。',
+      passwordExpiryTemplate: '密码到期提醒模板',
+      loginFailureLockTemplate: '登录失败锁定提醒模板',
+      inactiveLockTemplate: '不活跃账户锁定提醒模板',
+      loadError: '加载SMTP设置失败: {{error}}',
+      saveSuccess: 'SMTP设置保存成功。',
+      saveError: '保存SMTP设置失败: {{error}}',
+      testError: 'SMTP连接测试失败: {{error}}',
+      testResult: '测试结果',
+      testSuccess: '连接成功！',
+      testFailed: '连接失败: {{error}}',
     },
     toolsets: {
       name: '名称',

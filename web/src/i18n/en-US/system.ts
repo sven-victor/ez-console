@@ -253,6 +253,10 @@ export default {
         label: 'Password Expiry Time',
         tooltip: 'Set the expiry time for user passwords, 0 means never expire',
       },
+      passwordExpiryNotify: {
+        label: 'Password Expiry Notification',
+        tooltip: 'Set the number of days before expiry to send password reminder emails, 0 means disabled',
+      },
       loginFailureLock: {
         label: 'Automatic Account Lock after Login Failures',
         tooltip: 'When enabled, accounts will be temporarily locked after consecutive login failures',
@@ -528,6 +532,16 @@ export default {
       mfaCodeTemplate: 'MFA Code Template',
       activationTemplate: 'Account Activation Template',
       activationTemplateTooltip: 'Email sent to new users when no password is set. Available variables: {{.ActivationURL}} (activation link), {{.FullName}} (user\'s full name), {{.Username}}.',
+      passwordExpiryTemplate: 'Password Expiry Reminder Template',
+      loginFailureLockTemplate: 'Login Failure Lock Template',
+      inactiveLockTemplate: 'Inactive Account Lock Template',
+      loadError: 'Failed to load SMTP settings: {{error}}',
+      saveSuccess: 'SMTP settings saved successfully.',
+      saveError: 'Failed to save SMTP settings: {{error}}',
+      testError: 'SMTP connection test failed: {{error}}',
+      testResult: 'Test Result',
+      testSuccess: 'Connection successful!',
+      testFailed: 'Connection failed: {{error}}',
     },
     toolsets: {
       name: 'Name',

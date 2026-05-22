@@ -87,8 +87,11 @@ func (s *SettingService) UpdateSMTPSettings(ctx context.Context, settings *model
 		string(model.SettingSMTPFromName):              settings.FromName,
 		string(model.SettingSMTPMFACodeTemplate):       settings.MFACodeTemplate,
 		string(model.SettingSMTPResetPasswordTemplate): settings.ResetPasswordTemplate,
-		string(model.SettingSMTPUserLockedTemplate):    settings.UserLockedTemplate,
 		string(model.SettingSMTPActivationTemplate):    settings.ActivationTemplate,
+
+		string(model.SettingSMTPPasswordExpiryTemplate):   settings.PasswordExpiryTemplate,
+		string(model.SettingSMTPLoginFailureLockTemplate): settings.LoginFailureLockTemplate,
+		string(model.SettingSMTPInactiveLockTemplate):     settings.InactiveLockTemplate,
 	}
 	if settings.Password != nil {
 		settingsToUpdate[string(model.SettingSMTPPassword)] = settings.Password.String()
@@ -114,9 +117,12 @@ func (s *SettingService) InitDefaultSMTPSettings(ctx context.Context) error {
 		model.SettingSMTPFromAddress:           {"", "SMTP from address"},
 		model.SettingSMTPFromName:              {"", "SMTP from name"},
 		model.SettingSMTPResetPasswordTemplate: {"<p>Your password has been reset, the new password is: <strong>{{.Password}}</strong></p>", "Reset password template"},
-		model.SettingSMTPUserLockedTemplate:    {"Your account has been locked, please contact the administrator to unlock it.", "User locked template"},
 		model.SettingSMTPMFACodeTemplate:       {"<p>Your MFA verification code is: <strong>{{.Code}}</strong></p>", "Enable MFA template"},
 		model.SettingSMTPActivationTemplate:    {"<p>Hello {{.FullName}},</p><p>Your account has been created. Please click the link below to activate your account and set your password:</p><p><a href=\"{{.ActivationURL}}\">Activate Account</a></p><p>This link will expire in 48 hours.</p>", "Account activation email template"},
+
+		model.SettingSMTPPasswordExpiryTemplate:   {"<p>Hello {{.FullName}},</p><p>Your password will expire in <strong>{{.DaysLeft}}</strong> days. Please update your password as soon as possible.</p>", "Password expiry warning template"},
+		model.SettingSMTPLoginFailureLockTemplate: {"<p>Hello {{.FullName}},</p><p>Your account has been locked due to too many failed login attempts.</p>", "Login failure lock template"},
+		model.SettingSMTPInactiveLockTemplate:     {"<p>Hello {{.FullName}},</p><p>Your account has been locked due to inactivity.</p>", "Inactive account lock template"},
 	}
 	// Check if each setting already exists, if not, create it
 	for key, setting := range defaultSettings {

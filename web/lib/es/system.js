@@ -216,7 +216,7 @@ async function q(t, a) {
     }
   );
 }
-async function z(t, a, n) {
+async function G(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/organizations/${e}/users`,
@@ -231,7 +231,7 @@ async function z(t, a, n) {
     }
   );
 }
-async function G(t, a) {
+async function z(t, a) {
   const { id: n, user_id: e, ...i } = t;
   return s(
     `/api/system/organizations/${n}/users/${e}`,
@@ -303,13 +303,13 @@ async function D(t, a) {
     }
   );
 }
-async function v(t) {
+async function F(t) {
   return s("/api/system/site", {
     method: "GET",
     ...t || {}
   });
 }
-async function F(t, a) {
+async function v(t, a) {
   return s("/api/system/skills", {
     method: "GET",
     params: {
@@ -538,7 +538,16 @@ async function at(t, a) {
     ...a || {}
   });
 }
-async function st(t, a) {
+async function st(t) {
+  return s(
+    "/api/system/smtp-settings/fields",
+    {
+      method: "GET",
+      ...t || {}
+    }
+  );
+}
+async function et(t, a) {
   return s(
     "/api/system/smtp-settings/test",
     {
@@ -551,13 +560,13 @@ async function st(t, a) {
     }
   );
 }
-async function et(t) {
+async function nt(t) {
   return s("/api/system/task-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function nt(t, a) {
+async function it(t, a) {
   return s("/api/system/task-settings", {
     method: "PUT",
     headers: {
@@ -567,7 +576,7 @@ async function nt(t, a) {
     ...a || {}
   });
 }
-async function it(t) {
+async function ot(t) {
   return s(
     "/api/system/task-settings/fields",
     {
@@ -576,7 +585,7 @@ async function it(t) {
     }
   );
 }
-async function ot(t) {
+async function rt(t) {
   return s(
     "/api/system/task-settings/log-storage-backends",
     {
@@ -585,7 +594,7 @@ async function ot(t) {
     }
   );
 }
-async function rt(t, a) {
+async function pt(t, a) {
   return s("/api/system/toolsets", {
     method: "GET",
     params: {
@@ -598,7 +607,7 @@ async function rt(t, a) {
     ...a || {}
   });
 }
-async function pt(t, a) {
+async function mt(t, a) {
   return s("/api/system/toolsets", {
     method: "POST",
     headers: {
@@ -608,7 +617,7 @@ async function pt(t, a) {
     ...a || {}
   });
 }
-async function mt(t, a) {
+async function ct(t, a) {
   const { id: n, ...e } = t;
   return s(`/api/system/toolsets/${n}`, {
     method: "GET",
@@ -616,7 +625,7 @@ async function mt(t, a) {
     ...a || {}
   });
 }
-async function ct(t, a, n) {
+async function ut(t, a, n) {
   const { id: e, ...i } = t;
   return s(`/api/system/toolsets/${e}`, {
     method: "PUT",
@@ -628,7 +637,7 @@ async function ct(t, a, n) {
     ...n || {}
   });
 }
-async function ut(t, a) {
+async function dt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}`,
@@ -639,7 +648,7 @@ async function ut(t, a) {
     }
   );
 }
-async function dt(t, a, n) {
+async function yt(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/toolsets/${e}/call`,
@@ -654,7 +663,7 @@ async function dt(t, a, n) {
     }
   );
 }
-async function yt(t, a, n) {
+async function lt(t, a, n) {
   const { id: e, ...i } = t;
   return s(
     `/api/system/toolsets/${e}/status`,
@@ -669,7 +678,7 @@ async function yt(t, a, n) {
     }
   );
 }
-async function lt(t, a) {
+async function ht(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/test`,
@@ -680,7 +689,7 @@ async function lt(t, a) {
     }
   );
 }
-async function ht(t, a) {
+async function Tt(t, a) {
   const { id: n, ...e } = t;
   return s(
     `/api/system/toolsets/${n}/tools`,
@@ -691,7 +700,7 @@ async function ht(t, a) {
     }
   );
 }
-async function Tt(t) {
+async function gt(t) {
   return s(
     "/api/system/toolsets/types",
     {
@@ -700,58 +709,59 @@ async function Tt(t) {
     }
   );
 }
-const ft = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const St = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  addUserToOrganization: z,
-  callTool: dt,
+  addUserToOrganization: G,
+  callTool: yt,
   checkPasswordComplexity: D,
   clearSiteCache: d,
   cloneSkill: X,
   createOrganization: C,
   createSkill: w,
   createSkillDir: M,
-  createToolSet: pt,
+  createToolSet: mt,
   deleteOrganization: j,
   deleteSkill: x,
   deleteSkillPath: K,
-  deleteToolSet: ut,
+  deleteToolSet: dt,
   getAuditLogs: m,
   getLdapSettings: h,
   getOauthSettings: f,
   getOrganization: O,
   getSecuritySettings: _,
-  getSiteConfig: v,
+  getSiteConfig: F,
   getSkill: B,
   getSkillFile: R,
+  getSmtpSettingFields: st,
   getSmtpSettings: tt,
   getSystemBaseSettings: c,
   getSystemInfo: l,
-  getTaskSettingFields: it,
-  getTaskSettings: et,
-  getToolSet: mt,
-  getToolSetTools: ht,
-  getToolSetTypeDefinitions: Tt,
+  getTaskSettingFields: ot,
+  getTaskSettings: nt,
+  getToolSet: ct,
+  getToolSetTools: Tt,
+  getToolSetTypeDefinitions: gt,
   getUserOrganizations: b,
   healthCheck: y,
   importLdapUsers: g,
-  listLogStorageBackends: ot,
+  listLogStorageBackends: rt,
   listOrganizationUsers: q,
   listOrganizations: E,
   listSkillAiToolBindings: I,
   listSkillDomains: Y,
   listSkillFilesTree: N,
-  listSkills: F,
-  listToolSets: rt,
+  listSkills: v,
+  listToolSets: pt,
   moveSkillPath: Q,
   previewSkill: V,
   putSkillFile: H,
-  removeUserFromOrganization: G,
+  removeUserFromOrganization: z,
   replaceSkillAiToolBindings: J,
   testLdapConnection: p,
   testOauthCallback: k,
   testOauthConnection: P,
-  testSmtpConnection: st,
-  testToolSet: lt,
+  testSmtpConnection: et,
+  testToolSet: ht,
   updateLdapSettings: T,
   updateOauthSettings: S,
   updateOrganization: $,
@@ -760,21 +770,21 @@ const ft = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   updateSkillStatus: W,
   updateSmtpSettings: at,
   updateSystemBaseSettings: u,
-  updateTaskSettings: nt,
-  updateToolSet: ct,
-  updateToolSetStatus: yt,
+  updateTaskSettings: it,
+  updateToolSet: ut,
+  updateToolSetStatus: lt,
   updateUserOrganizationRoles: U,
   uploadSkill: Z
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  ft as a,
+  St as a,
   q as b,
   C as c,
   j as d,
-  z as e,
+  G as e,
   U as f,
   O as g,
   E as l,
-  G as r,
+  z as r,
   $ as u
 };

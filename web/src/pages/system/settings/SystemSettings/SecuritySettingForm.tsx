@@ -104,6 +104,13 @@ const SecuritySettingForm: React.FC = () => {
       >
         <InputNumber min={0} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
       </Form.Item>
+      <Form.Item
+        name="password_expiry_notify_days"
+        label={t('settings.security.passwordExpiryNotify.label', { defaultValue: 'Password Expiry Notification (Days Before Expiry)' })}
+        tooltip={t('settings.security.passwordExpiryNotify.tooltip', { defaultValue: 'Notify users by email this many days before password expiry. Set to 0 to disable.' })}
+      >
+        <InputNumber min={0} style={{ width: '100%' }} addonAfter={t('settings.days', { defaultValue: 'Days' })} />
+      </Form.Item>
 
       {/* Login Failure Lock Settings */}
       <Form.Item
@@ -184,7 +191,7 @@ const SecuritySettingForm: React.FC = () => {
 
       {/* Auto Lock Inactive Account */}
       <Form.Item
-        name="inactive_account_lock_days"
+        name="user_inactive_days"
         label={t('settings.security.inactiveAccountLock.label', { defaultValue: 'Auto-lock Inactive Accounts (Days)' })}
         tooltip={t('settings.security.inactiveAccountLock.tooltip', { defaultValue: 'Number of days of inactivity after which user accounts are automatically locked. Set to 0 to disable.' })}
       >

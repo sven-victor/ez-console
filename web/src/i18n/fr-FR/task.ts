@@ -23,6 +23,8 @@ export default {
     audit_log_cleanup_task: 'Nettoyage des journaux d\'audit',
     ai_chat_session_cleanup_task: 'Nettoyage des sessions de chat IA',
     task_log_cleanup_task: 'Nettoyage des journaux de tâches',
+    inactive_account_lock_task: 'Verrouillage des comptes inactifs',
+    password_expiry_notification_task: 'Notification d\'expiration du mot de passe',
   },
   statusLabel: 'Statut',
   progress: 'Progression',
@@ -73,9 +75,12 @@ export default {
   triggerNow: 'Déclencher maintenant',
   executionHistory: 'Historique d\'exécution',
   scheduleListFailed: 'Impossible de lister les planifications : {{error}}',
+  scheduleTriggered: 'Tâche déclenchée.',
   description: {
     ai_chat_session_cleanup_task: 'Nettoyer les sessions de chat IA',
     audit_log_cleanup_task: 'Nettoyer les journaux d\'audit',
     task_log_cleanup_task: 'Nettoyer les journaux de tâches et les enregistrements historiques',
+    inactive_account_lock_task: 'Analyser les utilisateurs toutes les heures et verrouiller automatiquement les comptes inactifs',
+    password_expiry_notification_task: 'Analyser les utilisateurs toutes les heures et envoyer des rappels d\'expiration du mot de passe une fois par cycle de mot de passe',
   },
 };

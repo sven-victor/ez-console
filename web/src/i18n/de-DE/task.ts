@@ -23,6 +23,8 @@ export default {
     audit_log_cleanup_task: 'Bereinigung von Audit-Logs',
     ai_chat_session_cleanup_task: 'Bereinigung von AI-Chat-Sitzungen',
     task_log_cleanup_task: 'Bereinigung von Aufgaben-Logs',
+    inactive_account_lock_task: 'Sperrung inaktiver Konten',
+    password_expiry_notification_task: 'Benachrichtigung bei Passwortablauf',
   },
   statusLabel: 'Status',
   progress: 'Fortschritt',
@@ -73,9 +75,12 @@ export default {
   triggerNow: 'Jetzt auslösen',
   executionHistory: 'Ausführungsverlauf',
   scheduleListFailed: 'Zeitplanliste konnte nicht abgerufen werden: {{error}}',
+  scheduleTriggered: 'Aufgabe ausgelöst.',
   description: {
     ai_chat_session_cleanup_task: 'AI-Chat-Sitzungen bereinigen',
     audit_log_cleanup_task: 'Audit-Logs bereinigen',
     task_log_cleanup_task: 'Aufgabenprotokolle und historische Ausführungseinträge bereinigen',
+    inactive_account_lock_task: 'Benutzer stündlich prüfen und inaktive Konten automatisch sperren',
+    password_expiry_notification_task: 'Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden',
   },
 };

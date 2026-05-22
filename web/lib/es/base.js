@@ -1234,6 +1234,10 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "Password Expiry Time",
         tooltip: "Set the expiry time for user passwords, 0 means never expire"
       },
+      passwordExpiryNotify: {
+        label: "Password Expiry Notification",
+        tooltip: "Set the number of days before expiry to send password reminder emails, 0 means disabled"
+      },
       loginFailureLock: {
         label: "Automatic Account Lock after Login Failures",
         tooltip: "When enabled, accounts will be temporarily locked after consecutive login failures"
@@ -1508,7 +1512,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       userLockedTemplate: "User Locked Template",
       mfaCodeTemplate: "MFA Code Template",
       activationTemplate: "Account Activation Template",
-      activationTemplateTooltip: "Email sent to new users when no password is set. Available variables: {{.ActivationURL}} (activation link), {{.FullName}} (user's full name), {{.Username}}."
+      activationTemplateTooltip: "Email sent to new users when no password is set. Available variables: {{.ActivationURL}} (activation link), {{.FullName}} (user's full name), {{.Username}}.",
+      passwordExpiryTemplate: "Password Expiry Reminder Template",
+      loginFailureLockTemplate: "Login Failure Lock Template",
+      inactiveLockTemplate: "Inactive Account Lock Template",
+      loadError: "Failed to load SMTP settings: {{error}}",
+      saveSuccess: "SMTP settings saved successfully.",
+      saveError: "Failed to save SMTP settings: {{error}}",
+      testError: "SMTP connection test failed: {{error}}",
+      testResult: "Test Result",
+      testSuccess: "Connection successful!",
+      testFailed: "Connection failed: {{error}}"
     },
     toolsets: {
       name: "Name",
@@ -1719,7 +1733,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     user_export: "User Export",
     audit_log_cleanup_task: "Audit Log Cleanup",
     ai_chat_session_cleanup_task: "AI Chat Session Cleanup",
-    task_log_cleanup_task: "Task Log Cleanup"
+    task_log_cleanup_task: "Task Log Cleanup",
+    inactive_account_lock_task: "Inactive Account Lock Task",
+    password_expiry_notification_task: "Password Expiry Notification Task"
   },
   statusLabel: "Status",
   progress: "Progress",
@@ -1770,10 +1786,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "Trigger now",
   executionHistory: "Execution History",
   scheduleListFailed: "Failed to list schedules: {{error}}",
+  scheduleTriggered: "Task triggered.",
   description: {
     ai_chat_session_cleanup_task: "Cleanup AI chat sessions",
     audit_log_cleanup_task: "Cleanup audit logs",
-    task_log_cleanup_task: "Cleanup task logs and historical task run records"
+    task_log_cleanup_task: "Cleanup task logs and historical task run records",
+    inactive_account_lock_task: "Scan users hourly and lock inactive accounts automatically",
+    password_expiry_notification_task: "Scan users hourly and send password expiry reminders once per password cycle"
   }
 }, z = {
   login: {
@@ -1914,7 +1933,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, C = {
+}, E = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -2053,7 +2072,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, E = {
+}, C = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -3345,6 +3364,10 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "密码过期时间",
         tooltip: "设置用户密码的过期时间，0表示永不过期"
       },
+      passwordExpiryNotify: {
+        label: "密码到期前通知时间",
+        tooltip: "设置密码到期前多少天发送邮件提醒，0表示不提醒"
+      },
       loginFailureLock: {
         label: "登录失败自动锁定",
         tooltip: "启用后，连续多次登录失败将导致账户被临时锁定"
@@ -3621,7 +3644,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       userLockedTemplate: "用户锁定模板",
       mfaCodeTemplate: "MFA验证码模板",
       activationTemplate: "账户激活邮件模板",
-      activationTemplateTooltip: "创建无密码用户时发送的激活邮件模板。可用变量：{{.ActivationURL}}（激活链接）、{{.FullName}}（用户姓名）、{{.Username}}。"
+      activationTemplateTooltip: "创建无密码用户时发送的激活邮件模板。可用变量：{{.ActivationURL}}（激活链接）、{{.FullName}}（用户姓名）、{{.Username}}。",
+      passwordExpiryTemplate: "密码到期提醒模板",
+      loginFailureLockTemplate: "登录失败锁定提醒模板",
+      inactiveLockTemplate: "不活跃账户锁定提醒模板",
+      loadError: "加载SMTP设置失败: {{error}}",
+      saveSuccess: "SMTP设置保存成功。",
+      saveError: "保存SMTP设置失败: {{error}}",
+      testError: "SMTP连接测试失败: {{error}}",
+      testResult: "测试结果",
+      testSuccess: "连接成功！",
+      testFailed: "连接失败: {{error}}"
     },
     toolsets: {
       name: "名称",
@@ -3832,7 +3865,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     user_export: "用户导出",
     audit_log_cleanup_task: "审计日志清理任务",
     ai_chat_session_cleanup_task: "AI 会话清理任务",
-    task_log_cleanup_task: "任务日志清理任务"
+    task_log_cleanup_task: "任务日志清理任务",
+    inactive_account_lock_task: "不活跃账户锁定任务",
+    password_expiry_notification_task: "密码到期提醒任务"
   },
   statusLabel: "状态",
   progress: "进度",
@@ -3883,10 +3918,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "立即触发",
   executionHistory: "执行历史",
   scheduleListFailed: "获取计划任务列表失败：{{error}}",
+  scheduleTriggered: "任务已触发。",
   description: {
     ai_chat_session_cleanup_task: "清理 AI 会话",
     audit_log_cleanup_task: "清理审计日志",
-    task_log_cleanup_task: "清理任务日志及历史运行记录"
+    task_log_cleanup_task: "清理任务日志及历史运行记录",
+    inactive_account_lock_task: "每小时扫描用户并自动锁定不活跃账户",
+    password_expiry_notification_task: "每小时扫描用户，并在每个密码周期内发送一次密码到期提醒"
   }
 }, N = {
   loading: "Wird geladen...",
@@ -4701,6 +4739,10 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "Passwortablaufzeit",
         tooltip: "Legen Sie die Ablaufzeit für Benutzerpasswörter fest. 0 bedeutet, dass sie nie ablaufen"
       },
+      passwordExpiryNotify: {
+        label: "Passwortablauf-Benachrichtigung",
+        tooltip: "Anzahl der Tage vor dem Ablauf, an denen eine Erinnerungs-E-Mail gesendet wird. 0 deaktiviert die Benachrichtigung"
+      },
       loginFailureLock: {
         label: "Automatische Kontosperrung nach Anmeldefehlern",
         tooltip: "Wenn aktiviert, werden Konten nach aufeinanderfolgenden Anmeldefehlern vorübergehend gesperrt"
@@ -4977,7 +5019,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       userLockedTemplate: "Vorlage für gesperrte Benutzer",
       mfaCodeTemplate: "MFA-Code-Vorlage",
       activationTemplate: "Kontoaktivierungs-E-Mail-Vorlage",
-      activationTemplateTooltip: "E-Mail, die an neue Benutzer gesendet wird, wenn kein Passwort gesetzt ist. Verfügbare Variablen: {{.ActivationURL}} (Aktivierungslink), {{.FullName}} (vollständiger Name), {{.Username}}."
+      activationTemplateTooltip: "E-Mail, die an neue Benutzer gesendet wird, wenn kein Passwort gesetzt ist. Verfügbare Variablen: {{.ActivationURL}} (Aktivierungslink), {{.FullName}} (vollständiger Name), {{.Username}}.",
+      passwordExpiryTemplate: "Vorlage für Passwortablauf-Erinnerung",
+      loginFailureLockTemplate: "Vorlage für Sperre nach Login-Fehlern",
+      inactiveLockTemplate: "Vorlage für Sperre bei Inaktivität",
+      loadError: "SMTP-Einstellungen konnten nicht geladen werden: {{error}}",
+      saveSuccess: "SMTP-Einstellungen wurden erfolgreich gespeichert.",
+      saveError: "SMTP-Einstellungen konnten nicht gespeichert werden: {{error}}",
+      testError: "SMTP-Verbindungstest fehlgeschlagen: {{error}}",
+      testResult: "Testergebnis",
+      testSuccess: "Verbindung erfolgreich!",
+      testFailed: "Verbindung fehlgeschlagen: {{error}}"
     },
     toolsets: {
       name: "Name",
@@ -5239,7 +5291,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     user_export: "Benutzerexport",
     audit_log_cleanup_task: "Bereinigung von Audit-Logs",
     ai_chat_session_cleanup_task: "Bereinigung von AI-Chat-Sitzungen",
-    task_log_cleanup_task: "Bereinigung von Aufgaben-Logs"
+    task_log_cleanup_task: "Bereinigung von Aufgaben-Logs",
+    inactive_account_lock_task: "Sperrung inaktiver Konten",
+    password_expiry_notification_task: "Benachrichtigung bei Passwortablauf"
   },
   statusLabel: "Status",
   progress: "Fortschritt",
@@ -5290,10 +5344,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "Jetzt auslösen",
   executionHistory: "Ausführungsverlauf",
   scheduleListFailed: "Zeitplanliste konnte nicht abgerufen werden: {{error}}",
+  scheduleTriggered: "Aufgabe ausgelöst.",
   description: {
     ai_chat_session_cleanup_task: "AI-Chat-Sitzungen bereinigen",
     audit_log_cleanup_task: "Audit-Logs bereinigen",
-    task_log_cleanup_task: "Aufgabenprotokolle und historische Ausführungseinträge bereinigen"
+    task_log_cleanup_task: "Aufgabenprotokolle und historische Ausführungseinträge bereinigen",
+    inactive_account_lock_task: "Benutzer stündlich prüfen und inaktive Konten automatisch sperren",
+    password_expiry_notification_task: "Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden"
   }
 }, K = {
   loading: "Cargando...",
@@ -6108,6 +6165,10 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "Tiempo de caducidad de la contraseña",
         tooltip: "Establecer el tiempo de caducidad para las contraseñas de los usuarios, 0 significa que nunca caducan"
       },
+      passwordExpiryNotify: {
+        label: "Notificación de caducidad de contraseña",
+        tooltip: "Días antes de la caducidad para enviar el correo de aviso. 0 desactiva la notificación"
+      },
       loginFailureLock: {
         label: "Bloqueo automático de la cuenta después de fallos de inicio de sesión",
         tooltip: "Cuando está habilitado, las cuentas se bloquearán temporalmente después de fallos de inicio de sesión consecutivos"
@@ -6384,7 +6445,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       userLockedTemplate: "Plantilla de usuario bloqueado",
       mfaCodeTemplate: "Plantilla de código MFA",
       activationTemplate: "Plantilla de correo de activación de cuenta",
-      activationTemplateTooltip: "Correo enviado a nuevos usuarios cuando no se establece contraseña. Variables disponibles: {{.ActivationURL}} (enlace de activación), {{.FullName}} (nombre completo), {{.Username}}."
+      activationTemplateTooltip: "Correo enviado a nuevos usuarios cuando no se establece contraseña. Variables disponibles: {{.ActivationURL}} (enlace de activación), {{.FullName}} (nombre completo), {{.Username}}.",
+      passwordExpiryTemplate: "Plantilla de aviso de caducidad de contraseña",
+      loginFailureLockTemplate: "Plantilla de bloqueo por fallos de inicio de sesión",
+      inactiveLockTemplate: "Plantilla de bloqueo por inactividad",
+      loadError: "Error al cargar la configuración SMTP: {{error}}",
+      saveSuccess: "Configuración SMTP guardada correctamente.",
+      saveError: "Error al guardar la configuración SMTP: {{error}}",
+      testError: "Error en la prueba de conexión SMTP: {{error}}",
+      testResult: "Resultado de la prueba",
+      testSuccess: "Conexion exitosa!",
+      testFailed: "Conexion fallida: {{error}}"
     },
     toolsets: {
       name: "Nombre",
@@ -6646,7 +6717,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     user_export: "Exportar usuarios",
     audit_log_cleanup_task: "Limpieza de registros de auditoría",
     ai_chat_session_cleanup_task: "Limpieza de sesiones de chat de IA",
-    task_log_cleanup_task: "Limpieza de registros de tareas"
+    task_log_cleanup_task: "Limpieza de registros de tareas",
+    inactive_account_lock_task: "Bloqueo de cuentas inactivas",
+    password_expiry_notification_task: "Notificación de vencimiento de contraseña"
   },
   statusLabel: "Estado",
   progress: "Progreso",
@@ -6697,10 +6770,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "Ejecutar ahora",
   executionHistory: "Historial de ejecuciones",
   scheduleListFailed: "Error al listar los planes: {{error}}",
+  scheduleTriggered: "Tarea ejecutada.",
   description: {
     ai_chat_session_cleanup_task: "Limpiar sesiones de chat de IA",
     audit_log_cleanup_task: "Limpiar registros de auditoría",
-    task_log_cleanup_task: "Limpiar registros de tareas y registros de ejecución histórica"
+    task_log_cleanup_task: "Limpiar registros de tareas y registros de ejecución histórica",
+    inactive_account_lock_task: "Escanear usuarios cada hora y bloquear automáticamente las cuentas inactivas",
+    password_expiry_notification_task: "Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña"
   }
 }, Z = {
   loading: "Chargement...",
@@ -7515,6 +7591,10 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "Délai d'expiration du mot de passe",
         tooltip: "Définir le délai d'expiration des mots de passe des utilisateurs, 0 signifie qu'ils n'expirent jamais"
       },
+      passwordExpiryNotify: {
+        label: "Notification avant expiration du mot de passe",
+        tooltip: "Nombre de jours avant expiration pour envoyer un e-mail de rappel. 0 desactive la notification"
+      },
       loginFailureLock: {
         label: "Verrouillage automatique du compte après des échecs de connexion",
         tooltip: "Lorsque cette option est activée, les comptes seront temporairement verrouillés après des échecs de connexion consécutifs"
@@ -7791,7 +7871,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       userLockedTemplate: "Modèle d'utilisateur verrouillé",
       mfaCodeTemplate: "Modèle de code AMF",
       activationTemplate: "Modèle d'e-mail d'activation de compte",
-      activationTemplateTooltip: "E-mail envoyé aux nouveaux utilisateurs sans mot de passe. Variables disponibles : {{.ActivationURL}} (lien d'activation), {{.FullName}} (nom complet), {{.Username}}."
+      activationTemplateTooltip: "E-mail envoyé aux nouveaux utilisateurs sans mot de passe. Variables disponibles : {{.ActivationURL}} (lien d'activation), {{.FullName}} (nom complet), {{.Username}}.",
+      passwordExpiryTemplate: "Modele de rappel d'expiration du mot de passe",
+      loginFailureLockTemplate: "Modele de verrouillage apres echecs de connexion",
+      inactiveLockTemplate: "Modele de verrouillage pour inactivite",
+      loadError: "Echec du chargement des parametres SMTP : {{error}}",
+      saveSuccess: "Parametres SMTP enregistres avec succes.",
+      saveError: "Echec de l'enregistrement des parametres SMTP : {{error}}",
+      testError: "Echec du test de connexion SMTP : {{error}}",
+      testResult: "Resultat du test",
+      testSuccess: "Connexion reussie !",
+      testFailed: "Connexion echouee : {{error}}"
     },
     toolsets: {
       name: "Nom",
@@ -8053,7 +8143,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     user_export: "Export d'utilisateurs",
     audit_log_cleanup_task: "Nettoyage des journaux d'audit",
     ai_chat_session_cleanup_task: "Nettoyage des sessions de chat IA",
-    task_log_cleanup_task: "Nettoyage des journaux de tâches"
+    task_log_cleanup_task: "Nettoyage des journaux de tâches",
+    inactive_account_lock_task: "Verrouillage des comptes inactifs",
+    password_expiry_notification_task: "Notification d'expiration du mot de passe"
   },
   statusLabel: "Statut",
   progress: "Progression",
@@ -8104,10 +8196,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "Déclencher maintenant",
   executionHistory: "Historique d'exécution",
   scheduleListFailed: "Impossible de lister les planifications : {{error}}",
+  scheduleTriggered: "Tâche déclenchée.",
   description: {
     ai_chat_session_cleanup_task: "Nettoyer les sessions de chat IA",
     audit_log_cleanup_task: "Nettoyer les journaux d'audit",
-    task_log_cleanup_task: "Nettoyer les journaux de tâches et les enregistrements historiques"
+    task_log_cleanup_task: "Nettoyer les journaux de tâches et les enregistrements historiques",
+    inactive_account_lock_task: "Analyser les utilisateurs toutes les heures et verrouiller automatiquement les comptes inactifs",
+    password_expiry_notification_task: "Analyser les utilisateurs toutes les heures et envoyer des rappels d'expiration du mot de passe une fois par cycle de mot de passe"
   }
 }, X = {
   loading: "جار التحميل...",
@@ -8922,6 +9017,10 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "وقت انتهاء صلاحية كلمة المرور",
         tooltip: "تعيين وقت انتهاء صلاحية كلمات مرور المستخدمين ، 0 يعني عدم انتهاء الصلاحية أبدًا"
       },
+      passwordExpiryNotify: {
+        label: "إشعار قبل انتهاء صلاحية كلمة المرور",
+        tooltip: "عدد الأيام قبل الانتهاء لإرسال تذكير بالبريد الإلكتروني. 0 يعني تعطيل الإشعار"
+      },
       loginFailureLock: {
         label: "قفل الحساب التلقائي بعد فشل تسجيل الدخول",
         tooltip: "عند التمكين ، سيتم قفل الحسابات مؤقتًا بعد فشل تسجيل الدخول المتتالي"
@@ -9198,7 +9297,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       userLockedTemplate: "قالب المستخدم المقفل",
       mfaCodeTemplate: "قالب رمز MFA",
       activationTemplate: "قالب بريد تفعيل الحساب",
-      activationTemplateTooltip: "البريد المرسل للمستخدمين الجدد عند عدم تعيين كلمة مرور. المتغيرات المتاحة: {{.ActivationURL}} (رابط التفعيل)، {{.FullName}} (الاسم الكامل)، {{.Username}}."
+      activationTemplateTooltip: "البريد المرسل للمستخدمين الجدد عند عدم تعيين كلمة مرور. المتغيرات المتاحة: {{.ActivationURL}} (رابط التفعيل)، {{.FullName}} (الاسم الكامل)، {{.Username}}.",
+      passwordExpiryTemplate: "قالب تذكير انتهاء صلاحية كلمة المرور",
+      loginFailureLockTemplate: "قالب قفل الحساب بعد فشل تسجيل الدخول",
+      inactiveLockTemplate: "قالب قفل الحساب غير النشط",
+      loadError: "فشل تحميل إعدادات SMTP: {{error}}",
+      saveSuccess: "تم حفظ إعدادات SMTP بنجاح.",
+      saveError: "فشل حفظ إعدادات SMTP: {{error}}",
+      testError: "فشل اختبار اتصال SMTP: {{error}}",
+      testResult: "نتيجة الاختبار",
+      testSuccess: "تم الاتصال بنجاح!",
+      testFailed: "فشل الاتصال: {{error}}"
     },
     toolsets: {
       name: "الاسم",
@@ -9460,7 +9569,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     user_export: "تصدير المستخدمين",
     audit_log_cleanup_task: "تنظيف سجلات التدقيق",
     ai_chat_session_cleanup_task: "تنظيف جلسات محادثات الذكاء الاصطناعي",
-    task_log_cleanup_task: "تنظيف سجلات المهام"
+    task_log_cleanup_task: "تنظيف سجلات المهام",
+    inactive_account_lock_task: "مهمة قفل الحسابات غير النشطة",
+    password_expiry_notification_task: "مهمة إشعار انتهاء صلاحية كلمة المرور"
   },
   statusLabel: "الحالة",
   progress: "التقدم",
@@ -9511,10 +9622,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "شغّل الآن",
   executionHistory: "سجل التنفيذ",
   scheduleListFailed: "فشل سرد الجداول الزمنية: {{error}}",
+  scheduleTriggered: "تم تشغيل المهمة.",
   description: {
     ai_chat_session_cleanup_task: "تنظيف جلسات محادثة الذكاء الاصطناعي",
     audit_log_cleanup_task: "تنظيف سجلات التدقيق",
-    task_log_cleanup_task: "تنظيف سجلات المهام وسجلات التشغيل التاريخية"
+    task_log_cleanup_task: "تنظيف سجلات المهام وسجلات التشغيل التاريخية",
+    inactive_account_lock_task: "فحص المستخدمين كل ساعة وقفل الحسابات غير النشطة تلقائياً",
+    password_expiry_notification_task: "فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور"
   }
 }, re = {
   loading: "Laddar...",
@@ -10329,6 +10443,10 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         label: "Lösenordets giltighetstid",
         tooltip: "Ange giltighetstiden för användarlösenord, 0 betyder att det aldrig går ut"
       },
+      passwordExpiryNotify: {
+        label: "Notis innan lösenord går ut",
+        tooltip: "Antal dagar innan utgång för att skicka påminnelse via e-post. 0 inaktiverar notisen"
+      },
       loginFailureLock: {
         label: "Automatisk kontolåsning efter inloggningsfel",
         tooltip: "När detta är aktiverat låses konton tillfälligt efter upprepade inloggningsfel"
@@ -10605,7 +10723,17 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       userLockedTemplate: "Mall för låst användare",
       mfaCodeTemplate: "Mall för MFA-kod",
       activationTemplate: "E-postmall för kontoaktivering",
-      activationTemplateTooltip: "E-post som skickas till nya användare utan lösenord. Tillgängliga variabler: {{.ActivationURL}} (aktiveringslänk), {{.FullName}} (fullständigt namn), {{.Username}}."
+      activationTemplateTooltip: "E-post som skickas till nya användare utan lösenord. Tillgängliga variabler: {{.ActivationURL}} (aktiveringslänk), {{.FullName}} (fullständigt namn), {{.Username}}.",
+      passwordExpiryTemplate: "Mall för lösenordsutgångspåminnelse",
+      loginFailureLockTemplate: "Mall för låsning vid misslyckad inloggning",
+      inactiveLockTemplate: "Mall för låsning av inaktivt konto",
+      loadError: "Det gick inte att läsa SMTP-inställningar: {{error}}",
+      saveSuccess: "SMTP-inställningarna har sparats.",
+      saveError: "Det gick inte att spara SMTP-inställningarna: {{error}}",
+      testError: "SMTP-anslutningstest misslyckades: {{error}}",
+      testResult: "Testresultat",
+      testSuccess: "Anslutningen lyckades!",
+      testFailed: "Anslutningen misslyckades: {{error}}"
     },
     toolsets: {
       name: "Namn",
@@ -10867,7 +10995,9 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     user_export: "Användarexport",
     audit_log_cleanup_task: "Rensning av granskningsloggar",
     ai_chat_session_cleanup_task: "Rensning av AI-chattsessioner",
-    task_log_cleanup_task: "Rensning av uppgiftsloggar"
+    task_log_cleanup_task: "Rensning av uppgiftsloggar",
+    inactive_account_lock_task: "Låsning av inaktiva konton",
+    password_expiry_notification_task: "Avisering om lösenordsutgång"
   },
   statusLabel: "Status",
   progress: "Framsteg",
@@ -10918,10 +11048,13 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   triggerNow: "Kör nu",
   executionHistory: "Körhistorik",
   scheduleListFailed: "Det gick inte att lista scheman: {{error}}",
+  scheduleTriggered: "Uppgift utlöst.",
   description: {
     ai_chat_session_cleanup_task: "Rensa AI-chattsessioner",
     audit_log_cleanup_task: "Rensa granskningsloggar",
-    task_log_cleanup_task: "Rensa uppgiftsloggar och historiska körningsdata"
+    task_log_cleanup_task: "Rensa uppgiftsloggar och historiska körningsdata",
+    inactive_account_lock_task: "Skanna användare varje timme och lås inaktiva konton automatiskt",
+    password_expiry_notification_task: "Skanna användare varje timme och skicka påminnelser om lösenordsutgång en gång per lösenordscykel"
   }
 };
 g.use(f).use(h).init({
@@ -10953,7 +11086,7 @@ g.use(f).use(h).init({
       task: V
     },
     "es-ES": {
-      translation: C,
+      translation: E,
       common: K,
       authorization: j,
       system: G,
@@ -10961,7 +11094,7 @@ g.use(f).use(h).init({
       task: H
     },
     "fr-FR": {
-      translation: E,
+      translation: C,
       common: Z,
       authorization: J,
       system: Y,

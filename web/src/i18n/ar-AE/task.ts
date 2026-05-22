@@ -23,6 +23,8 @@ export default {
     audit_log_cleanup_task: 'تنظيف سجلات التدقيق',
     ai_chat_session_cleanup_task: 'تنظيف جلسات محادثات الذكاء الاصطناعي',
     task_log_cleanup_task: 'تنظيف سجلات المهام',
+    inactive_account_lock_task: 'مهمة قفل الحسابات غير النشطة',
+    password_expiry_notification_task: 'مهمة إشعار انتهاء صلاحية كلمة المرور',
   },
   statusLabel: 'الحالة',
   progress: 'التقدم',
@@ -73,9 +75,12 @@ export default {
   triggerNow: 'شغّل الآن',
   executionHistory: 'سجل التنفيذ',
   scheduleListFailed: 'فشل سرد الجداول الزمنية: {{error}}',
+  scheduleTriggered: 'تم تشغيل المهمة.',
   description: {
     ai_chat_session_cleanup_task: 'تنظيف جلسات محادثة الذكاء الاصطناعي',
     audit_log_cleanup_task: 'تنظيف سجلات التدقيق',
     task_log_cleanup_task: 'تنظيف سجلات المهام وسجلات التشغيل التاريخية',
+    inactive_account_lock_task: 'فحص المستخدمين كل ساعة وقفل الحسابات غير النشطة تلقائياً',
+    password_expiry_notification_task: 'فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور',
   },
 };

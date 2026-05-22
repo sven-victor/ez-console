@@ -44,6 +44,7 @@ func (c *SMTPSettingController) RegisterRoutes(r *gin.RouterGroup) {
 		smtpRoutes.GET("", middleware.RequirePermission("system:settings:view"), c.GetSMTPSettings)            // Assuming similar permission
 		smtpRoutes.PUT("", middleware.RequirePermission("system:settings:update"), c.UpdateSMTPSettings)       // Assuming similar permission
 		smtpRoutes.POST("/test", middleware.RequirePermission("system:settings:update"), c.TestSMTPConnection) // Assuming similar permission
+		smtpRoutes.GET("/fields", middleware.RequirePermission("system:settings:view"), c.GetSMTPSettingFields)
 	}
 }
 
@@ -148,4 +149,20 @@ func (c *SMTPSettingController) TestSMTPConnection(ctx *gin.Context) {
 		Message: "SMTP connection test successful",
 		Success: true,
 	})
+}
+
+// GetSMTPSettingFields godoc
+//
+//	@Summary		Get SMTP setting fields
+//	@Description	Returns the list of registered SMTP dynamic field definitions.
+//	@ID             getSmtpSettingFields
+//	@Tags			System Settings/SMTP
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	util.Response[[]model.SettingFieldDefinition]
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/smtp-settings/fields [get]
+//	@Security		ApiKeyAuth
+func (c *SMTPSettingController) GetSMTPSettingFields(ctx *gin.Context) {
+	util.RespondWithSuccess(ctx, http.StatusOK, model.GetRegisteredSMTPSettingFields())
 }

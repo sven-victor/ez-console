@@ -1,7 +1,7 @@
 var l = Object.defineProperty;
 var h = (e, t, r) => t in e ? l(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r;
-var u = (e, t, r) => h(e, typeof t != "symbol" ? t + "" : t, r);
-import { g as p } from "./base.js";
+var p = (e, t, r) => h(e, typeof t != "symbol" ? t + "" : t, r);
+import { g as d } from "./base.js";
 import m from "axios";
 const g = "/api", n = m.create({
   baseURL: g,
@@ -10,10 +10,10 @@ const g = "/api", n = m.create({
     "Content-Type": "application/json"
   }
 });
-class d extends Error {
-  constructor(r, a) {
-    super(a);
-    u(this, "code");
+class u extends Error {
+  constructor(r, o) {
+    super(o);
+    p(this, "code");
     this.code = r;
   }
 }
@@ -22,8 +22,8 @@ n.interceptors.request.use(
     if (!e.withoutAuth) {
       const r = localStorage.getItem("token");
       if (r && (e.headers = e.headers || {}, e.headers.Authorization = `Bearer ${r}`, !e.headers["X-Scope-OrgID"])) {
-        const a = localStorage.getItem("orgID");
-        a && (e.headers["X-Scope-OrgID"] = a);
+        const o = localStorage.getItem("orgID");
+        o && (e.headers["X-Scope-OrgID"] = o);
       }
     }
     const t = localStorage.getItem("i18nextLng");
@@ -45,40 +45,40 @@ n.interceptors.response.use(
     } : r.data : Promise.reject(r || "Unknown error") : e.data;
   },
   (e) => {
-    var r, a, o, i, s;
-    ((r = e.response) == null ? void 0 : r.status) === 401 && window.location.pathname !== p("/login") && (localStorage.removeItem("token"), delete n.defaults.headers.common.Authorization, window.location.href = p("/login?redirect=" + encodeURIComponent(window.location.href)));
-    let t = new d(((a = e.response) == null ? void 0 : a.status.toString()) || "500", e.message);
-    if ((i = (o = e.response) == null ? void 0 : o.headers["content-type"]) != null && i.includes("application/json")) {
+    var r, o, a, i, s;
+    ((r = e.response) == null ? void 0 : r.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete n.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
+    let t = new u(((o = e.response) == null ? void 0 : o.status.toString()) || "500", e.message);
+    if ((i = (a = e.response) == null ? void 0 : a.headers["content-type"]) != null && i.includes("application/json")) {
       const c = (s = e.response) == null ? void 0 : s.data;
-      c && (c.err ? t = new d(c.code, c.err) : c.error && (t = new d(c.code, c.error)));
+      c && (c.err ? t = new u(c.code, c.err) : c.error && (t = new u(c.code, c.error)));
     }
     return Promise.reject(t);
   }
 );
 const I = async (e, t) => n.get(e, t), j = async (e, t, r) => n.post(e, t, r), L = async (e, t, r) => n.put(e, t, r), x = async (e, t) => n.delete(e, t);
 async function f(e, t) {
-  const { signal: r, ...a } = t || {}, o = await fetch(e, {
-    method: a.method || "GET",
-    headers: a.headers,
-    body: a.body,
+  const { signal: r, ...o } = t || {}, a = await fetch(e, {
+    method: o.method || "GET",
+    headers: o.headers,
+    body: o.body,
     signal: r
   });
-  if (!o.ok || !o.body) {
-    let i = o.statusText;
-    if (o.body)
+  if (!a.ok || !a.body) {
+    let i = a.statusText;
+    if (a.body)
       try {
-        const s = await o.json();
+        const s = await a.json();
         i = `SSE connection failed: ${s.message || s.err}`;
       } catch {
-        i = `SSE connection failed: ${o.statusText}`;
+        i = `SSE connection failed: ${a.statusText}`;
       }
     throw new Error(i);
   }
-  if (o.status !== 200) {
-    const i = await o.json();
+  if (a.status !== 200) {
+    const i = await a.json();
     throw new Error(`SSE connection failed: ${i.message}`);
   }
-  return o.body;
+  return a.body;
 }
 function y(e) {
   if (e)
@@ -87,60 +87,65 @@ function y(e) {
     );
 }
 async function E(e, t) {
-  const { requestType: r, signal: a, ...o } = t || {}, i = o.responseType;
+  const { requestType: r, signal: o, ...a } = t || {}, i = a.responseType;
   if (r === "sse") {
     const c = localStorage.getItem("orgID");
     return f(e, {
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
+        "X-Base-Path": d(),
         "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         ...c ? { "X-Scope-OrgID": c } : {},
-        ...y(o.headers)
+        ...y(a.headers)
       },
-      method: o.method,
-      body: JSON.stringify(o.data),
-      signal: a
+      method: a.method,
+      body: JSON.stringify(a.data),
+      signal: o
     });
   }
   const s = r === "form" ? {
     ...t == null ? void 0 : t.headers,
-    "Content-Type": "multipart/form-data"
-  } : t == null ? void 0 : t.headers;
+    "Content-Type": "multipart/form-data",
+    "X-Base-Path": d()
+  } : {
+    ...t == null ? void 0 : t.headers,
+    "X-Base-Path": d()
+  };
   switch (i) {
     case "arraybuffer":
       return n.request({
         url: e,
         baseURL: "",
-        ...o,
+        ...a,
         headers: s
       });
     case "blob":
       return n.request({
         url: e,
         baseURL: "",
-        ...o,
+        ...a,
         headers: s
       });
     case "text":
       return n.request({
         url: e,
         baseURL: "",
-        ...o,
+        ...a,
         headers: s
       });
     default:
       return n.request({
         url: e,
         baseURL: "",
-        ...o,
+        ...a,
         headers: s
       });
   }
 }
 export {
-  d as A,
+  u as A,
   x as a,
   g as b,
   n as c,

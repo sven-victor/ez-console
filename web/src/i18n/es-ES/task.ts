@@ -23,6 +23,8 @@ export default {
     audit_log_cleanup_task: 'Limpieza de registros de auditoría',
     ai_chat_session_cleanup_task: 'Limpieza de sesiones de chat de IA',
     task_log_cleanup_task: 'Limpieza de registros de tareas',
+    inactive_account_lock_task: 'Bloqueo de cuentas inactivas',
+    password_expiry_notification_task: 'Notificación de vencimiento de contraseña',
   },
   statusLabel: 'Estado',
   progress: 'Progreso',
@@ -73,9 +75,12 @@ export default {
   triggerNow: 'Ejecutar ahora',
   executionHistory: 'Historial de ejecuciones',
   scheduleListFailed: 'Error al listar los planes: {{error}}',
+  scheduleTriggered: 'Tarea ejecutada.',
   description: {
     ai_chat_session_cleanup_task: 'Limpiar sesiones de chat de IA',
     audit_log_cleanup_task: 'Limpiar registros de auditoría',
     task_log_cleanup_task: 'Limpiar registros de tareas y registros de ejecución histórica',
+    inactive_account_lock_task: 'Escanear usuarios cada hora y bloquear automáticamente las cuentas inactivas',
+    password_expiry_notification_task: 'Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña',
   },
 };

@@ -422,6 +422,9 @@ export declare const api: {
     updateSmtpSettings(body: API.SMTPSettings, options?: {
         [key: string]: any;
     }): Promise<API.SMTPSettings>;
+    getSmtpSettingFields(options?: {
+        [key: string]: any;
+    }): Promise<API.SettingFieldDefinition[]>;
     testSmtpConnection(body: API.SMTPTestRequest, options?: {
         [key: string]: any;
     }): Promise<API.SMTPTestResponse>;
@@ -2058,6 +2061,13 @@ export declare interface ResponseArrayModelServiceAccountAccessKey {
     trace_id: string;
 }
 
+export declare interface ResponseArrayModelSettingFieldDefinition {
+    code: string;
+    data: SettingFieldDefinition[];
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayModelTask {
     code: string;
     data: Task[];
@@ -2483,9 +2493,9 @@ export declare interface Schema {
     /** section 9.5 */
     examples: any[];
     /** section 6.2.3 */
-    exclusiveMaximum: string;
+    exclusiveMaximum: number;
     /** section 6.2.5 */
-    exclusiveMinimum: string;
+    exclusiveMinimum: number;
     /** RFC draft-bhutton-json-schema-validation-00, section 7 */
     format: string;
     /** RFC draft-bhutton-json-schema-00 section 10.2.2 (Apply sub-schemas conditionally) */
@@ -2501,7 +2511,7 @@ export declare interface Schema {
     /** section 6.5.1 */
     maxProperties: number;
     /** section 6.2.2 */
-    maximum: string;
+    maximum: number;
     /** section 6.4.5 */
     minContains: number;
     /** section 6.4.2 */
@@ -2511,9 +2521,9 @@ export declare interface Schema {
     /** section 6.5.2 */
     minProperties: number;
     /** section 6.2.4 */
-    minimum: string;
+    minimum: number;
     /** section 6.2.1 */
-    multipleOf: string;
+    multipleOf: number;
     /** section 10.2.1.4 */
     not: Schema;
     /** section 10.2.1.3 */
@@ -2553,6 +2563,7 @@ export declare interface SecuritySettings {
     mfa_enforced: boolean;
     password_complexity: PasswordComplexity;
     password_expiry_days: number;
+    password_expiry_notify_days: number;
     password_min_length: number;
     session_idle_timeout_minutes: number;
     session_timeout_minutes: number;
@@ -2631,6 +2642,25 @@ export declare interface setServiceAccountPolicyParams {
 export declare interface SetServiceAccountPolicyRequest {
     policy_document: PolicyDocument;
 }
+
+export declare interface SettingFieldDefinition {
+    default_value: string;
+    enum_options: SettingFieldEnumOption[];
+    key: string;
+    label_key: string;
+    max: number;
+    min: number;
+    step: number;
+    tooltip_key: string;
+    value_type: SettingFieldType;
+}
+
+export declare interface SettingFieldEnumOption {
+    label: string;
+    value: string;
+}
+
+export declare type SettingFieldType = "string" | "number" | "percentage" | "rich_text" | "string_list" | "enum";
 
 export declare interface SimpleChatMessage {
     content: string;
@@ -2725,11 +2755,13 @@ export declare interface SMTPSettings {
     from_address: string;
     from_name: string;
     host: string;
+    inactive_lock_template: string;
+    login_failure_lock_template: string;
     mfa_code_template: string;
     password: string;
+    password_expiry_template: string;
     port: number;
     reset_password_template: string;
-    user_locked_template: string;
     username: string;
 }
 
@@ -2742,12 +2774,14 @@ export declare interface SMTPTestRequest {
     from_address: string;
     from_name: string;
     host: string;
+    inactive_lock_template: string;
+    login_failure_lock_template: string;
     mfa_code_template: string;
     password: string;
+    password_expiry_template: string;
     port: number;
     reset_password_template: string;
     to: string;
-    user_locked_template: string;
     username: string;
 }
 

@@ -579,7 +579,7 @@ func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password s
 				existingUser.LockedUntil = time.Now().AddDate(100, 0, 0)
 			}
 			if existingUser.Email != "" {
-				s.baseService.SendEmailFromTemplate(ctx, []string{existingUser.Email}, "User Locked", model.SettingSMTPUserLockedTemplate, map[string]any{
+				s.baseService.SendEmailFromTemplate(ctx, []string{existingUser.Email}, "User Locked", model.SettingSMTPLoginFailureLockTemplate, map[string]any{
 					"Username": existingUser.Username,
 					"UserID":   existingUser.ResourceID,
 					"Email":    existingUser.Email,

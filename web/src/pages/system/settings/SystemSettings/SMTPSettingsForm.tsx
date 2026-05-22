@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Switch, Button, message, Modal, Spin, Radio, Divider } from 'antd';
+import { Form, Input, Select, Switch, Button, message, Modal, Spin, Radio, Divider, InputNumber } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
@@ -31,6 +31,7 @@ const SMTPSettingsForm: React.FC = () => {
   const [testModalVisible, setTestModalVisible] = useState(false);
   const [testForm] = Form.useForm();
   const [isEnabled, setIsEnabled] = useState(false);
+  const { data: smtpFieldDefs } = useRequest(api.system.getSmtpSettingFields);
   const { loading: loadingSettings } = useRequest(api.system.getSmtpSettings, {
     onSuccess: (data: API.SMTPSettings) => {
       form.setFieldsValue(data);
@@ -72,6 +73,23 @@ const SMTPSettingsForm: React.FC = () => {
     manual: true,
   });
 
+  const renderFieldControl = (field: API.SettingFieldDefinition) => {
+    switch (field.value_type) {
+      case 'number':
+        return <InputNumber style={{ width: '100%' }} disabled={!isEnabled} min={field.min} max={field.max} step={field.step} />;
+      case 'percentage':
+        return <InputNumber style={{ width: '100%' }} disabled={!isEnabled} min={0} max={100} step={field.step || 0.01} addonAfter="%" />;
+      case 'string_list':
+        return <Select mode="tags" tokenSeparators={[',']} disabled={!isEnabled} />;
+      case 'enum':
+        return <Select disabled={!isEnabled} options={field.enum_options || []} />;
+      case 'rich_text':
+        return <ReactQuill theme="snow" readOnly={!isEnabled} />;
+      case 'string':
+      default:
+        return <Input disabled={!isEnabled} />;
+    }
+  };
 
   return (
     <>
@@ -169,34 +187,16 @@ const SMTPSettingsForm: React.FC = () => {
 
           <Divider>{t('settings.smtp.templateDivider', { defaultValue: 'Template Configuration' })}</Divider>
 
-          <Form.Item
-            label={t('settings.smtp.resetPasswordTemplate', { defaultValue: 'Reset Password Template' })}
-            name="reset_password_template"
-          >
-            <ReactQuill theme="snow" />
-          </Form.Item>
-
-          <Form.Item
-            label={t('settings.smtp.userLockedTemplate', { defaultValue: 'User Locked Template' })}
-            name="user_locked_template"
-          >
-            <ReactQuill theme="snow" />
-          </Form.Item>
-
-          <Form.Item
-            label={t('settings.smtp.mfaCodeTemplate', { defaultValue: 'MFA Code Template' })}
-            name="mfa_code_template"
-          >
-            <ReactQuill theme="snow" />
-          </Form.Item>
-
-          <Form.Item
-            label={t('settings.smtp.activationTemplate', { defaultValue: 'Account Activation Template' })}
-            name="activation_template"
-            tooltip={t('settings.smtp.activationTemplateTooltip', { defaultValue: 'Email template sent to new users when no password is set. Use {{.ActivationURL}} for the activation link, {{.FullName}} for the user\'s name.' })}
-          >
-            <ReactQuill theme="snow" />
-          </Form.Item>
+          {(smtpFieldDefs || []).map((field) => (
+            <Form.Item
+              key={field.key}
+              label={t(field.label_key || `settings.smtp.${field.key}`, { defaultValue: field.key })}
+              name={field.key}
+              tooltip={field.tooltip_key ? t(field.tooltip_key, { defaultValue: '' }) : undefined}
+            >
+              {renderFieldControl(field)}
+            </Form.Item>
+          ))}
 
           <Form.Item>
             <PermissionGuard permission="system:settings:update">

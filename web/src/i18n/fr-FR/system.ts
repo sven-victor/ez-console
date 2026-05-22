@@ -201,6 +201,10 @@ export default {
         label: 'Délai d\'expiration du mot de passe',
         tooltip: 'Définir le délai d\'expiration des mots de passe des utilisateurs, 0 signifie qu\'ils n\'expirent jamais',
       },
+      passwordExpiryNotify: {
+        label: 'Notification avant expiration du mot de passe',
+        tooltip: 'Nombre de jours avant expiration pour envoyer un e-mail de rappel. 0 desactive la notification',
+      },
       loginFailureLock: {
         label: 'Verrouillage automatique du compte après des échecs de connexion',
         tooltip: 'Lorsque cette option est activée, les comptes seront temporairement verrouillés après des échecs de connexion consécutifs',
@@ -478,6 +482,16 @@ export default {
       mfaCodeTemplate: 'Modèle de code AMF',
       activationTemplate: 'Modèle d\'e-mail d\'activation de compte',
       activationTemplateTooltip: 'E-mail envoyé aux nouveaux utilisateurs sans mot de passe. Variables disponibles : {{.ActivationURL}} (lien d\'activation), {{.FullName}} (nom complet), {{.Username}}.',
+      passwordExpiryTemplate: 'Modele de rappel d\'expiration du mot de passe',
+      loginFailureLockTemplate: 'Modele de verrouillage apres echecs de connexion',
+      inactiveLockTemplate: 'Modele de verrouillage pour inactivite',
+      loadError: 'Echec du chargement des parametres SMTP : {{error}}',
+      saveSuccess: 'Parametres SMTP enregistres avec succes.',
+      saveError: 'Echec de l\'enregistrement des parametres SMTP : {{error}}',
+      testError: 'Echec du test de connexion SMTP : {{error}}',
+      testResult: 'Resultat du test',
+      testSuccess: 'Connexion reussie !',
+      testFailed: 'Connexion echouee : {{error}}',
     },
     toolsets: {
       name: 'Nom',

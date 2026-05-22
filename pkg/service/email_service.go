@@ -105,13 +105,23 @@ func (s *EmailService) SendEmailFromTemplate(ctx context.Context, to []string, s
 		if err != nil {
 			return err
 		}
-	case model.SettingSMTPUserLockedTemplate:
-		tmpl, err = template.New("email").Parse(smtpSettings.UserLockedTemplate)
+	case model.SettingSMTPActivationTemplate:
+		tmpl, err = template.New("email").Parse(smtpSettings.ActivationTemplate)
 		if err != nil {
 			return err
 		}
-	case model.SettingSMTPActivationTemplate:
-		tmpl, err = template.New("email").Parse(smtpSettings.ActivationTemplate)
+	case model.SettingSMTPPasswordExpiryTemplate:
+		tmpl, err = template.New("email").Parse(smtpSettings.PasswordExpiryTemplate)
+		if err != nil {
+			return err
+		}
+	case model.SettingSMTPLoginFailureLockTemplate:
+		tmpl, err = template.New("email").Parse(smtpSettings.LoginFailureLockTemplate)
+		if err != nil {
+			return err
+		}
+	case model.SettingSMTPInactiveLockTemplate:
+		tmpl, err = template.New("email").Parse(smtpSettings.InactiveLockTemplate)
 		if err != nil {
 			return err
 		}

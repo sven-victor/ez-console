@@ -43,6 +43,7 @@ func (s *SettingService) GetSecuritySettings(ctx context.Context) (*model.Securi
 		PasswordComplexity:        model.PasswordComplexityMedium,
 		PasswordMinLength:         8,
 		PasswordExpiryDays:        90,
+		PasswordExpiryNotifyDays:  7,
 		LoginFailureLock:          true,
 		LoginFailureAttempts:      5,
 		HistoryPasswordCheck:      true,
@@ -70,6 +71,11 @@ func (s *SettingService) GetSecuritySettings(ctx context.Context) (*model.Securi
 	if val, ok := settings[string(model.SettingPasswordExpiryDays)]; ok {
 		if intVal, err := strconv.Atoi(val); err == nil {
 			result.PasswordExpiryDays = intVal
+		}
+	}
+	if val, ok := settings[string(model.SettingPasswordExpiryNotifyDays)]; ok {
+		if intVal, err := strconv.Atoi(val); err == nil {
+			result.PasswordExpiryNotifyDays = intVal
 		}
 	}
 
@@ -128,6 +134,7 @@ func (s *SettingService) UpdateSecuritySettings(ctx context.Context, settings *m
 		string(model.SettingPasswordComplexity):        string(settings.PasswordComplexity),
 		string(model.SettingPasswordMinLength):         strconv.Itoa(settings.PasswordMinLength),
 		string(model.SettingPasswordExpiryDays):        strconv.Itoa(settings.PasswordExpiryDays),
+		string(model.SettingPasswordExpiryNotifyDays):  strconv.Itoa(settings.PasswordExpiryNotifyDays),
 		string(model.SettingLoginFailureLock):          boolToString(settings.LoginFailureLock),
 		string(model.SettingLoginFailureAttempts):      strconv.Itoa(settings.LoginFailureAttempts),
 		string(model.SettingHistoryPasswordCheck):      boolToString(settings.HistoryPasswordCheck),
@@ -161,6 +168,7 @@ func (s *SettingService) InitDefaultSecuritySettings(ctx context.Context) error 
 		model.SettingSessionIdleTimeoutMinutes:  {"1440", "Session idle timeout in minutes"},
 		model.SettingUserInactiveDays:           {"90", "User inactive days (0 means do not disable)"},
 		model.SettingPasswordExpiryDays:         {"90", "Password expiry days (0 means never expires)"},
+		model.SettingPasswordExpiryNotifyDays:   {"7", "Password expiry notify days (0 means disabled)"},
 	}
 
 	// Check if each setting already exists, if not, create it

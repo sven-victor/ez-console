@@ -23,6 +23,8 @@ export default {
     audit_log_cleanup_task: 'Audit Log Cleanup',
     ai_chat_session_cleanup_task: 'AI Chat Session Cleanup',
     task_log_cleanup_task: 'Task Log Cleanup',
+    inactive_account_lock_task: 'Inactive Account Lock Task',
+    password_expiry_notification_task: 'Password Expiry Notification Task',
   },
   statusLabel: 'Status',
   progress: 'Progress',
@@ -73,9 +75,12 @@ export default {
   triggerNow: 'Trigger now',
   executionHistory: 'Execution History',
   scheduleListFailed: 'Failed to list schedules: {{error}}',
+  scheduleTriggered: 'Task triggered.',
   description: {
     ai_chat_session_cleanup_task: 'Cleanup AI chat sessions',
     audit_log_cleanup_task: 'Cleanup audit logs',
     task_log_cleanup_task: 'Cleanup task logs and historical task run records',
+    inactive_account_lock_task: 'Scan users hourly and lock inactive accounts automatically',
+    password_expiry_notification_task: 'Scan users hourly and send password expiry reminders once per password cycle',
   },
 };

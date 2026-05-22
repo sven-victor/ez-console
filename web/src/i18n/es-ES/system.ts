@@ -201,6 +201,10 @@ export default {
         label: 'Tiempo de caducidad de la contraseña',
         tooltip: 'Establecer el tiempo de caducidad para las contraseñas de los usuarios, 0 significa que nunca caducan',
       },
+      passwordExpiryNotify: {
+        label: 'Notificación de caducidad de contraseña',
+        tooltip: 'Días antes de la caducidad para enviar el correo de aviso. 0 desactiva la notificación',
+      },
       loginFailureLock: {
         label: 'Bloqueo automático de la cuenta después de fallos de inicio de sesión',
         tooltip: 'Cuando está habilitado, las cuentas se bloquearán temporalmente después de fallos de inicio de sesión consecutivos',
@@ -478,6 +482,16 @@ export default {
       mfaCodeTemplate: 'Plantilla de código MFA',
       activationTemplate: 'Plantilla de correo de activación de cuenta',
       activationTemplateTooltip: 'Correo enviado a nuevos usuarios cuando no se establece contraseña. Variables disponibles: {{.ActivationURL}} (enlace de activación), {{.FullName}} (nombre completo), {{.Username}}.',
+      passwordExpiryTemplate: 'Plantilla de aviso de caducidad de contraseña',
+      loginFailureLockTemplate: 'Plantilla de bloqueo por fallos de inicio de sesión',
+      inactiveLockTemplate: 'Plantilla de bloqueo por inactividad',
+      loadError: 'Error al cargar la configuración SMTP: {{error}}',
+      saveSuccess: 'Configuración SMTP guardada correctamente.',
+      saveError: 'Error al guardar la configuración SMTP: {{error}}',
+      testError: 'Error en la prueba de conexión SMTP: {{error}}',
+      testResult: 'Resultado de la prueba',
+      testSuccess: 'Conexion exitosa!',
+      testFailed: 'Conexion fallida: {{error}}',
     },
     toolsets: {
       name: 'Nombre',

@@ -41,9 +41,40 @@ var (
 func NewSettingService() *SettingService {
 	settingServiceOnce.Do(func() {
 		settingService = &SettingService{}
+		settingService.migrateLegacySMTPUserLockedTemplate()
 		middleware.RegisterSettingService(settingService)
 	})
 	return settingService
+}
+
+// migrateLegacySMTPUserLockedTemplate migrates legacy SMTP template key.
+// TODO: Remove this compatibility logic in a future release.
+func (s *SettingService) migrateLegacySMTPUserLockedTemplate() {
+	ctx := context.Background()
+	conn := db.Session(ctx)
+
+	var loginFailureCount int64
+	if err := conn.Model(&model.Setting{}).Where("key = ?", model.SettingSMTPLoginFailureLockTemplate).Count(&loginFailureCount).Error; err != nil {
+		return
+	}
+	if loginFailureCount > 0 {
+		return
+	}
+
+	var legacyCount int64
+	if err := conn.Model(&model.Setting{}).Where("key = ?", model.SettingSMTPUserLockedTemplate).Count(&legacyCount).Error; err != nil {
+		return
+	}
+	if legacyCount == 0 {
+		return
+	}
+
+	_ = conn.Model(&model.Setting{}).
+		Where("key = ?", model.SettingSMTPUserLockedTemplate).
+		Update("key", string(model.SettingSMTPLoginFailureLockTemplate)).Error
+	_ = cache.AllSettings.Delete(ctx, "all")
+	_ = cache.Settings.Delete(ctx, string(model.SettingSMTPUserLockedTemplate))
+	_ = cache.Settings.Delete(ctx, string(model.SettingSMTPLoginFailureLockTemplate))
 }
 
 // GetSetting gets the setting with the specified key name

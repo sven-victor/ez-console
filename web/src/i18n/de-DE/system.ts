@@ -201,6 +201,10 @@ export default {
         label: 'Passwortablaufzeit',
         tooltip: 'Legen Sie die Ablaufzeit für Benutzerpasswörter fest. 0 bedeutet, dass sie nie ablaufen',
       },
+      passwordExpiryNotify: {
+        label: 'Passwortablauf-Benachrichtigung',
+        tooltip: 'Anzahl der Tage vor dem Ablauf, an denen eine Erinnerungs-E-Mail gesendet wird. 0 deaktiviert die Benachrichtigung',
+      },
       loginFailureLock: {
         label: 'Automatische Kontosperrung nach Anmeldefehlern',
         tooltip: 'Wenn aktiviert, werden Konten nach aufeinanderfolgenden Anmeldefehlern vorübergehend gesperrt',
@@ -478,6 +482,16 @@ export default {
       mfaCodeTemplate: 'MFA-Code-Vorlage',
       activationTemplate: 'Kontoaktivierungs-E-Mail-Vorlage',
       activationTemplateTooltip: 'E-Mail, die an neue Benutzer gesendet wird, wenn kein Passwort gesetzt ist. Verfügbare Variablen: {{.ActivationURL}} (Aktivierungslink), {{.FullName}} (vollständiger Name), {{.Username}}.',
+      passwordExpiryTemplate: 'Vorlage für Passwortablauf-Erinnerung',
+      loginFailureLockTemplate: 'Vorlage für Sperre nach Login-Fehlern',
+      inactiveLockTemplate: 'Vorlage für Sperre bei Inaktivität',
+      loadError: 'SMTP-Einstellungen konnten nicht geladen werden: {{error}}',
+      saveSuccess: 'SMTP-Einstellungen wurden erfolgreich gespeichert.',
+      saveError: 'SMTP-Einstellungen konnten nicht gespeichert werden: {{error}}',
+      testError: 'SMTP-Verbindungstest fehlgeschlagen: {{error}}',
+      testResult: 'Testergebnis',
+      testSuccess: 'Verbindung erfolgreich!',
+      testFailed: 'Verbindung fehlgeschlagen: {{error}}',
     },
     toolsets: {
       name: 'Name',

@@ -23,6 +23,8 @@ export default {
     audit_log_cleanup_task: '审计日志清理任务',
     ai_chat_session_cleanup_task: 'AI 会话清理任务',
     task_log_cleanup_task: '任务日志清理任务',
+    inactive_account_lock_task: '不活跃账户锁定任务',
+    password_expiry_notification_task: '密码到期提醒任务',
   },
   statusLabel: '状态',
   progress: '进度',
@@ -73,9 +75,12 @@ export default {
   triggerNow: '立即触发',
   executionHistory: '执行历史',
   scheduleListFailed: '获取计划任务列表失败：{{error}}',
+  scheduleTriggered: '任务已触发。',
   description: {
     ai_chat_session_cleanup_task: '清理 AI 会话',
     audit_log_cleanup_task: '清理审计日志',
     task_log_cleanup_task: '清理任务日志及历史运行记录',
+    inactive_account_lock_task: '每小时扫描用户并自动锁定不活跃账户',
+    password_expiry_notification_task: '每小时扫描用户，并在每个密码周期内发送一次密码到期提醒',
   },
 };

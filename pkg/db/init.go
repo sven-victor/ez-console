@@ -37,6 +37,7 @@ var migrateModels = []interface{}{
 	&model.ServiceAccount{},
 	&model.ServiceAccountAccessKey{},
 	&model.PasswordHistory{},
+	&model.UserExt{},
 	&model.File{},
 	&model.TempData{},
 	&model.AIModel{},

@@ -473,7 +473,15 @@ export interface downloadFileParams {
   fileKey: string;
 }
 
-export type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+export type Duration =
+  | -9223372036854776000
+  | 9223372036854776000
+  | 1
+  | 1000
+  | 1000000
+  | 1000000000
+  | 60000000000
+  | 3600000000000;
 
 export interface EnableMFARequest {
   mfa_type: string;
@@ -1250,6 +1258,13 @@ export interface ResponseArrayModelServiceAccountAccessKey {
   trace_id: string;
 }
 
+export interface ResponseArrayModelSettingFieldDefinition {
+  code: string;
+  data: SettingFieldDefinition[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayModelTask {
   code: string;
   data: Task[];
@@ -1746,6 +1761,7 @@ export interface SecuritySettings {
   mfa_enforced: boolean;
   password_complexity: PasswordComplexity;
   password_expiry_days: number;
+  password_expiry_notify_days: number;
   password_min_length: number;
   session_idle_timeout_minutes: number;
   session_timeout_minutes: number;
@@ -1825,6 +1841,31 @@ export interface SetServiceAccountPolicyRequest {
   policy_document: PolicyDocument;
 }
 
+export interface SettingFieldDefinition {
+  default_value: string;
+  enum_options: SettingFieldEnumOption[];
+  key: string;
+  label_key: string;
+  max: number;
+  min: number;
+  step: number;
+  tooltip_key: string;
+  value_type: SettingFieldType;
+}
+
+export interface SettingFieldEnumOption {
+  label: string;
+  value: string;
+}
+
+export type SettingFieldType =
+  | "string"
+  | "number"
+  | "percentage"
+  | "rich_text"
+  | "string_list"
+  | "enum";
+
 export interface SimpleChatMessage {
   content: string;
   role: AIChatMessageRole;
@@ -1901,11 +1942,13 @@ export interface SMTPSettings {
   from_address: string;
   from_name: string;
   host: string;
+  inactive_lock_template: string;
+  login_failure_lock_template: string;
   mfa_code_template: string;
   password: string;
+  password_expiry_template: string;
   port: number;
   reset_password_template: string;
-  user_locked_template: string;
   username: string;
 }
 
@@ -1918,12 +1961,14 @@ export interface SMTPTestRequest {
   from_address: string;
   from_name: string;
   host: string;
+  inactive_lock_template: string;
+  login_failure_lock_template: string;
   mfa_code_template: string;
   password: string;
+  password_expiry_template: string;
   port: number;
   reset_password_template: string;
   to: string;
-  user_locked_template: string;
   username: string;
 }
 

@@ -23,6 +23,8 @@ export default {
     audit_log_cleanup_task: 'Rensning av granskningsloggar',
     ai_chat_session_cleanup_task: 'Rensning av AI-chattsessioner',
     task_log_cleanup_task: 'Rensning av uppgiftsloggar',
+    inactive_account_lock_task: 'Låsning av inaktiva konton',
+    password_expiry_notification_task: 'Avisering om lösenordsutgång',
   },
   statusLabel: 'Status',
   progress: 'Framsteg',
@@ -73,9 +75,12 @@ export default {
   triggerNow: 'Kör nu',
   executionHistory: 'Körhistorik',
   scheduleListFailed: 'Det gick inte att lista scheman: {{error}}',
+  scheduleTriggered: 'Uppgift utlöst.',
   description: {
     ai_chat_session_cleanup_task: 'Rensa AI-chattsessioner',
     audit_log_cleanup_task: 'Rensa granskningsloggar',
     task_log_cleanup_task: 'Rensa uppgiftsloggar och historiska körningsdata',
+    inactive_account_lock_task: 'Skanna användare varje timme och lås inaktiva konton automatiskt',
+    password_expiry_notification_task: 'Skanna användare varje timme och skicka påminnelser om lösenordsutgång en gång per lösenordscykel',
   },
 };

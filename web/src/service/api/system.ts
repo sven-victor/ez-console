@@ -785,6 +785,17 @@ export async function updateSmtpSettings(
   });
 }
 
+/** Get SMTP setting fields Returns the list of registered SMTP dynamic field definitions. GET /api/system/smtp-settings/fields */
+export async function getSmtpSettingFields(options?: { [key: string]: any }) {
+  return request<API.ResponseArrayModelSettingFieldDefinition>(
+    "/api/system/smtp-settings/fields",
+    {
+      method: "GET",
+      ...(options || {}),
+    }
+  );
+}
+
 /** Test SMTP connection Sends a test email to the specified recipient using the provided or saved SMTP settings. POST /api/system/smtp-settings/test */
 export async function testSmtpConnection(
   body: API.SMTPTestRequest,
