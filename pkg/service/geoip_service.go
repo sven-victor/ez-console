@@ -28,34 +28,46 @@ import (
 	"github.com/sven-victor/ez-utils/log"
 )
 
-type GeoIPService struct {
+type GeoIPService interface {
+	MustGetLocation(ctx context.Context, addr string, language string) string
+	GetLocation(ctx context.Context, addr string, language string) (string, error)
+}
+
+type GeoIP2Service struct {
 	db *geoip2.Reader
 	mu sync.Mutex
 }
 
-func NewGeoIPService(ctx context.Context) *GeoIPService {
-	logger := log.GetContextLogger(ctx)
-	cfg := config.GetConfig()
-	if cfg.Server.GeoIPDBPath != "" {
-		if _, err := os.Stat(cfg.Server.GeoIPDBPath); os.IsNotExist(err) {
-			level.Error(logger).Log("msg", "GeoIP database file does not exist", "path", cfg.Server.GeoIPDBPath)
-			os.Exit(1)
-		} else if err != nil {
-			level.Error(logger).Log("msg", "failed to open GeoIP database", "error", err)
-			os.Exit(1)
+var geoipService GeoIPService
+var geoipServiceOnce sync.Once
+
+func NewGeoIPService(ctx context.Context) GeoIPService {
+	geoipServiceOnce.Do(func() {
+		svc := &GeoIP2Service{db: nil, mu: sync.Mutex{}}
+		logger := log.GetContextLogger(ctx)
+		cfg := config.GetConfig()
+		if cfg.Server.GeoIPDBPath != "" {
+			if _, err := os.Stat(cfg.Server.GeoIPDBPath); os.IsNotExist(err) {
+				level.Error(logger).Log("msg", "GeoIP database file does not exist", "path", cfg.Server.GeoIPDBPath)
+				os.Exit(1)
+			} else if err != nil {
+				level.Error(logger).Log("msg", "failed to open GeoIP database", "error", err)
+				os.Exit(1)
+			}
+			level.Info(logger).Log("msg", "opening GeoIP database", "path", cfg.Server.GeoIPDBPath)
+			reader, err := geoip2.Open(cfg.Server.GeoIPDBPath)
+			if err != nil {
+				level.Error(logger).Log("msg", "failed to open GeoIP database", "error", err)
+				os.Exit(1)
+			}
+			svc.db = reader
 		}
-		level.Info(logger).Log("msg", "opening GeoIP database", "path", cfg.Server.GeoIPDBPath)
-		reader, err := geoip2.Open(cfg.Server.GeoIPDBPath)
-		if err != nil {
-			level.Error(logger).Log("msg", "failed to open GeoIP database", "error", err)
-			os.Exit(1)
-		}
-		return &GeoIPService{db: reader}
-	}
-	return &GeoIPService{}
+		geoipService = svc
+	})
+	return geoipService
 }
 
-func (s *GeoIPService) City(inet netip.Addr) (*geoip2.City, error) {
+func (s *GeoIP2Service) City(inet netip.Addr) (*geoip2.City, error) {
 	if s.db == nil {
 		return nil, nil
 	}
@@ -64,7 +76,7 @@ func (s *GeoIPService) City(inet netip.Addr) (*geoip2.City, error) {
 	return s.db.City(inet)
 }
 
-func (s *GeoIPService) MustGetLocation(ctx context.Context, addr string, language string) string {
+func (s *GeoIP2Service) MustGetLocation(ctx context.Context, addr string, language string) string {
 	var loc string
 	var err error
 	if addr != "" {
@@ -102,7 +114,7 @@ func (s *GeoIPService) MustGetLocation(ctx context.Context, addr string, languag
 	return loc
 }
 
-func (s *GeoIPService) GetLocation(ctx context.Context, addr string, language string) (string, error) {
+func (s *GeoIP2Service) GetLocation(ctx context.Context, addr string, language string) (string, error) {
 	language = strings.ToLower(language)
 	language, _, _ = strings.Cut(language, "-")
 	ip, err := netip.ParseAddr(addr)

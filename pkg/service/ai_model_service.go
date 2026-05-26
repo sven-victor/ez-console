@@ -28,34 +28,48 @@ import (
 	"gorm.io/gorm"
 )
 
-// AIModelService handles AI model management
-type AIModelService struct{}
+// aiModelService handles AI model management
+type aiModelService struct{}
+
+type AIModelService interface {
+	CreateAIModel(ctx context.Context, req *model.AIModel) (*model.AIModel, error)
+	GetAIModel(ctx context.Context, organizationID, id string) (*model.AIModel, error)
+	GetAIModelForAPI(ctx context.Context, organizationID, id string) (*model.AIModel, error)
+	UpdateAIModel(ctx context.Context, organizationID, id string, req *model.AIModel) (*model.AIModel, error)
+	DeleteAIModel(ctx context.Context, organizationID, id string) error
+	ListAIModels(ctx context.Context, organizationID string, current, pageSize int, search string) ([]model.AIModel, int64, error)
+	GetDefaultAIModel(ctx context.Context, organizationID string) (*model.AIModel, error)
+	SetDefaultAIModel(ctx context.Context, organizationID, id string) error
+	TestAIModel(ctx context.Context, organizationID, id string) error
+	GetAITypeDefinitions(ctx context.Context) []AITypeDefinition
+}
 
 var (
-	aiServiceOnce  sync.Once
-	aiModelService *AIModelService
+	aiModelServiceOnce     sync.Once
+	aiModelServiceInstance AIModelService
 )
 
 // NewAIModelService creates a new AI model service
-func NewAIModelService() *AIModelService {
-	aiServiceOnce.Do(func() {
-		aiModelService = &AIModelService{}
+func NewAIModelService() AIModelService {
+	aiModelServiceOnce.Do(func() {
+		inst := &aiModelService{}
+		aiModelServiceInstance = inst
 		RegisterSiteConigAttr("ai_enabled", func(ctx context.Context) any {
 			organizationID := ctx.(*gin.Context).GetString("organization_id")
 			if organizationID == "" {
 				return false
 			}
-			if aiModel, _ := aiModelService.GetDefaultAIModel(ctx, organizationID); aiModel == nil {
+			if aiModel, _ := aiModelServiceInstance.GetDefaultAIModel(ctx, organizationID); aiModel == nil {
 				return false
 			}
 			return true
 		})
 	})
-	return aiModelService
+	return aiModelServiceInstance
 }
 
 // CreateAIModel creates a new AI model
-func (s *AIModelService) CreateAIModel(ctx context.Context, req *model.AIModel) (*model.AIModel, error) {
+func (s *aiModelService) CreateAIModel(ctx context.Context, req *model.AIModel) (*model.AIModel, error) {
 	// Encrypt the API key in Config
 	if req.Config != nil {
 		if apiKey, ok := req.Config["api_key"].(string); ok && apiKey != "" {
@@ -84,7 +98,7 @@ func (s *AIModelService) CreateAIModel(ctx context.Context, req *model.AIModel) 
 }
 
 // GetAIModel gets an AI model by ID
-func (s *AIModelService) GetAIModel(ctx context.Context, organizationID, id string) (*model.AIModel, error) {
+func (s *aiModelService) GetAIModel(ctx context.Context, organizationID, id string) (*model.AIModel, error) {
 	var aiModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
@@ -94,7 +108,7 @@ func (s *AIModelService) GetAIModel(ctx context.Context, organizationID, id stri
 }
 
 // GetAIModelForAPI gets an AI model by ID for API response (without API key)
-func (s *AIModelService) GetAIModelForAPI(ctx context.Context, organizationID, id string) (*model.AIModel, error) {
+func (s *aiModelService) GetAIModelForAPI(ctx context.Context, organizationID, id string) (*model.AIModel, error) {
 	var aiModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
@@ -108,7 +122,7 @@ func (s *AIModelService) GetAIModelForAPI(ctx context.Context, organizationID, i
 }
 
 // UpdateAIModel updates an AI model
-func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id string, req *model.AIModel) (*model.AIModel, error) {
+func (s *aiModelService) UpdateAIModel(ctx context.Context, organizationID, id string, req *model.AIModel) (*model.AIModel, error) {
 	var existingModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&existingModel).Error; err != nil {
 		return nil, fmt.Errorf("failed to find AI model: %w", err)
@@ -150,7 +164,7 @@ func (s *AIModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 }
 
 // DeleteAIModel deletes an AI model
-func (s *AIModelService) DeleteAIModel(ctx context.Context, organizationID, id string) error {
+func (s *aiModelService) DeleteAIModel(ctx context.Context, organizationID, id string) error {
 	var aiModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to find AI model: %w", err)
@@ -167,7 +181,7 @@ func (s *AIModelService) DeleteAIModel(ctx context.Context, organizationID, id s
 }
 
 // ListAIModels lists AI models with pagination
-func (s *AIModelService) ListAIModels(ctx context.Context, organizationID string, current, pageSize int, search string) ([]model.AIModel, int64, error) {
+func (s *aiModelService) ListAIModels(ctx context.Context, organizationID string, current, pageSize int, search string) ([]model.AIModel, int64, error) {
 	var models []model.AIModel
 	var total int64
 
@@ -196,7 +210,7 @@ func (s *AIModelService) ListAIModels(ctx context.Context, organizationID string
 }
 
 // GetDefaultAIModel gets the default AI model for a provider
-func (s *AIModelService) GetDefaultAIModel(ctx context.Context, organizationID string) (*model.AIModel, error) {
+func (s *aiModelService) GetDefaultAIModel(ctx context.Context, organizationID string) (*model.AIModel, error) {
 	var aiModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND is_default = ? AND status = ?",
 		organizationID, true, model.AIModelStatusEnabled).First(&aiModel).Error; err != nil {
@@ -207,7 +221,7 @@ func (s *AIModelService) GetDefaultAIModel(ctx context.Context, organizationID s
 }
 
 // SetDefaultAIModel sets an AI model as default
-func (s *AIModelService) SetDefaultAIModel(ctx context.Context, organizationID, id string) error {
+func (s *aiModelService) SetDefaultAIModel(ctx context.Context, organizationID, id string) error {
 	var aiModel model.AIModel
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to find AI model: %w", err)
@@ -232,14 +246,14 @@ func (s *AIModelService) SetDefaultAIModel(ctx context.Context, organizationID, 
 }
 
 // unsetDefaultModels unsets all default models for a provider
-func (s *AIModelService) unsetDefaultModels(ctx context.Context, provider model.AIModelProvider) error {
+func (s *aiModelService) unsetDefaultModels(ctx context.Context, provider model.AIModelProvider) error {
 	return db.Session(ctx).Model(&model.AIModel{}).
 		Where("provider = ? AND is_default = ?", provider, true).
 		Update("is_default", false).Error
 }
 
 // TestAIModel tests an AI model connection
-func (s *AIModelService) TestAIModel(ctx context.Context, organizationID, id string) error {
+func (s *aiModelService) TestAIModel(ctx context.Context, organizationID, id string) error {
 	aiModel, err := s.GetAIModel(ctx, organizationID, id)
 	if err != nil {
 		return fmt.Errorf("failed to get AI model: %w", err)
@@ -278,7 +292,7 @@ func (s *AIModelService) TestAIModel(ctx context.Context, organizationID, id str
 }
 
 // testOpenAIModel tests OpenAI model connection
-func (s *AIModelService) testOpenAIModel(ctx context.Context, aiModel *model.AIModel) error {
+func (s *aiModelService) testOpenAIModel(ctx context.Context, aiModel *model.AIModel) error {
 	// This would be implemented to test the actual OpenAI connection
 	// For now, just validate the configuration
 	if aiModel.Config == nil {
@@ -309,7 +323,7 @@ type AITypeDefinition struct {
 }
 
 // GetAITypeDefinitions returns all registered AI provider type definitions
-func (s *AIModelService) GetAITypeDefinitions(ctx context.Context) []AITypeDefinition {
+func (s *aiModelService) GetAITypeDefinitions(ctx context.Context) []AITypeDefinition {
 	factories := ai.GetRegisteredFactories()
 	definitions := []AITypeDefinition{}
 	for provider, factory := range factories {

@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
@@ -28,15 +29,32 @@ import (
 )
 
 // RoleService provides role-related services
-type RoleService struct {
-	toolSetService *ToolSetService
+type RoleService interface {
+	ListRoles(ctx context.Context, current, pageSize int, search string, organizationID *string) ([]model.Role, int64, error)
+	GetRole(ctx context.Context, id string) (*model.Role, error)
+	CreateRole(ctx context.Context, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error)
+	UpdateRole(ctx context.Context, id, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error)
+	DeleteRole(ctx context.Context, id string) error
+	AssignPermissions(ctx context.Context, roleID string, permissionIDs []string) error
+	SetRolePolicy(ctx context.Context, roleID string, policyDocument model.PolicyDocument) (*model.Role, error)
+	GetRolePolicy(ctx context.Context, roleID string) (model.PolicyDocument, error)
 }
 
+type roleService struct {
+	toolSetService ToolSetService
+}
+
+var (
+	roleServiceOnce     sync.Once
+	roleServiceInstance RoleService
+)
+
 // NewRoleService creates a role service instance.
-func NewRoleService(toolSetService *ToolSetService) *RoleService {
-	return &RoleService{
-		toolSetService: toolSetService,
-	}
+func NewRoleService(_ context.Context, base BaseService) RoleService {
+	roleServiceOnce.Do(func() {
+		roleServiceInstance = &roleService{toolSetService: base}
+	})
+	return roleServiceInstance
 }
 
 // RoleAIToolAssignment represents AI tool assignments for a role.
@@ -61,7 +79,7 @@ func deduplicateStrings(values []string) []string {
 	return result
 }
 
-func (s *RoleService) validateAIToolAssignments(ctx context.Context, organizationID *string, assignments []RoleAIToolAssignment) error {
+func (s *roleService) validateAIToolAssignments(ctx context.Context, organizationID *string, assignments []RoleAIToolAssignment) error {
 	if len(assignments) == 0 {
 		return nil
 	}
@@ -186,7 +204,7 @@ func buildRoleAIToolPermissions(roleID string, organizationID string, assignment
 	return permissions
 }
 
-func (s *RoleService) replaceRoleAIToolPermissions(ctx context.Context, tx *gorm.DB, roleID string, organizationID *string, assignments []RoleAIToolAssignment) error {
+func (s *roleService) replaceRoleAIToolPermissions(ctx context.Context, tx *gorm.DB, roleID string, organizationID *string, assignments []RoleAIToolAssignment) error {
 	if err := tx.WithContext(ctx).Where("role_id = ?", roleID).Unscoped().Delete(&model.RoleAIToolPermission{}).Error; err != nil {
 		return err
 	}
@@ -206,7 +224,7 @@ func (s *RoleService) replaceRoleAIToolPermissions(ctx context.Context, tx *gorm
 // validatePermissionAssignment validates that permissions are assigned correctly based on role type
 // Non-org permissions can only be assigned to global roles (OrganizationID == nil)
 // Org permissions can be assigned to both global and org roles
-func (s *RoleService) validatePermissionAssignment(ctx context.Context, organizationID *string, permissionIDs []string) error {
+func (s *roleService) validatePermissionAssignment(ctx context.Context, organizationID *string, permissionIDs []string) error {
 	if len(permissionIDs) == 0 {
 		return nil
 	}
@@ -238,7 +256,7 @@ func (s *RoleService) validatePermissionAssignment(ctx context.Context, organiza
 }
 
 // ListRoles gets the list of roles
-func (s *RoleService) ListRoles(ctx context.Context, current, pageSize int, search string, organizationID *string) ([]model.Role, int64, error) {
+func (s *roleService) ListRoles(ctx context.Context, current, pageSize int, search string, organizationID *string) ([]model.Role, int64, error) {
 	var roles []model.Role
 	var total int64
 	query := db.Session(ctx).Model(&model.Role{})
@@ -282,7 +300,7 @@ func (s *RoleService) ListRoles(ctx context.Context, current, pageSize int, sear
 }
 
 // GetRole gets a role by ID
-func (s *RoleService) GetRole(ctx context.Context, id string) (*model.Role, error) {
+func (s *roleService) GetRole(ctx context.Context, id string) (*model.Role, error) {
 	var role model.Role
 	if err := db.Session(ctx).
 		Where(&model.Role{Base: model.Base{ResourceID: id}}).
@@ -313,7 +331,7 @@ func (s *RoleService) GetRole(ctx context.Context, id string) (*model.Role, erro
 }
 
 // CreateRole creates a new role
-func (s *RoleService) CreateRole(ctx context.Context, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error) {
+func (s *roleService) CreateRole(ctx context.Context, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error) {
 	// Validate permission assignment based on role type
 	if err := s.validatePermissionAssignment(ctx, organizationID, permissionIDs); err != nil {
 		return nil, err
@@ -421,7 +439,7 @@ func (s *RoleService) CreateRole(ctx context.Context, name, description string, 
 }
 
 // UpdateRole updates a role
-func (s *RoleService) UpdateRole(ctx context.Context, id, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error) {
+func (s *roleService) UpdateRole(ctx context.Context, id, name, description string, organizationID *string, permissionIDs []string, policyDocument model.PolicyDocument, aiAssignments []RoleAIToolAssignment) (*model.Role, error) {
 	var role model.Role
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -576,7 +594,7 @@ func (s *RoleService) UpdateRole(ctx context.Context, id, name, description stri
 }
 
 // DeleteRole deletes a role
-func (s *RoleService) DeleteRole(ctx context.Context, id string) error {
+func (s *roleService) DeleteRole(ctx context.Context, id string) error {
 	var role model.Role
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -626,7 +644,7 @@ func (s *RoleService) DeleteRole(ctx context.Context, id string) error {
 }
 
 // AssignPermissions assigns permissions to a role
-func (s *RoleService) AssignPermissions(ctx context.Context, roleID string, permissionIDs []string) error {
+func (s *roleService) AssignPermissions(ctx context.Context, roleID string, permissionIDs []string) error {
 	var role model.Role
 	if err := db.Session(ctx).Where(&model.Role{Base: model.Base{ResourceID: roleID}}).First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -674,7 +692,7 @@ func (s *RoleService) AssignPermissions(ctx context.Context, roleID string, perm
 }
 
 // SetRolePolicy sets the policy document for a role
-func (s *RoleService) SetRolePolicy(ctx context.Context, roleID string, policyDocument model.PolicyDocument) (*model.Role, error) {
+func (s *roleService) SetRolePolicy(ctx context.Context, roleID string, policyDocument model.PolicyDocument) (*model.Role, error) {
 	var role model.Role
 	if err := db.Session(ctx).Where(&model.Role{Base: model.Base{ResourceID: roleID}}).First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -724,7 +742,7 @@ func (s *RoleService) SetRolePolicy(ctx context.Context, roleID string, policyDo
 }
 
 // GetRolePolicy gets the policy document of a role
-func (s *RoleService) GetRolePolicy(ctx context.Context, roleID string) (model.PolicyDocument, error) {
+func (s *roleService) GetRolePolicy(ctx context.Context, roleID string) (model.PolicyDocument, error) {
 	var role model.Role
 	if err := db.Session(ctx).Where(&model.Role{Base: model.Base{ResourceID: roleID}}).First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

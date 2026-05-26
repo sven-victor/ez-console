@@ -19,6 +19,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -28,9 +29,32 @@ import (
 	"github.com/sven-victor/ez-utils/safe"
 )
 
-// SessionService session service
-type SessionService struct {
-	geoipService *GeoIPService
+type sessionService struct {
+	baseService GeoIPService
+}
+
+type SessionService interface {
+	DeleteSession(ctx context.Context, userID, token string) error
+	CreateSession(ctx context.Context, user *model.User, token, ipAddress, userAgent string, expiredAt time.Time, temporaryRoleIDs ...string) (*model.Session, error)
+	GetUserSessions(ctx context.Context, userID string, currentSessionID string, language string) ([]SessionInfo, error)
+	TerminateSession(ctx context.Context, sessionID string, currentUserID string) error
+	TerminateOtherSessions(ctx context.Context, userID string, currentSessionID string) error
+	GetSessionByToken(ctx context.Context, token string) (*model.Session, error)
+	UpdateSessionActivity(ctx context.Context, sessionID string) error
+	GetCurrentSessionID(c *gin.Context) string
+}
+
+var (
+	sessionServiceOnce     sync.Once
+	sessionServiceInstance SessionService
+)
+
+// NewSessionService creates a new session service
+func NewSessionService(_ context.Context, svc BaseService) SessionService {
+	sessionServiceOnce.Do(func() {
+		sessionServiceInstance = &sessionService{baseService: svc}
+	})
+	return sessionServiceInstance
 }
 
 // SessionInfo session information
@@ -45,7 +69,7 @@ type SessionInfo struct {
 }
 
 // DeleteSession deletes a session record and removes the corresponding cache entry.
-func (s *SessionService) DeleteSession(ctx context.Context, userID, token string) error {
+func (s *sessionService) DeleteSession(ctx context.Context, userID, token string) error {
 	tokenHash := safe.NewHash(sha256.New, []byte(token)).HexString(64)
 	_ = cache.Sessions.Delete(ctx, tokenHash)
 	return db.Session(ctx).Where("user_id = ? AND token = ?", userID, tokenHash).Delete(&model.Session{}).Error
@@ -54,7 +78,7 @@ func (s *SessionService) DeleteSession(ctx context.Context, userID, token string
 // CreateSession creates a new session record and populates the session cache.
 // oauthTemporaryRoleIDs, when non-empty, stores OAuth role IDs for the
 // temporary role mapping mode so they survive cache eviction.
-func (s *SessionService) CreateSession(ctx context.Context, user *model.User, token, ipAddress, userAgent string, expiredAt time.Time, temporaryRoleIDs ...string) (*model.Session, error) {
+func (s *sessionService) CreateSession(ctx context.Context, user *model.User, token, ipAddress, userAgent string, expiredAt time.Time, temporaryRoleIDs ...string) (*model.Session, error) {
 	session := &model.Session{
 		UserID:       user.ResourceID,
 		Token:        safe.NewHash(sha256.New, []byte(token)).HexString(64),
@@ -85,7 +109,7 @@ func (s *SessionService) CreateSession(ctx context.Context, user *model.User, to
 }
 
 // GetUserSessions gets all sessions for a user
-func (s *SessionService) GetUserSessions(ctx context.Context, userID string, currentSessionID string, language string) ([]SessionInfo, error) {
+func (s *sessionService) GetUserSessions(ctx context.Context, userID string, currentSessionID string, language string) ([]SessionInfo, error) {
 	var sessions []model.Session
 	if err := db.Session(ctx).Where("user_id = ? AND is_valid = ?", userID, true).Find(&sessions).Error; err != nil {
 		return nil, fmt.Errorf("failed to get session list: %w", err)
@@ -97,7 +121,7 @@ func (s *SessionService) GetUserSessions(ctx context.Context, userID string, cur
 			continue
 		}
 
-		location := s.geoipService.MustGetLocation(ctx, session.IPAddress, language)
+		location := s.baseService.MustGetLocation(ctx, session.IPAddress, language)
 
 		sessionInfos = append(sessionInfos, SessionInfo{
 			ID:           session.ResourceID,
@@ -114,7 +138,7 @@ func (s *SessionService) GetUserSessions(ctx context.Context, userID string, cur
 }
 
 // TerminateSession terminates a specified session and removes its cache entry.
-func (s *SessionService) TerminateSession(ctx context.Context, sessionID string, currentUserID string) error {
+func (s *sessionService) TerminateSession(ctx context.Context, sessionID string, currentUserID string) error {
 	var session model.Session
 	if err := db.Session(ctx).Where("resource_id = ?", sessionID).First(&session).Error; err != nil {
 		return fmt.Errorf("session not found: %w", err)
@@ -135,7 +159,7 @@ func (s *SessionService) TerminateSession(ctx context.Context, sessionID string,
 
 // TerminateOtherSessions terminates all sessions except the current one and
 // removes their cache entries.
-func (s *SessionService) TerminateOtherSessions(ctx context.Context, userID string, currentSessionID string) error {
+func (s *sessionService) TerminateOtherSessions(ctx context.Context, userID string, currentSessionID string) error {
 	var sessions []model.Session
 	if err := db.Session(ctx).Select("token").
 		Where("user_id = ? AND resource_id != ? AND is_valid = ?", userID, currentSessionID, true).
@@ -157,7 +181,7 @@ func (s *SessionService) TerminateOtherSessions(ctx context.Context, userID stri
 }
 
 // GetSessionByToken gets a session by token
-func (s *SessionService) GetSessionByToken(ctx context.Context, token string) (*model.Session, error) {
+func (s *sessionService) GetSessionByToken(ctx context.Context, token string) (*model.Session, error) {
 	var session model.Session
 	if err := db.Session(ctx).Where("token = ? AND is_valid = ?", token, true).First(&session).Error; err != nil {
 		return nil, fmt.Errorf("session not found or invalid: %w", err)
@@ -174,7 +198,7 @@ func (s *SessionService) GetSessionByToken(ctx context.Context, token string) (*
 }
 
 // UpdateSessionActivity updates session activity information
-func (s *SessionService) UpdateSessionActivity(ctx context.Context, sessionID string) error {
+func (s *sessionService) UpdateSessionActivity(ctx context.Context, sessionID string) error {
 	result := db.Session(ctx).Model(&model.Session{}).
 		Where("resource_id = ?", sessionID).
 		Updates(map[string]interface{}{
@@ -189,7 +213,7 @@ func (s *SessionService) UpdateSessionActivity(ctx context.Context, sessionID st
 }
 
 // GetCurrentSessionID gets the current session ID from the request context
-func (s *SessionService) GetCurrentSessionID(c *gin.Context) string {
+func (s *sessionService) GetCurrentSessionID(c *gin.Context) string {
 	sessionInterface, exists := c.Get("session")
 	if !exists {
 		return ""

@@ -17,6 +17,7 @@ package service
 import (
 	"context"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -24,15 +25,26 @@ import (
 	"github.com/sven-victor/ez-console/pkg/model"
 )
 
-// SystemService provides system-related services
-type SystemService struct {
-	baseService *BaseService
+type systemService struct {
+	baseService BaseService
 }
 
-func NewSystemService(baseService *BaseService) *SystemService {
-	return &SystemService{
-		baseService: baseService,
-	}
+type SystemService interface {
+	GetSystemInfo(ctx context.Context) (*SystemInfo, error)
+	GetSite(ctx context.Context) (*SiteConfig, error)
+	HealthCheck(ctx context.Context) (*HealthResult, error)
+}
+
+var (
+	systemServiceOnce     sync.Once
+	systemServiceInstance SystemService
+)
+
+func NewSystemService(_ context.Context, baseService BaseService) SystemService {
+	systemServiceOnce.Do(func() {
+		systemServiceInstance = &systemService{baseService: baseService}
+	})
+	return systemServiceInstance
 }
 
 // SystemInfo system information structure
@@ -49,7 +61,7 @@ type SystemInfo struct {
 }
 
 // GetSystemInfo gets system information
-func (s *SystemService) GetSystemInfo(ctx context.Context) (*SystemInfo, error) {
+func (s *systemService) GetSystemInfo(ctx context.Context) (*SystemInfo, error) {
 	// Get user count
 	var userCount int64
 	if err := db.Session(ctx).Model(&model.User{}).Count(&userCount).Error; err != nil {
@@ -131,9 +143,9 @@ type SiteConfig struct {
 }
 
 // GetNavigation gets navigation
-func (s *SystemService) GetSite(ctx context.Context) (*SiteConfig, error) {
+func (s *systemService) GetSite(ctx context.Context) (*SiteConfig, error) {
 	user := middleware.GetUserFromContext(ctx)
-	systemSettings, err := s.baseService.SettingService.GetSystemSettings(ctx)
+	systemSettings, err := s.baseService.GetSystemSettings(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +170,7 @@ func (s *SystemService) GetSite(ctx context.Context) (*SiteConfig, error) {
 }
 
 // HealthCheck system health check
-func (s *SystemService) HealthCheck(ctx context.Context) (*HealthResult, error) {
+func (s *systemService) HealthCheck(ctx context.Context) (*HealthResult, error) {
 	// Check database connection
 	if db.Session(ctx).Error != nil {
 		return &HealthResult{

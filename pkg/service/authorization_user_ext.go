@@ -24,7 +24,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (s *UserService) resetPasswordExpiryNotifyAtTx(ctx context.Context, tx *gorm.DB, userID string) error {
+func (s *userService) resetPasswordExpiryNotifyAtTx(ctx context.Context, tx *gorm.DB, userID string) error {
 	_ = ctx
 	return tx.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "user_id"}},

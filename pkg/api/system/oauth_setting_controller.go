@@ -161,7 +161,7 @@ func (c *OAuthSettingController) TestOAuthConnection(ctx *gin.Context) {
 	if req.ClientSecret != "" && !strings.HasPrefix(req.ClientSecret, "{CRYPT}") {
 		req.OAuthSettings.ClientSecret = safe.NewEncryptedString(req.ClientSecret, os.Getenv(safe.SecretEnvName))
 	} else {
-		settings, err := c.service.GetSetting(ctx, model.SettingOAuthClientSecret)
+		settings, err := c.service.GetSettingByStringKey(ctx, string(model.SettingOAuthClientSecret))
 		if err != nil {
 			util.RespondWithError(ctx, util.NewError("E5003", err))
 			return

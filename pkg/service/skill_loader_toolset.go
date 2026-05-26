@@ -25,7 +25,7 @@ type SkillLoaderOptions struct {
 
 // SkillLoaderToolSet is a runtime-only toolset that exposes get_skill_content for skills allowed by domains/skillIDs.
 type SkillLoaderToolSet struct {
-	skillService     *SkillService
+	skillService     SkillService
 	organizationID   string
 	allowedIDs       map[string]struct{}
 	onLoaded         func(ctx context.Context, skillID string) error
@@ -40,7 +40,7 @@ func (s SkillLoaderToolSet) GetAllowedIDs() []string {
 }
 
 // NewSkillLoaderToolSet creates a toolset that allows loading only the given skills (resolved from domains + skillIDs) within an organization.
-func NewSkillLoaderToolSet(ctx context.Context, skillService *SkillService, organizationID string, skillIDs []string, opts *SkillLoaderOptions) toolset.ToolSet {
+func NewSkillLoaderToolSet(ctx context.Context, skillService SkillService, organizationID string, skillIDs []string, opts *SkillLoaderOptions) toolset.ToolSet {
 	allowed := make(map[string]struct{})
 	for _, id := range skillIDs {
 		if id == "" {

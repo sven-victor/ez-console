@@ -30,8 +30,8 @@ import (
 )
 
 // GetLDAPSettings gets LDAP settings
-func (s *SettingService) GetLDAPSettings(ctx context.Context) (clientsldap.Options, error) {
-	settings, err := s.GetSettingsMap(ctx)
+func (s *ldapService) GetLDAPSettings(ctx context.Context) (clientsldap.Options, error) {
+	settings, err := s.baseService.GetSettingsMap(ctx)
 	if err != nil {
 		return clientsldap.Options{}, err
 	}
@@ -86,7 +86,7 @@ func (s *SettingService) GetLDAPSettings(ctx context.Context) (clientsldap.Optio
 }
 
 // UpdateLDAPSettings updates LDAP settings
-func (s *SettingService) UpdateLDAPSettings(ctx context.Context, settings *clientsldap.Options) error {
+func (s *ldapService) UpdateLDAPSettings(ctx context.Context, settings *clientsldap.Options) error {
 	settingsMap := map[string]string{
 		string(model.SettingLDAPEnabled):         boolToString(settings.Enabled),
 		string(model.SettingLDAPServerURL):       settings.ServerURL,
@@ -111,11 +111,11 @@ func (s *SettingService) UpdateLDAPSettings(ctx context.Context, settings *clien
 		settingsMap[string(model.SettingLDAPBindPassword)] = settings.BindPassword.String()
 	}
 
-	return s.UpdateSettings(ctx, settingsMap)
+	return s.baseService.UpdateSettings(ctx, settingsMap)
 }
 
 // InitDefaultLDAPSettings init default ldap settings
-func (s *SettingService) InitDefaultLDAPSettings(ctx context.Context) error {
+func (s *ldapService) InitDefaultLDAPSettings(ctx context.Context) error {
 	// default settings
 	defaultSettings := map[model.SettingKey]struct {
 		Value   string

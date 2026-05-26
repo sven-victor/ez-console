@@ -16,20 +16,57 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-kit/log/level"
+	"github.com/robfig/cron/v3"
 	"github.com/sven-victor/ez-utils/log"
+	"gorm.io/gorm"
 
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 )
 
-// AuditLogService handles business logic related to audit logs
-type AuditLogService struct {
+type auditLogService struct {
+	baseService BaseService
+}
+
+type AuditLogService interface {
+	StartAudit(ctx *gin.Context, resourceID string, handleFunc func(auditLog *model.AuditLog) error, withOptions ...WithStartAuditOptions) error
+	GetAuditLogsByUser(ctx context.Context, userID string, page, pageSize int) ([]model.AuditLog, int64, error)
+	GetAuditLogs(ctx context.Context, filters AuditLogFilters, page, pageSize int) ([]model.AuditLog, int64, error)
+	GetAuditLogsByResourceID(ctx context.Context, resource, resourceID string, page, pageSize int) ([]model.AuditLog, int64, error)
+}
+
+var (
+	auditLogServiceOnce     sync.Once
+	auditLogServiceInstance AuditLogService
+)
+
+func NewAuditLogService(_ context.Context, baseService BaseService) AuditLogService {
+	auditLogServiceOnce.Do(func() {
+		inst := &auditLogService{
+			baseService: baseService,
+		}
+
+		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
+			ID:          "audit-log-cleanup",
+			Name:        "Audit Log Cleanup",
+			Spec:        "0 0 * * *",
+			Schedule:    cron.Every(time.Hour * 24),
+			Description: "Cleanup audit logs",
+			TaskType:    auditLogCleanupTaskType,
+			Runner:      taskscheduler.NewFuncTaskRunner(inst.runAuditLogCleanupJob),
+		})
+		auditLogServiceInstance = inst
+	})
+	return auditLogServiceInstance
 }
 
 type StartAuditOptions struct {
@@ -54,7 +91,7 @@ func WithAfterFilters(filters ...func(*model.AuditLog)) WithStartAuditOptions {
 // StartAudit is used in Controllers to record audit logs and execute operations
 // detailFunc is used to generate operation details
 // handleFunc is used to execute the actual operation
-func (s *AuditLogService) StartAudit(ctx *gin.Context, resourceID string, handleFunc func(auditLog *model.AuditLog) error, withOptions ...WithStartAuditOptions) error {
+func (s *auditLogService) StartAudit(ctx *gin.Context, resourceID string, handleFunc func(auditLog *model.AuditLog) error, withOptions ...WithStartAuditOptions) error {
 	logger := log.GetContextLogger(ctx)
 	var options StartAuditOptions
 	for _, option := range withOptions {
@@ -125,7 +162,7 @@ func (s *AuditLogService) StartAudit(ctx *gin.Context, resourceID string, handle
 }
 
 // GetAuditLogsByUser gets audit logs for a specified user
-func (s *AuditLogService) GetAuditLogsByUser(ctx context.Context, userID string, page, pageSize int) ([]model.AuditLog, int64, error) {
+func (s *auditLogService) GetAuditLogsByUser(ctx context.Context, userID string, page, pageSize int) ([]model.AuditLog, int64, error) {
 	var logs []model.AuditLog
 	var total int64
 
@@ -158,7 +195,7 @@ type AuditLogFilters struct {
 }
 
 // GetAuditLogs gets all audit logs, supports multiple filter conditions
-func (s *AuditLogService) GetAuditLogs(ctx context.Context, filters AuditLogFilters, page, pageSize int) ([]model.AuditLog, int64, error) {
+func (s *auditLogService) GetAuditLogs(ctx context.Context, filters AuditLogFilters, page, pageSize int) ([]model.AuditLog, int64, error) {
 	var logs []model.AuditLog
 	var total int64
 
@@ -207,7 +244,7 @@ func (s *AuditLogService) GetAuditLogs(ctx context.Context, filters AuditLogFilt
 }
 
 // GetAuditLogsByResourceID gets audit logs for a specified resource
-func (s *AuditLogService) GetAuditLogsByResourceID(ctx context.Context, resource, resourceID string, page, pageSize int) ([]model.AuditLog, int64, error) {
+func (s *auditLogService) GetAuditLogsByResourceID(ctx context.Context, resource, resourceID string, page, pageSize int) ([]model.AuditLog, int64, error) {
 	var logs []model.AuditLog
 	var total int64
 
@@ -227,4 +264,88 @@ func (s *AuditLogService) GetAuditLogsByResourceID(ctx context.Context, resource
 	}
 
 	return logs, total, nil
+}
+
+func (s *auditLogService) runAuditLogCleanupJob(ctx context.Context, t *model.Task, progressCallback taskscheduler.ProgressCallback, cancelCh <-chan struct{}) (result interface{}, err error) {
+	logger := log.GetContextLogger(ctx)
+	retentionDays, _ := s.baseService.GetIntSetting(ctx, model.SettingTaskAuditLogRetentionDays, 365)
+	if retentionDays < 1 {
+		retentionDays = 365
+	}
+	level.Info(logger).Log("msg", "Audit log cleanup started", "retention_days", retentionDays)
+	cutoff := time.Now().Add(-time.Hour * 24 * time.Duration(retentionDays))
+	dbConn := db.Session(ctx)
+
+	var total int64
+	if err := dbConn.Unscoped().
+		Model(&model.AuditLog{}).
+		Where("timestamp < ?", cutoff).
+		Count(&total).Error; err != nil {
+		return nil, fmt.Errorf("failed to count expired audit logs: %w", err)
+	}
+
+	if total == 0 {
+		progressCallback(100)
+		level.Info(logger).Log("msg", "Audit log cleanup completed", "deleted_audit_logs", 0, "retention_days", retentionDays, "cutoff_timestamp", cutoff.Format(time.RFC3339), "total", 0)
+		return map[string]interface{}{
+			"deleted_audit_logs": 0,
+			"retention_days":     retentionDays,
+			"cutoff_timestamp":   cutoff.Format(time.RFC3339),
+		}, nil
+	}
+
+	const batchSize = 500
+	var deleted int64
+
+	level.Info(logger).Log("msg", "Audit log cleanup in progress", "total_audit_logs", total, "retention_days", retentionDays)
+	for {
+		select {
+		case <-cancelCh:
+			return nil, taskscheduler.ErrCancelled
+		default:
+		}
+
+		var batch []string
+		if err := dbConn.Unscoped().
+			Model(&model.AuditLog{}).
+			Select("resource_id").
+			Where("timestamp < ?", cutoff).
+			Order("timestamp ASC").
+			Limit(batchSize).
+			Pluck("resource_id", &batch).Error; err != nil {
+			return nil, fmt.Errorf("failed to query expired audit logs: %w", err)
+		}
+
+		if len(batch) == 0 {
+			break
+		}
+
+		if err := dbConn.Transaction(func(tx *gorm.DB) error {
+			res := tx.Unscoped().
+				Where("resource_id IN ?", batch).
+				Delete(&model.AuditLog{})
+			if res.Error != nil {
+				return res.Error
+			}
+			deleted += res.RowsAffected
+			return nil
+		}); err != nil {
+			return nil, fmt.Errorf("failed to delete expired audit logs: %w", err)
+		}
+
+		progress := int(float64(deleted) / float64(total) * 99)
+		if progress < 1 {
+			progress = 1
+		}
+		progressCallback(progress)
+		level.Info(logger).Log("msg", "Audit log cleanup in progress", "deleted_audit_logs", deleted, "total_audit_logs", total, "progress", progress)
+	}
+
+	progressCallback(100)
+	level.Info(logger).Log("msg", "Audit log cleanup completed", "deleted_audit_logs", deleted, "retention_days", retentionDays, "cutoff_timestamp", cutoff.Format(time.RFC3339), "total", total)
+	return map[string]interface{}{
+		"deleted_audit_logs": deleted,
+		"retention_days":     retentionDays,
+		"cutoff_timestamp":   cutoff.Format(time.RFC3339),
+	}, nil
 }

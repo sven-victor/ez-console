@@ -24,7 +24,7 @@ import (
 )
 
 // InitDefaultTaskSettings initializes default task settings
-func (s *SettingService) InitDefaultTaskSettings(ctx context.Context) error {
+func (s *taskService) InitDefaultTaskSettings(ctx context.Context) error {
 	dbConn := db.Session(ctx)
 
 	// Fixed non-extensible setting.
@@ -61,8 +61,8 @@ func (s *SettingService) InitDefaultTaskSettings(ctx context.Context) error {
 // GetTaskSettings returns current task settings as a flat map.
 // The map always contains "log_storage_backend" plus all registered extensible fields
 // (with their full task_-prefixed keys).
-func (s *SettingService) GetTaskSettings(ctx context.Context) (map[string]any, error) {
-	settingsMap, err := s.GetSettingsMap(ctx)
+func (s *taskService) GetTaskSettings(ctx context.Context) (map[string]any, error) {
+	settingsMap, err := s.baseService.GetSettingsMap(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (s *SettingService) GetTaskSettings(ctx context.Context) (map[string]any, e
 }
 
 // UpdateTaskSettings validates and persists the flat task settings map.
-func (s *SettingService) UpdateTaskSettings(ctx context.Context, settings map[string]any) error {
+func (s *taskService) UpdateTaskSettings(ctx context.Context, settings map[string]any) error {
 	toSave := make(map[string]string)
 
 	// Fixed non-extensible setting.
@@ -134,5 +134,5 @@ func (s *SettingService) UpdateTaskSettings(ctx context.Context, settings map[st
 		toSave[k] = raw
 	}
 
-	return s.UpdateSettings(ctx, toSave)
+	return s.baseService.UpdateSettings(ctx, toSave)
 }

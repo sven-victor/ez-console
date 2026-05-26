@@ -17,6 +17,7 @@ package service
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -24,11 +25,31 @@ import (
 	"gorm.io/gorm"
 )
 
-// PermissionService provides permission-related services
-type PermissionService struct{}
+type permissionService struct{}
+
+type PermissionService interface {
+	ListPermissions(ctx context.Context) ([]model.Permission, error)
+	GetPermission(ctx context.Context, id string) (*model.Permission, error)
+	CreatePermission(ctx context.Context, name, description, code string) (*model.Permission, error)
+	UpdatePermission(ctx context.Context, id, name, description, code string) (*model.Permission, error)
+	DeletePermission(ctx context.Context, id string) error
+}
+
+var (
+	permissionServiceOnce     sync.Once
+	permissionServiceInstance PermissionService
+)
+
+// NewPermissionService creates a new permission service
+func NewPermissionService(_ context.Context, _ BaseService) PermissionService {
+	permissionServiceOnce.Do(func() {
+		permissionServiceInstance = &permissionService{}
+	})
+	return permissionServiceInstance
+}
 
 // ListPermissions gets the permission list
-func (s *PermissionService) ListPermissions(ctx context.Context) ([]model.Permission, error) {
+func (s *permissionService) ListPermissions(ctx context.Context) ([]model.Permission, error) {
 	var permissions []model.Permission
 	if err := db.Session(ctx).Find(&permissions).Error; err != nil {
 		return nil, err
@@ -37,7 +58,7 @@ func (s *PermissionService) ListPermissions(ctx context.Context) ([]model.Permis
 }
 
 // GetPermission gets a permission by ID
-func (s *PermissionService) GetPermission(ctx context.Context, id string) (*model.Permission, error) {
+func (s *permissionService) GetPermission(ctx context.Context, id string) (*model.Permission, error) {
 	var permission model.Permission
 	if err := db.Session(ctx).Where(&model.Permission{Base: model.Base{ResourceID: id}}).First(&permission).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -55,7 +76,7 @@ func (s *PermissionService) GetPermission(ctx context.Context, id string) (*mode
 }
 
 // CreatePermission creates a new permission
-func (s *PermissionService) CreatePermission(ctx context.Context, name, description, code string) (*model.Permission, error) {
+func (s *permissionService) CreatePermission(ctx context.Context, name, description, code string) (*model.Permission, error) {
 	// Check if permission name already exists
 	var count int64
 	if err := db.Session(ctx).Model(&model.Permission{}).Where("name = ?", name).Count(&count).Error; err != nil {
@@ -97,7 +118,7 @@ func (s *PermissionService) CreatePermission(ctx context.Context, name, descript
 }
 
 // UpdatePermission updates a permission
-func (s *PermissionService) UpdatePermission(ctx context.Context, id, name, description, code string) (*model.Permission, error) {
+func (s *permissionService) UpdatePermission(ctx context.Context, id, name, description, code string) (*model.Permission, error) {
 	var permission model.Permission
 	if err := db.Session(ctx).Where(&model.Permission{Base: model.Base{ResourceID: id}}).First(&permission).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -154,7 +175,7 @@ func (s *PermissionService) UpdatePermission(ctx context.Context, id, name, desc
 }
 
 // DeletePermission deletes a permission
-func (s *PermissionService) DeletePermission(ctx context.Context, id string) error {
+func (s *permissionService) DeletePermission(ctx context.Context, id string) error {
 	// Check if the permission is being used by roles
 	var permission model.Permission
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&permission).Error; err != nil {

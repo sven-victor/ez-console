@@ -29,7 +29,7 @@ const (
 	toolsetCompanionNameSuffix    = " — AI toolset"
 )
 
-func (s *ToolSetService) deleteToolsetCompanionSkillIfAny(ctx context.Context, organizationID, toolsetResourceID string) error {
+func (s *toolSetService) deleteToolsetCompanionSkillIfAny(ctx context.Context, organizationID, toolsetResourceID string) error {
 	pk := toolsetCompanionPresetKey(toolsetResourceID)
 	var sk model.Skill
 	err := db.Session(ctx).Where("organization_id = ? AND preset_key = ?", organizationID, pk).First(&sk).Error
@@ -43,7 +43,7 @@ func (s *ToolSetService) deleteToolsetCompanionSkillIfAny(ctx context.Context, o
 }
 
 // SyncToolsetCompanionSkillsForOrganization ensures every non-preset toolset in the organization has a companion skill.
-func (s *ToolSetService) SyncToolsetCompanionSkillsForOrganization(ctx context.Context, organizationID string) error {
+func (s *toolSetService) SyncToolsetCompanionSkillsForOrganization(ctx context.Context, organizationID string) error {
 	if organizationID == "" {
 		return nil
 	}
@@ -59,7 +59,7 @@ func (s *ToolSetService) SyncToolsetCompanionSkillsForOrganization(ctx context.C
 	return nil
 }
 
-func (s *ToolSetService) ensureToolsetCompanionSkill(ctx context.Context, ts *model.ToolSet) error {
+func (s *toolSetService) ensureToolsetCompanionSkill(ctx context.Context, ts *model.ToolSet) error {
 	if ts == nil || ts.IsPreset {
 		return nil
 	}
@@ -251,7 +251,7 @@ func firstLine(s string) string {
 	return s
 }
 
-func (s *ToolSetService) ensureCompanionToolBinding(ctx context.Context, organizationID, skillID, toolsetResourceID string) error {
+func (s *toolSetService) ensureCompanionToolBinding(ctx context.Context, organizationID, skillID, toolsetResourceID string) error {
 	var n int64
 	if err := db.Session(ctx).Model(&model.SkillAIToolBinding{}).
 		Where("skill_id = ? AND organization_id = ? AND toolset_id = ? AND tool_name = ?", skillID, organizationID, toolsetResourceID, "*").

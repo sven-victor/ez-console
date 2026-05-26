@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -28,17 +29,40 @@ import (
 	"gorm.io/gorm"
 )
 
-// ServiceAccountService service for service accounts
-type ServiceAccountService struct {
+type serviceAccountService struct{}
+
+type ServiceAccountService interface {
+	GetServiceAccountList(ctx context.Context, page, pageSize int, search string, organizationID *string) ([]model.ServiceAccount, int64, error)
+	GetServiceAccountByID(ctx context.Context, id string) (*model.ServiceAccount, error)
+	CreateServiceAccount(ctx context.Context, serviceAccount *model.ServiceAccount) error
+	UpdateServiceAccount(ctx context.Context, id string, serviceAccount *model.ServiceAccount) error
+	DeleteServiceAccount(ctx context.Context, id string) error
+	UpdateServiceAccountStatus(ctx context.Context, id, status string) error
+	GetServiceAccountAccessKeys(ctx context.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error)
+	CreateServiceAccountAccessKey(ctx context.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error)
+	UpdateServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID, name, description, status string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, error)
+	DeleteServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID string) error
+	GetServiceAccountRoles(ctx context.Context, serviceAccountID string) ([]model.Role, error)
+	AssignServiceAccountRoles(ctx context.Context, serviceAccountID string, roleIDs []string) error
+	GetServiceAccountPolicy(ctx context.Context, serviceAccountID string) (model.PolicyDocument, error)
+	SetServiceAccountPolicy(ctx context.Context, serviceAccountID string, policyDoc model.PolicyDocument) error
 }
 
+var (
+	serviceAccountServiceOnce     sync.Once
+	serviceAccountServiceInstance ServiceAccountService
+)
+
 // NewServiceAccountService creates a new service account service
-func NewServiceAccountService() *ServiceAccountService {
-	return &ServiceAccountService{}
+func NewServiceAccountService(_ context.Context, _ BaseService) ServiceAccountService {
+	serviceAccountServiceOnce.Do(func() {
+		serviceAccountServiceInstance = &serviceAccountService{}
+	})
+	return serviceAccountServiceInstance
 }
 
 // GetServiceAccountList gets the list of service accounts. organizationID filters by org; nil means global-only when multi-org is enabled, or all when caller has global permission.
-func (s *ServiceAccountService) GetServiceAccountList(ctx context.Context, page, pageSize int, search string, organizationID *string) ([]model.ServiceAccount, int64, error) {
+func (s *serviceAccountService) GetServiceAccountList(ctx context.Context, page, pageSize int, search string, organizationID *string) ([]model.ServiceAccount, int64, error) {
 	var serviceAccounts []model.ServiceAccount
 	var total int64
 
@@ -83,7 +107,7 @@ func (s *ServiceAccountService) GetServiceAccountList(ctx context.Context, page,
 }
 
 // GetServiceAccountByID gets a service account by ID
-func (s *ServiceAccountService) GetServiceAccountByID(ctx context.Context, id string) (*model.ServiceAccount, error) {
+func (s *serviceAccountService) GetServiceAccountByID(ctx context.Context, id string) (*model.ServiceAccount, error) {
 	var serviceAccount model.ServiceAccount
 
 	err := db.Session(ctx).Where("resource_id = ?", id).Preload("Roles").Preload("Organization").First(&serviceAccount).Error
@@ -94,12 +118,12 @@ func (s *ServiceAccountService) GetServiceAccountByID(ctx context.Context, id st
 }
 
 // CreateServiceAccount creates a service account
-func (s *ServiceAccountService) CreateServiceAccount(ctx context.Context, serviceAccount *model.ServiceAccount) error {
+func (s *serviceAccountService) CreateServiceAccount(ctx context.Context, serviceAccount *model.ServiceAccount) error {
 	return db.Session(ctx).Create(serviceAccount).Error
 }
 
 // UpdateServiceAccount updates a service account. OrganizationID is not updated after creation.
-func (s *ServiceAccountService) UpdateServiceAccount(ctx context.Context, id string, serviceAccount *model.ServiceAccount) error {
+func (s *serviceAccountService) UpdateServiceAccount(ctx context.Context, id string, serviceAccount *model.ServiceAccount) error {
 	sa, err := s.GetServiceAccountByID(ctx, id)
 	if err != nil {
 		return err
@@ -118,7 +142,7 @@ func (s *ServiceAccountService) UpdateServiceAccount(ctx context.Context, id str
 }
 
 // DeleteServiceAccount deletes a service account
-func (s *ServiceAccountService) DeleteServiceAccount(ctx context.Context, id string) error {
+func (s *serviceAccountService) DeleteServiceAccount(ctx context.Context, id string) error {
 	sa, err := s.GetServiceAccountByID(ctx, id)
 	if err != nil {
 		return err
@@ -147,7 +171,7 @@ func (s *ServiceAccountService) DeleteServiceAccount(ctx context.Context, id str
 }
 
 // UpdateServiceAccountStatus updates the status of a service account
-func (s *ServiceAccountService) UpdateServiceAccountStatus(ctx context.Context, id, status string) error {
+func (s *serviceAccountService) UpdateServiceAccountStatus(ctx context.Context, id, status string) error {
 	sa, err := s.GetServiceAccountByID(ctx, id)
 	if err != nil {
 		return err
@@ -165,7 +189,7 @@ func (s *ServiceAccountService) UpdateServiceAccountStatus(ctx context.Context, 
 // Other service account related methods can be added, such as managing access keys, role assignment, policy management, etc.
 
 // GetServiceAccountAccessKeys gets the list of access keys for a service account
-func (s *ServiceAccountService) GetServiceAccountAccessKeys(ctx context.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error) {
+func (s *serviceAccountService) GetServiceAccountAccessKeys(ctx context.Context, serviceAccountID string) ([]model.ServiceAccountAccessKey, error) {
 	sa, err := s.GetServiceAccountByID(ctx, serviceAccountID)
 	if err != nil {
 		return nil, err
@@ -182,7 +206,7 @@ func (s *ServiceAccountService) GetServiceAccountAccessKeys(ctx context.Context,
 }
 
 // CreateServiceAccountAccessKey creates an access key for a service account
-func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx context.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error) {
+func (s *serviceAccountService) CreateServiceAccountAccessKey(ctx context.Context, serviceAccountID, name, description string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, string, error) {
 	sa, err := s.GetServiceAccountByID(ctx, serviceAccountID)
 	if err != nil {
 		return nil, "", err
@@ -225,7 +249,7 @@ func (s *ServiceAccountService) CreateServiceAccountAccessKey(ctx context.Contex
 }
 
 // UpdateServiceAccountAccessKey updates a service account access key
-func (s *ServiceAccountService) UpdateServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID, name, description, status string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, error) {
+func (s *serviceAccountService) UpdateServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID, name, description, status string, expiresAt *time.Time) (*model.ServiceAccountAccessKey, error) {
 	sa, err := s.GetServiceAccountByID(ctx, serviceAccountID)
 	if err != nil {
 		return nil, err
@@ -270,7 +294,7 @@ func (s *ServiceAccountService) UpdateServiceAccountAccessKey(ctx context.Contex
 }
 
 // DeleteServiceAccountAccessKey deletes a service account access key
-func (s *ServiceAccountService) DeleteServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID string) error {
+func (s *serviceAccountService) DeleteServiceAccountAccessKey(ctx context.Context, serviceAccountID, keyID string) error {
 	sa, err := s.GetServiceAccountByID(ctx, serviceAccountID)
 	if err != nil {
 		return err
@@ -285,7 +309,7 @@ func (s *ServiceAccountService) DeleteServiceAccountAccessKey(ctx context.Contex
 }
 
 // GetServiceAccountRoles gets the list of roles for a service account
-func (s *ServiceAccountService) GetServiceAccountRoles(ctx context.Context, serviceAccountID string) ([]model.Role, error) {
+func (s *serviceAccountService) GetServiceAccountRoles(ctx context.Context, serviceAccountID string) ([]model.Role, error) {
 	sa, err := s.GetServiceAccountByID(ctx, serviceAccountID)
 	if err != nil {
 		return nil, err
@@ -305,7 +329,7 @@ func (s *ServiceAccountService) GetServiceAccountRoles(ctx context.Context, serv
 }
 
 // AssignServiceAccountRoles assigns roles to a service account. Organization-level service accounts can only be assigned organization roles (same organization); global service accounts only global roles.
-func (s *ServiceAccountService) AssignServiceAccountRoles(ctx context.Context, serviceAccountID string, roleIDs []string) error {
+func (s *serviceAccountService) AssignServiceAccountRoles(ctx context.Context, serviceAccountID string, roleIDs []string) error {
 
 	var serviceAccount model.ServiceAccount
 	err := db.Session(ctx).Where("resource_id = ?", serviceAccountID).First(&serviceAccount).Error
@@ -345,7 +369,7 @@ func (s *ServiceAccountService) AssignServiceAccountRoles(ctx context.Context, s
 }
 
 // GetServiceAccountPolicy gets the policy document for a service account
-func (s *ServiceAccountService) GetServiceAccountPolicy(ctx context.Context, serviceAccountID string) (model.PolicyDocument, error) {
+func (s *serviceAccountService) GetServiceAccountPolicy(ctx context.Context, serviceAccountID string) (model.PolicyDocument, error) {
 	var serviceAccount model.ServiceAccount
 	err := db.Session(ctx).Where("resource_id = ?", serviceAccountID).First(&serviceAccount).Error
 	if err != nil {
@@ -361,7 +385,7 @@ func (s *ServiceAccountService) GetServiceAccountPolicy(ctx context.Context, ser
 }
 
 // SetServiceAccountPolicy sets the policy document for a service account
-func (s *ServiceAccountService) SetServiceAccountPolicy(ctx context.Context, serviceAccountID string, policyDoc model.PolicyDocument) error {
+func (s *serviceAccountService) SetServiceAccountPolicy(ctx context.Context, serviceAccountID string, policyDoc model.PolicyDocument) error {
 	sa, err := s.GetServiceAccountByID(ctx, serviceAccountID)
 	if err != nil {
 		return err

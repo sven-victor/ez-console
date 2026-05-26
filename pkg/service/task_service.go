@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/go-kit/log/level"
+	"github.com/robfig/cron/v3"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -78,6 +79,9 @@ type TaskService interface {
 	SetTaskArtifact(ctx context.Context, id string, fileKey string, fileName string) error
 	GetTaskLogs(ctx context.Context, id string) ([]model.TaskLog, error)
 	DeleteTask(ctx context.Context, id string) error
+	InitDefaultTaskSettings(ctx context.Context) error
+	GetTaskSettings(ctx context.Context) (map[string]any, error)
+	UpdateTaskSettings(ctx context.Context, settings map[string]any) error
 }
 
 // taskService handles task CRUD and worker pool.
@@ -86,6 +90,7 @@ type taskService struct {
 	cancelMu    sync.RWMutex
 	taskQueue   chan *model.Task
 	taskQueueMu sync.Mutex
+	baseService BaseService
 }
 
 var (
@@ -94,12 +99,24 @@ var (
 )
 
 // NewTaskService creates a new TaskService.
-func NewTaskService(ctx context.Context) *taskService {
+func NewTaskService(ctx context.Context, baseService BaseService) TaskService {
 	taskServiceOnce.Do(func() {
 		taskSvc = &taskService{
 			cancelChans: make(map[string]chan struct{}),
 			taskQueue:   make(chan *model.Task, defaultTaskQueueSize),
+			baseService: baseService,
 		}
+
+		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
+			ID:          "task-log-cleanup",
+			Name:        "Task Log Cleanup",
+			Spec:        "0 0 * * *",
+			Schedule:    cron.Every(time.Hour * 24),
+			Description: "Cleanup task logs and historical task run records",
+			TaskType:    taskLogCleanupTaskType,
+			Runner:      taskscheduler.NewFuncTaskRunner(taskSvc.runTaskLogCleanupJob),
+		})
+
 		go func() {
 			time.Sleep(10 * time.Second)
 			taskSvc.startWorkerPool(ctx)

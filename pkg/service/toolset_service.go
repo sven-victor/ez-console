@@ -28,28 +28,48 @@ import (
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
-// ToolSetService handles toolset management
-type ToolSetService struct {
-	skillService *SkillService
+type toolSetService struct {
+	skillService SkillService
+}
+
+// ToolSetService handles toolset management.
+type ToolSetService interface {
+	CreateToolSet(ctx context.Context, req *model.ToolSet) (*model.ToolSet, error)
+	GetToolSet(ctx context.Context, organizationID, id string) (*model.ToolSet, error)
+	UpdateToolSet(ctx context.Context, organizationID, id string, req *model.ToolSet) (*model.ToolSet, error)
+	UpdateToolSetStatus(ctx context.Context, organizationID, id string, status model.ToolSetStatus) (*model.ToolSet, error)
+	DeleteToolSet(ctx context.Context, organizationID, id string) error
+	ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool) ([]model.ToolSet, int64, error)
+	GetEnabledToolSets(ctx context.Context, organizationID string) ([]model.ToolSet, error)
+	TestToolSet(ctx context.Context, organizationID, id string) error
+	GetToolSetInstance(ctx context.Context, organizationID, id string) (toolset.ToolSet, error)
+	CreateToolSetInstance(toolSet *model.ToolSet) (toolset.ToolSet, error)
+	GetAllEnabledToolSetInstances(ctx context.Context, organizationID string) (toolset.ToolSets, error)
+	GetToolSetTypeDefinitions(ctx context.Context) []ToolSetTypeDefinition
+	GetToolSetTools(ctx context.Context, organizationID, id string) ([]openai.Tool, error)
+	GetToolSetToolDefinitions(ctx context.Context, organizationID, id string) ([]model.ToolDefinition, error)
+	GetAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error)
+	GetAuthorizedToolSetsForChat(ctx context.Context, organizationID string, skillBindings []model.SkillAIToolBinding, mode SkillChatBindingMode) (toolset.ToolSets, error)
+	SyncToolsetCompanionSkillsForOrganization(ctx context.Context, organizationID string) error
 }
 
 var (
 	toolSetServiceOnce sync.Once
-	toolSetService     *ToolSetService
+	toolSetSvc         ToolSetService
 )
 
-// NewToolSetService creates a new toolset service
-func NewToolSetService() *ToolSetService {
+// NewToolSetService creates a new toolset service.
+func NewToolSetService() ToolSetService {
 	toolSetServiceOnce.Do(func() {
-		toolSetService = &ToolSetService{
+		toolSetSvc = &toolSetService{
 			skillService: NewSkillService(),
 		}
 	})
-	return toolSetService
+	return toolSetSvc
 }
 
 // CreateToolSet creates a new toolset
-func (s *ToolSetService) CreateToolSet(ctx context.Context, req *model.ToolSet) (*model.ToolSet, error) {
+func (s *toolSetService) CreateToolSet(ctx context.Context, req *model.ToolSet) (*model.ToolSet, error) {
 	if err := db.Session(ctx).Create(req).Error; err != nil {
 		return nil, fmt.Errorf("failed to create toolset: %w", err)
 	}
@@ -62,7 +82,7 @@ func (s *ToolSetService) CreateToolSet(ctx context.Context, req *model.ToolSet) 
 }
 
 // GetToolSet gets an toolset by ID
-func (s *ToolSetService) GetToolSet(ctx context.Context, organizationID, id string) (*model.ToolSet, error) {
+func (s *toolSetService) GetToolSet(ctx context.Context, organizationID, id string) (*model.ToolSet, error) {
 	var toolset model.ToolSet
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ? and status = ?", organizationID, id, model.ToolSetStatusEnabled).First(&toolset).Error; err != nil {
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
@@ -72,7 +92,7 @@ func (s *ToolSetService) GetToolSet(ctx context.Context, organizationID, id stri
 }
 
 // UpdateToolSet updates an toolset
-func (s *ToolSetService) UpdateToolSet(ctx context.Context, organizationID, id string, req *model.ToolSet) (*model.ToolSet, error) {
+func (s *toolSetService) UpdateToolSet(ctx context.Context, organizationID, id string, req *model.ToolSet) (*model.ToolSet, error) {
 	var existingToolSet model.ToolSet
 	conn := db.Session(ctx)
 	if err := conn.Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&existingToolSet).Error; err != nil {
@@ -97,7 +117,7 @@ func (s *ToolSetService) UpdateToolSet(ctx context.Context, organizationID, id s
 }
 
 // updatePresetToolSet only updates config (e.g. disabled_tools) and status; name/type/description stay managed by sync.
-func (s *ToolSetService) updatePresetToolSet(ctx context.Context, organizationID string, existing, req *model.ToolSet) (*model.ToolSet, error) {
+func (s *toolSetService) updatePresetToolSet(ctx context.Context, organizationID string, existing, req *model.ToolSet) (*model.ToolSet, error) {
 	merged := make(model.ToolSetConfig)
 	if existing.Config != nil {
 		for k, v := range existing.Config {
@@ -130,7 +150,7 @@ func (s *ToolSetService) updatePresetToolSet(ctx context.Context, organizationID
 }
 
 // UpdateToolSetStatus updates a toolset's status
-func (s *ToolSetService) UpdateToolSetStatus(ctx context.Context, organizationID, id string, status model.ToolSetStatus) (*model.ToolSet, error) {
+func (s *toolSetService) UpdateToolSetStatus(ctx context.Context, organizationID, id string, status model.ToolSetStatus) (*model.ToolSet, error) {
 	var toolset model.ToolSet
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
 		return nil, fmt.Errorf("failed to find toolset: %w", err)
@@ -145,7 +165,7 @@ func (s *ToolSetService) UpdateToolSetStatus(ctx context.Context, organizationID
 }
 
 // DeleteToolSet deletes an toolset
-func (s *ToolSetService) DeleteToolSet(ctx context.Context, organizationID, id string) error {
+func (s *toolSetService) DeleteToolSet(ctx context.Context, organizationID, id string) error {
 	if err := s.deleteToolsetCompanionSkillIfAny(ctx, organizationID, id); err != nil {
 		return err
 	}
@@ -165,7 +185,7 @@ func (s *ToolSetService) DeleteToolSet(ctx context.Context, organizationID, id s
 }
 
 // ListToolSets lists toolsets with pagination
-func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool) ([]model.ToolSet, int64, error) {
+func (s *toolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool) ([]model.ToolSet, int64, error) {
 	var toolsets []model.ToolSet
 	var total int64
 
@@ -208,7 +228,7 @@ func (s *ToolSetService) ListToolSets(ctx context.Context, organizationID string
 }
 
 // GetEnabledToolSets gets all enabled toolsets
-func (s *ToolSetService) GetEnabledToolSets(ctx context.Context, organizationID string) ([]model.ToolSet, error) {
+func (s *toolSetService) GetEnabledToolSets(ctx context.Context, organizationID string) ([]model.ToolSet, error) {
 	var toolsets []model.ToolSet
 	if err := db.Session(ctx).Where("organization_id = ? AND status = ?", organizationID, model.ToolSetStatusEnabled).Find(&toolsets).Error; err != nil {
 		return nil, fmt.Errorf("failed to get enabled toolsets: %w", err)
@@ -218,7 +238,7 @@ func (s *ToolSetService) GetEnabledToolSets(ctx context.Context, organizationID 
 }
 
 // TestToolSet tests an toolset connection
-func (s *ToolSetService) TestToolSet(ctx context.Context, organizationID, id string) error {
+func (s *toolSetService) TestToolSet(ctx context.Context, organizationID, id string) error {
 	toolset, err := s.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		return fmt.Errorf("failed to get toolset: %w", err)
@@ -243,7 +263,7 @@ func (s *ToolSetService) TestToolSet(ctx context.Context, organizationID, id str
 }
 
 // GetToolSetInstance creates a toolset instance from database model
-func (s *ToolSetService) GetToolSetInstance(ctx context.Context, organizationID, id string) (toolset.ToolSet, error) {
+func (s *toolSetService) GetToolSetInstance(ctx context.Context, organizationID, id string) (toolset.ToolSet, error) {
 	toolset, err := s.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
@@ -253,7 +273,7 @@ func (s *ToolSetService) GetToolSetInstance(ctx context.Context, organizationID,
 }
 
 // CreateToolSetInstance creates a toolset instance from database model
-func (s *ToolSetService) CreateToolSetInstance(toolSet *model.ToolSet) (toolset.ToolSet, error) {
+func (s *toolSetService) CreateToolSetInstance(toolSet *model.ToolSet) (toolset.ToolSet, error) {
 	factory, exists := toolset.GetToolSetFactory(toolset.ToolSetType(toolSet.Type))
 	if !exists {
 		return nil, fmt.Errorf("unsupported toolset type: %s", toolSet.Type)
@@ -276,7 +296,7 @@ func (s *ToolSetService) CreateToolSetInstance(toolSet *model.ToolSet) (toolset.
 }
 
 // GetAllEnabledToolSetInstances gets all enabled toolset instances
-func (s *ToolSetService) GetAllEnabledToolSetInstances(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+func (s *toolSetService) GetAllEnabledToolSetInstances(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
 	toolsets, err := s.GetEnabledToolSets(ctx, organizationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get enabled toolsets: %w", err)
@@ -303,7 +323,7 @@ type ToolSetTypeDefinition struct {
 	Name         string              `json:"name"`
 }
 
-func (s *ToolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSetTypeDefinition {
+func (s *toolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSetTypeDefinition {
 	toolSets := toolset.GetRegisteredToolSets()
 	definitions := []ToolSetTypeDefinition{}
 	for name, factory := range toolSets {
@@ -329,7 +349,7 @@ func (s *ToolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSe
 }
 
 // GetToolSetTools gets tools from a toolset
-func (s *ToolSetService) GetToolSetTools(ctx context.Context, organizationID, id string) ([]openai.Tool, error) {
+func (s *toolSetService) GetToolSetTools(ctx context.Context, organizationID, id string) ([]openai.Tool, error) {
 	toolsetInstance, err := s.GetToolSetInstance(ctx, organizationID, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get toolset instance: %w", err)
@@ -344,7 +364,7 @@ func (s *ToolSetService) GetToolSetTools(ctx context.Context, organizationID, id
 }
 
 // GetToolSetToolDefinitions returns tool definitions retrieved from the toolset instance.
-func (s *ToolSetService) GetToolSetToolDefinitions(ctx context.Context, organizationID, id string) ([]model.ToolDefinition, error) {
+func (s *toolSetService) GetToolSetToolDefinitions(ctx context.Context, organizationID, id string) ([]model.ToolDefinition, error) {
 	tools, err := s.GetToolSetTools(ctx, organizationID, id)
 	if err != nil {
 		return nil, err
@@ -398,7 +418,7 @@ func toolSetsFromAuthorizedItems(items []authorizedToolSetItem) toolset.ToolSets
 	return out
 }
 
-func (s *ToolSetService) buildAuthorizedToolSetItems(ctx context.Context, organizationID string) ([]authorizedToolSetItem, error) {
+func (s *toolSetService) buildAuthorizedToolSetItems(ctx context.Context, organizationID string) ([]authorizedToolSetItem, error) {
 	allowedTools := getAllowedAIToolPermissions(ctx, organizationID)
 	if len(allowedTools) == 0 {
 		return nil, nil
@@ -454,7 +474,7 @@ func (s *ToolSetService) buildAuthorizedToolSetItems(ctx context.Context, organi
 	return items, nil
 }
 
-func (s *ToolSetService) GetAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
+func (s *toolSetService) GetAuthorizedToolSets(ctx context.Context, organizationID string) (toolset.ToolSets, error) {
 	items, err := s.buildAuthorizedToolSetItems(ctx, organizationID)
 	if err != nil {
 		return nil, err
@@ -473,7 +493,7 @@ func SkillBindingMatches(bindings []model.SkillAIToolBinding, toolSetResourceID,
 	return false
 }
 
-func (s *ToolSetService) applySkillAIToolBindings(ctx context.Context, bindings []model.SkillAIToolBinding, items []authorizedToolSetItem) ([]authorizedToolSetItem, error) {
+func (s *toolSetService) applySkillAIToolBindings(ctx context.Context, bindings []model.SkillAIToolBinding, items []authorizedToolSetItem) ([]authorizedToolSetItem, error) {
 	if len(bindings) == 0 {
 		return items, nil
 	}
@@ -521,7 +541,7 @@ const (
 )
 
 // GetAuthorizedToolSetsForChat returns authorized toolsets for chat under the given binding mode.
-func (s *ToolSetService) GetAuthorizedToolSetsForChat(ctx context.Context, organizationID string, skillBindings []model.SkillAIToolBinding, mode SkillChatBindingMode) (toolset.ToolSets, error) {
+func (s *toolSetService) GetAuthorizedToolSetsForChat(ctx context.Context, organizationID string, skillBindings []model.SkillAIToolBinding, mode SkillChatBindingMode) (toolset.ToolSets, error) {
 	items, err := s.buildAuthorizedToolSetItems(ctx, organizationID)
 	if err != nil {
 		return nil, err

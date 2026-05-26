@@ -531,6 +531,60 @@ func (c *ProductController) DeleteProduct(ctx *gin.Context) {
 
 Services contain business logic and orchestrate data operations.
 
+### Framework service layer pattern
+
+Built-in services in `pkg/service/` follow a consistent interface pattern:
+
+| Symbol | Role |
+|--------|------|
+| `XxxService` | Exported **interface** with public methods |
+| `xxxService` | Unexported **struct** that implements the interface |
+| `NewXxxService(...)` | Constructor; returns `XxxService` (the interface) |
+| `xxxServiceInstance` | Optional singleton, guarded by `sync.Once` when the service must be process-wide |
+
+`service.Service` embeds each sub-service **as an interface** (not `*Struct`), so methods are promoted onto the aggregate service:
+
+```go
+type Service struct {
+	UserService
+	SettingService
+	EmailService
+	LDAPService
+	TaskService
+	// ...
+}
+```
+
+Cross-cutting infrastructure is grouped in `BaseService`, which composes `SettingService`, `EmailService`, and `GeoIPService`. Domain-specific settings live on their owning service rather than on `SettingService`:
+
+| Settings | Service | File |
+|----------|---------|------|
+| System / security | `SettingService` | `system_setting.go`, `system_security_setting.go` |
+| SMTP / email templates | `EmailService` | `email_service.go`, `email_setting.go` |
+| LDAP | `LDAPService` | `authorization_ldap.go`, `authorization_ldap_setting.go` |
+| OAuth | `OAuthService` | `authorization_oauth.go`, `authorization_oauth_setting.go` |
+| Task retention / concurrency | `TaskService` | `task_service.go`, `task_setting.go` |
+
+User-domain helpers such as password-complexity checks and “disable local login” logic live on `UserService`.
+
+When adding a custom service, mirror the same pattern:
+
+```go
+type productService struct {
+	baseService BaseService
+}
+
+type ProductService interface {
+	CreateProduct(ctx context.Context, name string) (*model.Product, error)
+}
+
+func NewProductService(_ context.Context, base BaseService) ProductService {
+	return &productService{baseService: base}
+}
+```
+
+Register it on `service.Service`, add a `ServiceOption` (see `pkg/service/service_options.go`), and pass it to `NewService`. Built-in services can be replaced the same way, e.g. `service.WithUserServiceFactory(myNewUserService)`.
+
 ### Basic Service Structure
 
 ```go
@@ -545,11 +599,15 @@ import (
 )
 
 // ProductService handles product business logic
-type ProductService struct{}
+type productService struct{}
+
+type ProductService interface {
+	CreateProduct(ctx context.Context, name string) (*model.Product, error)
+}
 
 // NewProductService creates a new product service
-func NewProductService() *ProductService {
-	return &ProductService{}
+func NewProductService() ProductService {
+	return &productService{}
 }
 ```
 
@@ -559,7 +617,7 @@ func NewProductService() *ProductService {
 
 ```go
 // CreateProduct creates a new product
-func (s *ProductService) CreateProduct(ctx context.Context, name, description string, price float64, category string, stock int) (*model.Product, error) {
+func (s *productService) CreateProduct(ctx context.Context, name, description string, price float64, category string, stock int) (*model.Product, error) {
 	product := &model.Product{
 		Name:        name,
 		Description: description,
@@ -581,7 +639,7 @@ func (s *ProductService) CreateProduct(ctx context.Context, name, description st
 
 ```go
 // GetProduct retrieves a product by ID
-func (s *ProductService) GetProduct(ctx context.Context, id string) (*model.Product, error) {
+func (s *productService) GetProduct(ctx context.Context, id string) (*model.Product, error) {
 	var product model.Product
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&product).Error; err != nil {
 		return nil, err
@@ -594,7 +652,7 @@ func (s *ProductService) GetProduct(ctx context.Context, id string) (*model.Prod
 
 ```go
 // ListProducts retrieves a paginated list of products
-func (s *ProductService) ListProducts(ctx context.Context, search, category, status string, page, pageSize int) ([]*model.Product, int64, error) {
+func (s *productService) ListProducts(ctx context.Context, search, category, status string, page, pageSize int) ([]*model.Product, int64, error) {
 	var products []*model.Product
 	var total int64
 
@@ -630,7 +688,7 @@ func (s *ProductService) ListProducts(ctx context.Context, search, category, sta
 
 ```go
 // UpdateProduct updates an existing product
-func (s *ProductService) UpdateProduct(ctx context.Context, id string, updates map[string]interface{}) (*model.Product, error) {
+func (s *productService) UpdateProduct(ctx context.Context, id string, updates map[string]interface{}) (*model.Product, error) {
 	var product model.Product
 	
 	// Find the product
@@ -664,7 +722,7 @@ import (
 )
 
 // DeleteProduct soft-deletes a product
-func (s *ProductService) DeleteProduct(ctx context.Context, id string) error {
+func (s *productService) DeleteProduct(ctx context.Context, id string) error {
 	// First check if the product exists
 	var product model.Product
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&product).Error; err != nil {
@@ -916,7 +974,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *ProductService) CreateOrderWithProducts(ctx context.Context, orderData OrderData) error {
+func (s *productService) CreateOrderWithProducts(ctx context.Context, orderData OrderData) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Create order
 		order := &model.Order{

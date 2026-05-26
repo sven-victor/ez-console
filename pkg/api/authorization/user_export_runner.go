@@ -132,7 +132,7 @@ func (r *userExportRunner) Run(
 	if err != nil {
 		return nil, fmt.Errorf("upload export file: %w", err)
 	}
-	if err := r.svc.TaskService.SetTaskArtifact(ctx, t.ResourceID, file.ResourceID, filename); err != nil {
+	if err := r.svc.SetTaskArtifact(ctx, t.ResourceID, file.ResourceID, filename); err != nil {
 		return nil, fmt.Errorf("set task artifact: %w", err)
 	}
 	progressCallback(100)

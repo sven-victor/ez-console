@@ -213,7 +213,7 @@ func useLowLevelClient(ctx context.Context) error {
     organizationID := "org-123"
 
     // Get the default AI model
-    aiModelSvc := service.NewAIModelService()
+    aiModelSvc := service.NewAIModelService(ctx, nil)
     aiModel, err := aiModelSvc.GetDefaultAIModel(ctx, organizationID)
     if err != nil {
         return err
@@ -1721,7 +1721,7 @@ func HandleChat(svc *service.Service) gin.HandlerFunc {
         }
 
         // Create skill loader (returns nil if no skills match the domains/IDs)
-        skillLoader, _ := svc.SkillService.CreateSkillLoader(ctx, organizationID,
+        skillLoader, _ := svc.CreateSkillLoader(ctx, organizationID,
             req.Domains, req.SkillIDs, session.ActivatedSkillIDs)
 
         // In production, wire OnContentLoaded to persist activated skills:

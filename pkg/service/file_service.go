@@ -27,6 +27,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -43,28 +44,46 @@ const (
 	maxFileSize = 10 << 20 // 10MB
 )
 
-// FileService handles file-related business logic
-type FileService struct {
-	baseService     *BaseService
+type fileService struct {
+	baseService     BaseService
 	signatureSecret string
 }
 
+type FileService interface {
+	UploadFile(ctx context.Context, filename, contentType string, accessType model.AccessType, fileType model.FileType, f io.Reader) (*model.File, error)
+	UploadFileWithOwner(ctx context.Context, ownerID, filename, contentType string, accessType model.AccessType, fileType model.FileType, f io.Reader) (*model.File, error)
+	SignDownloadURL(fileKey string) (string, int64, error)
+	VerifyDownloadURL(fileKey string, signature string, expires int64) bool
+	GetFileInfo(c *gin.Context, fileKey string) (*model.File, error)
+	DownloadFile(c *gin.Context, path string) error
+	ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, error)
+}
+
+var (
+	fileServiceOnce     sync.Once
+	fileServiceInstance FileService
+)
+
 // NewFileService creates a file service instance
-func NewFileService(s *BaseService) *FileService {
-	// Ensure upload directory exists
-	if err := os.MkdirAll(uploadDir, 0755); err != nil {
-		panic(fmt.Sprintf("Failed to create upload directory: %v", err))
-	}
-	priv := make([]byte, 32)
-	_, err := rand.Read(priv)
-	if err != nil {
-		panic(fmt.Sprintf("Failed to generate signature secret: %v", err))
-	}
-	return &FileService{baseService: s, signatureSecret: base64.StdEncoding.EncodeToString(priv)}
+func NewFileService(_ context.Context, s BaseService) FileService {
+	fileServiceOnce.Do(func() {
+		if err := os.MkdirAll(uploadDir, 0755); err != nil {
+			panic(fmt.Sprintf("Failed to create upload directory: %v", err))
+		}
+		priv := make([]byte, 32)
+		if _, err := rand.Read(priv); err != nil {
+			panic(fmt.Sprintf("Failed to generate signature secret: %v", err))
+		}
+		fileServiceInstance = &fileService{
+			baseService:     s,
+			signatureSecret: base64.StdEncoding.EncodeToString(priv),
+		}
+	})
+	return fileServiceInstance
 }
 
 // UploadFile handles file uploads
-func (s *FileService) UploadFile(ctx context.Context, filename, contentType string, accessType model.AccessType, fileType model.FileType, f io.Reader) (*model.File, error) {
+func (s *fileService) UploadFile(ctx context.Context, filename, contentType string, accessType model.AccessType, fileType model.FileType, f io.Reader) (*model.File, error) {
 	user := middleware.GetUserFromContext(ctx)
 	if user == nil {
 		return nil, util.ErrorResponse{
@@ -77,7 +96,7 @@ func (s *FileService) UploadFile(ctx context.Context, filename, contentType stri
 }
 
 // UploadFileWithOwner uploads a file with the given owner ID (e.g. for task artifact).
-func (s *FileService) UploadFileWithOwner(ctx context.Context, ownerID, filename, contentType string, accessType model.AccessType, fileType model.FileType, f io.Reader) (*model.File, error) {
+func (s *fileService) UploadFileWithOwner(ctx context.Context, ownerID, filename, contentType string, accessType model.AccessType, fileType model.FileType, f io.Reader) (*model.File, error) {
 	if ownerID == "" {
 		ownerID = "system"
 	}
@@ -123,7 +142,7 @@ func (s *FileService) UploadFileWithOwner(ctx context.Context, ownerID, filename
 	return &file, nil
 }
 
-func (s *FileService) SignDownloadURL(fileKey string) (string, int64, error) {
+func (s *fileService) SignDownloadURL(fileKey string) (string, int64, error) {
 	expires := time.Now().Add(10 * time.Minute).Unix()
 
 	data := fileKey + ":" + strconv.FormatInt(expires, 10)
@@ -133,7 +152,7 @@ func (s *FileService) SignDownloadURL(fileKey string) (string, int64, error) {
 	return signature, expires, nil
 }
 
-func (s *FileService) VerifyDownloadURL(fileKey string, signature string, expires int64) bool {
+func (s *fileService) VerifyDownloadURL(fileKey string, signature string, expires int64) bool {
 	data := fileKey + ":" + strconv.FormatInt(expires, 10)
 	h := hmac.New(sha256.New, []byte(s.signatureSecret))
 	h.Write([]byte(data))
@@ -142,7 +161,7 @@ func (s *FileService) VerifyDownloadURL(fileKey string, signature string, expire
 }
 
 // DownloadFile handles file downloads
-func (s *FileService) GetFileInfo(c *gin.Context, fileKey string) (*model.File, error) {
+func (s *fileService) GetFileInfo(c *gin.Context, fileKey string) (*model.File, error) {
 	var file model.File
 	if err := db.Session(c).Where("resource_id = ?", fileKey).First(&file).Error; err != nil {
 		return nil, fmt.Errorf("failed to get file: %v", err)
@@ -151,7 +170,7 @@ func (s *FileService) GetFileInfo(c *gin.Context, fileKey string) (*model.File, 
 }
 
 // DownloadFile handles file downloads
-func (s *FileService) DownloadFile(c *gin.Context, path string) error {
+func (s *fileService) DownloadFile(c *gin.Context, path string) error {
 	uploadDir, err := config.GetConfig().GetUploadDir()
 	if err != nil {
 		return fmt.Errorf("failed to get upload dir: %v", err)
@@ -160,7 +179,7 @@ func (s *FileService) DownloadFile(c *gin.Context, path string) error {
 	return nil
 }
 
-func (s *FileService) ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, error) {
+func (s *fileService) ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, error) {
 	roles := middleware.GetRolesFromContext(ctx)
 	var hasPermission bool
 	for _, role := range roles {

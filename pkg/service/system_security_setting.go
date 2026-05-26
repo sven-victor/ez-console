@@ -30,7 +30,7 @@ import (
 )
 
 // GetSecuritySettings gets all security settings
-func (s *SettingService) GetSecuritySettings(ctx context.Context) (*model.SecuritySettings, error) {
+func (s *settingService) GetSecuritySettings(ctx context.Context) (*model.SecuritySettings, error) {
 	// Get settings from database
 	settings, err := s.GetSettingsMap(ctx)
 	if err != nil {
@@ -127,7 +127,7 @@ func (s *SettingService) GetSecuritySettings(ctx context.Context) (*model.Securi
 }
 
 // UpdateSecuritySettings updates security settings
-func (s *SettingService) UpdateSecuritySettings(ctx context.Context, settings *model.SecuritySettings) error {
+func (s *settingService) UpdateSecuritySettings(ctx context.Context, settings *model.SecuritySettings) error {
 	// Prepare settings to be updated
 	settingsMap := map[string]string{
 		string(model.SettingMFAEnforced):               boolToString(settings.MFAEnforced),
@@ -149,7 +149,7 @@ func (s *SettingService) UpdateSecuritySettings(ctx context.Context, settings *m
 }
 
 // InitDefaultSecuritySettings initializes default security settings
-func (s *SettingService) InitDefaultSecuritySettings(ctx context.Context) error {
+func (s *settingService) InitDefaultSecuritySettings(ctx context.Context) error {
 	dbConn := db.Session(ctx)
 	// Default settings
 	defaultSettings := map[model.SettingKey]struct {
@@ -184,7 +184,7 @@ func (s *SettingService) InitDefaultSecuritySettings(ctx context.Context) error 
 	return s.initJWTKeys(ctx)
 }
 
-func (s *SettingService) initJWTKeys(ctx context.Context) error {
+func (s *settingService) initJWTKeys(ctx context.Context) error {
 	logger := log.GetContextLogger(ctx)
 	globalConfig := config.GetConfig()
 	if globalConfig.JWT.PrivateKey == "" || globalConfig.JWT.PublicKey == nil {
@@ -228,47 +228,6 @@ func (s *SettingService) initJWTKeys(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-// IsPasswordComplexityMet checks if the password meets the complexity requirements
-func (s *SettingService) IsPasswordComplexityMet(ctx context.Context, password string) (bool, error) {
-	// Get password complexity setting
-	complexitySetting, err := s.GetStringSetting(ctx, model.SettingPasswordComplexity, string(model.PasswordComplexityMedium))
-	if err != nil {
-		return false, err
-	}
-
-	complexity := model.PasswordComplexity(complexitySetting)
-
-	// Get minimum password length
-	minLength, err := s.GetIntSetting(ctx, model.SettingPasswordMinLength, 8)
-	if err != nil {
-		return false, err
-	}
-
-	// Check password length
-	if len(password) < minLength {
-		return false, nil
-	}
-
-	// Check password complexity
-	switch complexity {
-	case model.PasswordComplexityLow:
-		// Any characters allowed
-		return true, nil
-	case model.PasswordComplexityMedium:
-		// At least two character types combination
-		return passwordContainsAtLeast(password, 2), nil
-	case model.PasswordComplexityHigh:
-		// Must contain uppercase, lowercase letters and numbers
-		return hasUppercase(password) && hasLowercase(password) && hasDigit(password), nil
-	case model.PasswordComplexityVeryHigh:
-		// Must contain uppercase, lowercase letters, numbers and special characters
-		return hasUppercase(password) && hasLowercase(password) && hasDigit(password) && hasSpecial(password), nil
-	default:
-		// Default to medium complexity
-		return passwordContainsAtLeast(password, 2), nil
-	}
 }
 
 // passwordContainsAtLeast checks if the password contains at least n character types

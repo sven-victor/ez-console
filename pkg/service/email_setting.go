@@ -28,8 +28,8 @@ import (
 )
 
 // GetSMTPSettings retrieves SMTP settings from the database
-func (s *SettingService) GetSMTPSettings(ctx context.Context) (*model.SMTPSettings, error) {
-	settingsMap, err := s.GetSettingsMap(ctx)
+func (s *emailService) GetSMTPSettings(ctx context.Context) (*model.SMTPSettings, error) {
+	settingsMap, err := s.settingService.GetSettingsMap(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -75,7 +75,7 @@ func (s *SettingService) GetSMTPSettings(ctx context.Context) (*model.SMTPSettin
 }
 
 // UpdateSMTPSettings saves SMTP settings to the database
-func (s *SettingService) UpdateSMTPSettings(ctx context.Context, settings *model.SMTPSettings) error {
+func (s *emailService) UpdateSMTPSettings(ctx context.Context, settings *model.SMTPSettings) error {
 	settingsToUpdate := map[string]string{
 		string(model.SettingSMTPAdminEmails):           strings.Join(settings.AdminEmails, ","),
 		string(model.SettingSMTPEnabled):               strconv.FormatBool(settings.Enabled),
@@ -97,11 +97,11 @@ func (s *SettingService) UpdateSMTPSettings(ctx context.Context, settings *model
 		settingsToUpdate[string(model.SettingSMTPPassword)] = settings.Password.String()
 	}
 
-	return s.UpdateSettings(ctx, settingsToUpdate)
+	return s.settingService.UpdateSettings(ctx, settingsToUpdate)
 }
 
 // InitDefaultSMTPSettings initializes default SMTP settings
-func (s *SettingService) InitDefaultSMTPSettings(ctx context.Context) error {
+func (s *emailService) InitDefaultSMTPSettings(ctx context.Context) error {
 	// Default setting items
 	defaultSettings := map[model.SettingKey]struct {
 		Value   string

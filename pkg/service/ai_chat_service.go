@@ -33,32 +33,53 @@ import (
 	"gorm.io/gorm"
 )
 
-// AIChatService handles AI chat functionality
-type AIChatService struct {
-	aiModelService *AIModelService
-	toolSetService *ToolSetService
-	aiTraceService *AITraceService
-	settingService *SettingService
-	skillService   *SkillService
+type aiChatService struct {
+	aiModelService AIModelService
+	aiTraceService AITraceService
+	baseService    BaseService
+	skillService   SkillService
+}
+
+// AIChatService handles AI chat functionality.
+type AIChatService interface {
+	CreateChatSession(ctx context.Context, organizationID, userID, title, modelID string, messages []ai.SimpleChatMessage, anonymous bool) (*model.AIChatSession, error)
+	GetChatSession(ctx context.Context, organizationID, userID, sessionID string) (*model.AIChatSession, error)
+	AppendSessionActivatedSkill(ctx context.Context, organizationID, userID, sessionID, skillID string) error
+	ClearSessionActivatedSkills(ctx context.Context, organizationID, userID, sessionID string) error
+	GetUserChatSessions(ctx context.Context, organizationID, userID string, current, pageSize int) ([]model.AIChatSession, int64, error)
+	AddChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string, toolCalls model.AIToolCalls, toolCallID string) (*model.AIChatMessage, error)
+	GetChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
+	GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
+	UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error
+	DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error
+	MarkSessionMessagesSummarized(ctx context.Context, organizationID, userID, sessionID string) error
+	AddSummaryChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string) (*model.AIChatMessage, error)
+	EndChatSession(ctx context.Context, organizationID, userID, sessionID string) error
+	DeleteChatSession(ctx context.Context, organizationID, userID, sessionID string) error
+	UpdateSessionTokenUsage(ctx context.Context, organizationID, userID, sessionID string, promptTokens, completionTokens, activeTokens int) error
+	UpdateChatSessionTitle(ctx context.Context, organizationID, userID, sessionID string, title string) error
+	GenerateChatSessionTitle(ctx context.Context, organizationID, userID, sessionID, modelID string) (string, error)
+	CreateChatCompletionWithoutToolSets(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error)
+	CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) ([]ai.ChatMessage, error)
+	CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) (ai.ChatStream, error)
+	GetAvailableTools(ctx context.Context) ([]openai.Tool, error)
 }
 
 var aiChatSessionCleanupTaskType = model.TaskType("ai_chat_session_cleanup_task")
 
 var (
 	aiChatServiceOnce sync.Once
-	aiChatService     *AIChatService
+	aiChatSvc         AIChatService
 )
 
-// NewAIChatService creates a new AI chat service
-func NewAIChatService() *AIChatService {
+// NewAIChatService creates a new AI chat service.
+func NewAIChatService(ctx context.Context, baseService BaseService, aiModelService AIModelService, aiTraceService AITraceService, skillService SkillService) AIChatService {
 	aiChatServiceOnce.Do(func() {
-		settingSvc := NewSettingService()
-		aiChatService = &AIChatService{
-			aiModelService: NewAIModelService(),
-			toolSetService: NewToolSetService(),
-			aiTraceService: NewAITraceService(settingSvc),
-			settingService: settingSvc,
-			skillService:   NewSkillService(),
+		aiChatSvc = &aiChatService{
+			aiModelService: aiModelService,
+			aiTraceService: aiTraceService,
+			baseService:    baseService,
+			skillService:   skillService,
 		}
 		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
 			ID:             "ai-chat-session-cleanup",
@@ -70,8 +91,7 @@ func NewAIChatService() *AIChatService {
 			PayloadBuilder: func() string { return "{}" },
 			Runner: taskscheduler.NewFuncTaskRunner(func(ctx context.Context, t *model.Task, progressCallback taskscheduler.ProgressCallback, cancelCh <-chan struct{}) (result interface{}, err error) {
 				logger := log.GetContextLogger(ctx)
-				settingSvc := new(SettingService)
-				retentionDays, _ := settingSvc.GetIntSetting(ctx, model.SettingTaskAIChatRetentionDays, 90)
+				retentionDays, _ := baseService.GetIntSetting(ctx, model.SettingTaskAIChatRetentionDays, 90)
 				if retentionDays < 1 {
 					retentionDays = 90
 				}
@@ -154,11 +174,11 @@ func NewAIChatService() *AIChatService {
 			}),
 		})
 	})
-	return aiChatService
+	return aiChatSvc
 }
 
 // CreateChatSession creates a new chat session
-func (s *AIChatService) CreateChatSession(ctx context.Context, organizationID, userID, title, modelID string, messages []ai.SimpleChatMessage, anonymous bool) (*model.AIChatSession, error) {
+func (s *aiChatService) CreateChatSession(ctx context.Context, organizationID, userID, title, modelID string, messages []ai.SimpleChatMessage, anonymous bool) (*model.AIChatSession, error) {
 	session := model.NewAIChatSession(organizationID, userID, title, modelID, anonymous)
 
 	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
@@ -189,7 +209,7 @@ func (s *AIChatService) CreateChatSession(ctx context.Context, organizationID, u
 }
 
 // GetChatSession gets a chat session by ID
-func (s *AIChatService) GetChatSession(ctx context.Context, organizationID, userID, sessionID string) (*model.AIChatSession, error) {
+func (s *aiChatService) GetChatSession(ctx context.Context, organizationID, userID, sessionID string) (*model.AIChatSession, error) {
 	var session model.AIChatSession
 	if err := db.Session(ctx).Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).First(&session).Error; err != nil {
 		return nil, fmt.Errorf("failed to get chat session: %w", err)
@@ -199,7 +219,7 @@ func (s *AIChatService) GetChatSession(ctx context.Context, organizationID, user
 }
 
 // AppendSessionActivatedSkill records that get_skill_content succeeded for a skill in this session (deduplicated).
-func (s *AIChatService) AppendSessionActivatedSkill(ctx context.Context, organizationID, userID, sessionID, skillID string) error {
+func (s *aiChatService) AppendSessionActivatedSkill(ctx context.Context, organizationID, userID, sessionID, skillID string) error {
 	if skillID == "" {
 		return nil
 	}
@@ -224,7 +244,7 @@ func (s *AIChatService) AppendSessionActivatedSkill(ctx context.Context, organiz
 }
 
 // ClearSessionActivatedSkills clears skills activated via get_skill_content (e.g. after summarization).
-func (s *AIChatService) ClearSessionActivatedSkills(ctx context.Context, organizationID, userID, sessionID string) error {
+func (s *aiChatService) ClearSessionActivatedSkills(ctx context.Context, organizationID, userID, sessionID string) error {
 	if err := db.Session(ctx).Model(&model.AIChatSession{}).
 		Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).
 		Update("activated_skill_ids", []string{}).Error; err != nil {
@@ -234,7 +254,7 @@ func (s *AIChatService) ClearSessionActivatedSkills(ctx context.Context, organiz
 }
 
 // GetUserChatSessions gets chat sessions for a user with pagination
-func (s *AIChatService) GetUserChatSessions(ctx context.Context, organizationID, userID string, current, pageSize int) ([]model.AIChatSession, int64, error) {
+func (s *aiChatService) GetUserChatSessions(ctx context.Context, organizationID, userID string, current, pageSize int) ([]model.AIChatSession, int64, error) {
 	var sessions []model.AIChatSession
 	var total int64
 
@@ -255,7 +275,7 @@ func (s *AIChatService) GetUserChatSessions(ctx context.Context, organizationID,
 }
 
 // AddChatMessage adds a message to a chat session
-func (s *AIChatService) AddChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string, toolCalls model.AIToolCalls, toolCallID string) (*model.AIChatMessage, error) {
+func (s *aiChatService) AddChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string, toolCalls model.AIToolCalls, toolCallID string) (*model.AIChatMessage, error) {
 	message := model.NewAIChatMessage(organizationID, userID, sessionID, role, content, toolCalls, toolCallID)
 
 	if err := db.Session(ctx).Create(message).Error; err != nil {
@@ -266,7 +286,7 @@ func (s *AIChatService) AddChatMessage(ctx context.Context, organizationID, user
 }
 
 // GetChatMessages gets active messages for a chat session (excludes summarized messages).
-func (s *AIChatService) GetChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
+func (s *aiChatService) GetChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
 	var messages []model.AIChatMessage
 	if err := db.Session(ctx).
 		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
@@ -279,7 +299,7 @@ func (s *AIChatService) GetChatMessages(ctx context.Context, organizationID, use
 }
 
 // GetChatMessages gets messages for a chat session
-func (s *AIChatService) GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
+func (s *aiChatService) GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
 	var messages []model.AIChatMessage
 	if err := db.Session(ctx).
 		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
@@ -293,7 +313,7 @@ func (s *AIChatService) GetSimpleChatMessages(ctx context.Context, organizationI
 }
 
 // UpdateChatMessage updates a chat message
-func (s *AIChatService) UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error {
+func (s *aiChatService) UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error {
 	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND session_id = ? AND tool_call_id = ?", organizationID, userID, sessionID, toolCallID).Update("content", result).Error; err != nil {
 		return fmt.Errorf("failed to update chat tool call result: %w", err)
 	}
@@ -302,7 +322,7 @@ func (s *AIChatService) UpdateChatToolCallResult(ctx context.Context, organizati
 }
 
 // DeleteSessionAllMessages deletes all messages in a session.
-func (s *AIChatService) DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error {
+func (s *aiChatService) DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error {
 	if err := db.Session(ctx).Model(&model.AIChatMessage{}).Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).Delete(&model.AIChatMessage{}).Error; err != nil {
 		return fmt.Errorf("failed to delete session messages: %w", err)
 	}
@@ -313,7 +333,7 @@ func (s *AIChatService) DeleteSessionAllMessages(ctx context.Context, organizati
 // MarkSessionMessagesSummarized marks all existing messages in a session as
 // summarized (superseded). It also clears the is_summary flag on any previous
 // summary messages so only the newly added summaries are considered active.
-func (s *AIChatService) MarkSessionMessagesSummarized(ctx context.Context, organizationID, userID, sessionID string) error {
+func (s *aiChatService) MarkSessionMessagesSummarized(ctx context.Context, organizationID, userID, sessionID string) error {
 	if err := db.Session(ctx).Model(&model.AIChatMessage{}).
 		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
 		Updates(map[string]interface{}{"summarized": true, "is_summary": false}).Error; err != nil {
@@ -324,7 +344,7 @@ func (s *AIChatService) MarkSessionMessagesSummarized(ctx context.Context, organ
 
 // AddSummaryChatMessage persists a summary message that replaces older
 // conversation history for the AI context but is hidden from the frontend.
-func (s *AIChatService) AddSummaryChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string) (*model.AIChatMessage, error) {
+func (s *aiChatService) AddSummaryChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string) (*model.AIChatMessage, error) {
 	message := model.NewAIChatMessage(organizationID, userID, sessionID, role, content, nil, "")
 	message.IsSummary = true
 
@@ -335,7 +355,7 @@ func (s *AIChatService) AddSummaryChatMessage(ctx context.Context, organizationI
 }
 
 // EndChatSession ends a chat session
-func (s *AIChatService) EndChatSession(ctx context.Context, organizationID, userID, sessionID string) error {
+func (s *aiChatService) EndChatSession(ctx context.Context, organizationID, userID, sessionID string) error {
 	now := time.Now()
 	if err := db.Session(ctx).Model(&model.AIChatSession{}).Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).Update("end_time", now).Error; err != nil {
 		return fmt.Errorf("failed to end chat session: %w", err)
@@ -345,7 +365,7 @@ func (s *AIChatService) EndChatSession(ctx context.Context, organizationID, user
 }
 
 // DeleteChatSession deletes a chat session and all its messages
-func (s *AIChatService) DeleteChatSession(ctx context.Context, organizationID, userID, sessionID string) error {
+func (s *aiChatService) DeleteChatSession(ctx context.Context, organizationID, userID, sessionID string) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Delete all messages first
 		if err := tx.Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).Delete(&model.AIChatMessage{}).Error; err != nil {
@@ -363,7 +383,7 @@ func (s *AIChatService) DeleteChatSession(ctx context.Context, organizationID, u
 
 // UpdateSessionTokenUsage atomically adds prompt/completion tokens to the session
 // totals and sets the active token estimate.
-func (s *AIChatService) UpdateSessionTokenUsage(ctx context.Context, organizationID, userID, sessionID string, promptTokens, completionTokens, activeTokens int) error {
+func (s *aiChatService) UpdateSessionTokenUsage(ctx context.Context, organizationID, userID, sessionID string, promptTokens, completionTokens, activeTokens int) error {
 	if err := db.Session(ctx).Model(&model.AIChatSession{}).
 		Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).
 		Updates(map[string]interface{}{
@@ -377,7 +397,7 @@ func (s *AIChatService) UpdateSessionTokenUsage(ctx context.Context, organizatio
 }
 
 // UpdateChatSessionTitle updates the title of a chat session
-func (s *AIChatService) UpdateChatSessionTitle(ctx context.Context, organizationID, userID, sessionID string, title string) error {
+func (s *aiChatService) UpdateChatSessionTitle(ctx context.Context, organizationID, userID, sessionID string, title string) error {
 	if err := db.Session(ctx).Model(&model.AIChatSession{}).Where("organization_id = ? AND user_id = ? AND resource_id = ?", organizationID, userID, sessionID).Update("title", title).Error; err != nil {
 		return fmt.Errorf("failed to update chat session title: %w", err)
 	}
@@ -385,7 +405,7 @@ func (s *AIChatService) UpdateChatSessionTitle(ctx context.Context, organization
 }
 
 // GenerateChatSessionTitle generates a title for a chat session based on conversation content
-func (s *AIChatService) GenerateChatSessionTitle(ctx context.Context, organizationID, userID, sessionID, modelID string) (string, error) {
+func (s *aiChatService) GenerateChatSessionTitle(ctx context.Context, organizationID, userID, sessionID, modelID string) (string, error) {
 	// Get chat messages
 	messages, err := s.GetChatMessages(ctx, organizationID, userID, sessionID)
 	if err != nil {
@@ -492,7 +512,7 @@ func withAIModelChatTokenAndIterationOptions(aiModel *model.AIModel) []ai.WithCh
 }
 
 // CreateChatCompletionWithoutToolSets creates a chat completion using the specified model without toolSets.
-func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
+func (s *aiChatService) CreateChatCompletionWithoutToolSets(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -539,13 +559,13 @@ func (s *AIChatService) CreateChatCompletionWithoutToolSets(ctx context.Context,
 
 // mergeAIChatClientOptions builds shared chat options for Exchange and ExchangeStream: cached authorized toolsets,
 // optional get_skill_content toolset, progressive refresh when skill–tool binding is enabled, model limits, trace hooks, and SkillLoader.
-func (s *AIChatService) mergeAIChatClientOptions(ctx context.Context, organizationID string, skillLoader *ai.SkillLoader, aiModel *model.AIModel, options []ai.WithChatOptions) []ai.WithChatOptions {
-	enableSkillToolBinding, _ := s.settingService.GetBoolSetting(ctx, model.SettingSystemEnableSkillToolBinding, false)
+func (s *aiChatService) mergeAIChatClientOptions(ctx context.Context, organizationID string, skillLoader *ai.SkillLoader, aiModel *model.AIModel, options []ai.WithChatOptions) []ai.WithChatOptions {
+	enableSkillToolBinding, _ := s.baseService.GetBoolSetting(ctx, model.SettingSystemEnableSkillToolBinding, false)
 
 	var skillLoaderOptions ai.WithChatOptions
 	allOptions := []ai.WithChatOptions{
 		ai.WithChatToolSetsProvider(toolset.NewCachedToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
-			return s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
+			return s.baseService.GetAuthorizedToolSets(ctx, organizationID)
 		})),
 	}
 	if skillLoader != nil && skillLoader.HasSkills() {
@@ -578,7 +598,7 @@ func (s *AIChatService) mergeAIChatClientOptions(ctx context.Context, organizati
 
 // CreateChatCompletion creates a chat completion using the specified model with toolSets.
 // Pass skillLoader when the chat includes skills; when system skill–tool binding is enabled, organization tools are exposed progressively like streaming completions.
-func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
+func (s *aiChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -624,7 +644,7 @@ func (s *AIChatService) CreateChatCompletion(ctx context.Context, organizationID
 
 // CreateChatCompletionStream creates a streaming chat completion.
 // skillParams is nil for chats without skill metadata; when set, organization tools may load only after get_skill_content (see system_enable_skill_tool_binding).
-func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) (ai.ChatStream, error) {
+func (s *aiChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) (ai.ChatStream, error) {
 	var err error
 	var aiModel *model.AIModel
 	// Get the AI model
@@ -671,7 +691,7 @@ func (s *AIChatService) CreateChatCompletionStream(ctx context.Context, organiza
 }
 
 // appendTraceChatOptionsIfEnabled appends tracing wrappers when AI debug tracing is enabled.
-func (s *AIChatService) appendTraceChatOptionsIfEnabled(ctx context.Context, options []ai.WithChatOptions) []ai.WithChatOptions {
+func (s *aiChatService) appendTraceChatOptionsIfEnabled(ctx context.Context, options []ai.WithChatOptions) []ai.WithChatOptions {
 	if !s.aiTraceService.IsTraceEnabled(ctx) {
 		return options
 	}
@@ -733,10 +753,10 @@ func findOnSummary(options []ai.WithChatOptions) func(context.Context, []ai.Chat
 }
 
 // GetAvailableTools gets all available tools from enabled toolsets
-func (s *AIChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, error) {
+func (s *aiChatService) GetAvailableTools(ctx context.Context) ([]openai.Tool, error) {
 	logger := log.GetContextLogger(ctx)
 	organizationID := getOrganizationIDFromContext(ctx)
-	toolSets, err := s.toolSetService.GetAuthorizedToolSets(ctx, organizationID)
+	toolSets, err := s.baseService.GetAuthorizedToolSets(ctx, organizationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get enabled toolset instances: %w", err)
 	}

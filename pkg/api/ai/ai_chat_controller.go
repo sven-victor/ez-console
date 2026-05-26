@@ -440,7 +440,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	userIDStr := userID.(string)
 	req.Domains = append(req.Domains, "core", "chat")
 
-	skillLoader, err := c.service.SkillService.CreateSkillLoader(ctx, organizationID, req.Domains, req.SkillIDs, session.ActivatedSkillIDs)
+	skillLoader, err := c.service.CreateSkillLoader(ctx, organizationID, req.Domains, req.SkillIDs, session.ActivatedSkillIDs)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

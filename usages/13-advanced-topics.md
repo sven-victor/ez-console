@@ -96,31 +96,45 @@ func main() {
 ```go
 package service
 
-type CustomService struct {
-	baseService *BaseService
+type customService struct {
+	baseService BaseService
 }
 
-func NewCustomService(base *BaseService) *CustomService {
-	return &CustomService{baseService: base}
+type CustomService interface {
+	DoWork(ctx context.Context) error
 }
 
-// In service.go, add to Service struct
+func NewCustomService(_ context.Context, base BaseService) CustomService {
+	return &customService{baseService: base}
+}
+
+// In service.go, add to Service struct and register a factory option:
 type Service struct {
-	*UserService
-	*CustomService
+	UserService
+	CustomService
 	// ... other services
 }
 
-// Initialize in NewService
-func NewService(ctx context.Context) *Service {
-	baseService := &BaseService{...}
-	
-	return &Service{
-		UserService:   NewUserService(ctx, baseService),
-		CustomService: NewCustomService(baseService),
-		// ...
+type CustomServiceFactory func(ctx context.Context, base BaseService) CustomService
+
+func WithCustomServiceFactory(f CustomServiceFactory) ServiceOption {
+	return func(o *serviceOptions) {
+		o.customServiceFactory = f
 	}
 }
+
+// In your app main or server setup:
+svc := service.NewService(ctx,
+	service.WithCustomServiceFactory(NewCustomService),
+)
+
+// Replace a built-in service (example: custom UserService):
+func myUserService(ctx context.Context, base service.BaseService) service.UserService {
+	// delegate to default when needed:
+	return &myUserServiceImpl{delegate: service.NewUserService(ctx, base)}
+}
+
+svc := service.NewService(ctx, service.WithUserServiceFactory(myUserService))
 ```
 
 ## Hooks and Events

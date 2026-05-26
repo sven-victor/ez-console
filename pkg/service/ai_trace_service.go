@@ -17,6 +17,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"sync"
 
 	"github.com/go-kit/log/level"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
@@ -25,18 +26,35 @@ import (
 	"github.com/sven-victor/ez-utils/log"
 )
 
-// AITraceService handles AI debug tracing functionality
-type AITraceService struct {
-	settingService *SettingService
+type aiTraceService struct {
+	settingService SettingService
 }
 
+type AITraceService interface {
+	IsTraceEnabled(ctx context.Context) bool
+	SetTraceEnabled(ctx context.Context, enabled bool) error
+	WriteTraceEvent(ctx context.Context, event model.AITraceEvent)
+	GetTraceEvents(ctx context.Context, traceID string) ([]model.AITraceEvent, error)
+	DownloadTraceEvents(ctx context.Context, traceID string) ([]byte, error)
+	DeleteAllTraceEvents(ctx context.Context) error
+	NewTraceEventWriter() ai.TraceEventWriter
+}
+
+var (
+	aiTraceServiceOnce     sync.Once
+	aiTraceServiceInstance AITraceService
+)
+
 // NewAITraceService creates a new AI trace service
-func NewAITraceService(settingService *SettingService) *AITraceService {
-	return &AITraceService{settingService: settingService}
+func NewAITraceService(_ context.Context, base BaseService) AITraceService {
+	aiTraceServiceOnce.Do(func() {
+		aiTraceServiceInstance = &aiTraceService{settingService: base}
+	})
+	return aiTraceServiceInstance
 }
 
 // IsTraceEnabled checks if AI debug tracing is globally enabled
-func (s *AITraceService) IsTraceEnabled(ctx context.Context) bool {
+func (s *aiTraceService) IsTraceEnabled(ctx context.Context) bool {
 	enabled, err := s.settingService.GetBoolSetting(ctx, model.SettingAIDebugEnabled, false)
 	if err != nil {
 		return false
@@ -46,7 +64,7 @@ func (s *AITraceService) IsTraceEnabled(ctx context.Context) bool {
 
 // SetTraceEnabled toggles the AI debug tracing setting.
 // When disabled, all stored trace events are deleted.
-func (s *AITraceService) SetTraceEnabled(ctx context.Context, enabled bool) error {
+func (s *aiTraceService) SetTraceEnabled(ctx context.Context, enabled bool) error {
 	val := "false"
 	if enabled {
 		val = "true"
@@ -67,7 +85,7 @@ func (s *AITraceService) SetTraceEnabled(ctx context.Context, enabled bool) erro
 }
 
 // WriteTraceEvent persists a single trace event to the database.
-func (s *AITraceService) WriteTraceEvent(ctx context.Context, event model.AITraceEvent) {
+func (s *aiTraceService) WriteTraceEvent(ctx context.Context, event model.AITraceEvent) {
 	if err := db.Session(ctx).Create(&event).Error; err != nil {
 		logger := log.GetContextLogger(ctx)
 		level.Error(logger).Log("msg", "Failed to write AI trace event", "error", err, "trace_id", event.TraceID)
@@ -75,7 +93,7 @@ func (s *AITraceService) WriteTraceEvent(ctx context.Context, event model.AITrac
 }
 
 // GetTraceEvents returns all events for a given trace ID, ordered by step.
-func (s *AITraceService) GetTraceEvents(ctx context.Context, traceID string) ([]model.AITraceEvent, error) {
+func (s *aiTraceService) GetTraceEvents(ctx context.Context, traceID string) ([]model.AITraceEvent, error) {
 	var events []model.AITraceEvent
 	if err := db.Session(ctx).
 		Where("trace_id = ?", traceID).
@@ -87,7 +105,7 @@ func (s *AITraceService) GetTraceEvents(ctx context.Context, traceID string) ([]
 }
 
 // DownloadTraceEvents exports all events for a given trace ID as JSON bytes.
-func (s *AITraceService) DownloadTraceEvents(ctx context.Context, traceID string) ([]byte, error) {
+func (s *aiTraceService) DownloadTraceEvents(ctx context.Context, traceID string) ([]byte, error) {
 	events, err := s.GetTraceEvents(ctx, traceID)
 	if err != nil {
 		return nil, err
@@ -96,12 +114,12 @@ func (s *AITraceService) DownloadTraceEvents(ctx context.Context, traceID string
 }
 
 // DeleteAllTraceEvents removes all trace events from the database.
-func (s *AITraceService) DeleteAllTraceEvents(ctx context.Context) error {
+func (s *aiTraceService) DeleteAllTraceEvents(ctx context.Context) error {
 	return db.Session(ctx).Where("1 = 1").Delete(&model.AITraceEvent{}).Error
 }
 
 // NewTraceEventWriter returns a TraceEventWriter callback bound to this service.
-func (s *AITraceService) NewTraceEventWriter() ai.TraceEventWriter {
+func (s *aiTraceService) NewTraceEventWriter() ai.TraceEventWriter {
 	return func(ctx context.Context, event model.AITraceEvent) {
 		s.WriteTraceEvent(ctx, event)
 	}

@@ -85,9 +85,9 @@ Reset behavior:
 
 ## Scheduled Jobs
 
-Jobs are registered in:
+Jobs are registered when `NewUserService` initializes (not in `init()`):
 
-- `pkg/service/user_notification_jobs.go`
+- `pkg/service/authorization_user_notification_jobs.go`
 
 ### Password Expiry Notification
 

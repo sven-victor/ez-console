@@ -21,35 +21,76 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/go-kit/log/level"
 	"github.com/sven-victor/ez-console/pkg/cache"
+	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-utils/log"
 	w "github.com/sven-victor/ez-utils/wrapper"
+	"go.opentelemetry.io/otel"
 	"gorm.io/gorm"
 )
 
 // SettingService system settings service
-type SettingService struct{}
+type settingService struct{}
+
+type SettingService interface {
+	GetSettingsMap(ctx context.Context) (map[string]string, error)
+	GetStringSetting(ctx context.Context, key model.SettingKey, defaultValue string) (string, error)
+	GetBoolSetting(ctx context.Context, key model.SettingKey, defaultValue bool) (bool, error)
+	GetIntSetting(ctx context.Context, key model.SettingKey, defaultValue int) (int, error)
+	GetSettingByStringKey(ctx context.Context, key string) (*model.Setting, error)
+	GetAllSettings(ctx context.Context) ([]model.Setting, error)
+	UpdateSetting(ctx context.Context, key model.SettingKey, value, comment string) (*model.Setting, error)
+	UpdateSettings(ctx context.Context, settings map[string]string) error
+	DeleteSetting(ctx context.Context, key model.SettingKey) error
+	GetSystemSettings(ctx context.Context) (*model.SystemSettings, error)
+	UpdateSystemSettings(ctx context.Context, settings model.SystemSettings) error
+
+	GetSecuritySettings(ctx context.Context) (*model.SecuritySettings, error)
+	UpdateSecuritySettings(ctx context.Context, settings *model.SecuritySettings) error
+}
 
 var (
-	settingService     *SettingService
-	settingServiceOnce sync.Once
+	settingServiceInstance SettingService
+	settingServiceOnce     sync.Once
 )
 
 // NewSettingService creates a new system settings service
-func NewSettingService() *SettingService {
+func NewSettingService(ctx context.Context) SettingService {
 	settingServiceOnce.Do(func() {
-		settingService = &SettingService{}
-		settingService.migrateLegacySMTPUserLockedTemplate()
-		middleware.RegisterSettingService(settingService)
+		inst := &settingService{}
+		inst.init(ctx)
+		inst.migrateLegacySMTPUserLockedTemplate()
+		settingServiceInstance = inst
+		middleware.RegisterSettingService(settingServiceInstance)
 	})
-	return settingService
+	return settingServiceInstance
+}
+
+func (svc settingService) init(ctx context.Context) {
+	cfg := config.GetConfig()
+	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(ctx, "Initialize Settings")
+	defer span.End()
+	traceId := span.SpanContext().TraceID()
+	ctx, logger := log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
+
+	// Initialize default settings
+	if err := svc.InitDefaultSettings(ctx); err != nil {
+		level.Error(logger).Log("msg", "Init default settings failed", "error", err)
+	}
+
+	// Initialize default security settings
+	if err := svc.InitDefaultSecuritySettings(ctx); err != nil {
+		level.Error(logger).Log("msg", "Init default security settings failed", "error", err)
+	}
 }
 
 // migrateLegacySMTPUserLockedTemplate migrates legacy SMTP template key.
 // TODO: Remove this compatibility logic in a future release.
-func (s *SettingService) migrateLegacySMTPUserLockedTemplate() {
+func (s *settingService) migrateLegacySMTPUserLockedTemplate() {
 	ctx := context.Background()
 	conn := db.Session(ctx)
 
@@ -78,7 +119,7 @@ func (s *SettingService) migrateLegacySMTPUserLockedTemplate() {
 }
 
 // GetSetting gets the setting with the specified key name
-func (s *SettingService) GetSetting(ctx context.Context, key model.SettingKey) (*model.Setting, error) {
+func (s *settingService) GetSetting(ctx context.Context, key model.SettingKey) (*model.Setting, error) {
 	if allSettings, err := cache.AllSettings.Get(ctx, "all"); err == nil && len(allSettings) > 0 {
 		for _, setting := range allSettings {
 			if setting.Key == key {
@@ -100,12 +141,12 @@ func (s *SettingService) GetSetting(ctx context.Context, key model.SettingKey) (
 }
 
 // GetSettingByStringKey gets the setting by string key name
-func (s *SettingService) GetSettingByStringKey(ctx context.Context, key string) (*model.Setting, error) {
+func (s *settingService) GetSettingByStringKey(ctx context.Context, key string) (*model.Setting, error) {
 	return s.GetSetting(ctx, model.SettingKey(key))
 }
 
 // GetAllSettings gets all system settings
-func (s *SettingService) GetAllSettings(ctx context.Context) ([]model.Setting, error) {
+func (s *settingService) GetAllSettings(ctx context.Context) ([]model.Setting, error) {
 	return cache.AllSettings.GetOrLoad(ctx, "all", func() ([]model.Setting, error) {
 		var settings []model.Setting
 		if err := db.Session(ctx).Where("key IN ?", model.SettingKeys).Find(&settings).Error; err != nil {
@@ -116,7 +157,7 @@ func (s *SettingService) GetAllSettings(ctx context.Context) ([]model.Setting, e
 }
 
 // GetSettingsMap gets all system settings and returns them as a map
-func (s *SettingService) GetSettingsMap(ctx context.Context) (map[string]string, error) {
+func (s *settingService) GetSettingsMap(ctx context.Context) (map[string]string, error) {
 	settings, err := s.GetAllSettings(ctx)
 	if err != nil {
 		return nil, err
@@ -130,7 +171,7 @@ func (s *SettingService) GetSettingsMap(ctx context.Context) (map[string]string,
 }
 
 // UpdateSetting updates a setting item
-func (s *SettingService) UpdateSetting(ctx context.Context, key model.SettingKey, value, comment string) (*model.Setting, error) {
+func (s *settingService) UpdateSetting(ctx context.Context, key model.SettingKey, value, comment string) (*model.Setting, error) {
 	var setting model.Setting
 	if err := db.Session(ctx).Where("key = ?", key).First(&setting).Error; err != nil {
 		setting = *model.NewSetting(key, value, comment)
@@ -154,7 +195,7 @@ func (s *SettingService) UpdateSetting(ctx context.Context, key model.SettingKey
 }
 
 // UpdateSettings batch updates settings
-func (s *SettingService) UpdateSettings(ctx context.Context, settings map[string]string) error {
+func (s *settingService) UpdateSettings(ctx context.Context, settings map[string]string) error {
 	// Use transaction to ensure atomicity
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		for key, value := range settings {
@@ -178,7 +219,7 @@ func (s *SettingService) UpdateSettings(ctx context.Context, settings map[string
 }
 
 // GetIntSetting gets the integer value of a setting
-func (s *SettingService) GetIntSetting(ctx context.Context, key model.SettingKey, defaultValue int) (int, error) {
+func (s *settingService) GetIntSetting(ctx context.Context, key model.SettingKey, defaultValue int) (int, error) {
 	setting, err := s.GetSetting(ctx, key)
 	if err != nil {
 		return defaultValue, nil
@@ -192,7 +233,7 @@ func (s *SettingService) GetIntSetting(ctx context.Context, key model.SettingKey
 }
 
 // GetBoolSetting gets the boolean value of a setting
-func (s *SettingService) GetBoolSetting(ctx context.Context, key model.SettingKey, defaultValue bool) (bool, error) {
+func (s *settingService) GetBoolSetting(ctx context.Context, key model.SettingKey, defaultValue bool) (bool, error) {
 	setting, err := s.GetSetting(ctx, key)
 	if err != nil {
 		return defaultValue, nil
@@ -207,7 +248,7 @@ func (s *SettingService) GetBoolSetting(ctx context.Context, key model.SettingKe
 }
 
 // GetStringSetting gets the string value of a setting
-func (s *SettingService) GetStringSetting(ctx context.Context, key model.SettingKey, defaultValue string) (string, error) {
+func (s *settingService) GetStringSetting(ctx context.Context, key model.SettingKey, defaultValue string) (string, error) {
 	setting, err := s.GetSetting(ctx, key)
 	if err != nil {
 		return defaultValue, nil
@@ -274,7 +315,7 @@ func RegisterDefaultSettings(ctx context.Context, key model.SettingKey, value, c
 }
 
 // InitDefaultSettings initializes default settings
-func (s *SettingService) InitDefaultSettings(ctx context.Context) error {
+func (s *settingService) InitDefaultSettings(ctx context.Context) error {
 	// Check if each setting already exists, if not, create it
 	for _, setting := range defaultSettings {
 		var count int64
@@ -290,7 +331,7 @@ func (s *SettingService) InitDefaultSettings(ctx context.Context) error {
 }
 
 // DeleteSetting deletes a setting
-func (s *SettingService) DeleteSetting(ctx context.Context, key model.SettingKey) error {
+func (s *settingService) DeleteSetting(ctx context.Context, key model.SettingKey) error {
 	defer func() {
 		_ = cache.AllSettings.Delete(ctx, "all")
 		_ = cache.Settings.Delete(ctx, string(key))
@@ -298,7 +339,7 @@ func (s *SettingService) DeleteSetting(ctx context.Context, key model.SettingKey
 	return db.Session(ctx).Where("key = ?", key).Delete(&model.Setting{}).Error
 }
 
-func (s *SettingService) GetSystemSettings(ctx context.Context) (*model.SystemSettings, error) {
+func (s *settingService) GetSystemSettings(ctx context.Context) (*model.SystemSettings, error) {
 	settings, err := s.GetSettingsMap(ctx)
 	if err != nil {
 		return nil, err
@@ -324,7 +365,7 @@ func (s *SettingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 	return baseSettings, nil
 }
 
-func (s *SettingService) UpdateSystemSettings(ctx context.Context, settings model.SystemSettings) error {
+func (s *settingService) UpdateSystemSettings(ctx context.Context, settings model.SystemSettings) error {
 	settingsMap := map[string]string{
 		string(model.SettingSystemName):     settings.Name,
 		string(model.SettingSystemNameI18n): w.JSONStringer(settings.NameI18n).String(),
@@ -336,31 +377,4 @@ func (s *SettingService) UpdateSystemSettings(ctx context.Context, settings mode
 		string(model.SettingSystemEnableSkillToolBinding): strconv.FormatBool(settings.EnableSkillToolBinding),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
-}
-
-// IsDisableLocalUserLogin checks if local user login is disabled
-// If local user login is disabled, it will check LDAP and OAuth2 settings to determine if local user login is allowed
-// If LDAP and OAuth2 are not enabled, it will return true
-func (s *SettingService) IsDisableLocalUserLogin(ctx context.Context) (bool, error) {
-	disableLocalUserLogin, err := s.GetBoolSetting(ctx, model.SettingSystemDisableLocalUserLogin, false)
-	if err != nil {
-		return false, err
-	}
-	if disableLocalUserLogin {
-		ldapEnabled, err := s.GetBoolSetting(ctx, model.SettingLDAPEnabled, false)
-		if err != nil {
-			return false, err
-		}
-		if ldapEnabled {
-			return true, nil
-		}
-		oauthEnabled, err := s.GetBoolSetting(ctx, model.SettingOAuthEnabled, false)
-		if err != nil {
-			return false, err
-		}
-		if oauthEnabled {
-			return true, nil
-		}
-	}
-	return false, nil
 }

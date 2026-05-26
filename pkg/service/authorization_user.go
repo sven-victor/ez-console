@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/go-kit/log/level"
@@ -40,6 +41,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
@@ -47,9 +49,44 @@ type UserChangeHook func(ctx context.Context, tx *gorm.DB, oldUser, newUser *mod
 type UserRoleChangeHook func(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error
 
 // UserService provides user-related services
-type UserService struct {
-	baseService         *BaseService
-	ldapService         *LDAPService
+type UserService interface {
+	LDAPService
+	OAuthService
+	RegisterUserChangeHook(hook UserChangeHook)
+	RegisterUserRoleChangeHook(hook UserRoleChangeHook)
+	UserLoginFailed(ctx context.Context, user *model.User) error
+	LoginWithMFA(ctx context.Context, mfaCode, mfaToken string) (*LoginResponse, error)
+	GenerateMFA(ctx context.Context, user *model.User, source middleware.JWTIssuer) (*LoginResponse, error)
+	IsDisableLocalUserLogin(ctx context.Context) (bool, error)
+	Login(ctx context.Context, username, password string) (*LoginResponse, error)
+	IsPasswordComplexityMet(ctx context.Context, password string) (bool, error)
+	CreateUser(ctx context.Context, req CreateUserRequest, baseURL string) (*model.User, error)
+	ResendActivationEmail(ctx context.Context, userID string, baseURL string) error
+	ActivateUser(ctx context.Context, req ActivateUserRequest) (*model.User, error)
+	Register(ctx context.Context, req CreateUserRequest) (*model.User, error)
+	GetUserIDByUsername(ctx context.Context, username string) (string, error)
+	GetUserByID(ctx context.Context, id string, opts ...WithGetUserByIDOptions) (*model.User, error)
+	ListUsers(ctx context.Context, keywords, status string, current, pageSize int) ([]model.User, int64, error)
+	PatchUser(ctx context.Context, id string, req UpdateUserRequest) (*model.User, error)
+	DeleteUser(ctx context.Context, id string) error
+	ChangePassword(ctx context.Context, id string, req ChangePasswordRequest) error
+	ResetPassword(ctx context.Context, userID string, newPassword string) (sendEmail bool, err error)
+	EnableMFA(ctx context.Context, userID string, mfaType string) (*EnableMFAResponse, error)
+	VerifyAndActivateEmailMFA(ctx context.Context, userID string, token string, code string) error
+	VerifyAndActivateTOTPMFA(ctx context.Context, userID string, code string) error
+	DisableMFA(ctx context.Context, userID string) error
+	AssignRoles(ctx context.Context, userID string, roleIDs []string) error
+	GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error)
+	RestoreUser(ctx context.Context, userID string) error
+	UnlockUser(ctx context.Context, userID string) error
+	RunUserChangeHooks(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error
+	RunUserRoleChangeHooks(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error
+}
+
+type userService struct {
+	OAuthService
+	LDAPService
+	baseService         BaseService
 	userChangeHooks     []UserChangeHook
 	userRoleChangeHooks []UserRoleChangeHook
 }
@@ -80,12 +117,44 @@ func initUserIndex(ctx context.Context) {
 	}
 }
 
-// NewUserService creates a user service
-func NewUserService(ctx context.Context, baseService *BaseService, ldapService *LDAPService) *UserService {
+var (
+	userServiceInstance UserService
+	userServiceOnce     sync.Once
+)
+
+func NewUserService(ctx context.Context, baseService BaseService) UserService {
+	userServiceOnce.Do(func() {
+		ldapService := NewLDAPService(ctx, baseService)
+		inst := newUserService(ctx, baseService, ldapService)
+		oauthService := NewOAuthService(baseService, inst)
+		inst.OAuthService = oauthService
+		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
+			ID:          "password-expiry-notify",
+			Name:        "Password Expiry Notification",
+			Spec:        "0 * * * *",
+			Description: "Scan users hourly and send password expiry reminders once per password cycle",
+			TaskType:    passwordExpiryNotificationTaskType,
+			Runner:      taskscheduler.NewFuncTaskRunner(inst.runPasswordExpiryNotificationJob),
+		})
+		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
+			ID:          "inactive-account-lock",
+			Name:        "Inactive Account Lock",
+			Spec:        "0 * * * *",
+			Description: "Scan users hourly and lock inactive accounts automatically",
+			TaskType:    inactiveAccountLockTaskType,
+			Runner:      taskscheduler.NewFuncTaskRunner(inst.runInactiveAccountLockJob),
+		})
+		userServiceInstance = inst
+	})
+	return userServiceInstance
+}
+
+// newUserService creates a user service
+func newUserService(ctx context.Context, baseService BaseService, ldapService LDAPService) *userService {
 	initUserIndex(ctx)
-	return &UserService{
+	return &userService{
 		baseService: baseService,
-		ldapService: ldapService,
+		LDAPService: ldapService,
 		userChangeHooks: []UserChangeHook{
 			func(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error {
 				if newUser == nil {
@@ -202,15 +271,15 @@ type MFATokenData struct {
 	Source  middleware.JWTIssuer `json:"source"`
 }
 
-func (s *UserService) RegisterUserChangeHook(hook UserChangeHook) {
+func (s *userService) RegisterUserChangeHook(hook UserChangeHook) {
 	s.userChangeHooks = append(s.userChangeHooks, hook)
 }
 
-func (s *UserService) RegisterUserRoleChangeHook(hook UserRoleChangeHook) {
+func (s *userService) RegisterUserRoleChangeHook(hook UserRoleChangeHook) {
 	s.userRoleChangeHooks = append(s.userRoleChangeHooks, hook)
 }
 
-func (s *UserService) UserLoginFailed(ctx context.Context, user *model.User) error {
+func (s *userService) UserLoginFailed(ctx context.Context, user *model.User) error {
 	oldUser, err := s.GetUserByID(ctx, user.ResourceID, WithCache(true), WithRoles(false), WithPermissions(false))
 	if err != nil {
 		return fmt.Errorf("failed to get user: %w", err)
@@ -251,7 +320,7 @@ func (s *UserService) UserLoginFailed(ctx context.Context, user *model.User) err
 	})
 }
 
-func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string) (*LoginResponse, error) {
+func (s *userService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string) (*LoginResponse, error) {
 	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
 		return nil, util.ErrorResponse{
@@ -376,7 +445,7 @@ func (s *UserService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 	}, nil
 }
 
-func (s *UserService) GenerateMFA(ctx context.Context, user *model.User, source middleware.JWTIssuer) (*LoginResponse, error) {
+func (s *userService) GenerateMFA(ctx context.Context, user *model.User, source middleware.JWTIssuer) (*LoginResponse, error) {
 	logger := log.GetContextLogger(ctx)
 	var err error
 	token := MFATokenData{
@@ -423,8 +492,35 @@ func (s *UserService) GenerateMFA(ctx context.Context, user *model.User, source 
 	}, nil
 }
 
+// IsDisableLocalUserLogin checks if local user login is disabled
+// If local user login is disabled, it will check LDAP and OAuth2 settings to determine if local user login is allowed
+// If LDAP and OAuth2 are not enabled, it will return true
+func (s *userService) IsDisableLocalUserLogin(ctx context.Context) (bool, error) {
+	disableLocalUserLogin, err := s.baseService.GetBoolSetting(ctx, model.SettingSystemDisableLocalUserLogin, false)
+	if err != nil {
+		return false, err
+	}
+	if disableLocalUserLogin {
+		ldapEnabled, err := s.baseService.GetBoolSetting(ctx, model.SettingLDAPEnabled, false)
+		if err != nil {
+			return false, err
+		}
+		if ldapEnabled {
+			return true, nil
+		}
+		oauthEnabled, err := s.baseService.GetBoolSetting(ctx, model.SettingOAuthEnabled, false)
+		if err != nil {
+			return false, err
+		}
+		if oauthEnabled {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // Login user login verification
-func (s *UserService) Login(ctx context.Context, username, password string) (*LoginResponse, error) {
+func (s *userService) Login(ctx context.Context, username, password string) (*LoginResponse, error) {
 	dbConn := db.Session(ctx)
 	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
@@ -436,7 +532,7 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 	}
 
 	// Attempt LDAP authentication
-	user, err := s.ldapService.AuthenticateUser(ctx, username, password)
+	user, err := s.LDAPService.AuthenticateLDAPUser(ctx, username, password)
 	if err != nil {
 		return nil, util.ErrorResponse{
 			HTTPCode: http.StatusUnauthorized,
@@ -446,7 +542,7 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 		}
 	}
 
-	if disableLocalUserLogin, err := s.baseService.IsDisableLocalUserLogin(ctx); err != nil {
+	if disableLocalUserLogin, err := s.IsDisableLocalUserLogin(ctx); err != nil {
 		return nil, util.NewErrorMessage("E5001", "System error, please contact the administrator", err)
 	} else if disableLocalUserLogin {
 		return nil, util.NewErrorMessage("E4011", "Local user login is disabled")
@@ -561,7 +657,7 @@ func (s *UserService) Login(ctx context.Context, username, password string) (*Lo
 	}, nil
 }
 
-func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*model.User, error) {
+func (s *userService) createUser(ctx context.Context, req CreateUserRequest) (*model.User, error) {
 	dbConn := db.Session(ctx)
 	// Check if username already exists
 	var existingUser model.User
@@ -636,8 +732,49 @@ func (s *UserService) createUser(ctx context.Context, req CreateUserRequest) (*m
 	return &user, nil
 }
 
+// IsPasswordComplexityMet checks if the password meets the complexity requirements
+func (s *userService) IsPasswordComplexityMet(ctx context.Context, password string) (bool, error) {
+	// Get password complexity setting
+	complexitySetting, err := s.baseService.GetStringSetting(ctx, model.SettingPasswordComplexity, string(model.PasswordComplexityMedium))
+	if err != nil {
+		return false, err
+	}
+
+	complexity := model.PasswordComplexity(complexitySetting)
+
+	// Get minimum password length
+	minLength, err := s.baseService.GetIntSetting(ctx, model.SettingPasswordMinLength, 8)
+	if err != nil {
+		return false, err
+	}
+
+	// Check password length
+	if len(password) < minLength {
+		return false, nil
+	}
+
+	// Check password complexity
+	switch complexity {
+	case model.PasswordComplexityLow:
+		// Any characters allowed
+		return true, nil
+	case model.PasswordComplexityMedium:
+		// At least two character types combination
+		return passwordContainsAtLeast(password, 2), nil
+	case model.PasswordComplexityHigh:
+		// Must contain uppercase, lowercase letters and numbers
+		return hasUppercase(password) && hasLowercase(password) && hasDigit(password), nil
+	case model.PasswordComplexityVeryHigh:
+		// Must contain uppercase, lowercase letters, numbers and special characters
+		return hasUppercase(password) && hasLowercase(password) && hasDigit(password) && hasSpecial(password), nil
+	default:
+		// Default to medium complexity
+		return passwordContainsAtLeast(password, 2), nil
+	}
+}
+
 // CreateUser creates a new user
-func (s *UserService) CreateUser(ctx context.Context, req CreateUserRequest, baseURL string) (*model.User, error) {
+func (s *userService) CreateUser(ctx context.Context, req CreateUserRequest, baseURL string) (*model.User, error) {
 	if req.Password == "" {
 		// No password provided: require email to send activation link
 		if req.Email == "" {
@@ -645,7 +782,7 @@ func (s *UserService) CreateUser(ctx context.Context, req CreateUserRequest, bas
 		}
 	} else {
 		// Validate password complexity
-		isValid, err := s.baseService.IsPasswordComplexityMet(ctx, req.Password)
+		isValid, err := s.IsPasswordComplexityMet(ctx, req.Password)
 		if err != nil {
 			return nil, fmt.Errorf("check password complexity failed: %w", err)
 		}
@@ -687,7 +824,7 @@ func (s *UserService) CreateUser(ctx context.Context, req CreateUserRequest, bas
 }
 
 // ResendActivationEmail regenerates the activation token and resends the activation email.
-func (s *UserService) ResendActivationEmail(ctx context.Context, userID string, baseURL string) error {
+func (s *userService) ResendActivationEmail(ctx context.Context, userID string, baseURL string) error {
 	user, err := s.GetUserByID(ctx, userID, WithCache(false), WithRoles(false), WithPermissions(false))
 	if err != nil {
 		return err
@@ -702,7 +839,7 @@ func (s *UserService) ResendActivationEmail(ctx context.Context, userID string, 
 }
 
 // sendActivationEmail generates an activation token and sends the activation email.
-func (s *UserService) sendActivationEmail(ctx context.Context, user *model.User, baseURL string) error {
+func (s *userService) sendActivationEmail(ctx context.Context, user *model.User, baseURL string) error {
 	token := uuid.New().String()
 	expiresAt := time.Now().Add(48 * time.Hour)
 	safeToken := safe.NewEncryptedString(user.ResourceID, os.Getenv(safe.SecretEnvName))
@@ -732,7 +869,7 @@ type ActivateUserRequest struct {
 }
 
 // ActivateUser validates the activation token and sets the user's password, activating the account.
-func (s *UserService) ActivateUser(ctx context.Context, req ActivateUserRequest) (*model.User, error) {
+func (s *userService) ActivateUser(ctx context.Context, req ActivateUserRequest) (*model.User, error) {
 	cacheKey := fmt.Sprintf("ez-console:user:activation:%s", req.Token)
 	data, err := cache.Store.Get(ctx, cacheKey)
 	if err != nil || len(data) == 0 {
@@ -755,7 +892,7 @@ func (s *UserService) ActivateUser(ctx context.Context, req ActivateUserRequest)
 	}
 
 	// Validate password complexity
-	isValid, err := s.baseService.IsPasswordComplexityMet(ctx, req.Password)
+	isValid, err := s.IsPasswordComplexityMet(ctx, req.Password)
 	if err != nil {
 		return nil, fmt.Errorf("check password complexity failed: %w", err)
 	}
@@ -804,12 +941,12 @@ func (s *UserService) ActivateUser(ctx context.Context, req ActivateUserRequest)
 }
 
 // Register user registration, called internally
-func (s *UserService) Register(ctx context.Context, req CreateUserRequest) (*model.User, error) {
+func (s *userService) Register(ctx context.Context, req CreateUserRequest) (*model.User, error) {
 	return s.createUser(ctx, req)
 }
 
 // GetUserIDByUsername gets user ID by username
-func (s *UserService) GetUserIDByUsername(ctx context.Context, username string) (string, error) {
+func (s *userService) GetUserIDByUsername(ctx context.Context, username string) (string, error) {
 	var userId string
 	if err := db.Session(ctx).Model(&model.User{}).Where(&model.User{Username: username}).Select("resource_id").First(&userId).Error; err != nil {
 		return "", err
@@ -851,7 +988,7 @@ func WithSoftDeleted(withSoftDeleted bool) WithGetUserByIDOptions {
 }
 
 // GetUserByID gets user by ID
-func (s *UserService) GetUserByID(ctx context.Context, id string, opts ...WithGetUserByIDOptions) (*model.User, error) {
+func (s *userService) GetUserByID(ctx context.Context, id string, opts ...WithGetUserByIDOptions) (*model.User, error) {
 	if id == "" {
 		return nil, errors.New("user ID cannot be empty")
 	}
@@ -882,7 +1019,7 @@ func (s *UserService) GetUserByID(ctx context.Context, id string, opts ...WithGe
 var systemAttrs = []string{"entryUUID", "createTimestamp", "modifyTimestamp", "memberOf"}
 
 // ListUsers lists users
-func (s *UserService) ListUsers(ctx context.Context, keywords, status string, current, pageSize int) ([]model.User, int64, error) {
+func (s *userService) ListUsers(ctx context.Context, keywords, status string, current, pageSize int) ([]model.User, int64, error) {
 	passwordExpiryDays, err := s.baseService.GetIntSetting(ctx, model.SettingPasswordExpiryDays, 0)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get password expiry days: %w", err)
@@ -935,7 +1072,7 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get LDAP allow change password: %w", err)
 	}
-	settings, err := s.baseService.GetLDAPSettings(ctx)
+	settings, err := s.LDAPService.GetLDAPSettings(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to get LDAP settings: %w", err)
 	}
@@ -947,7 +1084,7 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 				}
 			}
 		}
-		ldapSession, err := s.ldapService.GetLDAPSession(ctx)
+		ldapSession, err := s.LDAPService.GetLDAPSession(ctx)
 		if err != nil {
 			return nil, 0, fmt.Errorf("failed to get LDAP session: %w", err)
 		}
@@ -1004,7 +1141,7 @@ func (s *UserService) ListUsers(ctx context.Context, keywords, status string, cu
 }
 
 // PatchUser updates user information
-func (s *UserService) PatchUser(ctx context.Context, id string, req UpdateUserRequest) (*model.User, error) {
+func (s *userService) PatchUser(ctx context.Context, id string, req UpdateUserRequest) (*model.User, error) {
 	user, err := s.GetUserByID(ctx, id, WithCache(true), WithRoles(true), WithPermissions(false))
 	if err != nil {
 		return nil, err
@@ -1062,7 +1199,7 @@ func (s *UserService) PatchUser(ctx context.Context, id string, req UpdateUserRe
 		selectFields = append(selectFields, "Source")
 	}
 	if req.LDAPDN != "" {
-		entry, err := s.ldapService.GetLDAPEntry(ctx, req.LDAPDN, []string{"dn"})
+		entry, err := s.LDAPService.GetLDAPEntry(ctx, req.LDAPDN, []string{"dn"})
 		if err != nil {
 			return nil, fmt.Errorf("failed to get LDAP entry: %w", err)
 		}
@@ -1099,7 +1236,7 @@ func (s *UserService) PatchUser(ctx context.Context, id string, req UpdateUserRe
 }
 
 // DeleteUser deletes a user
-func (s *UserService) DeleteUser(ctx context.Context, id string) error {
+func (s *userService) DeleteUser(ctx context.Context, id string) error {
 	user, err := s.GetUserByID(ctx, id, WithCache(true), WithSoftDeleted(true))
 	if err != nil {
 		return err
@@ -1130,7 +1267,7 @@ func (s *UserService) DeleteUser(ctx context.Context, id string) error {
 }
 
 // ChangePassword changes the user's password
-func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangePasswordRequest) error {
+func (s *userService) ChangePassword(ctx context.Context, id string, req ChangePasswordRequest) error {
 	logger := log.GetContextLogger(ctx)
 	dbConn := db.Session(ctx)
 	var ldapSession clientsldap.Conn
@@ -1148,7 +1285,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 	// Check if old password is correct
 	switch user.Source {
 	case model.UserSourceLDAP:
-		settings, err := s.baseService.GetLDAPSettings(ctx)
+		settings, err := s.LDAPService.GetLDAPSettings(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get LDAP settings: %w", err)
 		}
@@ -1168,7 +1305,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 			level.Error(logger).Log("msg", "failed to bind with user credentials", "user_id", user.ResourceID, "error", err)
 			return util.NewErrorMessage("E40032", "old password is incorrect")
 		}
-		ldapSession, err = s.ldapService.GetLDAPSession(ctx)
+		ldapSession, err = s.LDAPService.GetLDAPSession(ctx)
 		if err != nil {
 			return fmt.Errorf("failed to get LDAP session: %w", err)
 		}
@@ -1183,7 +1320,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 	}
 
 	// Check password complexity
-	isValid, err := s.baseService.IsPasswordComplexityMet(ctx, req.NewPassword)
+	isValid, err := s.IsPasswordComplexityMet(ctx, req.NewPassword)
 	if err != nil {
 		return util.NewErrorMessage("E40034", "check password complexity failed", err)
 	}
@@ -1293,7 +1430,7 @@ func (s *UserService) ChangePassword(ctx context.Context, id string, req ChangeP
 }
 
 // ResetPassword resets the user's password (administrator operation)
-func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassword string) (sendEmail bool, err error) {
+func (s *userService) ResetPassword(ctx context.Context, userID string, newPassword string) (sendEmail bool, err error) {
 	logger := log.GetContextLogger(ctx)
 	dbConn := db.Session(ctx)
 	var user model.User
@@ -1355,7 +1492,7 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 			if ok, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false); !ok {
 				return util.NewErrorMessage("E40037", "The current system prohibits modifying LDAP user passwords.")
 			}
-			ldapSession, err := s.ldapService.GetLDAPSession(ctx)
+			ldapSession, err := s.LDAPService.GetLDAPSession(ctx)
 			if err != nil {
 				return fmt.Errorf("failed to get LDAP session: %w", err)
 			}
@@ -1393,7 +1530,7 @@ func (s *UserService) ResetPassword(ctx context.Context, userID string, newPassw
 }
 
 // EnableMFA enables MFA for the user
-func (s *UserService) EnableMFA(ctx context.Context, userID string, mfaType string) (*EnableMFAResponse, error) {
+func (s *userService) EnableMFA(ctx context.Context, userID string, mfaType string) (*EnableMFAResponse, error) {
 	logger := log.GetContextLogger(ctx)
 	user, err := s.GetUserByID(ctx, userID, WithCache(true))
 	if err != nil {
@@ -1460,7 +1597,7 @@ func (s *UserService) EnableMFA(ctx context.Context, userID string, mfaType stri
 	}
 }
 
-func (s *UserService) VerifyAndActivateEmailMFA(ctx context.Context, userID string, token string, code string) error {
+func (s *userService) VerifyAndActivateEmailMFA(ctx context.Context, userID string, token string, code string) error {
 	user, err := s.GetUserByID(ctx, userID, WithCache(true))
 	if err != nil {
 		return err
@@ -1488,7 +1625,7 @@ func (s *UserService) VerifyAndActivateEmailMFA(ctx context.Context, userID stri
 }
 
 // VerifyAndActivateTOTPMFA verifies the MFA code and activates TOTP MFA for the user
-func (s *UserService) VerifyAndActivateTOTPMFA(ctx context.Context, userID string, code string) error {
+func (s *userService) VerifyAndActivateTOTPMFA(ctx context.Context, userID string, code string) error {
 	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithRoles(false), WithPermissions(false))
 	if err != nil {
 		return err
@@ -1518,7 +1655,7 @@ func (s *UserService) VerifyAndActivateTOTPMFA(ctx context.Context, userID strin
 }
 
 // DisableMFA disables MFA for the user
-func (s *UserService) DisableMFA(ctx context.Context, userID string) error {
+func (s *userService) DisableMFA(ctx context.Context, userID string) error {
 	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithRoles(false), WithPermissions(false))
 	if err != nil {
 		return err
@@ -1542,7 +1679,7 @@ func (s *UserService) DisableMFA(ctx context.Context, userID string) error {
 }
 
 // AssignRoles assigns roles to a user
-func (s *UserService) AssignRoles(ctx context.Context, userID string, roleIDs []string) error {
+func (s *userService) AssignRoles(ctx context.Context, userID string, roleIDs []string) error {
 	user, err := s.GetUserByID(ctx, userID, WithRoles(true), WithCache(true))
 	if err != nil {
 		return err
@@ -1576,15 +1713,15 @@ func (s *UserService) AssignRoles(ctx context.Context, userID string, roleIDs []
 	})
 }
 
-func (s *UserService) GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error) {
+func (s *userService) GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error) {
 	logger := log.GetContextLogger(ctx)
-	settings, err := s.baseService.GetLDAPSettings(ctx)
+	settings, err := s.LDAPService.GetLDAPSettings(ctx)
 	if err != nil {
 		return nil, err
 	}
 	filter := fmt.Sprintf("(&(|(%s=%s)(%s=%s))%s)", settings.UserAttr, "*", settings.EmailAttr, "*", settings.UserFilter)
 	attributes := []string{settings.UserAttr, settings.EmailAttr, settings.DisplayNameAttr, "entryUUID", "createTimestamp", "modifyTimestamp"}
-	entries, err := s.ldapService.FilterLDAPEntries(ctx, settings.BaseDN, filter, attributes)
+	entries, err := s.LDAPService.FilterLDAPEntries(ctx, settings.BaseDN, filter, attributes)
 	if err != nil {
 		return nil, fmt.Errorf("failed to filter LDAP entries: %w", err)
 	}
@@ -1648,7 +1785,7 @@ func (s *UserService) GetLdapUsers(ctx context.Context, skipExisting bool) ([]mo
 }
 
 // RestoreUser restores a user
-func (s *UserService) RestoreUser(ctx context.Context, userID string) error {
+func (s *userService) RestoreUser(ctx context.Context, userID string) error {
 	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithPermissions(false), WithRoles(false), WithSoftDeleted(true))
 	if err != nil {
 		return err
@@ -1670,7 +1807,7 @@ func (s *UserService) RestoreUser(ctx context.Context, userID string) error {
 }
 
 // UnlockUser unlocks a user
-func (s *UserService) UnlockUser(ctx context.Context, userID string) error {
+func (s *userService) UnlockUser(ctx context.Context, userID string) error {
 	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithPermissions(false), WithRoles(false))
 	if err != nil {
 		return err
@@ -1691,7 +1828,7 @@ func (s *UserService) UnlockUser(ctx context.Context, userID string) error {
 	})
 }
 
-func (s *UserService) RunUserChangeHooks(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error {
+func (s *userService) RunUserChangeHooks(ctx context.Context, tx *gorm.DB, oldUser, newUser *model.User) error {
 	for _, hook := range s.userChangeHooks {
 		if err := hook(ctx, tx, oldUser, newUser); err != nil {
 			return err
@@ -1700,7 +1837,7 @@ func (s *UserService) RunUserChangeHooks(ctx context.Context, tx *gorm.DB, oldUs
 	return nil
 }
 
-func (s *UserService) RunUserRoleChangeHooks(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error {
+func (s *userService) RunUserRoleChangeHooks(ctx context.Context, tx *gorm.DB, userId string, oldRoles, newRoles []model.Role) error {
 	for _, hook := range s.userRoleChangeHooks {
 		if err := hook(ctx, tx, userId, oldRoles, newRoles); err != nil {
 			return err

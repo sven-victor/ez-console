@@ -135,7 +135,7 @@ func (s *Service) syncPresetSkillForOrg(ctx context.Context, organizationID stri
 			PresetKey:      spec.PresetKey,
 		}
 		content := spec.InitialMarkdown
-		if _, err := s.SkillService.Create(ctx, sk, content); err != nil {
+		if _, err := s.Create(ctx, sk, content); err != nil {
 			return fmt.Errorf("create preset skill: %w", err)
 		}
 		return nil
@@ -154,7 +154,7 @@ func (s *Service) syncPresetSkillForOrg(ctx context.Context, organizationID stri
 	if err := db.Session(ctx).Model(&model.Skill{}).Where("resource_id = ?", row.ResourceID).Updates(updates).Error; err != nil {
 		return fmt.Errorf("update preset skill metadata: %w", err)
 	}
-	if err := s.SkillService.EnsurePresetSkillMarkdown(ctx, organizationID, row.ResourceID, spec.InitialMarkdown); err != nil {
+	if err := s.EnsurePresetSkillMarkdown(ctx, organizationID, row.ResourceID, spec.InitialMarkdown); err != nil {
 		return err
 	}
 	return nil

@@ -17,6 +17,7 @@ package service
 import (
 	"context"
 
+	"github.com/go-kit/log/level"
 	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -25,91 +26,93 @@ import (
 )
 
 type Service struct {
-	*UserService
-	*PermissionService
-	*RoleService
-	*SystemService
-	*OAuthService
-	*SessionService
-	*AuditLogService
-	*SettingService
-	*ServiceAccountService
-	*LDAPService
-	*FileService
-	*StatsService
-	*BaseService
-	*GeoIPService
-	*AIModelService
-	*ToolSetService
-	*AIChatService
-	*OrganizationService
-	*SkillService
-	TaskService
+	UserService
+	PermissionService
+	RoleService
+	SystemService
+	SessionService
+	AuditLogService
+	ServiceAccountService
+	FileService
+	StatsService
+	AIService
+	OrganizationService
 	TaskSchedulerService
-	*AITraceService
+	BaseService
 }
 
-type BaseService struct {
-	*SettingService
-	*EmailService
-	*GeoIPService
+type BaseService interface {
+	SettingService
+	EmailService
+	GeoIPService
+	ToolSetService
 }
 
-func NewService(ctx context.Context) *Service {
+type baseService struct {
+	EmailService
+	SettingService
+	GeoIPService
+	ToolSetService
+}
+
+// NewService builds the application service layer. Pass ServiceOption values to replace
+// default constructors, for example:
+//
+//	service.NewService(ctx, service.WithUserServiceFactory(myNewUserService))
+func NewService(ctx context.Context, opts ...ServiceOption) *Service {
 	cfg := config.GetConfig()
 	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(ctx, "Initialize Service")
 	defer span.End()
 	traceId := span.SpanContext().TraceID()
-	ctx, _ = log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
+	ctx, logger := log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
+
+	options := &serviceOptions{}
+	for _, opt := range opts {
+		opt(options)
+	}
+	applyServiceDefaults(options)
 
 	if err := cache.Init(&cfg.Cache, db.Session); err != nil {
 		panic("failed to initialize cache: " + err.Error())
 	}
 
-	settingService := NewSettingService()
-	geoipService := NewGeoIPService(ctx)
+	settingService := options.settingServiceFactory(ctx)
+	emailService := options.emailServiceFactory(settingService)
 
-	baseService := &BaseService{
+	base := &baseService{
+		EmailService:   emailService,
 		SettingService: settingService,
-		EmailService:   &EmailService{settingService: settingService},
-		GeoIPService:   geoipService,
+		GeoIPService:   options.geoIPServiceFactory(ctx),
+		ToolSetService: options.toolSetServiceFactory(),
 	}
-	ldapService := NewLDAPService(ctx, baseService)
-	userService := NewUserService(ctx, baseService, ldapService)
 
-	// Create AI services
-	aiModelService := NewAIModelService()
-	toolSetService := NewToolSetService()
-	roleService := NewRoleService(toolSetService)
-	aiChatService := NewAIChatService()
-
-	// Create OAuth service and initialize it
-	oauthService := &OAuthService{
-		BaseService: baseService,
-		UserService: userService,
-	}
 	s := &Service{
-		UserService:           userService,
-		PermissionService:     new(PermissionService),
-		RoleService:           roleService,
-		SystemService:         NewSystemService(baseService),
-		OAuthService:          oauthService,
-		SessionService:        &SessionService{geoipService: geoipService},
-		AuditLogService:       new(AuditLogService),
-		SettingService:        settingService,
-		ServiceAccountService: NewServiceAccountService(),
-		LDAPService:           ldapService,
-		StatsService:          NewStatsService(),
-		BaseService:           baseService,
-		AIModelService:        aiModelService,
-		ToolSetService:        toolSetService,
-		AIChatService:         aiChatService,
-		OrganizationService:   NewOrganizationService(),
-		SkillService:          NewSkillService(),
+		BaseService:           base,
+		AIService:             options.aiServiceFactory(ctx, base),
+		AuditLogService:       options.auditLogServiceFactory(ctx, base),
+		FileService:           options.fileServiceFactory(ctx, base),
+		OrganizationService:   options.organizationServiceFactory(ctx, base),
+		PermissionService:     options.permissionServiceFactory(ctx, base),
+		RoleService:           options.roleServiceFactory(ctx, base),
+		ServiceAccountService: options.serviceAccountServiceFactory(ctx, base),
+		SessionService:        options.sessionServiceFactory(ctx, base),
+		StatsService:          options.statsServiceFactory(ctx, base),
+		SystemService:         options.systemServiceFactory(ctx, base),
+		TaskSchedulerService:  options.taskSchedulerServiceFactory(ctx, base),
+		UserService:           options.userServiceFactory(ctx, base),
 	}
-	s.TaskService = NewTaskService(ctx)
-	s.TaskSchedulerService = NewSchedulerService(ctx, s.TaskService)
-	s.FileService = NewFileService(baseService)
-	s.AITraceService = NewAITraceService(settingService)
+
+	if err := s.InitDefaultSMTPSettings(ctx); err != nil {
+		level.Error(logger).Log("msg", "Init default smtp settings failed", "error", err)
+	}
+	if err := s.InitDefaultOAuthSettings(ctx); err != nil {
+		level.Error(logger).Log("msg", "Init default oauth settings failed", "error", err)
+	}
+	if err := s.InitDefaultLDAPSettings(ctx); err != nil {
+		level.Error(logger).Log("msg", "Init default ldap settings failed", "error", err)
+	}
+	if err := s.InitDefaultTaskSettings(ctx); err != nil {
+		level.Error(logger).Log("msg", "Init default task settings failed", "error", err)
+	}
 	return s
 }

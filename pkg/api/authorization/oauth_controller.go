@@ -100,7 +100,7 @@ func (c *OAuthController) GetLoginURL(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := c.service.GetLoginURL(ctx, provider)
+	resp, err := c.service.GetOAuthLoginURL(ctx, provider)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4002", "failed to get login URL", err))
 		return
@@ -158,7 +158,7 @@ func (c *OAuthController) HandleCallback(ctx *gin.Context) {
 				"state":    strings.Repeat("*", len(req.State)),
 			}
 
-			loginResp, err := c.service.HandleCallback(ctx, req)
+			loginResp, err := c.service.HandleOAuthCallback(ctx, req)
 			if err != nil {
 				return util.NewError("E4012", err)
 			}

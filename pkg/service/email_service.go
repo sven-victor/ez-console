@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/smtp"
+	"sync"
 	"os"
 	"strconv"
 	"strings"
@@ -81,12 +82,34 @@ func encodeToRFC5322(fromName, fromAddress string, to []string, subject, body st
 	return msg.String()
 }
 
-type EmailService struct {
-	settingService *SettingService
+type emailService struct {
+	settingService SettingService
 }
 
-func (s *EmailService) SendEmailFromTemplate(ctx context.Context, to []string, subject string, bodyTemplate model.SettingKey, data map[string]any) error {
-	smtpSettings, err := s.settingService.GetSMTPSettings(ctx)
+type EmailService interface {
+	SendEmailFromTemplate(ctx context.Context, to []string, subject string, bodyTemplate model.SettingKey, data map[string]any) error
+	SendEmailToAdmins(ctx context.Context, subject, body string) error
+	SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) error
+	TestSMTPConnection(ctx context.Context, testReq *model.SMTPTestRequest) error
+	GetSMTPSettings(ctx context.Context) (*model.SMTPSettings, error)
+	UpdateSMTPSettings(ctx context.Context, settings *model.SMTPSettings) error
+	InitDefaultSMTPSettings(ctx context.Context) error
+}
+
+var (
+	emailServiceOnce     sync.Once
+	emailServiceInstance EmailService
+)
+
+func NewEmailService(settingService SettingService) EmailService {
+	emailServiceOnce.Do(func() {
+		emailServiceInstance = &emailService{settingService: settingService}
+	})
+	return emailServiceInstance
+}
+
+func (s *emailService) SendEmailFromTemplate(ctx context.Context, to []string, subject string, bodyTemplate model.SettingKey, data map[string]any) error {
+	smtpSettings, err := s.GetSMTPSettings(ctx)
 	if err != nil {
 		return err
 	}
@@ -136,8 +159,8 @@ func (s *EmailService) SendEmailFromTemplate(ctx context.Context, to []string, s
 	return s.SendEmail(ctx, smtpSettings, to, subject, buf.String())
 }
 
-func (s *EmailService) SendEmailToAdmins(ctx context.Context, subject, body string) error {
-	smtpSettings, err := s.settingService.GetSMTPSettings(ctx)
+func (s *emailService) SendEmailToAdmins(ctx context.Context, subject, body string) error {
+	smtpSettings, err := s.GetSMTPSettings(ctx)
 	if err != nil {
 		return err
 	}
@@ -150,7 +173,7 @@ func (s *EmailService) SendEmailToAdmins(ctx context.Context, subject, body stri
 	return s.SendEmail(ctx, smtpSettings, smtpSettings.AdminEmails, subject, body)
 }
 
-func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) (err error) {
+func (s emailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSettings, to []string, subject, body string) (err error) {
 	logger := log.GetContextLogger(ctx)
 	ctx, span := otel.GetTracerProvider().Tracer(config.GetConfig().Tracing.ServiceName).Start(
 		ctx, "SEND Email",
@@ -269,7 +292,7 @@ func (s *EmailService) SendEmail(ctx context.Context, smtpSettings *model.SMTPSe
 }
 
 // TestSMTPConnection tests the SMTP connection by sending an email
-func (s *EmailService) TestSMTPConnection(ctx context.Context, testReq *model.SMTPTestRequest) error {
+func (s emailService) TestSMTPConnection(ctx context.Context, testReq *model.SMTPTestRequest) error {
 	systemName, err := s.settingService.GetStringSetting(ctx, model.SettingSystemName, "EZ-Console")
 	if err != nil {
 		return err
@@ -281,7 +304,7 @@ func (s *EmailService) TestSMTPConnection(ctx context.Context, testReq *model.SM
 	}
 
 	// Consolidate fetching missing fields if not provided in testReq, after enabled check
-	dbSettings, err := s.settingService.GetSMTPSettings(ctx)
+	dbSettings, err := s.GetSMTPSettings(ctx)
 	if err != nil {
 		return err
 	}

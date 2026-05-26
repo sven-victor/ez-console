@@ -25,9 +25,9 @@ import (
 )
 
 // GetOAuthSettings gets OAuth settings
-func (s *SettingService) GetOAuthSettings(ctx context.Context) (*model.OAuthSettings, error) {
+func (s *oauthService) GetOAuthSettings(ctx context.Context) (*model.OAuthSettings, error) {
 	// Get settings from database
-	settings, err := s.GetSettingsMap(ctx)
+	settings, err := s.baseService.GetSettingsMap(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (s *SettingService) GetOAuthSettings(ctx context.Context) (*model.OAuthSett
 }
 
 // UpdateOAuthSettings updates OAuth settings
-func (s *SettingService) UpdateOAuthSettings(ctx context.Context, settings *model.OAuthSettings) error {
+func (s *oauthService) UpdateOAuthSettings(ctx context.Context, settings *model.OAuthSettings) error {
 	// Prepare settings to be updated
 	settingsMap := map[string]string{
 		string(model.SettingOAuthEnabled):          boolToString(settings.Enabled),
@@ -115,11 +115,11 @@ func (s *SettingService) UpdateOAuthSettings(ctx context.Context, settings *mode
 	}
 
 	// Batch update settings
-	return s.UpdateSettings(ctx, settingsMap)
+	return s.baseService.UpdateSettings(ctx, settingsMap)
 }
 
 // InitDefaultOAuthSettings initializes default OAuth settings
-func (s *SettingService) InitDefaultOAuthSettings(ctx context.Context) error {
+func (s *oauthService) InitDefaultOAuthSettings(ctx context.Context) error {
 	// Default setting items
 	defaultSettings := map[model.SettingKey]struct {
 		Value   string

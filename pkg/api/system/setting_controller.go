@@ -128,7 +128,7 @@ func (c *SettingController) UpdateSystemBaseSettings(ctx *gin.Context) {
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
 
 			// Get settings before update for audit log
-			oldSettings, err := c.service.SettingService.GetSettingsMap(ctx)
+			oldSettings, err := c.service.GetSettingsMap(ctx)
 			if err != nil {
 				util.RespondWithError(ctx, util.NewError("E5001", err))
 				return

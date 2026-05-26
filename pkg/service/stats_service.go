@@ -17,6 +17,7 @@ package service
 import (
 	"context"
 	"errors"
+	"sync"
 	"time"
 
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -24,11 +25,23 @@ import (
 	"github.com/sven-victor/ez-console/pkg/model"
 )
 
-type StatsService struct {
+type statsService struct{}
+
+type StatsService interface {
+	GetUserStatistics(ctx context.Context) (Charts, error)
+	GetStatistics(ctx context.Context) (Charts, error)
 }
 
-func NewStatsService() *StatsService {
-	return &StatsService{}
+var (
+	statsServiceOnce     sync.Once
+	statsServiceInstance StatsService
+)
+
+func NewStatsService(_ context.Context, _ BaseService) StatsService {
+	statsServiceOnce.Do(func() {
+		statsServiceInstance = &statsService{}
+	})
+	return statsServiceInstance
 }
 
 type Statistic struct {
@@ -61,7 +74,7 @@ type LoginStatus struct {
 	Count     float64 `json:"count"`
 }
 
-func (s *StatsService) GetUserStatistics(ctx context.Context) (Charts, error) {
+func (s *statsService) GetUserStatistics(ctx context.Context) (Charts, error) {
 	userID := middleware.GetUserIDFromContext(ctx)
 	if len(userID) == 0 {
 		return nil, errors.New("user not found")
@@ -154,7 +167,7 @@ func (s *StatsService) GetUserStatistics(ctx context.Context) (Charts, error) {
 	}, nil
 }
 
-func (s *StatsService) GetStatistics(ctx context.Context) (Charts, error) {
+func (s *statsService) GetStatistics(ctx context.Context) (Charts, error) {
 	dbConn := db.Session(ctx)
 	var userTotal int64
 

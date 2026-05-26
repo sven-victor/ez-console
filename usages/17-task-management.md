@@ -473,7 +473,7 @@ Task settings support registry-driven extension from backend code. Register once
    - Call `model.RegisterTaskSetting(key, valueType, defaultValue)`.
    - `key` should be provided **without** `task_`; backend auto-prefixes to full key `task_<key>`.
    - Supported `valueType` values are `int`, `bool`, `string`.
-2. Ensure server startup runs default initialization (`SettingService.InitDefaultTaskSettings`):
+2. Ensure server startup runs default initialization (`TaskService.InitDefaultTaskSettings` via `NewService`):
    - If no row exists for the setting key, it inserts `defaultValue`.
 3. Frontend discovers the field automatically:
    - `TaskSettingsForm` calls `GET /api/system/task-settings/fields` and renders the control by `value_type`.

@@ -67,7 +67,7 @@ type ToggleTraceRequest struct {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/ai/trace/status [get]
 func (c *AITraceController) GetTraceStatus(ctx *gin.Context) {
-	enabled := c.service.AITraceService.IsTraceEnabled(ctx)
+	enabled := c.service.IsTraceEnabled(ctx)
 	util.RespondWithSuccess(ctx, http.StatusOK, TraceStatusResponse{Enabled: enabled})
 }
 
@@ -91,7 +91,7 @@ func (c *AITraceController) ToggleTrace(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.service.AITraceService.SetTraceEnabled(ctx, req.Enabled); err != nil {
+	if err := c.service.SetTraceEnabled(ctx, req.Enabled); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -118,7 +118,7 @@ func (c *AITraceController) GetTraceEvents(ctx *gin.Context) {
 		return
 	}
 
-	events, err := c.service.AITraceService.GetTraceEvents(ctx, traceID)
+	events, err := c.service.GetTraceEvents(ctx, traceID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -146,7 +146,7 @@ func (c *AITraceController) DownloadTraceEvents(ctx *gin.Context) {
 		return
 	}
 
-	data, err := c.service.AITraceService.DownloadTraceEvents(ctx, traceID)
+	data, err := c.service.DownloadTraceEvents(ctx, traceID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

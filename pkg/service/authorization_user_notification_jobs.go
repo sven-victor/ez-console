@@ -33,30 +33,9 @@ var (
 	inactiveAccountLockTaskType        = model.TaskType("inactive_account_lock_task")
 )
 
-func init() {
-	taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
-		ID:          "password-expiry-notify",
-		Name:        "Password Expiry Notification",
-		Spec:        "0 * * * *",
-		Description: "Scan users hourly and send password expiry reminders once per password cycle",
-		TaskType:    passwordExpiryNotificationTaskType,
-		Runner:      taskscheduler.NewFuncTaskRunner(runPasswordExpiryNotificationJob),
-	})
-	taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
-		ID:          "inactive-account-lock",
-		Name:        "Inactive Account Lock",
-		Spec:        "0 * * * *",
-		Description: "Scan users hourly and lock inactive accounts automatically",
-		TaskType:    inactiveAccountLockTaskType,
-		Runner:      taskscheduler.NewFuncTaskRunner(runInactiveAccountLockJob),
-	})
-}
-
-func runPasswordExpiryNotificationJob(ctx context.Context, _ *model.Task, progressCallback taskscheduler.ProgressCallback, cancelCh <-chan struct{}) (interface{}, error) {
+func (s *userService) runPasswordExpiryNotificationJob(ctx context.Context, _ *model.Task, progressCallback taskscheduler.ProgressCallback, cancelCh <-chan struct{}) (interface{}, error) {
 	logger := log.GetContextLogger(ctx)
-	settingSvc := new(SettingService)
-	emailSvc := &EmailService{settingService: settingSvc}
-	securitySettings, err := settingSvc.GetSecuritySettings(ctx)
+	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get security settings: %w", err)
 	}
@@ -64,7 +43,7 @@ func runPasswordExpiryNotificationJob(ctx context.Context, _ *model.Task, progre
 		progressCallback(100)
 		return map[string]any{"sent": 0, "skipped": "password expiry notification disabled"}, nil
 	}
-	allowLDAPManagePassword, _ := settingSvc.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
+	allowLDAPManagePassword, _ := s.baseService.GetBoolSetting(ctx, model.SettingLDAPAllowManageUserPassword, false)
 	var users []model.User
 	if err := db.Session(ctx).Where("status = ?", model.UserStatusActive).Find(&users).Error; err != nil {
 		return nil, fmt.Errorf("failed to list users: %w", err)
@@ -109,7 +88,7 @@ func runPasswordExpiryNotificationJob(ctx context.Context, _ *model.Task, progre
 			level.Error(logger).Log("msg", "failed to mark password expiry reminder sent", "user_id", user.ResourceID, "err", err)
 			continue
 		}
-		if err := emailSvc.SendEmailFromTemplate(ctx, []string{user.Email}, "Password Expiry Reminder", model.SettingSMTPPasswordExpiryTemplate, map[string]any{
+		if err := s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "Password Expiry Reminder", model.SettingSMTPPasswordExpiryTemplate, map[string]any{
 			"Username":          user.Username,
 			"UserID":            user.ResourceID,
 			"Email":             user.Email,
@@ -128,11 +107,9 @@ func runPasswordExpiryNotificationJob(ctx context.Context, _ *model.Task, progre
 	return map[string]any{"sent": sent}, nil
 }
 
-func runInactiveAccountLockJob(ctx context.Context, _ *model.Task, progressCallback taskscheduler.ProgressCallback, cancelCh <-chan struct{}) (interface{}, error) {
+func (s *userService) runInactiveAccountLockJob(ctx context.Context, _ *model.Task, progressCallback taskscheduler.ProgressCallback, cancelCh <-chan struct{}) (interface{}, error) {
 	logger := log.GetContextLogger(ctx)
-	settingSvc := new(SettingService)
-	emailSvc := &EmailService{settingService: settingSvc}
-	inactiveDays, err := settingSvc.GetIntSetting(ctx, model.SettingUserInactiveDays, 0)
+	inactiveDays, err := s.baseService.GetIntSetting(ctx, model.SettingUserInactiveDays, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get inactive account days: %w", err)
 	}
@@ -165,7 +142,7 @@ func runInactiveAccountLockJob(ctx context.Context, _ *model.Task, progressCallb
 			continue
 		}
 		if user.Email != "" {
-			if err := emailSvc.SendEmailFromTemplate(ctx, []string{user.Email}, "Account Locked Due To Inactivity", model.SettingSMTPInactiveLockTemplate, map[string]any{
+			if err := s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "Account Locked Due To Inactivity", model.SettingSMTPInactiveLockTemplate, map[string]any{
 				"Username": user.Username,
 				"UserID":   user.ResourceID,
 				"Email":    user.Email,

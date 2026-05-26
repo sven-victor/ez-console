@@ -153,6 +153,7 @@ type Service interface {
 type ServerOption struct {
 	withCommand []withCommandOption
 	withEngine  []withEngineOption
+	withService []service.ServiceOption
 }
 
 type withEngineOption func(*gin.Engine)
@@ -169,6 +170,12 @@ func WithCommandOptions(options ...withCommandOption) WithServerOption {
 func WithEngineOptions(options ...withEngineOption) WithServerOption {
 	return func(option *ServerOption) {
 		option.withEngine = append(option.withEngine, options...)
+	}
+}
+
+func WithServiceOptions(options ...service.ServiceOption) WithServerOption {
+	return func(option *ServerOption) {
+		option.withService = append(option.withService, options...)
 	}
 }
 
@@ -217,7 +224,7 @@ func NewCommandServer(serviceName string, version string, description string, op
 	}
 	rootCmd.Run = func(cmd *cobra.Command, args []string) {
 		initConfig()
-		newServer(cmd.Context(), serviceName, serverOption.withEngine...)
+		newServer(cmd.Context(), serviceName, serverOption.withEngine, serverOption.withService)
 	}
 	for _, option := range serverOption.withCommand {
 		option(rootCmd)
@@ -246,43 +253,6 @@ func initDB(ctx context.Context, cfg *config.Config) {
 	}
 }
 
-func initSettings(ctx context.Context, cfg *config.Config, svc *service.Service) {
-	ctx, span := otel.GetTracerProvider().Tracer(cfg.Tracing.ServiceName).Start(ctx, "Initialize Settings")
-	defer span.End()
-	traceId := span.SpanContext().TraceID()
-	ctx, logger := log.NewContextLogger(ctx, log.WithTraceId(traceId.String()))
-
-	// Initialize default settings
-	if err := svc.InitDefaultSettings(ctx); err != nil {
-		level.Error(logger).Log("msg", "Init default settings failed", "error", err)
-	}
-
-	// Initialize default security settings
-	if err := svc.InitDefaultSecuritySettings(ctx); err != nil {
-		level.Error(logger).Log("msg", "Init default security settings failed", "error", err)
-	}
-
-	// Initialize default OAuth settings
-	if err := svc.InitDefaultOAuthSettings(ctx); err != nil {
-		level.Error(logger).Log("msg", "Init default oauth settings failed", "error", err)
-	}
-
-	// Initialize default SMTP settings
-	if err := svc.InitDefaultSMTPSettings(ctx); err != nil {
-		level.Error(logger).Log("msg", "Init default smtp settings failed", "error", err)
-	}
-
-	// Initialize default LDAP settings
-	if err := svc.InitDefaultLDAPSettings(ctx); err != nil {
-		level.Error(logger).Log("msg", "Init default ldap settings failed", "error", err)
-	}
-
-	// Initialize default task settings
-	if err := svc.InitDefaultTaskSettings(ctx); err != nil {
-		level.Error(logger).Log("msg", "Init default task settings failed", "error", err)
-	}
-}
-
 // safeArgs return a safe args for trace
 func safeArgs() []string {
 	var args []string
@@ -300,7 +270,7 @@ func safeArgs() []string {
 	return args
 }
 
-func newServer(ctx context.Context, serviceName string, options ...withEngineOption) {
+func newServer(ctx context.Context, serviceName string, engineOptions []withEngineOption, serviceOptions []service.ServiceOption) {
 	cfg := config.GetConfig()
 	{
 		traceProvider, err := tracing.NewTraceProvider(ctx, &cfg.Tracing, tracing.WithAttributes(attribute.KeyValue{
@@ -352,13 +322,11 @@ func newServer(ctx context.Context, serviceName string, options ...withEngineOpt
 	engine.Use(middleware.CORSMiddleware(), middleware.DelayMiddleware())
 
 	// Apply custom engine options, example Middleware, Routes, etc.
-	for _, option := range options {
+	for _, option := range engineOptions {
 		option(engine)
 	}
 
-	svc := service.NewService(ctx)
-
-	initSettings(ctx, cfg, svc)
+	svc := service.NewService(ctx, serviceOptions...)
 
 	if err := svc.SyncPresetResources(ctx); err != nil {
 		level.Error(logger).Log("msg", "Failed to sync preset skills and toolsets", "err", err)

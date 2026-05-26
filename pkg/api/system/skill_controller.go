@@ -142,7 +142,7 @@ func (c *SkillController) ListSkills(ctx *gin.Context) {
 	category := ctx.Query("category")
 	domain := ctx.Query("domain")
 
-	list, total, err := c.service.SkillService.List(ctx, organizationID, current, pageSize, search, category, domain)
+	list, total, err := c.service.List(ctx, organizationID, current, pageSize, search, category, domain)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -162,7 +162,7 @@ func (c *SkillController) ListSkills(ctx *gin.Context) {
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/skills/domains [get]
 func (c *SkillController) ListSkillDomains(ctx *gin.Context) {
-	domains := c.service.SkillService.ListDomains()
+	domains := c.service.ListDomains()
 	util.RespondWithSuccess(ctx, http.StatusOK, domains)
 }
 
@@ -190,7 +190,7 @@ func (c *SkillController) GetSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
+	skill, err := c.service.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -229,7 +229,7 @@ func (c *SkillController) CreateSkill(ctx *gin.Context) {
 		Category:       req.Category,
 		Domain:         req.Domain,
 	}
-	created, err := c.service.SkillService.Create(ctx, skill, req.Content)
+	created, err := c.service.Create(ctx, skill, req.Content)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -267,7 +267,7 @@ func (c *SkillController) CloneSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
-	created, err := c.service.SkillService.CloneSkill(ctx, req.SourceID, skill, orgID)
+	created, err := c.service.CloneSkill(ctx, req.SourceID, skill, orgID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -305,11 +305,11 @@ func (c *SkillController) UpdateSkillStatus(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.UpdateSkillStatus(ctx, organizationID, id, req.Status); err != nil {
+	if err := c.service.UpdateSkillStatus(ctx, organizationID, id, req.Status); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
+	skill, err := c.service.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -347,7 +347,7 @@ func (c *SkillController) UpdateSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
+	skill, err := c.service.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -360,11 +360,11 @@ func (c *SkillController) UpdateSkill(ctx *gin.Context) {
 	skill.Description = req.Description
 	skill.Category = req.Category
 	skill.Domain = req.Domain
-	if err := c.service.SkillService.Update(ctx, skill); err != nil {
+	if err := c.service.Update(ctx, skill); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
-	if err := c.service.SkillService.UpdateSkillFrontmatter(ctx, skill); err != nil {
+	if err := c.service.UpdateSkillFrontmatter(ctx, skill); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -395,7 +395,7 @@ func (c *SkillController) DeleteSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
-	skill, err := c.service.SkillService.GetByID(ctx, organizationID, id)
+	skill, err := c.service.GetByID(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -404,7 +404,7 @@ func (c *SkillController) DeleteSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Preset skills cannot be deleted"))
 		return
 	}
-	if err := c.service.SkillService.Delete(ctx, organizationID, id); err != nil {
+	if err := c.service.Delete(ctx, organizationID, id); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -445,7 +445,7 @@ func (c *SkillController) UploadSkill(ctx *gin.Context) {
 		return
 	}
 	defer f.Close()
-	created, err := c.service.SkillService.UploadSkill(ctx, organizationID, f, file.Filename, category, domain)
+	created, err := c.service.UploadSkill(ctx, organizationID, f, file.Filename, category, domain)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -477,7 +477,7 @@ func (c *SkillController) PreviewSkill(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
-	result, err := c.service.SkillService.GetSkillPreview(ctx, organizationID, id)
+	result, err := c.service.GetSkillPreview(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -510,7 +510,7 @@ func (c *SkillController) ListSkillFilesTree(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
-	tree, err := c.service.SkillService.ListFilesTree(ctx, organizationID, id)
+	tree, err := c.service.ListFilesTree(ctx, organizationID, id)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -545,7 +545,7 @@ func (c *SkillController) GetSkillFile(ctx *gin.Context) {
 	}
 	pathParam := ctx.Param("path")
 	path := strings.TrimPrefix(pathParam, "/")
-	content, err := c.service.SkillService.GetFile(ctx, organizationID, id, path)
+	content, err := c.service.GetFile(ctx, organizationID, id, path)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -586,7 +586,7 @@ func (c *SkillController) PutSkillFile(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.PutFile(ctx, organizationID, id, path, body); err != nil {
+	if err := c.service.PutFile(ctx, organizationID, id, path, body); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -623,7 +623,7 @@ func (c *SkillController) CreateSkillDir(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.CreateDir(ctx, organizationID, id, req.Path); err != nil {
+	if err := c.service.CreateDir(ctx, organizationID, id, req.Path); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -660,7 +660,7 @@ func (c *SkillController) MoveSkillPath(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E4001", err))
 		return
 	}
-	if err := c.service.SkillService.MovePath(ctx, organizationID, id, req.FromPath, req.ToPath); err != nil {
+	if err := c.service.MovePath(ctx, organizationID, id, req.FromPath, req.ToPath); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -694,7 +694,7 @@ func (c *SkillController) DeleteSkillPath(ctx *gin.Context) {
 	}
 	pathParam := ctx.Param("path")
 	path := strings.TrimPrefix(pathParam, "/")
-	if err := c.service.SkillService.DeletePath(ctx, organizationID, id, path); err != nil {
+	if err := c.service.DeletePath(ctx, organizationID, id, path); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}
@@ -731,7 +731,7 @@ func (c *SkillController) ListSkillAIToolBindings(ctx *gin.Context) {
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
-	list, total, err := c.service.SkillService.ListSkillAIToolBindings(ctx, id, orgID, current, pageSize, search)
+	list, total, err := c.service.ListSkillAIToolBindings(ctx, id, orgID, current, pageSize, search)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -776,7 +776,7 @@ func (c *SkillController) ReplaceSkillAIToolBindings(ctx *gin.Context) {
 			ToolName:  b.ToolName,
 		})
 	}
-	if err := c.service.SkillService.ReplaceSkillAIToolBindings(ctx, id, orgID, rows); err != nil {
+	if err := c.service.ReplaceSkillAIToolBindings(ctx, id, orgID, rows); err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
 	}

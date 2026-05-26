@@ -17,6 +17,7 @@ package service
 import (
 	"context"
 	"errors"
+	"sync"
 
 	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -25,16 +26,36 @@ import (
 	"gorm.io/gorm"
 )
 
-// OrganizationService provides organization-related services
-type OrganizationService struct{}
+type organizationService struct{}
+
+type OrganizationService interface {
+	ListOrganizations(ctx context.Context, current, pageSize int, search string) ([]model.Organization, int64, error)
+	GetOrganization(ctx context.Context, id string) (*model.Organization, error)
+	CreateOrganization(ctx context.Context, org *model.Organization) error
+	UpdateOrganization(ctx context.Context, id string, org *model.Organization) error
+	DeleteOrganization(ctx context.Context, id string) error
+	GetUserOrganizations(ctx context.Context, userID string) ([]model.Organization, error)
+	ListOrganizationUsers(ctx context.Context, organizationID string, current, pageSize int, search string) ([]OrganizationUser, int64, error)
+	AddUserToOrganization(ctx context.Context, organizationID string, userID string, roleIDs []string) error
+	UpdateUserOrganizationRoles(ctx context.Context, organizationID string, userID string, roleIDs []string) error
+	RemoveUserFromOrganization(ctx context.Context, organizationID string, userID string) error
+}
+
+var (
+	organizationServiceInstance OrganizationService
+	organizationServiceOnce     sync.Once
+)
 
 // NewOrganizationService creates a new organization service
-func NewOrganizationService() *OrganizationService {
-	return &OrganizationService{}
+func NewOrganizationService(_ context.Context, _ BaseService) OrganizationService {
+	organizationServiceOnce.Do(func() {
+		organizationServiceInstance = &organizationService{}
+	})
+	return organizationServiceInstance
 }
 
 // ListOrganizations lists organizations with pagination
-func (s *OrganizationService) ListOrganizations(ctx context.Context, current, pageSize int, search string) ([]model.Organization, int64, error) {
+func (s *organizationService) ListOrganizations(ctx context.Context, current, pageSize int, search string) ([]model.Organization, int64, error) {
 	var orgs []model.Organization
 	var total int64
 
@@ -60,7 +81,7 @@ func (s *OrganizationService) ListOrganizations(ctx context.Context, current, pa
 }
 
 // GetOrganization gets an organization by ID
-func (s *OrganizationService) GetOrganization(ctx context.Context, id string) (*model.Organization, error) {
+func (s *organizationService) GetOrganization(ctx context.Context, id string) (*model.Organization, error) {
 	var org model.Organization
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&org).Error; err != nil {
 		return nil, err
@@ -70,7 +91,7 @@ func (s *OrganizationService) GetOrganization(ctx context.Context, id string) (*
 
 // CreateOrganization creates a new organization and automatically creates default
 // org-scoped roles (operator, viewer, etc.) per permission config with DefaultRoleNames + OrgPermission.
-func (s *OrganizationService) CreateOrganization(ctx context.Context, org *model.Organization) error {
+func (s *organizationService) CreateOrganization(ctx context.Context, org *model.Organization) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(org).Error; err != nil {
 			return err
@@ -80,7 +101,7 @@ func (s *OrganizationService) CreateOrganization(ctx context.Context, org *model
 }
 
 // UpdateOrganization updates an organization
-func (s *OrganizationService) UpdateOrganization(ctx context.Context, id string, org *model.Organization) error {
+func (s *organizationService) UpdateOrganization(ctx context.Context, id string, org *model.Organization) error {
 	var existing model.Organization
 	if err := db.Session(ctx).Where("resource_id = ?", id).First(&existing).Error; err != nil {
 		return err
@@ -94,7 +115,7 @@ func (s *OrganizationService) UpdateOrganization(ctx context.Context, id string,
 }
 
 // DeleteOrganization deletes an organization
-func (s *OrganizationService) DeleteOrganization(ctx context.Context, id string) error {
+func (s *organizationService) DeleteOrganization(ctx context.Context, id string) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Check if organization has roles
 		var roleCount int64
@@ -121,7 +142,7 @@ func (s *OrganizationService) DeleteOrganization(ctx context.Context, id string)
 }
 
 // GetUserOrganizations gets all organizations a user belongs to
-func (s *OrganizationService) GetUserOrganizations(ctx context.Context, userID string) ([]model.Organization, error) {
+func (s *organizationService) GetUserOrganizations(ctx context.Context, userID string) ([]model.Organization, error) {
 	var orgs []model.Organization
 	if err := db.Session(ctx).
 		Joins("JOIN t_user_organizations ON t_user_organizations.organization_id = t_organization.id").
@@ -140,7 +161,7 @@ type OrganizationUser struct {
 }
 
 // ListOrganizationUsers lists users in an organization with their roles
-func (s *OrganizationService) ListOrganizationUsers(ctx context.Context, organizationID string, current, pageSize int, search string) ([]OrganizationUser, int64, error) {
+func (s *organizationService) ListOrganizationUsers(ctx context.Context, organizationID string, current, pageSize int, search string) ([]OrganizationUser, int64, error) {
 	var users []OrganizationUser
 	var total int64
 
@@ -194,7 +215,7 @@ func (s *OrganizationService) ListOrganizationUsers(ctx context.Context, organiz
 }
 
 // AddUserToOrganization adds a user to an organization with specified roles
-func (s *OrganizationService) AddUserToOrganization(ctx context.Context, organizationID string, userID string, roleIDs []string) error {
+func (s *organizationService) AddUserToOrganization(ctx context.Context, organizationID string, userID string, roleIDs []string) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Verify organization exists
 		var org model.Organization
@@ -269,7 +290,7 @@ func (s *OrganizationService) AddUserToOrganization(ctx context.Context, organiz
 }
 
 // UpdateUserOrganizationRoles updates a user's roles in an organization
-func (s *OrganizationService) UpdateUserOrganizationRoles(ctx context.Context, organizationID string, userID string, roleIDs []string) error {
+func (s *organizationService) UpdateUserOrganizationRoles(ctx context.Context, organizationID string, userID string, roleIDs []string) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Verify organization exists
 		var org model.Organization
@@ -339,7 +360,7 @@ func (s *OrganizationService) UpdateUserOrganizationRoles(ctx context.Context, o
 }
 
 // RemoveUserFromOrganization removes a user from an organization and removes their roles in that organization
-func (s *OrganizationService) RemoveUserFromOrganization(ctx context.Context, organizationID string, userID string) error {
+func (s *organizationService) RemoveUserFromOrganization(ctx context.Context, organizationID string, userID string) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		// Verify organization exists
 		var org model.Organization

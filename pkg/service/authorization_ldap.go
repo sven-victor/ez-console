@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/go-kit/log/level"
@@ -34,26 +35,47 @@ import (
 	"github.com/sven-victor/ez-console/pkg/util"
 )
 
-// LDAPService provides LDAP related services
-type LDAPService struct {
-	baseService *BaseService
+// ldapService provides LDAP related services
+type ldapService struct {
+	baseService BaseService
 	ldapPool    *clientsldap.Pool
 }
 
-func NewLDAPService(ctx context.Context, baseService *BaseService) *LDAPService {
-	ldapPool, err := clientsldap.NewPool(ctx, baseService.GetLDAPSettings)
-	if err != nil {
-		panic(err)
-	}
-	service := &LDAPService{
-		baseService: baseService,
-		ldapPool:    ldapPool,
-	}
-	return service
+type LDAPService interface {
+	GetLDAPSettings(ctx context.Context) (clientsldap.Options, error)
+	UpdateLDAPSettings(ctx context.Context, settings *clientsldap.Options) error
+	InitDefaultLDAPSettings(ctx context.Context) error
+	GetLDAPSession(ctx context.Context) (clientsldap.Conn, error)
+	GetLDAPConn(ctx context.Context) (*ldap.Conn, error)
+	TestLDAPConnection(ctx context.Context, ldapSettings clientsldap.Options, username, password string) (*model.LDAPTestResponse, error)
+	FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error)
+	GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error)
+	ImportLDAPUsers(ctx context.Context, userDNs []string) ([]model.User, error)
+	AuthenticateLDAPUser(ctx context.Context, username, password string) (*model.User, error)
+}
+
+var (
+	ldapServiceInstance LDAPService
+	ldapServiceOnce     sync.Once
+)
+
+func NewLDAPService(ctx context.Context, baseService BaseService) LDAPService {
+	ldapServiceOnce.Do(func() {
+		service := &ldapService{
+			baseService: baseService,
+		}
+		ldapPool, err := clientsldap.NewPool(ctx, service.GetLDAPSettings)
+		if err != nil {
+			panic(err)
+		}
+		service.ldapPool = ldapPool
+		ldapServiceInstance = service
+	})
+	return ldapServiceInstance
 }
 
 // GetLDAPClient Retrieve the already `Bind` LDAP client connection,
-func (s *LDAPService) GetLDAPSession(ctx context.Context) (clientsldap.Conn, error) {
+func (s *ldapService) GetLDAPSession(ctx context.Context) (clientsldap.Conn, error) {
 	ldapConn, err := s.ldapPool.Get(ctx)
 	if err != nil {
 		return nil, err
@@ -61,8 +83,8 @@ func (s *LDAPService) GetLDAPSession(ctx context.Context) (clientsldap.Conn, err
 	return ldapConn, nil
 }
 
-func (s *LDAPService) GetLDAPConn(ctx context.Context) (*ldap.Conn, error) {
-	settings, err := s.baseService.GetLDAPSettings(ctx)
+func (s *ldapService) GetLDAPConn(ctx context.Context) (*ldap.Conn, error) {
+	settings, err := s.GetLDAPSettings(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +92,7 @@ func (s *LDAPService) GetLDAPConn(ctx context.Context) (*ldap.Conn, error) {
 }
 
 // TestLDAPConnection tests LDAP connection
-func (s *LDAPService) TestLDAPConnection(ctx context.Context, ldapSettings clientsldap.Options, username, password string) (*model.LDAPTestResponse, error) {
+func (s *ldapService) TestLDAPConnection(ctx context.Context, ldapSettings clientsldap.Options, username, password string) (*model.LDAPTestResponse, error) {
 	logger := log.GetContextLogger(ctx)
 	var messages []model.LDAPTestMessage
 	if !ldapSettings.Enabled {
@@ -196,7 +218,7 @@ func (s *LDAPService) TestLDAPConnection(ctx context.Context, ldapSettings clien
 	}, nil
 }
 
-func (s *LDAPService) FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error) {
+func (s *ldapService) FilterLDAPEntries(ctx context.Context, baseDN string, filter string, attributes []string) ([]*ldap.Entry, error) {
 	logger := log.GetContextLogger(ctx)
 	ldapClient, err := s.GetLDAPSession(ctx)
 	if err != nil {
@@ -221,7 +243,7 @@ func (s *LDAPService) FilterLDAPEntries(ctx context.Context, baseDN string, filt
 	return result.Entries, nil
 }
 
-func (s *LDAPService) GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error) {
+func (s *ldapService) GetLDAPEntry(ctx context.Context, baseDN string, attributes []string) (*ldap.Entry, error) {
 	logger := log.GetContextLogger(ctx)
 	ldapClient, err := s.GetLDAPSession(ctx)
 	if err != nil {
@@ -252,9 +274,9 @@ func (s *LDAPService) GetLDAPEntry(ctx context.Context, baseDN string, attribute
 }
 
 // ImportLDAPUsers imports users from LDAP
-func (s *LDAPService) ImportLDAPUsers(ctx context.Context, userDNs []string) ([]model.User, error) {
+func (s *ldapService) ImportLDAPUsers(ctx context.Context, userDNs []string) ([]model.User, error) {
 	logger := log.GetContextLogger(ctx)
-	settings, err := s.baseService.GetLDAPSettings(ctx)
+	settings, err := s.GetLDAPSettings(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get LDAP settings: %w", err)
 	}
@@ -396,13 +418,13 @@ func (s *LDAPService) ImportLDAPUsers(ctx context.Context, userDNs []string) ([]
 }
 
 // AuthenticateUser authenticates a user using LDAP
-func (s *LDAPService) AuthenticateUser(ctx context.Context, username, password string) (*model.User, error) {
+func (s *ldapService) AuthenticateLDAPUser(ctx context.Context, username, password string) (*model.User, error) {
 	logger := log.GetContextLogger(ctx)
 	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
 		return nil, util.NewErrorMessage("E50012", "System error, please contact the administrator", err)
 	}
-	settings, err := s.baseService.GetLDAPSettings(ctx)
+	settings, err := s.GetLDAPSettings(ctx)
 	if err != nil {
 		return nil, util.NewErrorMessage("E50012", "System error, please contact the administrator", err)
 	}

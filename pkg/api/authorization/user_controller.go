@@ -835,7 +835,7 @@ func (c *UserController) RefreshToken(ctx *gin.Context) {
 		return
 	}
 
-	securitySettings, err := c.service.SettingService.GetSecuritySettings(ctx)
+	securitySettings, err := c.service.GetSecuritySettings(ctx)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5012", "Failed to get security settings", err))
 	}

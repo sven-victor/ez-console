@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	keyfunc "github.com/MicahParks/keyfunc/v3"
@@ -44,9 +45,36 @@ import (
 )
 
 // OAuthService provides OAuth related services
-type OAuthService struct {
-	BaseService *BaseService
-	UserService *UserService
+type OAuthService interface {
+	GetOAuthSettings(ctx context.Context) (*model.OAuthSettings, error)
+	UpdateOAuthSettings(ctx context.Context, settings *model.OAuthSettings) error
+	InitDefaultOAuthSettings(ctx context.Context) error
+	GetOAuth2ProviderConfig(ctx context.Context) []OAuth2ProviderConfig
+	GetOAuthLoginURL(ctx *gin.Context, provider string) (*OAuthLoginURLResponse, error)
+	HandleOAuthCallback(ctx context.Context, req OAuthCallbackRequest) (*LoginResponse, error)
+	TestOAuthConnection(ctx context.Context, settings *model.OAuthSettings) (*OAuthLoginURLResponse, error)
+	TestOAuthCallback(ctx context.Context, req *OAuthCallbackRequest) (*TestOAuthCallbackResponse, error)
+}
+
+type oauthService struct {
+	baseService BaseService
+	userService UserService
+}
+
+var (
+	oauthServiceOnce     sync.Once
+	oauthServiceInstance OAuthService
+)
+
+func NewOAuthService(baseService BaseService, userService UserService) OAuthService {
+	oauthServiceOnce.Do(func() {
+		oauthServiceInstance = &oauthService{
+			baseService: baseService,
+			userService: userService,
+		}
+
+	})
+	return oauthServiceInstance
 }
 
 // OAuthLoginURLResponse contains OAuth login URL and state
@@ -178,10 +206,10 @@ func (c *OAuth2ProviderConfig) Exchange(ctx context.Context, code string) (*oaut
 	return token, nil
 }
 
-func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2ProviderConfig {
+func (s *oauthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2ProviderConfig {
 	logger := log.GetContextLogger(ctx)
 	var providers []OAuth2ProviderConfig
-	settings, err := s.BaseService.GetOAuthSettings(ctx)
+	settings, err := s.GetOAuthSettings(ctx)
 	if err != nil {
 		level.Error(logger).Log("msg", "Failed to get OAuth settings", "err", err.Error())
 	} else if settings.Enabled {
@@ -238,8 +266,8 @@ func (s *OAuthService) GetOAuth2ProviderConfig(ctx context.Context) []OAuth2Prov
 	return providers
 }
 
-// GetLoginURL gets OAuth login URL
-func (s *OAuthService) GetLoginURL(ctx *gin.Context, provider string) (*OAuthLoginURLResponse, error) {
+// GetOAuthLoginURL gets OAuth login URL
+func (s *oauthService) GetOAuthLoginURL(ctx *gin.Context, provider string) (*OAuthLoginURLResponse, error) {
 	var oauth2Config *OAuth2ProviderConfig
 
 	for _, cfg := range s.GetOAuth2ProviderConfig(ctx) {
@@ -290,8 +318,8 @@ func (s *OAuthService) GetLoginURL(ctx *gin.Context, provider string) (*OAuthLog
 	}, nil
 }
 
-// HandleCallback handles OAuth callback
-func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequest) (*LoginResponse, error) {
+// HandleOAuthCallback handles OAuth callback
+func (s *oauthService) HandleOAuthCallback(ctx context.Context, req OAuthCallbackRequest) (*LoginResponse, error) {
 	logger := log.GetContextLogger(ctx)
 	stateKey := fmt.Sprintf("ez-console:oauth:state:%s", req.State)
 	cacheVal, err := cache.Store.Get(ctx, stateKey)
@@ -308,7 +336,7 @@ func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequ
 	if oauth2Config.TokenEndpoint == "" {
 		return nil, fmt.Errorf("invalid oauth2 config")
 	}
-	verifyToken, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyToken, true)
+	verifyToken, err := s.baseService.GetBoolSetting(ctx, model.SettingOAuthVerifyToken, true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get verify token setting: %w", err)
 	}
@@ -317,7 +345,7 @@ func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequ
 		oauth2Config.Issuer = ""
 	}
 
-	verifyNonce, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyNonce, true)
+	verifyNonce, err := s.baseService.GetBoolSetting(ctx, model.SettingOAuthVerifyNonce, true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get verify nonce setting: %w", err)
 	}
@@ -325,7 +353,7 @@ func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequ
 		oauth2Config.Nonce = ""
 	}
 
-	verifyCodeVerifier, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthCodeVerifier, true)
+	verifyCodeVerifier, err := s.baseService.GetBoolSetting(ctx, model.SettingOAuthCodeVerifier, true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get verify code verifier setting: %w", err)
 	}
@@ -351,7 +379,7 @@ func (s *OAuthService) HandleCallback(ctx context.Context, req OAuthCallbackRequ
 }
 
 // getUserInfo gets user information from OAuth provider
-func (s *OAuthService) getUserInfo(accessToken, userInfoURL string) (map[string]interface{}, error) {
+func (s *oauthService) getUserInfo(accessToken, userInfoURL string) (map[string]interface{}, error) {
 	// Create HTTP request
 	req, err := http.NewRequest("GET", userInfoURL, nil)
 	if err != nil {
@@ -435,7 +463,7 @@ func shouldUpdateRolesInDB(mode model.RoleMappingMode, existingUser bool, hasExi
 // Format: "roleName" for global roles, "orgIdentifier/roleName" for org-scoped roles.
 // orgIdentifier can be the organization slug, resource_id, or name (matched in that order).
 // Returns a found model.Role or a stub with only Name populated (ID == 0).
-func (s *OAuthService) resolveRoleByQualifiedName(ctx context.Context, qualifiedName string) (model.Role, error) {
+func (s *oauthService) resolveRoleByQualifiedName(ctx context.Context, qualifiedName string) (model.Role, error) {
 	parts := strings.SplitN(qualifiedName, "/", 2)
 	if len(parts) == 2 && parts[0] != "" {
 		orgIdentifier := parts[0]
@@ -473,7 +501,7 @@ func (s *OAuthService) resolveRoleByQualifiedName(ctx context.Context, qualified
 
 // findOrganizationByIdentifier looks up an organization by slug or resource_id.
 // Returns nil (without error) when no organization matches.
-func (s *OAuthService) findOrganizationByIdentifier(ctx context.Context, identifier string) (*model.Organization, error) {
+func (s *oauthService) findOrganizationByIdentifier(ctx context.Context, identifier string) (*model.Organization, error) {
 	var org model.Organization
 	err := db.Session(ctx).
 		Where("slug = ? OR resource_id = ?", identifier, identifier).
@@ -488,7 +516,7 @@ func (s *OAuthService) findOrganizationByIdentifier(ctx context.Context, identif
 }
 
 // resolveRolesByQualifiedNames resolves a list of qualified role names.
-func (s *OAuthService) resolveRolesByQualifiedNames(ctx context.Context, qualifiedNames []string) ([]model.Role, error) {
+func (s *oauthService) resolveRolesByQualifiedNames(ctx context.Context, qualifiedNames []string) ([]model.Role, error) {
 	roles := make([]model.Role, 0, len(qualifiedNames))
 	for _, qn := range qualifiedNames {
 		role, err := s.resolveRoleByQualifiedName(ctx, qn)
@@ -500,7 +528,7 @@ func (s *OAuthService) resolveRolesByQualifiedNames(ctx context.Context, qualifi
 	return roles, nil
 }
 
-func (s *OAuthService) convertUserInfoToUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*model.User, error) {
+func (s *oauthService) convertUserInfoToUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*model.User, error) {
 	mode := model.NormalizeRoleMappingMode(provider.RoleMappingMode)
 
 	// Get OAuth user ID
@@ -738,7 +766,7 @@ func ensureRolesExist(tx *gorm.DB, roles []model.Role, logger interface{ Log(...
 }
 
 // processOAuthUser processes OAuth user, finds or creates user
-func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*LoginResponse, error) {
+func (s *oauthService) processOAuthUser(ctx context.Context, userInfo map[string]interface{}, provider *OAuth2ProviderConfig) (*LoginResponse, error) {
 	logger := log.GetContextLogger(ctx)
 	mode := model.NormalizeRoleMappingMode(provider.RoleMappingMode)
 	user, err := s.convertUserInfoToUser(ctx, userInfo, provider)
@@ -862,20 +890,20 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 		user.Roles = temporaryOAuthRoles
 	}
 
-	sessionTimeoutMinutes, err := s.BaseService.GetIntSetting(ctx, model.SettingSessionTimeoutMinutes, 10)
+	sessionTimeoutMinutes, err := s.baseService.GetIntSetting(ctx, model.SettingSessionTimeoutMinutes, 10)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get session timeout: %w", err)
 	}
 
 	if !user.MFAEnforced {
-		user.MFAEnforced, err = s.BaseService.GetBoolSetting(ctx, model.SettingMFAEnforced, false)
+		user.MFAEnforced, err = s.baseService.GetBoolSetting(ctx, model.SettingMFAEnforced, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get MFA enforced: %w", err)
 		}
 	}
 
 	if user.MFAEnforced || user.MFAEnabled {
-		mfaEnabled, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthMFAEnabled, false)
+		mfaEnabled, err := s.baseService.GetBoolSetting(ctx, model.SettingOAuthMFAEnabled, false)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get MFA enabled: %w", err)
 		}
@@ -886,7 +914,7 @@ func (s *OAuthService) processOAuthUser(ctx context.Context, userInfo map[string
 	}
 
 	if user.MFAEnabled {
-		return s.UserService.GenerateMFA(ctx, user, middleware.JWTIssuerOAuth)
+		return s.userService.GenerateMFA(ctx, user, middleware.JWTIssuerOAuth)
 	}
 
 	if user.MFAEnforced {
@@ -918,7 +946,7 @@ type WellknownResponse struct {
 	Issuer                string `json:"issuer"`
 }
 
-func (s *OAuthService) autoDiscoverOAuth2Endpoint(ctx context.Context, endpoint string) (*WellknownResponse, error) {
+func (s *oauthService) autoDiscoverOAuth2Endpoint(ctx context.Context, endpoint string) (*WellknownResponse, error) {
 	logger := log.GetContextLogger(ctx)
 	if endpoint == "" {
 		return nil, fmt.Errorf("wellknown endpoint is required")
@@ -956,7 +984,7 @@ func (s *OAuthService) autoDiscoverOAuth2Endpoint(ctx context.Context, endpoint 
 }
 
 // TestOAuthConnection tests OAuth connection
-func (s *OAuthService) TestOAuthConnection(ctx context.Context, settings *model.OAuthSettings) (resp *OAuthLoginURLResponse, err error) {
+func (s *oauthService) TestOAuthConnection(ctx context.Context, settings *model.OAuthSettings) (resp *OAuthLoginURLResponse, err error) {
 	oauth2Config := OAuth2ProviderConfig{
 		OAuthSettings: *settings,
 		Name:          fmt.Sprintf("settings.%s", settings.Provider),
@@ -993,7 +1021,7 @@ type TestOAuthCallbackResponse struct {
 }
 
 // TestOAuthCallback tests OAuth callback
-func (s *OAuthService) TestOAuthCallback(ctx context.Context, req *OAuthCallbackRequest) (resp *TestOAuthCallbackResponse, err error) {
+func (s *oauthService) TestOAuthCallback(ctx context.Context, req *OAuthCallbackRequest) (resp *TestOAuthCallbackResponse, err error) {
 	logger := log.GetContextLogger(ctx)
 	stateKey := fmt.Sprintf("ez-console:oauth:state:%s", req.State)
 	cacheVal, err := cache.Store.Get(ctx, stateKey)
@@ -1011,7 +1039,7 @@ func (s *OAuthService) TestOAuthCallback(ctx context.Context, req *OAuthCallback
 		return nil, fmt.Errorf("invalid oauth2 config")
 	}
 
-	verifyToken, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyToken, true)
+	verifyToken, err := s.baseService.GetBoolSetting(ctx, model.SettingOAuthVerifyToken, true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get verify token setting: %w", err)
 	}
@@ -1020,7 +1048,7 @@ func (s *OAuthService) TestOAuthCallback(ctx context.Context, req *OAuthCallback
 		oauth2Config.Issuer = ""
 	}
 
-	verifyNonce, err := s.BaseService.GetBoolSetting(ctx, model.SettingOAuthVerifyNonce, true)
+	verifyNonce, err := s.baseService.GetBoolSetting(ctx, model.SettingOAuthVerifyNonce, true)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get verify nonce setting: %w", err)
 	}

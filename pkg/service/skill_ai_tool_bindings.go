@@ -15,7 +15,7 @@ import (
 )
 
 // ListSkillAIToolBindings lists bindings for a skill in an organization with pagination.
-func (s *SkillService) ListSkillAIToolBindings(ctx context.Context, skillID, organizationID string, current, pageSize int, search string) ([]model.SkillAIToolBinding, int64, error) {
+func (s *skillService) ListSkillAIToolBindings(ctx context.Context, skillID, organizationID string, current, pageSize int, search string) ([]model.SkillAIToolBinding, int64, error) {
 	if skillID == "" {
 		return nil, 0, fmt.Errorf("skill id is required")
 	}
@@ -45,7 +45,7 @@ func (s *SkillService) ListSkillAIToolBindings(ctx context.Context, skillID, org
 }
 
 // ReplaceSkillAIToolBindings replaces all bindings for a skill in an organization.
-func (s *SkillService) ReplaceSkillAIToolBindings(ctx context.Context, skillID, organizationID string, rows []model.SkillAIToolBinding) error {
+func (s *skillService) ReplaceSkillAIToolBindings(ctx context.Context, skillID, organizationID string, rows []model.SkillAIToolBinding) error {
 	if skillID == "" {
 		return fmt.Errorf("skill id is required")
 	}
@@ -77,7 +77,7 @@ func (s *SkillService) ReplaceSkillAIToolBindings(ctx context.Context, skillID, 
 }
 
 // ListSkillAIToolBindingsForChat returns all bindings for the given skills in an organization (no pagination).
-func (s *SkillService) ListSkillAIToolBindingsForChat(ctx context.Context, organizationID string, skillIDs []string) ([]model.SkillAIToolBinding, error) {
+func (s *skillService) ListSkillAIToolBindingsForChat(ctx context.Context, organizationID string, skillIDs []string) ([]model.SkillAIToolBinding, error) {
 	if organizationID == "" || len(skillIDs) == 0 {
 		return nil, nil
 	}

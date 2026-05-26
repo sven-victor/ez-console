@@ -38,6 +38,7 @@ type ScheduledJobState struct {
 }
 
 type TaskSchedulerService interface {
+	TaskService
 	ListScheduledJobsWithState() []ScheduledJobState
 	ToggleEnabled(id string, enabled bool) error
 	TriggerNow(ctx context.Context, id string) (*model.Task, error)
@@ -45,11 +46,11 @@ type TaskSchedulerService interface {
 
 // SchedulerService runs registered cron jobs and creates tasks via TaskService.
 type taskSchedulerService struct {
-	taskService TaskService
-	cron        *cron.Cron
-	entryIDs    map[string]cron.EntryID
-	lastRun     map[string]time.Time
-	mu          sync.RWMutex
+	TaskService
+	cron     *cron.Cron
+	entryIDs map[string]cron.EntryID
+	lastRun  map[string]time.Time
+	mu       sync.RWMutex
 }
 
 var (
@@ -58,10 +59,11 @@ var (
 )
 
 // NewSchedulerService creates a SchedulerService. Call Start to begin running schedules.
-func NewSchedulerService(ctx context.Context, taskService TaskService) TaskSchedulerService {
+func NewSchedulerService(ctx context.Context, baseService BaseService) TaskSchedulerService {
 	taskSchedulerServiceOnce.Do(func() {
+		taskService := NewTaskService(ctx, baseService)
 		taskSchedulerSvc = &taskSchedulerService{
-			taskService: taskService,
+			TaskService: taskService,
 			cron:        cron.New(),
 			entryIDs:    make(map[string]cron.EntryID),
 			lastRun:     make(map[string]time.Time),
@@ -93,7 +95,7 @@ func (s *taskSchedulerService) addJobLocked(def *taskscheduler.ScheduledJobDef) 
 	defCopy := def
 	jobFunc := cron.FuncJob(func() {
 		payload := defCopy.PayloadBuilder()
-		_, _ = s.taskService.CreateTask(
+		_, _ = s.TaskService.CreateTask(
 			context.Background(),
 			defCopy.TaskType,
 			WithPayload(payload),
@@ -179,7 +181,7 @@ func (s *taskSchedulerService) TriggerNow(ctx context.Context, id string) (*mode
 		s.lastRun[id] = time.Now()
 		s.mu.Unlock()
 	}()
-	return s.taskService.CreateTask(ctx, def.TaskType,
+	return s.TaskService.CreateTask(ctx, def.TaskType,
 		WithPayload(payload),
 		WithMaxRetries(def.MaxRetries),
 		WithCategory(model.TaskCategorySystem),
