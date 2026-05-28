@@ -30,7 +30,7 @@ export interface ActionProps extends ButtonProps {
   confirm?: {
     title: React.ReactNode;
     description?: React.ReactNode;
-    onConfirm: () => void;
+    onConfirm?: () => (Promise<void> | void);
     okText?: React.ComponentProps<typeof Popconfirm>['okText'];
     cancelText?: React.ComponentProps<typeof Popconfirm>['cancelText'];
   }
@@ -67,7 +67,7 @@ const ActionButton: React.FC<ActionProps> = (action) => {
   if (confirm && !disabled) {
     const confirmHandler = async () => {
       if (confirm.onConfirm) {
-        confirm.onConfirm();
+        await confirm.onConfirm();
       } else if (handleClick) {
         await handleClick();
       }
@@ -129,7 +129,7 @@ export const Actions: React.FC<ActionsProps> = ({ actions, maxVisibleItems }) =>
         Modal.confirm({
           title: confirm.title,
           content: confirm.description,
-          onOk: confirm.onConfirm,
+          onOk: confirm.onConfirm || onClick,
           okText: confirm.okText,
           cancelText: confirm.cancelText,
         });
