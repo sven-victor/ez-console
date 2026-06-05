@@ -1,7 +1,8 @@
 package cache
 
 import (
-	"fmt"
+	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/sven-victor/ez-console/pkg/config"
@@ -10,69 +11,125 @@ import (
 
 const (
 	defaultGCInterval = time.Minute
-	sessionCacheTTL   = 5 * time.Minute
-	roleCacheTTL      = 10 * time.Minute
-	settingCacheTTL   = 10 * time.Minute
+	// Sessions are security-sensitive so we use a short TTL; EventBus
+	// invalidation brings the inconsistency window down to sub-second for
+	// normal operations.  The short TTL is the fallback for when an
+	// invalidation event is lost.
+	sessionCacheTTL = 45 * time.Second
+	roleCacheTTL    = 10 * time.Minute
+	settingCacheTTL = 10 * time.Minute
+)
+
+// Logical cache names used in cache.invalidate events.
+const (
+	CacheNameSessions    = "sessions"
+	CacheNameRoles       = "roles"
+	CacheNameSettings    = "settings"
+	CacheNameAllSettings = "all_settings"
 )
 
 // Global cache instances, initialised by Init.
 var (
-	// Store is the raw byte cache used for ephemeral data (OAuth state, MFA tokens, etc.).
-	Store Cache
-
-	// Sessions is a typed cache for authenticated sessions (hot path).
+	// Sessions is a typed L1 cache for authenticated sessions (hot path).
 	// Key: tokenHash (sha256 hex of the raw JWT), Value: CachedSession.
-	// L2 is backed by the t_cache_entry DB table so sessions survive restarts.
+	// Truth source: t_session / t_user / t_user_roles / t_role.
 	Sessions *TypedCache[CachedSession]
 
 	// Roles caches full Role objects (with Permissions & AIToolPermissions).
-	// Key: roleID (ResourceID), Value: model.Role. In-memory only (no L2).
+	// Key: roleID (ResourceID), Value: model.Role. Truth source: t_role.
 	Roles *TypedCache[model.Role]
 
 	// Settings caches individual system settings by key.
+	// Truth source: t_setting.
 	Settings *TypedCache[model.Setting]
 
 	// AllSettings caches the full settings list under a single key.
+	// Truth source: t_setting.
 	AllSettings *TypedCache[[]model.Setting]
 )
 
-// Init creates the cache backend from config and wires up the global instances.
+// logicalNameToCache maps the logical cache name used in invalidation events
+// to the concrete typed cache instance so that the EventBus subscriber can
+// perform targeted invalidation by key.
+var logicalNameToCache = map[string]interface{ InvalidateByKey(ctx context.Context, key string) }{}
+
+// invalidatePublishHook, when set, is called after a local cache invalidation
+// so the caller can broadcast a cache.invalidate event to other cluster nodes.
+// It is set once at startup via SetInvalidatePublishHook.
+var invalidatePublishHook func(ctx context.Context, cacheName, key string)
+
+// SetInvalidatePublishHook registers the EventBus publish callback.  Call this
+// once during server startup after the EventBus has been initialised.
+func SetInvalidatePublishHook(fn func(ctx context.Context, cacheName, key string)) {
+	invalidatePublishHook = fn
+}
+
+// PublishInvalidate deletes a key from the named local cache AND calls the
+// registered publish hook so that all cluster nodes evict the same entry.
+// Use this everywhere instead of calling cache.X.Delete directly when the
+// change should propagate across nodes.
+func PublishInvalidate(ctx context.Context, cacheName, key string) {
+	InvalidateByKey(ctx, cacheName, key)
+	if invalidatePublishHook != nil {
+		invalidatePublishHook(ctx, cacheName, key)
+	}
+}
+
+// Init creates the in-memory L1 caches and wires up the global instances.
+// The external L2 cache (DB-backed / Redis-backed) is no longer used; all
+// caches are pure in-process L1.  Cross-node invalidation is handled via the
+// EventBus (see RegisterCacheInvalidationHandler).
 // Must be called once at startup before any cache access.
-// dbSessionFn provides the DB connection for DB-backed external cache; pass nil
-// when cache driver is not db (useful in tests).
-func Init(cfg *config.CacheConfig, dbSessionFn DBSessionFunc) error {
+func Init(_ *config.CacheConfig, _ DBSessionFunc) error {
 	ResetCacheRegistry()
 
-	externalCache, err := newExternalCache(cfg, dbSessionFn)
-	if err != nil {
-		return err
-	}
-
-	Store = NewLayeredCache(NewMemoryCache(), externalCache, sessionCacheTTL)
-	RegisterCache("store:l1+l2:"+cfg.GetDriver(), Store)
-	if externalCache != nil {
-		RegisterCache("external:"+cfg.GetDriver(), externalCache)
-	}
-
-	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, externalCache, defaultGCInterval)
+	Sessions = NewTypedCache[CachedSession]("session:", sessionCacheTTL, nil, defaultGCInterval)
 	Roles = NewTypedCache[model.Role]("role:", roleCacheTTL, nil, defaultGCInterval)
 	Settings = NewTypedCache[model.Setting]("setting:", settingCacheTTL, nil, defaultGCInterval)
 	AllSettings = NewTypedCache[[]model.Setting]("all_settings:", settingCacheTTL, nil, defaultGCInterval)
+
+	logicalNameToCache = map[string]interface{ InvalidateByKey(ctx context.Context, key string) }{
+		CacheNameSessions:    Sessions,
+		CacheNameRoles:       Roles,
+		CacheNameSettings:    Settings,
+		CacheNameAllSettings: AllSettings,
+	}
 	return nil
 }
 
-func newExternalCache(cfg *config.CacheConfig, dbSessionFn DBSessionFunc) (Cache, error) {
-	switch cfg.GetDriver() {
-	case "memory", "":
-		return nil, nil
-	case "db":
-		if dbSessionFn == nil {
-			return nil, fmt.Errorf("cache driver db requires db session function")
-		}
-		return NewDBCache(dbSessionFn), nil
-	case "redis":
-		return NewRedisCache(cfg.Redis)
-	default:
-		return nil, fmt.Errorf("unsupported cache driver: %s", cfg.GetDriver())
+// InvalidateByKey deletes a single key from the named logical cache.
+// key == "*" clears the entire cache.
+func InvalidateByKey(ctx context.Context, cacheName, key string) {
+	c, ok := logicalNameToCache[cacheName]
+	if !ok {
+		return
 	}
+	if key == "*" {
+		switch v := c.(type) {
+		case *TypedCache[CachedSession]:
+			v.Clear()
+		case *TypedCache[model.Role]:
+			v.Clear()
+		case *TypedCache[model.Setting]:
+			v.Clear()
+		case *TypedCache[[]model.Setting]:
+			v.Clear()
+		}
+		return
+	}
+	c.InvalidateByKey(ctx, key)
 }
+
+// HandleCacheInvalidateEvent is the EventBus subscriber for "cache.invalidate"
+// events.  It parses the JSON payload and calls InvalidateByKey.
+func HandleCacheInvalidateEvent(payload []byte) {
+	var p struct {
+		CacheName string `json:"cache_name"`
+		Key       string `json:"key"`
+	}
+	if err := json.Unmarshal(payload, &p); err != nil {
+		return
+	}
+	InvalidateByKey(context.Background(), p.CacheName, p.Key)
+}
+

@@ -260,7 +260,7 @@ func (c *RoleController) UpdateRole(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			_ = cache.Roles.Delete(ctx, id)
+			cache.PublishInvalidate(ctx, cache.CacheNameRoles, id)
 
 			util.RespondWithSuccess(ctx, http.StatusOK, role)
 			return nil
@@ -311,7 +311,7 @@ func (c *RoleController) DeleteRole(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			_ = cache.Roles.Delete(ctx, id)
+			cache.PublishInvalidate(ctx, cache.CacheNameRoles, id)
 
 			util.RespondWithMessage(ctx, "Role deleted successfully")
 			return nil
@@ -373,7 +373,7 @@ func (c *RoleController) AssignPermissions(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			_ = cache.Roles.Delete(ctx, id)
+			cache.PublishInvalidate(ctx, cache.CacheNameRoles, id)
 
 			util.RespondWithMessage(ctx, "Permissions assigned successfully")
 			return nil
@@ -462,7 +462,7 @@ func (c *RoleController) SetRolePolicy(ctx *gin.Context) {
 				return util.NewError("E5001", err)
 			}
 
-			_ = cache.Roles.Delete(ctx, id)
+			cache.PublishInvalidate(ctx, cache.CacheNameRoles, id)
 
 			util.RespondWithSuccess(ctx, http.StatusOK, role)
 			return nil

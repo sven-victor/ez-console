@@ -17,12 +17,15 @@ package service
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/go-kit/log/level"
 	"github.com/sven-victor/ez-console/pkg/util/jwt"
 	"github.com/sven-victor/ez-utils/log"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
@@ -174,7 +177,7 @@ func (s *settingService) InitDefaultSecuritySettings(ctx context.Context) error 
 	// Check if each setting already exists, if not, create it
 	for key, setting := range defaultSettings {
 		var count int64
-		dbConn.Model(&model.Setting{}).Where("key = ?", key).Count(&count)
+		dbConn.Model(&model.Setting{}).Where("`key` = ?", key).Count(&count)
 		if count == 0 {
 			if err := dbConn.Create(model.NewSetting(key, setting.Value, setting.Comment)).Error; err != nil {
 				return err
@@ -187,47 +190,70 @@ func (s *settingService) InitDefaultSecuritySettings(ctx context.Context) error 
 func (s *settingService) initJWTKeys(ctx context.Context) error {
 	logger := log.GetContextLogger(ctx)
 	globalConfig := config.GetConfig()
-	if globalConfig.JWT.PrivateKey == "" || globalConfig.JWT.PublicKey == nil {
-		level.Info(logger).Log("msg", "loading JWT keys from database")
-		jwtKeySetting, err := s.GetStringSetting(ctx, model.SettingJWTKey, "")
-		if err != nil {
-			return fmt.Errorf("failed to get JWT key: %w", err)
-		}
-		jwtMethodSetting, err := s.GetStringSetting(ctx, model.SettingJWTMethod, "")
-		if err != nil {
-			return fmt.Errorf("failed to get JWT method: %w", err)
-		}
-		if jwtKeySetting != "" && jwtMethodSetting != "" {
-			jwtConfig, err := jwt.NewConfig(jwtMethodSetting, jwtKeySetting)
-			if err != nil {
-				return fmt.Errorf("failed to generate new JWT keys: %w", err)
-			}
-			globalConfig.JWT = *jwtConfig
-			globalConfig.JWT.KeyID = fmt.Sprintf("%x", sha256.Sum256([]byte(jwtKeySetting)))[:6]
-			return nil
-		}
-		level.Info(logger).Log("msg", "generating new JWT keys, auto write to database")
-		// Automatically generate new JWT secret
-		method := "ES256"
-		pk, err := jwt.NewRandomKey(method)
-		if err != nil {
-			return fmt.Errorf("failed to generate new JWT keys: %w", err)
-		}
-		jwtConfig, err := jwt.NewConfig(method, pk)
-		if err != nil {
-			return fmt.Errorf("failed to generate new JWT keys: %w", err)
-		}
-		globalConfig.JWT = *jwtConfig
-		globalConfig.JWT.KeyID = fmt.Sprintf("%x", sha256.Sum256([]byte(pk)))[:6]
-		if err := s.UpdateSettings(ctx, map[string]string{
-			string(model.SettingJWTKey):    pk,
-			string(model.SettingJWTMethod): method,
-		}); err != nil {
-			return fmt.Errorf("failed to update JWT keys: %w", err)
-		}
+	if globalConfig.JWT.PrivateKey != "" && globalConfig.JWT.PublicKey != nil {
+		return nil
 	}
 
+	level.Info(logger).Log("msg", "loading JWT keys from database")
+	pk, method, err := s.getOrCreateJWTKey(ctx)
+	if err != nil {
+		return err
+	}
+	jwtConfig, err := jwt.NewConfig(method, pk)
+	if err != nil {
+		return fmt.Errorf("failed to build JWT config: %w", err)
+	}
+	globalConfig.JWT = *jwtConfig
+	globalConfig.JWT.KeyID = fmt.Sprintf("%x", sha256.Sum256([]byte(pk)))[:6]
 	return nil
+}
+
+// getOrCreateJWTKey atomically ensures a JWT private key and method exist in the
+// database.  On first start, multiple nodes may race to insert; the winner's
+// value is returned to all losers via a re-read, so all nodes end up with the
+// same key.
+func (s *settingService) getOrCreateJWTKey(ctx context.Context) (pk, method string, err error) {
+	dbConn := db.Session(ctx)
+
+	var keySetting, methodSetting model.Setting
+	keyErr := dbConn.Where("`key` = ?", model.SettingJWTKey).First(&keySetting).Error
+	methodErr := dbConn.Where("`key` = ?", model.SettingJWTMethod).First(&methodSetting).Error
+
+	if keyErr == nil && methodErr == nil && keySetting.Value != "" && methodSetting.Value != "" {
+		return keySetting.Value, methodSetting.Value, nil
+	}
+	if keyErr != nil && !errors.Is(keyErr, gorm.ErrRecordNotFound) {
+		return "", "", fmt.Errorf("failed to read JWT key setting: %w", keyErr)
+	}
+
+	// Generate new key material.
+	const jwtMethod = "ES256"
+	newPK, err := jwt.NewRandomKey(jwtMethod)
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate JWT key: %w", err)
+	}
+
+	// Attempt atomic insert with OnConflict DoNothing.
+	keyRow := model.NewSetting(model.SettingJWTKey, newPK, "auto-generated JWT private key")
+	resKey := dbConn.Clauses(clause.OnConflict{DoNothing: true}).Create(keyRow)
+	if resKey.Error != nil {
+		return "", "", fmt.Errorf("failed to persist JWT key: %w", resKey.Error)
+	}
+
+	methodRow := model.NewSetting(model.SettingJWTMethod, jwtMethod, "JWT signing algorithm")
+	resMethod := dbConn.Clauses(clause.OnConflict{DoNothing: true}).Create(methodRow)
+	if resMethod.Error != nil {
+		return "", "", fmt.Errorf("failed to persist JWT method: %w", resMethod.Error)
+	}
+
+	// Re-read to get whichever value "won" (could be ours or a concurrent node's).
+	if err := dbConn.Where("`key` = ?", model.SettingJWTKey).First(&keySetting).Error; err != nil {
+		return "", "", fmt.Errorf("failed to re-read JWT key: %w", err)
+	}
+	if err := dbConn.Where("`key` = ?", model.SettingJWTMethod).First(&methodSetting).Error; err != nil {
+		return "", "", fmt.Errorf("failed to re-read JWT method: %w", err)
+	}
+	return keySetting.Value, methodSetting.Value, nil
 }
 
 // passwordContainsAtLeast checks if the password contains at least n character types

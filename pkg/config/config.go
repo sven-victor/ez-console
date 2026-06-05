@@ -45,6 +45,80 @@ type CacheConfig struct {
 	Redis  RedisConfig `yaml:"redis" mapstructure:"redis"`
 }
 
+// ClusterConfig holds multi-node cluster configuration.
+// When cluster.enabled=false (default for SQLite) all cluster features are disabled
+// and a noop EventBus is used.
+type ClusterConfig struct {
+	// Enabled must be explicitly set to true for multi-node deployments.
+	// When database.driver != "sqlite" this field is required (fail-fast if absent).
+	Enabled   bool                 `yaml:"enabled" mapstructure:"enabled"`
+	Gossip    GossipConfig         `yaml:"gossip" mapstructure:"gossip"`
+	Scheduler SchedulerLeaseConfig `yaml:"scheduler" mapstructure:"scheduler"`
+	Task      TaskLeaseConfig      `yaml:"task" mapstructure:"task"`
+}
+
+// GossipConfig configures the hashicorp/serf gossip transport.
+type GossipConfig struct {
+	BindAddr      string   `yaml:"bind_addr" mapstructure:"bind_addr"`
+	AdvertiseAddr string   `yaml:"advertise_addr" mapstructure:"advertise_addr"`
+	Join          []string `yaml:"join" mapstructure:"join"`
+	// DiscoverInterval controls how often the node re-resolves join addresses
+	// and attempts to rejoin any newly discovered peers.  This enables
+	// automatic peer discovery via Kubernetes headless service DNS: the DNS
+	// name resolves to one A record per ready pod, so new replicas are
+	// detected within one DiscoverInterval after they become Ready.
+	// Defaults to 30s when unset or zero.
+	DiscoverInterval time.Duration `yaml:"discover_interval" mapstructure:"discover_interval"`
+}
+
+// SchedulerLeaseConfig configures the DB-based leader election for the task scheduler.
+type SchedulerLeaseConfig struct {
+	LeaseTTL           time.Duration `yaml:"lease_ttl" mapstructure:"lease_ttl"`
+	LeaseRenewInterval time.Duration `yaml:"lease_renew_interval" mapstructure:"lease_renew_interval"`
+}
+
+// TaskLeaseConfig configures per-task execution leases and fallback polling.
+type TaskLeaseConfig struct {
+	LeaseTTL             time.Duration `yaml:"lease_ttl" mapstructure:"lease_ttl"`
+	FallbackPollInterval time.Duration `yaml:"fallback_poll_interval" mapstructure:"fallback_poll_interval"`
+}
+
+func (c *ClusterConfig) GetSchedulerLeaseTTL() time.Duration {
+	if c.Scheduler.LeaseTTL <= 0 {
+		return 15 * time.Second
+	}
+	return c.Scheduler.LeaseTTL
+}
+
+func (c *ClusterConfig) GetSchedulerLeaseRenewInterval() time.Duration {
+	if c.Scheduler.LeaseRenewInterval <= 0 {
+		return 5 * time.Second
+	}
+	return c.Scheduler.LeaseRenewInterval
+}
+
+func (c *ClusterConfig) GetTaskLeaseTTL() time.Duration {
+	if c.Task.LeaseTTL <= 0 {
+		return 60 * time.Second
+	}
+	return c.Task.LeaseTTL
+}
+
+func (c *ClusterConfig) GetTaskFallbackPollInterval() time.Duration {
+	if c.Task.FallbackPollInterval <= 0 {
+		return time.Minute
+	}
+	return c.Task.FallbackPollInterval
+}
+
+// GetDiscoverInterval returns the peer re-discovery interval, defaulting to 30s.
+func (c *GossipConfig) GetDiscoverInterval() time.Duration {
+	if c.DiscoverInterval <= 0 {
+		return 30 * time.Second
+	}
+	return c.DiscoverInterval
+}
+
 // RedisConfig holds connection parameters for a Redis-backed cache.
 type RedisConfig struct {
 	Addr     string `yaml:"addr" mapstructure:"addr"`
@@ -75,6 +149,7 @@ type Config struct {
 	JWT      jwt.Config           `yaml:"jwt" mapstructure:"jwt"`
 	OAuth    OAuthConfig          `yaml:"oauth" mapstructure:"oauth"`
 	Cache    CacheConfig          `yaml:"cache" mapstructure:"cache"`
+	Cluster  ClusterConfig        `yaml:"cluster" mapstructure:"cluster"`
 }
 
 // ServerConfig server configuration
@@ -407,6 +482,21 @@ func LoadConfig(appName, configPath string) (*Config, error) {
 		viper.Set("global.encrypt-key", os.Getenv(safe.SecretEnvName))
 	} else {
 		return nil, fmt.Errorf("encrypt key is not set, use --global.encrypt-key or set %s environment variable", safe.SecretEnvName)
+	}
+
+	// Validate cluster config against database driver
+	dbDriver := viper.GetString("database.driver")
+	if dbDriver == "" {
+		dbDriver = "sqlite"
+	}
+	clusterEnabled := viper.GetBool("cluster.enabled")
+	clusterExplicitlySet := viper.IsSet("cluster.enabled")
+
+	if dbDriver == "sqlite" && clusterEnabled {
+		return nil, fmt.Errorf("cluster.enabled=true is not supported with driver=sqlite; SQLite only supports single-node deployment")
+	}
+	if dbDriver != "sqlite" && !clusterExplicitlySet {
+		return nil, fmt.Errorf("database.driver=%s requires cluster.enabled to be explicitly set (true for multi-node, false for single-node); omitting it is not allowed", dbDriver)
 	}
 
 	if err := viper.Unmarshal(&globalConfig, viper.DecodeHook(mapstructure.ComposeDecodeHookFunc(

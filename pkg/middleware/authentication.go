@@ -364,7 +364,7 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 			case string(JWTIssuerOAuth):
 				var oauthMFAEnabled string
 				oauthErr := db.Session(ctx).Model(&model.Setting{}).Select("value").
-					Where("key = ?", model.SettingOAuthMFAEnabled).First(&oauthMFAEnabled).Error
+					Where("`key` = ?", model.SettingOAuthMFAEnabled).First(&oauthMFAEnabled).Error
 				if oauthErr != nil && oauthErr != gorm.ErrRecordNotFound {
 					return util.NewErrorMessage("E4012", "System configuration error", oauthErr)
 				}

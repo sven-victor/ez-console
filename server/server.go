@@ -16,9 +16,13 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -31,6 +35,8 @@ import (
 	"github.com/sven-victor/ez-utils/clients/tracing"
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/log/flag"
+	"github.com/sven-victor/ez-utils/safe"
+	"github.com/sven-victor/ez-utils/signals"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.opentelemetry.io/otel"
@@ -38,9 +44,11 @@ import (
 
 	"github.com/sven-victor/ez-console/pkg/api"
 	authorizationapi "github.com/sven-victor/ez-console/pkg/api/authorization"
+	"github.com/sven-victor/ez-console/pkg/cache"
 	clientsldap "github.com/sven-victor/ez-console/pkg/clients/ldap"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
+	"github.com/sven-victor/ez-console/pkg/eventbus"
 	_ "github.com/sven-victor/ez-console/pkg/logs"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -69,6 +77,14 @@ func initFlags(rootCmd *cobra.Command) {
 	serverFlagSet.String("server.skills_path", "./skills", "server skills storage path")
 	serverFlagSet.String("server.geoip_db_path", "", "GeoIP database path")
 	rootCmd.Flags().AddFlagSet(serverFlagSet)
+
+	clusterFlagSet := pflag.NewFlagSet("cluster", pflag.ExitOnError)
+	clusterFlagSet.Bool("cluster.enabled", false, "cluster enabled")
+	clusterFlagSet.String("cluster.name", "", "cluster name")
+	clusterFlagSet.String("cluster.gossip.bind_addr", "", "cluster gossip bind address")
+	clusterFlagSet.String("cluster.gossip.advertise_addr", "", "cluster gossip advertise address")
+	clusterFlagSet.StringSlice("cluster.gossip.join", []string{}, "cluster gossip join addresses")
+	rootCmd.Flags().AddFlagSet(clusterFlagSet)
 
 	databaseFlagSet := pflag.NewFlagSet("database", pflag.ExitOnError)
 	databaseFlagSet.String("database.driver", "sqlite", "database driver")
@@ -197,6 +213,16 @@ func bindTracingEnv() {
 	viper.BindEnv("tracing.file.path", "TRACING_FILE_PATH")
 	viper.BindEnv("tracing.zipkin.endpoint", "TRACING_ZIPKIN_ENDPOINT")
 	viper.BindEnv("server.host", "SERVER_HOST")
+	// Kubernetes pod IP injection via Downward API.
+	// Set MY_POD_IP in the pod spec and GOSSIP_ADVERTISE_ADDR picks it up:
+	//   env:
+	//   - name: MY_POD_IP
+	//     valueFrom:
+	//       fieldRef:
+	//         fieldPath: status.podIP
+	//   - name: GOSSIP_ADVERTISE_ADDR
+	//     value: "$(MY_POD_IP):7946"
+	viper.BindEnv("cluster.gossip.advertise_addr", "GOSSIP_ADVERTISE_ADDR")
 }
 
 func NewCommandServer(serviceName string, version string, description string, options ...WithServerOption) *CommandServer {
@@ -300,6 +326,10 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 		initDB(ctx, cfg)
 	}
 
+	// Validate the encrypt-key against DB-stored encrypted values.
+	// This prevents a misconfigured key from silently corrupting data at runtime.
+	validateEncryptKey(ctx)
+
 	// Set Gin mode
 	if cfg.Server.Mode == "debug" {
 		gin.SetMode(gin.DebugMode)
@@ -307,6 +337,31 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 		gin.SetMode(gin.ReleaseMode)
 	}
 	logger := log.GetContextLogger(ctx)
+
+	// Initialise cluster EventBus (serf for multi-node, noop for single-node).
+	bus, busErr := eventbus.New(&cfg.Cluster)
+	if busErr != nil {
+		level.Error(logger).Log("msg", "Failed to start eventbus", "err", busErr)
+		os.Exit(1)
+	}
+	defer bus.Close()
+	eventbus.SetGlobalEventBus(bus)
+
+	// Wire EventBus → cache invalidation so all L1 caches are flushed when
+	// another node publishes a cache.invalidate event.
+	bus.Subscribe(func(event string, payload []byte) {
+		if event == eventbus.EventCacheInvalidate {
+			cache.HandleCacheInvalidateEvent(payload)
+		}
+	})
+
+	// Wire cache invalidation publish hook so that local cache deletions are
+	// automatically broadcast to all cluster nodes via the EventBus.
+	cache.SetInvalidatePublishHook(func(ctx context.Context, cacheName, key string) {
+		p, _ := json.Marshal(eventbus.CacheInvalidatePayload{CacheName: cacheName, Key: key})
+		_ = bus.Publish(ctx, eventbus.EventCacheInvalidate, p)
+	})
+
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath string, handlerName string, nuHandlers int) {
 		level.Debug(logger).Log("msg", "add gin route", log.KeyName("httpMethod"), httpMethod, log.KeyName("absolutePath"), absolutePath, log.KeyName("handlerName"), handlerName, log.KeyName("nuHandlers"), nuHandlers)
 	}
@@ -342,10 +397,90 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Start the server
+	// Start the server with graceful shutdown on SIGTERM/SIGINT.
 	serverAddr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	level.Info(logger).Log("msg", "Server starting on", "serverAddr", serverAddr)
-	if err := engine.Run(serverAddr); err != nil {
-		level.Error(logger).Log("msg", "Failed to start server", "error", err)
+
+	srv := &http.Server{
+		Addr:         serverAddr,
+		Handler:      engine,
+		ReadTimeout:  cfg.Server.ReadTimeout,
+		WriteTimeout: cfg.Server.WriteTimeout,
 	}
+
+	// Run HTTP server in background goroutine.
+	errCh := make(chan error, 1)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			errCh <- err
+		}
+	}()
+
+	// Wait for termination signal or fatal server error.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	select {
+	case sig := <-quit:
+		level.Info(logger).Log("msg", "Received signal, shutting down", "signal", sig)
+	case err := <-errCh:
+		level.Error(logger).Log("msg", "Server error", "error", err)
+	}
+
+	shutdownTimeout := cfg.Server.ShutdownTimeout
+	if shutdownTimeout == 0 {
+		shutdownTimeout = 10 * time.Second
+	}
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer shutdownCancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		level.Error(logger).Log("msg", "Server forced to shutdown", "error", err)
+	}
+
+	stopCh := signals.SetupSignalHandler(logger)
+	stopCh.Wait()
+	level.Info(logger).Log("msg", "Server exited gracefully")
+}
+
+// validateEncryptKey probes the encrypt-key by attempting to decrypt a
+// DB-stored encrypted value (SMTP password or OAuth client secret).
+// If an encrypted value exists and cannot be decrypted, the process exits
+// immediately to prevent the node from operating with a mismatched key.
+// On first start (no encrypted values stored yet), the probe is skipped.
+func validateEncryptKey(ctx context.Context) {
+	logger := log.GetContextLogger(ctx)
+	encKey := os.Getenv(safe.SecretEnvName)
+	if encKey == "" {
+		// No encrypt key configured — nothing to validate.
+		return
+	}
+
+	// Look for any encrypted setting value (SMTP password is a reliable probe).
+	probeSMTPPassword := db.Session(ctx).
+		Where("`key` = ? AND value != ''", model.SettingSMTPPassword).
+		First(&model.Setting{})
+
+	if probeSMTPPassword.RowsAffected == 0 {
+		// No encrypted values stored yet; skip validation on first start.
+		return
+	}
+
+	var setting model.Setting
+	if err := db.Session(ctx).Where("`key` = ? AND value != ''", model.SettingSMTPPassword).
+		First(&setting).Error; err != nil {
+		// Setting not found or read error; skip.
+		return
+	}
+
+	// Try to decrypt: if the value is an encrypted string, UnsafeString should succeed.
+	es := safe.NewEncryptedString(setting.Value, encKey)
+	if _, err := es.UnsafeString(); err != nil {
+		level.Error(logger).Log("msg",
+			"encrypt-key validation failed: cannot decrypt stored SMTP password — "+
+				"wrong encrypt-key or corrupted data",
+			"err", err)
+		os.Exit(1)
+	}
+
+	level.Info(logger).Log("msg", "encrypt-key validated successfully")
 }

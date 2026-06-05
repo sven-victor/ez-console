@@ -114,14 +114,15 @@ func (cs *CachedSession) ToUser(roles []model.Role) model.User {
 	}
 }
 
-// InvalidateUserSessions deletes all session cache entries for the given user.
-// It queries the t_session table to discover the tokenHash keys, then removes
-// each one from the Sessions cache (L1 + L2).
+// InvalidateUserSessions deletes all session cache entries for the given user
+// locally and broadcasts cache.invalidate events to other cluster nodes.
+// It queries the t_session table to discover the token keys, then removes
+// each one from the Sessions cache (L1) and publishes to the EventBus.
 func InvalidateUserSessions(ctx context.Context, tx *gorm.DB, userID string) {
 	var sessions []model.Session
 	tx.Select("token").Where("user_id = ? AND is_valid = ?", userID, true).Find(&sessions)
 	for _, s := range sessions {
-		_ = Sessions.Delete(ctx, s.Token)
+		PublishInvalidate(ctx, CacheNameSessions, s.Token)
 	}
 }
 

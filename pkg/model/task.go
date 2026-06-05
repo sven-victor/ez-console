@@ -61,6 +61,20 @@ type Task struct {
 
 	Category       TaskCategory `gorm:"size:32;not null;index;default:user" json:"category"` // user or system
 	CronScheduleID string       `gorm:"size:64;index" json:"cron_schedule_id,omitempty"`     // set when task was created by a scheduled job
+
+	// Multi-node fields
+	// ScheduleFireKey is set for cron-triggered tasks and has a unique index so
+	// that concurrent leader nodes cannot enqueue the same fire-time twice.
+	ScheduleFireKey string     `gorm:"column:schedule_fire_key;uniqueIndex;size:128" json:"-"`
+	// WorkerID is the NodeID of the instance currently executing this task.
+	WorkerID        string     `gorm:"column:worker_id;size:64" json:"-"`
+	// LeaseExpiresAt is refreshed by the running worker; the reaper reclaims
+	// tasks whose lease has expired (node crashed or became unresponsive).
+	LeaseExpiresAt  *time.Time `gorm:"column:lease_expires_at;index" json:"-"`
+	// CancelRequested is set to true when a cancellation is requested for a
+	// running task.  Workers check this column as a fallback when EventBus
+	// task.cancel events are not received.
+	CancelRequested bool       `gorm:"column:cancel_requested;default:false" json:"-"`
 }
 
 type TaskLog struct {

@@ -481,9 +481,14 @@ tar -czf uploads_backup_$DATE.tar.gz /opt/myapp/uploads
 - Review application logs
 - Check for N+1 queries
 
+## Multi-Node Deployment
+
+For running multiple instances behind a load balancer with MySQL or PostgreSQL, see [Distributed Deployment](./19-distributed-deployment.md). That guide covers cluster configuration, gossip networking, shared storage, and the APIs (`ClusterBackend`, `EventBus`, `EphemeralTokenService`, cache invalidation) used when extending the framework.
+
 ## Next Steps
 
 - Review [Configuration Guide](./05-configuration.md)
+- Explore [Distributed Deployment](./19-distributed-deployment.md) for multi-node setups
 - Explore [Advanced Topics](./13-advanced-topics.md)
 - Check [Troubleshooting](./14-troubleshooting.md)
 

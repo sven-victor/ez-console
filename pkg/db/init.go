@@ -18,8 +18,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/go-kit/log/level"
+	"github.com/sven-victor/ez-console/pkg/cluster"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-utils/log"
 	"gorm.io/gorm"
@@ -51,20 +53,72 @@ var migrateModels = []interface{}{
 	&model.TaskLog{},
 	&model.AITraceEvent{},
 	&model.CacheEntry{},
+	// Distributed deployment models
+	&model.EphemeralToken{},
+	&model.ClusterLease{},
+	&model.ScheduledJobState{},
 }
 
 func RegisterModels(models ...interface{}) {
 	migrateModels = append(migrateModels, models...)
 }
 
-// MigrateDB executes database migration and automatically creates table structures
+const (
+	migrationLeaseName  = "migration"
+	migrationLeaseTTL   = 5 * time.Minute
+	migrationPollInterval = 3 * time.Second
+	migrationMaxWait    = 10 * time.Minute
+)
+
+// MigrateDB executes database migration and automatically creates table structures.
+// In multi-node deployments only one node runs the migration at a time, serialised
+// via the t_cluster_lease table which is bootstrapped with a raw DDL statement
+// before AutoMigrate runs to avoid a chicken-and-egg problem.
 func MigrateDB(ctx context.Context) error {
 	logger := log.GetContextLogger(ctx)
 	level.Info(logger).Log("msg", "Starting database migration...")
 
-	// Use transactions to ensure data consistency
-	return Session(ctx).Transaction(func(tx *gorm.DB) error {
+	dbConn := Session(ctx)
 
+	// Bootstrap the lease table with raw DDL so it is available before
+	// AutoMigrate.  This is idempotent ("IF NOT EXISTS").
+	if err := cluster.EnsureLeaseTable(dbConn); err != nil {
+		return fmt.Errorf("failed to bootstrap cluster lease table: %w", err)
+	}
+
+	backend := cluster.NewDBClusterBackend(dbConn)
+	// Use a stable "node id" for the migration lock.  Since we only need it
+	// to be unique per process, the process PID is sufficient here.
+	nodeID := fmt.Sprintf("migration-%d", time.Now().UnixNano())
+
+	// Try to acquire the migration lease.  If another node already holds it,
+	// poll until it is released (i.e. migration was completed by the other node).
+	deadline := time.Now().Add(migrationMaxWait)
+	for {
+		acquired, err := backend.AcquireLease(ctx, migrationLeaseName, nodeID, migrationLeaseTTL)
+		if err != nil {
+			return fmt.Errorf("failed to acquire migration lease: %w", err)
+		}
+		if acquired {
+			break
+		}
+		if time.Now().After(deadline) {
+			return fmt.Errorf("timed out waiting for migration lease after %v", migrationMaxWait)
+		}
+		level.Info(logger).Log("msg", "Waiting for another node to finish migration...")
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(migrationPollInterval):
+		}
+	}
+
+	defer func() {
+		_ = backend.ReleaseLease(ctx, migrationLeaseName, nodeID)
+	}()
+
+	// Use transactions to ensure data consistency
+	if err := dbConn.Transaction(func(tx *gorm.DB) error {
 		// Automatically migrate all models
 		if err := tx.AutoMigrate(migrateModels...); err != nil {
 			return err
@@ -77,7 +131,11 @@ func MigrateDB(ctx context.Context) error {
 
 		level.Info(logger).Log("msg", "Database migration completed")
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // SeedDB initializes basic data

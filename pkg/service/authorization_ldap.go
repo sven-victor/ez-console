@@ -592,8 +592,17 @@ func (s *ldapService) AuthenticateLDAPUser(ctx context.Context, username, passwo
 	// Try to bind with user credentials
 	userDN := result.Entries[0].DN
 	if err := loginConn.Bind(userDN, password); err != nil {
-		// Record login failure and lock account based on configuration
-		existingUser.IncrementLoginAttempts()
+		// Atomic increment of login_attempts — safe across concurrent nodes.
+		_ = db.Session(ctx).Model(&model.User{}).
+			Where("resource_id = ?", existingUser.ResourceID).
+			Update("login_attempts", gorm.Expr("login_attempts + 1"))
+		// Re-read the updated counter.
+		var updated model.User
+		if rerr := db.Session(ctx).Select("resource_id", "login_attempts").
+			Where("resource_id = ?", existingUser.ResourceID).First(&updated).Error; rerr == nil {
+			existingUser.LoginAttempts = updated.LoginAttempts
+		}
+
 		if securitySettings.LoginFailureLock && securitySettings.LoginFailureAttempts > 0 && existingUser.LoginAttempts >= securitySettings.LoginFailureAttempts {
 			if securitySettings.LoginFailureLockoutMinutes > 0 {
 				existingUser.Lock(time.Duration(securitySettings.LoginFailureLockoutMinutes) * time.Minute)
@@ -610,7 +619,7 @@ func (s *ldapService) AuthenticateLDAPUser(ctx context.Context, username, passwo
 				})
 			}
 		}
-		userUpdateFields = append(userUpdateFields, "LoginAttempts", "LockedUntil")
+		userUpdateFields = append(userUpdateFields, "LockedUntil")
 		level.Error(logger).Log("msg", "Failed to bind with user credentials", "err", err.Error())
 		return nil, util.ErrorResponse{
 			HTTPCode: http.StatusUnauthorized,

@@ -95,7 +95,7 @@ func (s *settingService) migrateLegacySMTPUserLockedTemplate() {
 	conn := db.Session(ctx)
 
 	var loginFailureCount int64
-	if err := conn.Model(&model.Setting{}).Where("key = ?", model.SettingSMTPLoginFailureLockTemplate).Count(&loginFailureCount).Error; err != nil {
+	if err := conn.Model(&model.Setting{}).Where("`key` = ?", model.SettingSMTPLoginFailureLockTemplate).Count(&loginFailureCount).Error; err != nil {
 		return
 	}
 	if loginFailureCount > 0 {
@@ -103,7 +103,7 @@ func (s *settingService) migrateLegacySMTPUserLockedTemplate() {
 	}
 
 	var legacyCount int64
-	if err := conn.Model(&model.Setting{}).Where("key = ?", model.SettingSMTPUserLockedTemplate).Count(&legacyCount).Error; err != nil {
+	if err := conn.Model(&model.Setting{}).Where("`key` = ?", model.SettingSMTPUserLockedTemplate).Count(&legacyCount).Error; err != nil {
 		return
 	}
 	if legacyCount == 0 {
@@ -111,11 +111,11 @@ func (s *settingService) migrateLegacySMTPUserLockedTemplate() {
 	}
 
 	_ = conn.Model(&model.Setting{}).
-		Where("key = ?", model.SettingSMTPUserLockedTemplate).
+		Where("`key` = ?", model.SettingSMTPUserLockedTemplate).
 		Update("key", string(model.SettingSMTPLoginFailureLockTemplate)).Error
-	_ = cache.AllSettings.Delete(ctx, "all")
-	_ = cache.Settings.Delete(ctx, string(model.SettingSMTPUserLockedTemplate))
-	_ = cache.Settings.Delete(ctx, string(model.SettingSMTPLoginFailureLockTemplate))
+	cache.PublishInvalidate(ctx, cache.CacheNameAllSettings, "all")
+	cache.PublishInvalidate(ctx, cache.CacheNameSettings, string(model.SettingSMTPUserLockedTemplate))
+	cache.PublishInvalidate(ctx, cache.CacheNameSettings, string(model.SettingSMTPLoginFailureLockTemplate))
 }
 
 // GetSetting gets the setting with the specified key name
@@ -129,7 +129,7 @@ func (s *settingService) GetSetting(ctx context.Context, key model.SettingKey) (
 	}
 	setting, err := cache.Settings.GetOrLoad(ctx, string(key), func() (model.Setting, error) {
 		var setting model.Setting
-		if err := db.Session(ctx).Where("key = ?", key).First(&setting).Error; err != nil {
+		if err := db.Session(ctx).Where("`key` = ?", key).First(&setting).Error; err != nil {
 			return setting, err
 		}
 		return setting, nil
@@ -149,7 +149,7 @@ func (s *settingService) GetSettingByStringKey(ctx context.Context, key string) 
 func (s *settingService) GetAllSettings(ctx context.Context) ([]model.Setting, error) {
 	return cache.AllSettings.GetOrLoad(ctx, "all", func() ([]model.Setting, error) {
 		var settings []model.Setting
-		if err := db.Session(ctx).Where("key IN ?", model.SettingKeys).Find(&settings).Error; err != nil {
+		if err := db.Session(ctx).Where("`key` IN ?", model.SettingKeys).Find(&settings).Error; err != nil {
 			return nil, err
 		}
 		return settings, nil
@@ -173,12 +173,12 @@ func (s *settingService) GetSettingsMap(ctx context.Context) (map[string]string,
 // UpdateSetting updates a setting item
 func (s *settingService) UpdateSetting(ctx context.Context, key model.SettingKey, value, comment string) (*model.Setting, error) {
 	var setting model.Setting
-	if err := db.Session(ctx).Where("key = ?", key).First(&setting).Error; err != nil {
+	if err := db.Session(ctx).Where("`key` = ?", key).First(&setting).Error; err != nil {
 		setting = *model.NewSetting(key, value, comment)
 		if err := db.Session(ctx).Create(&setting).Error; err != nil {
 			return nil, err
 		}
-		_ = cache.AllSettings.Delete(ctx, "all")
+		cache.PublishInvalidate(ctx, cache.CacheNameAllSettings, "all")
 		return &setting, nil
 	}
 
@@ -189,7 +189,8 @@ func (s *settingService) UpdateSetting(ctx context.Context, key model.SettingKey
 	if err := db.Session(ctx).Save(&setting).Error; err != nil {
 		return nil, err
 	}
-	_ = cache.AllSettings.Delete(ctx, "all")
+	cache.PublishInvalidate(ctx, cache.CacheNameAllSettings, "all")
+	cache.PublishInvalidate(ctx, cache.CacheNameSettings, string(key))
 	_ = cache.Settings.Set(ctx, string(key), setting)
 	return &setting, nil
 }
@@ -200,7 +201,7 @@ func (s *settingService) UpdateSettings(ctx context.Context, settings map[string
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		for key, value := range settings {
 			var setting model.Setting
-			if err := tx.Where("key = ?", key).First(&setting).Error; err != nil {
+			if err := tx.Where("`key` = ?", key).First(&setting).Error; err != nil {
 				setting = *model.NewSetting(model.SettingKey(key), value, "")
 				if err := tx.Create(&setting).Error; err != nil {
 					return err
@@ -211,9 +212,10 @@ func (s *settingService) UpdateSettings(ctx context.Context, settings map[string
 					return err
 				}
 			}
+			cache.PublishInvalidate(ctx, cache.CacheNameSettings, key)
 			_ = cache.Settings.Set(ctx, key, setting)
 		}
-		_ = cache.AllSettings.Delete(ctx, "all")
+		cache.PublishInvalidate(ctx, cache.CacheNameAllSettings, "all")
 		return nil
 	})
 }
@@ -319,7 +321,7 @@ func (s *settingService) InitDefaultSettings(ctx context.Context) error {
 	// Check if each setting already exists, if not, create it
 	for _, setting := range defaultSettings {
 		var count int64
-		db.Session(ctx).Model(&model.Setting{}).Where("key = ?", setting.Key).Count(&count)
+		db.Session(ctx).Model(&model.Setting{}).Where("`key` = ?", setting.Key).Count(&count)
 		if count == 0 {
 			if err := db.Session(ctx).Create(model.NewSetting(setting.Key, setting.Value, setting.Comment)).Error; err != nil {
 				return err
@@ -332,11 +334,12 @@ func (s *settingService) InitDefaultSettings(ctx context.Context) error {
 
 // DeleteSetting deletes a setting
 func (s *settingService) DeleteSetting(ctx context.Context, key model.SettingKey) error {
-	defer func() {
-		_ = cache.AllSettings.Delete(ctx, "all")
-		_ = cache.Settings.Delete(ctx, string(key))
-	}()
-	return db.Session(ctx).Where("key = ?", key).Delete(&model.Setting{}).Error
+	if err := db.Session(ctx).Where("`key` = ?", key).Delete(&model.Setting{}).Error; err != nil {
+		return err
+	}
+	cache.PublishInvalidate(ctx, cache.CacheNameAllSettings, "all")
+	cache.PublishInvalidate(ctx, cache.CacheNameSettings, string(key))
+	return nil
 }
 
 func (s *settingService) GetSystemSettings(ctx context.Context) (*model.SystemSettings, error) {

@@ -289,29 +289,51 @@ func (s *userService) UserLoginFailed(ctx context.Context, user *model.User) err
 		return fmt.Errorf("failed to get security settings: %w", err)
 	}
 	dbConn := db.Session(ctx)
-	user.IncrementLoginAttempts()
-	if securitySettings.LoginFailureLock && securitySettings.LoginFailureAttempts > 0 && user.LoginAttempts >= securitySettings.LoginFailureAttempts {
-		if securitySettings.LoginFailureLockoutMinutes > 0 {
-			user.Lock(time.Duration(securitySettings.LoginFailureLockoutMinutes) * time.Minute)
-		} else {
-			user.LockedUntil = time.Now().AddDate(100, 0, 0)
-		}
 
-		if user.Email != "" {
-			s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "User Locked", model.SettingSMTPLoginFailureLockTemplate, map[string]any{
-				"Username": user.Username,
-				"UserID":   user.ResourceID,
-				"Email":    user.Email,
-				"Avatar":   user.Avatar,
-				"FullName": user.FullName,
+	// Atomic increment — safe across concurrent nodes.
+	if err := dbConn.Model(&model.User{}).
+		Where("resource_id = ?", user.ResourceID).
+		Update("login_attempts", gorm.Expr("login_attempts + 1")).Error; err != nil {
+		return fmt.Errorf("failed to increment login attempts: %w", err)
+	}
+
+	// Re-read to get the current counter value after the atomic update.
+	var updated model.User
+	if err := dbConn.Select("resource_id", "login_attempts", "locked_until", "email", "username", "avatar", "full_name").
+		Where("resource_id = ?", user.ResourceID).First(&updated).Error; err != nil {
+		return fmt.Errorf("failed to re-read user after attempt increment: %w", err)
+	}
+	user.LoginAttempts = updated.LoginAttempts
+
+	var lockedUntil *time.Time
+	if securitySettings.LoginFailureLock && securitySettings.LoginFailureAttempts > 0 && user.LoginAttempts >= securitySettings.LoginFailureAttempts {
+		var lockTime time.Time
+		if securitySettings.LoginFailureLockoutMinutes > 0 {
+			lockTime = time.Now().Add(time.Duration(securitySettings.LoginFailureLockoutMinutes) * time.Minute)
+		} else {
+			lockTime = time.Now().AddDate(100, 0, 0)
+		}
+		lockedUntil = &lockTime
+
+		if updated.Email != "" {
+			s.baseService.SendEmailFromTemplate(ctx, []string{updated.Email}, "User Locked", model.SettingSMTPLoginFailureLockTemplate, map[string]any{
+				"Username": updated.Username,
+				"UserID":   updated.ResourceID,
+				"Email":    updated.Email,
+				"Avatar":   updated.Avatar,
+				"FullName": updated.FullName,
 			})
 		}
 	}
 
 	return dbConn.Transaction(func(tx *gorm.DB) error {
-		err = tx.Model(&user).Select("LoginAttempts", "LockedUntil").Updates(&user).Error
-		if err != nil {
-			return fmt.Errorf("failed to update user login attempts: %w", err)
+		if lockedUntil != nil {
+			if err := tx.Model(&model.User{}).
+				Where("resource_id = ?", user.ResourceID).
+				Update("locked_until", lockedUntil).Error; err != nil {
+				return fmt.Errorf("failed to lock user: %w", err)
+			}
+			user.LockedUntil = *lockedUntil
 		}
 		newUser := *oldUser
 		newUser.LoginAttempts = user.LoginAttempts
@@ -330,13 +352,7 @@ func (s *userService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 		}
 	}
 
-	cacheVal, err := cache.Store.Get(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
-	if err != nil {
-		return nil, util.NewErrorMessage("E5001", "Failed to get MFA code", err)
-	}
-
-	safeToken := safe.NewEncryptedString(string(cacheVal), os.Getenv(safe.SecretEnvName))
-	rawTokenData, err := safeToken.UnsafeString()
+	rawTokenData, err := GetEphemeralTokenService().ConsumeAndGetPayload(ctx, mfaToken)
 	if err != nil {
 		return nil, util.NewErrorMessage("E5001", "Failed to get MFA code", err)
 	}
@@ -393,7 +409,6 @@ func (s *userService) LoginWithMFA(ctx context.Context, mfaCode, mfaToken string
 	default:
 		return nil, util.NewErrorMessage("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
 	}
-	_ = cache.Store.Delete(ctx, fmt.Sprintf("ez-console:login:code:%s", mfaToken))
 	// Verify user status
 	if user.Status == model.UserStatusDisabled {
 		return nil, util.ErrorResponse{
@@ -480,8 +495,13 @@ func (s *userService) GenerateMFA(ctx context.Context, user *model.User, source 
 	default:
 		return nil, util.NewErrorMessage("E5001", fmt.Sprintf("MFA type %s is not supported", user.MFAType))
 	}
-	safeToken := safe.NewEncryptedString(w.JSONStringer(token).String(), os.Getenv(safe.SecretEnvName))
-	if err = cache.Store.Set(ctx, fmt.Sprintf("ez-console:login:code:%s", token.Token), []byte(safeToken.String()), time.Until(expiresAt)); err != nil {
+	if err = GetEphemeralTokenService().Create(
+		ctx,
+		model.EphemeralTokenMFALogin,
+		token.Token,
+		w.JSONStringer(token).String(),
+		time.Until(expiresAt),
+	); err != nil {
 		return nil, util.NewErrorMessage("E5001", "Failed to create MFA code", err)
 	}
 	return &LoginResponse{
@@ -842,9 +862,14 @@ func (s *userService) ResendActivationEmail(ctx context.Context, userID string, 
 func (s *userService) sendActivationEmail(ctx context.Context, user *model.User, baseURL string) error {
 	token := uuid.New().String()
 	expiresAt := time.Now().Add(48 * time.Hour)
-	safeToken := safe.NewEncryptedString(user.ResourceID, os.Getenv(safe.SecretEnvName))
-	if err := cache.Store.Set(ctx, fmt.Sprintf("ez-console:user:activation:%s", token), []byte(safeToken.String()), time.Until(expiresAt)); err != nil {
-		return fmt.Errorf("failed to cache activation token: %w", err)
+	if err := GetEphemeralTokenService().Create(
+		ctx,
+		model.EphemeralTokenUserActivation,
+		token,
+		user.ResourceID,
+		time.Until(expiresAt),
+	); err != nil {
+		return fmt.Errorf("failed to create activation token: %w", err)
 	}
 
 	activationURL := fmt.Sprintf("%s/activate?token=%s", baseURL, token)
@@ -870,14 +895,7 @@ type ActivateUserRequest struct {
 
 // ActivateUser validates the activation token and sets the user's password, activating the account.
 func (s *userService) ActivateUser(ctx context.Context, req ActivateUserRequest) (*model.User, error) {
-	cacheKey := fmt.Sprintf("ez-console:user:activation:%s", req.Token)
-	data, err := cache.Store.Get(ctx, cacheKey)
-	if err != nil || len(data) == 0 {
-		return nil, util.NewErrorMessage("E4041", "Invalid or expired activation token")
-	}
-
-	safeToken := safe.NewEncryptedString(string(data), os.Getenv(safe.SecretEnvName))
-	userID, err := safeToken.UnsafeString()
+	userID, err := GetEphemeralTokenService().ConsumeAndGetPayload(ctx, req.Token)
 	if err != nil {
 		return nil, util.NewErrorMessage("E4041", "Invalid or expired activation token", err)
 	}
@@ -933,9 +951,6 @@ func (s *userService) ActivateUser(ctx context.Context, req ActivateUserRequest)
 	if err != nil {
 		return nil, err
 	}
-
-	// Remove the activation token from cache
-	_ = cache.Store.Delete(ctx, cacheKey)
 
 	return user, nil
 }
@@ -1585,9 +1600,14 @@ func (s *userService) EnableMFA(ctx context.Context, userID string, mfaType stri
 		if err != nil {
 			return nil, fmt.Errorf("failed to send email: %w", err)
 		}
-		safeCode := safe.NewEncryptedString(code, os.Getenv(safe.SecretEnvName))
-		if err = cache.Store.Set(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token), []byte(safeCode.String()), time.Until(expiresAt)); err != nil {
-			return nil, fmt.Errorf("failed to create cache: %w", err)
+		if err = GetEphemeralTokenService().Create(
+			ctx,
+			model.EphemeralTokenMFAActivation,
+			token,
+			code,
+			time.Until(expiresAt),
+		); err != nil {
+			return nil, fmt.Errorf("failed to create MFA activation token: %w", err)
 		}
 		return &EnableMFAResponse{
 			Token: token,
@@ -1602,13 +1622,11 @@ func (s *userService) VerifyAndActivateEmailMFA(ctx context.Context, userID stri
 	if err != nil {
 		return err
 	}
-	cacheVal, err := cache.Store.Get(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token))
+	storedCode, err := GetEphemeralTokenService().ConsumeAndGetPayload(ctx, token)
 	if err != nil {
-		return fmt.Errorf("failed to get cache: %w", err)
+		return fmt.Errorf("failed to get MFA activation token: %w", err)
 	}
-	_ = cache.Store.Delete(ctx, fmt.Sprintf("ez-console:mfa:activation:%s", token))
-	safeCode := safe.NewEncryptedString(string(cacheVal), os.Getenv(safe.SecretEnvName))
-	if !safeCode.Equal(*safe.NewEncryptedString(code, os.Getenv(safe.SecretEnvName))) {
+	if storedCode != code {
 		return errors.New("MFA verification code is invalid")
 	}
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {

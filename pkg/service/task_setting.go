@@ -36,7 +36,7 @@ func (s *taskService) InitDefaultTaskSettings(ctx context.Context) error {
 	}
 	for key, setting := range fixedDefaults {
 		var count int64
-		dbConn.Model(&model.Setting{}).Where("key = ?", key).Count(&count)
+		dbConn.Model(&model.Setting{}).Where("`key` = ?", key).Count(&count)
 		if count == 0 {
 			if err := dbConn.Create(model.NewSetting(key, setting.Value, setting.Comment)).Error; err != nil {
 				return err
@@ -48,7 +48,7 @@ func (s *taskService) InitDefaultTaskSettings(ctx context.Context) error {
 	for _, field := range model.GetRegisteredTaskSettingFields() {
 		key := model.SettingKey(field.Key)
 		var count int64
-		dbConn.Model(&model.Setting{}).Where("key = ?", key).Count(&count)
+		dbConn.Model(&model.Setting{}).Where("`key` = ?", key).Count(&count)
 		if count == 0 {
 			if err := dbConn.Create(model.NewSetting(key, field.DefaultValue, "Task setting: "+field.Key)).Error; err != nil {
 				return err

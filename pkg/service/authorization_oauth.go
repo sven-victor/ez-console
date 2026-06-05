@@ -309,7 +309,13 @@ func (s *oauthService) GetOAuthLoginURL(ctx *gin.Context, provider string) (*OAu
 
 	// Generate authorization URL
 	authURL := oauth2Config.AuthCodeURL(state, oauth2Config.Nonce, oauth2Config.CodeVerifier)
-	if err := cache.Store.Set(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), []byte(w.JSONStringer(oauth2Config).String()), 10*time.Minute); err != nil {
+	if err := GetEphemeralTokenService().Create(
+		ctx,
+		model.EphemeralTokenOAuthState,
+		state,
+		w.JSONStringer(oauth2Config).String(),
+		10*time.Minute,
+	); err != nil {
 		return nil, fmt.Errorf("failed to create oauth state: %w", err)
 	}
 
@@ -321,15 +327,13 @@ func (s *oauthService) GetOAuthLoginURL(ctx *gin.Context, provider string) (*OAu
 // HandleOAuthCallback handles OAuth callback
 func (s *oauthService) HandleOAuthCallback(ctx context.Context, req OAuthCallbackRequest) (*LoginResponse, error) {
 	logger := log.GetContextLogger(ctx)
-	stateKey := fmt.Sprintf("ez-console:oauth:state:%s", req.State)
-	cacheVal, err := cache.Store.Get(ctx, stateKey)
+	rawPayload, err := GetEphemeralTokenService().ConsumeAndGetPayload(ctx, req.State)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oauth state: %w", err)
 	}
-	_ = cache.Store.Delete(ctx, stateKey)
 
 	var oauth2Config OAuth2ProviderConfig
-	if err := json.Unmarshal(cacheVal, &oauth2Config); err != nil {
+	if err := json.Unmarshal([]byte(rawPayload), &oauth2Config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal oauth2 config: %w", err)
 	}
 
@@ -1006,7 +1010,13 @@ func (s *oauthService) TestOAuthConnection(ctx context.Context, settings *model.
 	oauth2Config.Nonce = util.GenerateRandomString(16)
 	oauth2Config.CodeVerifier = util.GenerateRandomString(32)
 	authURL := oauth2Config.AuthCodeURL(state, oauth2Config.Nonce, oauth2Config.CodeVerifier)
-	if err = cache.Store.Set(ctx, fmt.Sprintf("ez-console:oauth:state:%s", state), []byte(w.JSONStringer(oauth2Config).String()), 10*time.Minute); err != nil {
+	if err = GetEphemeralTokenService().Create(
+		ctx,
+		model.EphemeralTokenOAuthState,
+		state,
+		w.JSONStringer(oauth2Config).String(),
+		10*time.Minute,
+	); err != nil {
 		return nil, err
 	}
 	return &OAuthLoginURLResponse{
@@ -1023,15 +1033,13 @@ type TestOAuthCallbackResponse struct {
 // TestOAuthCallback tests OAuth callback
 func (s *oauthService) TestOAuthCallback(ctx context.Context, req *OAuthCallbackRequest) (resp *TestOAuthCallbackResponse, err error) {
 	logger := log.GetContextLogger(ctx)
-	stateKey := fmt.Sprintf("ez-console:oauth:state:%s", req.State)
-	cacheVal, err := cache.Store.Get(ctx, stateKey)
+	rawPayload, err := GetEphemeralTokenService().ConsumeAndGetPayload(ctx, req.State)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get oauth state: %w", err)
 	}
-	_ = cache.Store.Delete(ctx, stateKey)
 
 	var oauth2Config OAuth2ProviderConfig
-	if err := json.Unmarshal(cacheVal, &oauth2Config); err != nil {
+	if err := json.Unmarshal([]byte(rawPayload), &oauth2Config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal oauth2 config: %w", err)
 	}
 

@@ -18,12 +18,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
 	"github.com/go-kit/log/level"
 	"github.com/robfig/cron/v3"
+	"github.com/sven-victor/ez-console/pkg/cluster"
+	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
+	dbdialect "github.com/sven-victor/ez-console/pkg/db/dialect"
+	"github.com/sven-victor/ez-console/pkg/eventbus"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/taskscheduler"
@@ -62,6 +68,16 @@ func WithCronScheduleID(id string) CreateTaskOption {
 	}
 }
 
+// WithScheduleFireKey sets the deduplication key for cron-triggered tasks.
+// When two nodes fire the same job in the same cron window, only one INSERT
+// wins (the other gets a DoNothing no-op) because schedule_fire_key has a
+// unique index on t_task.
+func WithScheduleFireKey(key string) CreateTaskOption {
+	return func(t *model.Task) {
+		t.ScheduleFireKey = key
+	}
+}
+
 const (
 	defaultTaskQueueSize = 1000
 	taskPollInterval     = 2 * time.Second
@@ -84,6 +100,12 @@ type TaskService interface {
 	UpdateTaskSettings(ctx context.Context, settings map[string]any) error
 }
 
+const (
+	taskLeaseName    = "task-reaper"
+	taskLeaseRenewInterval = 30 * time.Second
+	taskRenewalInterval    = 20 * time.Second
+)
+
 // taskService handles task CRUD and worker pool.
 type taskService struct {
 	cancelChans map[string]chan struct{}
@@ -91,6 +113,16 @@ type taskService struct {
 	taskQueue   chan *model.Task
 	taskQueueMu sync.Mutex
 	baseService BaseService
+
+	// wakeupCh receives signals from EventBus task.new events so workers can
+	// immediately check for new tasks without waiting for the fallback poll.
+	wakeupCh chan struct{}
+
+	// workerID identifies this node's workers for lease tracking.
+	workerID string
+
+	// clusterBackend for leader election (reaper)
+	clusterBackend cluster.ClusterBackend
 }
 
 var (
@@ -101,10 +133,18 @@ var (
 // NewTaskService creates a new TaskService.
 func NewTaskService(ctx context.Context, baseService BaseService) TaskService {
 	taskServiceOnce.Do(func() {
+		bus := GetGlobalEventBus()
+		nodeID := "local"
+		if bus != nil {
+			nodeID = bus.NodeID()
+		}
 		taskSvc = &taskService{
-			cancelChans: make(map[string]chan struct{}),
-			taskQueue:   make(chan *model.Task, defaultTaskQueueSize),
-			baseService: baseService,
+			cancelChans:    make(map[string]chan struct{}),
+			taskQueue:      make(chan *model.Task, defaultTaskQueueSize),
+			wakeupCh:       make(chan struct{}, 16),
+			workerID:       nodeID,
+			clusterBackend: cluster.NewDBClusterBackend(db.Session(ctx)),
+			baseService:    baseService,
 		}
 
 		taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
@@ -116,6 +156,35 @@ func NewTaskService(ctx context.Context, baseService BaseService) TaskService {
 			TaskType:    taskLogCleanupTaskType,
 			Runner:      taskscheduler.NewFuncTaskRunner(taskSvc.runTaskLogCleanupJob),
 		})
+
+		// Subscribe to task events.
+		if bus != nil {
+			bus.Subscribe(func(event string, payload []byte) {
+				switch event {
+				case eventbus.EventTaskNew:
+					select {
+					case taskSvc.wakeupCh <- struct{}{}:
+					default:
+					}
+				case eventbus.EventTaskCancel:
+					// Another node published a cancel; check if we own this task.
+					taskID := string(payload)
+					taskSvc.cancelMu.Lock()
+					ch, ok := taskSvc.cancelChans[taskID]
+					taskSvc.cancelMu.Unlock()
+					if ok {
+						select {
+						case <-ch:
+						default:
+							close(ch)
+							taskSvc.cancelMu.Lock()
+							delete(taskSvc.cancelChans, taskID)
+							taskSvc.cancelMu.Unlock()
+						}
+					}
+				}
+			})
+		}
 
 		go func() {
 			time.Sleep(10 * time.Second)
@@ -144,16 +213,31 @@ func (s *taskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 	for _, o := range opts {
 		o(t)
 	}
-	if err := db.Session(ctx).Create(t).Error; err != nil {
+
+	dbConn := db.Session(ctx)
+	if t.ScheduleFireKey != "" {
+		// Use OnConflict DoNothing to deduplicate cron-triggered tasks across
+		// leader nodes that race to enqueue the same job in the same fire window.
+		res := dbConn.Clauses(dbdialect.OnConflictDoNothingOnColumns("schedule_fire_key")).Create(t)
+		if res.Error != nil {
+			return nil, res.Error
+		}
+		if res.RowsAffected == 0 {
+			// Another node already enqueued this task for this fire window.
+			return nil, nil
+		}
+	} else if err := dbConn.Create(t).Error; err != nil {
 		return nil, err
 	}
 	taskCreatedTotal.WithLabelValues(string(t.Category), string(t.Type)).Inc()
-	// Prefer in-memory queue; if full, leave task in DB only and set overflow so workers will poll DB.
+	// Publish wakeup event so workers on this and other nodes poll immediately.
+	if bus := GetGlobalEventBus(); bus != nil {
+		_ = bus.Publish(ctx, eventbus.EventTaskNew, []byte(t.ResourceID))
+	}
+	// Also wake local workers via in-process channel for minimal latency.
 	select {
-	case s.taskQueue <- t:
-		taskQueueLength.Inc()
+	case s.wakeupCh <- struct{}{}:
 	default:
-		taskQueueOverflowTotal.WithLabelValues(string(t.Category)).Inc()
 	}
 	return t, nil
 }
@@ -268,7 +352,10 @@ func (s *taskService) SetTaskArtifact(ctx context.Context, id string, fileKey st
 		}).Error
 }
 
-// CancelTask signals the running task to cancel. The worker will set status to cancelled when it exits.
+// CancelTask signals the running task to cancel.
+// For pending tasks it sets status directly to cancelled.
+// For running tasks it sets cancel_requested=true in DB and publishes a
+// task.cancel event so all nodes (including the one running the task) cancel it.
 func (s *taskService) CancelTask(ctx context.Context, id string) error {
 	t, err := s.GetTask(ctx, id)
 	if err != nil {
@@ -277,16 +364,33 @@ func (s *taskService) CancelTask(ctx context.Context, id string) error {
 	if t.Status != model.TaskStatusRunning && t.Status != model.TaskStatusPending {
 		return nil
 	}
+	if t.Status == model.TaskStatusPending {
+		return s.updateTaskStatus(ctx, id, string(model.TaskStatusCancelled), "", "", 0)
+	}
+
+	// Running task: set cancel_requested in DB (picked up by lease renewal loop)
+	// and broadcast via EventBus for immediate wakeup of the owning node.
+	if err := db.Session(ctx).Model(&model.Task{}).
+		Where("resource_id = ?", id).
+		Update("cancel_requested", true).Error; err != nil {
+		return fmt.Errorf("failed to set cancel_requested: %w", err)
+	}
+	if bus := GetGlobalEventBus(); bus != nil {
+		_ = bus.Publish(ctx, eventbus.EventTaskCancel, []byte(id))
+	}
+	// Also cancel locally if this node is running the task.
 	s.cancelMu.Lock()
 	ch, ok := s.cancelChans[id]
 	s.cancelMu.Unlock()
 	if ok {
-		close(ch)
-		s.cancelMu.Lock()
-		delete(s.cancelChans, id)
-		s.cancelMu.Unlock()
-	} else if t.Status == model.TaskStatusPending {
-		return s.updateTaskStatus(ctx, id, string(model.TaskStatusCancelled), "", "", 0)
+		select {
+		case <-ch:
+		default:
+			close(ch)
+			s.cancelMu.Lock()
+			delete(s.cancelChans, id)
+			s.cancelMu.Unlock()
+		}
 	}
 	return nil
 }
@@ -341,25 +445,31 @@ func (s *taskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskL
 	return entries, nil
 }
 
-// claimTaskByID atomically claims the given pending task by ID (sets status to running). Returns the task or nil if not found/not pending.
-func (s *taskService) claimTaskByID(ctx context.Context, id string) (*model.Task, error) {
+// claimNextPending atomically claims one pending task using SKIP LOCKED so
+// multiple worker nodes (or goroutines) never claim the same row.
+func (s *taskService) claimNextPending(ctx context.Context) (*model.Task, error) {
+	dbConn := db.Session(ctx)
+	cfg := config.GetConfig()
+	leaseTTL := cfg.Cluster.GetTaskLeaseTTL()
+
 	var t model.Task
-	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Where("resource_id = ? AND status = ?", id, model.TaskStatusPending).First(&t).Error; err != nil {
-			return err
-		}
-		now := time.Now()
-		res := tx.Model(&t).Where("status = ?", model.TaskStatusPending).Updates(map[string]interface{}{
-			"status":     model.TaskStatusRunning,
-			"started_at": &now,
-		})
+	err := dbConn.Transaction(func(tx *gorm.DB) error {
+		// SELECT ... FOR UPDATE SKIP LOCKED so concurrent workers each grab a different row.
+		res := dbdialect.LockSkipLocked(tx).
+			Where("status = ?", model.TaskStatusPending).
+			Order("created_at ASC").
+			Limit(1).
+			First(&t)
 		if res.Error != nil {
 			return res.Error
 		}
-		if res.RowsAffected == 0 {
-			return gorm.ErrRecordNotFound
-		}
-		return nil
+		now := time.Now()
+		return tx.Model(&t).Updates(map[string]interface{}{
+			"status":           model.TaskStatusRunning,
+			"started_at":       &now,
+			"worker_id":        s.workerID,
+			"lease_expires_at": dbdialect.NowPlus(tx, leaseTTL),
+		}).Error
 	})
 	if err != nil {
 		return nil, err
@@ -367,7 +477,18 @@ func (s *taskService) claimTaskByID(ctx context.Context, id string) (*model.Task
 	return &t, nil
 }
 
-// Start starts the worker pool and the fallback poller. Call once at server startup.
+// renewTaskLease refreshes the lease_expires_at for a running task.
+func (s *taskService) renewTaskLease(ctx context.Context, taskID string) error {
+	cfg := config.GetConfig()
+	leaseTTL := cfg.Cluster.GetTaskLeaseTTL()
+	dbConn := db.Session(ctx)
+	return dbConn.Model(&model.Task{}).
+		Where("resource_id = ? AND status = ? AND worker_id = ?", taskID, model.TaskStatusRunning, s.workerID).
+		Update("lease_expires_at", dbdialect.NowPlus(dbConn, leaseTTL)).Error
+}
+
+// startWorkerPool starts the worker goroutines, a DB poller (fallback for missed
+// EventBus wakeup events), and the leader-only task reaper.
 func (s *taskService) startWorkerPool(ctx context.Context) {
 	logger := log.GetContextLogger(ctx)
 	settingService := middleware.GetSettingService()
@@ -376,29 +497,93 @@ func (s *taskService) startWorkerPool(ctx context.Context) {
 		maxConcurrent = 1
 	}
 	for i := 0; i < maxConcurrent; i++ {
-		go s.worker(ctx, i, logger)
+		go s.worker(ctx, i)
 	}
+	go s.pollLoop(ctx)
+	go s.reaperLoop(ctx)
 	level.Info(logger).Log("msg", "Task worker pool started", "workers", maxConcurrent)
 }
 
-func (s *taskService) worker(ctx context.Context, id int, logger interface{}) {
+// pollLoop is the fallback DB poller.  It runs even when EventBus events are
+// working so that any missed events are retried within the poll interval.
+func (s *taskService) pollLoop(ctx context.Context) {
+	cfg := config.GetConfig()
+	base := cfg.Cluster.GetTaskFallbackPollInterval()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-s.wakeupCh:
+			s.tryClaimAndWake(ctx)
+		case <-time.After(base + time.Duration(rand.Int63n(int64(base/5)))):
+			s.tryClaimAndWake(ctx)
+		}
+	}
+}
+
+func (s *taskService) tryClaimAndWake(ctx context.Context) {
+	t, err := s.claimNextPending(ctx)
+	if err != nil || t == nil {
+		return
+	}
+	// Route claimed task to the task queue; drop if full (worker will pick it up
+	// from the next poll cycle).
+	select {
+	case s.taskQueue <- t:
+		taskQueueLength.Inc()
+	default:
+		taskQueueOverflowTotal.WithLabelValues(string(t.Category)).Inc()
+	}
+}
+
+func (s *taskService) worker(ctx context.Context, _ int) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case t := <-s.taskQueue:
 			taskQueueLength.Dec()
-			// Task from queue may still be pending in DB; claim it before running.
-			if t.Status != model.TaskStatusRunning {
-				claimed, err := s.claimTaskByID(ctx, t.ResourceID)
-				if err != nil || claimed == nil {
-					continue
-				}
-				t = claimed
-			}
 			s.runTask(ctx, t)
 		}
 	}
+}
+
+// reaperLoop is leader-only.  It runs every 30 s and resets tasks whose
+// lease has expired so they can be picked up by another worker.
+func (s *taskService) reaperLoop(ctx context.Context) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			s.reapExpiredLeases(ctx)
+		}
+	}
+}
+
+func (s *taskService) reapExpiredLeases(ctx context.Context) {
+	cfg := config.GetConfig()
+	if cfg.Cluster.Enabled {
+		ok, err := s.clusterBackend.IsLeader(ctx, taskLeaseName, s.workerID)
+		if err != nil || !ok {
+			// Ensure this node holds the reaper lease (best-effort: no-op for non-leader)
+			_, _ = s.clusterBackend.AcquireLease(ctx, taskLeaseName, s.workerID, 60*time.Second)
+			ok, _ = s.clusterBackend.IsLeader(ctx, taskLeaseName, s.workerID)
+			if !ok {
+				return
+			}
+		}
+	}
+	dbConn := db.Session(ctx)
+	dbConn.Model(&model.Task{}).
+		Where("status = ? AND lease_expires_at < ?", model.TaskStatusRunning, dbdialect.Now(dbConn)).
+		Updates(map[string]any{
+			"status":           model.TaskStatusPending,
+			"worker_id":        nil,
+			"lease_expires_at": nil,
+		})
 }
 
 func (s *taskService) runTask(pctx context.Context, t *model.Task) {
@@ -423,6 +608,37 @@ func (s *taskService) runTask(pctx context.Context, t *model.Task) {
 		delete(s.cancelChans, t.ResourceID)
 		s.cancelMu.Unlock()
 	}()
+
+	// Lease renewal + cancel_requested polling goroutine.
+	renewStop := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(taskRenewalInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-renewStop:
+				return
+			case <-ticker.C:
+				_ = s.renewTaskLease(taskCtx, t.ResourceID)
+				// Check cancel_requested from DB (cross-node cancel support).
+				var row model.Task
+				if err := db.Session(taskCtx).Select("cancel_requested").
+					Where("resource_id = ?", t.ResourceID).First(&row).Error; err == nil {
+					if row.CancelRequested {
+						select {
+						case <-cancelCh:
+						default:
+							close(cancelCh)
+							s.cancelMu.Lock()
+							delete(s.cancelChans, t.ResourceID)
+							s.cancelMu.Unlock()
+						}
+					}
+				}
+			}
+		}
+	}()
+	defer close(renewStop)
 
 	// Bridge task logs to log storage: get backend name from task settings and tee the context logger with a task logger.
 	settingService := middleware.GetSettingService()
@@ -456,22 +672,22 @@ func (s *taskService) runTask(pctx context.Context, t *model.Task) {
 			shouldRetry := t.MaxRetries > 0 && nextAutoRetry <= t.MaxRetries
 
 			if shouldRetry {
-				t.Status = model.TaskStatusPending
-				t.Error = err.Error()
-				t.Result = ""
-				t.Progress = 0
-				t.FinishedAt = nil
-				t.AutoRetryCount = nextAutoRetry
 				_ = db.Session(taskCtx).Model(&model.Task{}).
 					Where("resource_id = ?", t.ResourceID).
-					Select("status", "error", "result", "progress", "finished_at", "auto_retry_count").
-					Updates(t).Error
-
+					Updates(map[string]interface{}{
+						"status":           model.TaskStatusPending,
+						"error":            err.Error(),
+						"result":           "",
+						"progress":         0,
+						"finished_at":      nil,
+						"auto_retry_count": nextAutoRetry,
+						"worker_id":        nil,
+						"lease_expires_at": nil,
+					}).Error
+				// Wake workers to pick up the retried task.
 				select {
-				case s.taskQueue <- t:
-					taskQueueLength.Inc()
+				case s.wakeupCh <- struct{}{}:
 				default:
-					taskQueueOverflowTotal.WithLabelValues(string(t.Category)).Inc()
 				}
 			} else {
 				now := time.Now()

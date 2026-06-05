@@ -71,7 +71,7 @@ type SessionInfo struct {
 // DeleteSession deletes a session record and removes the corresponding cache entry.
 func (s *sessionService) DeleteSession(ctx context.Context, userID, token string) error {
 	tokenHash := safe.NewHash(sha256.New, []byte(token)).HexString(64)
-	_ = cache.Sessions.Delete(ctx, tokenHash)
+	cache.PublishInvalidate(ctx, cache.CacheNameSessions, tokenHash)
 	return db.Session(ctx).Where("user_id = ? AND token = ?", userID, tokenHash).Delete(&model.Session{}).Error
 }
 
@@ -153,7 +153,7 @@ func (s *sessionService) TerminateSession(ctx context.Context, sessionID string,
 		return fmt.Errorf("failed to terminate session: %w", err)
 	}
 
-	_ = cache.Sessions.Delete(ctx, session.Token)
+	cache.PublishInvalidate(ctx, cache.CacheNameSessions, session.Token)
 	return nil
 }
 
@@ -175,7 +175,7 @@ func (s *sessionService) TerminateOtherSessions(ctx context.Context, userID stri
 	}
 
 	for _, sess := range sessions {
-		_ = cache.Sessions.Delete(ctx, sess.Token)
+		cache.PublishInvalidate(ctx, cache.CacheNameSessions, sess.Token)
 	}
 	return nil
 }
@@ -190,7 +190,7 @@ func (s *sessionService) GetSessionByToken(ctx context.Context, token string) (*
 	if session.IsExpired() {
 		session.Invalidate()
 		db.Session(ctx).Select("IsValid").Save(&session)
-		_ = cache.Sessions.Delete(ctx, session.Token)
+		cache.PublishInvalidate(ctx, cache.CacheNameSessions, session.Token)
 		return nil, errors.New("session expired")
 	}
 

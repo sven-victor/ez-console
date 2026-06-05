@@ -179,6 +179,16 @@ func (c *TypedCache[T]) set(key string, value T, ttl time.Duration) {
 	c.mu.Unlock()
 }
 
+// InvalidateByKey deletes a single key from L1 (and L2 if configured).
+// key == "*" clears the entire cache.
+func (c *TypedCache[T]) InvalidateByKey(ctx context.Context, key string) {
+	if key == "*" {
+		c.Clear()
+		return
+	}
+	_ = c.Delete(ctx, key)
+}
+
 func (c *TypedCache[T]) GC() {
 	c.mu.Lock()
 	defer c.mu.Unlock()

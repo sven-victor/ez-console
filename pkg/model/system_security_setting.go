@@ -48,6 +48,11 @@ const (
 	SettingJWTKey           SettingKey = "jwt_key"            // JWT secret key
 	SettingJWTMethod        SettingKey = "jwt_method"         // JWT encryption method
 
+	// SettingFileSignatureKey is the base64-encoded HMAC key used to sign
+	// and verify file download URLs.  It is auto-generated on first startup
+	// and shared across all nodes via the database so that download URLs
+	// signed by one node can be verified by any other node.
+	SettingFileSignatureKey SettingKey = "file_signature_key"
 )
 
 var SecuritySettingKeys = []SettingKey{

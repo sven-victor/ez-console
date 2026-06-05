@@ -21,6 +21,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -34,9 +35,12 @@ import (
 	"github.com/spf13/afero"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
+	dbdialect "github.com/sven-victor/ez-console/pkg/db/dialect"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 const (
@@ -64,22 +68,68 @@ var (
 	fileServiceInstance FileService
 )
 
-// NewFileService creates a file service instance
-func NewFileService(_ context.Context, s BaseService) FileService {
+// NewFileService creates a file service instance.
+// The file-signing secret is loaded from (or auto-generated and written to)
+// the t_setting table so that all nodes share the same key without manual
+// configuration.  Concurrent first-start races are resolved by
+// clause.OnConflict{DoNothing:true}: exactly one node wins the insert, the
+// others re-read the winner's value.
+func NewFileService(ctx context.Context, s BaseService) FileService {
 	fileServiceOnce.Do(func() {
-		if err := os.MkdirAll(uploadDir, 0755); err != nil {
-			panic(fmt.Sprintf("Failed to create upload directory: %v", err))
-		}
-		priv := make([]byte, 32)
-		if _, err := rand.Read(priv); err != nil {
-			panic(fmt.Sprintf("Failed to generate signature secret: %v", err))
+		key, err := getOrCreateFileSignatureKey(ctx)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to initialise file signature key: %v", err))
 		}
 		fileServiceInstance = &fileService{
 			baseService:     s,
-			signatureSecret: base64.StdEncoding.EncodeToString(priv),
+			signatureSecret: key,
 		}
 	})
 	return fileServiceInstance
+}
+
+// getOrCreateFileSignatureKey loads the file signature key from the database.
+// If no key exists yet it generates one and persists it atomically.
+func getOrCreateFileSignatureKey(ctx context.Context) (string, error) {
+	dbConn := db.Session(ctx)
+
+	var existing model.Setting
+	if err := dbConn.Where("`key` = ?", model.SettingFileSignatureKey).First(&existing).Error; err == nil {
+		return existing.Value, nil
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", fmt.Errorf("failed to read file signature key setting: %w", err)
+	}
+
+	// Generate a new key.
+	priv := make([]byte, 32)
+	if _, err := rand.Read(priv); err != nil {
+		return "", fmt.Errorf("failed to generate file signature key: %w", err)
+	}
+	key := base64.StdEncoding.EncodeToString(priv)
+
+	newRow := model.NewSetting(model.SettingFileSignatureKey, key, "auto-generated file download signing key")
+	res := dbConn.Clauses(clause.OnConflict{DoNothing: true}).Create(newRow)
+	if res.Error != nil {
+		return "", fmt.Errorf("failed to persist file signature key: %w", res.Error)
+	}
+
+	if res.RowsAffected == 0 {
+		// Another node won the race — re-read its value.
+		if err := dbConn.Where("`key` = ?", model.SettingFileSignatureKey).First(&existing).Error; err != nil {
+			return "", fmt.Errorf("failed to re-read file signature key: %w", err)
+		}
+		return existing.Value, nil
+	}
+
+	return key, nil
+}
+
+// loadFileSignatureKey loads the key from DB using DB server time for
+// expiry checks (dialect-aware).  Not currently used but kept as a helper
+// for future hot-reload support.
+func loadFileSignatureKey(ctx context.Context) (string, error) {
+	_ = dbdialect.Now(db.Session(ctx))
+	return getOrCreateFileSignatureKey(ctx)
 }
 
 // UploadFile handles file uploads

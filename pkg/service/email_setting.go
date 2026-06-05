@@ -127,7 +127,7 @@ func (s *emailService) InitDefaultSMTPSettings(ctx context.Context) error {
 	// Check if each setting already exists, if not, create it
 	for key, setting := range defaultSettings {
 		var count int64
-		db.Session(ctx).Model(&model.Setting{}).Where("key = ?", key).Count(&count)
+		db.Session(ctx).Model(&model.Setting{}).Where("`key` = ?", key).Count(&count)
 		if count == 0 {
 			if err := db.Session(ctx).Create(model.NewSetting(key, setting.Value, setting.Comment)).Error; err != nil {
 				return err
