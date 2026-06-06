@@ -2026,6 +2026,11 @@ declare global {
       finished_at: string;
       id: string;
       max_retries: number;
+      /** NotAfter, if set, causes the task to be automatically expired (cancelled)
+  if not started by this deadline. Enforced by claimNextPending and the reaper. */
+      not_after: string;
+      /** NotBefore, if set, prevents the task from being claimed before this time. */
+      not_before: string;
       /** optional JSON payload for task input */
       payload: string;
       /** 0-100 */

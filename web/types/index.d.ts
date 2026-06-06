@@ -39,7 +39,7 @@ export declare interface ActionProps extends ButtonProps {
     confirm?: {
         title: React.ReactNode;
         description?: React.ReactNode;
-        onConfirm: () => void;
+        onConfirm?: () => (Promise<void> | void);
         okText?: React.ComponentProps<typeof Popconfirm>['okText'];
         cancelText?: React.ComponentProps<typeof Popconfirm>['cancelText'];
     };
@@ -2873,6 +2873,11 @@ export declare interface Task {
     finished_at: string;
     id: string;
     max_retries: number;
+    /** NotAfter, if set, causes the task to be automatically expired (cancelled)
+     if not started by this deadline. Enforced by claimNextPending and the reaper. */
+    not_after: string;
+    /** NotBefore, if set, prevents the task from being claimed before this time. */
+    not_before: string;
     /** optional JSON payload for task input */
     payload: string;
     /** 0-100 */

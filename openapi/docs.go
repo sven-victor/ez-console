@@ -9446,6 +9446,8 @@ const docTemplate = `{
                 "finished_at",
                 "id",
                 "max_retries",
+                "not_after",
+                "not_before",
                 "payload",
                 "progress",
                 "result",
@@ -9494,6 +9496,14 @@ const docTemplate = `{
                 },
                 "max_retries": {
                     "type": "integer"
+                },
+                "not_after": {
+                    "description": "NotAfter, if set, causes the task to be automatically expired (cancelled)\nif not started by this deadline. Enforced by claimNextPending and the reaper.",
+                    "type": "string"
+                },
+                "not_before": {
+                    "description": "NotBefore, if set, prevents the task from being claimed before this time.",
+                    "type": "string"
                 },
                 "payload": {
                     "description": "optional JSON payload for task input",
@@ -11304,7 +11314,8 @@ const docTemplate = `{
                 1000,
                 1000000,
                 1000000000,
-                60000000000
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -11335,7 +11346,8 @@ const docTemplate = `{
                 "Microsecond",
                 "Millisecond",
                 "Second",
-                "Minute"
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {

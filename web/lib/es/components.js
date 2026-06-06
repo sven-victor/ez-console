@@ -465,7 +465,7 @@ const te = () => /* @__PURE__ */ e.jsx("div", { style: {
   );
   if (c && !m) {
     const g = async () => {
-      c.onConfirm ? c.onConfirm() : u && await u();
+      c.onConfirm ? await c.onConfirm() : u && await u();
     };
     r = /* @__PURE__ */ e.jsx(
       H,
@@ -494,7 +494,7 @@ const te = () => /* @__PURE__ */ e.jsx("div", { style: {
         r ? B.confirm({
           title: r.title,
           content: r.description,
-          onOk: r.onConfirm,
+          onOk: r.onConfirm || u,
           okText: r.okText,
           cancelText: r.cancelText
         }) : u && await u();

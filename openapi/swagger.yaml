@@ -2026,6 +2026,15 @@ definitions:
         type: string
       max_retries:
         type: integer
+      not_after:
+        description: |-
+          NotAfter, if set, causes the task to be automatically expired (cancelled)
+          if not started by this deadline. Enforced by claimNextPending and the reaper.
+        type: string
+      not_before:
+        description: NotBefore, if set, prevents the task from being claimed before
+          this time.
+        type: string
       payload:
         description: optional JSON payload for task input
         type: string
@@ -2056,6 +2065,8 @@ definitions:
     - finished_at
     - id
     - max_retries
+    - not_after
+    - not_before
     - payload
     - progress
     - result
@@ -3334,6 +3345,7 @@ definitions:
     - 1000000
     - 1000000000
     - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3365,6 +3377,7 @@ definitions:
     - Millisecond
     - Second
     - Minute
+    - Hour
   toolset.ToolSetType:
     enum:
     - utils
