@@ -101,7 +101,7 @@ type TaskService interface {
 }
 
 const (
-	taskLeaseName    = "task-reaper"
+	taskLeaseName          = "task-reaper"
 	taskLeaseRenewInterval = 30 * time.Second
 	taskRenewalInterval    = 20 * time.Second
 )
@@ -234,11 +234,7 @@ func (s *taskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 	if bus := GetGlobalEventBus(); bus != nil {
 		_ = bus.Publish(ctx, eventbus.EventTaskNew, []byte(t.ResourceID))
 	}
-	// Also wake local workers via in-process channel for minimal latency.
-	select {
-	case s.wakeupCh <- struct{}{}:
-	default:
-	}
+	s.wakeWorkers()
 	return t, nil
 }
 
@@ -404,17 +400,25 @@ func (s *taskService) RetryTask(ctx context.Context, id string) error {
 	if t.Status != model.TaskStatusFailed && t.Status != model.TaskStatusCancelled {
 		return nil
 	}
-	return db.Session(ctx).Model(&model.Task{}).Where("resource_id = ?", id).Updates(map[string]interface{}{
-		"status":      model.TaskStatusPending,
-		"error":       "",
-		"result":      "",
-		"progress":    0,
-		"started_at":  nil,
-		"finished_at": nil,
-		"retry_count": t.RetryCount + 1,
-		// Manual retry starts a fresh auto-retry cycle.
-		"auto_retry_count": 0,
-	}).Error
+	if err := db.Session(ctx).Model(&model.Task{}).Where("resource_id = ?", id).Updates(map[string]interface{}{
+		"status":           model.TaskStatusPending,
+		"error":            "",
+		"result":           "",
+		"progress":         0,
+		"started_at":       nil,
+		"finished_at":      nil,
+		"retry_count":        t.RetryCount + 1,
+		"auto_retry_count":   0,
+		"worker_id":          nil,
+		"lease_expires_at":   nil,
+	}).Error; err != nil {
+		return err
+	}
+	if bus := GetGlobalEventBus(); bus != nil {
+		_ = bus.Publish(ctx, eventbus.EventTaskNew, []byte(id))
+	}
+	s.wakeWorkers()
+	return nil
 }
 
 // DeleteTask soft-deletes a task. Enforces creator or admin.
@@ -501,38 +505,110 @@ func (s *taskService) startWorkerPool(ctx context.Context) {
 	}
 	go s.pollLoop(ctx)
 	go s.reaperLoop(ctx)
+	s.wakeWorkers()
 	level.Info(logger).Log("msg", "Task worker pool started", "workers", maxConcurrent)
 }
 
-// pollLoop is the fallback DB poller.  It runs even when EventBus events are
-// working so that any missed events are retried within the poll interval.
+// wakeWorkers signals pollLoop to claim pending tasks from DB without blocking.
+func (s *taskService) wakeWorkers() {
+	select {
+	case s.wakeupCh <- struct{}{}:
+	default:
+	}
+}
+
+// drainWakeupCh discards coalesced wakeup signals already buffered in wakeupCh.
+func (s *taskService) drainWakeupCh() {
+	for {
+		select {
+		case <-s.wakeupCh:
+		default:
+			return
+		}
+	}
+}
+
+func (s *taskService) hasTaskQueueCapacity() bool {
+	return len(s.taskQueue) < cap(s.taskQueue)
+}
+
+func jitteredFallbackInterval(base time.Duration) time.Duration {
+	if base <= 0 {
+		base = taskFallbackInterval
+	}
+	return base + time.Duration(rand.Int63n(int64(base/5)))
+}
+
+// pollLoop claims pending tasks from DB. EventBus wakeups trigger immediate
+// batch claiming; a timer provides short polling while backlog may exist and
+// long fallback polling when idle.
 func (s *taskService) pollLoop(ctx context.Context) {
 	cfg := config.GetConfig()
-	base := cfg.Cluster.GetTaskFallbackPollInterval()
+	long := cfg.Cluster.GetTaskFallbackPollInterval()
+	short := taskPollInterval
+
+	timer := time.NewTimer(jitteredFallbackInterval(long))
+	defer timer.Stop()
+
+	resetTimer := func(d time.Duration) {
+		if !timer.Stop() {
+			select {
+			case <-timer.C:
+			default:
+			}
+		}
+		timer.Reset(d)
+	}
+
+	claimUntilIdle := func() bool {
+		any := false
+		for s.tryClaimAndWake(ctx) {
+			any = true
+			if !s.hasTaskQueueCapacity() {
+				break
+			}
+		}
+		return any
+	}
+
+	handlePoll := func() {
+		if claimUntilIdle() {
+			resetTimer(short)
+		} else {
+			resetTimer(jitteredFallbackInterval(long))
+		}
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-s.wakeupCh:
-			s.tryClaimAndWake(ctx)
-		case <-time.After(base + time.Duration(rand.Int63n(int64(base/5)))):
-			s.tryClaimAndWake(ctx)
+			s.drainWakeupCh()
+			handlePoll()
+		case <-timer.C:
+			handlePoll()
 		}
 	}
 }
 
-func (s *taskService) tryClaimAndWake(ctx context.Context) {
-	t, err := s.claimNextPending(ctx)
-	if err != nil || t == nil {
-		return
+// tryClaimAndWake atomically claims one pending task and enqueues it locally.
+// Returns true when a task was claimed and enqueued.
+func (s *taskService) tryClaimAndWake(ctx context.Context) bool {
+	if !s.hasTaskQueueCapacity() {
+		return false
 	}
-	// Route claimed task to the task queue; drop if full (worker will pick it up
-	// from the next poll cycle).
+	t, err := s.claimNextPending(ctx)
+	if err != nil {
+		return false
+	}
 	select {
 	case s.taskQueue <- t:
 		taskQueueLength.Inc()
+		return true
 	default:
 		taskQueueOverflowTotal.WithLabelValues(string(t.Category)).Inc()
+		return false
 	}
 }
 
@@ -544,6 +620,7 @@ func (s *taskService) worker(ctx context.Context, _ int) {
 		case t := <-s.taskQueue:
 			taskQueueLength.Dec()
 			s.runTask(ctx, t)
+			s.wakeWorkers()
 		}
 	}
 }
@@ -684,11 +761,7 @@ func (s *taskService) runTask(pctx context.Context, t *model.Task) {
 						"worker_id":        nil,
 						"lease_expires_at": nil,
 					}).Error
-				// Wake workers to pick up the retried task.
-				select {
-				case s.wakeupCh <- struct{}{}:
-				default:
-				}
+				s.wakeWorkers()
 			} else {
 				now := time.Now()
 				_ = db.Session(taskCtx).Model(&model.Task{}).Where("resource_id = ?", t.ResourceID).Updates(map[string]interface{}{
