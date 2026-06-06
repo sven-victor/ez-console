@@ -72,10 +72,11 @@ func WithCronScheduleID(id string) CreateTaskOption {
 // WithScheduleFireKey sets the deduplication key for cron-triggered tasks.
 // When two nodes fire the same job in the same cron window, only one INSERT
 // wins (the other gets a DoNothing no-op) because schedule_fire_key has a
-// unique index on t_task.
+// unique index on t_task.  Non-cron tasks leave ScheduleFireKey nil so that
+// MySQL's unique index (which permits multiple NULLs) is not violated.
 func WithScheduleFireKey(key string) CreateTaskOption {
 	return func(t *model.Task) {
-		t.ScheduleFireKey = key
+		t.ScheduleFireKey = &key
 	}
 }
 
@@ -231,7 +232,7 @@ func (s *taskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 	}
 
 	dbConn := db.Session(ctx)
-	if t.ScheduleFireKey != "" {
+	if t.ScheduleFireKey != nil {
 		// Use OnConflict DoNothing to deduplicate cron-triggered tasks across
 		// leader nodes that race to enqueue the same job in the same fire window.
 		res := dbConn.Clauses(dbdialect.OnConflictDoNothingOnColumns("schedule_fire_key")).Create(t)

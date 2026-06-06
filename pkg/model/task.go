@@ -65,7 +65,9 @@ type Task struct {
 	// Multi-node fields
 	// ScheduleFireKey is set for cron-triggered tasks and has a unique index so
 	// that concurrent leader nodes cannot enqueue the same fire-time twice.
-	ScheduleFireKey string     `gorm:"column:schedule_fire_key;uniqueIndex;size:128" json:"-"`
+	// Nullable (*string) so that non-cron tasks store NULL instead of an empty
+	// string — all major databases allow multiple NULL values in a unique index.
+	ScheduleFireKey *string `gorm:"column:schedule_fire_key;uniqueIndex;size:128" json:"-"`
 	// WorkerID is the NodeID of the instance currently executing this task.
 	WorkerID        string     `gorm:"column:worker_id;size:64" json:"-"`
 	// LeaseExpiresAt is refreshed by the running worker; the reaper reclaims
