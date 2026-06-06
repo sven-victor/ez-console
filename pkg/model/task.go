@@ -74,7 +74,20 @@ type Task struct {
 	// CancelRequested is set to true when a cancellation is requested for a
 	// running task.  Workers check this column as a fallback when EventBus
 	// task.cancel events are not received.
-	CancelRequested bool       `gorm:"column:cancel_requested;default:false" json:"-"`
+	CancelRequested bool `gorm:"column:cancel_requested;default:false" json:"-"`
+
+	// ClaimToken is a one-time UUID written atomically when the task is claimed
+	// (MySQL/PostgreSQL atomic UPDATE path). The poller queries this column to
+	// retrieve the exact row it just claimed. Empty for un-claimed tasks and for
+	// SQLite (transaction-based claim).
+	ClaimToken string `gorm:"column:claim_token;size:36;index" json:"-"`
+
+	// NotBefore, if set, prevents the task from being claimed before this time.
+	NotBefore *time.Time `gorm:"column:not_before;index" json:"not_before,omitempty"`
+
+	// NotAfter, if set, causes the task to be automatically expired (cancelled)
+	// if not started by this deadline. Enforced by claimNextPending and the reaper.
+	NotAfter *time.Time `gorm:"column:not_after;index" json:"not_after,omitempty"`
 }
 
 type TaskLog struct {

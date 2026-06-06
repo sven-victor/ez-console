@@ -256,27 +256,48 @@ func (s *taskSchedulerService) addJobLocked(ctx context.Context, def *taskschedu
 	if _, ok := s.entryIDs[def.ID]; ok {
 		return
 	}
+
+	// Ensure Schedule is populated so the job function can compute the next
+	// fire time for the not_after deadline. ParseStandard handles the standard
+	// 5-field cron format used by AddJob; Schedule-based jobs already have it set.
+	if def.Schedule == nil && def.Spec != "" {
+		if parsed, err := cron.ParseStandard(def.Spec); err == nil {
+			def.Schedule = parsed
+		}
+	}
+
 	defCopy := def
 	jobFunc := cron.FuncJob(func() {
 		if !s.isLeader() {
 			return
 		}
+		now := time.Now()
 		payload := defCopy.PayloadBuilder()
 		// scheduleFireKey deduplicates concurrent leader nodes that fire the same job
 		// in the same scheduling window.  The key encodes the job ID and the Unix
 		// timestamp of "now" rounded to the cron interval so it is stable.
-		fireTime := time.Now().Unix()
-		scheduleFireKey := fmt.Sprintf("%s:%s", defCopy.ID, strconv.FormatInt(fireTime, 10))
-		_, _ = s.TaskService.CreateTask(
-			context.Background(),
-			defCopy.TaskType,
+		scheduleFireKey := fmt.Sprintf("%s:%s", defCopy.ID, strconv.FormatInt(now.Unix(), 10))
+
+		opts := []CreateTaskOption{
 			WithPayload(payload),
 			WithMaxRetries(defCopy.MaxRetries),
 			WithCategory(model.TaskCategorySystem),
 			WithCronScheduleID(defCopy.ID),
 			WithScheduleFireKey(scheduleFireKey),
-		)
-		now := time.Now()
+			// Allow a 1-second back-dated window so minor clock skew between the
+			// cron scheduler and the worker does not cause premature rejection.
+			WithNotBefore(now.Add(-time.Second)),
+		}
+		// By default set not_after to the next scheduled fire time so that a
+		// task that was not picked up within its scheduling window is discarded
+		// rather than running stale. Opt out with DisableNotAfter=true for jobs
+		// that must always run regardless of scheduling lag.
+		if !defCopy.DisableNotAfter && defCopy.Schedule != nil {
+			nextRun := defCopy.Schedule.Next(now)
+			opts = append(opts, WithNotAfter(nextRun))
+		}
+
+		_, _ = s.TaskService.CreateTask(context.Background(), defCopy.TaskType, opts...)
 		s.mu.Lock()
 		s.lastRun[defCopy.ID] = now
 		s.mu.Unlock()

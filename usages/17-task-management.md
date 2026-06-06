@@ -14,29 +14,43 @@ The Task Management module provides:
 - **Creator-based visibility**: Non-admin users see only their own tasks; admins see all.
 - **Task execution logs**: Logs produced during task execution (via the context logger) are stored in a configurable log storage backend and can be viewed on the task detail page.
 - **Configurable log storage**: Task settings let you choose where task logs are stored (e.g. database); the list of backends is provided by a registry in `pkg/taskscheduler`.
+- **Multi-node safe**: Tasks are claimed from the DB atomically (SKIP LOCKED / single-statement UPDATE); each node runs its own poller. A lease mechanism and a leader-elected reaper recover tasks from crashed nodes.
+- **Execution time windows**: Tasks can carry `not_before` and `not_after` deadlines. Scheduled (cron) tasks automatically receive a time window matching their fire interval so stale runs are discarded rather than executed late.
 
 ## Architecture
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────────────┐
-│  Other      │     │  TaskService │     │  Task Type              │
-│  Modules    │───▶│  CreateTask  │───▶│  Registry               │
-│  (e.g.      │     │  Get/List/   │     │  (pkg/taskscheduler)    │
-│   Export)   │     │  Cancel/     │     │                         │
-└─────────────┘     │  Retry/Delete│     └──────────┬──────────────┘
-                    └──────┬───────┘                │
-                           │                        │ GetTaskRunner
-                           ▼                        ▼
-                    ┌───────────────┐     ┌─────────────────────────┐
-                    │  Worker Pool  │───▶│  TaskRunner              │
-                    │  (configurable│     │  Run(ctx, task,          │
-                    │   concurrency)│     │  progressCallback,       │
-                    └───────────────┘     │  cancelCh)               │
-                                          └─────────────────────────┘
+┌─────────────┐     ┌──────────────────┐      ┌─────────────────────────┐
+│  Other      │     │  TaskService     │      │  Task Type              │
+│  Modules    │────▶│  CreateTask      │      │  Registry               │
+│  (e.g.      │     │  Get/List/       │      │  (pkg/taskscheduler)    │
+│   Export)   │     │  Cancel/Retry/   │      │                         │
+└─────────────┘     │  Delete          │      └──────────┬──────────────┘
+                    └────────┬─────────┘                 │
+                             │ write DB + EventBus        │ GetTaskRunner
+                             ▼                           ▼
+                    ┌─────────────────┐      ┌─────────────────────────┐
+                    │  t_task (DB)    │      │  TaskRunner              │
+                    │  (truth source) │      │  Run(ctx, task,          │
+                    └────────┬────────┘      │  progressCallback,       │
+                             │               │  cancelCh)               │
+                    ┌────────▼────────┐      └──────────▲──────────────┘
+                    │  pollLoop       │                  │
+                    │  (per node)     │                  │
+                    │  claimNextPending│─────────────────┘
+                    └────────┬────────┘  claim → in-memory queue
+                             │
+                    ┌────────▼────────┐
+                    │  Worker Pool    │
+                    │  (N goroutines) │
+                    └─────────────────┘
 ```
 
-- **Task creation** is only via `TaskService.CreateTask` (no HTTP POST). Other modules (e.g. export) call it and get a task ID.
-- **Worker pool** reads max concurrency from system setting `task_max_concurrent` (default 10). Tasks are fed by an in-memory channel. When the channel is full, the task is still persisted to the DB but is **not** enqueued (see **Task scheduling internals** below).
+- **Task creation** is only via `TaskService.CreateTask` (no HTTP POST). Other modules call it and get a task ID.
+- **DB is the task queue**: All tasks are persisted first. After writing, `CreateTask` publishes a `task.new` EventBus event and sends an in-process wakeup signal; both trigger the `pollLoop` on every node.
+- **pollLoop** (one per node) drives claiming: on wakeup or fallback timer it calls `claimNextPending` in a loop until the in-memory queue is full or no more eligible tasks exist.
+- **claimNextPending** atomically claims one task from DB (transitions `pending → running`, sets `worker_id`, `lease_expires_at`, time-window checks). Claimed tasks are pushed into a local buffered channel for workers to consume.
+- **Worker pool** reads max concurrency from system setting `task_max_concurrent` (default 10). Workers consume tasks from the in-memory channel and run the registered `TaskRunner`.
 - **Task types** are registered with `taskscheduler.RegisterTaskType(typeName, runner)` or `taskscheduler.RegisterFuncTaskType(typeName, fn)`. Each type has a `TaskRunner` implementing `Run(ctx, task, progressCallback, cancelCh)`.
 - **Task logs**: Before running a task, the worker reads the log storage backend name from task settings (`task_log_storage_backend`). It creates a tee logger that forwards all `log.Logger` output from the runner to both the default logger and a **task logger** (created via `taskscheduler.NewTaskLogger`) that writes to the chosen log storage backend. Log storage backends are registered in `pkg/taskscheduler`; the default backend is `"database"`.
 
@@ -193,8 +207,10 @@ task, err := svc.TaskService.CreateTask(ctx, "export",
 if err != nil {
     return err
 }
-// task.ResourceID is the task ID; worker will pick it up and run when a runner for "export" is registered.
-// Callers should rely on polling task status or the task list/detail APIs; completion callbacks are not supported (they are lost on service restart).
+// task.ResourceID is the task ID; the pollLoop will pick it up immediately
+// via the wakeup signal sent after the DB write.
+// Callers should rely on polling task status or the task list/detail APIs;
+// completion callbacks are not supported (they are lost on service restart).
 ```
 
 Options:
@@ -203,6 +219,8 @@ Options:
 - **WithMaxRetries(n int)**: Max retries. When > 0, the worker automatically retries on failure (increments `auto_retry_count` and re-enqueues). The user can also manually retry from the UI.
 - **WithCategory(category model.TaskCategory)**: Set task category to `"user"` or `"system"` (`model.TaskCategoryUser` / `model.TaskCategorySystem`). Defaults to `"user"` when creator is not `"system"`, otherwise `"system"`.
 - **WithCronScheduleID(id string)**: Associates the task with a scheduled (cron) job. Set automatically when a cron job fires; not typically used directly.
+- **WithNotBefore(t time.Time)**: The task will not be claimed before this time. Workers skip tasks whose `not_before` is in the future.
+- **WithNotAfter(t time.Time)**: If the task has not started by this deadline it is automatically cancelled by the reaper. Useful to discard stale work (e.g. a cron task that was not executed within its scheduling window).
 
 Creator is taken from `middleware.GetUserIDFromContext(ctx)`; if empty, `"system"` is used.
 
@@ -379,18 +397,98 @@ To add a new log storage backend (e.g. file, external service), implement `tasks
 | retry_count         | int       | Number of manual retries             |
 | auto_retry_count    | int       | Number of automatic retries by the worker |
 | max_retries         | int       | Max retries allowed                  |
-| started_at          | *time     | When run started                    |
-| finished_at         | *time     | When run finished                   |
-| payload             | string    | Optional input for the runner       |
+| started_at          | *time     | When run started                     |
+| finished_at         | *time     | When run finished                    |
+| payload             | string    | Optional input for the runner        |
 | cron_schedule_id    | string    | Set when the task was created by a scheduled (cron) job; used for execution history. |
+| not_before          | *time     | If set, the task will not be claimed before this time. |
+| not_after           | *time     | If set, the task is automatically cancelled if it has not started by this deadline. |
 
 ## Task scheduling internals
 
-- **Write-first**: When a task is created, it is always written to the DB first (status `pending`).
-- **Best-effort enqueue**: After persisting, `TaskService.CreateTask` tries to push the task into an in-memory buffered channel. This is a best-effort optimization for fast pickup by workers.
-- **Overflow behavior**: If the channel is full, the task remains in the DB as `pending` and is **not** enqueued. The service increments the Prometheus counter `task_queue_overflow_total{category=...}` for visibility.
-- **Worker claim-before-run**: A worker consumes tasks from the channel, then atomically "claims" the task in the DB (transitions `pending → running` and sets `started_at`). If the claim fails (already claimed, deleted, or no longer pending), the worker skips it. This prevents duplicate execution.
-- **Auto-retry on failure**: When a task runner returns an error (non-cancellation), if `max_retries > 0` and `auto_retry_count < max_retries`, the worker resets the task to `pending`, increments `auto_retry_count`, and re-enqueues it. This is distinct from manual retry (which increments `retry_count`). Tasks that exhaust auto-retries transition to `failed`.
+### Task lifecycle
+
+```
+CreateTask → DB (status=pending) → EventBus task.new + wakeupCh
+                                        │
+                                        ▼
+                               pollLoop (per node)
+                                        │
+                               claimNextPending ──── not eligible (not_before / not_after) → skip
+                                        │
+                                 status = running
+                                 worker_id = nodeID
+                                 lease_expires_at = NOW + TTL
+                                        │
+                                in-memory taskQueue (buf=1000)
+                                        │
+                                   worker.Run()
+                                 ┌──────┴──────┐
+                              success        failure
+                                 │         (auto-retry if max_retries > 0)
+                            status=success   │
+                                         status=pending → wakeupCh
+```
+
+### Write-first, DB-backed queue
+
+When a task is created it is always written to the DB first (status `pending`). The DB is the authoritative queue; the in-memory channel is a fast-path buffer, not the source of truth.
+
+After persisting, `CreateTask`:
+1. Publishes a `task.new` EventBus event so **all** nodes receive a wakeup signal.
+2. Sends a non-blocking signal to the local `wakeupCh`.
+
+### pollLoop and claimNextPending
+
+Each node runs exactly one `pollLoop` goroutine. On receiving a wakeup signal or a fallback timer fire, `pollLoop` calls `claimUntilIdle`, which loops calling `claimNextPending` until either:
+
+- **Drained**: `claimNextPending` finds no eligible pending task (returns `ErrRecordNotFound`).
+- **Capped**: the local in-memory queue is full (`len(taskQueue) == cap(taskQueue)`). In this case workers are still executing; they call `wakeWorkers()` on completion, which restarts the claim loop.
+
+After `claimUntilIdle` returns (either condition), the fallback timer is reset to `TaskFallbackPollInterval` (default 1 minute, with ±20% jitter). The fallback timer is a safety net for cases where EventBus messages are missed; in normal operation the wakeup channel drives claiming with near-zero latency.
+
+### Atomic claim (claimNextPending)
+
+`claimNextPending` transitions one `pending` task to `running` atomically, enforcing `not_before ≤ NOW < not_after` (if set):
+
+- **MySQL**: single `UPDATE … ORDER BY created_at ASC LIMIT 1` — no explicit transaction needed.
+- **PostgreSQL**: single `UPDATE … WHERE resource_id = (SELECT … FOR UPDATE SKIP LOCKED)` — no explicit transaction.
+- **SQLite**: `SELECT … FOR UPDATE` inside a transaction (SQLite serializes writes via its file lock; `SKIP LOCKED` is not supported but unnecessary).
+
+On success, the task row has `status='running'`, `worker_id`, `started_at`, and `lease_expires_at = NOW + leaseTTL` (default 60 s). The poller then retrieves the row by `claim_token` (MySQL/PostgreSQL) or direct reference (SQLite) and pushes it into the local `taskQueue` channel.
+
+### Lease renewal and cancellation
+
+While a task is running, a background goroutine inside the worker:
+
+- Renews `lease_expires_at` every 20 seconds to signal "still alive".
+- Polls `cancel_requested` from the DB every 20 seconds as a cross-node fallback for cancellation (in addition to the in-process `cancelCh` closed by the EventBus `task.cancel` event).
+
+### Reaper
+
+A leader-elected `reaperLoop` runs every 30 seconds and performs two cleanup operations:
+
+1. **Recover crashed workers**: Resets `running` tasks whose `lease_expires_at < NOW` back to `pending` (clears `worker_id`, `lease_expires_at`, `claim_token`), so another node can pick them up.
+2. **Expire overdue pending tasks**: Cancels `pending` tasks whose `not_after < NOW`, setting `status='cancelled'` and `error='task expired: not_after deadline passed'`. This prevents stale tasks from being executed long after their scheduling window has closed.
+
+Leadership is determined by `t_cluster_lease` via `DBClusterBackend`. In single-node deployments (`cluster.enabled=false`) the reaper always runs.
+
+### Auto-retry on failure
+
+When a task runner returns an error (non-cancellation), if `max_retries > 0` and `auto_retry_count < max_retries`, the worker:
+1. Resets the task to `pending` (clears `worker_id`, `lease_expires_at`, `claim_token`).
+2. Increments `auto_retry_count`.
+3. Calls `wakeWorkers()` so the task is picked up immediately.
+
+This is distinct from manual retry (which increments `retry_count`). Tasks that exhaust auto-retries transition to `failed`.
+
+### Manual retry (RetryTask)
+
+`RetryTask` resets a `failed` or `cancelled` task to `pending` (resets `error`, `result`, `progress`, `started_at`, `finished_at`, `auto_retry_count` to 0, increments `retry_count`). After the DB update it publishes a `task.new` EventBus event and calls `wakeWorkers()` so the task is picked up immediately on all nodes.
+
+### Overflow behavior
+
+If `taskQueue` is full when `claimUntilIdle` runs, claiming stops (capped). Workers call `wakeWorkers()` when they finish a task, which restarts the claim loop. The `task_queue_overflow_total` Prometheus counter increments when a rare race causes a task to be claimed but not enqueued (between the capacity check and the channel send).
 
 ## Prometheus metrics for tasks
 
@@ -401,18 +499,21 @@ The following metrics are exposed under `/metrics` for monitoring:
 | `task_created_total`           | Counter  | category, type            | Total tasks created. |
 | `task_started_total`           | Counter  | category, type            | Total tasks that started running. |
 | `task_completed_total`         | Counter  | category, type, status    | Total tasks completed (status: success, failed, cancelled). |
-| `task_queue_overflow_total`    | Counter  | category                  | Number of times a task was not enqueued because the in-memory queue was full. |
+| `task_queue_overflow_total`    | Counter  | category                  | Number of times a task was claimed but could not be enqueued (queue full race). |
 | `task_queue_length`           | Gauge    | —                         | Current number of tasks in the in-memory queue. |
 | `task_running_gauge`          | Gauge    | type                      | Number of tasks currently running. |
 | `task_run_duration_seconds`   | Histogram| type                      | Task run duration from start to finish. |
 
 ## Scheduled tasks (cron)
 
-- **Registry**: Scheduled jobs are defined in code via `pkg/taskscheduler`. Call `taskscheduler.RegisterScheduledJob(def)` with a `ScheduledJobDef` (ID, Name, Spec, Description, TaskType, PayloadBuilder, MaxRetries, Runner, Schedule). Definitions are **not** persisted to the DB; they exist only in memory. Note: `RegisterScheduledJob` panics if a job with the same ID is already registered.
-- **Schedule field**: `ScheduledJobDef.Schedule` is an optional pre-parsed `cron.Schedule`. If set, the `Spec` string is used only for display; the actual schedule is driven by the `Schedule` value. If nil, `Spec` is parsed at runtime.
+- **Registry**: Scheduled jobs are defined in code via `pkg/taskscheduler`. Call `taskscheduler.RegisterScheduledJob(def)` with a `ScheduledJobDef` (ID, Name, Spec, Description, TaskType, PayloadBuilder, MaxRetries, Runner, Schedule, DisableNotAfter). Definitions are **not** persisted to the DB; they exist only in memory. Note: `RegisterScheduledJob` panics if a job with the same ID is already registered.
+- **Schedule field**: `ScheduledJobDef.Schedule` is an optional pre-parsed `cron.Schedule`. If set, the `Spec` string is used only for display; the actual schedule is driven by the `Schedule` value. If nil, `Spec` is parsed with `cron.ParseStandard` at job registration time (stored back into `Schedule`) so that `not_after` can be computed at fire time.
 - **Runner field**: `ScheduledJobDef.Runner` is optional. If set, `RegisterScheduledJob` automatically registers the runner as the task type via `RegisterFuncTaskType`. If nil, the task type must be registered separately (e.g. via another `RegisterTaskType` call).
 - **Enabled**: All registered jobs start with `Enabled: true` by default. Users can toggle enabled/disabled via the UI or API.
-- **Execution**: The `SchedulerService` (in `pkg/service`) uses `github.com/robfig/cron/v3`. When a cron job fires, it calls `TaskService.CreateTask` with the job's task type, payload from `PayloadBuilder()`, category `"system"`, and `WithCronScheduleID(jobID)`. The created task is then processed like any other task (queue, workers, DB). Each run produces one task row, so execution history is the list of tasks with that `cron_schedule_id`.
+- **Execution time window**: When a cron job fires, the created task automatically receives:
+  - `not_before = fire_time - 1s` — allows a 1-second back-dated window for minor clock skew between the scheduler and the worker.
+  - `not_after = schedule.Next(fire_time)` — the next scheduled fire time; tasks not started before the next window are automatically cancelled by the reaper, preventing stale runs. Set `DisableNotAfter: true` to opt out (e.g. for long-running or one-shot jobs that must always execute).
+- **Deduplication**: Each scheduled task carries a `schedule_fire_key` (`<jobID>:<unix_ts>`). A unique DB index on this column ensures that concurrent leader nodes cannot create duplicate tasks for the same fire window (only the first `INSERT` wins; the other is a silent no-op).
 - **UI**: The **Scheduled Tasks** page (`/tasks/schedules`) lists all registered cron jobs (name, spec, description, task type, enabled, next run, last run) and allows viewing execution history for a selected job. Users with `task:schedule:update` can enable/disable a job and trigger a run immediately.
 
 ### Registering a scheduled job
@@ -430,6 +531,7 @@ taskscheduler.RegisterScheduledJob(&taskscheduler.ScheduledJobDef{
     TaskType:    "cleanup",
     PayloadBuilder: func() string { return `{}` },
     MaxRetries:  1,
+    // DisableNotAfter: true,  // uncomment for jobs that must not be discarded
     Runner: taskscheduler.NewFuncTaskRunner(func(
         ctx context.Context,
         t *model.Task,
@@ -464,6 +566,8 @@ The scheduler does not store cron definitions in the DB; adding or changing a jo
 
 - **Max concurrent tasks**: System Settings → Task Settings → "Max concurrent tasks" (default 10). Stored as `task_max_concurrent` in the settings table.
 - **Log storage backend**: System Settings → Task Settings → "Log storage" dropdown (default `database`). Stored as `task_log_storage_backend`. Determines where task execution logs are written and read from; options come from `pkg/taskscheduler` registry.
+- **Task fallback poll interval**: `cluster.task.fallback_poll_interval` in config (default 1 minute). Controls how often `pollLoop` fires its safety-net timer when no wakeup signals arrive. In normal operation wakeup signals drive claiming; this interval is only a fallback for missed events.
+- **Task lease TTL**: `cluster.task.lease_ttl` in config (default 60 seconds). How long a running task's lease is valid before the reaper considers the worker dead and reclaims the task.
 
 ### Registering a new extensible task setting (developer guide)
 
@@ -489,10 +593,13 @@ Built-in extensible settings are currently registered in `init()` as:
 ## Troubleshooting
 
 - **Task stays "pending"**: Ensure a runner is registered for the task's `type` via `taskscheduler.RegisterTaskType` or `taskscheduler.RegisterFuncTaskType`. Ensure the server has restarted after registering so the worker pool and registry are loaded.
-- **Many tasks stay "pending" under high load**: Check Prometheus `task_queue_overflow_total`. If it increases, the in-memory queue was full at task creation time, so some tasks were persisted but not enqueued. Mitigations: reduce bursty task creation, increase the in-memory queue size (code change: `defaultTaskQueueSize`), or implement a DB-backed pickup loop to drain pending tasks.
+- **Task stays "pending" and never executes**: Check `not_before` and `not_after` on the task row. If `not_after` has already passed, the task will be cancelled by the next reaper run (every 30 s) rather than executed. If `not_before` is in the future, the task will be skipped by `claimNextPending` until that time arrives.
+- **Many tasks stay "pending" under high load**: Check Prometheus `task_queue_overflow_total`. If it is non-zero, there was a rare race between the capacity check and the channel send; the affected tasks retain `status='running'` temporarily and are recovered by the reaper within `lease_ttl` seconds. For sustained backlog, increase `task_max_concurrent` in Task Settings or scale to multiple nodes.
 - **"task type not registered"**: The worker sets status to failed with this message when `taskscheduler.GetTaskRunner(ctx, task.Type)` returns false. Add a `RegisterTaskType` or `RegisterFuncTaskType` call for that type (e.g. in `init()` of the package that implements the runner).
+- **Tasks cancelled with "task expired"**: A cron task was not claimed within its `not_after` window (the next scheduled fire time). Causes: worker pool overloaded, service was down during the window, or `not_after` was set too tight. For jobs that must always run regardless of scheduling lag, set `DisableNotAfter: true` on the `ScheduledJobDef`.
 - **Creator or admin only**: List and get APIs filter by `creator_id` for non-admin users. Use a context with the correct user when calling from backend code if you need to simulate a user.
 - **No task logs on detail page**: Ensure Task Settings → Log storage is set to a registered backend (e.g. `database`). Logs are only stored when the runner uses the context logger (`log.GetContextLogger(ctx)`); if the runner does not log, the list will be empty. Ensure the task has started at least once (logs are written during execution).
+- **Running task not progressing (node crashed)**: The reaper will reset the task to `pending` after `lease_ttl` seconds (default 60 s) and another worker will pick it up. Check `task_running_gauge` and `lease_expires_at` in the DB to diagnose.
 
 ## Related Documentation
 

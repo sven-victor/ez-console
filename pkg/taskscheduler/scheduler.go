@@ -39,6 +39,13 @@ type ScheduledJobDef struct {
 	MaxRetries     int
 	Enabled        bool       // if false, the job is not added to cron (or is removed)
 	Runner         TaskRunner // if nil, the task type is not registered by the scheduler, but by the task service directly
+
+	// DisableNotAfter disables the automatic not_after deadline for tasks created
+	// by this job. By default (false), not_after is set to the next scheduled fire
+	// time so that a task missed within its scheduling window is auto-expired rather
+	// than running stale. Set to true for long-running or one-shot jobs that should
+	// not be discarded if they cannot start immediately.
+	DisableNotAfter bool
 }
 
 var (

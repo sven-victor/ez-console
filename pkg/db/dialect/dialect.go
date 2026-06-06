@@ -92,3 +92,45 @@ func OnConflictDoNothingOnColumns(columns ...string) clause.OnConflict {
 	}
 	return clause.OnConflict{Columns: cols, DoNothing: true}
 }
+
+// AtomicClaimTask atomically claims one pending task by issuing a single UPDATE
+// statement, avoiding an explicit transaction + SELECT FOR UPDATE round-trip.
+// On success it returns (true, nil) and the caller should retrieve the row with
+// SELECT WHERE claim_token=claimToken.  Returns (false, nil) when no eligible
+// pending task exists, or when the dialect is SQLite (caller must fall back to
+// the transaction-based claim path).
+//
+// tableName must be the resolved GORM table name (e.g. "t_task").
+// The update sets: claim_token, status='running', worker_id, started_at, lease_expires_at.
+// Eligible tasks must satisfy: status='pending', not_before<=NOW() or NULL,
+// not_after>NOW() or NULL.
+func AtomicClaimTask(db *gorm.DB, tableName, claimToken, workerID string, leaseTTL time.Duration) (bool, error) {
+	leaseSecs := int64(leaseTTL.Seconds())
+	var result *gorm.DB
+	switch db.Dialector.Name() {
+	case "mysql":
+		sql := fmt.Sprintf(
+			"UPDATE %s SET claim_token=?, status='running', worker_id=?, started_at=NOW(), lease_expires_at=DATE_ADD(NOW(), INTERVAL %d SECOND) "+
+				"WHERE status='pending' AND (not_before IS NULL OR not_before <= NOW()) AND (not_after IS NULL OR not_after > NOW()) "+
+				"ORDER BY created_at ASC LIMIT 1",
+			tableName, leaseSecs,
+		)
+		result = db.Exec(sql, claimToken, workerID)
+	case "postgres":
+		sql := fmt.Sprintf(
+			"UPDATE %s SET claim_token=?, status='running', worker_id=?, started_at=NOW(), lease_expires_at=NOW() + INTERVAL '%d seconds' "+
+				"WHERE resource_id = (SELECT resource_id FROM %s WHERE status='pending' AND (not_before IS NULL OR not_before <= NOW()) AND (not_after IS NULL OR not_after > NOW()) "+
+				"ORDER BY created_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED)",
+			tableName, leaseSecs, tableName,
+		)
+		result = db.Exec(sql, claimToken, workerID)
+	default:
+		// SQLite: single-writer serialization makes a transaction sufficient;
+		// signal the caller to use the transaction-based fallback.
+		return false, nil
+	}
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return result.RowsAffected == 1, nil
+}

@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/go-kit/log/level"
+	"github.com/google/uuid"
 	"github.com/robfig/cron/v3"
 	"github.com/sven-victor/ez-console/pkg/cluster"
 	"github.com/sven-victor/ez-console/pkg/config"
@@ -75,6 +76,21 @@ func WithCronScheduleID(id string) CreateTaskOption {
 func WithScheduleFireKey(key string) CreateTaskOption {
 	return func(t *model.Task) {
 		t.ScheduleFireKey = key
+	}
+}
+
+// WithNotBefore prevents the task from being claimed before the given time.
+func WithNotBefore(t time.Time) CreateTaskOption {
+	return func(task *model.Task) {
+		task.NotBefore = &t
+	}
+}
+
+// WithNotAfter marks the task as expired if it has not started by the given time.
+// The reaper automatically cancels pending tasks that exceed their not_after deadline.
+func WithNotAfter(t time.Time) CreateTaskOption {
+	return func(task *model.Task) {
+		task.NotAfter = &t
 	}
 }
 
@@ -407,10 +423,11 @@ func (s *taskService) RetryTask(ctx context.Context, id string) error {
 		"progress":         0,
 		"started_at":       nil,
 		"finished_at":      nil,
-		"retry_count":        t.RetryCount + 1,
-		"auto_retry_count":   0,
-		"worker_id":          nil,
-		"lease_expires_at":   nil,
+		"retry_count":      t.RetryCount + 1,
+		"auto_retry_count": 0,
+		"worker_id":        nil,
+		"lease_expires_at": nil,
+		"claim_token":      "",
 	}).Error; err != nil {
 		return err
 	}
@@ -449,18 +466,51 @@ func (s *taskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskL
 	return entries, nil
 }
 
-// claimNextPending atomically claims one pending task using SKIP LOCKED so
-// multiple worker nodes (or goroutines) never claim the same row.
+// claimNextPending atomically claims one pending task that is within its
+// execution window (not_before <= NOW, not_after > NOW or unset).
+//
+// For MySQL and PostgreSQL a single-statement UPDATE is used (no explicit
+// transaction) so that concurrent workers never contend on the same row.
+// For SQLite a transaction + SELECT FOR UPDATE fallback is used instead because
+// SQLite serialises writes via its file lock, making SKIP LOCKED unnecessary.
 func (s *taskService) claimNextPending(ctx context.Context) (*model.Task, error) {
 	dbConn := db.Session(ctx)
 	cfg := config.GetConfig()
 	leaseTTL := cfg.Cluster.GetTaskLeaseTTL()
 
+	// Resolve the GORM table name so we can build dialect-specific raw SQL.
+	stmt := &gorm.Statement{DB: dbConn}
+	_ = stmt.Parse(&model.Task{})
+	tableName := stmt.Table
+
+	claimToken := uuid.New().String()
+
+	// Attempt atomic single-statement UPDATE (MySQL / PostgreSQL).
+	claimed, err := dbdialect.AtomicClaimTask(dbConn, tableName, claimToken, s.workerID, leaseTTL)
+	if err != nil {
+		return nil, err
+	}
+	if claimed {
+		var t model.Task
+		if err := dbConn.Where("claim_token = ? AND status = ?", claimToken, model.TaskStatusRunning).First(&t).Error; err != nil {
+			return nil, err
+		}
+		return &t, nil
+	}
+
+	// AtomicClaimTask returns (false, nil) either because:
+	//   a) MySQL/PostgreSQL: no eligible pending task exists → surface as ErrRecordNotFound.
+	//   b) SQLite: fallback required.
+	if dbConn.Dialector.Name() != "sqlite" {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	// SQLite fallback: transaction + SELECT FOR UPDATE (plain, no SKIP LOCKED).
 	var t model.Task
-	err := dbConn.Transaction(func(tx *gorm.DB) error {
-		// SELECT ... FOR UPDATE SKIP LOCKED so concurrent workers each grab a different row.
+	err = dbConn.Transaction(func(tx *gorm.DB) error {
 		res := dbdialect.LockSkipLocked(tx).
-			Where("status = ?", model.TaskStatusPending).
+			Where("status = ? AND (not_before IS NULL OR not_before <= ?) AND (not_after IS NULL OR not_after > ?)",
+				model.TaskStatusPending, dbdialect.Now(tx), dbdialect.Now(tx)).
 			Order("created_at ASC").
 			Limit(1).
 			First(&t)
@@ -540,12 +590,20 @@ func jitteredFallbackInterval(base time.Duration) time.Duration {
 }
 
 // pollLoop claims pending tasks from DB. EventBus wakeups trigger immediate
-// batch claiming; a timer provides short polling while backlog may exist and
-// long fallback polling when idle.
+// batch claiming; a fallback timer fires periodically to recover missed wakeups.
+//
+// Claiming strategy (claimUntilIdle):
+//   - Loop: check queue capacity → claim one task → repeat.
+//   - Stop when the queue is full (capped): worker completion calls wakeWorkers()
+//     so the next claim will happen via the wakeup path, not the timer.
+//   - Stop when claimNextPending finds no eligible task (drained).
+//   - After either stop condition, reset the timer to the long fallback interval.
+//     The short-poll (taskPollInterval) timer is intentionally not used: the
+//     wakeWorkers() calls from worker completion and CreateTask already provide
+//     the low-latency trigger; the fallback timer is purely a safety net.
 func (s *taskService) pollLoop(ctx context.Context) {
 	cfg := config.GetConfig()
 	long := cfg.Cluster.GetTaskFallbackPollInterval()
-	short := taskPollInterval
 
 	timer := time.NewTimer(jitteredFallbackInterval(long))
 	defer timer.Stop()
@@ -560,23 +618,22 @@ func (s *taskService) pollLoop(ctx context.Context) {
 		timer.Reset(d)
 	}
 
-	claimUntilIdle := func() bool {
-		any := false
-		for s.tryClaimAndWake(ctx) {
-			any = true
+	// claimUntilIdle drains all immediately executable pending tasks into the
+	// local queue, stopping early if the queue becomes full.
+	claimUntilIdle := func() {
+		for {
 			if !s.hasTaskQueueCapacity() {
-				break
+				return // capped: workers will call wakeWorkers() when they free slots
+			}
+			if !s.tryClaimAndWake(ctx) {
+				return // drained: no more eligible pending tasks (or transient DB error)
 			}
 		}
-		return any
 	}
 
 	handlePoll := func() {
-		if claimUntilIdle() {
-			resetTimer(short)
-		} else {
-			resetTimer(jitteredFallbackInterval(long))
-		}
+		claimUntilIdle()
+		resetTimer(jitteredFallbackInterval(long))
 	}
 
 	for {
@@ -654,12 +711,27 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 		}
 	}
 	dbConn := db.Session(ctx)
+
+	// Reset running tasks whose lease has expired back to pending so another
+	// worker can pick them up (handles crashed or unresponsive nodes).
 	dbConn.Model(&model.Task{}).
 		Where("status = ? AND lease_expires_at < ?", model.TaskStatusRunning, dbdialect.Now(dbConn)).
 		Updates(map[string]any{
 			"status":           model.TaskStatusPending,
 			"worker_id":        nil,
 			"lease_expires_at": nil,
+			"claim_token":      "",
+		})
+
+	// Cancel pending tasks that have exceeded their not_after deadline.
+	// This prevents stale tasks from clogging the pending queue indefinitely.
+	dbConn.Model(&model.Task{}).
+		Where("status = ? AND not_after IS NOT NULL AND not_after < ?",
+			model.TaskStatusPending, dbdialect.Now(dbConn)).
+		Updates(map[string]any{
+			"status":      model.TaskStatusCancelled,
+			"error":       "task expired: not_after deadline passed",
+			"finished_at": dbdialect.Now(dbConn),
 		})
 }
 
@@ -760,6 +832,7 @@ func (s *taskService) runTask(pctx context.Context, t *model.Task) {
 						"auto_retry_count": nextAutoRetry,
 						"worker_id":        nil,
 						"lease_expires_at": nil,
+						"claim_token":      "",
 					}).Error
 				s.wakeWorkers()
 			} else {
