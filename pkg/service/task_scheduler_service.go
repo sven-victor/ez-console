@@ -33,7 +33,6 @@ import (
 	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/signals"
-	"gorm.io/gorm/clause"
 )
 
 // ScheduledJobState is the runtime state of a scheduled job (for API listing).
@@ -380,11 +379,14 @@ func (s *taskSchedulerService) ToggleEnabled(id string, enabled bool) error {
 
 	// Persist state to DB using upsert so other nodes can bootstrap from it.
 	state := model.ScheduledJobState{ID: id, Enabled: enabled}
-	if err := db.Session(s.svcCtx).Clauses(clause.OnConflict{
-		Columns:   []clause.Column{{Name: "id"}},
-		DoUpdates: clause.AssignmentColumns([]string{"enabled", "updated_at"}),
-	}).Create(&state).Error; err != nil {
-		return fmt.Errorf("failed to persist scheduled job state: %w", err)
+	result := db.Session(s.svcCtx).Select("enabled").Model(&model.ScheduledJobState{}).Where("id = ?", id).Updates(state)
+	if result.Error == nil && result.RowsAffected == 0 {
+		if err := db.Session(s.svcCtx).Create(&state).Error; err != nil {
+			return fmt.Errorf("failed to persist scheduled job state: %w", err)
+		}
+	}
+	if result.Error != nil {
+		return fmt.Errorf("failed to persist scheduled job state: %w", result.Error)
 	}
 
 	// Broadcast to all nodes (including self via subscribe handler).
