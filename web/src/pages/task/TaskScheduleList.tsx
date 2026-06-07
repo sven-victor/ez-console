@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Button, Space, message, Tag, Tooltip, Switch, Progress } from 'antd';
+import { Card, Button, Space, message, Tag, Switch, Progress } from 'antd';
 import { ReloadOutlined, PlayCircleOutlined, HistoryOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -24,6 +24,7 @@ import { TableRef } from '@/components/Table';
 import { Table } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { PermissionGuard } from '@/components/PermissionGuard';
+import Actions from '@/components/Actions';
 import { PAGINATION } from '@/constants';
 import { useRequest } from 'ahooks';
 import { useNavigate } from 'react-router-dom';
@@ -132,31 +133,26 @@ const TaskScheduleList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      width: 200,
+      width: 120,
       fixed: 'right',
       render: (_: unknown, record: API.ScheduledJobState) => (
-        <Space size="small">
-          <Tooltip title={t('viewHistory', { defaultValue: 'View history' })}>
-            <Button
-              type="text"
-              size="small"
-              icon={<HistoryOutlined />}
-              onClick={() => {
-                setSelectedScheduleId(record.id);
-              }}
-            />
-          </Tooltip>
-          <PermissionGuard permission="task:schedule:update">
-            <Tooltip title={t('triggerNow', { defaultValue: 'Trigger now' })}>
-              <Button
-                type="text"
-                size="small"
-                icon={<PlayCircleOutlined />}
-                onClick={() => handleTrigger(record.id)}
-              />
-            </Tooltip>
-          </PermissionGuard>
-        </Space>
+        <Actions
+          actions={[
+            {
+              key: 'history',
+              icon: <HistoryOutlined />,
+              tooltip: t('viewHistory', { defaultValue: 'View history' }),
+              onClick: async () => { setSelectedScheduleId(record.id); },
+            },
+            {
+              key: 'trigger',
+              icon: <PlayCircleOutlined />,
+              tooltip: t('triggerNow', { defaultValue: 'Trigger now' }),
+              permission: 'task:schedule:update',
+              onClick: () => handleTrigger(record.id),
+            },
+          ]}
+        />
       ),
     },
   ];
@@ -215,6 +211,13 @@ const TaskScheduleList: React.FC = () => {
     },
     { title: t('creatorId', { defaultValue: 'Creator' }), dataIndex: 'creator_id', key: 'creator_id', width: 120, ellipsis: true },
     {
+      title: t('notBefore', { defaultValue: 'Not Before' }),
+      dataIndex: 'not_before',
+      key: 'not_before',
+      width: 170,
+      render: (v: string) => (v ? new Date(v).toLocaleString() : '-'),
+    },
+    {
       title: t('createdAt', { defaultValue: 'Created At' }),
       dataIndex: 'created_at',
       key: 'created_at',
@@ -224,14 +227,25 @@ const TaskScheduleList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      width: 140,
+      width: 100,
       render: (_: unknown, record: API.Task) => (
-        <Space size="small">
-          <Button type="text" size="small" icon={<EyeOutlined />} onClick={() => navigate(`/tasks/${record.id}`)} />
-          {record.artifact_file_key && (
-            <Button type="text" size="small" icon={<DownloadOutlined />} onClick={() => handleDownload(record.artifact_file_key)} />
-          )}
-        </Space>
+        <Actions
+          actions={[
+            {
+              key: 'view',
+              icon: <EyeOutlined />,
+              tooltip: t('view', { defaultValue: 'View' }),
+              onClick: async () => { navigate(`/tasks/${record.id}`); },
+            },
+            {
+              key: 'download',
+              icon: <DownloadOutlined />,
+              tooltip: t('download', { defaultValue: 'Download' }),
+              hidden: !record.artifact_file_key,
+              onClick: () => handleDownload(record.artifact_file_key),
+            },
+          ]}
+        />
       ),
     },
   ];

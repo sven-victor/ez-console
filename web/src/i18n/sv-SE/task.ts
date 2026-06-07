@@ -29,6 +29,7 @@ export default {
   statusLabel: 'Status',
   progress: 'Framsteg',
   creatorId: 'Skapad av',
+  notBefore: 'Inte före',
   createdAt: 'Skapad',
   startedAt: 'Startad',
   finishedAt: 'Slutförd',

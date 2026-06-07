@@ -29,6 +29,7 @@ export default {
   statusLabel: 'الحالة',
   progress: 'التقدم',
   creatorId: 'المنشئ',
+  notBefore: 'ليس قبل',
   createdAt: 'تاريخ الإنشاء',
   startedAt: 'تاريخ البدء',
   finishedAt: 'تاريخ الانتهاء',

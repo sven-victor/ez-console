@@ -1,46 +1,46 @@
 import { j as s } from "./vendor.js";
-import { useState as R, useRef as E, useEffect as A } from "react";
-import { message as u, Tag as p, Switch as D, Space as h, Tooltip as y, Button as l, Progress as F, Card as m, Table as N } from "antd";
-import { HistoryOutlined as $, PlayCircleOutlined as P, EyeOutlined as O, DownloadOutlined as H, ReloadOutlined as g } from "@ant-design/icons";
-import { useTranslation as k } from "react-i18next";
+import { useState as R, useRef as A, useEffect as E } from "react";
+import { message as n, Tag as h, Switch as D, Progress as N, Space as y, Card as k, Table as z, Button as f } from "antd";
+import { HistoryOutlined as F, PlayCircleOutlined as $, EyeOutlined as P, DownloadOutlined as O, ReloadOutlined as g } from "@ant-design/icons";
+import { useTranslation as x } from "react-i18next";
 import { a as o } from "./index.js";
-import { f as j, i as U } from "./components.js";
+import { f as H, b as m, i as U } from "./components.js";
 import { P as w } from "./base.js";
-import { useRequest as q } from "ahooks";
-import { useNavigate as v } from "react-router-dom";
-const G = {
+import { useRequest as v } from "ahooks";
+import { useNavigate as q } from "react-router-dom";
+const B = {
   pending: "default",
   running: "processing",
   success: "success",
   failed: "error",
   cancelled: "default"
 }, te = () => {
-  const { t: a } = k("task"), { t: d } = k("common"), T = v(), [r, f] = R(null), c = E(null), { data: n, loading: V, refresh: x } = q(
+  const { t: a } = x("task"), { t: d } = x("common"), V = q(), [l, c] = R(null), u = A(null), { data: i, loading: T, refresh: p } = v(
     () => o.tasks.listTaskSchedules(),
     {
       onError: (e) => {
-        u.error(a("scheduleListFailed", { defaultValue: "Failed to list schedules: {{error}}", error: e }));
+        n.error(a("scheduleListFailed", { defaultValue: "Failed to list schedules: {{error}}", error: e }));
       }
     }
-  ), _ = Array.isArray(n) ? n : (n == null ? void 0 : n.data) ?? [], S = async (e, t) => {
+  ), _ = Array.isArray(i) ? i : (i == null ? void 0 : i.data) ?? [], j = async (e, t) => {
     try {
-      await o.tasks.toggleTaskSchedule({ id: e }, { enabled: t }), u.success(a("scheduleUpdated", { defaultValue: "Schedule updated." })), x();
+      await o.tasks.toggleTaskSchedule({ id: e }, { enabled: t }), n.success(a("scheduleUpdated", { defaultValue: "Schedule updated." })), p();
     } catch {
-      u.error(a("scheduleUpdateFailed", { defaultValue: "Failed to update schedule." }));
+      n.error(a("scheduleUpdateFailed", { defaultValue: "Failed to update schedule." }));
     }
   };
-  A(() => {
+  E(() => {
     var e, t;
-    r && ((t = (e = c.current) == null ? void 0 : e.reload) == null || t.call(e));
-  }, [r]);
-  const C = async (e) => {
-    var t, i;
+    l && ((t = (e = u.current) == null ? void 0 : e.reload) == null || t.call(e));
+  }, [l]);
+  const S = async (e) => {
+    var t, r;
     try {
-      await o.tasks.triggerTaskSchedule({ id: e }), u.success(a("scheduleTriggered", { defaultValue: "Task triggered." })), f(e), e === r && ((i = (t = c.current) == null ? void 0 : t.reload) == null || i.call(t));
+      await o.tasks.triggerTaskSchedule({ id: e }), n.success(a("scheduleTriggered", { defaultValue: "Task triggered." })), c(e), e === l && ((r = (t = u.current) == null ? void 0 : t.reload) == null || r.call(t));
     } catch {
-      u.error(a("scheduleTriggerFailed", { defaultValue: "Failed to trigger schedule." }));
+      n.error(a("scheduleTriggerFailed", { defaultValue: "Failed to trigger schedule." }));
     }
-  }, I = [
+  }, C = [
     { title: a("scheduleName", { defaultValue: "Name" }), dataIndex: "name", key: "name", width: 260 },
     { title: a("scheduleSpec", { defaultValue: "Cron" }), dataIndex: "spec", key: "spec", width: 120 },
     {
@@ -57,7 +57,7 @@ const G = {
       width: 300,
       render: (e) => {
         const t = a(`type.${e}`, { defaultValue: e });
-        return /* @__PURE__ */ s.jsx(p, { color: "blue", children: t });
+        return /* @__PURE__ */ s.jsx(h, { color: "blue", children: t });
       }
     },
     {
@@ -65,7 +65,7 @@ const G = {
       dataIndex: "enabled",
       key: "enabled",
       width: 90,
-      render: (e, t) => /* @__PURE__ */ s.jsx(j, { permission: "task:schedule:update", children: /* @__PURE__ */ s.jsx(D, { checked: e, onChange: (i) => S(t.id, i), size: "small" }) })
+      render: (e, t) => /* @__PURE__ */ s.jsx(H, { permission: "task:schedule:update", children: /* @__PURE__ */ s.jsx(D, { checked: e, onChange: (r) => j(t.id, r), size: "small" }) })
     },
     {
       title: a("scheduleNextRun", { defaultValue: "Next Run" }),
@@ -84,33 +84,33 @@ const G = {
     {
       title: d("actions", { defaultValue: "Actions" }),
       key: "action",
-      width: 200,
+      width: 120,
       fixed: "right",
-      render: (e, t) => /* @__PURE__ */ s.jsxs(h, { size: "small", children: [
-        /* @__PURE__ */ s.jsx(y, { title: a("viewHistory", { defaultValue: "View history" }), children: /* @__PURE__ */ s.jsx(
-          l,
-          {
-            type: "text",
-            size: "small",
-            icon: /* @__PURE__ */ s.jsx($, {}),
-            onClick: () => {
-              f(t.id);
+      render: (e, t) => /* @__PURE__ */ s.jsx(
+        m,
+        {
+          actions: [
+            {
+              key: "history",
+              icon: /* @__PURE__ */ s.jsx(F, {}),
+              tooltip: a("viewHistory", { defaultValue: "View history" }),
+              onClick: async () => {
+                c(t.id);
+              }
+            },
+            {
+              key: "trigger",
+              icon: /* @__PURE__ */ s.jsx($, {}),
+              tooltip: a("triggerNow", { defaultValue: "Trigger now" }),
+              permission: "task:schedule:update",
+              onClick: () => S(t.id)
             }
-          }
-        ) }),
-        /* @__PURE__ */ s.jsx(j, { permission: "task:schedule:update", children: /* @__PURE__ */ s.jsx(y, { title: a("triggerNow", { defaultValue: "Trigger now" }), children: /* @__PURE__ */ s.jsx(
-          l,
-          {
-            type: "text",
-            size: "small",
-            icon: /* @__PURE__ */ s.jsx(P, {}),
-            onClick: () => C(t.id)
-          }
-        ) }) })
-      ] })
+          ]
+        }
+      )
     }
-  ], z = (e) => r ? o.tasks.getTaskScheduleHistory({
-    id: r,
+  ], I = (e) => l ? o.tasks.getTaskScheduleHistory({
+    id: l,
     current: e.current ?? w.DEFAULT_CURRENT,
     page_size: e.page_size ?? w.DEFAULT_PAGE_SIZE
   }) : Promise.resolve({
@@ -121,8 +121,8 @@ const G = {
     page_size: 10,
     trace_id: ""
   }), b = async (e) => {
-    const t = await o.base.downloadFile({ fileKey: e }, { params: { method: "sign" } }), i = `/api/files/${e}?signature=${t.signature}&expires=${t.expires}`;
-    window.open(i, "_blank");
+    const t = await o.base.downloadFile({ fileKey: e }, { params: { method: "sign" } }), r = `/api/files/${e}?signature=${t.signature}&expires=${t.expires}`;
+    window.open(r, "_blank");
   }, L = [
     {
       title: a("scheduleTaskType", { defaultValue: "Task Type" }),
@@ -131,7 +131,7 @@ const G = {
       width: 300,
       render: (e) => {
         const t = a(`type.${e}`, { defaultValue: e });
-        return /* @__PURE__ */ s.jsx(p, { color: "blue", children: t });
+        return /* @__PURE__ */ s.jsx(h, { color: "blue", children: t });
       }
     },
     {
@@ -139,16 +139,23 @@ const G = {
       dataIndex: "status",
       key: "status",
       width: 100,
-      render: (e) => /* @__PURE__ */ s.jsx(p, { color: G[e] || "default", children: a(`status.${e}`, { defaultValue: e }) })
+      render: (e) => /* @__PURE__ */ s.jsx(h, { color: B[e] || "default", children: a(`status.${e}`, { defaultValue: e }) })
     },
     {
       title: a("progress", { defaultValue: "Progress" }),
       dataIndex: "progress",
       key: "progress",
       width: 100,
-      render: (e, t) => t.status === "running" || t.status === "success" || t.status === "pending" ? /* @__PURE__ */ s.jsx(F, { percent: e, size: "small" }) : "-"
+      render: (e, t) => t.status === "running" || t.status === "success" || t.status === "pending" ? /* @__PURE__ */ s.jsx(N, { percent: e, size: "small" }) : "-"
     },
     { title: a("creatorId", { defaultValue: "Creator" }), dataIndex: "creator_id", key: "creator_id", width: 120, ellipsis: !0 },
+    {
+      title: a("notBefore", { defaultValue: "Not Before" }),
+      dataIndex: "not_before",
+      key: "not_before",
+      width: 170,
+      render: (e) => e ? new Date(e).toLocaleString() : "-"
+    },
     {
       title: a("createdAt", { defaultValue: "Created At" }),
       dataIndex: "created_at",
@@ -159,48 +166,66 @@ const G = {
     {
       title: d("actions", { defaultValue: "Actions" }),
       key: "action",
-      width: 140,
-      render: (e, t) => /* @__PURE__ */ s.jsxs(h, { size: "small", children: [
-        /* @__PURE__ */ s.jsx(l, { type: "text", size: "small", icon: /* @__PURE__ */ s.jsx(O, {}), onClick: () => T(`/tasks/${t.id}`) }),
-        t.artifact_file_key && /* @__PURE__ */ s.jsx(l, { type: "text", size: "small", icon: /* @__PURE__ */ s.jsx(H, {}), onClick: () => b(t.artifact_file_key) })
-      ] })
+      width: 100,
+      render: (e, t) => /* @__PURE__ */ s.jsx(
+        m,
+        {
+          actions: [
+            {
+              key: "view",
+              icon: /* @__PURE__ */ s.jsx(P, {}),
+              tooltip: a("view", { defaultValue: "View" }),
+              onClick: async () => {
+                V(`/tasks/${t.id}`);
+              }
+            },
+            {
+              key: "download",
+              icon: /* @__PURE__ */ s.jsx(O, {}),
+              tooltip: a("download", { defaultValue: "Download" }),
+              hidden: !t.artifact_file_key,
+              onClick: () => b(t.artifact_file_key)
+            }
+          ]
+        }
+      )
     }
   ];
-  return /* @__PURE__ */ s.jsxs(h, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
+  return /* @__PURE__ */ s.jsxs(y, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
     /* @__PURE__ */ s.jsx(
-      m,
+      k,
       {
         title: a("scheduledTasks", { defaultValue: "Scheduled Tasks" }),
-        extra: /* @__PURE__ */ s.jsx(l, { icon: /* @__PURE__ */ s.jsx(g, {}), onClick: () => x(), children: d("refresh", { defaultValue: "Refresh" }) }),
+        extra: /* @__PURE__ */ s.jsx(f, { icon: /* @__PURE__ */ s.jsx(g, {}), onClick: () => p(), children: d("refresh", { defaultValue: "Refresh" }) }),
         children: /* @__PURE__ */ s.jsx(
-          N,
+          z,
           {
             rowKey: "id",
-            columns: I,
+            columns: C,
             dataSource: _,
-            loading: V,
+            loading: T,
             pagination: !1,
             scroll: { x: 900 }
           }
         )
       }
     ),
-    r && /* @__PURE__ */ s.jsx(
-      m,
+    l && /* @__PURE__ */ s.jsx(
+      k,
       {
         title: a("executionHistory", { defaultValue: "Execution History" }),
-        extra: /* @__PURE__ */ s.jsxs(h, { size: "small", children: [
-          /* @__PURE__ */ s.jsx(l, { type: "text", size: "small", icon: /* @__PURE__ */ s.jsx(g, {}), onClick: () => {
+        extra: /* @__PURE__ */ s.jsxs(y, { size: "small", children: [
+          /* @__PURE__ */ s.jsx(f, { type: "text", size: "small", icon: /* @__PURE__ */ s.jsx(g, {}), onClick: () => {
             var e, t;
-            return (t = (e = c.current) == null ? void 0 : e.reload) == null ? void 0 : t.call(e);
+            return (t = (e = u.current) == null ? void 0 : e.reload) == null ? void 0 : t.call(e);
           }, children: d("refresh", { defaultValue: "Refresh" }) }),
-          /* @__PURE__ */ s.jsx(l, { type: "text", size: "small", onClick: () => f(null), children: d("close", { defaultValue: "Close" }) })
+          /* @__PURE__ */ s.jsx(f, { type: "text", size: "small", onClick: () => c(null), children: d("close", { defaultValue: "Close" }) })
         ] }),
         children: /* @__PURE__ */ s.jsx(
           U,
           {
-            actionRef: c,
-            request: z,
+            actionRef: u,
+            request: I,
             columns: L,
             rowKey: "id",
             scroll: { x: 800 }

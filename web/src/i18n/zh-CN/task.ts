@@ -29,6 +29,7 @@ export default {
   statusLabel: '状态',
   progress: '进度',
   creatorId: '创建人',
+  notBefore: '最早执行时间',
   createdAt: '创建时间',
   startedAt: '开始时间',
   finishedAt: '完成时间',

@@ -29,6 +29,7 @@ export default {
   statusLabel: 'Estado',
   progress: 'Progreso',
   creatorId: 'Creador',
+  notBefore: 'No antes de',
   createdAt: 'Creado el',
   startedAt: 'Iniciado el',
   finishedAt: 'Finalizado el',

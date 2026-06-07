@@ -15,7 +15,7 @@
  */
 
 import React, { useRef, useState } from 'react';
-import { Card, Button, Space, message, Input, Tag, Tooltip, Progress } from 'antd';
+import { Card, Button, Space, message, Input, Tag, Progress } from 'antd';
 import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined, EyeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -116,6 +116,13 @@ const TaskList: React.FC = () => {
       ellipsis: true,
     },
     {
+      title: t('notBefore', { defaultValue: 'Not Before' }),
+      dataIndex: 'not_before',
+      key: 'not_before',
+      width: 170,
+      render: (v: string) => (v ? new Date(v).toLocaleString() : '-'),
+    },
+    {
       title: t('createdAt', { defaultValue: 'Created At' }),
       dataIndex: 'created_at',
       key: 'created_at',
@@ -125,72 +132,57 @@ const TaskList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      width: 220,
+      width: 100,
       fixed: 'right',
       render: (_: unknown, record: API.Task) => (
-        <Space size="small">
-
-          <Button type="text" icon={<EyeOutlined />} onClick={() => {
-            navigate(`/tasks/${record.id}`);
-          }} />
-          {(record.status === 'running' || record.status === 'pending') && (
-            <PermissionGuard permission="task:cancel">
-              <Actions
-                actions={[
-                  {
-                    key: 'cancel',
-                    label: t('cancel', { defaultValue: 'Cancel' }),
-                    icon: <StopOutlined />,
-                    confirm: {
-                      title: t('cancelConfirm', { defaultValue: 'Cancel this task?' }),
-                      onConfirm: () => handleCancel(record.id),
-                    },
-                  },
-                ]}
-              />
-            </PermissionGuard>
-          )}
-          {(record.status === 'failed' || record.status === 'cancelled') && (
-            <PermissionGuard permission="task:retry">
-              <Tooltip title={t('retry', { defaultValue: 'Retry' })}>
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<RedoOutlined />}
-                  onClick={() => handleRetry(record.id)}
-                />
-              </Tooltip>
-            </PermissionGuard>
-          )}
-          {record.artifact_file_key && (
-            <PermissionGuard permission="task:view">
-              <Tooltip title={t('download', { defaultValue: 'Download' })}>
-                <Button
-                  type="text"
-                  size="small"
-                  icon={<DownloadOutlined />}
-                  onClick={() => handleDownload(record.artifact_file_key)}
-                />
-              </Tooltip>
-            </PermissionGuard>
-          )}
-          <PermissionGuard permission="task:delete">
-            <Actions
-              actions={[
-                {
-                  key: 'delete',
-                  label: t('delete', { defaultValue: 'Delete' }),
-                  icon: <DeleteOutlined />,
-                  danger: true,
-                  confirm: {
-                    title: t('deleteConfirm', { defaultValue: 'Delete this task?' }),
-                    onConfirm: () => handleDelete(record.id),
-                  },
-                },
-              ]}
-            />
-          </PermissionGuard>
-        </Space>
+        <Actions
+          actions={[
+            {
+              key: 'view',
+              icon: <EyeOutlined />,
+              tooltip: t('view', { defaultValue: 'View' }),
+              onClick: async () => { navigate(`/tasks/${record.id}`); },
+            },
+            {
+              key: 'cancel',
+              icon: <StopOutlined />,
+              tooltip: t('cancel', { defaultValue: 'Cancel' }),
+              hidden: record.status !== 'running' && record.status !== 'pending',
+              permission: 'task:cancel',
+              confirm: {
+                title: t('cancelConfirm', { defaultValue: 'Cancel this task?' }),
+                onConfirm: () => handleCancel(record.id),
+              },
+            },
+            {
+              key: 'retry',
+              icon: <RedoOutlined />,
+              tooltip: t('retry', { defaultValue: 'Retry' }),
+              hidden: record.status !== 'failed' && record.status !== 'cancelled',
+              permission: 'task:retry',
+              onClick: () => handleRetry(record.id),
+            },
+            {
+              key: 'download',
+              icon: <DownloadOutlined />,
+              tooltip: t('download', { defaultValue: 'Download' }),
+              hidden: !record.artifact_file_key,
+              permission: 'task:view',
+              onClick: () => handleDownload(record.artifact_file_key),
+            },
+            {
+              key: 'delete',
+              icon: <DeleteOutlined />,
+              tooltip: t('delete', { defaultValue: 'Delete' }),
+              danger: true,
+              permission: 'task:delete',
+              confirm: {
+                title: t('deleteConfirm', { defaultValue: 'Delete this task?' }),
+                onConfirm: () => handleDelete(record.id),
+              },
+            },
+          ]}
+        />
       ),
     },
   ];
@@ -221,7 +213,7 @@ const TaskList: React.FC = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onPressEnter={() => tableRef.current?.reload?.()}
-            style={{ width: 220 }}
+            style={{ width: 520 }}
             allowClear
           />
           <Button icon={<SearchOutlined />} onClick={() => {

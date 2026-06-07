@@ -124,7 +124,7 @@ const TaskDetail: React.FC = () => {
       }
     >
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Descriptions bordered column={1} size="small">
+        <Descriptions bordered column={1} size="small" labelStyle={{ minWidth: 150 }}>
           <Descriptions.Item label={t('typeLabel', { defaultValue: 'Type' })}>{t(`type.${task.type}`, { defaultValue: task.type })}</Descriptions.Item>
           <Descriptions.Item label={t('statusLabel', { defaultValue: 'Status' })}>
             <Tag color={statusColors[task.status] || 'default'}>
