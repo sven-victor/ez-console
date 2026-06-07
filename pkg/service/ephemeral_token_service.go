@@ -77,7 +77,7 @@ func (s *ephemeralTokenService) Create(ctx context.Context, purpose model.Epheme
 		Purpose:   purpose,
 		TokenHash: hashToken(token),
 		Payload:   encPayload,
-		ExpiresAt: time.Now().Add(ttl),
+		ExpiresAt: time.Now().UTC().Add(ttl),
 	}
 	return db.Session(ctx).
 		Clauses(clause.OnConflict{DoNothing: true}).

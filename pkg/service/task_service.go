@@ -35,6 +35,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 	"github.com/sven-victor/ez-utils/log"
+	w "github.com/sven-victor/ez-utils/wrapper"
 	"gorm.io/gorm"
 )
 
@@ -83,7 +84,7 @@ func WithScheduleFireKey(key string) CreateTaskOption {
 // WithNotBefore prevents the task from being claimed before the given time.
 func WithNotBefore(t time.Time) CreateTaskOption {
 	return func(task *model.Task) {
-		task.NotBefore = &t
+		task.NotBefore = w.P(t.UTC())
 	}
 }
 
@@ -91,7 +92,7 @@ func WithNotBefore(t time.Time) CreateTaskOption {
 // The reaper automatically cancels pending tasks that exceed their not_after deadline.
 func WithNotAfter(t time.Time) CreateTaskOption {
 	return func(task *model.Task) {
-		task.NotAfter = &t
+		task.NotAfter = w.P(t.UTC())
 	}
 }
 
