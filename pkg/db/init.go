@@ -64,10 +64,10 @@ func RegisterModels(models ...interface{}) {
 }
 
 const (
-	migrationLeaseName  = "migration"
-	migrationLeaseTTL   = 5 * time.Minute
+	migrationLeaseName    = "migration"
+	migrationLeaseTTL     = 5 * time.Minute
 	migrationPollInterval = 3 * time.Second
-	migrationMaxWait    = 10 * time.Minute
+	migrationMaxWait      = 10 * time.Minute
 )
 
 // MigrateDB executes database migration and automatically creates table structures.

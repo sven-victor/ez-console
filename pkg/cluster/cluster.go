@@ -141,33 +141,13 @@ func (b *DBClusterBackend) ReleaseLease(ctx context.Context, name, holderID stri
 
 func (b *DBClusterBackend) Close() error { return nil }
 
-// EnsureLeaseTable creates the t_cluster_lease table idempotently using a raw
-// CREATE TABLE IF NOT EXISTS so it exists before AutoMigrate or any lease
-// acquisition attempt.  Must be called once at startup before MigrateDB.
+// EnsureLeaseTable creates (or migrates) the t_cluster_lease table via
+// GORM's AutoMigrate so that the DDL is always in GORM's own format.
+// This must be called once at startup before MigrateDB so the table is
+// available for lease acquisition during migration serialization.
+// Using AutoMigrate here (rather than raw DDL) also prevents the GORM
+// SQLite migrator from failing to parse a hand-written DDL when the full
+// AutoMigrate later runs with model.ClusterLease in migrateModels.
 func EnsureLeaseTable(db *gorm.DB) error {
-	var sql string
-	switch db.Dialector.Name() {
-	case "sqlite":
-		sql = `CREATE TABLE IF NOT EXISTS t_cluster_lease (
-			name       TEXT PRIMARY KEY,
-			holder_id  TEXT NOT NULL DEFAULT '',
-			expires_at DATETIME NOT NULL DEFAULT '1970-01-01 00:00:00'
-		)`
-	case "mysql":
-		sql = `CREATE TABLE IF NOT EXISTS t_cluster_lease (
-			name       VARCHAR(64) NOT NULL,
-			holder_id  VARCHAR(64) NOT NULL DEFAULT '',
-			expires_at DATETIME    NOT NULL DEFAULT '1970-01-01 00:00:00',
-			PRIMARY KEY (name)
-		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
-	default:
-		// PostgreSQL
-		sql = `CREATE TABLE IF NOT EXISTS t_cluster_lease (
-			name       VARCHAR(64) NOT NULL,
-			holder_id  VARCHAR(64) NOT NULL DEFAULT '',
-			expires_at TIMESTAMPTZ NOT NULL DEFAULT '1970-01-01 00:00:00+00',
-			PRIMARY KEY (name)
-		)`
-	}
-	return db.Exec(sql).Error
+	return db.AutoMigrate(&ClusterLease{})
 }
