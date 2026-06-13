@@ -120,6 +120,8 @@ export default {
     titleGenerationFailed: 'Titel konnte nicht generiert werden',
     skill: 'Fähigkeit',
     skillsPlaceholder: 'Fähigkeiten (optional)',
+    skillsOptional: 'optional',
+    skillsSelected: '{{count}} ausgewählt',
     skillDomain: 'Fähigkeitsbereich',
   },
 };

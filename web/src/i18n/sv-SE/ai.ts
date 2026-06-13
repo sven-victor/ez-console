@@ -120,6 +120,8 @@ export default {
     titleGenerationFailed: 'Misslyckades med att generera titel',
     skill: 'Färdighet',
     skillsPlaceholder: 'Färdigheter (valfritt)',
+    skillsOptional: 'valfritt',
+    skillsSelected: '{{count}} valda',
     skillDomain: 'Färdighetsdomän',
   },
 };

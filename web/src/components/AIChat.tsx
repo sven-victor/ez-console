@@ -38,16 +38,16 @@ import { LuPanelRight, LuPanelRightDashed, LuExternalLink, LuBookOpenText } from
 
 import { useRequest } from 'ahooks';
 import { Button, Dropdown, Flex, Radio, Space, Spin, Tag, message } from 'antd';
-import { createStyles } from 'antd-style';
+import { createStyles, useThemeMode } from 'antd-style';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { theme } from 'antd';
 import { useAI } from '@/contexts/AIContext';
 import classNames from 'classnames';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import '@ant-design/x-markdown/themes/light.css';
 import '@ant-design/x-markdown/themes/dark.css';
+import type { BubbleItemType, Info } from '@ant-design/x/es/bubble/interface';
 
 const useStyle = createStyles(({ token, css }) => {
   return {
@@ -148,6 +148,12 @@ const useStyle = createStyles(({ token, css }) => {
       .ant-bubble-list{
         .ant-bubble.ant-bubble-start{
           padding-inline-end: 10%;
+        }
+      }
+      .x-markdown-light pre .ant-codeHighlighter .ant-codeHighlighter-code pre{
+        background-color: #f5f5f5;
+        code{
+          background-color: #f5f5f5;
         }
       }
       .ant-bubble-end{
@@ -377,22 +383,11 @@ const Code: React.FC<ComponentProps> = (props) => {
   if (lang === 'mermaid') {
     return <Mermaid>{children}</Mermaid>;
   }
-  return <CodeHighlighter lang={lang}>{children}</CodeHighlighter>;
+  return <code className="ant-highlightCode-code">
+    <CodeHighlighter lang={lang}>{children}</CodeHighlighter>
+  </code>;
 };
 
-export const useMarkdownTheme = () => {
-  const token = theme.useToken();
-
-  const isLightMode = React.useMemo(() => {
-    return token?.theme?.id === 0;
-  }, [token]);
-
-  const className = React.useMemo(() => {
-    return isLightMode ? 'x-markdown-light' : 'x-markdown-dark';
-  }, [isLightMode]);
-
-  return [className];
-};
 
 const ChatContext = React.createContext<{
   onReload?: ReturnType<typeof useXChat>['onReload'];
@@ -406,24 +401,65 @@ interface SelectedSkillOption {
 
 export interface AIChatProps {
   bubble?: {
-    contentRender?: (content: string) => React.ReactNode;
-    footerRender?: (message: MessageInfo<ChatStreamMessage>) => React.ReactNode;
-    components?: XMarkdownProps['components'];
+    contentRender?: (content: string, info: Info, onSendMessage: (val: string) => void) => React.ReactNode;
+    footerRender?: ((message: MessageInfo<ChatStreamMessage>, info: Info, onSendMessage: (val: string) => void) => React.ReactNode);
+    components?: {
+      [tagName: string]: React.ComponentType<ComponentProps & { onSendMessage: (val: string) => void }> | keyof JSX.IntrinsicElements;
+    };
   }
 }
 
-export const AIChat: React.FC<AIChatProps> = ({
+interface ChatListProps {
+  bubble: AIChatProps['bubble'];
+  messages?: MessageInfo<ChatStreamMessage>[];
+  loading?: boolean;
+  layout?: 'classic' | 'sidebar' | 'float-sidebar';
+  onSendMessage: (val: string) => void;
+}
+
+const ChatList: React.FC<ChatListProps> = ({
   bubble = {},
+  messages,
+  loading,
+  layout = 'classic',
+  onSendMessage,
 }) => {
+  const { styles } = useStyle();
+  const { isDarkMode } = useThemeMode();
+
+  const components: XMarkdownProps['components'] = useMemo(() => {
+    if (!bubble.components) return { code: Code, };
+
+    const result: XMarkdownProps['components'] = {};
+
+    for (const key in bubble.components) {
+      const Comp = bubble.components[key];
+
+      if (typeof Comp === "string") {
+        result[key] = Comp;
+        continue;
+      }
+
+      result[key] = (props: ComponentProps) => {
+        return (
+          <Comp
+            {...props}
+            onSendMessage={onSendMessage}
+          />
+        );
+      };
+    }
+
+    return result;
+  }, [onSendMessage, bubble.components]);
 
   const {
-    components = { code: Code, },
     contentRender = (content: string) => {
       return (
         <XMarkdown
           paragraphTag="div"
           content={content}
-          className={className}
+          className={isDarkMode ? 'x-markdown-dark' : 'x-markdown-light'}
           components={components}
         />
       );
@@ -439,6 +475,53 @@ export const AIChat: React.FC<AIChatProps> = ({
       return undefined;
     },
   } = bubble;
+
+  const bubbleMessages: BubbleListProps['items'] = useMemo(() => {
+    return (messages || []).map((i) => ({
+      ...i.message,
+      key: i.id,
+      contentRender: contentRender,
+      footer: (_: string, info: Info) => footerRender?.(i, info, onSendMessage),
+    } as BubbleItemType)).filter((i) => i.content);
+  }, [messages]);
+
+  return (
+    <div className={styles.chatList}>
+      <Spin spinning={loading}>
+        <Bubble.List
+          items={bubbleMessages}
+          style={{
+            height: '100%',
+            paddingInline: layout === 'classic' ? 'calc(calc(100% - 700px) /2)' : '20px'
+          }}
+          // @ts-ignore
+          roles={{
+            assistant: {
+              placement: 'start',
+              loadingRender: () => <Spin size="small" />,
+            },
+            user: {
+              placement: 'end',
+            },
+          }}
+          role={{
+            assistant: {
+              placement: 'start',
+              loadingRender: () => <Spin size="small" />,
+            },
+            user: {
+              placement: 'end',
+            },
+          }}
+        />
+      </Spin>
+    </div>
+  );
+}
+
+export const AIChat: React.FC<AIChatProps> = ({
+  bubble = {},
+}) => {
   const {
     layout,
     setVisible,
@@ -483,7 +566,6 @@ export const AIChat: React.FC<AIChatProps> = ({
     setDefaultActiveConversationKey(activeConversationKey)
   }, [activeConversationKey])
 
-  const [className] = useMarkdownTheme();
   const [messageApi, contextHolder] = message.useMessage();
 
   const [inputValue, setInputValue] = useState('');
@@ -825,45 +907,6 @@ export const AIChat: React.FC<AIChatProps> = ({
     </div>
   );
 
-  const bubbleMessages: BubbleListProps['items'] = messages?.map((i) => ({
-    ...i.message,
-    key: i.id,
-    contentRender: contentRender,
-    footer: footerRender?.(i),
-  })).filter((i) => i.content);
-
-  const chatList = (
-    <div className={styles.chatList}>
-      <Spin spinning={fetchConversationLoading || createNewConversationLoading}>
-        <Bubble.List
-          items={bubbleMessages}
-          style={{
-            height: '100%',
-            paddingInline: layout === 'classic' ? 'calc(calc(100% - 700px) /2)' : '20px'
-          }}
-          // @ts-ignore
-          roles={{
-            assistant: {
-              placement: 'start',
-              loadingRender: () => <Spin size="small" />,
-            },
-            user: {
-              placement: 'end',
-            },
-          }}
-          role={{
-            assistant: {
-              placement: 'start',
-              loadingRender: () => <Spin size="small" />,
-            },
-            user: {
-              placement: 'end',
-            },
-          }}
-        />
-      </Spin>
-    </div>
-  );
   const chatSender = (
     <>
       <Space direction="vertical" style={{ width: '100%', maxWidth: 700, margin: '0 auto' }}>
@@ -890,7 +933,10 @@ export const AIChat: React.FC<AIChatProps> = ({
                         }
                       });
                     },
-                    items: allSkills,
+                    items: allSkills.map((s) => ({
+                      label: s.label,
+                      key: s.key,
+                    })),
                   }}
                 >
                   <Sender.Switch value={false} icon={<LuBookOpenText />}>
@@ -981,7 +1027,13 @@ export const AIChat: React.FC<AIChatProps> = ({
         }}>
           {layout === 'classic' ? chatSider : null}
           <div className={styles.chat}>
-            {chatList}
+            <ChatList
+              bubble={bubble}
+              messages={messages}
+              loading={fetchConversationLoading || createNewConversationLoading}
+              layout={layout}
+              onSendMessage={onSubmit}
+            />
             {chatSender}
           </div>
         </div>

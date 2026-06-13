@@ -120,6 +120,8 @@ export default {
     titleGenerationFailed: 'فشل إنشاء العنوان',
     skill: 'المهارة',
     skillsPlaceholder: 'المهارات (اختياري)',
+    skillsOptional: 'اختياري',
+    skillsSelected: '{{count}} محدد',
     skillDomain: 'مجال المهارة',
   },
 };

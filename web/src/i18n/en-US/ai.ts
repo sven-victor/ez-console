@@ -120,6 +120,8 @@ export default {
     titleGenerationFailed: 'Failed to generate title',
     skill: 'Skill',
     skillsPlaceholder: 'Skills (optional)',
+    skillsOptional: 'optional',
+    skillsSelected: '{{count}} selected',
     skillDomain: 'Skill domain',
   },
 };

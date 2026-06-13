@@ -33,6 +33,12 @@ const useStyle = createStyles(({ token, css }) => {
       position: relative;
       height: 100vh;
     `,
+    siderLayoutContent: css`
+      height: 100%;
+      width: 100%;
+      background-color: ${token.colorBgContainer};
+      overflow: hidden;
+    `,
     floatSiderLayout: css`
       position: fixed;
       right: 16px;
@@ -108,12 +114,9 @@ export const AIChatSider: React.FC<AIChatProps> = (props) => {
       />
       <div
         style={{
-          width: '100%',
-          height: '100%',
-          backgroundColor: '#ffffff',
-          overflow: 'hidden',
           borderRadius: layout === 'float-sidebar' ? '12px' : '0',
         }}
+        className={styles.siderLayoutContent}
       >
         <div>
           {withSuspense(AIChatDialog, props)}

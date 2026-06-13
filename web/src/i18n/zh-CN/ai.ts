@@ -119,6 +119,8 @@ export default {
     titleGenerationFailed: '生成标题失败',
     skill: '技能',
     skillsPlaceholder: '技能（可选）',
+    skillsOptional: '可选',
+    skillsSelected: '已选 {{count}} 个',
     skillDomain: '技能域',
   },
 };

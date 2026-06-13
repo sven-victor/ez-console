@@ -1723,6 +1723,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerationFailed: "Failed to generate title",
     skill: "Skill",
     skillsPlaceholder: "Skills (optional)",
+    skillsOptional: "optional",
+    skillsSelected: "{{count}} selected",
     skillDomain: "Skill domain"
   }
 }, D = {
@@ -3856,6 +3858,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerationFailed: "生成标题失败",
     skill: "技能",
     skillsPlaceholder: "技能（可选）",
+    skillsOptional: "可选",
+    skillsSelected: "已选 {{count}} 个",
     skillDomain: "技能域"
   }
 }, q = {
@@ -5283,6 +5287,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerationFailed: "Titel konnte nicht generiert werden",
     skill: "Fähigkeit",
     skillsPlaceholder: "Fähigkeiten (optional)",
+    skillsOptional: "optional",
+    skillsSelected: "{{count}} ausgewählt",
     skillDomain: "Fähigkeitsbereich"
   }
 }, V = {
@@ -6710,6 +6716,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerationFailed: "Error al generar el título",
     skill: "Habilidad",
     skillsPlaceholder: "Habilidades (opcional)",
+    skillsOptional: "opcional",
+    skillsSelected: "{{count}} seleccionado(s)",
     skillDomain: "Dominio de habilidad"
   }
 }, H = {
@@ -8137,6 +8145,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerationFailed: "Échec de la génération du titre",
     skill: "Compétence",
     skillsPlaceholder: "Compétences (optionnel)",
+    skillsOptional: "optionnel",
+    skillsSelected: "{{count}} sélectionné(s)",
     skillDomain: "Domaine de compétence"
   }
 }, $ = {
@@ -9564,6 +9574,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerationFailed: "فشل إنشاء العنوان",
     skill: "المهارة",
     skillsPlaceholder: "المهارات (اختياري)",
+    skillsOptional: "اختياري",
+    skillsSelected: "{{count}} محدد",
     skillDomain: "مجال المهارة"
   }
 }, ie = {
@@ -10991,6 +11003,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     titleGenerationFailed: "Misslyckades med att generera titel",
     skill: "Färdighet",
     skillsPlaceholder: "Färdigheter (valfritt)",
+    skillsOptional: "valfritt",
+    skillsSelected: "{{count}} valda",
     skillDomain: "Färdighetsdomän"
   }
 }, le = {

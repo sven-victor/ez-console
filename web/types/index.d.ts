@@ -10,6 +10,7 @@ import { DropDownProps } from 'antd/es/dropdown';
 import { FC } from 'react';
 import { FormItemProps } from 'antd';
 import { default as i18n } from 'i18next';
+import { Info } from '@ant-design/x/es/bubble/interface';
 import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react/jsx-runtime';
 import { LazyExoticComponent } from 'react';
@@ -24,7 +25,6 @@ import { TabsProps } from 'antd';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { XMarkdown } from '@ant-design/x-markdown';
-import { XMarkdownProps } from '@ant-design/x-markdown';
 
 export declare type AccessType = "public" | "private" | "owner";
 
@@ -118,9 +118,13 @@ export declare const AIChatModal: default_2.FC<AIChatProps>;
 
 export declare interface AIChatProps {
     bubble?: {
-        contentRender?: (content: string) => default_2.ReactNode;
-        footerRender?: (message: MessageInfo<ChatStreamMessage>) => default_2.ReactNode;
-        components?: XMarkdownProps['components'];
+        contentRender?: (content: string, info: Info, onSendMessage: (val: string) => void) => default_2.ReactNode;
+        footerRender?: ((message: MessageInfo<ChatStreamMessage>, info: Info, onSendMessage: (val: string) => void) => default_2.ReactNode);
+        components?: {
+            [tagName: string]: default_2.ComponentType<ComponentProps & {
+                onSendMessage: (val: string) => void;
+            }> | keyof JSX.IntrinsicElements;
+        };
     };
 }
 
