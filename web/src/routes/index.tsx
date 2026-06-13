@@ -19,6 +19,8 @@ import Loading from '../components/Loading';
 import { DashboardOutlined, UserOutlined, SolutionOutlined, SettingOutlined, FileSearchOutlined, SafetyOutlined } from '@ant-design/icons';
 import type { TabsProps as AntTabsProps } from 'antd';
 import { LanguageConfig } from '@/components/LanguageSwitch';
+import { LuUserCog, LuUser } from "react-icons/lu";
+
 
 // Lazy load page components
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
@@ -199,7 +201,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
             {
               path: '/authorization/users',
               name: 'users',
-              icon: <UserOutlined />,
+              icon: <LuUser />,
               permissions: ['authorization:user:list'],
               children: [
                 {
@@ -239,7 +241,7 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
             {
               path: '/authorization/service-accounts',
               name: 'serviceAccounts',
-              icon: <UserOutlined />,
+              icon: <LuUserCog />,
               permissions: [
                 'authorization:service_account:list',
               ],

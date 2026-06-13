@@ -16,8 +16,6 @@
 
 import api from '@/service/api';
 import {
-  BlockOutlined,
-  BorderRightOutlined,
   CloseOutlined,
   DeleteOutlined,
   HistoryOutlined,
@@ -36,17 +34,16 @@ import {
 import { AbstractChatProvider, TransformMessage, useXChat, XRequest, XRequestOptions } from '@ant-design/x-sdk';
 import { useXConversations, type MessageInfo } from '@ant-design/x-sdk';
 import { type ComponentProps, XMarkdown, XMarkdownProps } from '@ant-design/x-markdown';
+import { LuPanelRight, LuPanelRightDashed, LuExternalLink, LuBookOpenText } from "react-icons/lu";
 
 import { useRequest } from 'ahooks';
-import { Button, Dropdown, Radio, Select, Space, Spin, Tag, message } from 'antd';
+import { Button, Dropdown, Flex, Radio, Space, Spin, Tag, message } from 'antd';
 import { createStyles } from 'antd-style';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { theme } from 'antd';
 import { useAI } from '@/contexts/AIContext';
-import { BaseOptionType } from 'antd/es/select';
-import { isArray } from 'lodash-es';
 import classNames from 'classnames';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import '@ant-design/x-markdown/themes/light.css';
@@ -490,25 +487,30 @@ export const AIChat: React.FC<AIChatProps> = ({
   const [messageApi, contextHolder] = message.useMessage();
 
   const [inputValue, setInputValue] = useState('');
+  const [skillsVisible, setSkillsVisible] = useState(false);
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkillOption[]>([]);
 
   const { data: domainsData } = useRequest(() => api.system.listSkillDomains());
-  const domainOptions = ((domainsData as string[]) ?? []).map((d) => {
-    return {
-      skillType: 'domain',
-      value: d,
-      label: <><Tag>{t('chat.skillDomain', { defaultValue: 'Skill domain' })}</Tag>{d}</>
-    };
-  });
   const { data: skillsListData } = useRequest(() =>
     api.system.listSkills({ current: 1, page_size: 500 })
   );
-  const skillsList = (skillsListData as any)?.data ?? [];
-  const skillOptions = skillsList.map((s: { id: string; name: string; domain?: string }) => ({
-    skillType: 'skill',
-    value: s.id,
-    label: <><Tag>{t('chat.skill', { defaultValue: 'Skill' })}</Tag>{s.name}</>,
-  }));
+
+  const allSkills: { skillType: 'domain' | 'skill'; key: string; label: React.ReactNode }[] = useMemo(() => {
+    return [
+      ...((domainsData as string[]) ?? []).map((d) => {
+        return {
+          skillType: 'domain',
+          key: d,
+          label: <><Tag>{t('chat.skillDomain', { defaultValue: 'Skill domain' })}</Tag>{d}</>
+        };
+      }),
+      ...((skillsListData as any)?.data ?? []).map((s: { id: string; name: string; domain?: string }) => ({
+        skillType: 'skill',
+        key: s.id,
+        label: <><Tag>{t('chat.skill', { defaultValue: 'Skill' })}</Tag>{s.name}</>,
+      })),
+    ]
+  }, [skillsListData, skillsListData])
 
   // Message buffer to be sent
   const [messageBuffer, setMessageBuffer] = useState<{ message: string, sessionId: string }>();
@@ -865,27 +867,44 @@ export const AIChat: React.FC<AIChatProps> = ({
   const chatSender = (
     <>
       <Space direction="vertical" style={{ width: '100%', maxWidth: 700, margin: '0 auto' }}>
-        <Select<string[], (BaseOptionType & { skillType: 'domain' | 'skill' }) >
-          mode="multiple"
-          allowClear
-          placeholder={t('chat.skillsPlaceholder', { defaultValue: 'Skills (optional)' })}
-          value={selectedSkills.map((s) => s.value)}
-          onChange={(_, option) => {
-            if (isArray(option)) {
-              setSelectedSkills(option.map((o) => ({ type: o.skillType, value: o.value })));
-            } else if (option) {
-              setSelectedSkills([{ type: option.skillType, value: option.value }]);
-            } else {
-              setSelectedSkills([]);
-            }
-          }}
-          options={[
-            ...(domainOptions),
-            ...(skillOptions),
-          ]}
-          className={classNames(styles.skillsSelect, 'chat-skills-select')}
-        />
         <Sender
+          footer={(actionNode) => {
+            return <Flex justify="space-between" align="center">
+              <Flex gap="small" align="center">
+                <Dropdown
+                  open={skillsVisible}
+                  onOpenChange={(nextOpen, info) => {
+                    if (info.source === 'trigger' || nextOpen) {
+                      setSkillsVisible(nextOpen);
+                    }
+                  }}
+                  menu={{
+                    selectedKeys: selectedSkills.map((s) => s.value),
+                    onClick: (info) => {
+                      const option = allSkills.find((s) => s.key === info.key);
+                      setSelectedSkills((ori) => {
+                        if (ori.some((s) => s.value === info.key)) {
+                          return ori.filter((s) => s.value !== info.key);
+                        } else {
+                          return [...ori, { type: option?.skillType || 'skill', value: info.key }];
+                        }
+                      });
+                    },
+                    items: allSkills,
+                  }}
+                >
+                  <Sender.Switch value={false} icon={<LuBookOpenText />}>
+                    {t('chat.skill', { defaultValue: 'Skills' })}{' '}
+                    ({selectedSkills.length > 0 ? t('chat.skillsSelected', { defaultValue: '{{count}} selected', count: selectedSkills.length }) : t('chat.skillsOptional', { defaultValue: 'optional' })})
+                  </Sender.Switch>
+                </Dropdown>
+              </Flex>
+              <Flex align="center">
+                {actionNode}
+              </Flex>
+            </Flex>
+          }}
+          suffix={false}
           value={inputValue}
           onSubmit={async () => {
             onSubmit(inputValue.trim());
@@ -915,13 +934,13 @@ export const AIChat: React.FC<AIChatProps> = ({
               transform: 'translate(-50%, -50%)',
             }}
             options={[{
-              label: <BlockOutlined />,
+              label: <LuExternalLink style={{ transform: 'scaleX(-1)' }} />,
               value: 'classic',
             }, {
-              label: <BorderRightOutlined />,
+              label: <LuPanelRightDashed />,
               value: 'sidebar',
             }, {
-              label: <BorderRightOutlined />,
+              label: <LuPanelRight />,
               value: 'float-sidebar',
             }
             ]}
