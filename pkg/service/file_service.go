@@ -60,7 +60,7 @@ type FileService interface {
 	VerifyDownloadURL(fileKey string, signature string, expires int64) bool
 	GetFileInfo(c *gin.Context, fileKey string) (*model.File, error)
 	DownloadFile(c *gin.Context, path string) error
-	ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, error)
+	ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, int64, error)
 }
 
 var (
@@ -229,7 +229,7 @@ func (s *fileService) DownloadFile(c *gin.Context, path string) error {
 	return nil
 }
 
-func (s *fileService) ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, error) {
+func (s *fileService) ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, int64, error) {
 	roles := middleware.GetRolesFromContext(ctx)
 	var hasPermission bool
 	for _, role := range roles {
@@ -260,7 +260,7 @@ func (s *fileService) ListFiles(ctx context.Context, current int, pageSize int, 
 	var files []model.File
 	var total int64
 	if err := query.Offset((current - 1) * pageSize).Limit(pageSize).Count(&total).Find(&files).Error; err != nil {
-		return nil, fmt.Errorf("failed to get files: %v", err)
+		return nil, 0, fmt.Errorf("failed to get files: %v", err)
 	}
-	return files, nil
+	return files, total, nil
 }
