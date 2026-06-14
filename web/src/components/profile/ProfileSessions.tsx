@@ -15,7 +15,7 @@
  */
 
 import React, { useState } from 'react';
-import { Table, Button, Tag, Popconfirm, message, Space, Card, Typography, Empty } from 'antd';
+import { Table, Button, Tag, Popconfirm, message, Space, Typography, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { GlobalOutlined, ClockCircleOutlined, LaptopOutlined, EnvironmentOutlined } from '@ant-design/icons';
@@ -154,30 +154,25 @@ const ProfileSessions: React.FC = () => {
   ];
 
   return (
-    <Card
-      title={t('session.title')}
-      loading={loading}
-      extra={
-        <Space>
-          {sessions.length > 1 && (
-            <Popconfirm
-              title={t('session.confirmTerminateAll')}
-              onConfirm={handleTerminateOtherSessions}
-              okText={tCommon('confirm')}
-              cancelText={tCommon('cancel')}
+    <Space direction="vertical" style={{ padding: 8, width: '100%' }}>
+      <Space direction="horizontal" style={{ float: 'right' }}>
+        {sessions.length > 1 && (
+          <Popconfirm
+            title={t('session.confirmTerminateAll')}
+            onConfirm={handleTerminateOtherSessions}
+            okText={tCommon('confirm')}
+            cancelText={tCommon('cancel')}
+          >
+            <Button
+              danger
+              loading={terminatingAll}
             >
-              <Button
-                danger
-                loading={terminatingAll}
-              >
-                {t('session.terminateOthers')}
-              </Button>
-            </Popconfirm>
-          )}
-          <Button onClick={() => fetchSessions()} loading={loading}>{tCommon('refresh')}</Button>
-        </Space>
-      }
-    >
+              {t('session.terminateOthers')}
+            </Button>
+          </Popconfirm>
+        )}
+        <Button onClick={() => fetchSessions()} loading={loading}>{tCommon('refresh')}</Button>
+      </Space>
       {!loading && sessions.length === 0 ? (
         <Empty description={t('session.noSessions')} />
       ) : (
@@ -189,7 +184,7 @@ const ProfileSessions: React.FC = () => {
           pagination={false}
         />
       )}
-    </Card>
+    </Space>
   );
 };
 

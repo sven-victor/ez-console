@@ -15,7 +15,7 @@
  */
 
 import React, { useState } from 'react';
-import { Card, Button, Steps, Input, Alert, message, Result, QRCode, Space, Modal, Segmented, Divider } from 'antd';
+import { Button, Steps, Input, Alert, message, Result, QRCode, Space, Modal, Segmented, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { ClockCircleFilled, EyeInvisibleOutlined, EyeOutlined, MailOutlined } from '@ant-design/icons';
@@ -202,7 +202,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
     }
 
     return (
-      <div >
+      <div>
         <div style={{ display: currentStep === 2 ? 'none' : 'unset' }}>
           <Segmented
             defaultValue="totp"
@@ -233,9 +233,9 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
   };
 
   return (
-    <Card title={t('mfa.title')}>
+    <div style={{ padding: 8 }}>
       {renderMFAStatus()}
-    </Card>
+    </div>
   );
 };
 
