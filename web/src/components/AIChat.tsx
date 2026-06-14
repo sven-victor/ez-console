@@ -156,6 +156,13 @@ const useStyle = createStyles(({ token, css }) => {
           background-color: #f5f5f5;
         }
       }
+      .ant-bubble-content > .x-markdown > pre{
+        margin-top: 16px;
+        margin-bottom: 11px;
+        code{
+          padding: 0px;
+        }
+      }
       .ant-bubble-end{
         .ant-bubble-content{
           background-color: rgb(22 119 255 / 15%);
