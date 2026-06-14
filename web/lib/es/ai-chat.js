@@ -122,6 +122,13 @@ const ce = Ge(({ token: r, css: n }) => ({
           background-color: #f5f5f5;
         }
       }
+      .ant-bubble-content > .x-markdown > pre{
+        margin-top: 16px;
+        margin-bottom: 11px;
+        code{
+          padding: 0px;
+        }
+      }
       .ant-bubble-end{
         .ant-bubble-content{
           background-color: rgb(22 119 255 / 15%);
@@ -309,20 +316,20 @@ const q = /* @__PURE__ */ new Map(), at = (r) => (q.get(r) || q.set(
         components: h
       }
     ),
-    footerRender: y = ({ message: i }) => {
+    footerRender: b = ({ message: i }) => {
       if (i.error)
         return /* @__PURE__ */ s.jsx("div", { children: /* @__PURE__ */ s.jsx(se, { content: i.error, components: h }) });
     }
-  } = r, b = X(() => (n || []).map((i) => ({
+  } = r, y = X(() => (n || []).map((i) => ({
     ...i.message,
     key: i.id,
     contentRender: P,
-    footer: (k, m) => y == null ? void 0 : y(i, m, c)
+    footer: (k, m) => b == null ? void 0 : b(i, m, c)
   })).filter((i) => i.content), [n]);
   return /* @__PURE__ */ s.jsx("div", { className: d.chatList, children: /* @__PURE__ */ s.jsx(I, { spinning: o, children: /* @__PURE__ */ s.jsx(
     Ee.List,
     {
-      items: b,
+      items: y,
       style: {
         height: "100%",
         paddingInline: u === "classic" ? "calc(calc(100% - 700px) /2)" : "20px"
@@ -359,8 +366,8 @@ const q = /* @__PURE__ */ new Map(), at = (r) => (q.get(r) || q.set(
     setActiveConversationKey: x,
     conversations: h,
     fetchConversationsLoading: P,
-    ephemeralSystemPrompts: y,
-    clientTools: b
+    ephemeralSystemPrompts: b,
+    clientTools: y
   } = Ze(), { t: i } = le("ai"), { t: k } = le("common"), { styles: m } = ce(), w = (e) => ({
     key: e.id,
     label: e.title,
@@ -382,10 +389,10 @@ const q = /* @__PURE__ */ new Map(), at = (r) => (q.get(r) || q.set(
   S(() => {
     x(g);
   }, [g]);
-  const [J, pe] = E.useMessage(), [Y, G] = N(""), [fe, he] = N(!1), [T, xe] = N([]), { data: ye } = j(() => C.system.listSkillDomains()), { data: L } = j(
+  const [J, pe] = E.useMessage(), [Y, G] = N(""), [fe, he] = N(!1), [T, xe] = N([]), { data: be } = j(() => C.system.listSkillDomains()), { data: L } = j(
     () => C.system.listSkills({ current: 1, page_size: 500 })
   ), W = X(() => [
-    ...(ye ?? []).map((e) => ({
+    ...(be ?? []).map((e) => ({
       skillType: "domain",
       key: e,
       label: /* @__PURE__ */ s.jsxs(s.Fragment, { children: [
@@ -401,7 +408,7 @@ const q = /* @__PURE__ */ new Map(), at = (r) => (q.get(r) || q.set(
         e.name
       ] })
     }))
-  ], [L, L]), [A, U] = N(), { onRequest: R, messages: f, isRequesting: M, abort: be, onReload: ke, setMessages: ve, setMessage: Ce } = Xe({
+  ], [L, L]), [A, U] = N(), { onRequest: R, messages: f, isRequesting: M, abort: ye, onReload: ke, setMessages: ve, setMessage: Ce } = Xe({
     provider: at(g),
     // every conversation has its own provider
     conversationKey: g,
@@ -424,15 +431,15 @@ const q = /* @__PURE__ */ new Map(), at = (r) => (q.get(r) || q.set(
     }
   }), F = ie(() => {
     const e = {};
-    return y.length > 0 && (e.ephemeral_system_prompts = y), b.length > 0 && (e.client_tools = b.map((t) => ({
+    return b.length > 0 && (e.ephemeral_system_prompts = b), y.length > 0 && (e.client_tools = y.map((t) => ({
       name: t.name,
       description: t.description,
       parameters: t.parameters
     }))), e;
-  }, [y, b]), z = Qe(null), Q = ie(async (e) => {
+  }, [b, y]), z = Qe(null), Q = ie(async (e) => {
     const t = [];
     for (const a of e) {
-      const l = b.find((p) => p.name === a.name);
+      const l = y.find((p) => p.name === a.name);
       if (!l) {
         t.push({
           tool_call_id: a.id,
@@ -455,7 +462,7 @@ const q = /* @__PURE__ */ new Map(), at = (r) => (q.get(r) || q.set(
       client_tool_results: t,
       ...F()
     });
-  }, [b, R, F]);
+  }, [y, R, F]);
   S(() => {
     var e, t;
     if (!M && f && f.length > 0) {
@@ -671,7 +678,7 @@ const q = /* @__PURE__ */ new Map(), at = (r) => (q.get(r) || q.set(
       },
       onChange: G,
       onCancel: () => {
-        be();
+        ye();
       },
       loading: M,
       className: et(m.sender, "chat-sender"),

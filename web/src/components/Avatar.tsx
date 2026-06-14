@@ -15,7 +15,7 @@
  */
 
 import ImgCrop from 'antd-img-crop';
-import { Upload, UploadFile, UploadProps, Avatar as AntdAvatar, AvatarProps as AntdAvatarProps, Divider, List, Popover, Skeleton, Modal } from 'antd';
+import { Upload, UploadFile, UploadProps, Avatar as AntdAvatar, AvatarProps as AntdAvatarProps, Divider, List, Popover, Skeleton, Modal, Image, Spin } from 'antd';
 import api from '@/service/api';
 import { RcFile } from 'antd/es/upload';
 import React, { useEffect, useState } from 'react';
@@ -77,6 +77,7 @@ const AvatarSelect = ({ onChange, shape = 'square' }: AvatarUploadProps) => {
   }, {
     manual: true,
     onSuccess: ({ data }) => {
+      console.log(data)
       setIconList([...iconList, ...data]);
       setIconListHasMore(data.length === 40);
       setIconListPageNumber(iconListPageNumber + 1);
@@ -135,7 +136,8 @@ const AvatarSelect = ({ onChange, shape = 'square' }: AvatarUploadProps) => {
                       resetIconList();
                     }}
                   >
-                    <Avatar shape={shape} src={id} />
+                    <Image src={getFileSrc(id)} placeholder={<Spin size="default" />} preview={false} />
+                    {/* <Avatar shape={shape} src={id} icon={<UserOutlined />} /> */}
                   </div>
                 );
               }}

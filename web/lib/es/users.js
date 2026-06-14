@@ -1,7 +1,7 @@
 import { j as e } from "./vendor.js";
 import { useState as T, useEffect as ee, useCallback as Q } from "react";
 import { Form as p, message as o, Spin as M, Modal as F, Typography as W, Tag as P, Tooltip as je, Badge as V, Card as q, Row as Y, Col as D, Space as R, Input as L, Select as I, Button as U, Table as Ve, Tabs as ae, Descriptions as k, Switch as we } from "antd";
-import { UserOutlined as se, EyeOutlined as ye, EditOutlined as te, UnlockOutlined as _e, MailOutlined as be, KeyOutlined as Ee, ToolOutlined as ve, UndoOutlined as ke, DeleteOutlined as Ue, ReloadOutlined as ze, ExportOutlined as Pe, UserAddOutlined as Se, ArrowLeftOutlined as Ae } from "@ant-design/icons";
+import { UserOutlined as se, EyeOutlined as ye, EditOutlined as te, UnlockOutlined as _e, MailOutlined as be, KeyOutlined as ve, ToolOutlined as Ee, UndoOutlined as ke, DeleteOutlined as Ue, ReloadOutlined as ze, ExportOutlined as Pe, UserAddOutlined as Se, ArrowLeftOutlined as Ae } from "@ant-design/icons";
 import { useNavigate as H, Link as Ce, useParams as re } from "react-router-dom";
 import { A as le, b as Fe, f as Z, U as Le, c as Te } from "./components.js";
 import { a as h } from "./index.js";
@@ -103,8 +103,8 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
         ":",
         l.name
       ] });
-    const v = j == null ? void 0 : j.find((ge) => ge.id === s);
-    return v ? `${v.name}:${l.name}` : l.name;
+    const E = j == null ? void 0 : j.find((ge) => ge.id === s);
+    return E ? `${E.name}:${l.name}` : l.name;
   }, [j, O]), { run: r, loading: f } = x(() => {
     const s = {
       status: m.status,
@@ -123,7 +123,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
       o.error(a("user.loadError", { defaultValue: "Failed to load users", error: s.message }));
     },
     refreshDeps: [m]
-  }), E = (s) => {
+  }), v = (s) => {
     b({
       ...m,
       current: J.DEFAULT_CURRENT,
@@ -132,8 +132,8 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
       status: s.status
     });
   }, G = (s, l) => {
-    b((v) => ({
-      ...v,
+    b((E) => ({
+      ...E,
       current: s,
       page_size: l
     }));
@@ -158,7 +158,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
     {
       manual: !0,
       onSuccess: (s, l) => {
-        const v = l[0];
+        const E = l[0];
         o.success(a("user.resetPasswordSuccess", { defaultValue: "Password reset successfully" })), s.new_password ? F.info({
           title: a("user.resetPasswordSuccess", { defaultValue: "Password Reset Successfully" }),
           content: /* @__PURE__ */ e.jsx(W.Text, { copyable: { text: s.new_password }, children: a("user.resetPasswordSuccessContent", {
@@ -169,7 +169,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
           title: a("user.resetPasswordSuccess", { defaultValue: "Password Reset Successfully" }),
           content: a("user.resetPasswordSuccessSendByEmail", {
             defaultValue: "The new password has been sent to the user email: {{email}}",
-            email: v.email
+            email: E.email
           })
         });
       },
@@ -177,7 +177,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
         o.error(a("user.resetPasswordError", { defaultValue: "Failed to reset password" }));
       }
     }
-  ), oe = (s, l, v) => {
+  ), oe = (s, l, E) => {
     F.confirm({
       title: a("user.resetPasswordTitle", { defaultValue: "Reset Password" }),
       content: a("user.resetPasswordConfirm", {
@@ -186,7 +186,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
       }),
       okText: c("confirm", { defaultValue: "Confirm" }),
       cancelText: c("cancel", { defaultValue: "Cancel" }),
-      onOk: () => ie({ id: s, email: v })
+      onOk: () => ie({ id: s, email: E })
     });
   }, { run: de, loading: ce } = x(
     () => h.authorization.createUserExportTask({
@@ -349,7 +349,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
       key: "action",
       width: 150,
       render: (s, l) => {
-        const v = [{
+        const E = [{
           key: "view",
           permission: "authorization:user:view",
           icon: /* @__PURE__ */ e.jsx(ye, {}),
@@ -379,7 +379,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
         }, {
           key: "resetPassword",
           permission: "authorization:user:resetPassword",
-          icon: /* @__PURE__ */ e.jsx(Ee, {}),
+          icon: /* @__PURE__ */ e.jsx(ve, {}),
           disabled: l.disable_change_password,
           tooltip: l.disable_change_password ? a("user.resetPasswordDisabled", { defaultValue: "The current system prohibits modifying the password of this user." }) : a("user.resetPassword", { defaultValue: "Reset Password" }),
           hidden: !((l.source === "local" || l.source === "ldap" && l.ldap_dn) && l.status !== "deleted" && l.status !== "pending_activation"),
@@ -387,7 +387,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
         }, {
           key: "fixUser",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(ve, {}),
+          icon: /* @__PURE__ */ e.jsx(Ee, {}),
           tooltip: a("user.fixUser", { defaultValue: "Fix User" }),
           hidden: !(l.source === "ldap" && !l.ldap_dn && l.status !== "deleted"),
           onClick: async () => u(l)
@@ -414,7 +414,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
             cancelText: c("cancel", { defaultValue: "Cancel" })
           }
         }];
-        return /* @__PURE__ */ e.jsx(Fe, { actions: v }, "actions");
+        return /* @__PURE__ */ e.jsx(Fe, { actions: E }, "actions");
       }
     }
   ];
@@ -424,7 +424,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
       {
         form: d,
         layout: "vertical",
-        onFinish: E,
+        onFinish: v,
         name: "userSearchForm",
         children: /* @__PURE__ */ e.jsxs(Y, { justify: "space-between", align: "middle", gutter: [16, 16], children: [
           /* @__PURE__ */ e.jsx(D, { children: /* @__PURE__ */ e.jsxs(R, { children: [
@@ -434,7 +434,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
                 placeholder: a("user.keywords", { defaultValue: "Search by username, full name, or email" }),
                 allowClear: !0,
                 onSearch: () => {
-                  E(d.getFieldsValue());
+                  v(d.getFieldsValue());
                 },
                 style: { width: 300 }
               }
@@ -445,7 +445,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
                 placeholder: a("user.status", { defaultValue: "Status" }),
                 allowClear: !0,
                 onChange: () => {
-                  E(d.getFieldsValue());
+                  v(d.getFieldsValue());
                 },
                 style: { width: 220 },
                 children: [
@@ -553,7 +553,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
         /* @__PURE__ */ e.jsx(
           le,
           {
-            size: 64,
+            size: 48,
             icon: /* @__PURE__ */ e.jsx(se, {}),
             src: i.avatar,
             style: { marginRight: 16 }
@@ -617,8 +617,8 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
         ":",
         f.name
       ] });
-    const E = y == null ? void 0 : y.find((G) => G.id === r);
-    return E ? `${E.name}:${f.name}` : f.name;
+    const v = y == null ? void 0 : y.find((G) => G.id === r);
+    return v ? `${v.name}:${f.name}` : f.name;
   }, [y, z]), { data: _, loading: S } = x(async () => (await h.authorization.listRoles({})).data.map((f) => ({
     ...f,
     label: f.name,
@@ -632,6 +632,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
         c.setFieldsValue({
           username: r.username,
           email: r.email,
+          avatar: r.avatar,
           full_name: r.full_name,
           status: r.status,
           role_ids: r.roles ? r.roles.map((f) => f.id) : [],
@@ -686,8 +687,8 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
     }
   ), O = (r, f) => d || !f ? Promise.resolve() : f.length < 8 ? Promise.reject(new Error(t("user.passwordTooShort", { defaultValue: "Password must be at least 8 characters long" }))) : Promise.resolve(), K = (r, f) => {
     if (d) return Promise.resolve();
-    const E = c.getFieldValue("password");
-    return E ? f ? f !== E ? Promise.reject(new Error(t("user.passwordMismatch", { defaultValue: "Passwords do not match" }))) : Promise.resolve() : Promise.reject(new Error(t("user.confirmPasswordRequired", { defaultValue: "Please confirm your password" }))) : Promise.resolve();
+    const v = c.getFieldValue("password");
+    return v ? f ? f !== v ? Promise.reject(new Error(t("user.passwordMismatch", { defaultValue: "Passwords do not match" }))) : Promise.resolve() : Promise.reject(new Error(t("user.confirmPasswordRequired", { defaultValue: "Please confirm your password" }))) : Promise.resolve();
   };
   return /* @__PURE__ */ e.jsx(
     q,
