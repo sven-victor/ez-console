@@ -4629,7 +4629,7 @@ definitions:
 info:
   contact: {}
   title: EZ Console API
-  version: v1.16.0
+  version: v1.17.0
 paths:
   /api/ai/chat/sessions:
     get:
