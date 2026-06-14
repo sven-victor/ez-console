@@ -120,7 +120,7 @@ const UserDetail: React.FC = () => {
       title={
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Avatar
-            size={64}
+            size={48}
             icon={<UserOutlined />}
             src={user.avatar}
             style={{ marginRight: 16 }}

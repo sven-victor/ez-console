@@ -101,6 +101,7 @@ const UserForm: React.FC = () => {
         form.setFieldsValue({
           username: userData.username,
           email: userData.email,
+          avatar: userData.avatar,
           full_name: userData.full_name,
           status: userData.status,
           role_ids: userData.roles ? userData.roles.map((role) => role.id) : [],
