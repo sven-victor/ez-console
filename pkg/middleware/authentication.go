@@ -189,25 +189,56 @@ func serviceAuthenticationMiddleware(c *gin.Context, accessKey, secretKey string
 		return util.NewErrorMessage("E4011", "Service account is disabled")
 	}
 
-	var serviceAccount model.ServiceAccount
-	if err := db.Session(ctx).Where("resource_id = ?", key.ServiceAccountID).Preload("Roles.Permissions").Preload("Roles.AIToolPermissions").First(&serviceAccount).Error; err != nil {
+	// Load service account auth data from cache, falling back to DB on miss.
+	csa, err := cache.ServiceAccounts.GetOrLoad(ctx, key.ServiceAccountID, func() (cache.CachedServiceAccount, error) {
+		var sa model.ServiceAccount
+		if err := db.Session(ctx).Where("resource_id = ?", key.ServiceAccountID).First(&sa).Error; err != nil {
+			return cache.CachedServiceAccount{}, err
+		}
+		var roleIDs []string
+		if err := db.Session(ctx).Table("t_service_account_roles").
+			Joins("join `t_role` on `t_role`.id = t_service_account_roles.role_id").
+			Select("t_role.resource_id").
+			Where("t_service_account_roles.service_account_id = ?", sa.ID).
+			Pluck("t_role.resource_id", &roleIDs).Error; err != nil {
+			return cache.CachedServiceAccount{}, err
+		}
+		return cache.CachedServiceAccount{
+			ResourceID:     sa.ResourceID,
+			Status:         sa.Status,
+			PolicyDocument: sa.PolicyDocument,
+			RoleIDs:        roleIDs,
+		}, nil
+	})
+	if err != nil {
 		return util.NewErrorMessage("E4011", "Service account not found")
 	}
-	if serviceAccount.Status != "active" {
+	// Status is already verified via the access-key JOIN above; re-check here
+	// to catch changes that happened after the cache was populated.
+	if csa.Status != model.ServiceAccountStatusActive {
 		return util.NewErrorMessage("E4011", "Service account is disabled")
 	}
-	if len(serviceAccount.PolicyDocument.Statement) > 0 {
+
+	roles := loadRolesFromCache(ctx, csa.RoleIDs)
+
+	serviceAccount := model.ServiceAccount{}
+	serviceAccount.ResourceID = csa.ResourceID
+	serviceAccount.Status = csa.Status
+	serviceAccount.PolicyDocument = csa.PolicyDocument
+	serviceAccount.Roles = roles
+
+	if len(csa.PolicyDocument.Statement) > 0 {
 		serviceAccount.Roles = append([]model.Role{{
 			Base: model.Base{
-				ResourceID: serviceAccount.ResourceID,
+				ResourceID: csa.ResourceID,
 			},
-			Name:           fmt.Sprintf("SA-%s", serviceAccount.ResourceID),
+			Name:           fmt.Sprintf("SA-%s", csa.ResourceID),
 			Description:    "Service account virtual role",
-			PolicyDocument: serviceAccount.PolicyDocument,
-		}}, serviceAccount.Roles...)
+			PolicyDocument: csa.PolicyDocument,
+		}}, roles...)
 	}
 	// Update the last access time of the service account
-	db.Session(ctx).Model(&serviceAccount).Select("LastAccess").Update("last_access", time.Now())
+	db.Session(ctx).Model(&model.ServiceAccount{}).Where("resource_id = ?", csa.ResourceID).Select("LastAccess").Update("last_access", time.Now())
 
 	c.Set("service_account", &serviceAccount)
 	c.Set("service_account_id", serviceAccount.ResourceID)

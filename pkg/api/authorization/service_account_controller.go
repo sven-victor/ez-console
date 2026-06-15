@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
@@ -348,6 +349,7 @@ func (c *ServiceAccountController) UpdateServiceAccount(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5004", err))
 		return
 	}
+	cache.InvalidateServiceAccount(ctx, id)
 
 	// Get the updated service account
 	updatedServiceAccount, err := c.service.GetServiceAccountByID(ctx, id)
@@ -383,6 +385,7 @@ func (c *ServiceAccountController) DeleteServiceAccount(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5005", err))
 		return
 	}
+	cache.InvalidateServiceAccount(ctx, id)
 
 	util.RespondWithMessage(ctx, "Service account deleted successfully")
 }
@@ -423,6 +426,7 @@ func (c *ServiceAccountController) UpdateServiceAccountStatus(ctx *gin.Context) 
 		util.RespondWithError(ctx, util.NewError("E5006", err))
 		return
 	}
+	cache.InvalidateServiceAccount(ctx, id)
 
 	// Get the updated service account
 	updatedServiceAccount, err := c.service.GetServiceAccountByID(ctx, id)
@@ -666,6 +670,7 @@ func (c *ServiceAccountController) AssignServiceAccountRoles(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5012", err))
 		return
 	}
+	cache.InvalidateServiceAccount(ctx, id)
 
 	// Get the updated roles
 	updatedRoles, err := c.service.GetServiceAccountRoles(ctx, id)
@@ -741,6 +746,8 @@ func (c *ServiceAccountController) SetServiceAccountPolicy(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5014", err))
 		return
 	}
+	cache.InvalidateServiceAccount(ctx, id)
+
 	// Get the updated service account
 	updatedServiceAccount, err := c.service.GetServiceAccountByID(ctx, id)
 	if err != nil {

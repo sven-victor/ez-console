@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -105,10 +106,15 @@ func HasPermission(c *gin.Context, code string) error {
 			return util.NewErrorMessage("E4031", "Organization context required for this permission")
 		}
 		orgIDStr := orgID.(string)
-		// check if org is enabled
-		var org model.Organization
-
-		if err := db.Session(c.Request.Context()).Model(&model.Organization{}).Where("resource_id = ?", orgIDStr).First(&org).Error; err != nil {
+		// check if org is enabled — try cache first, fall back to DB on miss
+		org, err := cache.Organizations.GetOrLoad(c.Request.Context(), orgIDStr, func() (model.Organization, error) {
+			var o model.Organization
+			if err := db.Session(c.Request.Context()).Model(&model.Organization{}).Where("resource_id = ?", orgIDStr).First(&o).Error; err != nil {
+				return o, err
+			}
+			return o, nil
+		})
+		if err != nil {
 			return util.NewErrorMessage("E4031", "Organization not found", err)
 		}
 		if org.ResourceID == "" {

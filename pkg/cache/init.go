@@ -15,17 +15,21 @@ const (
 	// invalidation brings the inconsistency window down to sub-second for
 	// normal operations.  The short TTL is the fallback for when an
 	// invalidation event is lost.
-	sessionCacheTTL = 45 * time.Second
-	roleCacheTTL    = 10 * time.Minute
-	settingCacheTTL = 10 * time.Minute
+	sessionCacheTTL        = 45 * time.Second
+	roleCacheTTL           = 10 * time.Minute
+	settingCacheTTL        = 10 * time.Minute
+	orgCacheTTL            = 10 * time.Minute
+	serviceAccountCacheTTL = 10 * time.Minute
 )
 
 // Logical cache names used in cache.invalidate events.
 const (
-	CacheNameSessions    = "sessions"
-	CacheNameRoles       = "roles"
-	CacheNameSettings    = "settings"
-	CacheNameAllSettings = "all_settings"
+	CacheNameSessions        = "sessions"
+	CacheNameRoles           = "roles"
+	CacheNameSettings        = "settings"
+	CacheNameAllSettings     = "all_settings"
+	CacheNameOrganizations   = "organizations"
+	CacheNameServiceAccounts = "service_accounts"
 )
 
 // Global cache instances, initialised by Init.
@@ -46,6 +50,15 @@ var (
 	// AllSettings caches the full settings list under a single key.
 	// Truth source: t_setting.
 	AllSettings *TypedCache[[]model.Setting]
+
+	// Organizations caches Organization objects by resource_id.
+	// Truth source: t_organization.
+	Organizations *TypedCache[model.Organization]
+
+	// ServiceAccounts caches service account auth data (status, policy,
+	// role IDs) by resource_id. Full Role objects are loaded via Roles cache.
+	// Truth source: t_service_account / service_account_roles.
+	ServiceAccounts *TypedCache[CachedServiceAccount]
 )
 
 // logicalNameToCache maps the logical cache name used in invalidation events
@@ -87,12 +100,16 @@ func Init(_ *config.CacheConfig, _ DBSessionFunc) error {
 	Roles = NewTypedCache[model.Role]("role:", roleCacheTTL, nil, defaultGCInterval)
 	Settings = NewTypedCache[model.Setting]("setting:", settingCacheTTL, nil, defaultGCInterval)
 	AllSettings = NewTypedCache[[]model.Setting]("all_settings:", settingCacheTTL, nil, defaultGCInterval)
+	Organizations = NewTypedCache[model.Organization]("org:", orgCacheTTL, nil, defaultGCInterval)
+	ServiceAccounts = NewTypedCache[CachedServiceAccount]("sa:", serviceAccountCacheTTL, nil, defaultGCInterval)
 
 	logicalNameToCache = map[string]interface{ InvalidateByKey(ctx context.Context, key string) }{
-		CacheNameSessions:    Sessions,
-		CacheNameRoles:       Roles,
-		CacheNameSettings:    Settings,
-		CacheNameAllSettings: AllSettings,
+		CacheNameSessions:        Sessions,
+		CacheNameRoles:           Roles,
+		CacheNameSettings:        Settings,
+		CacheNameAllSettings:     AllSettings,
+		CacheNameOrganizations:   Organizations,
+		CacheNameServiceAccounts: ServiceAccounts,
 	}
 	return nil
 }
@@ -113,6 +130,10 @@ func InvalidateByKey(ctx context.Context, cacheName, key string) {
 		case *TypedCache[model.Setting]:
 			v.Clear()
 		case *TypedCache[[]model.Setting]:
+			v.Clear()
+		case *TypedCache[model.Organization]:
+			v.Clear()
+		case *TypedCache[CachedServiceAccount]:
 			v.Clear()
 		}
 		return

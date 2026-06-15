@@ -111,7 +111,11 @@ func (s *organizationService) UpdateOrganization(ctx context.Context, id string,
 	org.ResourceID = existing.ResourceID
 	org.CreatedAt = existing.CreatedAt
 
-	return db.Session(ctx).Save(org).Error
+	if err := db.Session(ctx).Save(org).Error; err != nil {
+		return err
+	}
+	cache.PublishInvalidate(ctx, cache.CacheNameOrganizations, id)
+	return nil
 }
 
 // DeleteOrganization deletes an organization
@@ -137,7 +141,11 @@ func (s *organizationService) DeleteOrganization(ctx context.Context, id string)
 		}
 
 		// Delete organization
-		return tx.Where("resource_id = ?", id).Delete(&model.Organization{}).Error
+		if err := tx.Where("resource_id = ?", id).Delete(&model.Organization{}).Error; err != nil {
+			return err
+		}
+		cache.PublishInvalidate(ctx, cache.CacheNameOrganizations, id)
+		return nil
 	})
 }
 
