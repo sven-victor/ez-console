@@ -613,7 +613,6 @@ func jitteredFallbackInterval(base time.Duration) time.Duration {
 //     wakeWorkers() calls from worker completion and CreateTask already provide
 //     the low-latency trigger; the fallback timer is purely a safety net.
 func (s *taskService) pollLoop(ctx context.Context) {
-	logger := log.GetContextLogger(ctx)
 	cfg := config.GetConfig()
 	long := cfg.Cluster.GetTaskFallbackPollInterval()
 
@@ -632,7 +631,7 @@ func (s *taskService) pollLoop(ctx context.Context) {
 
 	// claimUntilIdle drains all immediately executable pending tasks into the
 	// local queue, stopping early if the queue becomes full.
-	claimUntilIdle := func() (int, string) {
+	claimUntilIdle := func(ctx context.Context) (int, string) {
 		claimed := 0
 		for {
 			if !s.hasTaskQueueCapacity() {
@@ -646,8 +645,9 @@ func (s *taskService) pollLoop(ctx context.Context) {
 	}
 
 	handlePoll := func(trigger string) {
+		ctx, logger := log.NewContextLogger(ctx)
 		level.Debug(logger).Log("msg", "Task poll triggered", "trigger", trigger, "worker_id", s.workerID, "queue_len", len(s.taskQueue), "queue_cap", cap(s.taskQueue))
-		claimed, stopReason := claimUntilIdle()
+		claimed, stopReason := claimUntilIdle(ctx)
 		nextPoll := jitteredFallbackInterval(long)
 		resetTimer(nextPoll)
 		level.Debug(logger).Log("msg", "Task poll completed", "trigger", trigger, "claimed", claimed, "stop_reason", stopReason, "next_poll", nextPoll.String(), "worker_id", s.workerID, "queue_len", len(s.taskQueue), "queue_cap", cap(s.taskQueue))
@@ -729,6 +729,7 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 	logger := log.GetContextLogger(ctx)
 	cfg := config.GetConfig()
 	if cfg.Cluster.Enabled {
+		level.Debug(logger).Log("msg", "Checking if this node is leader", "worker_id", s.workerID)
 		ok, err := s.clusterBackend.IsLeader(ctx, taskLeaseName, s.workerID)
 		if err != nil || !ok {
 			// Ensure this node holds the reaper lease (best-effort: no-op for non-leader)
@@ -742,6 +743,7 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 	}
 	dbConn := db.Session(ctx)
 
+	level.Debug(logger).Log("msg", "Reaping expired leases", "worker_id", s.workerID)
 	// Reset running tasks whose lease has expired back to pending so another
 	// worker can pick them up (handles crashed or unresponsive nodes).
 	resetRes := dbConn.Model(&model.Task{}).
@@ -758,6 +760,7 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 		level.Info(logger).Log("msg", "Expired task leases reset", "tasks", resetRes.RowsAffected, "worker_id", s.workerID)
 	}
 
+	level.Debug(logger).Log("msg", "Cancelling expired pending tasks", "worker_id", s.workerID)
 	// Cancel pending tasks that have exceeded their not_after deadline.
 	// This prevents stale tasks from clogging the pending queue indefinitely.
 	cancelRes := dbConn.Model(&model.Task{}).

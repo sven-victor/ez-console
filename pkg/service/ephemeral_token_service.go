@@ -125,7 +125,7 @@ func (s *ephemeralTokenService) consumeDefault(ctx context.Context, dbConn *gorm
 	err := dbConn.Transaction(func(tx *gorm.DB) error {
 		var row model.EphemeralToken
 		// SELECT FOR UPDATE to serialise concurrent consume attempts.
-		level.Debug(logger).Log("msg", "Consuming ephemeral token in SQLite fallback")
+		level.Debug(logger).Log("msg", "Consuming ephemeral token")
 		if err := dbdialect.LockForUpdate(tx).
 			Where("token_hash = ? AND expires_at > ?", hash, dbdialect.Now(tx)).
 			First(&row).Error; err != nil {
