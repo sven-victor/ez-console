@@ -214,6 +214,7 @@ func NewTaskService(ctx context.Context, baseService BaseService) TaskService {
 
 // CreateTask creates a new task. CreatorID is set from context. Not exposed via HTTP.
 func (s *taskService) CreateTask(ctx context.Context, taskType model.TaskType, opts ...CreateTaskOption) (*model.Task, error) {
+	logger := log.GetContextLogger(ctx)
 	creatorID := middleware.GetUserIDFromContext(ctx)
 	if creatorID == "" {
 		creatorID = "system"
@@ -242,15 +243,18 @@ func (s *taskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 		}
 		if res.RowsAffected == 0 {
 			// Another node already enqueued this task for this fire window.
+			level.Debug(logger).Log("msg", "Task creation skipped by schedule fire key deduplication", "task_type", taskType, "schedule_fire_key", *t.ScheduleFireKey)
 			return nil, nil
 		}
 	} else if err := dbConn.Create(t).Error; err != nil {
 		return nil, err
 	}
 	taskCreatedTotal.WithLabelValues(string(t.Category), string(t.Type)).Inc()
+	level.Debug(logger).Log("msg", "Task created", "task_id", t.ResourceID, "task_type", t.Type, "category", t.Category, "creator_id", t.CreatorID, "cron_schedule_id", t.CronScheduleID, "not_before", t.NotBefore, "not_after", t.NotAfter)
 	// Publish wakeup event so workers on this and other nodes poll immediately.
 	if bus := GetGlobalEventBus(); bus != nil {
 		_ = bus.Publish(ctx, eventbus.EventTaskNew, []byte(t.ResourceID))
+		level.Debug(logger).Log("msg", "Published task wakeup event", "task_id", t.ResourceID, "task_type", t.Type)
 	}
 	s.wakeWorkers()
 	return t, nil
@@ -411,6 +415,7 @@ func (s *taskService) CancelTask(ctx context.Context, id string) error {
 
 // RetryTask resets task to pending and clears error so it can be picked up again.
 func (s *taskService) RetryTask(ctx context.Context, id string) error {
+	logger := log.GetContextLogger(ctx)
 	t, err := s.GetTask(ctx, id)
 	if err != nil {
 		return err
@@ -435,8 +440,10 @@ func (s *taskService) RetryTask(ctx context.Context, id string) error {
 	}
 	if bus := GetGlobalEventBus(); bus != nil {
 		_ = bus.Publish(ctx, eventbus.EventTaskNew, []byte(id))
+		level.Debug(logger).Log("msg", "Published task retry wakeup event", "task_id", id, "task_type", t.Type)
 	}
 	s.wakeWorkers()
+	level.Debug(logger).Log("msg", "Task reset for retry", "task_id", id, "task_type", t.Type, "retry_count", t.RetryCount+1)
 	return nil
 }
 
@@ -476,6 +483,7 @@ func (s *taskService) GetTaskLogs(ctx context.Context, id string) ([]model.TaskL
 // For SQLite a transaction + SELECT FOR UPDATE fallback is used instead because
 // SQLite serialises writes via its file lock, making SKIP LOCKED unnecessary.
 func (s *taskService) claimNextPending(ctx context.Context) (*model.Task, error) {
+	logger := log.GetContextLogger(ctx)
 	dbConn := db.Session(ctx)
 	cfg := config.GetConfig()
 	leaseTTL := cfg.Cluster.GetTaskLeaseTTL()
@@ -510,6 +518,7 @@ func (s *taskService) claimNextPending(ctx context.Context) (*model.Task, error)
 	// SQLite fallback: transaction + SELECT FOR UPDATE (plain, no SKIP LOCKED).
 	var t model.Task
 	err = dbConn.Transaction(func(tx *gorm.DB) error {
+		level.Debug(logger).Log("msg", "Claiming task", "worker_id", s.workerID)
 		res := dbdialect.LockSkipLocked(tx).
 			Where("status = ? AND (not_before IS NULL OR not_before <= ?) AND (not_after IS NULL OR not_after > ?)",
 				model.TaskStatusPending, dbdialect.Now(tx), dbdialect.Now(tx)).
@@ -604,6 +613,7 @@ func jitteredFallbackInterval(base time.Duration) time.Duration {
 //     wakeWorkers() calls from worker completion and CreateTask already provide
 //     the low-latency trigger; the fallback timer is purely a safety net.
 func (s *taskService) pollLoop(ctx context.Context) {
+	logger := log.GetContextLogger(ctx)
 	cfg := config.GetConfig()
 	long := cfg.Cluster.GetTaskFallbackPollInterval()
 
@@ -622,20 +632,25 @@ func (s *taskService) pollLoop(ctx context.Context) {
 
 	// claimUntilIdle drains all immediately executable pending tasks into the
 	// local queue, stopping early if the queue becomes full.
-	claimUntilIdle := func() {
+	claimUntilIdle := func() (int, string) {
+		claimed := 0
 		for {
 			if !s.hasTaskQueueCapacity() {
-				return // capped: workers will call wakeWorkers() when they free slots
+				return claimed, "queue_full" // capped: workers will call wakeWorkers() when they free slots
 			}
 			if !s.tryClaimAndWake(ctx) {
-				return // drained: no more eligible pending tasks (or transient DB error)
+				return claimed, "idle" // drained: no more eligible pending tasks (or transient DB error)
 			}
+			claimed++
 		}
 	}
 
-	handlePoll := func() {
-		claimUntilIdle()
-		resetTimer(jitteredFallbackInterval(long))
+	handlePoll := func(trigger string) {
+		level.Debug(logger).Log("msg", "Task poll triggered", "trigger", trigger, "worker_id", s.workerID, "queue_len", len(s.taskQueue), "queue_cap", cap(s.taskQueue))
+		claimed, stopReason := claimUntilIdle()
+		nextPoll := jitteredFallbackInterval(long)
+		resetTimer(nextPoll)
+		level.Debug(logger).Log("msg", "Task poll completed", "trigger", trigger, "claimed", claimed, "stop_reason", stopReason, "next_poll", nextPoll.String(), "worker_id", s.workerID, "queue_len", len(s.taskQueue), "queue_cap", cap(s.taskQueue))
 	}
 
 	for {
@@ -644,9 +659,9 @@ func (s *taskService) pollLoop(ctx context.Context) {
 			return
 		case <-s.wakeupCh:
 			s.drainWakeupCh()
-			handlePoll()
+			handlePoll("wakeup")
 		case <-timer.C:
-			handlePoll()
+			handlePoll("fallback_timer")
 		}
 	}
 }
@@ -654,30 +669,41 @@ func (s *taskService) pollLoop(ctx context.Context) {
 // tryClaimAndWake atomically claims one pending task and enqueues it locally.
 // Returns true when a task was claimed and enqueued.
 func (s *taskService) tryClaimAndWake(ctx context.Context) bool {
+	logger := log.GetContextLogger(ctx)
 	if !s.hasTaskQueueCapacity() {
+		level.Debug(logger).Log("msg", "Skip task claim because local queue is full", "queue_len", len(s.taskQueue), "queue_cap", cap(s.taskQueue), "worker_id", s.workerID)
 		return false
 	}
 	t, err := s.claimNextPending(ctx)
 	if err != nil {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			level.Warn(logger).Log("msg", "Failed to claim pending task", "error", err, "worker_id", s.workerID)
+		}
 		return false
 	}
 	select {
 	case s.taskQueue <- t:
 		taskQueueLength.Inc()
+		level.Debug(logger).Log("msg", "Task claimed and queued", "task_id", t.ResourceID, "task_type", t.Type, "category", t.Category, "worker_id", s.workerID, "queue_len", len(s.taskQueue), "queue_cap", cap(s.taskQueue))
 		return true
 	default:
 		taskQueueOverflowTotal.WithLabelValues(string(t.Category)).Inc()
+		level.Warn(logger).Log("msg", "Task queue overflow after claim", "task_id", t.ResourceID, "task_type", t.Type, "category", t.Category, "worker_id", s.workerID, "queue_len", len(s.taskQueue), "queue_cap", cap(s.taskQueue))
 		return false
 	}
 }
 
-func (s *taskService) worker(ctx context.Context, _ int) {
+func (s *taskService) worker(ctx context.Context, workerIndex int) {
+	logger := log.GetContextLogger(ctx)
+	level.Debug(logger).Log("msg", "Task worker started", "worker_index", workerIndex, "worker_id", s.workerID)
 	for {
 		select {
 		case <-ctx.Done():
+			level.Debug(logger).Log("msg", "Task worker stopped", "worker_index", workerIndex, "worker_id", s.workerID)
 			return
 		case t := <-s.taskQueue:
 			taskQueueLength.Dec()
+			level.Debug(logger).Log("msg", "Task dequeued by worker", "task_id", t.ResourceID, "task_type", t.Type, "worker_index", workerIndex, "worker_id", s.workerID, "queue_len", len(s.taskQueue))
 			s.runTask(ctx, t)
 			s.wakeWorkers()
 		}
@@ -700,6 +726,7 @@ func (s *taskService) reaperLoop(ctx context.Context) {
 }
 
 func (s *taskService) reapExpiredLeases(ctx context.Context) {
+	logger := log.GetContextLogger(ctx)
 	cfg := config.GetConfig()
 	if cfg.Cluster.Enabled {
 		ok, err := s.clusterBackend.IsLeader(ctx, taskLeaseName, s.workerID)
@@ -708,6 +735,7 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 			_, _ = s.clusterBackend.AcquireLease(ctx, taskLeaseName, s.workerID, 60*time.Second)
 			ok, _ = s.clusterBackend.IsLeader(ctx, taskLeaseName, s.workerID)
 			if !ok {
+				level.Debug(logger).Log("msg", "Skip task reaper because this node is not leader", "worker_id", s.workerID)
 				return
 			}
 		}
@@ -716,7 +744,7 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 
 	// Reset running tasks whose lease has expired back to pending so another
 	// worker can pick them up (handles crashed or unresponsive nodes).
-	dbConn.Model(&model.Task{}).
+	resetRes := dbConn.Model(&model.Task{}).
 		Where("status = ? AND lease_expires_at < ?", model.TaskStatusRunning, dbdialect.Now(dbConn)).
 		Updates(map[string]any{
 			"status":           model.TaskStatusPending,
@@ -724,10 +752,15 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 			"lease_expires_at": nil,
 			"claim_token":      "",
 		})
+	if resetRes.Error != nil {
+		level.Warn(logger).Log("msg", "Failed to reap expired task leases", "error", resetRes.Error, "worker_id", s.workerID)
+	} else if resetRes.RowsAffected > 0 {
+		level.Info(logger).Log("msg", "Expired task leases reset", "tasks", resetRes.RowsAffected, "worker_id", s.workerID)
+	}
 
 	// Cancel pending tasks that have exceeded their not_after deadline.
 	// This prevents stale tasks from clogging the pending queue indefinitely.
-	dbConn.Model(&model.Task{}).
+	cancelRes := dbConn.Model(&model.Task{}).
 		Where("status = ? AND not_after IS NOT NULL AND not_after < ?",
 			model.TaskStatusPending, dbdialect.Now(dbConn)).
 		Updates(map[string]any{
@@ -735,6 +768,11 @@ func (s *taskService) reapExpiredLeases(ctx context.Context) {
 			"error":       "task expired: not_after deadline passed",
 			"finished_at": dbdialect.Now(dbConn),
 		})
+	if cancelRes.Error != nil {
+		level.Warn(logger).Log("msg", "Failed to cancel expired pending tasks", "error", cancelRes.Error, "worker_id", s.workerID)
+	} else if cancelRes.RowsAffected > 0 {
+		level.Info(logger).Log("msg", "Expired pending tasks cancelled", "tasks", cancelRes.RowsAffected, "worker_id", s.workerID)
+	}
 }
 
 func (s *taskService) runTask(pctx context.Context, t *model.Task) {

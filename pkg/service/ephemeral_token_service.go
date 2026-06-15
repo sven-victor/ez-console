@@ -22,9 +22,11 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-kit/log/level"
 	"github.com/sven-victor/ez-console/pkg/db"
 	dbdialect "github.com/sven-victor/ez-console/pkg/db/dialect"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/safe"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -118,10 +120,12 @@ func (s *ephemeralTokenService) consumePostgres(ctx context.Context, dbConn *gor
 }
 
 func (s *ephemeralTokenService) consumeDefault(ctx context.Context, dbConn *gorm.DB, hash string) (string, error) {
+	logger := log.GetContextLogger(ctx)
 	var payload string
 	err := dbConn.Transaction(func(tx *gorm.DB) error {
 		var row model.EphemeralToken
 		// SELECT FOR UPDATE to serialise concurrent consume attempts.
+		level.Debug(logger).Log("msg", "Consuming ephemeral token in SQLite fallback")
 		if err := dbdialect.LockForUpdate(tx).
 			Where("token_hash = ? AND expires_at > ?", hash, dbdialect.Now(tx)).
 			First(&row).Error; err != nil {
