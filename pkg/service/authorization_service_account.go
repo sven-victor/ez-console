@@ -392,8 +392,8 @@ func (s *serviceAccountService) SetServiceAccountPolicy(ctx context.Context, ser
 	}
 	if sa.OrganizationID == nil || *sa.OrganizationID == "" {
 		// Global service account: require global permission
-		if !middleware.HasGlobalRolePermission(ctx, "authorization:service_account:policy:set") {
-			return util.NewErrorMessage("E4031", "No global permission to set service accounts")
+		if !middleware.HasGlobalRolePermission(ctx, "authorization:service_account:policy:update") {
+			return util.NewErrorMessage("E4031", "No global permission to update service accounts")
 		}
 	}
 	// Validate policy document

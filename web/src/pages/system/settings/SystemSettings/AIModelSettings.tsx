@@ -333,7 +333,7 @@ const AIModelSettings: React.FC = () => {
           },
           {
             key: 'setDefault',
-            permission: 'ai:models:setDefault',
+            permission: 'ai:models:update',
             icon: <StarOutlined />,
             tooltip: t('models.setDefault', { defaultValue: 'Set as Default' }),
             onClick: async () => setDefaultModel(record.id),

@@ -46,6 +46,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/utils';
 import dayjs from 'dayjs';
 import { useRequest } from 'ahooks';
+import { PermissionGuard } from '@/components/PermissionGuard';
 
 interface ServiceAccessKeysProps {
   serviceAccountID: string;
@@ -228,25 +229,29 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
       key: 'action',
       render: (_: any, record: API.ServiceAccountAccessKey) => (
         <Space size="small">
-          <Tooltip title={t('serviceAccount.updateKey', { defaultValue: 'Update Key' })}>
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => showEditModal(record)}
-            />
-          </Tooltip>
-          <Popconfirm
-            title={t('serviceAccount.deleteKeyConfirm', { defaultValue: 'Are you sure you want to delete this access key?' })}
-            onConfirm={() => deleteAccessKey(record.id)}
-            okText={tCommon('confirm', { defaultValue: 'Confirm' })}
-            cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
-          >
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-            />
-          </Popconfirm>
+          <PermissionGuard permission="authorization:service_account:access_key:update">
+            <Tooltip title={t('serviceAccount.updateKey', { defaultValue: 'Update Key' })}>
+              <Button
+                type="text"
+                icon={<EditOutlined />}
+                onClick={() => showEditModal(record)}
+              />
+            </Tooltip>
+          </PermissionGuard>
+          <PermissionGuard permission="authorization:service_account:access_key:delete">
+            <Popconfirm
+              title={t('serviceAccount.deleteKeyConfirm', { defaultValue: 'Are you sure you want to delete this access key?' })}
+              onConfirm={() => deleteAccessKey(record.id)}
+              okText={tCommon('confirm', { defaultValue: 'Confirm' })}
+              cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
+            >
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
+          </PermissionGuard>
         </Space>
       ),
     },
@@ -270,13 +275,15 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
             >
               {tCommon('refresh', { defaultValue: 'Refresh' })}
             </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={showCreateModal}
-            >
-              {t('serviceAccount.createAccessKey', { defaultValue: 'Create Access Key' })}
-            </Button>
+            <PermissionGuard permission="authorization:service_account:access_key:create">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={showCreateModal}
+              >
+                {t('serviceAccount.createAccessKey', { defaultValue: 'Create Access Key' })}
+              </Button>
+            </PermissionGuard>
           </Space>
         }
       >

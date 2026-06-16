@@ -392,11 +392,15 @@ const ServiceAccountDetail: React.FC = () => {
           />
         </TabPane>
 
-        <TabPane tab={t('serviceAccount.tabs.policy', { defaultValue: 'Policy Document' })} key="policy">
+        <TabPane
+          tab={t('serviceAccount.tabs.policy', { defaultValue: 'Policy Document' })}
+          key="policy"
+          disabled={!hasPermission('authorization:service_account:policy:view')}
+        >
           <div style={{ marginBottom: 16 }}>
             <Row justify="end">
               <Col>
-                <PermissionGuard permission="authorization:service_account:update">
+                <PermissionGuard permission="authorization:service_account:policy:update">
                   <Button
                     type="primary"
                     icon={<EditOutlined />}

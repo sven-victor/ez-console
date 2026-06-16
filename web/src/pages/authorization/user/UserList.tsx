@@ -553,7 +553,7 @@ const UserList: React.FC = () => {
           onClick: async () => handleResendActivation(record),
         }, {
           key: 'resetPassword',
-          permission: "authorization:user:resetPassword",
+          permission: "authorization:user:reset_password",
           icon: <KeyOutlined />,
           disabled: record.disable_change_password,
           tooltip: record.disable_change_password ? t('user.resetPasswordDisabled', { defaultValue: 'The current system prohibits modifying the password of this user.' }) : t('user.resetPassword', { defaultValue: 'Reset Password' }),

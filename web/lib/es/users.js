@@ -378,7 +378,7 @@ const { Option: C } = I, De = ({ user: n, onClose: w, onSuccess: t }) => {
           onClick: async () => pe(l)
         }, {
           key: "resetPassword",
-          permission: "authorization:user:resetPassword",
+          permission: "authorization:user:reset_password",
           icon: /* @__PURE__ */ e.jsx(ve, {}),
           disabled: l.disable_change_password,
           tooltip: l.disable_change_password ? a("user.resetPasswordDisabled", { defaultValue: "The current system prohibits modifying the password of this user." }) : a("user.resetPassword", { defaultValue: "Reset Password" }),

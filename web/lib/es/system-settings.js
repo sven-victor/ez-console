@@ -1607,7 +1607,7 @@ const Ae = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)
         },
         {
           key: "setDefault",
-          permission: "ai:models:setDefault",
+          permission: "ai:models:update",
           icon: /* @__PURE__ */ e.jsx(Rt, {}),
           tooltip: t("models.setDefault", { defaultValue: "Set as Default" }),
           onClick: async () => ne(A.id)

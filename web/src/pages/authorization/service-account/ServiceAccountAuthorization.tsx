@@ -20,6 +20,8 @@ import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
 import { SyncOutlined, LockOutlined } from '@ant-design/icons';
 import { useRequest } from 'ahooks';
+import { PermissionGuard } from '@/components/PermissionGuard';
+import { usePermission } from '@/hooks/usePermission';
 
 interface ServiceAuthorizationProps {
   serviceAccount: API.ServiceAccount | null;
@@ -35,7 +37,7 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
   const { t: tCommon } = useTranslation('common');
   const [availableRoles, setAvailableRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id' | 'role_type'>[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<Omit<API.Role, 'created_at' | 'updated_at' | 'policy_document' | 'permissions' | 'ai_tool_permissions' | 'organization' | 'organization_id' | 'role_type'>[]>([]);
-
+  const { hasPermission } = usePermission();
   useEffect(() => {
     setSelectedRoles(serviceAccount?.roles || []);
   }, [serviceAccount]);
@@ -149,11 +151,12 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
               onSearch={(keywords) => {
                 setSearchKeywords(keywords);
               }}
-              onDropdownVisibleChange={(open) => {
+              onOpenChange={(open) => {
                 if (open) {
                   setSearchKeywords(undefined);
                 }
               }}
+              disabled={!hasPermission('authorization:service_account:role:assign')}
               onChange={handleRoleChange}
               loading={loading || rolesLoading}
               optionFilterProp="label"
@@ -166,14 +169,16 @@ const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serv
           </div>
 
           <div style={{ marginTop: 16 }}>
-            <Button
-              type="primary"
-              onClick={assignRoles}
-              loading={submitting}
-              disabled={loading}
-            >
-              {t('serviceAccount.assignRoles', { defaultValue: 'Assign Roles' })}
-            </Button>
+            <PermissionGuard permission="authorization:service_account:role:assign">
+              <Button
+                type="primary"
+                onClick={assignRoles}
+                loading={submitting}
+                disabled={loading}
+              >
+                {t('serviceAccount.assignRoles', { defaultValue: 'Assign Roles' })}
+              </Button>
+            </PermissionGuard>
           </div>
         </>
       )}

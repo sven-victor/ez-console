@@ -53,8 +53,8 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.PUT("/:id", middleware.RequirePermission("authorization:user:update"), c.UpdateUser)
 		users.DELETE("/:id", middleware.RequirePermission("authorization:user:delete"), c.DeleteUser)
 		users.PUT("/:id/status", middleware.RequirePermission("authorization:user:update"), c.UpdateUserStatus)
-		users.PUT("/:id/password", middleware.RequirePermission("authorization:user:reset-password"), c.ResetUserPassword)
-		users.PUT("/:id/roles", middleware.RequirePermission("authorization:user:assign-roles"), c.AssignRoles)
+		users.PUT("/:id/password", middleware.RequirePermission("authorization:user:reset_password"), c.ResetUserPassword)
+		users.PUT("/:id/roles", middleware.RequirePermission("authorization:user:assign_roles"), c.AssignRoles)
 		users.GET("/:id/audit-logs", middleware.RequirePermission("authorization:user:view_audit_logs"), c.GetUserLogs)
 		users.POST("/:id/restore", middleware.RequirePermission("authorization:user:update"), c.RestoreUser)
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
@@ -253,7 +253,7 @@ func (c *UserController) UpdateUser(ctx *gin.Context) {
 		if slices.Equal(newRoleIDs, oldRoleIDs) {
 			req.RoleIDs = nil
 		} else {
-			middleware.RequirePermission("authorization:user:assign-roles")(ctx)
+			middleware.RequirePermission("authorization:user:assign_roles")(ctx)
 			if ctx.IsAborted() {
 				return
 			}
@@ -1147,13 +1147,13 @@ func init() {
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:             "authorization:user:reset-password",
+			Code:             "authorization:user:reset_password",
 			Name:             "Reset User Password",
 			Description:      "Reset user password",
 			DefaultRoleNames: []string{"operator"},
 		},
 		{
-			Code:             "authorization:user:assign-roles",
+			Code:             "authorization:user:assign_roles",
 			Name:             "Assign roles to users",
 			Description:      "Assign roles to users",
 			DefaultRoleNames: []string{"operator"},
