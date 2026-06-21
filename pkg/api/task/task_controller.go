@@ -41,21 +41,20 @@ func NewTaskController(service *service.Service) *TaskController {
 func (c *TaskController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
 	tasks := router.Group("/tasks")
 	{
-		tasks.GET("", middleware.RequirePermission("task:list"), c.ListTasks)
-		tasks.GET("/:id", middleware.RequirePermission("task:view"), c.GetTask)
-		tasks.GET("/:id/logs", middleware.RequirePermission("task:view"), c.GetTaskLogs)
-		tasks.POST("/:id/cancel", middleware.RequirePermission("task:cancel"), c.CancelTask)
-		tasks.POST("/:id/retry", middleware.RequirePermission("task:retry"), c.RetryTask)
-		tasks.DELETE("/:id", middleware.RequirePermission("task:delete"), c.DeleteTask)
+		tasks.GET("", c.ListTasks)
+		tasks.GET("/:id", c.GetTask)
+		tasks.GET("/:id/logs", c.GetTaskLogs)
+		tasks.POST("/:id/cancel", c.CancelTask)
+		tasks.POST("/:id/retry", c.RetryTask)
+		tasks.DELETE("/:id", c.DeleteTask)
 	}
 	userTasks := router.Group("/user-tasks")
 	{
 		userTasks.GET("", c.ListUserTasks)
 	}
 	taskSchedules := router.Group("/task-schedules")
-	taskSchedules.Use(middleware.RequirePermission("task:schedule:list"))
 	{
-		taskSchedules.GET("", c.ListTaskSchedules)
+		taskSchedules.GET("", middleware.RequirePermission("task:schedule:list"), c.ListTaskSchedules)
 		taskSchedules.GET("/:id/history", c.GetTaskScheduleHistory)
 		taskSchedules.POST("/:id/toggle", middleware.RequirePermission("task:schedule:update"), c.ToggleTaskSchedule)
 		taskSchedules.POST("/:id/trigger", middleware.RequirePermission("task:schedule:update"), c.TriggerTaskSchedule)
@@ -375,6 +374,10 @@ func (c *TaskController) TriggerTaskSchedule(ctx *gin.Context) {
 	if err != nil {
 		if errors.Is(err, service.ErrScheduledJobNotFound) {
 			util.RespondWithError(ctx, util.NewErrorMessage("E4041", "Scheduled job not found"))
+			return
+		}
+		if errors.Is(err, service.ErrScheduledJobDisabled) {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4002", "Scheduled job is disabled"))
 			return
 		}
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to trigger schedule", err))

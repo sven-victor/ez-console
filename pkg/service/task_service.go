@@ -260,16 +260,17 @@ func (s *taskService) CreateTask(ctx context.Context, taskType model.TaskType, o
 	return t, nil
 }
 
-// GetTask returns a task by ID. Enforces visibility: admin or creator.
+// GetTask returns a task by ID.
+// Access rule: admin or users with task:view can view all; others only their own.
 func (s *taskService) GetTask(ctx context.Context, id string) (*model.Task, error) {
-	var t model.Task
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&t).Error; err != nil {
+	t, err := s.getTaskByID(ctx, id)
+	if err != nil {
 		return nil, err
 	}
-	if !s.canAccess(ctx, t.CreatorID) {
+	if !s.canAccess(ctx, t.CreatorID, "task:view") {
 		return nil, gorm.ErrRecordNotFound
 	}
-	return &t, nil
+	return t, nil
 }
 
 // isGlobalAdmin returns true if the context user has the global admin role.
@@ -283,10 +284,11 @@ func isGlobalAdmin(ctx context.Context) bool {
 	return false
 }
 
-// ListTasks returns paginated tasks. Non-admin users only see their own.
+// ListTasks returns paginated tasks.
+// Access rule: admin or users with task:list can see all; others only their own.
 func (s *taskService) ListTasks(ctx context.Context, current, pageSize int, search string) ([]*model.Task, int64, error) {
 	query := db.Session(ctx).Model(&model.Task{})
-	if !isGlobalAdmin(ctx) {
+	if !s.canAccess(ctx, "", "task:list") {
 		userID := middleware.GetUserIDFromContext(ctx)
 		query = query.Where("creator_id = ?", userID)
 	}
@@ -308,6 +310,10 @@ func (s *taskService) ListTasks(ctx context.Context, current, pageSize int, sear
 // ListTasksByCronScheduleID returns paginated tasks created by the given cron schedule (for schedule execution history).
 func (s *taskService) ListTasksByCronScheduleID(ctx context.Context, cronScheduleID string, current, pageSize int) ([]*model.Task, int64, error) {
 	query := db.Session(ctx).Model(&model.Task{}).Where("cron_schedule_id = ?", cronScheduleID)
+	if !s.canAccess(ctx, "", "task:list") {
+		userID := middleware.GetUserIDFromContext(ctx)
+		query = query.Where("creator_id = ?", userID)
+	}
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -333,11 +339,25 @@ func (s *taskService) ListUserTasks(ctx context.Context, userID string) ([]*mode
 	return list, nil
 }
 
-func (s *taskService) canAccess(ctx context.Context, creatorID string) bool {
-	if middleware.HasGlobalRolePermission(ctx, "task:list") || middleware.HasGlobalRolePermission(ctx, "task:view") {
+func (s *taskService) canAccess(ctx context.Context, creatorID string, permissionCode string) bool {
+	if isGlobalAdmin(ctx) {
 		return true
 	}
+	if permissionCode != "" && middleware.HasGlobalRolePermission(ctx, permissionCode) {
+		return true
+	}
+	if creatorID == "" {
+		return false
+	}
 	return middleware.GetUserIDFromContext(ctx) == creatorID
+}
+
+func (s *taskService) getTaskByID(ctx context.Context, id string) (*model.Task, error) {
+	var t model.Task
+	if err := db.Session(ctx).Where("resource_id = ?", id).First(&t).Error; err != nil {
+		return nil, err
+	}
+	return &t, nil
 }
 
 // updateTaskStatus updates status, result, error, progress, and optionally finished_at.
@@ -375,9 +395,12 @@ func (s *taskService) SetTaskArtifact(ctx context.Context, id string, fileKey st
 // For running tasks it sets cancel_requested=true in DB and publishes a
 // task.cancel event so all nodes (including the one running the task) cancel it.
 func (s *taskService) CancelTask(ctx context.Context, id string) error {
-	t, err := s.GetTask(ctx, id)
+	t, err := s.getTaskByID(ctx, id)
 	if err != nil {
 		return err
+	}
+	if !s.canAccess(ctx, t.CreatorID, "task:cancel") {
+		return gorm.ErrRecordNotFound
 	}
 	if t.Status != model.TaskStatusRunning && t.Status != model.TaskStatusPending {
 		return nil
@@ -416,9 +439,12 @@ func (s *taskService) CancelTask(ctx context.Context, id string) error {
 // RetryTask resets task to pending and clears error so it can be picked up again.
 func (s *taskService) RetryTask(ctx context.Context, id string) error {
 	logger := log.GetContextLogger(ctx)
-	t, err := s.GetTask(ctx, id)
+	t, err := s.getTaskByID(ctx, id)
 	if err != nil {
 		return err
+	}
+	if !s.canAccess(ctx, t.CreatorID, "task:retry") {
+		return gorm.ErrRecordNotFound
 	}
 	if t.Status != model.TaskStatusFailed && t.Status != model.TaskStatusCancelled {
 		return nil
@@ -449,9 +475,12 @@ func (s *taskService) RetryTask(ctx context.Context, id string) error {
 
 // DeleteTask soft-deletes a task. Enforces creator or admin.
 func (s *taskService) DeleteTask(ctx context.Context, id string) error {
-	t, err := s.GetTask(ctx, id)
+	t, err := s.getTaskByID(ctx, id)
 	if err != nil {
 		return err
+	}
+	if !s.canAccess(ctx, t.CreatorID, "task:delete") {
+		return gorm.ErrRecordNotFound
 	}
 	return db.Session(ctx).Delete(t).Error
 }

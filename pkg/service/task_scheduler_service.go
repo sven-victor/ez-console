@@ -33,6 +33,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/taskscheduler"
 	"github.com/sven-victor/ez-utils/log"
 	"github.com/sven-victor/ez-utils/signals"
+	"gorm.io/gorm"
 )
 
 // ScheduledJobState is the runtime state of a scheduled job (for API listing).
@@ -435,6 +436,17 @@ func (s *taskSchedulerService) TriggerNow(ctx context.Context, id string) (*mode
 	if def == nil {
 		return nil, ErrScheduledJobNotFound
 	}
+	enabled := def.Enabled
+	var state model.ScheduledJobState
+	if err := db.Session(ctx).Where("id = ?", id).First(&state).Error; err == nil {
+		// Persisted state is the source of truth across nodes/restarts.
+		enabled = state.Enabled
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("failed to load scheduled job state: %w", err)
+	}
+	if !enabled {
+		return nil, ErrScheduledJobDisabled
+	}
 	payload := def.PayloadBuilder()
 	defer func() {
 		s.mu.Lock()
@@ -451,3 +463,6 @@ func (s *taskSchedulerService) TriggerNow(ctx context.Context, id string) (*mode
 
 // ErrScheduledJobNotFound is returned when a scheduled job ID is not found.
 var ErrScheduledJobNotFound = errors.New("scheduled job not found")
+
+// ErrScheduledJobDisabled is returned when a scheduled job is disabled.
+var ErrScheduledJobDisabled = errors.New("scheduled job is disabled")
