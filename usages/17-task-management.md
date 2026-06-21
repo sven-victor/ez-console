@@ -11,7 +11,7 @@ The Task Management module provides:
 - **Real-time progress and status**: Progress (0–100) and status (pending, running, success, failed, cancelled) are stored and can be polled by the frontend.
 - **Cancellation and retry**: Running or pending tasks can be cancelled; failed or cancelled tasks can be retried.
 - **Artifact download**: Tasks can attach an artifact file key; users download via the existing file API.
-- **Creator-based visibility**: Non-admin users see only their own tasks; admins see all.
+- **Permission-aware visibility**: Visibility and cross-user operations are enforced in the service layer. Users with the corresponding global task permission can operate on all tasks; otherwise they are limited to tasks they created.
 - **Task execution logs**: Logs produced during task execution (via the context logger) are stored in a configurable log storage backend and can be viewed on the task detail page.
 - **Configurable log storage**: Task settings let you choose where task logs are stored (e.g. database); the list of backends is provided by a registry in `pkg/taskscheduler`.
 - **Multi-node safe**: Tasks are claimed from the DB atomically (SKIP LOCKED / single-statement UPDATE); each node runs its own poller. A lease mechanism and a leader-elected reaper recover tasks from crashed nodes.
@@ -59,14 +59,14 @@ The Task Management module provides:
 ### Task List Page
 
 - **Path**: `/tasks`
-- **Permission**: `task:list`
+- **Permission**: Authenticated users can access the API; users with `task:list` can list all tasks, otherwise only their own tasks are returned.
 - **Behavior**: Paginated list with search (type or ID). Columns: type, status, progress, creator (if admin), created at. Actions: View, Cancel (running/pending), Retry (failed/cancelled), Download (if artifact), Delete.
-- **Visibility**: Admins see all tasks; other users see only tasks they created.
+- **Visibility**: Admins and users with `task:list` see all tasks; others see only tasks they created.
 
 ### Task Detail Page
 
 - **Path**: `/tasks/:id`
-- **Permission**: `task:view`
+- **Permission**: Authenticated users can access the API; users with `task:view` can view any task, otherwise only tasks they created are visible.
 - **Behavior**: Type, status, progress bar (for running/pending), creator, timestamps, error/result, artifact download link. Buttons: Cancel, Retry, Delete. Page polls every 2 seconds while status is running or pending.
 - **Task logs**: A **Task logs** card shows stored execution logs for the task. Logs are fetched from `GET /api/tasks/:id/logs`. While the task is running or pending, the log list is polled every 2 seconds so new lines appear in real time. Each line shows timestamp, level, and message (logfmt-style).
 
@@ -84,7 +84,7 @@ The Task Management module provides:
 
 - **Path**: `/tasks/schedules`
 - **Permission**: `task:schedule:list` (with `task:schedule:update` for toggle and trigger actions).
-- **Behavior**: Lists all registered cron jobs (name, cron spec, description, task type, enabled, next run, last run). Actions: View history, Toggle enable/disable, Trigger now. Selecting "View history" shows a paginated table of tasks created by that schedule (execution history). Accessible from the Task list page via the "Scheduled Tasks" link (when the user has `task:schedule:list`).
+- **Behavior**: Lists all registered cron jobs (name, cron spec, description, task type, enabled, next run, last run). Actions: View history, Toggle enable/disable, Trigger now. Selecting "View history" shows a paginated table of tasks created by that schedule (execution history). History API visibility follows task list rules: users with `task:list` can see full history; others only see their own tasks in that schedule. Accessible from the Task list page via the "Scheduled Tasks" link (when the user has `task:schedule:list`).
 
 ### System Settings: Task Settings Tab
 
@@ -122,15 +122,15 @@ The Task Management module provides:
 
 | Code                    | Description                           | Typical roles        |
 |-------------------------|---------------------------------------|----------------------|
-| `task:list`             | List tasks (own or all)               | admin, operator, viewer |
-| `task:view`             | View task detail                      | admin, operator, viewer |
-| `task:cancel`           | Cancel running/pending task           | admin, operator      |
-| `task:retry`            | Retry failed/cancelled task           | admin, operator      |
-| `task:delete`           | Delete task                           | admin, operator      |
+| `task:list`             | List all tasks (without it, list is restricted to own tasks) | admin, operator, viewer |
+| `task:view`             | View any task detail (without it, only own task detail)      | admin, operator, viewer |
+| `task:cancel`           | Cancel any running/pending task (without it, only own task)  | admin, operator      |
+| `task:retry`            | Retry any failed/cancelled task (without it, only own task)  | admin, operator      |
+| `task:delete`           | Delete any task (without it, only own task)                  | admin, operator      |
 | `task:schedule:list`    | List scheduled (cron) tasks and history | admin, operator   |
 | `task:schedule:update`  | Enable/disable and trigger scheduled tasks | admin, operator |
 
-Non-admin users are restricted to their own tasks for list and detail; admins see all.
+Task APIs are authenticated and enforce access in service logic: admin is always global, users with the corresponding permission can operate cross-user, and users without that permission are limited to their own tasks.
 
 ## API Reference
 
@@ -138,16 +138,16 @@ All task APIs require authentication.
 
 | Method | Path                  | Permission  | Description                |
 |--------|-----------------------|------------|----------------------------|
-| GET    | `/api/tasks`          | task:list  | List tasks (paginated)     |
-| GET    | `/api/tasks/:id`      | task:view  | Get one task              |
-| GET    | `/api/tasks/:id/logs` | task:view  | Get task execution logs   |
-| POST   | `/api/tasks/:id/cancel` | task:cancel | Cancel task             |
-| POST   | `/api/tasks/:id/retry`  | task:retry | Retry task              |
-| DELETE | `/api/tasks/:id`      | task:delete | Delete task (soft)      |
+| GET    | `/api/tasks`          | auth only  | List tasks (paginated)     |
+| GET    | `/api/tasks/:id`      | auth only  | Get one task              |
+| GET    | `/api/tasks/:id/logs` | auth only  | Get task execution logs   |
+| POST   | `/api/tasks/:id/cancel` | auth only | Cancel task             |
+| POST   | `/api/tasks/:id/retry`  | auth only | Retry task              |
+| DELETE | `/api/tasks/:id`      | auth only  | Delete task (soft)      |
 
-**List query parameters**: `current`, `page_size`, `search` (optional). Admins see all tasks; others see only their own.
+**List query parameters**: `current`, `page_size`, `search` (optional). Users with `task:list` (or admin) see all tasks; others see only their own.
 
-**Task logs** (`GET /api/tasks/:id/logs`): Returns an array of log entries for the task (same visibility as the task: admin or creator). Each entry has `id`, `task_id`, `level`, `message`, `created_at`. The backend used is the one selected in Task Settings (log storage).
+**Task logs** (`GET /api/tasks/:id/logs`): Returns an array of log entries for the task (same visibility as `GetTask`: users with `task:view` can read any task logs; others only their own). Each entry has `id`, `task_id`, `level`, `message`, `created_at`. The backend used is the one selected in Task Settings (log storage).
 
 ### User tasks for header dropdown (`/api/user-tasks`)
 
@@ -166,9 +166,9 @@ All task APIs require authentication.
 | Method | Path                                | Permission           | Description |
 |--------|-------------------------------------|----------------------|-------------|
 | GET    | `/api/task-schedules`               | task:schedule:list   | List registered cron jobs with next/last run and enabled status. |
-| GET    | `/api/task-schedules/:id/history`   | task:schedule:list   | Paginated execution history (tasks created by this schedule). Query: `current`, `page_size`. |
+| GET    | `/api/task-schedules/:id/history`   | auth only            | Paginated execution history (tasks created by this schedule). Query: `current`, `page_size`. Full history requires `task:list`; otherwise filtered to current user's tasks. |
 | POST   | `/api/task-schedules/:id/toggle`    | task:schedule:update | Enable or disable a cron job. Body: `{ "enabled": true \| false }`. |
-| POST   | `/api/task-schedules/:id/trigger`   | task:schedule:update | Run the scheduled job once immediately (creates one task). |
+| POST   | `/api/task-schedules/:id/trigger`   | task:schedule:update | Run the scheduled job once immediately (creates one task). Returns an error when the schedule is disabled. |
 
 ### Task settings APIs (log storage backends)
 
@@ -514,7 +514,7 @@ The following metrics are exposed under `/metrics` for monitoring:
   - `not_before = fire_time - 1s` — allows a 1-second back-dated window for minor clock skew between the scheduler and the worker.
   - `not_after = schedule.Next(fire_time)` — the next scheduled fire time; tasks not started before the next window are automatically cancelled by the reaper, preventing stale runs. Set `DisableNotAfter: true` to opt out (e.g. for long-running or one-shot jobs that must always execute).
 - **Deduplication**: Each scheduled task carries a `schedule_fire_key` (`<jobID>:<unix_ts>`). A unique DB index on this column ensures that concurrent leader nodes cannot create duplicate tasks for the same fire window (only the first `INSERT` wins; the other is a silent no-op).
-- **UI**: The **Scheduled Tasks** page (`/tasks/schedules`) lists all registered cron jobs (name, spec, description, task type, enabled, next run, last run) and allows viewing execution history for a selected job. Users with `task:schedule:update` can enable/disable a job and trigger a run immediately.
+- **UI**: The **Scheduled Tasks** page (`/tasks/schedules`) lists all registered cron jobs (name, spec, description, task type, enabled, next run, last run) and allows viewing execution history for a selected job. Users with `task:schedule:update` can enable/disable a job and trigger a run immediately. Triggering a disabled job returns an error.
 
 ### Registering a scheduled job
 
@@ -597,7 +597,7 @@ Built-in extensible settings are currently registered in `init()` as:
 - **Many tasks stay "pending" under high load**: Check Prometheus `task_queue_overflow_total`. If it is non-zero, there was a rare race between the capacity check and the channel send; the affected tasks retain `status='running'` temporarily and are recovered by the reaper within `lease_ttl` seconds. For sustained backlog, increase `task_max_concurrent` in Task Settings or scale to multiple nodes.
 - **"task type not registered"**: The worker sets status to failed with this message when `taskscheduler.GetTaskRunner(ctx, task.Type)` returns false. Add a `RegisterTaskType` or `RegisterFuncTaskType` call for that type (e.g. in `init()` of the package that implements the runner).
 - **Tasks cancelled with "task expired"**: A cron task was not claimed within its `not_after` window (the next scheduled fire time). Causes: worker pool overloaded, service was down during the window, or `not_after` was set too tight. For jobs that must always run regardless of scheduling lag, set `DisableNotAfter: true` on the `ScheduledJobDef`.
-- **Creator or admin only**: List and get APIs filter by `creator_id` for non-admin users. Use a context with the correct user when calling from backend code if you need to simulate a user.
+- **Permission-aware visibility**: List/get/log/cancel/retry/delete access is enforced in service logic. Users with the corresponding global task permission can operate across users; without that permission, access is limited to tasks created by the current user. Use a context with the correct user/roles when calling from backend code.
 - **No task logs on detail page**: Ensure Task Settings → Log storage is set to a registered backend (e.g. `database`). Logs are only stored when the runner uses the context logger (`log.GetContextLogger(ctx)`); if the runner does not log, the list will be empty. Ensure the task has started at least once (logs are written during execution).
 - **Running task not progressing (node crashed)**: The reaper will reset the task to `pending` after `lease_ttl` seconds (default 60 s) and another worker will pick it up. Check `task_running_gauge` and `lease_expires_at` in the DB to diagnose.
 
