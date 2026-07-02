@@ -55,11 +55,15 @@ func (t *UtilsToolSet) Call(ctx context.Context, name string, parameters string)
 		time.Sleep(time.Duration(params.Seconds) * time.Second)
 		return "", nil
 	case "random_string":
+		const maxRandomStringLength = 4096
 		var params struct {
 			StringLength int `json:"string_length"`
 		}
 		if err := json.Unmarshal([]byte(parameters), &params); err != nil {
 			return "", fmt.Errorf("failed to unmarshal parameters: %w", err)
+		}
+		if params.StringLength <= 0 || params.StringLength > maxRandomStringLength {
+			return "", fmt.Errorf("string_length must be between 1 and %d", maxRandomStringLength)
 		}
 		return util.GenerateRandomString(params.StringLength), nil
 	}

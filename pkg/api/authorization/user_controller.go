@@ -59,6 +59,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.POST("/:id/restore", middleware.RequirePermission("authorization:user:update"), c.RestoreUser)
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
 		users.POST("/:id/resend-activation", middleware.RequirePermission("authorization:user:update"), c.ResendActivationEmail)
+		users.DELETE("/:id/mfa", middleware.RequirePermission("authorization:user:update"), c.AdminDisableUserMFA)
 		users.GET("/ldap-users", middleware.RequirePermission("authorization:user:list"), c.GetLdapUsers)
 		users.POST("/export", middleware.RequirePermission("authorization:user:export"), c.CreateUserExportTask)
 	}
@@ -1233,4 +1234,42 @@ func (c *UserController) ActivateUser(ctx *gin.Context) {
 	}
 
 	util.RespondWithSuccess(ctx, http.StatusOK, user)
+}
+
+// AdminDisableUserMFA disables MFA for a specific user (admin operation)
+//
+//	@Summary		Disable MFA for a user (admin)
+//	@Description	Allows an administrator to disable MFA for any user without step-up authentication. The user's sessions are invalidated and they must re-login.
+//	@ID             adminDisableUserMfa
+//	@Tags			Authorization/Users
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		404	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/authorization/users/{id}/mfa [delete]
+func (c *UserController) AdminDisableUserMFA(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if id == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid user ID"))
+		return
+	}
+
+	err := c.service.AuditLogService.StartAudit(
+		ctx,
+		id,
+		func(auditLog *model.AuditLog) error {
+			if err := c.service.AdminDisableMFA(ctx, id); err != nil {
+				return err
+			}
+			auditLog.Details.Request = gin.H{"mfa_enabled": false}
+			util.RespondWithMessage(ctx, "MFA has been successfully disabled for the user")
+			return nil
+		},
+	)
+
+	if err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E5002", "Failed to disable MFA", err))
+	}
 }

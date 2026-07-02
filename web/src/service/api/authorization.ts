@@ -112,12 +112,19 @@ export async function getCurrentUserLogs(
   );
 }
 
-/** Disable MFA Disable MFA POST /api/authorization/profile/mfa/disable */
-export async function disableMfa(options?: { [key: string]: any }) {
+/** Disable MFA Disable MFA for the current user. Requires either password or TOTP code as step-up authentication. Blocked when global MFA enforcement is enabled. POST /api/authorization/profile/mfa/disable */
+export async function disableMfa(
+  body: API.DisableMFARequest,
+  options?: { [key: string]: any }
+) {
   return request<API.ResponseUtilMessageData>(
     "/api/authorization/profile/mfa/disable",
     {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
       ...(options || {}),
     }
   );
@@ -735,6 +742,22 @@ export async function getUserLogs(
         page_size: "10",
         ...queryParams,
       },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Disable MFA for a user (admin) Allows an administrator to disable MFA for any user without step-up authentication. The user's sessions are invalidated and they must re-login. DELETE /api/authorization/users/${param0}/mfa */
+export async function adminDisableUserMfa(
+  params: API.adminDisableUserMfaParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/authorization/users/${param0}/mfa`,
+    {
+      method: "DELETE",
+      params: { ...queryParams },
       ...(options || {}),
     }
   );

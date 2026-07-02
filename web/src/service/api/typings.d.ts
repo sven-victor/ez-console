@@ -17,6 +17,11 @@ declare global {
       user_id: string;
     }
   
+    interface adminDisableUserMfaParams {
+      /** User ID */
+      id: string;
+    }
+  
     interface AIChatMessage {
       /** Message content */
       content: string;
@@ -463,6 +468,11 @@ declare global {
     interface deleteUserParams {
       /** User ID */
       id: string;
+    }
+  
+    interface DisableMFARequest {
+      mfa_code: string;
+      password: string;
     }
   
     interface downloadAITraceEventsParams {

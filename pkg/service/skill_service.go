@@ -182,6 +182,11 @@ func NewSkillService() SkillService {
 	return skillSvc
 }
 
+const (
+	maxSkillZipSize  = 10 * 1024 * 1024 // 10 MB — maximum compressed ZIP size
+	maxSkillFileSize = 64 * 1024         // 64 KB — maximum size for a single skill file / frontmatter
+)
+
 // UploadSkill creates a skill from an uploaded file (single .md or .zip). Parses SKILL.md/SKILLS.md frontmatter for name/description.
 func (s *skillService) UploadSkill(ctx context.Context, organizationID string, file io.Reader, filename string, category, domain string) (*model.Skill, error) {
 	if organizationID == "" {
@@ -194,9 +199,12 @@ func (s *skillService) UploadSkill(ctx context.Context, organizationID string, f
 	if ext != ".md" {
 		return nil, fmt.Errorf("upload must be .md or .zip file")
 	}
-	content, err := io.ReadAll(file)
+	content, err := io.ReadAll(io.LimitReader(file, maxSkillFileSize+1))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+	if len(content) > maxSkillFileSize {
+		return nil, fmt.Errorf("skill file exceeds maximum allowed size of %d KB", maxSkillFileSize/1024)
 	}
 	name, description, categoryFromFile, err := parseSkillFrontmatter(content)
 	if err != nil {
@@ -218,9 +226,12 @@ func (s *skillService) uploadSkillZip(ctx context.Context, organizationID string
 	if organizationID == "" {
 		return nil, fmt.Errorf("organization id is required")
 	}
-	body, err := io.ReadAll(r)
+	body, err := io.ReadAll(io.LimitReader(r, maxSkillZipSize+1))
 	if err != nil {
 		return nil, fmt.Errorf("failed to read zip: %w", err)
+	}
+	if len(body) > maxSkillZipSize {
+		return nil, fmt.Errorf("ZIP file exceeds maximum allowed size of %d MB", maxSkillZipSize/1024/1024)
 	}
 	zr, err := zip.NewReader(bytes.NewReader(body), int64(len(body)))
 	if err != nil {
@@ -249,7 +260,7 @@ func (s *skillService) uploadSkillZip(ctx context.Context, organizationID string
 		if err != nil {
 			continue
 		}
-		content, _ := io.ReadAll(rc)
+		content, _ := io.ReadAll(io.LimitReader(rc, maxSkillFileSize))
 		_ = rc.Close()
 		base := filepath.Base(clean)
 		if base == skillMainFile || base == skillMainFileAlt {

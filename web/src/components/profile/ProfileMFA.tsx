@@ -34,6 +34,9 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
   const [mfaSecretHidden, setMfaSecretHidden] = useState(true);
   const [verificationCode, setVerificationCode] = useState('');
   const [mfaType, setMfaType] = useState<'totp' | 'email'>('totp');
+  const [disableModalOpen, setDisableModalOpen] = useState(false);
+  const [disablePassword, setDisablePassword] = useState('');
+  const [disableMfaCode, setDisableMfaCode] = useState('');
 
   const { run: handleEnableMFA, data: enableMFAData = { secret: '', qr_code: '', token: undefined } } = useRequest(
     () => api.authorization.enableMfa({ mfa_type: mfaType }),
@@ -73,11 +76,25 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
     }
   };
 
+  const closeDisableModal = () => {
+    setDisableModalOpen(false);
+    setDisablePassword('');
+    setDisableMfaCode('');
+  };
+
   const handleDisableMFA = async () => {
+    if (!disablePassword && !disableMfaCode) {
+      message.warning(t('mfa.passwordOrCodeRequired', { defaultValue: 'Please enter your password or verification code' }));
+      return;
+    }
     try {
       setLoading(true);
-      await api.authorization.disableMfa();
+      await api.authorization.disableMfa({
+        password: disablePassword,
+        mfa_code: disableMfaCode,
+      });
       message.success(t('mfa.disableSuccess'));
+      closeDisableModal();
       onSuccess();
     } catch (error) {
       message.error(tCommon('operationFailed'));
@@ -98,17 +115,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
           title={t('mfa.enabled')}
           subTitle={t('mfa.enabledDescription')}
           extra={
-            <Button
-              danger
-              onClick={() => {
-                Modal.confirm({
-                  title: t('mfa.confirmDisable'),
-                  content: t('mfa.disableWarning'),
-                  onOk: handleDisableMFA,
-                  okButtonProps: { danger: true },
-                });
-              }}
-            >
+            <Button danger onClick={() => setDisableModalOpen(true)}>
               {t('mfa.disable')}
             </Button>
           }
@@ -235,6 +242,38 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
   return (
     <div style={{ padding: 8 }}>
       {renderMFAStatus()}
+      <Modal
+        title={t('mfa.confirmDisable')}
+        open={disableModalOpen}
+        onOk={handleDisableMFA}
+        okText={t('mfa.disable')}
+        okButtonProps={{ danger: true, loading }}
+        onCancel={closeDisableModal}
+        destroyOnClose
+      >
+        <Alert
+          message={t('mfa.disableWarning')}
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+        <p>{t('mfa.disableVerifyDescription', { defaultValue: 'For security reasons, please verify your identity with your password or a verification code.' })}</p>
+        <Input.Password
+          placeholder={t('mfa.enterPassword', { defaultValue: 'Enter your password' })}
+          autoComplete="current-password"
+          value={disablePassword}
+          onChange={(e) => setDisablePassword(e.target.value)}
+          onPressEnter={handleDisableMFA}
+          style={{ marginBottom: 12 }}
+        />
+        <Input
+          placeholder={t('mfa.enterTotpCode', { defaultValue: 'Or enter the 6-digit code from your authenticator app' })}
+          maxLength={6}
+          value={disableMfaCode}
+          onChange={(e) => setDisableMfaCode(e.target.value)}
+          onPressEnter={handleDisableMFA}
+        />
+      </Modal>
     </div>
   );
 };

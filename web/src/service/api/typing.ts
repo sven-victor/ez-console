@@ -15,6 +15,11 @@ export interface AddUserToOrganizationRequest {
   user_id: string;
 }
 
+export interface adminDisableUserMfaParams {
+  /** User ID */
+  id: string;
+}
+
 export interface AIChatMessage {
   /** Message content */
   content: string;
@@ -461,6 +466,11 @@ export interface deleteToolSetParams {
 export interface deleteUserParams {
   /** User ID */
   id: string;
+}
+
+export interface DisableMFARequest {
+  mfa_code: string;
+  password: string;
 }
 
 export interface downloadAITraceEventsParams {

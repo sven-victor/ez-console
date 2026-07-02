@@ -74,7 +74,8 @@ type UserService interface {
 	EnableMFA(ctx context.Context, userID string, mfaType string) (*EnableMFAResponse, error)
 	VerifyAndActivateEmailMFA(ctx context.Context, userID string, token string, code string) error
 	VerifyAndActivateTOTPMFA(ctx context.Context, userID string, code string) error
-	DisableMFA(ctx context.Context, userID string) error
+	DisableMFA(ctx context.Context, userID string, password string, mfaCode string) error
+	AdminDisableMFA(ctx context.Context, targetUserID string) error
 	AssignRoles(ctx context.Context, userID string, roleIDs []string) error
 	GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error)
 	RestoreUser(ctx context.Context, userID string) error
@@ -722,6 +723,9 @@ func (s *userService) createUser(ctx context.Context, req CreateUserRequest) (*m
 			return nil, util.NewErrorMessage("E5001", "Failed to set password", err)
 		}
 	}
+	if err := s.validateRoleAssignment(ctx, req.RoleIDs); err != nil {
+		return nil, err
+	}
 	err := dbConn.Transaction(func(tx *gorm.DB) error {
 		// Create user in database
 		if err := tx.Create(&user).Error; err != nil {
@@ -1202,6 +1206,9 @@ func (s *userService) PatchUser(ctx context.Context, id string, req UpdateUserRe
 	}
 	var newRoles []model.Role
 	if req.RoleIDs != nil && len(*req.RoleIDs) > 0 {
+		if err := s.validateRoleAssignment(ctx, *req.RoleIDs); err != nil {
+			return nil, err
+		}
 		if err := db.Session(ctx).Where("resource_id IN ?", *req.RoleIDs).Find(&newRoles).Error; err != nil {
 			return nil, fmt.Errorf("update user roles failed: %w", err)
 		}
@@ -1417,6 +1424,8 @@ func (s *userService) ChangePassword(ctx context.Context, id string, req ChangeP
 		if err := tx.Select("Password", "Salt", "PasswordChangedAt", "Status").Save(&user).Error; err != nil {
 			return fmt.Errorf("save user info failed: %w", err)
 		}
+		// Invalidate all existing sessions so stolen tokens cannot be reused after a password change.
+		cache.InvalidateAndDisableUserSessions(ctx, tx, user.ResourceID)
 		if err := s.resetPasswordExpiryNotifyAtTx(ctx, tx, user.ResourceID); err != nil {
 			return fmt.Errorf("failed to reset password expiry notification state: %w", err)
 		}
@@ -1495,6 +1504,8 @@ func (s *userService) ResetPassword(ctx context.Context, userID string, newPassw
 		if err := tx.Select("Password", "Salt", "PasswordChangedAt", "Status", "LockedUntil", "LoginAttempts").Save(&user).Error; err != nil {
 			return fmt.Errorf("save user info failed: %w", err)
 		}
+		// Invalidate all existing sessions; an admin reset must force re-login on all devices.
+		cache.InvalidateAndDisableUserSessions(ctx, tx, user.ResourceID)
 		if err := s.resetPasswordExpiryNotifyAtTx(ctx, tx, user.ResourceID); err != nil {
 			return fmt.Errorf("failed to reset password expiry notification state: %w", err)
 		}
@@ -1672,8 +1683,18 @@ func (s *userService) VerifyAndActivateTOTPMFA(ctx context.Context, userID strin
 	})
 }
 
-// DisableMFA disables MFA for the user
-func (s *userService) DisableMFA(ctx context.Context, userID string) error {
+// DisableMFA disables MFA for the requesting user.
+// Requires step-up authentication (password or TOTP code) and is blocked
+// when global MFA enforcement is active.
+func (s *userService) DisableMFA(ctx context.Context, userID string, password string, mfaCode string) error {
+	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to get security settings: %w", err)
+	}
+	if securitySettings.MFAEnforced {
+		return util.NewErrorMessage("E4031", "MFA cannot be disabled while enforcement is enabled")
+	}
+
 	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithRoles(false), WithPermissions(false))
 	if err != nil {
 		return err
@@ -1683,6 +1704,46 @@ func (s *userService) DisableMFA(ctx context.Context, userID string) error {
 		return errors.New("MFA is not enabled")
 	}
 
+	// Step-up authentication: require either a valid password or a valid TOTP code.
+	if password == "" && mfaCode == "" {
+		return util.NewErrorMessage("E4031", "password or MFA code is required to disable MFA")
+	}
+	verified := false
+	if password != "" {
+		verified = user.CheckPassword(password)
+	}
+	if !verified && mfaCode != "" && user.MFASecret != nil {
+		secret, err := user.MFASecret.UnsafeString()
+		if err == nil {
+			verified = totp.Validate(mfaCode, secret)
+		}
+	}
+	if !verified {
+		return util.NewErrorMessage("E4031", "invalid password or MFA code")
+	}
+
+	return s.disableMFAForUser(ctx, user)
+}
+
+// AdminDisableMFA allows an administrator to disable MFA for any user without
+// requiring step-up authentication. The target user's sessions are invalidated
+// to force re-login.
+func (s *userService) AdminDisableMFA(ctx context.Context, targetUserID string) error {
+	user, err := s.GetUserByID(ctx, targetUserID, WithCache(true), WithRoles(false), WithPermissions(false))
+	if err != nil {
+		return err
+	}
+
+	if !user.MFAEnabled {
+		return errors.New("MFA is not enabled for this user")
+	}
+
+	return s.disableMFAForUser(ctx, user)
+}
+
+// disableMFAForUser is the shared implementation that clears MFA fields and
+// invalidates all sessions for the affected user.
+func (s *userService) disableMFAForUser(ctx context.Context, user *model.User) error {
 	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		oldUser := *user
 		user.MFAEnabled = false
@@ -1692,12 +1753,46 @@ func (s *userService) DisableMFA(ctx context.Context, userID string) error {
 		if err := tx.Select("MFAEnabled", "MFASecret", "MFAType").Save(user).Error; err != nil {
 			return fmt.Errorf("failed to disable MFA: %w", err)
 		}
+		cache.InvalidateAndDisableUserSessions(ctx, tx, user.ResourceID)
 		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
 	})
 }
 
+// validateRoleAssignment checks that the caller is authorised to assign the given roleIDs.
+// Global admins may assign any role. All other callers are blocked from assigning the
+// global "admin" role or any system role.
+func (s *userService) validateRoleAssignment(ctx context.Context, roleIDs []string) error {
+	if len(roleIDs) == 0 {
+		return nil
+	}
+	// Global admins may assign any role.
+	callerRoles := middleware.GetRolesFromContext(ctx)
+	for _, r := range callerRoles {
+		if r.Name == "admin" && (r.OrganizationID == nil || *r.OrganizationID == "") {
+			return nil
+		}
+	}
+	// Fetch the target roles to inspect their type and scope.
+	var roles []model.Role
+	if err := db.Session(ctx).Where("resource_id IN ?", roleIDs).Find(&roles).Error; err != nil {
+		return fmt.Errorf("failed to validate role assignment: %w", err)
+	}
+	for _, r := range roles {
+		if r.Name == "admin" && (r.OrganizationID == nil || *r.OrganizationID == "") {
+			return errors.New("only administrators can assign the admin role")
+		}
+		if r.RoleType == model.RoleTypeSystem {
+			return errors.New("insufficient privilege to assign system role")
+		}
+	}
+	return nil
+}
+
 // AssignRoles assigns roles to a user
 func (s *userService) AssignRoles(ctx context.Context, userID string, roleIDs []string) error {
+	if err := s.validateRoleAssignment(ctx, roleIDs); err != nil {
+		return err
+	}
 	user, err := s.GetUserByID(ctx, userID, WithRoles(true), WithCache(true))
 	if err != nil {
 		return err

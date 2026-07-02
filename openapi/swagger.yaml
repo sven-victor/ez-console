@@ -394,6 +394,16 @@ definitions:
       status:
         type: string
     type: object
+  authorizationapi.DisableMFARequest:
+    properties:
+      mfa_code:
+        type: string
+      password:
+        type: string
+    required:
+    - mfa_code
+    - password
+    type: object
   authorizationapi.EnableMFARequest:
     properties:
       mfa_type:
@@ -3332,14 +3342,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
     - 1
     - 1000
     - 1000000
@@ -3348,14 +3350,6 @@ definitions:
     - 3600000000000
     type: integer
     x-enum-varnames:
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -5373,8 +5367,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: Disable MFA
+      description: Disable MFA for the current user. Requires either password or TOTP
+        code as step-up authentication. Blocked when global MFA enforcement is enabled.
       operationId: disableMfa
+      parameters:
+      - description: Step-up authentication
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authorizationapi.DisableMFARequest'
       produces:
       - application/json
       responses:
@@ -5384,6 +5386,10 @@ paths:
             $ref: '#/definitions/util.Response-util_MessageData'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/util.ErrorResponse'
         "500":
@@ -6441,6 +6447,39 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get user's audit logs
+      tags:
+      - Authorization/Users
+  /api/authorization/users/{id}/mfa:
+    delete:
+      description: Allows an administrator to disable MFA for any user without step-up
+        authentication. The user's sessions are invalidated and they must re-login.
+      operationId: adminDisableUserMfa
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Disable MFA for a user (admin)
       tags:
       - Authorization/Users
   /api/authorization/users/{id}/password:

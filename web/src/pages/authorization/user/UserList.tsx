@@ -46,6 +46,7 @@ import {
   UnlockOutlined,
   ExportOutlined,
   MailOutlined,
+  SafetyOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { PermissionGuard } from '@/components/PermissionGuard';
@@ -382,6 +383,37 @@ const UserList: React.FC = () => {
     });
   };
 
+  const { runAsync: runAdminDisableMFA } = useRequest(
+    (userId: string) => api.authorization.adminDisableUserMfa({ id: userId }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('user.adminDisableMFASuccess', { defaultValue: 'MFA disabled successfully' }));
+        fetchUsers();
+      },
+      onError: (error) => {
+        message.error(
+          t('user.adminDisableMFAError', {
+            defaultValue: 'Failed to disable MFA: {{error}}',
+            error: error instanceof Error ? error.message : String(error),
+          }),
+        );
+      },
+    },
+  );
+
+  const handleAdminDisableMFA = (user: API.User) => {
+    Modal.confirm({
+      title: t('user.adminDisableMFATitle', { defaultValue: 'Disable MFA' }),
+      content: t('user.adminDisableMFAConfirm', {
+        defaultValue: 'Are you sure you want to disable MFA for this user? They will be logged out of all sessions.',
+        username: user.username,
+      }),
+      okType: 'danger',
+      onOk: () => runAdminDisableMFA(user.id),
+    });
+  };
+
   const { runAsync: runResendActivation } = useRequest(
     (userId: string) => api.authorization.resendActivationEmail({ id: userId }),
     {
@@ -544,6 +576,14 @@ const UserList: React.FC = () => {
           tooltip: t('user.unlock', { defaultValue: 'Unlock' }),
           hidden: record.status !== 'locked',
           onClick: async () => handleUnlock(record),
+        }, {
+          key: 'disableMFA',
+          permission: "authorization:user:update",
+          icon: <SafetyOutlined />,
+          tooltip: t('user.adminDisableMFA', { defaultValue: 'Disable MFA' }),
+          hidden: !record.mfa_enabled || record.status === 'deleted',
+          danger: true,
+          onClick: async () => handleAdminDisableMFA(record),
         }, {
           key: 'resendActivation',
           permission: "authorization:user:update",

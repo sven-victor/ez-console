@@ -306,16 +306,9 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 		return util.NewErrorMessage("E4011", "Invalid token", err)
 	}
 
-	iat, err := token.Claims.GetIssuedAt()
-	if err != nil {
-		return util.NewErrorMessage("E4011", "Invalid token", err)
-	}
 	sessionIdleTimeoutMinutes, err := settingService.GetIntSetting(c, model.SettingSessionIdleTimeoutMinutes, 0)
 	if err != nil {
 		return util.NewErrorMessage("E4011", "Invalid token", err)
-	}
-	if sessionIdleTimeoutMinutes > 0 && time.Since(iat.Time) > time.Duration(sessionIdleTimeoutMinutes)*time.Minute {
-		return util.NewErrorMessage("E4011", "Session expired, please login again")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
@@ -355,6 +348,10 @@ func jwtMiddleware(c *gin.Context, tokenString string) (err error) {
 	if time.Now().After(cs.ExpiredAt) {
 		_ = cache.Sessions.Delete(ctx, tokenHash)
 		db.Session(ctx).Model(&model.Session{}).Where("token = ?", tokenHash).Update("is_valid", false)
+		return util.NewErrorMessage("E4011", "Session expired, please login again")
+	}
+	// --- Session idle timeout check (based on last activity, not token issuance) ---
+	if sessionIdleTimeoutMinutes > 0 && time.Since(cs.LastActiveAt) > time.Duration(sessionIdleTimeoutMinutes)*time.Minute {
 		return util.NewErrorMessage("E4011", "Session expired, please login again")
 	}
 

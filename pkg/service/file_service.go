@@ -203,6 +203,9 @@ func (s *fileService) SignDownloadURL(fileKey string) (string, int64, error) {
 }
 
 func (s *fileService) VerifyDownloadURL(fileKey string, signature string, expires int64) bool {
+	if expires <= 0 || time.Now().Unix() > expires {
+		return false
+	}
 	data := fileKey + ":" + strconv.FormatInt(expires, 10)
 	h := hmac.New(sha256.New, []byte(s.signatureSecret))
 	h.Write([]byte(data))

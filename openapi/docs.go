@@ -1118,7 +1118,7 @@ const docTemplate = `{
         },
         "/api/authorization/profile/mfa/disable": {
             "post": {
-                "description": "Disable MFA",
+                "description": "Disable MFA for the current user. Requires either password or TOTP code as step-up authentication. Blocked when global MFA enforcement is enabled.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1130,6 +1130,17 @@ const docTemplate = `{
                 ],
                 "summary": "Disable MFA",
                 "operationId": "disableMfa",
+                "parameters": [
+                    {
+                        "description": "Step-up authentication",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authorizationapi.DisableMFARequest"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1139,6 +1150,12 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
                         }
@@ -2748,6 +2765,54 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/util.PaginationResponse-model_AuditLog"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authorization/users/{id}/mfa": {
+            "delete": {
+                "description": "Allows an administrator to disable MFA for any user without step-up authentication. The user's sessions are invalidated and they must re-login.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Disable MFA for a user (admin)",
+                "operationId": "adminDisableUserMfa",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     },
                     "500": {
@@ -7220,6 +7285,21 @@ const docTemplate = `{
                 }
             }
         },
+        "authorizationapi.DisableMFARequest": {
+            "type": "object",
+            "required": [
+                "mfa_code",
+                "password"
+            ],
+            "properties": {
+                "mfa_code": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
         "authorizationapi.EnableMFARequest": {
             "type": "object",
             "required": [
@@ -11302,14 +11382,6 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
                 1,
                 1000,
                 1000000,
@@ -11318,14 +11390,6 @@ const docTemplate = `{
                 3600000000000
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",

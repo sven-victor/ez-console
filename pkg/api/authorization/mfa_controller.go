@@ -162,16 +162,23 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 	}
 }
 
+type DisableMFARequest struct {
+	Password string `json:"password"`
+	MFACode  string `json:"mfa_code"`
+}
+
 // DisableMFA disables MFA
 //
 //	@Summary		Disable MFA
-//	@Description	Disable MFA
+//	@Description	Disable MFA for the current user. Requires either password or TOTP code as step-up authentication. Blocked when global MFA enforcement is enabled.
 //	@ID             disableMfa
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
 //	@Produce		json
+//	@Param			request	body		DisableMFARequest	true	"Step-up authentication"
 //	@Success		200	{object}	util.Response[util.MessageData]
 //	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		403	{object}	util.ErrorResponse
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/authorization/profile/mfa/disable [post]
 func (c *MFAController) DisableMFA(ctx *gin.Context) {
@@ -179,7 +186,13 @@ func (c *MFAController) DisableMFA(ctx *gin.Context) {
 	userInterface, _ := ctx.Get("user")
 	user, ok := userInterface.(model.User)
 	if !ok {
-		util.RespondWithError(ctx, util.NewErrorMessage("5001", "failed to get user information"))
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user information"))
+		return
+	}
+
+	var req DisableMFARequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4002", err))
 		return
 	}
 
@@ -188,8 +201,8 @@ func (c *MFAController) DisableMFA(ctx *gin.Context) {
 		ctx,
 		user.ResourceID,
 		func(auditLog *model.AuditLog) error {
-			// Call service to disable MFA
-			err := c.service.DisableMFA(ctx, user.ResourceID)
+			// Call service to disable MFA (step-up auth checked inside)
+			err := c.service.DisableMFA(ctx, user.ResourceID, req.Password, req.MFACode)
 			if err != nil {
 				return util.NewErrorMessage("E5002", "failed to disable MFA", err)
 			}

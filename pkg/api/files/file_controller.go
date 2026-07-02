@@ -15,8 +15,9 @@
 package filesapi
 
 import (
-	"fmt"
+	"mime"
 	"net/http"
+	"strings"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,47 @@ import (
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/util"
 )
+
+// dangerousMIMETypes lists MIME types that can execute code or be used for phishing
+// when served inline. Files with these types are always forced to download.
+var dangerousMIMETypes = map[string]bool{
+	"text/html":       true,
+	"image/svg+xml":   true,
+	"text/javascript": true,
+	"application/xhtml+xml": true,
+}
+
+// isDangerousMIME returns true if the MIME type (or extension-derived type) can
+// be exploited for stored XSS or phishing when rendered inline in a browser.
+func isDangerousMIME(mimeType, filename string) bool {
+	mt := strings.ToLower(strings.SplitN(mimeType, ";", 2)[0])
+	if dangerousMIMETypes[mt] {
+		return true
+	}
+	if ext := strings.ToLower(filepath_ext(filename)); ext != "" {
+		if derived := mime.TypeByExtension(ext); derived != "" {
+			derived = strings.ToLower(strings.SplitN(derived, ";", 2)[0])
+			return dangerousMIMETypes[derived]
+		}
+	}
+	return false
+}
+
+// filepath_ext is a thin wrapper so we don't import "path/filepath" just for Ext.
+func filepath_ext(name string) string {
+	for i := len(name) - 1; i >= 0 && name[i] != '/'; i-- {
+		if name[i] == '.' {
+			return name[i:]
+		}
+	}
+	return ""
+}
+
+// safeContentDisposition builds a properly encoded Content-Disposition header,
+// preventing header injection via newlines or unquoted special characters.
+func safeContentDisposition(disposition, filename string) string {
+	return mime.FormatMediaType(disposition, map[string]string{"filename": filename})
+}
 
 type FileController struct {
 	service *service.Service
@@ -60,6 +102,14 @@ func (c *FileController) UploadFile(ctx *gin.Context) {
 	accessType := model.AccessType(ctx.PostForm("access"))
 	if accessType == "" {
 		accessType = model.AccessTypePrivate
+	}
+	// Publishing a file publicly requires an elevated permission to prevent
+	// arbitrary users from hosting stored XSS or phishing pages.
+	if accessType == model.AccessTypePublic {
+		middleware.RequirePermission("file:publish")(ctx)
+		if ctx.IsAborted() {
+			return
+		}
 	}
 	fileType := model.FileType(ctx.PostForm("type"))
 	cfg := config.GetConfig()
@@ -140,11 +190,12 @@ func (c *FileController) DownloadFile(ctx *gin.Context) {
 			util.RespondWithError(ctx, util.NewErrorMessage("E4031", "Access denied"))
 			return
 		}
-		switch method {
-		default:
-			ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%s", file.Name))
-		case "download":
-			ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
+		ctx.Writer.Header().Set("Content-Security-Policy", "default-src 'none'")
+		forceAttachment := isDangerousMIME(file.MimiType, file.Name)
+		if forceAttachment || method == "download" {
+			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("attachment", file.Name))
+		} else {
+			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("inline", file.Name))
 		}
 		err := c.service.DownloadFile(ctx, file.Path)
 		if err != nil {
@@ -187,11 +238,9 @@ accessMode:
 			return
 		}
 	}
+	ctx.Writer.Header().Set("Content-Security-Policy", "default-src 'none'")
+	forceAttachment := isDangerousMIME(file.MimiType, file.Name)
 	switch method {
-	default:
-		ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("inline; filename=%s", file.Name))
-	case "download":
-		ctx.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Name))
 	case "sign":
 		signature, expires, err := c.service.SignDownloadURL(fileKey)
 		if err != nil {
@@ -200,6 +249,14 @@ accessMode:
 		}
 		util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"signature": signature, "expires": expires})
 		return
+	case "download":
+		ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("attachment", file.Name))
+	default:
+		if forceAttachment {
+			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("attachment", file.Name))
+		} else {
+			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("inline", file.Name))
+		}
 	}
 	err = c.service.DownloadFile(ctx, file.Path)
 	if err != nil {
@@ -243,6 +300,11 @@ func init() {
 			Name:             "List files",
 			Description:      "List files from the system",
 			DefaultRoleNames: []string{"operator", "viewer"},
+		},
+		{
+			Code:        "file:publish",
+			Name:        "Publish public files",
+			Description: "Upload files with public access (downloadable without authentication)",
 		},
 	})
 }
