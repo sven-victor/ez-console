@@ -35,6 +35,7 @@ const (
 	SettingSMTPPasswordExpiryTemplate   SettingKey = "smtp_password_expiry_template"    // Password expiry warning template
 	SettingSMTPLoginFailureLockTemplate SettingKey = "smtp_login_failure_lock_template" // Login failure lock template
 	SettingSMTPInactiveLockTemplate     SettingKey = "smtp_inactive_lock_template"      // Inactive account lock template
+	SettingSMTPMFADisabledTemplate      SettingKey = "smtp_mfa_disabled_template"       // MFA disabled notification template
 )
 
 var SMTPSettingKeys = []SettingKey{
@@ -53,6 +54,7 @@ var SMTPSettingKeys = []SettingKey{
 	SettingSMTPPasswordExpiryTemplate,
 	SettingSMTPLoginFailureLockTemplate,
 	SettingSMTPInactiveLockTemplate,
+	SettingSMTPMFADisabledTemplate,
 }
 
 // SettingFieldType defines typed setting field values for dynamic frontend rendering.
@@ -155,6 +157,12 @@ func init() {
 		DefaultValue: "<p>Hello {{.FullName}},</p><p>Your account has been locked due to inactivity.</p>",
 		LabelKey:     "settings.smtp.inactiveLockTemplate",
 	}, nil)
+	RegisterSMTPSettingField(SettingFieldDefinition{
+		Key:          "mfa_disabled_template",
+		ValueType:    SettingFieldTypeRichText,
+		DefaultValue: "<p>Hello {{.FullName}},</p><p>Multi-factor authentication (MFA) has been disabled on your account. If you did not perform this action, please contact your administrator immediately.</p>",
+		LabelKey:     "settings.smtp.mfaDisabledTemplate",
+	}, nil)
 }
 
 // SMTPSettings defines the structure for SMTP settings.
@@ -177,6 +185,7 @@ type SMTPSettings struct {
 	PasswordExpiryTemplate   string `json:"password_expiry_template,omitempty"`
 	LoginFailureLockTemplate string `json:"login_failure_lock_template,omitempty"`
 	InactiveLockTemplate     string `json:"inactive_lock_template,omitempty"`
+	MFADisabledTemplate      string `json:"mfa_disabled_template,omitempty"`
 }
 
 // SMTPTestRequest defines the request structure for testing SMTP connection.

@@ -23,6 +23,7 @@ const (
 	EphemeralTokenOAuthState   EphemeralTokenPurpose = "oauth_state"
 	EphemeralTokenMFALogin     EphemeralTokenPurpose = "mfa_login"
 	EphemeralTokenMFAActivation EphemeralTokenPurpose = "mfa_activation"
+	EphemeralTokenMFADisable    EphemeralTokenPurpose = "mfa_disable"
 	EphemeralTokenUserActivation EphemeralTokenPurpose = "user_activation"
 )
 

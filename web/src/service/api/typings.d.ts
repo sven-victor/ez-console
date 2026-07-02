@@ -471,7 +471,14 @@ declare global {
     }
   
     interface DisableMFARequest {
+      /** EmailCode is the one-time verification code received by email. */
+      email_code: string;
+      /** EmailToken is the token returned by the send-code endpoint, which must
+  accompany the email code. */
+      email_token: string;
+      /** MFACode is a TOTP code (only valid for TOTP MFA users). */
       mfa_code: string;
+      /** Password is the user's login password (local or LDAP). */
       password: string;
     }
   
@@ -1015,6 +1022,7 @@ declare global {
       ldap_dn: string;
       mfa_enabled: boolean;
       mfa_enforced: boolean;
+      mfa_type: string;
       oauth_id: string;
       oauth_provider: string;
       organization_roles: Role[];
@@ -1371,6 +1379,13 @@ declare global {
     interface ResponseAuthorizationapiResetUserPasswordResponse {
       code: string;
       data: ResetUserPasswordResponse;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseAuthorizationapiSendDisableMFACodeResponse {
+      code: string;
+      data: SendDisableMFACodeResponse;
       err: string;
       trace_id: string;
     }
@@ -1780,6 +1795,10 @@ declare global {
       user_inactive_days: number;
     }
   
+    interface SendDisableMFACodeResponse {
+      token: string;
+    }
+  
     interface SendMessageRequest {
       /** results from client-side tool execution */
       client_tool_results: ClientToolResult[];
@@ -1957,6 +1976,7 @@ declare global {
       inactive_lock_template: string;
       login_failure_lock_template: string;
       mfa_code_template: string;
+      mfa_disabled_template: string;
       password: string;
       password_expiry_template: string;
       port: number;
@@ -1976,6 +1996,7 @@ declare global {
       inactive_lock_template: string;
       login_failure_lock_template: string;
       mfa_code_template: string;
+      mfa_disabled_template: string;
       password: string;
       password_expiry_template: string;
       port: number;
@@ -2425,6 +2446,7 @@ declare global {
       ldap_dn: string;
       mfa_enabled: boolean;
       mfa_enforced: boolean;
+      mfa_type: string;
       oauth_id: string;
       oauth_provider: string;
       organizations: Organization[];

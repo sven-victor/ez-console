@@ -56,7 +56,7 @@ type User struct {
 	LockedUntil       time.Time      `json:"-"`
 	MFAEnabled        bool           `gorm:"default:false" json:"mfa_enabled"`
 	MFASecret         *safe.String   `gorm:"size:255" json:"-"`
-	MFAType           string         `gorm:"size:255" json:"-"`
+	MFAType           string         `gorm:"size:255" json:"mfa_type,omitempty"`
 	OAuthProvider     string         `gorm:"column:oauth_provider;size:50" json:"oauth_provider,omitempty"`
 	OAuthID           string         `gorm:"column:oauth_id;size:255" json:"oauth_id,omitempty"`
 	LDAPDN            string         `gorm:"column:ldap_dn;size:255" json:"ldap_dn,omitempty"`

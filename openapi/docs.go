@@ -1118,7 +1118,7 @@ const docTemplate = `{
         },
         "/api/authorization/profile/mfa/disable": {
             "post": {
-                "description": "Disable MFA for the current user. Requires either password or TOTP code as step-up authentication. Blocked when global MFA enforcement is enabled.",
+                "description": "Disable MFA for the current user. Requires step-up authentication: password (local or LDAP), TOTP code, or a one-time email verification code (with the token from the send-code endpoint). Blocked when global MFA enforcement is enabled. Failed verification attempts count toward the login failure lockout policy.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1156,6 +1156,39 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authorization/profile/mfa/disable/send-code": {
+            "post": {
+                "description": "Sends a one-time verification code to the current user's email. The returned token must be submitted together with the received code when disabling MFA.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Profile/MFA"
+                ],
+                "summary": "Send disable-MFA email verification code",
+                "operationId": "sendDisableMfaCode",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-authorizationapi_SendDisableMFACodeResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
                         }
@@ -7288,14 +7321,26 @@ const docTemplate = `{
         "authorizationapi.DisableMFARequest": {
             "type": "object",
             "required": [
+                "email_code",
+                "email_token",
                 "mfa_code",
                 "password"
             ],
             "properties": {
+                "email_code": {
+                    "description": "EmailCode is the one-time verification code received by email.",
+                    "type": "string"
+                },
+                "email_token": {
+                    "description": "EmailToken is the token returned by the send-code endpoint, which must\naccompany the email code.",
+                    "type": "string"
+                },
                 "mfa_code": {
+                    "description": "MFACode is a TOTP code (only valid for TOTP MFA users).",
                     "type": "string"
                 },
                 "password": {
+                    "description": "Password is the user's login password (local or LDAP).",
                     "type": "string"
                 }
             }
@@ -7389,6 +7434,17 @@ const docTemplate = `{
                     }
                 },
                 "toolset_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "authorizationapi.SendDisableMFACodeResponse": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
                     "type": "string"
                 }
             }
@@ -8936,6 +8992,7 @@ const docTemplate = `{
                 "inactive_lock_template",
                 "login_failure_lock_template",
                 "mfa_code_template",
+                "mfa_disabled_template",
                 "password",
                 "password_expiry_template",
                 "port",
@@ -8977,6 +9034,9 @@ const docTemplate = `{
                 "mfa_code_template": {
                     "type": "string"
                 },
+                "mfa_disabled_template": {
+                    "type": "string"
+                },
                 "password": {
                     "type": "string"
                 },
@@ -9007,6 +9067,7 @@ const docTemplate = `{
                 "inactive_lock_template",
                 "login_failure_lock_template",
                 "mfa_code_template",
+                "mfa_disabled_template",
                 "password",
                 "password",
                 "password_expiry_template",
@@ -9048,6 +9109,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "mfa_code_template": {
+                    "type": "string"
+                },
+                "mfa_disabled_template": {
                     "type": "string"
                 },
                 "password": {
@@ -9831,6 +9895,7 @@ const docTemplate = `{
                 "ldap_dn",
                 "mfa_enabled",
                 "mfa_enforced",
+                "mfa_type",
                 "oauth_id",
                 "oauth_provider",
                 "organizations",
@@ -9872,6 +9937,9 @@ const docTemplate = `{
                 },
                 "mfa_enforced": {
                     "type": "boolean"
+                },
+                "mfa_type": {
+                    "type": "string"
                 },
                 "oauth_id": {
                     "type": "string"
@@ -10239,6 +10307,7 @@ const docTemplate = `{
                 "ldap_dn",
                 "mfa_enabled",
                 "mfa_enforced",
+                "mfa_type",
                 "oauth_id",
                 "oauth_provider",
                 "organization_roles",
@@ -10281,6 +10350,9 @@ const docTemplate = `{
                 },
                 "mfa_enforced": {
                     "type": "boolean"
+                },
+                "mfa_type": {
+                    "type": "string"
                 },
                 "oauth_id": {
                     "type": "string"
@@ -11382,12 +11454,19 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000
+                3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -11406,12 +11485,19 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour"
+                "Hour",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute"
             ]
         },
         "toolset.ToolSetType": {
@@ -12477,6 +12563,29 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/authorizationapi.ResetUserPasswordResponse"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-authorizationapi_SendDisableMFACodeResponse": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/authorizationapi.SendDisableMFACodeResponse"
                 },
                 "err": {
                     "type": "string"

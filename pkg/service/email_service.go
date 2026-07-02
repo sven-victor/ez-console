@@ -148,6 +148,11 @@ func (s *emailService) SendEmailFromTemplate(ctx context.Context, to []string, s
 		if err != nil {
 			return err
 		}
+	case model.SettingSMTPMFADisabledTemplate:
+		tmpl, err = template.New("email").Parse(smtpSettings.MFADisabledTemplate)
+		if err != nil {
+			return err
+		}
 	default:
 		return errors.New("invalid template")
 	}

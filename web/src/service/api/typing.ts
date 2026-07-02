@@ -469,7 +469,14 @@ export interface deleteUserParams {
 }
 
 export interface DisableMFARequest {
+  /** EmailCode is the one-time verification code received by email. */
+  email_code: string;
+  /** EmailToken is the token returned by the send-code endpoint, which must
+accompany the email code. */
+  email_token: string;
+  /** MFACode is a TOTP code (only valid for TOTP MFA users). */
   mfa_code: string;
+  /** Password is the user's login password (local or LDAP). */
   password: string;
 }
 
@@ -1013,6 +1020,7 @@ export interface OrganizationUser {
   ldap_dn: string;
   mfa_enabled: boolean;
   mfa_enforced: boolean;
+  mfa_type: string;
   oauth_id: string;
   oauth_provider: string;
   organization_roles: Role[];
@@ -1369,6 +1377,13 @@ export interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
 export interface ResponseAuthorizationapiResetUserPasswordResponse {
   code: string;
   data: ResetUserPasswordResponse;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseAuthorizationapiSendDisableMFACodeResponse {
+  code: string;
+  data: SendDisableMFACodeResponse;
   err: string;
   trace_id: string;
 }
@@ -1778,6 +1793,10 @@ export interface SecuritySettings {
   user_inactive_days: number;
 }
 
+export interface SendDisableMFACodeResponse {
+  token: string;
+}
+
 export interface SendMessageRequest {
   /** results from client-side tool execution */
   client_tool_results: ClientToolResult[];
@@ -1955,6 +1974,7 @@ export interface SMTPSettings {
   inactive_lock_template: string;
   login_failure_lock_template: string;
   mfa_code_template: string;
+  mfa_disabled_template: string;
   password: string;
   password_expiry_template: string;
   port: number;
@@ -1974,6 +1994,7 @@ export interface SMTPTestRequest {
   inactive_lock_template: string;
   login_failure_lock_template: string;
   mfa_code_template: string;
+  mfa_disabled_template: string;
   password: string;
   password_expiry_template: string;
   port: number;
@@ -2423,6 +2444,7 @@ export interface User {
   ldap_dn: string;
   mfa_enabled: boolean;
   mfa_enforced: boolean;
+  mfa_type: string;
   oauth_id: string;
   oauth_provider: string;
   organizations: Organization[];

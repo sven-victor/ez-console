@@ -41,6 +41,7 @@ func (c *MFAController) RegisterRoutes(router *gin.RouterGroup) {
 		mfaRoutes.POST("/enable", c.EnableMFA)
 		mfaRoutes.POST("/verify", c.VerifyAndActivateMFA)
 		mfaRoutes.POST("/disable", c.DisableMFA)
+		mfaRoutes.POST("/disable/send-code", c.SendDisableMFACode)
 	}
 }
 
@@ -163,14 +164,21 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 }
 
 type DisableMFARequest struct {
+	// Password is the user's login password (local or LDAP).
 	Password string `json:"password"`
-	MFACode  string `json:"mfa_code"`
+	// MFACode is a TOTP code (only valid for TOTP MFA users).
+	MFACode string `json:"mfa_code"`
+	// EmailCode is the one-time verification code received by email.
+	EmailCode string `json:"email_code"`
+	// EmailToken is the token returned by the send-code endpoint, which must
+	// accompany the email code.
+	EmailToken string `json:"email_token"`
 }
 
 // DisableMFA disables MFA
 //
 //	@Summary		Disable MFA
-//	@Description	Disable MFA for the current user. Requires either password or TOTP code as step-up authentication. Blocked when global MFA enforcement is enabled.
+//	@Description	Disable MFA for the current user. Requires step-up authentication: password (local or LDAP), TOTP code, or a one-time email verification code (with the token from the send-code endpoint). Blocked when global MFA enforcement is enabled. Failed verification attempts count toward the login failure lockout policy.
 //	@ID             disableMfa
 //	@Tags			Authorization/Profile/MFA
 //	@Accept			json
@@ -202,7 +210,12 @@ func (c *MFAController) DisableMFA(ctx *gin.Context) {
 		user.ResourceID,
 		func(auditLog *model.AuditLog) error {
 			// Call service to disable MFA (step-up auth checked inside)
-			err := c.service.DisableMFA(ctx, user.ResourceID, req.Password, req.MFACode)
+			err := c.service.DisableMFA(ctx, user.ResourceID, service.DisableMFAVerification{
+				Password:   req.Password,
+				MFACode:    req.MFACode,
+				EmailCode:  req.EmailCode,
+				EmailToken: req.EmailToken,
+			})
 			if err != nil {
 				return util.NewErrorMessage("E5002", "failed to disable MFA", err)
 			}
@@ -217,4 +230,38 @@ func (c *MFAController) DisableMFA(ctx *gin.Context) {
 	if err != nil {
 		util.RespondWithError(ctx, err)
 	}
+}
+
+// SendDisableMFACodeResponse carries the token that must be submitted
+// together with the emailed verification code.
+type SendDisableMFACodeResponse struct {
+	Token string `json:"token"`
+}
+
+// SendDisableMFACode sends a one-time email verification code for disabling MFA
+//
+//	@Summary		Send disable-MFA email verification code
+//	@Description	Sends a one-time verification code to the current user's email. The returned token must be submitted together with the received code when disabling MFA.
+//	@ID             sendDisableMfaCode
+//	@Tags			Authorization/Profile/MFA
+//	@Produce		json
+//	@Success		200	{object}	util.Response[SendDisableMFACodeResponse]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/authorization/profile/mfa/disable/send-code [post]
+func (c *MFAController) SendDisableMFACode(ctx *gin.Context) {
+	// Get current user from context
+	userInterface, _ := ctx.Get("user")
+	user, ok := userInterface.(model.User)
+	if !ok {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "failed to get user information"))
+		return
+	}
+
+	token, err := c.service.SendDisableMFACode(ctx, user.ResourceID)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E5002", "failed to send verification code", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, SendDisableMFACodeResponse{Token: token})
 }

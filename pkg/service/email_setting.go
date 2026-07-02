@@ -92,6 +92,7 @@ func (s *emailService) UpdateSMTPSettings(ctx context.Context, settings *model.S
 		string(model.SettingSMTPPasswordExpiryTemplate):   settings.PasswordExpiryTemplate,
 		string(model.SettingSMTPLoginFailureLockTemplate): settings.LoginFailureLockTemplate,
 		string(model.SettingSMTPInactiveLockTemplate):     settings.InactiveLockTemplate,
+		string(model.SettingSMTPMFADisabledTemplate):      settings.MFADisabledTemplate,
 	}
 	if settings.Password != nil {
 		settingsToUpdate[string(model.SettingSMTPPassword)] = settings.Password.String()
@@ -123,6 +124,7 @@ func (s *emailService) InitDefaultSMTPSettings(ctx context.Context) error {
 		model.SettingSMTPPasswordExpiryTemplate:   {"<p>Hello {{.FullName}},</p><p>Your password will expire in <strong>{{.DaysLeft}}</strong> days. Please update your password as soon as possible.</p>", "Password expiry warning template"},
 		model.SettingSMTPLoginFailureLockTemplate: {"<p>Hello {{.FullName}},</p><p>Your account has been locked due to too many failed login attempts.</p>", "Login failure lock template"},
 		model.SettingSMTPInactiveLockTemplate:     {"<p>Hello {{.FullName}},</p><p>Your account has been locked due to inactivity.</p>", "Inactive account lock template"},
+		model.SettingSMTPMFADisabledTemplate:      {"<p>Hello {{.FullName}},</p><p>Multi-factor authentication (MFA) has been disabled on your account. If you did not perform this action, please contact your administrator immediately.</p>", "MFA disabled notification template"},
 	}
 	// Check if each setting already exists, if not, create it
 	for key, setting := range defaultSettings {

@@ -112,7 +112,7 @@ export async function getCurrentUserLogs(
   );
 }
 
-/** Disable MFA Disable MFA for the current user. Requires either password or TOTP code as step-up authentication. Blocked when global MFA enforcement is enabled. POST /api/authorization/profile/mfa/disable */
+/** Disable MFA Disable MFA for the current user. Requires step-up authentication: password (local or LDAP), TOTP code, or a one-time email verification code (with the token from the send-code endpoint). Blocked when global MFA enforcement is enabled. Failed verification attempts count toward the login failure lockout policy. POST /api/authorization/profile/mfa/disable */
 export async function disableMfa(
   body: API.DisableMFARequest,
   options?: { [key: string]: any }
@@ -125,6 +125,17 @@ export async function disableMfa(
         "Content-Type": "application/json",
       },
       data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Send disable-MFA email verification code Sends a one-time verification code to the current user's email. The returned token must be submitted together with the received code when disabling MFA. POST /api/authorization/profile/mfa/disable/send-code */
+export async function sendDisableMfaCode(options?: { [key: string]: any }) {
+  return request<API.ResponseAuthorizationapiSendDisableMFACodeResponse>(
+    "/api/authorization/profile/mfa/disable/send-code",
+    {
+      method: "POST",
       ...(options || {}),
     }
   );

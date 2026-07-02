@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Steps, Input, Alert, message, Result, QRCode, Space, Modal, Segmented, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -35,8 +35,18 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
   const [verificationCode, setVerificationCode] = useState('');
   const [mfaType, setMfaType] = useState<'totp' | 'email'>('totp');
   const [disableModalOpen, setDisableModalOpen] = useState(false);
+  const [disableMethod, setDisableMethod] = useState<'password' | 'totp' | 'email'>('password');
   const [disablePassword, setDisablePassword] = useState('');
   const [disableMfaCode, setDisableMfaCode] = useState('');
+  const [disableEmailCode, setDisableEmailCode] = useState('');
+  const [disableEmailToken, setDisableEmailToken] = useState('');
+  const [sendCodeCountdown, setSendCodeCountdown] = useState(0);
+
+  useEffect(() => {
+    if (sendCodeCountdown <= 0) return;
+    const timer = setTimeout(() => setSendCodeCountdown((s) => s - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [sendCodeCountdown]);
 
   const { run: handleEnableMFA, data: enableMFAData = { secret: '', qr_code: '', token: undefined } } = useRequest(
     () => api.authorization.enableMfa({ mfa_type: mfaType }),
@@ -78,27 +88,76 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
 
   const closeDisableModal = () => {
     setDisableModalOpen(false);
+    setDisableMethod('password');
     setDisablePassword('');
     setDisableMfaCode('');
+    setDisableEmailCode('');
+    setDisableEmailToken('');
+    setSendCodeCountdown(0);
+  };
+
+  const { runAsync: runSendDisableCode, loading: sendCodeLoading } = useRequest(
+    () => api.authorization.sendDisableMfaCode(),
+    { manual: true },
+  );
+
+  const handleSendDisableCode = async () => {
+    try {
+      const data = await runSendDisableCode();
+      setDisableEmailToken(data?.token ?? '');
+      setDisableEmailCode('');
+      setSendCodeCountdown(60);
+      message.success(t('mfa.codeSent', { defaultValue: 'Verification code has been sent to your email' }));
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : tCommon('operationFailed'));
+      console.error('Failed to send disable-MFA code:', error);
+    }
   };
 
   const handleDisableMFA = async () => {
-    if (!disablePassword && !disableMfaCode) {
-      message.warning(t('mfa.passwordOrCodeRequired', { defaultValue: 'Please enter your password or verification code' }));
+    if (disableMethod === 'email') {
+      if (!disableEmailToken) {
+        message.warning(t('mfa.sendCodeFirst', { defaultValue: 'Please send the verification code first' }));
+        return;
+      }
+      if (!disableEmailCode) {
+        message.warning(t('mfa.enterVerificationCode'));
+        return;
+      }
+    } else if (disableMethod === 'totp') {
+      if (!disableMfaCode) {
+        message.warning(t('mfa.enterVerificationCode'));
+        return;
+      }
+    } else if (!disablePassword) {
+      message.warning(t('mfa.enterPassword', { defaultValue: 'Enter your password' }));
       return;
+    }
+    const requestBody: API.DisableMFARequest = { password: '', mfa_code: '', email_code: '', email_token: '' };
+    if (disableMethod === 'email') {
+      requestBody.email_code = disableEmailCode;
+      requestBody.email_token = disableEmailToken;
+    } else if (disableMethod === 'totp') {
+      requestBody.mfa_code = disableMfaCode;
+    } else {
+      requestBody.password = disablePassword;
     }
     try {
       setLoading(true);
-      await api.authorization.disableMfa({
-        password: disablePassword,
-        mfa_code: disableMfaCode,
-      });
+      await api.authorization.disableMfa(requestBody);
       message.success(t('mfa.disableSuccess'));
       closeDisableModal();
       onSuccess();
     } catch (error) {
-      message.error(tCommon('operationFailed'));
+      message.error(error instanceof Error ? error.message : tCommon('operationFailed'));
       console.error('Failed to disable MFA:', error);
+      if (disableMethod === 'email') {
+        // The email code is single-use: after a failed attempt the token is
+        // consumed, so let the user request a new code immediately.
+        setDisableEmailToken('');
+        setDisableEmailCode('');
+        setSendCodeCountdown(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -249,7 +308,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
         okText={t('mfa.disable')}
         okButtonProps={{ danger: true, loading }}
         onCancel={closeDisableModal}
-        destroyOnClose
+        destroyOnHidden
       >
         <Alert
           message={t('mfa.disableWarning')}
@@ -258,21 +317,57 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
           style={{ marginBottom: 16 }}
         />
         <p>{t('mfa.disableVerifyDescription', { defaultValue: 'For security reasons, please verify your identity with your password or a verification code.' })}</p>
-        <Input.Password
-          placeholder={t('mfa.enterPassword', { defaultValue: 'Enter your password' })}
-          autoComplete="current-password"
-          value={disablePassword}
-          onChange={(e) => setDisablePassword(e.target.value)}
-          onPressEnter={handleDisableMFA}
-          style={{ marginBottom: 12 }}
+        <Segmented
+          block
+          value={disableMethod}
+          onChange={(value) => setDisableMethod(value as 'password' | 'totp' | 'email')}
+          options={[
+            { value: 'password', label: t('mfa.methodPassword', { defaultValue: 'Password' }) },
+            ...(user?.mfa_type === 'totp'
+              ? [{ value: 'totp', label: t('mfa.totp', { defaultValue: 'TOTP' }) }]
+              : []),
+            { value: 'email', label: t('mfa.methodEmailCode', { defaultValue: 'Email code' }) },
+          ]}
+          style={{ marginBottom: 16 }}
         />
-        <Input
-          placeholder={t('mfa.enterTotpCode', { defaultValue: 'Or enter the 6-digit code from your authenticator app' })}
-          maxLength={6}
-          value={disableMfaCode}
-          onChange={(e) => setDisableMfaCode(e.target.value)}
-          onPressEnter={handleDisableMFA}
-        />
+        {disableMethod === 'password' && (
+          <Input.Password
+            placeholder={t('mfa.enterPassword', { defaultValue: 'Enter your password' })}
+            autoComplete="current-password"
+            value={disablePassword}
+            onChange={(e) => setDisablePassword(e.target.value)}
+            onPressEnter={handleDisableMFA}
+          />
+        )}
+        {disableMethod === 'totp' && (
+          <Input
+            placeholder={t('mfa.enterTotpCode', { defaultValue: 'Enter the 6-digit code from your authenticator app' })}
+            maxLength={6}
+            value={disableMfaCode}
+            onChange={(e) => setDisableMfaCode(e.target.value)}
+            onPressEnter={handleDisableMFA}
+          />
+        )}
+        {disableMethod === 'email' && (
+          <Space.Compact style={{ width: '100%' }}>
+            <Input
+              placeholder={t('mfa.enterEmailCode', { defaultValue: 'Enter the 6-digit code sent to your email' })}
+              maxLength={6}
+              value={disableEmailCode}
+              onChange={(e) => setDisableEmailCode(e.target.value)}
+              onPressEnter={handleDisableMFA}
+            />
+            <Button
+              onClick={handleSendDisableCode}
+              loading={sendCodeLoading}
+              disabled={sendCodeCountdown > 0}
+            >
+              {sendCodeCountdown > 0
+                ? t('mfa.resendIn', { defaultValue: 'Resend ({{seconds}}s)', seconds: sendCodeCountdown })
+                : t('mfa.sendCode', { defaultValue: 'Send code' })}
+            </Button>
+          </Space.Compact>
+        )}
       </Modal>
     </div>
   );

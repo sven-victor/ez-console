@@ -74,7 +74,8 @@ type UserService interface {
 	EnableMFA(ctx context.Context, userID string, mfaType string) (*EnableMFAResponse, error)
 	VerifyAndActivateEmailMFA(ctx context.Context, userID string, token string, code string) error
 	VerifyAndActivateTOTPMFA(ctx context.Context, userID string, code string) error
-	DisableMFA(ctx context.Context, userID string, password string, mfaCode string) error
+	DisableMFA(ctx context.Context, userID string, verification DisableMFAVerification) error
+	SendDisableMFACode(ctx context.Context, userID string) (string, error)
 	AdminDisableMFA(ctx context.Context, targetUserID string) error
 	AssignRoles(ctx context.Context, userID string, roleIDs []string) error
 	GetLdapUsers(ctx context.Context, skipExisting bool) ([]model.User, error)
@@ -1683,10 +1684,75 @@ func (s *userService) VerifyAndActivateTOTPMFA(ctx context.Context, userID strin
 	})
 }
 
+// DisableMFAVerification carries the step-up authentication credentials for
+// disabling MFA. Exactly one method must be provided: a password (local or
+// LDAP), a TOTP code, or a one-time email verification code with its token.
+type DisableMFAVerification struct {
+	Password   string
+	MFACode    string
+	EmailCode  string
+	EmailToken string
+}
+
+// disableMFACodePayload is stored in the ephemeral token issued by
+// SendDisableMFACode so that the code is bound to a specific user.
+type disableMFACodePayload struct {
+	UserID string `json:"user_id"`
+	Code   string `json:"code"`
+}
+
+// SendDisableMFACode generates a one-time email verification code for
+// disabling MFA, emails it to the user, and returns the token that must be
+// submitted together with the received code.
+func (s *userService) SendDisableMFACode(ctx context.Context, userID string) (string, error) {
+	user, err := s.GetUserByID(ctx, userID, WithCache(true), WithRoles(false), WithPermissions(false))
+	if err != nil {
+		return "", err
+	}
+	if !user.MFAEnabled {
+		return "", errors.New("MFA is not enabled")
+	}
+	if user.Email == "" {
+		return "", util.NewErrorMessage("E4001", "email is not set")
+	}
+	if user.IsLocked() {
+		return "", util.NewErrorMessage("E4013", "Account is locked, please try again later")
+	}
+	logger := log.GetContextLogger(ctx)
+	expiresAt := time.Now().Add(time.Minute * 10)
+	token := uuid.New().String()
+	code := util.GenerateRandomString(6)
+	level.Info(logger).Log("msg", "Sending disable-MFA verification code to user", "user", user.Username, "email", user.Email)
+	err = s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "MFA Verification Code", model.SettingSMTPMFACodeTemplate, map[string]any{
+		"Code":     code,
+		"Username": user.Username,
+		"UserID":   user.ResourceID,
+		"Email":    user.Email,
+		"Avatar":   user.Avatar,
+		"FullName": user.FullName,
+		"Expires":  expiresAt,
+	})
+	if err != nil {
+		return "", fmt.Errorf("failed to send email: %w", err)
+	}
+	if err = GetEphemeralTokenService().Create(
+		ctx,
+		model.EphemeralTokenMFADisable,
+		token,
+		w.JSONStringer(disableMFACodePayload{UserID: user.ResourceID, Code: code}).String(),
+		time.Until(expiresAt),
+	); err != nil {
+		return "", fmt.Errorf("failed to create disable-MFA token: %w", err)
+	}
+	return token, nil
+}
+
 // DisableMFA disables MFA for the requesting user.
-// Requires step-up authentication (password or TOTP code) and is blocked
-// when global MFA enforcement is active.
-func (s *userService) DisableMFA(ctx context.Context, userID string, password string, mfaCode string) error {
+// Requires step-up authentication (password, TOTP code, or a one-time email
+// verification code) and is blocked when global MFA enforcement is active.
+// Failed verification attempts are counted against the same lockout policy
+// as failed logins.
+func (s *userService) DisableMFA(ctx context.Context, userID string, verification DisableMFAVerification) error {
 	securitySettings, err := s.baseService.GetSecuritySettings(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to get security settings: %w", err)
@@ -1704,25 +1770,95 @@ func (s *userService) DisableMFA(ctx context.Context, userID string, password st
 		return errors.New("MFA is not enabled")
 	}
 
-	// Step-up authentication: require either a valid password or a valid TOTP code.
-	if password == "" && mfaCode == "" {
-		return util.NewErrorMessage("E4031", "password or MFA code is required to disable MFA")
+	if user.IsLocked() {
+		return util.NewErrorMessage("E4013", "Account is locked, please try again later")
 	}
-	verified := false
-	if password != "" {
-		verified = user.CheckPassword(password)
-	}
-	if !verified && mfaCode != "" && user.MFASecret != nil {
-		secret, err := user.MFASecret.UnsafeString()
-		if err == nil {
-			verified = totp.Validate(mfaCode, secret)
-		}
+
+	verified, err := s.verifyDisableMFAStepUp(ctx, user, verification)
+	if err != nil {
+		return err
 	}
 	if !verified {
-		return util.NewErrorMessage("E4031", "invalid password or MFA code")
+		// Count the failed attempt and lock the account when the login
+		// failure threshold is reached (same policy as login).
+		if failErr := s.UserLoginFailed(ctx, user); failErr != nil {
+			level.Error(log.GetContextLogger(ctx)).Log("msg", "failed to record disable-MFA verification failure", "error", failErr)
+		}
+		return util.NewErrorMessage("E4031", "invalid password or verification code")
 	}
 
 	return s.disableMFAForUser(ctx, user)
+}
+
+// verifyDisableMFAStepUp validates one of the supported step-up methods.
+// A returned error indicates an infrastructure failure or a bad request; a
+// plain "false" means the provided credential was wrong.
+func (s *userService) verifyDisableMFAStepUp(ctx context.Context, user *model.User, verification DisableMFAVerification) (bool, error) {
+	switch {
+	case verification.EmailToken != "" && verification.EmailCode != "":
+		rawPayload, err := GetEphemeralTokenService().ConsumeAndGetPayload(ctx, verification.EmailToken)
+		if err != nil {
+			if errors.Is(err, ErrEphemeralTokenInvalidOrUsed) {
+				return false, nil
+			}
+			return false, fmt.Errorf("failed to get disable-MFA token: %w", err)
+		}
+		var payload disableMFACodePayload
+		if err := json.Unmarshal([]byte(rawPayload), &payload); err != nil {
+			return false, fmt.Errorf("failed to unmarshal disable-MFA token payload: %w", err)
+		}
+		return payload.UserID == user.ResourceID && payload.Code == verification.EmailCode, nil
+	case verification.Password != "":
+		return s.verifyUserPassword(ctx, user, verification.Password)
+	case verification.MFACode != "":
+		if user.MFAType != "totp" {
+			return false, nil
+		}
+		if user.MFASecret == nil {
+			var mfaSecret safe.String
+			if err := db.Session(ctx).Model(&model.User{}).Where("resource_id = ?", user.ResourceID).Select("MFASecret").First(&mfaSecret).Error; err != nil {
+				return false, fmt.Errorf("failed to get MFA secret: %w", err)
+			}
+			user.MFASecret = &mfaSecret
+		}
+		secret, err := user.MFASecret.UnsafeString()
+		if err != nil {
+			return false, fmt.Errorf("MFA secret is invalid: %w", err)
+		}
+		return totp.Validate(verification.MFACode, secret), nil
+	default:
+		return false, util.NewErrorMessage("E4031", "password or verification code is required to disable MFA")
+	}
+}
+
+// verifyUserPassword checks the user's password against the local database or
+// the LDAP server, depending on the user source (same behavior as login).
+func (s *userService) verifyUserPassword(ctx context.Context, user *model.User, password string) (bool, error) {
+	switch user.Source {
+	case model.UserSourceLDAP:
+		logger := log.GetContextLogger(ctx)
+		if user.LDAPDN == "" {
+			level.Error(logger).Log("msg", "user is LDAP user but LDAPDN is empty", "user_id", user.ResourceID)
+			return false, nil
+		}
+		settings, err := s.LDAPService.GetLDAPSettings(ctx)
+		if err != nil {
+			return false, fmt.Errorf("failed to get LDAP settings: %w", err)
+		}
+		conn, err := clientsldap.NewConn(ctx, settings)
+		if err != nil {
+			return false, fmt.Errorf("failed to create LDAP connection: %w", err)
+		}
+		defer conn.Close()
+		// Try to bind with user credentials (same as login/change-password).
+		if err := conn.Bind(user.LDAPDN, password); err != nil {
+			level.Info(logger).Log("msg", "LDAP bind failed during disable-MFA verification", "user_id", user.ResourceID, "error", err)
+			return false, nil
+		}
+		return true, nil
+	default:
+		return user.CheckPassword(password), nil
+	}
 }
 
 // AdminDisableMFA allows an administrator to disable MFA for any user without
@@ -1742,9 +1878,10 @@ func (s *userService) AdminDisableMFA(ctx context.Context, targetUserID string) 
 }
 
 // disableMFAForUser is the shared implementation that clears MFA fields and
-// invalidates all sessions for the affected user.
+// invalidates all sessions for the affected user. On success, a notification
+// email is sent to the user.
 func (s *userService) disableMFAForUser(ctx context.Context, user *model.User) error {
-	return db.Session(ctx).Transaction(func(tx *gorm.DB) error {
+	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
 		oldUser := *user
 		user.MFAEnabled = false
 		user.MFASecret = nil
@@ -1756,6 +1893,22 @@ func (s *userService) disableMFAForUser(ctx context.Context, user *model.User) e
 		cache.InvalidateAndDisableUserSessions(ctx, tx, user.ResourceID)
 		return s.RunUserChangeHooks(ctx, tx, &oldUser, user)
 	})
+	if err != nil {
+		return err
+	}
+	// Notify the user by email; a delivery failure must not fail the operation.
+	if user.Email != "" {
+		if mailErr := s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "MFA Disabled", model.SettingSMTPMFADisabledTemplate, map[string]any{
+			"Username": user.Username,
+			"UserID":   user.ResourceID,
+			"Email":    user.Email,
+			"Avatar":   user.Avatar,
+			"FullName": user.FullName,
+		}); mailErr != nil {
+			level.Warn(log.GetContextLogger(ctx)).Log("msg", "failed to send MFA disabled notification email", "user_id", user.ResourceID, "error", mailErr)
+		}
+	}
+	return nil
 }
 
 // validateRoleAssignment checks that the caller is authorised to assign the given roleIDs.
