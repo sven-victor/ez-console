@@ -67,6 +67,11 @@ export declare interface AddUserToOrganizationRequest {
     user_id: string;
 }
 
+export declare interface adminDisableUserMfaParams {
+    /** User ID */
+    id: string;
+}
+
 /**
  * Admin guard component - only admin can view content
  */
@@ -522,9 +527,12 @@ export declare const api: {
     getCurrentUserLogs(params: API.getCurrentUserLogsParams, options?: {
         [key: string]: any;
     }): Promise<API.PaginationResponseModelAuditLog>;
-    disableMfa(options?: {
+    disableMfa(body: API.DisableMFARequest, options?: {
         [key: string]: any;
     }): Promise<API.MessageData>;
+    sendDisableMfaCode(options?: {
+        [key: string]: any;
+    }): Promise<API.SendDisableMFACodeResponse>;
     enableMfa(body: API.EnableMFARequest, options?: {
         [key: string]: any;
     }): Promise<API.EnableMFAResponse>;
@@ -630,6 +638,9 @@ export declare const api: {
     getUserLogs(params: API.getUserLogsParams, options?: {
         [key: string]: any;
     }): Promise<API.PaginationResponseModelAuditLog>;
+    adminDisableUserMfa(params: API.adminDisableUserMfaParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
     resetUserPassword(params: API.resetUserPasswordParams, body: API.ResetUserPasswordRequest, options?: {
         [key: string]: any;
     }): Promise<API.ResetUserPasswordResponse>;
@@ -1036,6 +1047,18 @@ export declare interface deleteToolSetParams {
 export declare interface deleteUserParams {
     /** User ID */
     id: string;
+}
+
+export declare interface DisableMFARequest {
+    /** EmailCode is the one-time verification code received by email. */
+    email_code: string;
+    /** EmailToken is the token returned by the send-code endpoint, which must
+     accompany the email code. */
+    email_token: string;
+    /** MFACode is a TOTP code (only valid for TOTP MFA users). */
+    mfa_code: string;
+    /** Password is the user's login password (local or LDAP). */
+    password: string;
 }
 
 export declare interface downloadAITraceEventsParams {
@@ -1731,6 +1754,7 @@ export declare interface OrganizationUser {
     ldap_dn: string;
     mfa_enabled: boolean;
     mfa_enforced: boolean;
+    mfa_type: string;
     oauth_id: string;
     oauth_provider: string;
     organization_roles: Role[];
@@ -2170,6 +2194,13 @@ export declare interface ResponseAuthorizationapiResetUserPasswordResponse {
     trace_id: string;
 }
 
+export declare interface ResponseAuthorizationapiSendDisableMFACodeResponse {
+    code: string;
+    data: SendDisableMFACodeResponse;
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseAuthorizationapiTokenResponse {
     code: string;
     data: TokenResponse;
@@ -2574,6 +2605,10 @@ export declare interface SecuritySettings {
     user_inactive_days: number;
 }
 
+export declare interface SendDisableMFACodeResponse {
+    token: string;
+}
+
 export declare interface SendMessageRequest {
     /** results from client-side tool execution */
     client_tool_results: ClientToolResult[];
@@ -2762,6 +2797,7 @@ export declare interface SMTPSettings {
     inactive_lock_template: string;
     login_failure_lock_template: string;
     mfa_code_template: string;
+    mfa_disabled_template: string;
     password: string;
     password_expiry_template: string;
     port: number;
@@ -2781,6 +2817,7 @@ export declare interface SMTPTestRequest {
     inactive_lock_template: string;
     login_failure_lock_template: string;
     mfa_code_template: string;
+    mfa_disabled_template: string;
     password: string;
     password_expiry_template: string;
     port: number;
@@ -3308,6 +3345,7 @@ export declare interface User {
     ldap_dn: string;
     mfa_enabled: boolean;
     mfa_enforced: boolean;
+    mfa_type: string;
     oauth_id: string;
     oauth_provider: string;
     organizations: Organization[];

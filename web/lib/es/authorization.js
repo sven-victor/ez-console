@@ -78,9 +78,22 @@ async function y(a, t) {
     }
   );
 }
-async function l(a) {
+async function l(a, t) {
   return r(
     "/api/authorization/profile/mfa/disable",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: a,
+      ...t || {}
+    }
+  );
+}
+async function f(a) {
+  return r(
+    "/api/authorization/profile/mfa/disable/send-code",
     {
       method: "POST",
       ...a || {}
@@ -100,7 +113,7 @@ async function T(a, t) {
     }
   );
 }
-async function f(a, t) {
+async function P(a, t) {
   return r(
     "/api/authorization/profile/mfa/verify",
     {
@@ -113,7 +126,7 @@ async function f(a, t) {
     }
   );
 }
-async function P(a, t) {
+async function z(a, t) {
   return r(
     "/api/authorization/profile/password",
     {
@@ -126,7 +139,7 @@ async function P(a, t) {
     }
   );
 }
-async function z(a, t) {
+async function S(a, t) {
   return r(
     "/api/authorization/profile/sessions",
     {
@@ -142,7 +155,7 @@ async function z(a, t) {
     }
   );
 }
-async function S(a, t) {
+async function v(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/profile/sessions/${e}`,
@@ -153,7 +166,7 @@ async function S(a, t) {
     }
   );
 }
-async function v(a) {
+async function E(a) {
   return r(
     "/api/authorization/profile/sessions/terminate-others",
     {
@@ -171,7 +184,7 @@ async function g(a) {
     }
   );
 }
-async function E(a, t) {
+async function $(a, t) {
   return r("/api/authorization/roles", {
     method: "GET",
     params: {
@@ -184,7 +197,7 @@ async function E(a, t) {
     ...t || {}
   });
 }
-async function $(a, t) {
+async function q(a, t) {
   return r("/api/authorization/roles", {
     method: "POST",
     headers: {
@@ -194,7 +207,7 @@ async function $(a, t) {
     ...t || {}
   });
 }
-async function q(a, t) {
+async function U(a, t) {
   const { id: e, ...n } = a;
   return r(`/api/authorization/roles/${e}`, {
     method: "GET",
@@ -202,7 +215,7 @@ async function q(a, t) {
     ...t || {}
   });
 }
-async function U(a, t, e) {
+async function C(a, t, e) {
   const { id: n, ...o } = a;
   return r(`/api/authorization/roles/${n}`, {
     method: "PUT",
@@ -214,7 +227,7 @@ async function U(a, t, e) {
     ...e || {}
   });
 }
-async function C(a, t) {
+async function j(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/roles/${e}`,
@@ -225,7 +238,7 @@ async function C(a, t) {
     }
   );
 }
-async function j(a, t, e) {
+async function O(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/roles/${n}/permissions`,
@@ -251,7 +264,7 @@ async function A(a, t) {
     }
   );
 }
-async function O(a, t, e) {
+async function G(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/roles/${n}/policy`,
@@ -266,7 +279,7 @@ async function O(a, t, e) {
     }
   );
 }
-async function G(a, t) {
+async function b(a, t) {
   return r(
     "/api/authorization/service-accounts",
     {
@@ -321,7 +334,7 @@ async function _(a, t, e) {
     }
   );
 }
-async function b(a, t) {
+async function L(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}`,
@@ -332,7 +345,7 @@ async function b(a, t) {
     }
   );
 }
-async function L(a, t) {
+async function D(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}/access-keys`,
@@ -343,7 +356,7 @@ async function L(a, t) {
     }
   );
 }
-async function D(a, t, e) {
+async function M(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/service-accounts/${n}/access-keys`,
@@ -384,7 +397,7 @@ async function K(a, t) {
     }
   );
 }
-async function M(a, t) {
+async function x(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}/policy`,
@@ -395,7 +408,7 @@ async function M(a, t) {
     }
   );
 }
-async function x(a, t, e) {
+async function I(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/service-accounts/${n}/policy`,
@@ -410,7 +423,7 @@ async function x(a, t, e) {
     }
   );
 }
-async function I(a, t) {
+async function B(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/service-accounts/${e}/roles`,
@@ -421,7 +434,7 @@ async function I(a, t) {
     }
   );
 }
-async function B(a, t, e) {
+async function F(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/service-accounts/${n}/roles`,
@@ -436,7 +449,7 @@ async function B(a, t, e) {
     }
   );
 }
-async function F(a, t, e) {
+async function H(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/service-accounts/${n}/status`,
@@ -451,7 +464,7 @@ async function F(a, t, e) {
     }
   );
 }
-async function H(a, t) {
+async function J(a, t) {
   return r("/api/authorization/users", {
     method: "GET",
     params: {
@@ -464,7 +477,7 @@ async function H(a, t) {
     ...t || {}
   });
 }
-async function J(a, t) {
+async function N(a, t) {
   return r("/api/authorization/users", {
     method: "POST",
     headers: {
@@ -474,7 +487,7 @@ async function J(a, t) {
     ...t || {}
   });
 }
-async function N(a, t) {
+async function Q(a, t) {
   const { id: e, ...n } = a;
   return r(`/api/authorization/users/${e}`, {
     method: "GET",
@@ -482,7 +495,7 @@ async function N(a, t) {
     ...t || {}
   });
 }
-async function Q(a, t, e) {
+async function V(a, t, e) {
   const { id: n, ...o } = a;
   return r(`/api/authorization/users/${n}`, {
     method: "PUT",
@@ -494,7 +507,7 @@ async function Q(a, t, e) {
     ...e || {}
   });
 }
-async function V(a, t) {
+async function W(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/users/${e}`,
@@ -505,7 +518,7 @@ async function V(a, t) {
     }
   );
 }
-async function W(a, t) {
+async function X(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/users/${e}/audit-logs`,
@@ -522,7 +535,18 @@ async function W(a, t) {
     }
   );
 }
-async function X(a, t, e) {
+async function Y(a, t) {
+  const { id: e, ...n } = a;
+  return r(
+    `/api/authorization/users/${e}/mfa`,
+    {
+      method: "DELETE",
+      params: { ...n },
+      ...t || {}
+    }
+  );
+}
+async function Z(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/users/${n}/password`,
@@ -537,7 +561,7 @@ async function X(a, t, e) {
     }
   );
 }
-async function Y(a, t) {
+async function aa(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/users/${e}/resend-activation`,
@@ -548,7 +572,7 @@ async function Y(a, t) {
     }
   );
 }
-async function Z(a, t) {
+async function ta(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/users/${e}/restore`,
@@ -559,7 +583,7 @@ async function Z(a, t) {
     }
   );
 }
-async function aa(a, t, e) {
+async function ea(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/users/${n}/roles`,
@@ -574,7 +598,7 @@ async function aa(a, t, e) {
     }
   );
 }
-async function ta(a, t, e) {
+async function na(a, t, e) {
   const { id: n, ...o } = a;
   return r(
     `/api/authorization/users/${n}/status`,
@@ -589,7 +613,7 @@ async function ta(a, t, e) {
     }
   );
 }
-async function ea(a, t) {
+async function ra(a, t) {
   const { id: e, ...n } = a;
   return r(
     `/api/authorization/users/${e}/unlock`,
@@ -600,7 +624,7 @@ async function ea(a, t) {
     }
   );
 }
-async function na(a, t) {
+async function oa(a, t) {
   return r("/api/authorization/users/export", {
     method: "POST",
     headers: {
@@ -610,62 +634,64 @@ async function na(a, t) {
     ...t || {}
   });
 }
-const oa = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ia = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   activateUser: i,
-  assignPermissions: j,
-  assignRoles: aa,
-  assignServiceAccountRoles: B,
-  changePassword: P,
-  createRole: $,
+  adminDisableUserMfa: Y,
+  assignPermissions: O,
+  assignRoles: ea,
+  assignServiceAccountRoles: F,
+  changePassword: z,
+  createRole: q,
   createServiceAccount: k,
-  createServiceAccountAccessKey: D,
-  createUser: J,
-  createUserExportTask: na,
-  deleteRole: C,
-  deleteServiceAccount: b,
+  createServiceAccountAccessKey: M,
+  createUser: N,
+  createUserExportTask: oa,
+  deleteRole: j,
+  deleteServiceAccount: L,
   deleteServiceAccountAccessKey: K,
-  deleteUser: V,
+  deleteUser: W,
   disableMfa: l,
   enableMfa: T,
   getCurrentUser: d,
   getCurrentUserLogs: y,
   getLdapUsers: p,
-  getRole: q,
+  getRole: U,
   getRolePolicy: A,
-  getServiceAccountAccessKeys: L,
+  getServiceAccountAccessKeys: D,
   getServiceAccountById: R,
-  getServiceAccountPolicy: M,
-  getServiceAccountRoles: I,
-  getServiceAccounts: G,
-  getUser: N,
-  getUserLogs: W,
-  getUserSessions: z,
+  getServiceAccountPolicy: x,
+  getServiceAccountRoles: B,
+  getServiceAccounts: b,
+  getUser: Q,
+  getUserLogs: X,
+  getUserSessions: S,
   listPermissions: m,
-  listRoles: E,
-  listUsers: H,
+  listRoles: $,
+  listUsers: J,
   login: c,
   logout: u,
   refreshToken: g,
-  resendActivationEmail: Y,
-  resetUserPassword: X,
-  restoreUser: Z,
-  setRolePolicy: O,
-  setServiceAccountPolicy: x,
-  terminateOtherSessions: v,
-  terminateSession: S,
-  unlockUser: ea,
+  resendActivationEmail: aa,
+  resetUserPassword: Z,
+  restoreUser: ta,
+  sendDisableMfaCode: f,
+  setRolePolicy: G,
+  setServiceAccountPolicy: I,
+  terminateOtherSessions: E,
+  terminateSession: v,
+  unlockUser: ra,
   updateCurrentUser: h,
-  updateRole: U,
+  updateRole: C,
   updateServiceAccount: _,
   updateServiceAccountAccessKey: w,
-  updateServiceAccountStatus: F,
-  updateUser: Q,
-  updateUserStatus: ta,
-  verifyAndActivateMfa: f
+  updateServiceAccountStatus: H,
+  updateUser: V,
+  updateUserStatus: na,
+  verifyAndActivateMfa: P
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  oa as a,
-  E as b,
-  H as l
+  ia as a,
+  $ as b,
+  J as l
 };

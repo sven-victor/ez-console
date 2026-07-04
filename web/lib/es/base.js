@@ -616,6 +616,16 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setupSuccessDescription: "Two-factor authentication has been set up successfully. Your account is now more secure.",
     confirmDisable: "Confirm Disable Two-Factor Authentication",
     disableWarning: "After disabling two-factor authentication, your account security will be reduced. Are you sure you want to disable it?",
+    disableVerifyDescription: "For security reasons, please verify your identity with your password or a verification code.",
+    enterPassword: "Enter your password",
+    enterTotpCode: "Enter the 6-digit code from your authenticator app",
+    methodPassword: "Password",
+    methodEmailCode: "Email code",
+    enterEmailCode: "Enter the 6-digit code sent to your email",
+    sendCode: "Send code",
+    resendIn: "Resend ({{seconds}}s)",
+    codeSent: "Verification code has been sent to your email",
+    sendCodeFirst: "Please send the verification code first",
     totp: "TOTP",
     email: "E-Mail",
     totpTitle: "TOTP (Time-based One-Time Password)",
@@ -848,7 +858,14 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         logout: "Logout",
         create: "Create users",
         update: "Update users",
-        delete: "Delete users"
+        delete: "Delete users",
+        change_password: "Change Password",
+        reset_password: "Reset User Password",
+        update_profile: "Update Profile",
+        enable_mfa: "Enable MFA",
+        activate_mfa: "Verify and Activate MFA",
+        disable_mfa: "Disable MFA",
+        import_ldap_users: "Import LDAP Users"
       },
       oauth: {
         callback: "OAuth Callback/Login"
@@ -2728,6 +2745,16 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setupSuccessDescription: "多因子认证（MFA）已成功设置，现在你的账户更加安全了",
     confirmDisable: "确认禁用多因子认证（MFA）",
     disableWarning: "禁用多因子认证（MFA）后，你的账户安全性将降低，确定要禁用吗？",
+    disableVerifyDescription: "出于安全考虑，请输入密码或验证码以验证身份。",
+    enterPassword: "请输入密码",
+    enterTotpCode: "输入身份验证器中的6位验证码",
+    methodPassword: "密码",
+    methodEmailCode: "邮件验证码",
+    enterEmailCode: "输入发送到邮箱的6位验证码",
+    sendCode: "发送验证码",
+    resendIn: "重新发送（{{seconds}}秒）",
+    codeSent: "验证码已发送至你的邮箱",
+    sendCodeFirst: "请先发送验证码",
     totp: "TOTP",
     email: "E-Mail",
     totpTitle: "TOTP（基于时间的一次性密码）",
@@ -2979,7 +3006,14 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         logout: "登出",
         create: "创建用户",
         update: "更新用户",
-        delete: "删除用户"
+        delete: "删除用户",
+        change_password: "修改密码",
+        reset_password: "重置用户密码",
+        update_profile: "更新个人资料",
+        enable_mfa: "启用多因素认证",
+        activate_mfa: "验证并激活多因素认证",
+        disable_mfa: "禁用多因素认证",
+        import_ldap_users: "导入 LDAP 用户"
       },
       oauth: {
         callback: "OAuth 回调/登录"
@@ -4161,6 +4195,16 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setupSuccessDescription: "Die Zwei-Faktor-Authentifizierung wurde erfolgreich eingerichtet. Ihr Konto ist jetzt sicherer.",
     confirmDisable: "Deaktivierung der Zwei-Faktor-Authentifizierung bestätigen",
     disableWarning: "Nach der Deaktivierung der Zwei-Faktor-Authentifizierung wird die Sicherheit Ihres Kontos verringert. Sind Sie sicher, dass Sie sie deaktivieren möchten?",
+    disableVerifyDescription: "Aus Sicherheitsgründen bestätigen Sie bitte Ihre Identität mit Ihrem Passwort oder einem Bestätigungscode.",
+    enterPassword: "Geben Sie Ihr Passwort ein",
+    enterTotpCode: "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein",
+    methodPassword: "Passwort",
+    methodEmailCode: "E-Mail-Code",
+    enterEmailCode: "Geben Sie den 6-stelligen Code ein, der an Ihre E-Mail gesendet wurde",
+    sendCode: "Code senden",
+    resendIn: "Erneut senden ({{seconds}}s)",
+    codeSent: "Der Bestätigungscode wurde an Ihre E-Mail gesendet",
+    sendCodeFirst: "Bitte senden Sie zuerst den Bestätigungscode",
     totp: "TOTP",
     email: "E-Mail",
     totpTitle: "TOTP (Zeitbasiertes Einmalpasswort)",
@@ -4410,7 +4454,14 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         logout: "Abmelden",
         create: "Benutzer erstellen",
         update: "Benutzer aktualisieren",
-        delete: "Benutzer löschen"
+        delete: "Benutzer löschen",
+        change_password: "Passwort ändern",
+        reset_password: "Benutzerpasswort zurücksetzen",
+        update_profile: "Profil aktualisieren",
+        enable_mfa: "MFA aktivieren",
+        activate_mfa: "MFA verifizieren und aktivieren",
+        disable_mfa: "MFA deaktivieren",
+        import_ldap_users: "LDAP-Benutzer importieren"
       },
       oauth: {
         callback: "OAuth-Rückruf/Anmeldung"
@@ -5590,6 +5641,16 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setupSuccessDescription: "La autenticación de dos factores se ha configurado correctamente. Tu cuenta es ahora más segura.",
     confirmDisable: "Confirmar desactivación de la autenticación de dos factores",
     disableWarning: "Después de desactivar la autenticación de dos factores, la seguridad de tu cuenta se reducirá. ¿Estás seguro de que quieres desactivarla?",
+    disableVerifyDescription: "Por razones de seguridad, verifica tu identidad con tu contraseña o un código de verificación.",
+    enterPassword: "Introduce tu contraseña",
+    enterTotpCode: "Introduce el código de 6 dígitos de tu aplicación de autenticación",
+    methodPassword: "Contraseña",
+    methodEmailCode: "Código por correo",
+    enterEmailCode: "Introduce el código de 6 dígitos enviado a tu correo",
+    sendCode: "Enviar código",
+    resendIn: "Reenviar ({{seconds}}s)",
+    codeSent: "El código de verificación se ha enviado a tu correo",
+    sendCodeFirst: "Por favor, envía primero el código de verificación",
     totp: "TOTP",
     email: "Correo electrónico",
     totpTitle: "TOTP (contraseña de un solo uso basada en el tiempo)",
@@ -5839,7 +5900,14 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         logout: "Cerrar sesión",
         create: "Crear usuarios",
         update: "Actualizar usuarios",
-        delete: "Eliminar usuarios"
+        delete: "Eliminar usuarios",
+        change_password: "Cambiar contraseña",
+        reset_password: "Restablecer contraseña de usuario",
+        update_profile: "Actualizar perfil",
+        enable_mfa: "Habilitar MFA",
+        activate_mfa: "Verificar y activar MFA",
+        disable_mfa: "Deshabilitar MFA",
+        import_ldap_users: "Importar usuarios LDAP"
       },
       oauth: {
         callback: "Devolución de llamada OAuth/Inicio de sesión"
@@ -7019,6 +7087,16 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setupSuccessDescription: "L'authentification à deux facteurs a été configurée avec succès. Votre compte est maintenant plus sécurisé.",
     confirmDisable: "Confirmer la désactivation de l'authentification à deux facteurs",
     disableWarning: "Après avoir désactivé l'authentification à deux facteurs, la sécurité de votre compte sera réduite. Êtes-vous sûr de vouloir la désactiver ?",
+    disableVerifyDescription: "Pour des raisons de sécurité, veuillez vérifier votre identité avec votre mot de passe ou un code de vérification.",
+    enterPassword: "Saisissez votre mot de passe",
+    enterTotpCode: "Saisissez le code à 6 chiffres de votre application d'authentification",
+    methodPassword: "Mot de passe",
+    methodEmailCode: "Code e-mail",
+    enterEmailCode: "Saisissez le code à 6 chiffres envoyé à votre e-mail",
+    sendCode: "Envoyer le code",
+    resendIn: "Renvoyer ({{seconds}}s)",
+    codeSent: "Le code de vérification a été envoyé à votre e-mail",
+    sendCodeFirst: "Veuillez d'abord envoyer le code de vérification",
     totp: "TOTP",
     email: "E-mail",
     totpTitle: "TOTP (mot de passe à usage unique basé sur le temps)",
@@ -7268,7 +7346,14 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         logout: "Déconnexion",
         create: "Créer des utilisateurs",
         update: "Mettre à jour les utilisateurs",
-        delete: "Supprimer les utilisateurs"
+        delete: "Supprimer les utilisateurs",
+        change_password: "Changer le mot de passe",
+        reset_password: "Réinitialiser le mot de passe utilisateur",
+        update_profile: "Mettre à jour le profil",
+        enable_mfa: "Activer la MFA",
+        activate_mfa: "Vérifier et activer la MFA",
+        disable_mfa: "Désactiver la MFA",
+        import_ldap_users: "Importer les utilisateurs LDAP"
       },
       oauth: {
         callback: "Rappel OAuth/Connexion"
@@ -8448,6 +8533,16 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setupSuccessDescription: "تم إعداد المصادقة الثنائية بنجاح. حسابك الآن أكثر أمانًا.",
     confirmDisable: "تأكيد تعطيل المصادقة الثنائية",
     disableWarning: "بعد تعطيل المصادقة الثنائية ، سيتم تقليل أمان حسابك. هل أنت متأكد أنك تريد تعطيلها؟",
+    disableVerifyDescription: "لأسباب أمنية، يرجى التحقق من هويتك باستخدام كلمة المرور أو رمز التحقق.",
+    enterPassword: "أدخل كلمة المرور",
+    enterTotpCode: "أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة",
+    methodPassword: "كلمة المرور",
+    methodEmailCode: "رمز البريد الإلكتروني",
+    enterEmailCode: "أدخل الرمز المكون من 6 أرقام المرسل إلى بريدك الإلكتروني",
+    sendCode: "إرسال الرمز",
+    resendIn: "إعادة الإرسال ({{seconds}} ثانية)",
+    codeSent: "تم إرسال رمز التحقق إلى بريدك الإلكتروني",
+    sendCodeFirst: "يرجى إرسال رمز التحقق أولاً",
     totp: "TOTP",
     email: "البريد الإلكتروني",
     totpTitle: "TOTP (كلمة مرور لمرة واحدة تعتمد على الوقت)",
@@ -8697,7 +8792,14 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         logout: "تسجيل الخروج",
         create: "إنشاء مستخدمين",
         update: "تحديث المستخدمين",
-        delete: "حذف المستخدمين"
+        delete: "حذف المستخدمين",
+        change_password: "تغيير كلمة المرور",
+        reset_password: "إعادة تعيين كلمة مرور المستخدم",
+        update_profile: "تحديث الملف الشخصي",
+        enable_mfa: "تمكين المصادقة متعددة العوامل",
+        activate_mfa: "التحقق وتفعيل المصادقة متعددة العوامل",
+        disable_mfa: "تعطيل المصادقة متعددة العوامل",
+        import_ldap_users: "استيراد مستخدمي LDAP"
       },
       oauth: {
         callback: "معاودة الاتصال OAuth/تسجيل الدخول"
@@ -9877,6 +9979,16 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     setupSuccessDescription: "Tvåfaktorsautentisering har ställts in. Ditt konto är nu säkrare.",
     confirmDisable: "Bekräfta inaktivering av tvåfaktorsautentisering",
     disableWarning: "Efter att ha inaktiverat tvåfaktorsautentisering kommer din kontosäkerhet att minska. Är du säker på att du vill inaktivera den?",
+    disableVerifyDescription: "Av säkerhetsskäl, verifiera din identitet med ditt lösenord eller en verifieringskod.",
+    enterPassword: "Ange ditt lösenord",
+    enterTotpCode: "Ange den 6-siffriga koden från din autentiseringsapp",
+    methodPassword: "Lösenord",
+    methodEmailCode: "E-postkod",
+    enterEmailCode: "Ange den 6-siffriga koden som skickats till din e-post",
+    sendCode: "Skicka kod",
+    resendIn: "Skicka igen ({{seconds}}s)",
+    codeSent: "Verifieringskoden har skickats till din e-post",
+    sendCodeFirst: "Skicka verifieringskoden först",
     totp: "TOTP",
     email: "E-post",
     totpTitle: "TOTP (Tidsbaserat engångslösenord)",
@@ -10126,7 +10238,14 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         logout: "Logga ut",
         create: "Skapa användare",
         update: "Uppdatera användare",
-        delete: "Ta bort användare"
+        delete: "Ta bort användare",
+        change_password: "Ändra lösenord",
+        reset_password: "Återställ användarlösenord",
+        update_profile: "Uppdatera profil",
+        enable_mfa: "Aktivera MFA",
+        activate_mfa: "Verifiera och aktivera MFA",
+        disable_mfa: "Inaktivera MFA",
+        import_ldap_users: "Importera LDAP-användare"
       },
       oauth: {
         callback: "OAuth Callback/Inloggning"
@@ -11161,7 +11280,7 @@ function de(e) {
   }
   return t;
 }
-function p(e) {
+function m(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 function Te(e) {
@@ -11173,7 +11292,7 @@ function Te(e) {
   if (r === -1) return e;
   const o = i.slice(0, r).trim(), s = i.slice(r + 4).trimStart(), n = de(o), a = Object.keys(n);
   if (a.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = a.map((m) => "| " + p(m) + " | " + p(n[m] ?? "") + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = a.map((p) => "| " + m(p) + " | " + m(n[p] ?? "") + " |").join(`
 `);
   return l + `
 ` + d + `
