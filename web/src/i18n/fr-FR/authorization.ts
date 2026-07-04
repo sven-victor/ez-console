@@ -435,6 +435,13 @@ export default {
         create: 'Créer des utilisateurs',
         update: 'Mettre à jour les utilisateurs',
         delete: 'Supprimer les utilisateurs',
+        change_password: 'Changer le mot de passe',
+        reset_password: 'Réinitialiser le mot de passe utilisateur',
+        update_profile: 'Mettre à jour le profil',
+        enable_mfa: 'Activer la MFA',
+        activate_mfa: 'Vérifier et activer la MFA',
+        disable_mfa: 'Désactiver la MFA',
+        import_ldap_users: 'Importer les utilisateurs LDAP',
       },
       oauth: {
         callback: 'Rappel OAuth/Connexion',

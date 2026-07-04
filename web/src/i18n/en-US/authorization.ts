@@ -418,6 +418,13 @@ export default {
         create: 'Create users',
         update: 'Update users',
         delete: 'Delete users',
+        change_password: 'Change Password',
+        reset_password: 'Reset User Password',
+        update_profile: 'Update Profile',
+        enable_mfa: 'Enable MFA',
+        activate_mfa: 'Verify and Activate MFA',
+        disable_mfa: 'Disable MFA',
+        import_ldap_users: 'Import LDAP Users',
       },
       oauth: {
         callback: 'OAuth Callback/Login',

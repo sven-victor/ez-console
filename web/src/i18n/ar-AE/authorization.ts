@@ -435,6 +435,13 @@ export default {
         create: 'إنشاء مستخدمين',
         update: 'تحديث المستخدمين',
         delete: 'حذف المستخدمين',
+        change_password: 'تغيير كلمة المرور',
+        reset_password: 'إعادة تعيين كلمة مرور المستخدم',
+        update_profile: 'تحديث الملف الشخصي',
+        enable_mfa: 'تمكين المصادقة متعددة العوامل',
+        activate_mfa: 'التحقق وتفعيل المصادقة متعددة العوامل',
+        disable_mfa: 'تعطيل المصادقة متعددة العوامل',
+        import_ldap_users: 'استيراد مستخدمي LDAP',
       },
       oauth: {
         callback: 'معاودة الاتصال OAuth/تسجيل الدخول',

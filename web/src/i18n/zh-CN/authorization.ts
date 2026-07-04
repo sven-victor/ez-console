@@ -437,6 +437,13 @@ export default {
         create: '创建用户',
         update: '更新用户',
         delete: '删除用户',
+        change_password: '修改密码',
+        reset_password: '重置用户密码',
+        update_profile: '更新个人资料',
+        enable_mfa: '启用多因素认证',
+        activate_mfa: '验证并激活多因素认证',
+        disable_mfa: '禁用多因素认证',
+        import_ldap_users: '导入 LDAP 用户',
       },
       oauth: {
         callback: 'OAuth 回调/登录',

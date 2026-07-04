@@ -609,6 +609,10 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 		ctx,
 		user.ResourceID,
 		func(auditLog *model.AuditLog) error {
+			// The /profile routes have no permission middleware, so the
+			// action info cannot be derived from "permission_code" and must be set here.
+			auditLog.Action = "authorization:user:update_profile"
+			auditLog.ActionName = "Update Profile"
 			newUser, err := c.service.PatchUser(ctx, user.ResourceID,
 				service.UpdateUserRequest{
 					Email:    req.Email,
@@ -626,6 +630,10 @@ func (c *UserController) UpdateCurrentUser(ctx *gin.Context) {
 			return nil
 		},
 		service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+			// The /profile route has no permission middleware, so the action info
+			// cannot be derived from "permission_code" and must be set here.
+			auditLog.Action = "authorization:user:update_profile"
+			auditLog.ActionName = "Update Profile"
 			auditLog.Details.OldData = user
 			auditLog.Details.Request = req
 		}),

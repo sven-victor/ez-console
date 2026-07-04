@@ -213,6 +213,9 @@ func (c *LDAPSettingController) ImportLDAPUsers(ctx *gin.Context) {
 		return
 	}
 	err := c.service.StartAudit(ctx, "", func(auditLog *model.AuditLog) error {
+		// Override the generic "authorization:user:create" action derived from
+		// the permission middleware with a more specific one.
+		auditLog.Action = "authorization:user:import_ldap_users"
 		auditLog.ActionName = "Import LDAP Users"
 		users, err := c.service.ImportLDAPUsers(ctx, req.UserDN)
 		if err != nil {

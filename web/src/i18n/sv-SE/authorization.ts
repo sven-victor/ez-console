@@ -435,6 +435,13 @@ export default {
         create: 'Skapa användare',
         update: 'Uppdatera användare',
         delete: 'Ta bort användare',
+        change_password: 'Ändra lösenord',
+        reset_password: 'Återställ användarlösenord',
+        update_profile: 'Uppdatera profil',
+        enable_mfa: 'Aktivera MFA',
+        activate_mfa: 'Verifiera och aktivera MFA',
+        disable_mfa: 'Inaktivera MFA',
+        import_ldap_users: 'Importera LDAP-användare',
       },
       oauth: {
         callback: 'OAuth Callback/Inloggning',

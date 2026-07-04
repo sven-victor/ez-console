@@ -82,6 +82,10 @@ func (c *MFAController) EnableMFA(ctx *gin.Context) {
 		ctx,
 		user.ResourceID,
 		func(auditLog *model.AuditLog) error {
+			// The /profile/mfa routes have no permission middleware, so the
+			// action info cannot be derived from "permission_code" and must be set here.
+			auditLog.Action = "authorization:user:enable_mfa"
+			auditLog.ActionName = "Enable MFA"
 			response, err := c.service.EnableMFA(ctx, user.ResourceID, req.MFAType)
 			if err != nil {
 				return util.NewError("E5002", err)
@@ -140,6 +144,9 @@ func (c *MFAController) VerifyAndActivateMFA(ctx *gin.Context) {
 		ctx,
 		user.ResourceID,
 		func(auditLog *model.AuditLog) error {
+			// No permission middleware on this route; set action info manually.
+			auditLog.Action = "authorization:user:activate_mfa"
+			auditLog.ActionName = "Verify and Activate MFA"
 			var err error
 			// Call service to verify and activate MFA
 			if req.MFAType == "totp" {
@@ -209,6 +216,9 @@ func (c *MFAController) DisableMFA(ctx *gin.Context) {
 		ctx,
 		user.ResourceID,
 		func(auditLog *model.AuditLog) error {
+			// No permission middleware on this route; set action info manually.
+			auditLog.Action = "authorization:user:disable_mfa"
+			auditLog.ActionName = "Disable MFA"
 			// Call service to disable MFA (step-up auth checked inside)
 			err := c.service.DisableMFA(ctx, user.ResourceID, service.DisableMFAVerification{
 				Password:   req.Password,
