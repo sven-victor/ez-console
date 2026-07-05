@@ -130,6 +130,7 @@ export default {
     system_settings_skillEditor: 'محرر المهارة',
     system_settings_skillPreview: 'معاينة المهارة',
     system_settings_aiTraceViewer: 'تتبع الذكاء الاصطناعي',
+    system_settings_toolSetDebug: 'تصحيح مجموعة الأدوات',
     system_audit: 'سجل التدقيق',
     dashboard: 'لوحة التحكم',
     profile: 'الملف الشخصي',

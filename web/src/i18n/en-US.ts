@@ -131,6 +131,7 @@ export default {
     system_settings_skillEditor: 'Skill Editor',
     system_settings_skillPreview: 'Skill Preview',
     system_settings_aiTraceViewer: 'AI Trace',
+    system_settings_toolSetDebug: 'Tool Set Debug',
     system_audit: 'Audit Log',
     dashboard: 'Dashboard',
     profile: 'Profile',

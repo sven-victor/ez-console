@@ -130,6 +130,7 @@ export default {
     system_settings_skillEditor: 'Skill-Editor',
     system_settings_skillPreview: 'Skill-Vorschau',
     system_settings_aiTraceViewer: 'KI-Trace',
+    system_settings_toolSetDebug: 'Toolset-Debugging',
     system_audit: 'Audit-Protokoll',
     dashboard: 'Dashboard',
     profile: 'Profil',

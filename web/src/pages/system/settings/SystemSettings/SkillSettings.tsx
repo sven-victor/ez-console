@@ -24,6 +24,7 @@ import {
   Empty,
   Switch,
   Tooltip,
+  Radio,
   Row,
   Col,
 } from 'antd';
@@ -176,6 +177,8 @@ const SkillSettings: React.FC = () => {
   const [form] = Form.useForm();
   const [searchText, setSearchText] = useState('');
   const [domainFilter, setDomainFilter] = useState<string>();
+  // 'user' hides built-in (preset) skills; 'all' shows everything. Defaults to user skills.
+  const [skillScope, setSkillScope] = useState<'user' | 'all'>('user');
   const [modalVisible, setModalVisible] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [cloneSourceSkill, setCloneSourceSkill] = useState<Skill | null>(null);
@@ -215,9 +218,10 @@ const SkillSettings: React.FC = () => {
         page_size: 100,
         search: searchText || undefined,
         domain: domainFilter,
+        is_preset: skillScope === 'user' ? false : undefined,
       }),
     {
-      refreshDeps: [searchText, domainFilter],
+      refreshDeps: [searchText, domainFilter, skillScope],
       onError: () => {
         message.error(t('settings.skills.fetchFailed', { defaultValue: 'Failed to fetch skills' }));
       },
@@ -588,6 +592,15 @@ const SkillSettings: React.FC = () => {
                 value={domainFilter}
                 onChange={setDomainFilter}
                 options={domainOptions.map((d) => ({ value: d, label: d }))}
+              />
+              <Radio.Group
+                optionType="button"
+                value={skillScope}
+                onChange={(e) => setSkillScope(e.target.value as 'user' | 'all')}
+                options={[
+                  { value: 'user', label: t('settings.skills.scopeUser', { defaultValue: 'User skills' }) },
+                  { value: 'all', label: t('settings.skills.scopeAll', { defaultValue: 'All skills' }) },
+                ]}
               />
             </Space>
           </Col>

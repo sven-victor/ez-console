@@ -130,6 +130,7 @@ export default {
     system_settings_skillEditor: 'Éditeur de compétence',
     system_settings_skillPreview: 'Aperçu de la compétence',
     system_settings_aiTraceViewer: 'Trace IA',
+    system_settings_toolSetDebug: 'Débogage du jeu d\'outils',
     system_audit: 'Journal d\'audit',
     dashboard: 'Tableau de bord',
     profile: 'Profil',

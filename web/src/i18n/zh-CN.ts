@@ -134,6 +134,7 @@ export default {
     system_settings_skillEditor: '技能编辑器',
     system_settings_skillPreview: '技能预览',
     system_settings_aiTraceViewer: 'AI 链路追踪',
+    system_settings_toolSetDebug: '工具集调试',
     system_audit: '审计日志',
     dashboard: '仪表盘',
     profile: '个人中心',

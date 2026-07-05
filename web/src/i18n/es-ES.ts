@@ -130,6 +130,7 @@ export default {
     system_settings_skillEditor: 'Editor de habilidad',
     system_settings_skillPreview: 'Vista previa de habilidad',
     system_settings_aiTraceViewer: 'Trazas de IA',
+    system_settings_toolSetDebug: 'Depuración del conjunto de herramientas',
     system_audit: 'Registro de auditoría',
     dashboard: 'Dashboard',
     profile: 'Perfil',

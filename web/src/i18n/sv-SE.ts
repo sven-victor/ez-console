@@ -130,6 +130,7 @@ export default {
     system_settings_skillEditor: 'Kompetensredigerare',
     system_settings_skillPreview: 'Kompetensförhandsvisning',
     system_settings_aiTraceViewer: 'AI-spår',
+    system_settings_toolSetDebug: 'Felsökning av verktygsuppsättning',
     system_audit: 'Granskningslogg',
     dashboard: 'Instrumentpanel',
     profile: 'Profil',

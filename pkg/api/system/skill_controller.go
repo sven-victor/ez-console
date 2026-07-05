@@ -127,6 +127,7 @@ type MoveSkillPathRequest struct {
 //	@Param			search		query		string	false	"Search keyword"
 //	@Param			category	query		string	false	"Filter by category"
 //	@Param			domain		query		string	false	"Filter by domain"
+//	@Param			is_preset	query		boolean	false	"Filter by built-in flag (true = preset only, false = user skills only; omit for all)"
 //	@Success		200			{object}	util.PaginationResponse[model.Skill]
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/system/skills [get]
@@ -141,8 +142,17 @@ func (c *SkillController) ListSkills(ctx *gin.Context) {
 	search := ctx.Query("search")
 	category := ctx.Query("category")
 	domain := ctx.Query("domain")
+	var isPreset *bool
+	if raw := ctx.Query("is_preset"); raw != "" {
+		v, err := strconv.ParseBool(raw)
+		if err != nil {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4001", "is_preset must be a boolean"))
+			return
+		}
+		isPreset = &v
+	}
 
-	list, total, err := c.service.List(ctx, organizationID, current, pageSize, search, category, domain)
+	list, total, err := c.service.List(ctx, organizationID, current, pageSize, search, category, domain, isPreset)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

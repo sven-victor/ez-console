@@ -140,7 +140,7 @@ type skillService struct{}
 type SkillService interface {
 	UploadSkill(ctx context.Context, organizationID string, file io.Reader, filename string, category, domain string) (*model.Skill, error)
 	ListDomains() []string
-	List(ctx context.Context, organizationID string, current, pageSize int, search, category, domain string) ([]model.Skill, int64, error)
+	List(ctx context.Context, organizationID string, current, pageSize int, search, category, domain string, isPreset *bool) ([]model.Skill, int64, error)
 	GetByID(ctx context.Context, organizationID, id string) (*model.Skill, error)
 	Create(ctx context.Context, skill *model.Skill, initialContent string) (*model.Skill, error)
 	CloneSkill(ctx context.Context, sourceSkillID string, newSkill *model.Skill, organizationID string) (*model.Skill, error)
@@ -332,7 +332,8 @@ func (s *skillService) ListDomains() []string {
 }
 
 // List returns skills with pagination and optional filters for one organization.
-func (s *skillService) List(ctx context.Context, organizationID string, current, pageSize int, search, category, domain string) ([]model.Skill, int64, error) {
+// isPreset filters by built-in (preset) flag when non-nil: true = preset only, false = user skills only.
+func (s *skillService) List(ctx context.Context, organizationID string, current, pageSize int, search, category, domain string, isPreset *bool) ([]model.Skill, int64, error) {
 	if organizationID == "" {
 		return nil, 0, fmt.Errorf("organization id is required")
 	}
@@ -346,6 +347,9 @@ func (s *skillService) List(ctx context.Context, organizationID string, current,
 	}
 	if domain != "" {
 		query = query.Where("domain = ?", domain)
+	}
+	if isPreset != nil {
+		query = query.Where("is_preset = ?", *isPreset)
 	}
 
 	var total int64
@@ -790,13 +794,11 @@ type SkillFilePreview struct {
 }
 
 // GetSkillPreview returns concatenated preview fragments from SKILL.md/SKILLS.md and other .md files under the skill.
+// Disabled skills are still previewable so administrators can manage them; AI consumption paths filter by status separately.
 func (s *skillService) GetSkillPreview(ctx context.Context, organizationID, skillID string) ([]SkillFilePreview, error) {
-	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
-	}
-	if !model.SkillIsEnabled(skill) {
-		return nil, ErrSkillDisabled
 	}
 
 	var previews []SkillFilePreview
@@ -838,14 +840,12 @@ func (s *skillService) GetSkillPreview(ctx context.Context, organizationID, skil
 	return previews, nil
 }
 
-// GetSkillContent reads SKILL.md (or SKILLS.md)
+// GetSkillContent reads SKILL.md (or SKILLS.md).
+// It does not check skill status so disabled skills remain manageable; AI consumption paths filter by status separately.
 func (s *skillService) GetSkillContent(ctx context.Context, organizationID, skillID string) (string, error) {
-	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return "", err
-	}
-	if !model.SkillIsEnabled(skill) {
-		return "", ErrSkillDisabled
 	}
 
 	// Main file first: SKILL.md or SKILLS.md
@@ -952,13 +952,11 @@ func (s *skillService) ListFiles(ctx context.Context, organizationID, skillID, r
 }
 
 // GetFile returns the content of a file under the skill. Path must be relative; only .md and .txt allowed.
+// It does not check skill status so disabled skills remain manageable; AI consumption paths filter by status separately.
 func (s *skillService) GetFile(ctx context.Context, organizationID, skillID, relativePath string) ([]byte, error) {
-	skill, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
-	}
-	if !model.SkillIsEnabled(skill) {
-		return nil, ErrSkillDisabled
 	}
 	path, err := validateSkillPath(relativePath, true)
 	if err != nil {
@@ -1323,6 +1321,14 @@ func (s *skillService) CreateSkillLoader(ctx context.Context, organizationID str
 		return nil, fmt.Errorf("failed to load skills: %w", err)
 	}
 	skillLoader := ai.NewSkillLoader(skills, activatedSkillIDs, func(ctx context.Context, skillID string, path string) (string, error) {
+		// Re-check status on every load: a skill disabled mid-session must not be consumed by AI.
+		sk, err := s.GetByID(ctx, organizationID, skillID)
+		if err != nil {
+			return "", fmt.Errorf("failed to get skill: %w", err)
+		}
+		if !model.SkillIsEnabled(sk) {
+			return "", ErrSkillDisabled
+		}
 		if strings.TrimSpace(path) == "" {
 			content, err := s.GetSkillContent(ctx, organizationID, skillID)
 			if err != nil {
