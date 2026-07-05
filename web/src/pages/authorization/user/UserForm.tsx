@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Card,
   Form,
@@ -55,7 +55,7 @@ const UserForm: React.FC = () => {
   const { t: tCommon } = useTranslation("common");
   const [form] = Form.useForm();
   const isEditMode = !!id;
-
+  const [rolesSearch, setRolesSearch] = useState('');
   const { enableMultiOrg } = useSite();
 
   const { data: organizations, loading: organizationsLoading } = useRequest(async () => {
@@ -83,12 +83,14 @@ const UserForm: React.FC = () => {
 
   // Get role list
   const { data: rolesData, loading: rolesLoading } = useRequest(async () => {
-    const response = await api.authorization.listRoles({});
+    const response = await api.authorization.listRoles({ search: rolesSearch || undefined });
     return response.data.map((role: API.Role) => ({
       ...role,
       label: role.name,
       value: role.id,
     }));
+  }, {
+    refreshDeps: [rolesSearch],
   });
 
   // If in edit mode, get user information
@@ -113,6 +115,15 @@ const UserForm: React.FC = () => {
       },
     },
   );
+
+  const rolesOptions: (API.Role & { label: React.ReactNode, value: string })[] = useMemo(() => {
+    const userRoles = userData?.roles.filter((role: API.Role) => !rolesData?.some((r: API.Role) => r.id === role.id));
+    return [...(userRoles || []), ...(rolesData || [])].map((role) => ({
+      ...role,
+      label: enableMultiOrg ? renderOrganizationRole(role.organization_id, role) : role.name || '',
+      value: role.id,
+    }));
+  }, [rolesData, enableMultiOrg, renderOrganizationRole, userData?.roles]);
 
   // Submit form
   const { run: onSubmit, loading: submitLoading } = useRequest(
@@ -195,7 +206,7 @@ const UserForm: React.FC = () => {
   return (
     <Card
       title={isEditMode ? t('user.editTitle', { defaultValue: 'Edit User' }) : t('user.createTitle', { defaultValue: 'Create User' })}
-      loading={userLoading || rolesLoading}
+      loading={userLoading}
     >
       <Form
         form={form}
@@ -259,6 +270,7 @@ const UserForm: React.FC = () => {
               <Option value="disabled">{t('user.statusDisabled', { defaultValue: 'Disabled' })}</Option>
               <Option value="password_expired">{t('user.statusEnum.password_expired', { defaultValue: 'Password Expired' })}</Option>
               {userData?.status === 'pending_activation' && <Option value="pending_activation">{t('user.statusEnum.pending_activation', { defaultValue: 'Pending Activation' })}</Option>}
+              {userData?.status === 'locked' && <Option value="locked">{t('user.statusEnum.locked', { defaultValue: 'Locked' })}</Option>}
             </Select>
           </Form.Item>)}
         <Form.Item
@@ -299,11 +311,9 @@ const UserForm: React.FC = () => {
         >
           <Select
             mode="multiple"
+            onSearch={(value) => setRolesSearch(value)}
             placeholder={t('user.selectRoles', { defaultValue: 'Select roles' })}
-            options={rolesData?.map((role: API.Role & { label: string, value: string }) => ({
-              ...role,
-              label: enableMultiOrg ? renderOrganizationRole(role.organization_id, role) : role.name,
-            }))}
+            options={rolesOptions}
             optionFilterProp="label"
             loading={rolesLoading}
           />
