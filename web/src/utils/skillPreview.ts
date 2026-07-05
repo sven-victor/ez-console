@@ -9,23 +9,15 @@
  * Parses simple YAML frontmatter (key: value lines) into a record.
  * Handles single-line values only; keys are lowercased.
  */
+import { load as loadYaml } from 'js-yaml';
+
 function parseSimpleYamlFrontmatter(yamlBlock: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  const lines = yamlBlock.split(/\r?\n/);
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (!trimmed) continue;
-    const colonIdx = trimmed.indexOf(':');
-    if (colonIdx <= 0) continue;
-    const key = trimmed.slice(0, colonIdx).trim();
-    const value = trimmed.slice(colonIdx + 1).trim();
-    // Remove optional surrounding quotes
-    const cleanValue = (value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"))
-      ? value.slice(1, -1)
-      : value;
-    out[key] = cleanValue;
+  try {
+    return loadYaml(yamlBlock) as Record<string, string>;
+  } catch (error) {
+    console.error(error);
+    return {};
   }
-  return out;
 }
 
 /**
