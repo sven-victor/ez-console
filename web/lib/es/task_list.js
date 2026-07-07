@@ -1,10 +1,10 @@
 import { j as s } from "./vendor.js";
 import { useRef as C, useState as _ } from "react";
 import { Tag as f, Progress as S, Card as D, Space as k, Input as I, Button as o, message as n } from "antd";
-import { EyeOutlined as b, StopOutlined as R, RedoOutlined as A, DownloadOutlined as F, DeleteOutlined as O, SearchOutlined as h, ReloadOutlined as v, CalendarOutlined as E } from "@ant-design/icons";
+import { EyeOutlined as b, StopOutlined as R, RedoOutlined as A, DownloadOutlined as F, DeleteOutlined as O, SearchOutlined as h, ReloadOutlined as E, CalendarOutlined as L } from "@ant-design/icons";
 import { useTranslation as p } from "react-i18next";
 import { a as i } from "./index.js";
-import { b as L, i as P, f as $ } from "./components.js";
+import { b as P, i as v, f as $ } from "./components.js";
 import { P as y } from "./base.js";
 import { useNavigate as N } from "react-router-dom";
 const z = {
@@ -90,7 +90,7 @@ const z = {
       width: 100,
       fixed: "right",
       render: (e, t) => /* @__PURE__ */ s.jsx(
-        L,
+        P,
         {
           actions: [
             {
@@ -125,7 +125,6 @@ const z = {
               icon: /* @__PURE__ */ s.jsx(F, {}),
               tooltip: a("download", { defaultValue: "Download" }),
               hidden: !t.artifact_file_key,
-              permission: "task:view",
               onClick: () => g(t.artifact_file_key)
             },
             {
@@ -152,7 +151,7 @@ const z = {
     D,
     {
       title: a("listTitle", { defaultValue: "Task List" }),
-      extra: /* @__PURE__ */ s.jsx($, { permission: "task:schedule:list", children: /* @__PURE__ */ s.jsx(o, { type: "link", icon: /* @__PURE__ */ s.jsx(E, {}), onClick: () => u("/tasks/schedules"), children: a("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) }),
+      extra: /* @__PURE__ */ s.jsx($, { permission: "task:schedule:list", children: /* @__PURE__ */ s.jsx(o, { type: "link", icon: /* @__PURE__ */ s.jsx(L, {}), onClick: () => u("/tasks/schedules"), children: a("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) }),
       children: /* @__PURE__ */ s.jsxs(k, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
         /* @__PURE__ */ s.jsxs(k, { wrap: !0, children: [
           /* @__PURE__ */ s.jsx(
@@ -174,13 +173,13 @@ const z = {
             var e, t;
             (t = (e = r.current) == null ? void 0 : e.reload) == null || t.call(e);
           }, children: d("search", { defaultValue: "Search" }) }),
-          /* @__PURE__ */ s.jsx(o, { icon: /* @__PURE__ */ s.jsx(v, {}), onClick: () => {
+          /* @__PURE__ */ s.jsx(o, { icon: /* @__PURE__ */ s.jsx(E, {}), onClick: () => {
             var e, t;
             return (t = (e = r.current) == null ? void 0 : e.reload) == null ? void 0 : t.call(e);
           }, children: d("refresh", { defaultValue: "Refresh" }) })
         ] }),
         /* @__PURE__ */ s.jsx(
-          P,
+          v,
           {
             actionRef: r,
             request: T,

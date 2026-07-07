@@ -1,12 +1,12 @@
 import { j as t } from "./vendor.js";
 import b from "react";
-import { Card as u, Spin as T, Button as n, Space as f, Descriptions as r, Tag as _, Progress as C, message as l } from "antd";
-import { DownloadOutlined as D, StopOutlined as S, RedoOutlined as I, DeleteOutlined as A, ArrowLeftOutlined as v } from "@ant-design/icons";
-import { useParams as F, useNavigate as L } from "react-router-dom";
+import { Card as o, Spin as T, Button as n, Space as u, Descriptions as r, Tag as _, Progress as C, message as l } from "antd";
+import { DownloadOutlined as D, StopOutlined as S, RedoOutlined as I, DeleteOutlined as A, ArrowLeftOutlined as F } from "@ant-design/icons";
+import { useParams as L, useNavigate as R } from "react-router-dom";
 import { useTranslation as p } from "react-i18next";
-import { useRequest as R } from "ahooks";
+import { useRequest as v } from "ahooks";
 import { a as c } from "./index.js";
-import { n as O, f as d, b as P } from "./components.js";
+import { n as O, f, b as P } from "./components.js";
 const E = {
   pending: "default",
   running: "processing",
@@ -14,7 +14,7 @@ const E = {
   failed: "error",
   cancelled: "default"
 }, J = () => {
-  const { id: s } = F(), o = L(), { t: a } = p("task"), { t: h } = p("common"), { data: e, loading: x, refresh: i } = R(
+  const { id: s } = L(), d = R(), { t: a } = p("task"), { t: h } = p("common"), { data: e, loading: x, refresh: i } = v(
     () => s ? c.tasks.getTask({ id: s }) : Promise.reject(new Error("No id")),
     {
       refreshDeps: [s],
@@ -43,7 +43,7 @@ const E = {
   }, y = async () => {
     if (s)
       try {
-        await c.tasks.deleteTask({ id: s }), l.success(a("deleteSuccess", { defaultValue: "Task deleted." })), o("/tasks");
+        await c.tasks.deleteTask({ id: s }), l.success(a("deleteSuccess", { defaultValue: "Task deleted." })), d("/tasks");
       } catch {
         l.error(a("deleteFailed", { defaultValue: "Failed to delete task." }));
       }
@@ -52,19 +52,19 @@ const E = {
     window.open(`/api/files/${e.artifact_file_key}`, "_blank");
   };
   if (x && !e)
-    return /* @__PURE__ */ t.jsx(u, { children: /* @__PURE__ */ t.jsx(T, { spinning: !0 }) });
+    return /* @__PURE__ */ t.jsx(o, { children: /* @__PURE__ */ t.jsx(T, { spinning: !0 }) });
   if (!e)
-    return /* @__PURE__ */ t.jsxs(u, { children: [
+    return /* @__PURE__ */ t.jsxs(o, { children: [
       /* @__PURE__ */ t.jsx("p", { children: a("notFound", { defaultValue: "Task not found." }) }),
-      /* @__PURE__ */ t.jsx(n, { type: "primary", onClick: () => o("/tasks"), children: a("backToList", { defaultValue: "Back to list" }) })
+      /* @__PURE__ */ t.jsx(n, { type: "primary", onClick: () => d("/tasks"), children: a("backToList", { defaultValue: "Back to list" }) })
     ] });
   const V = e.status === "running" || e.status === "pending", w = e.status === "failed" || e.status === "cancelled";
   return /* @__PURE__ */ t.jsx(
-    u,
+    o,
     {
       title: a("detailTitle", { defaultValue: "Task Detail" }),
-      extra: /* @__PURE__ */ t.jsx(n, { type: "text", icon: /* @__PURE__ */ t.jsx(v, {}), onClick: () => o("/tasks"), children: h("back", { defaultValue: "Back" }) }),
-      children: /* @__PURE__ */ t.jsxs(f, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
+      extra: /* @__PURE__ */ t.jsx(n, { type: "text", icon: /* @__PURE__ */ t.jsx(F, {}), onClick: () => d("/tasks"), children: h("back", { defaultValue: "Back" }) }),
+      children: /* @__PURE__ */ t.jsxs(u, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
         /* @__PURE__ */ t.jsxs(r, { bordered: !0, column: 1, size: "small", labelStyle: { minWidth: 150 }, children: [
           /* @__PURE__ */ t.jsx(r.Item, { label: a("typeLabel", { defaultValue: "Type" }), children: a(`type.${e.type}`, { defaultValue: e.type }) }),
           /* @__PURE__ */ t.jsx(r.Item, { label: a("statusLabel", { defaultValue: "Status" }), children: /* @__PURE__ */ t.jsx(_, { color: E[e.status] || "default", children: a(`status.${e.status}`, { defaultValue: e.status }) }) }),
@@ -86,11 +86,11 @@ const E = {
             poll: e.status === "running" || e.status === "pending"
           }
         ),
-        e.artifact_file_key && /* @__PURE__ */ t.jsx(f, { children: /* @__PURE__ */ t.jsx(d, { permission: "task:view", children: /* @__PURE__ */ t.jsx(n, { type: "primary", icon: /* @__PURE__ */ t.jsx(D, {}), onClick: g, children: a("downloadArtifact", { defaultValue: "Download artifact" }) }) }) }),
-        /* @__PURE__ */ t.jsxs(f, { wrap: !0, children: [
-          V && /* @__PURE__ */ t.jsx(d, { permission: "task:cancel", children: /* @__PURE__ */ t.jsx(n, { icon: /* @__PURE__ */ t.jsx(S, {}), onClick: j, children: a("cancel", { defaultValue: "Cancel" }) }) }),
-          w && /* @__PURE__ */ t.jsx(d, { permission: "task:retry", children: /* @__PURE__ */ t.jsx(n, { icon: /* @__PURE__ */ t.jsx(I, {}), onClick: k, children: a("retry", { defaultValue: "Retry" }) }) }),
-          /* @__PURE__ */ t.jsx(d, { permission: "task:delete", children: /* @__PURE__ */ t.jsx(
+        e.artifact_file_key && /* @__PURE__ */ t.jsx(u, { children: /* @__PURE__ */ t.jsx(n, { type: "primary", icon: /* @__PURE__ */ t.jsx(D, {}), onClick: g, children: a("downloadArtifact", { defaultValue: "Download artifact" }) }) }),
+        /* @__PURE__ */ t.jsxs(u, { wrap: !0, children: [
+          V && /* @__PURE__ */ t.jsx(f, { permission: "task:cancel", children: /* @__PURE__ */ t.jsx(n, { icon: /* @__PURE__ */ t.jsx(S, {}), onClick: j, children: a("cancel", { defaultValue: "Cancel" }) }) }),
+          w && /* @__PURE__ */ t.jsx(f, { permission: "task:retry", children: /* @__PURE__ */ t.jsx(n, { icon: /* @__PURE__ */ t.jsx(I, {}), onClick: k, children: a("retry", { defaultValue: "Retry" }) }) }),
+          /* @__PURE__ */ t.jsx(f, { permission: "task:delete", children: /* @__PURE__ */ t.jsx(
             P,
             {
               actions: [

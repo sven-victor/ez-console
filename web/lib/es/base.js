@@ -2,66 +2,67 @@ import { r as u } from "./client.js";
 import g from "i18next";
 import { initReactI18next as h } from "react-i18next";
 import f from "i18next-browser-languagedetector";
-const he = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const i = e instanceof Date ? e : new Date(e), r = i.getFullYear(), o = String(i.getMonth() + 1).padStart(2, "0"), s = String(i.getDate()).padStart(2, "0"), n = String(i.getHours()).padStart(2, "0"), a = String(i.getMinutes()).padStart(2, "0"), l = String(i.getSeconds()).padStart(2, "0");
-  return t.replace("YYYY", String(r)).replace("MM", o).replace("DD", s).replace("HH", n).replace("mm", a).replace("ss", l);
-}, fe = (e, t) => {
+import { load as v } from "js-yaml";
+const ve = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
+  const a = e instanceof Date ? e : new Date(e), r = a.getFullYear(), n = String(a.getMonth() + 1).padStart(2, "0"), s = String(a.getDate()).padStart(2, "0"), o = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
+  return t.replace("YYYY", String(r)).replace("MM", n).replace("DD", s).replace("HH", o).replace("mm", i).replace("ss", l);
+}, ke = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
-  const i = e.trim().toLowerCase();
-  if (i.startsWith("#")) {
-    let a = i.slice(1);
-    if (a.length === 3 && (a = a[0] + a[0] + a[1] + a[1] + a[2] + a[2]), a.length !== 6)
+  const a = e.trim().toLowerCase();
+  if (a.startsWith("#")) {
+    let i = a.slice(1);
+    if (i.length === 3 && (i = i[0] + i[0] + i[1] + i[1] + i[2] + i[2]), i.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const l = parseInt(a.slice(0, 2), 16), d = parseInt(a.slice(2, 4), 16), c = parseInt(a.slice(4, 6), 16);
+    const l = parseInt(i.slice(0, 2), 16), d = parseInt(i.slice(2, 4), 16), c = parseInt(i.slice(4, 6), 16);
     if (isNaN(l) || isNaN(d) || isNaN(c))
       throw new Error("Invalid characters in HEX color value.");
     return `rgba(${l}, ${d}, ${c}, ${t})`;
   }
-  const r = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, o = i.match(r);
-  if (o) {
-    const a = parseInt(o[1], 10), l = parseInt(o[2], 10), d = parseInt(o[3], 10);
-    if (a < 0 || a > 255 || l < 0 || l > 255 || d < 0 || d > 255)
-      throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${a}, ${l}, ${d}, ${t})`;
-  }
-  const s = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, n = i.match(s);
+  const r = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, n = a.match(r);
   if (n) {
-    const a = parseInt(n[1], 10), l = parseInt(n[2], 10), d = parseInt(n[3], 10);
-    if (a < 0 || a > 255 || l < 0 || l > 255 || d < 0 || d > 255)
+    const i = parseInt(n[1], 10), l = parseInt(n[2], 10), d = parseInt(n[3], 10);
+    if (i < 0 || i > 255 || l < 0 || l > 255 || d < 0 || d > 255)
+      throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
+    return `rgba(${i}, ${l}, ${d}, ${t})`;
+  }
+  const s = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, o = a.match(s);
+  if (o) {
+    const i = parseInt(o[1], 10), l = parseInt(o[2], 10), d = parseInt(o[3], 10);
+    if (i < 0 || i > 255 || l < 0 || l > 255 || d < 0 || d > 255)
       throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${a}, ${l}, ${d}, ${t})`;
+    return `rgba(${i}, ${l}, ${d}, ${t})`;
   }
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, ve = (e) => {
+}, be = (e) => {
   if (!e)
     return "";
-  const [t, i] = e.split("@");
-  return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + i : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + i;
-}, ke = (e) => {
+  const [t, a] = e.split("@");
+  return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
+}, Ae = (e) => {
   const t = "/";
   return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
-}, be = (e) => {
+}, Se = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
-  return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((i, r) => r !== 0 && t.includes(i) ? i : i.charAt(0).toUpperCase() + i.slice(1)).join(" ");
-}, Ae = (e, t, i) => {
+  return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((a, r) => r !== 0 && t.includes(a) ? a : a.charAt(0).toUpperCase() + a.slice(1)).join(" ");
+}, ye = (e, t, a) => {
   if (e === void 0 && t === void 0) return !0;
   if (e === void 0 || t === void 0 || e.length !== t.length) return !1;
   const r = new Array(t.length).fill(!1);
-  for (const o of e) {
+  for (const n of e) {
     let s = !1;
-    for (let n = 0; n < t.length; n++)
-      if (!r[n] && i(o, t[n])) {
-        r[n] = !0, s = !0;
+    for (let o = 0; o < t.length; o++)
+      if (!r[o] && a(n, t[o])) {
+        r[o] = !0, s = !0;
         break;
       }
     if (!s) return !1;
   }
   return !0;
 };
-async function v(e, t) {
+async function k(e, t) {
   return u("/api/files", {
     method: "GET",
     params: {
@@ -70,39 +71,39 @@ async function v(e, t) {
     ...t || {}
   });
 }
-async function k(e, t, i) {
+async function b(e, t, a) {
   const r = new FormData();
-  return t && r.append("file", t), Object.keys(e).forEach((o) => {
-    const s = e[o];
-    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((n) => r.append(o, n || "")) : r.append(o, JSON.stringify(s)) : r.append(o, s));
+  return t && r.append("file", t), Object.keys(e).forEach((n) => {
+    const s = e[n];
+    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((o) => r.append(n, o || "")) : r.append(n, JSON.stringify(s)) : r.append(n, s));
   }), u("/api/files", {
     method: "POST",
     data: r,
     requestType: "form",
-    ...i || {}
+    ...a || {}
   });
 }
-async function b(e, t) {
-  const { fileKey: i, ...r } = e;
-  return u(`/api/files/${i}`, {
+async function A(e, t) {
+  const { fileKey: a, ...r } = e;
+  return u(`/api/files/${a}`, {
     method: "GET",
     params: { ...r },
     ...t || {}
   });
 }
-async function A(e) {
+async function S(e) {
   return u("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: b,
-  getStatistics: A,
-  listFiles: v,
-  uploadFile: k
-}, Symbol.toStringTag, { value: "Module" })), S = {
+  downloadFile: A,
+  getStatistics: S,
+  listFiles: k,
+  uploadFile: b
+}, Symbol.toStringTag, { value: "Module" })), y = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -222,6 +223,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system_settings_skillEditor: "技能编辑器",
     system_settings_skillPreview: "技能预览",
     system_settings_aiTraceViewer: "AI 链路追踪",
+    system_settings_toolSetDebug: "工具集调试",
     system_audit: "审计日志",
     dashboard: "仪表盘",
     profile: "个人中心",
@@ -246,7 +248,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, y = {
+}, T = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -362,6 +364,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system_settings_skillEditor: "Skill Editor",
     system_settings_skillPreview: "Skill Preview",
     system_settings_aiTraceViewer: "AI Trace",
+    system_settings_toolSetDebug: "Tool Set Debug",
     system_audit: "Audit Log",
     dashboard: "Dashboard",
     profile: "Profile",
@@ -386,7 +389,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, T = {
+}, w = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -459,7 +462,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, w = {
+}, P = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -537,6 +540,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     resetPasswordSuccessSendByEmail: "The new password has been sent to the user email: {{email}}",
     resetPasswordSuccessContent: "New password: {{password}}",
     resetPasswordError: "Password reset failed",
+    adminDisableMFA: "Disable MFA",
+    adminDisableMFATitle: "Disable MFA",
+    adminDisableMFAConfirm: 'Are you sure you want to disable MFA for user "{{username}}"? They will be logged out of all sessions.',
+    adminDisableMFASuccess: "MFA disabled successfully",
+    adminDisableMFAError: "Failed to disable MFA: {{error}}",
     source: "Source",
     sourceLdap: "LDAP",
     sourceOauth2: "OAuth2.0",
@@ -800,8 +808,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.skills.update": "Update skill",
       "system.skills.delete": "Delete skill",
       "system.skills.edit_files": "Edit skill files",
-      "task.list": "List tasks",
-      "task.view": "View task",
+      "task.list": "List all tasks",
+      "task.view": "View any task",
       "task.cancel": "Cancel task",
       "task.retry": "Retry task",
       "task.delete": "Delete task",
@@ -1017,7 +1025,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, P = {
+}, R = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1090,6 +1098,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledEditMetadata: "Built-in skills cannot change metadata.",
       presetDisabledDelete: "Built-in skills cannot be deleted.",
       statusForAi: "AI chat",
+      scopeUser: "User skills",
+      scopeAll: "All skills",
       statusUpdateSuccess: "Skill status updated",
       statusUpdateFailed: "Failed to update skill status",
       tooltipEnableSkillForAi: "Enable this skill for AI chat",
@@ -1528,6 +1538,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Reset Password Template",
       userLockedTemplate: "User Locked Template",
       mfaCodeTemplate: "MFA Code Template",
+      mfaDisabledTemplate: "MFA Disabled Notification Template",
       activationTemplate: "Account Activation Template",
       activationTemplateTooltip: "Email sent to new users when no password is set. Available variables: {{.ActivationURL}} (activation link), {{.FullName}} (user's full name), {{.Username}}.",
       passwordExpiryTemplate: "Password Expiry Reminder Template",
@@ -1635,7 +1646,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, R = {
+}, D = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1744,7 +1755,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} selected",
     skillDomain: "Skill domain"
   }
-}, D = {
+}, z = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1814,7 +1825,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     inactive_account_lock_task: "Scan users hourly and lock inactive accounts automatically",
     password_expiry_notification_task: "Scan users hourly and send password expiry reminders once per password cycle"
   }
-}, z = {
+}, E = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1929,6 +1940,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system_settings_skillEditor: "Skill-Editor",
     system_settings_skillPreview: "Skill-Vorschau",
     system_settings_aiTraceViewer: "KI-Trace",
+    system_settings_toolSetDebug: "Toolset-Debugging",
     system_audit: "Audit-Protokoll",
     dashboard: "Dashboard",
     profile: "Profil",
@@ -1953,7 +1965,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, E = {
+}, C = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -2068,6 +2080,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system_settings_skillEditor: "Editor de habilidad",
     system_settings_skillPreview: "Vista previa de habilidad",
     system_settings_aiTraceViewer: "Trazas de IA",
+    system_settings_toolSetDebug: "Depuración del conjunto de herramientas",
     system_audit: "Registro de auditoría",
     dashboard: "Dashboard",
     profile: "Perfil",
@@ -2092,7 +2105,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, C = {
+}, F = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -2207,6 +2220,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system_settings_skillEditor: "Éditeur de compétence",
     system_settings_skillPreview: "Aperçu de la compétence",
     system_settings_aiTraceViewer: "Trace IA",
+    system_settings_toolSetDebug: "Débogage du jeu d'outils",
     system_audit: "Journal d'audit",
     dashboard: "Tableau de bord",
     profile: "Profil",
@@ -2231,7 +2245,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, F = {
+}, I = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -2346,6 +2360,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system_settings_skillEditor: "محرر المهارة",
     system_settings_skillPreview: "معاينة المهارة",
     system_settings_aiTraceViewer: "تتبع الذكاء الاصطناعي",
+    system_settings_toolSetDebug: "تصحيح مجموعة الأدوات",
     system_audit: "سجل التدقيق",
     dashboard: "لوحة التحكم",
     profile: "الملف الشخصي",
@@ -2370,7 +2385,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, I = {
+}, _ = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2485,6 +2500,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     system_settings_skillEditor: "Kompetensredigerare",
     system_settings_skillPreview: "Kompetensförhandsvisning",
     system_settings_aiTraceViewer: "AI-spår",
+    system_settings_toolSetDebug: "Felsökning av verktygsuppsättning",
     system_audit: "Granskningslogg",
     dashboard: "Instrumentpanel",
     profile: "Profil",
@@ -2588,7 +2604,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, _ = {
+}, M = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -2666,6 +2682,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     resetPasswordSuccessSendByEmail: "新密码已发送至用户邮箱：{{email}}",
     resetPasswordSuccessContent: "新密码为: {{password}}",
     resetPasswordError: "密码重置失败",
+    adminDisableMFA: "禁用 MFA",
+    adminDisableMFATitle: "禁用 MFA",
+    adminDisableMFAConfirm: '确定要禁用用户 "{{username}}" 的 MFA 吗？该用户的所有会话将被注销。',
+    adminDisableMFASuccess: "MFA 已禁用",
+    adminDisableMFAError: "禁用 MFA 失败：{{error}}",
     source: "来源",
     sourceLdap: "LDAP",
     sourceOauth2: "OAuth2.0",
@@ -2948,8 +2969,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.skills.update": "更新技能",
       "system.skills.delete": "删除技能",
       "system.skills.edit_files": "编辑技能文件",
-      "task.list": "查看任务列表",
-      "task.view": "查看任务",
+      "task.list": "查看所有用户的任务列表",
+      "task.view": "查看任意用户的任务",
       "task.cancel": "取消任务",
       "task.retry": "重试任务",
       "task.delete": "删除任务",
@@ -3167,7 +3188,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, M = {
+}, U = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -3240,6 +3261,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledEditMetadata: "内置技能不能修改元数据。",
       presetDisabledDelete: "内置技能不能删除。",
       statusForAi: "AI 对话",
+      scopeUser: "用户技能",
+      scopeAll: "全部技能",
       statusUpdateSuccess: "技能状态已更新",
       statusUpdateFailed: "更新技能状态失败",
       tooltipEnableSkillForAi: "在 AI 对话中启用此技能",
@@ -3680,6 +3703,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "重置密码模板",
       userLockedTemplate: "用户锁定模板",
       mfaCodeTemplate: "MFA验证码模板",
+      mfaDisabledTemplate: "MFA禁用通知模板",
       activationTemplate: "账户激活邮件模板",
       activationTemplateTooltip: "创建无密码用户时发送的激活邮件模板。可用变量：{{.ActivationURL}}（激活链接）、{{.FullName}}（用户姓名）、{{.Username}}。",
       passwordExpiryTemplate: "密码到期提醒模板",
@@ -3787,7 +3811,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, U = {
+}, q = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3896,7 +3920,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "已选 {{count}} 个",
     skillDomain: "技能域"
   }
-}, q = {
+}, N = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3966,7 +3990,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     inactive_account_lock_task: "每小时扫描用户并自动锁定不活跃账户",
     password_expiry_notification_task: "每小时扫描用户，并在每个密码周期内发送一次密码到期提醒"
   }
-}, N = {
+}, O = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -4038,7 +4062,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, O = {
+}, x = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -4116,6 +4140,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     resetPasswordSuccessSendByEmail: "Das neue Passwort wurde an die E-Mail des Benutzers gesendet: {{email}}",
     resetPasswordSuccessContent: "Neues Passwort: {{password}}",
     resetPasswordError: "Passwort zurücksetzen fehlgeschlagen",
+    adminDisableMFA: "MFA deaktivieren",
+    adminDisableMFATitle: "MFA deaktivieren",
+    adminDisableMFAConfirm: 'Möchten Sie MFA für den Benutzer "{{username}}" wirklich deaktivieren? Alle Sitzungen des Benutzers werden abgemeldet.',
+    adminDisableMFASuccess: "MFA erfolgreich deaktiviert",
+    adminDisableMFAError: "MFA konnte nicht deaktiviert werden: {{error}}",
     source: "Quelle",
     sourceLdap: "LDAP",
     sourceOauth2: "OAuth2.0",
@@ -4377,8 +4406,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.skills.update": "Skill aktualisieren",
       "system.skills.delete": "Skill löschen",
       "system.skills.edit_files": "Skill-Dateien bearbeiten",
-      "task.list": "Aufgaben auflisten",
-      "task.view": "Aufgabe anzeigen",
+      "task.list": "Alle Aufgaben auflisten",
+      "task.view": "Beliebige Aufgabe anzeigen",
       "task.cancel": "Aufgabe abbrechen",
       "task.retry": "Aufgabe wiederholen",
       "task.delete": "Aufgabe löschen",
@@ -4613,7 +4642,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, x = {
+}, B = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -4686,6 +4715,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledEditMetadata: "Metadaten integrierter Fähigkeiten können nicht geändert werden.",
       presetDisabledDelete: "Integrierte Fähigkeiten können nicht gelöscht werden.",
       statusForAi: "KI-Chat",
+      scopeUser: "Benutzerfähigkeiten",
+      scopeAll: "Alle Fähigkeiten",
       statusUpdateSuccess: "Fähigkeitsstatus aktualisiert",
       statusUpdateFailed: "Fähigkeitsstatus konnte nicht aktualisiert werden",
       tooltipEnableSkillForAi: "Diese Fähigkeit für den KI-Chat aktivieren",
@@ -5075,6 +5106,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Vorlage zum Zurücksetzen des Passworts",
       userLockedTemplate: "Vorlage für gesperrte Benutzer",
       mfaCodeTemplate: "MFA-Code-Vorlage",
+      mfaDisabledTemplate: "Vorlage für MFA-Deaktivierungsbenachrichtigung",
       activationTemplate: "Kontoaktivierungs-E-Mail-Vorlage",
       activationTemplateTooltip: "E-Mail, die an neue Benutzer gesendet wird, wenn kein Passwort gesetzt ist. Verfügbare Variablen: {{.ActivationURL}} (Aktivierungslink), {{.FullName}} (vollständiger Name), {{.Username}}.",
       passwordExpiryTemplate: "Vorlage für Passwortablauf-Erinnerung",
@@ -5233,7 +5265,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, B = {
+}, V = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -5342,7 +5374,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} ausgewählt",
     skillDomain: "Fähigkeitsbereich"
   }
-}, V = {
+}, K = {
   listTitle: "Aufgabenliste",
   detailTitle: "Aufgabendetails",
   typeLabel: "Typ",
@@ -5412,7 +5444,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     inactive_account_lock_task: "Benutzer stündlich prüfen und inaktive Konten automatisch sperren",
     password_expiry_notification_task: "Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden"
   }
-}, K = {
+}, j = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -5484,7 +5516,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, j = {
+}, G = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -5562,6 +5594,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     resetPasswordSuccessSendByEmail: "La nueva contraseña ha sido enviada al correo electrónico del usuario: {{email}}",
     resetPasswordSuccessContent: "Nueva contraseña: {{password}}",
     resetPasswordError: "Error al restablecer la contraseña",
+    adminDisableMFA: "Deshabilitar MFA",
+    adminDisableMFATitle: "Deshabilitar MFA",
+    adminDisableMFAConfirm: '¿Está seguro de que desea deshabilitar MFA para el usuario "{{username}}"? Se cerrarán todas sus sesiones.',
+    adminDisableMFASuccess: "MFA deshabilitado correctamente",
+    adminDisableMFAError: "Error al deshabilitar MFA: {{error}}",
     source: "Fuente",
     sourceLdap: "LDAP",
     sourceOauth2: "OAuth2.0",
@@ -5823,8 +5860,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.skills.update": "Actualizar habilidad",
       "system.skills.delete": "Eliminar habilidad",
       "system.skills.edit_files": "Editar archivos de habilidad",
-      "task.list": "Listar tareas",
-      "task.view": "Ver tarea",
+      "task.list": "Listar todas las tareas",
+      "task.view": "Ver cualquier tarea",
       "task.cancel": "Cancelar tarea",
       "task.retry": "Reintentar tarea",
       "task.delete": "Eliminar tarea",
@@ -6059,7 +6096,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, G = {
+}, W = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -6132,6 +6169,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledEditMetadata: "No se pueden cambiar los metadatos de las habilidades integradas.",
       presetDisabledDelete: "No se pueden eliminar las habilidades integradas.",
       statusForAi: "Chat de IA",
+      scopeUser: "Habilidades de usuario",
+      scopeAll: "Todas las habilidades",
       statusUpdateSuccess: "Estado de la habilidad actualizado",
       statusUpdateFailed: "Error al actualizar el estado",
       tooltipEnableSkillForAi: "Habilitar esta habilidad para el chat de IA",
@@ -6521,6 +6560,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Plantilla para restablecer la contraseña",
       userLockedTemplate: "Plantilla de usuario bloqueado",
       mfaCodeTemplate: "Plantilla de código MFA",
+      mfaDisabledTemplate: "Plantilla de notificación de MFA deshabilitado",
       activationTemplate: "Plantilla de correo de activación de cuenta",
       activationTemplateTooltip: "Correo enviado a nuevos usuarios cuando no se establece contraseña. Variables disponibles: {{.ActivationURL}} (enlace de activación), {{.FullName}} (nombre completo), {{.Username}}.",
       passwordExpiryTemplate: "Plantilla de aviso de caducidad de contraseña",
@@ -6679,7 +6719,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, W = {
+}, H = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -6788,7 +6828,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} seleccionado(s)",
     skillDomain: "Dominio de habilidad"
   }
-}, H = {
+}, Z = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -6858,7 +6898,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     inactive_account_lock_task: "Escanear usuarios cada hora y bloquear automáticamente las cuentas inactivas",
     password_expiry_notification_task: "Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña"
   }
-}, Z = {
+}, J = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -6930,7 +6970,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, J = {
+}, Y = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -7008,6 +7048,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     resetPasswordSuccessSendByEmail: "Le nouveau mot de passe a été envoyé à l'e-mail de l'utilisateur : {{email}}",
     resetPasswordSuccessContent: "Nouveau mot de passe : {{password}}",
     resetPasswordError: "Échec de la réinitialisation du mot de passe",
+    adminDisableMFA: "Désactiver la MFA",
+    adminDisableMFATitle: "Désactiver la MFA",
+    adminDisableMFAConfirm: `Voulez-vous vraiment désactiver la MFA pour l'utilisateur "{{username}}" ? Toutes ses sessions seront déconnectées.`,
+    adminDisableMFASuccess: "MFA désactivée avec succès",
+    adminDisableMFAError: "Échec de la désactivation de la MFA : {{error}}",
     source: "Source",
     sourceLdap: "LDAP",
     sourceOauth2: "OAuth2.0",
@@ -7269,8 +7314,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.skills.update": "Mettre à jour une compétence",
       "system.skills.delete": "Supprimer une compétence",
       "system.skills.edit_files": "Modifier les fichiers de compétence",
-      "task.list": "Lister les tâches",
-      "task.view": "Voir la tâche",
+      "task.list": "Lister toutes les tâches",
+      "task.view": "Voir n'importe quelle tâche",
       "task.cancel": "Annuler la tâche",
       "task.retry": "Réessayer la tâche",
       "task.delete": "Supprimer la tâche",
@@ -7505,7 +7550,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, Y = {
+}, Q = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -7578,6 +7623,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledEditMetadata: "Les métadonnées des compétences intégrées ne peuvent pas être modifiées.",
       presetDisabledDelete: "Les compétences intégrées ne peuvent pas être supprimées.",
       statusForAi: "Chat IA",
+      scopeUser: "Compétences utilisateur",
+      scopeAll: "Toutes les compétences",
       statusUpdateSuccess: "Statut de la compétence mis à jour",
       statusUpdateFailed: "Échec de la mise à jour du statut",
       tooltipEnableSkillForAi: "Activer cette compétence pour le chat IA",
@@ -7967,6 +8014,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Modèle de réinitialisation de mot de passe",
       userLockedTemplate: "Modèle d'utilisateur verrouillé",
       mfaCodeTemplate: "Modèle de code AMF",
+      mfaDisabledTemplate: "Modèle de notification de désactivation de l'AMF",
       activationTemplate: "Modèle d'e-mail d'activation de compte",
       activationTemplateTooltip: "E-mail envoyé aux nouveaux utilisateurs sans mot de passe. Variables disponibles : {{.ActivationURL}} (lien d'activation), {{.FullName}} (nom complet), {{.Username}}.",
       passwordExpiryTemplate: "Modele de rappel d'expiration du mot de passe",
@@ -8125,7 +8173,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, Q = {
+}, $ = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -8234,7 +8282,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} sélectionné(s)",
     skillDomain: "Domaine de compétence"
   }
-}, $ = {
+}, X = {
   listTitle: "Liste des tâches",
   detailTitle: "Détail de la tâche",
   typeLabel: "Type",
@@ -8304,7 +8352,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     inactive_account_lock_task: "Analyser les utilisateurs toutes les heures et verrouiller automatiquement les comptes inactifs",
     password_expiry_notification_task: "Analyser les utilisateurs toutes les heures et envoyer des rappels d'expiration du mot de passe une fois par cycle de mot de passe"
   }
-}, X = {
+}, ee = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -8376,7 +8424,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, ee = {
+}, te = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -8454,6 +8502,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     resetPasswordSuccessSendByEmail: "تم إرسال كلمة المرور الجديدة إلى البريد الإلكتروني للمستخدم: {{email}}",
     resetPasswordSuccessContent: "كلمة المرور الجديدة: {{password}}",
     resetPasswordError: "فشل إعادة تعيين كلمة المرور",
+    adminDisableMFA: "تعطيل MFA",
+    adminDisableMFATitle: "تعطيل MFA",
+    adminDisableMFAConfirm: 'هل أنت متأكد من تعطيل MFA للمستخدم "{{username}}"؟ سيتم تسجيل خروجه من جميع الجلسات.',
+    adminDisableMFASuccess: "تم تعطيل MFA بنجاح",
+    adminDisableMFAError: "فشل تعطيل MFA: {{error}}",
     source: "المصدر",
     sourceLdap: "LDAP",
     sourceOauth2: "OAuth2.0",
@@ -8715,8 +8768,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.skills.update": "تحديث مهارة",
       "system.skills.delete": "حذف مهارة",
       "system.skills.edit_files": "تعديل ملفات المهارة",
-      "task.list": "عرض قائمة المهام",
-      "task.view": "عرض المهمة",
+      "task.list": "عرض قائمة مهام جميع المستخدمين",
+      "task.view": "عرض مهمة أي مستخدم",
       "task.cancel": "إلغاء المهمة",
       "task.retry": "إعادة محاولة المهمة",
       "task.delete": "حذف المهمة",
@@ -8951,7 +9004,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, te = {
+}, ae = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -9024,6 +9077,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledEditMetadata: "لا يمكن تغيير بيانات المهارات المدمجة.",
       presetDisabledDelete: "لا يمكن حذف المهارات المدمجة.",
       statusForAi: "محادثة الذكاء الاصطناعي",
+      scopeUser: "مهارات المستخدم",
+      scopeAll: "جميع المهارات",
       statusUpdateSuccess: "تم تحديث حالة المهارة",
       statusUpdateFailed: "فشل تحديث حالة المهارة",
       tooltipEnableSkillForAi: "تفعيل هذه المهارة لمحادثة الذكاء الاصطناعي",
@@ -9413,6 +9468,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "قالب إعادة تعيين كلمة المرور",
       userLockedTemplate: "قالب المستخدم المقفل",
       mfaCodeTemplate: "قالب رمز MFA",
+      mfaDisabledTemplate: "قالب إشعار تعطيل MFA",
       activationTemplate: "قالب بريد تفعيل الحساب",
       activationTemplateTooltip: "البريد المرسل للمستخدمين الجدد عند عدم تعيين كلمة مرور. المتغيرات المتاحة: {{.ActivationURL}} (رابط التفعيل)، {{.FullName}} (الاسم الكامل)، {{.Username}}.",
       passwordExpiryTemplate: "قالب تذكير انتهاء صلاحية كلمة المرور",
@@ -9571,7 +9627,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, ae = {
+}, ie = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -9680,7 +9736,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} محدد",
     skillDomain: "مجال المهارة"
   }
-}, ie = {
+}, re = {
   listTitle: "قائمة المهام",
   detailTitle: "تفاصيل المهمة",
   typeLabel: "النوع",
@@ -9750,7 +9806,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     inactive_account_lock_task: "فحص المستخدمين كل ساعة وقفل الحسابات غير النشطة تلقائياً",
     password_expiry_notification_task: "فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور"
   }
-}, re = {
+}, se = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -9822,7 +9878,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, se = {
+}, oe = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -9900,6 +9956,11 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     resetPasswordSuccessSendByEmail: "Det nya lösenordet har skickats till användarens e-post: {{email}}",
     resetPasswordSuccessContent: "Nytt lösenord: {{password}}",
     resetPasswordError: "Återställning av lösenord misslyckades",
+    adminDisableMFA: "Inaktivera MFA",
+    adminDisableMFATitle: "Inaktivera MFA",
+    adminDisableMFAConfirm: 'Är du säker på att du vill inaktivera MFA för användaren "{{username}}"? Alla användarens sessioner loggas ut.',
+    adminDisableMFASuccess: "MFA har inaktiverats",
+    adminDisableMFAError: "Det gick inte att inaktivera MFA: {{error}}",
     source: "Källa",
     sourceLdap: "LDAP",
     sourceOauth2: "OAuth2.0",
@@ -10161,8 +10222,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       "system.skills.update": "Uppdatera kompetens",
       "system.skills.delete": "Ta bort kompetens",
       "system.skills.edit_files": "Redigera kompetensfiler",
-      "task.list": "Lista uppgifter",
-      "task.view": "Visa uppgift",
+      "task.list": "Lista alla uppgifter",
+      "task.view": "Visa valfri uppgift",
       "task.cancel": "Avbryt uppgift",
       "task.retry": "Försök igen uppgift",
       "task.delete": "Ta bort uppgift",
@@ -10397,7 +10458,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policyhantering"
     }
   }
-}, oe = {
+}, ne = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -10470,6 +10531,8 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       presetDisabledEditMetadata: "Inbyggda färdigheter kan inte ändra metadata.",
       presetDisabledDelete: "Inbyggda färdigheter kan inte tas bort.",
       statusForAi: "AI-chatt",
+      scopeUser: "Användarfärdigheter",
+      scopeAll: "Alla färdigheter",
       statusUpdateSuccess: "Färdighetsstatus uppdaterad",
       statusUpdateFailed: "Kunde inte uppdatera färdighetsstatus",
       tooltipEnableSkillForAi: "Aktivera denna färdighet för AI-chatt",
@@ -10859,6 +10922,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       resetPasswordTemplate: "Mall för återställning av lösenord",
       userLockedTemplate: "Mall för låst användare",
       mfaCodeTemplate: "Mall för MFA-kod",
+      mfaDisabledTemplate: "Mall för avisering om inaktiverad MFA",
       activationTemplate: "E-postmall för kontoaktivering",
       activationTemplateTooltip: "E-post som skickas till nya användare utan lösenord. Tillgängliga variabler: {{.ActivationURL}} (aktiveringslänk), {{.FullName}} (fullständigt namn), {{.Username}}.",
       passwordExpiryTemplate: "Mall för lösenordsutgångspåminnelse",
@@ -11017,7 +11081,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, ne = {
+}, le = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -11126,7 +11190,7 @@ const Se = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} valda",
     skillDomain: "Färdighetsdomän"
   }
-}, le = {
+}, de = {
   listTitle: "Uppgiftslista",
   detailTitle: "Uppgiftsdetaljer",
   typeLabel: "Typ",
@@ -11202,60 +11266,60 @@ g.use(f).use(h).init({
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: S,
+      translation: y,
       common: L,
-      authorization: _,
-      system: M,
-      ai: U,
-      task: q
+      authorization: M,
+      system: U,
+      ai: q,
+      task: N
     },
     "en-US": {
-      translation: y,
-      common: T,
-      authorization: w,
-      system: P,
-      ai: R,
-      task: D
+      translation: T,
+      common: w,
+      authorization: P,
+      system: R,
+      ai: D,
+      task: z
     },
     "de-DE": {
-      translation: z,
-      common: N,
-      authorization: O,
-      system: x,
-      ai: B,
-      task: V
+      translation: E,
+      common: O,
+      authorization: x,
+      system: B,
+      ai: V,
+      task: K
     },
     "es-ES": {
-      translation: E,
-      common: K,
-      authorization: j,
-      system: G,
-      ai: W,
-      task: H
+      translation: C,
+      common: j,
+      authorization: G,
+      system: W,
+      ai: H,
+      task: Z
     },
     "fr-FR": {
-      translation: C,
-      common: Z,
-      authorization: J,
-      system: Y,
-      ai: Q,
-      task: $
+      translation: F,
+      common: J,
+      authorization: Y,
+      system: Q,
+      ai: $,
+      task: X
     },
     "ar-AE": {
-      translation: F,
-      common: X,
-      authorization: ee,
-      system: te,
-      ai: ae,
-      task: ie
+      translation: I,
+      common: ee,
+      authorization: te,
+      system: ae,
+      ai: ie,
+      task: re
     },
     "sv-SE": {
-      translation: I,
-      common: re,
-      authorization: se,
-      system: oe,
-      ai: ne,
-      task: le
+      translation: _,
+      common: se,
+      authorization: oe,
+      system: ne,
+      ai: le,
+      task: de
     }
   },
   fallbackLng: "en-US",
@@ -11264,35 +11328,30 @@ g.use(f).use(h).init({
     escapeValue: !1
   }
 });
-const ye = {
+const we = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
-function de(e) {
-  const t = {}, i = e.split(/\r?\n/);
-  for (const r of i) {
-    const o = r.trim();
-    if (!o) continue;
-    const s = o.indexOf(":");
-    if (s <= 0) continue;
-    const n = o.slice(0, s).trim(), a = o.slice(s + 1).trim(), l = a.startsWith('"') && a.endsWith('"') || a.startsWith("'") && a.endsWith("'") ? a.slice(1, -1) : a;
-    t[n] = l;
+function ce(e) {
+  try {
+    return v(e);
+  } catch (t) {
+    return console.error(t), {};
   }
-  return t;
 }
-function m(e) {
+function p(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function Te(e) {
+function Pe(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
-  const i = t.slice(3), r = i.indexOf(`
+  const a = t.slice(3), r = a.indexOf(`
 ---`);
   if (r === -1) return e;
-  const o = i.slice(0, r).trim(), s = i.slice(r + 4).trimStart(), n = de(o), a = Object.keys(n);
-  if (a.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = a.map((p) => "| " + m(p) + " | " + m(n[p] ?? "") + " |").join(`
+  const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = ce(n), i = Object.keys(o);
+  if (i.length === 0) return e;
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(o[m] ?? "") + " |").join(`
 `);
   return l + `
 ` + d + `
@@ -11301,13 +11360,13 @@ function Te(e) {
 ` + s;
 }
 export {
-  ye as P,
-  be as a,
-  Se as b,
-  Te as c,
-  he as f,
-  ke as g,
-  Ae as i,
-  ve as m,
-  fe as t
+  we as P,
+  Se as a,
+  Te as b,
+  Pe as c,
+  ve as f,
+  Ae as g,
+  ye as i,
+  be as m,
+  ke as t
 };

@@ -1575,6 +1575,8 @@ export declare interface listSkillsParams {
     category?: string;
     /** Filter by domain */
     domain?: string;
+    /** Filter by built-in flag (true = preset only, false = user skills only; omit for all) */
+    is_preset?: boolean;
 }
 
 export declare interface listTasksParams {
