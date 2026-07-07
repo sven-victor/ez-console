@@ -168,11 +168,9 @@ const TaskDetail: React.FC = () => {
 
         {task.artifact_file_key && (
           <Space>
-            <PermissionGuard permission="task:view">
-              <Button type="primary" icon={<DownloadOutlined />} onClick={handleDownload}>
-                {t('downloadArtifact', { defaultValue: 'Download artifact' })}
-              </Button>
-            </PermissionGuard>
+            <Button type="primary" icon={<DownloadOutlined />} onClick={handleDownload}>
+              {t('downloadArtifact', { defaultValue: 'Download artifact' })}
+            </Button>
           </Space>
         )}
 

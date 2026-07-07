@@ -22,7 +22,6 @@ import { List, Tag, Progress, Button, Typography } from 'antd';
 import HeaderDropdown from './HeaderDropdown';
 import { useSite } from '@/contexts/SiteContext';
 import api from '@/service/api';
-import { PermissionGuard } from './PermissionGuard';
 import { useRequest } from 'ahooks';
 import { useAuth } from '@/contexts/AuthContext';
 import { isUnorderedEqual } from '@/utils';
@@ -112,13 +111,11 @@ const TaskListDropdown: React.FC<{ className?: string }> = ({ className }) => {
           </List.Item>
         )}
       />
-      <PermissionGuard permission="task:view">
-        <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8, textAlign: 'center' }}>
-          <Button type="link" size="small" onClick={() => navigate('/tasks')}>
-            {t('more', { defaultValue: 'More' })}
-          </Button>
-        </div>
-      </PermissionGuard>
+      <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 8, marginTop: 8, textAlign: 'center' }}>
+        <Button type="link" size="small" onClick={() => navigate('/tasks')}>
+          {t('more', { defaultValue: 'More' })}
+        </Button>
+      </div>
     </div>
   );
   if (!tasks || tasks.length === 0) {

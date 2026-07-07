@@ -3373,16 +3373,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3407,16 +3397,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -9029,7 +9009,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: Get a list of tasks. Admin sees all; others see only their own.
+      description: Get a list of tasks. Admin and users with task:list see all; others
+        see only their own.
       operationId: listTasks
       parameters:
       - default: 1

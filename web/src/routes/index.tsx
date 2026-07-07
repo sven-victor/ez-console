@@ -132,12 +132,12 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         ...extraPrivateRoutes,
         {
           path: '/tasks',
-          permissions: ['task:list', 'task:schedule:list'],
           children: [
             {
               // path: '/tasks',
+              // No permission required: the backend limits the result to the
+              // current user's own tasks unless they hold task:list.
               element: withSuspense(TaskList),
-              permissions: ['task:list'],
               name: 'tasks',
               index: true,
             },
@@ -150,8 +150,9 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
             },
             {
               path: '/tasks/:id',
+              // No permission required: the backend allows the task creator
+              // to view their own task; task:view grants access to all tasks.
               element: withSuspense(TaskDetail),
-              permissions: ['task:view'],
               index: false,
             },
           ],

@@ -63,8 +63,8 @@ func (c *TaskController) RegisterRoutes(ctx context.Context, router *gin.RouterG
 
 func init() {
 	middleware.RegisterPermission("Task Management", "View, cancel, retry, and delete tasks", []model.Permission{
-		{Code: "task:list", Name: "List tasks", Description: "List tasks (admin sees all, others see own)", DefaultRoleNames: []string{"admin", "operator", "viewer"}},
-		{Code: "task:view", Name: "View task", Description: "View task details", DefaultRoleNames: []string{"admin", "operator", "viewer"}},
+		{Code: "task:list", Name: "List all tasks", Description: "List tasks created by all users. Users without this permission can only see their own tasks", DefaultRoleNames: []string{"admin", "operator", "viewer"}},
+		{Code: "task:view", Name: "View any task", Description: "View details and logs of tasks created by any user. Users without this permission can only view their own tasks", DefaultRoleNames: []string{"admin", "operator", "viewer"}},
 		{Code: "task:cancel", Name: "Cancel task", Description: "Cancel a running or pending task", DefaultRoleNames: []string{"admin", "operator"}},
 		{Code: "task:retry", Name: "Retry task", Description: "Retry a failed or cancelled task", DefaultRoleNames: []string{"admin", "operator"}},
 		{Code: "task:delete", Name: "Delete task", Description: "Delete a task", DefaultRoleNames: []string{"admin", "operator"}},
@@ -103,7 +103,7 @@ func (c *TaskController) ListUserTasks(ctx *gin.Context) {
 // ListTasks gets a list of tasks with pagination
 //
 //	@Summary		Get task list
-//	@Description	Get a list of tasks. Admin sees all; others see only their own.
+//	@Description	Get a list of tasks. Admin and users with task:list see all; others see only their own.
 //	@ID             listTasks
 //	@Tags			Task Management
 //	@Accept			json

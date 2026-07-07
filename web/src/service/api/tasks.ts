@@ -72,7 +72,7 @@ export async function triggerTaskSchedule(
   );
 }
 
-/** Get task list Get a list of tasks. Admin sees all; others see only their own. GET /api/tasks */
+/** Get task list Get a list of tasks. Admin and users with task:list see all; others see only their own. GET /api/tasks */
 export async function listTasks(
   params: API.listTasksParams,
   options?: { [key: string]: any }

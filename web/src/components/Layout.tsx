@@ -334,7 +334,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <SwapOutlined />
     </HeaderDropdown>,
     ...(siteConfig?.enable_multi_org ? [<OrganizationSwitcher key="org-switcher" className="header-item org-switcher" />] : []),
-    ...(hasPermission('task:list') ? [<TaskListDropdown key="task-dropdown" className="header-item task-dropdown" />] : []),
+    <TaskListDropdown key="task-dropdown" className="header-item task-dropdown" />,
     <HeaderDropdown
       key="user-dropdown"
       className="header-item user-dropdown"

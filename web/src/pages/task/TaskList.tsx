@@ -167,7 +167,6 @@ const TaskList: React.FC = () => {
               icon: <DownloadOutlined />,
               tooltip: t('download', { defaultValue: 'Download' }),
               hidden: !record.artifact_file_key,
-              permission: 'task:view',
               onClick: () => handleDownload(record.artifact_file_key),
             },
             {
