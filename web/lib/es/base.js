@@ -41,10 +41,7 @@ const ve = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, Ae = (e) => {
-  const t = "/";
-  return e ? t.endsWith("/") ? e.startsWith("/") ? t + e.substring(1) : t + e : e.startsWith("/") ? t + e : t + "/" + e : t;
-}, Se = (e) => {
+}, Ae = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Se = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((a, r) => r !== 0 && t.includes(a) ? a : a.charAt(0).toUpperCase() + a.slice(1)).join(" ");
 }, ye = (e, t, a) => {

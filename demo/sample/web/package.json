@@ -15,10 +15,11 @@
     "ahooks": "^3.9.5",
     "antd": "~5.25.3",
     "antd-style": "^3.7.1",
-    "axios": "^1.6.7",
+    "axios": ">=1.16.0",
     "classnames": "^2.5.1",
+    "lodash-es": ">=4.18.0",
     "dayjs": "^1.11.10",
-    "ez-console": "^1.12.0",
+    "ez-console": "github:sven-victor/ez-console#924465810039689cff0df125b141fac769d2266b&path:web",
     "i18next": ">=25.0.0",
     "js-yaml": "^4.1.1",
     "react": "^18.3.1",
@@ -31,18 +32,17 @@
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
-    "@types/lodash-es": "^4.17.12",
     "@types/react": "^18.3.27",
     "@types/react-dom": "^18.3.5",
     "@types/react-syntax-highlighter": "^15.5.13",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.55.0",
+    "eslint": "^8.57.1",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "vite": "^6.4.3"
   },
   "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af"
 }

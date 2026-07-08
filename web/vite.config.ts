@@ -133,10 +133,10 @@ export default defineConfig((env: ConfigEnv) => {
             entryFileNames: 'ez-console.[format].js',
             chunkFileNames: '[format]/[name].js',
             assetFileNames: (chunkInfo) => {
-              if (chunkInfo.names?.find((name) => name === 'style.css')) {
-                return "[name].[ext]"
+              if (chunkInfo.names?.find((name) => name === 'style.css' || name === 'ez-console.css')) {
+                return "style.css"
               }
-              return '[format]/[name].[ext]'
+              return 'assets/[name].[ext]'
             },
           },
           external: [

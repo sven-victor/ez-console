@@ -16,6 +16,7 @@
 
 import { getURL } from '@/utils';
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import { isString } from 'lodash-es';
 
 export const baseURL = '/api';
 
@@ -72,7 +73,8 @@ client.interceptors.request.use(
 client.interceptors.response.use(
   (response) => {
     const contentType = response.headers['content-type']
-    if (contentType && !contentType.includes('application/json')) {
+
+    if (contentType && (!isString(contentType) || !contentType.includes('application/json'))) {
       return response;
     }
     // Check for new format response
@@ -113,7 +115,8 @@ client.interceptors.response.use(
 
     // Extract error message
     let errorMessage = new ApiError(error.response?.status.toString() || '500', error.message);
-    if (error.response?.headers['content-type']?.includes('application/json')) {
+    const contentType = error.response?.headers['content-type']
+    if (contentType && isString(contentType) && contentType.includes('application/json')) {
       const errorResponse = error.response?.data as any;
       if (errorResponse) {
         if (errorResponse.err) {

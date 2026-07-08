@@ -1,18 +1,19 @@
-var l = Object.defineProperty;
-var h = (e, t, r) => t in e ? l(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r;
-var p = (e, t, r) => h(e, typeof t != "symbol" ? t + "" : t, r);
+var h = Object.defineProperty;
+var m = (e, t, r) => t in e ? h(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r;
+var p = (e, t, r) => m(e, typeof t != "symbol" ? t + "" : t, r);
 import { g as d } from "./base.js";
-import m from "axios";
-const g = "/api", n = m.create({
-  baseURL: g,
+import g from "axios";
+import { isString as l } from "lodash-es";
+const f = "/api", n = g.create({
+  baseURL: f,
   timeout: 3e4,
   headers: {
     "Content-Type": "application/json"
   }
 });
 class u extends Error {
-  constructor(r, o) {
-    super(o);
+  constructor(r, a) {
+    super(a);
     p(this, "code");
     this.code = r;
   }
@@ -22,8 +23,8 @@ n.interceptors.request.use(
     if (!e.withoutAuth) {
       const r = localStorage.getItem("token");
       if (r && (e.headers = e.headers || {}, e.headers.Authorization = `Bearer ${r}`, !e.headers["X-Scope-OrgID"])) {
-        const o = localStorage.getItem("orgID");
-        o && (e.headers["X-Scope-OrgID"] = o);
+        const a = localStorage.getItem("orgID");
+        a && (e.headers["X-Scope-OrgID"] = a);
       }
     }
     const t = localStorage.getItem("i18nextLng");
@@ -34,7 +35,7 @@ n.interceptors.request.use(
 n.interceptors.response.use(
   (e) => {
     const t = e.headers["content-type"];
-    if (t && !t.includes("application/json"))
+    if (t && (!l(t) || !t.includes("application/json")))
       return e;
     const r = e.data;
     return r && r.code !== void 0 ? r.code === "0" ? r.total !== void 0 && r.current !== void 0 && r.page_size !== void 0 ? {
@@ -45,52 +46,53 @@ n.interceptors.response.use(
     } : r.data : Promise.reject(r || "Unknown error") : e.data;
   },
   (e) => {
-    var r, o, a, i, s;
-    ((r = e.response) == null ? void 0 : r.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete n.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
+    var a, o, i, s;
+    ((a = e.response) == null ? void 0 : a.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete n.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
     let t = new u(((o = e.response) == null ? void 0 : o.status.toString()) || "500", e.message);
-    if ((i = (a = e.response) == null ? void 0 : a.headers["content-type"]) != null && i.includes("application/json")) {
+    const r = (i = e.response) == null ? void 0 : i.headers["content-type"];
+    if (r && l(r) && r.includes("application/json")) {
       const c = (s = e.response) == null ? void 0 : s.data;
       c && (c.err ? t = new u(c.code, c.err) : c.error && (t = new u(c.code, c.error)));
     }
     return Promise.reject(t);
   }
 );
-const I = async (e, t) => n.get(e, t), j = async (e, t, r) => n.post(e, t, r), L = async (e, t, r) => n.put(e, t, r), x = async (e, t) => n.delete(e, t);
-async function f(e, t) {
-  const { signal: r, ...o } = t || {}, a = await fetch(e, {
-    method: o.method || "GET",
-    headers: o.headers,
-    body: o.body,
+const L = async (e, t) => n.get(e, t), T = async (e, t, r) => n.post(e, t, r), x = async (e, t, r) => n.put(e, t, r), E = async (e, t) => n.delete(e, t);
+async function y(e, t) {
+  const { signal: r, ...a } = t || {}, o = await fetch(e, {
+    method: a.method || "GET",
+    headers: a.headers,
+    body: a.body,
     signal: r
   });
-  if (!a.ok || !a.body) {
-    let i = a.statusText;
-    if (a.body)
+  if (!o.ok || !o.body) {
+    let i = o.statusText;
+    if (o.body)
       try {
-        const s = await a.json();
+        const s = await o.json();
         i = `SSE connection failed: ${s.message || s.err}`;
       } catch {
-        i = `SSE connection failed: ${a.statusText}`;
+        i = `SSE connection failed: ${o.statusText}`;
       }
     throw new Error(i);
   }
-  if (a.status !== 200) {
-    const i = await a.json();
+  if (o.status !== 200) {
+    const i = await o.json();
     throw new Error(`SSE connection failed: ${i.message}`);
   }
-  return a.body;
+  return o.body;
 }
-function y(e) {
+function S(e) {
   if (e)
     return typeof e.toJSON == "function" ? e.toJSON() : Object.fromEntries(
       Object.entries(e).map(([t, r]) => [t, String(r)])
     );
 }
-async function E(e, t) {
-  const { requestType: r, signal: o, ...a } = t || {}, i = a.responseType;
+async function A(e, t) {
+  const { requestType: r, signal: a, ...o } = t || {}, i = o.responseType;
   if (r === "sse") {
     const c = localStorage.getItem("orgID");
-    return f(e, {
+    return y(e, {
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
@@ -98,11 +100,11 @@ async function E(e, t) {
         "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         ...c ? { "X-Scope-OrgID": c } : {},
-        ...y(a.headers)
+        ...S(o.headers)
       },
-      method: a.method,
-      body: JSON.stringify(a.data),
-      signal: o
+      method: o.method,
+      body: JSON.stringify(o.data),
+      signal: a
     });
   }
   const s = r === "form" ? {
@@ -118,40 +120,40 @@ async function E(e, t) {
       return n.request({
         url: e,
         baseURL: "",
-        ...a,
+        ...o,
         headers: s
       });
     case "blob":
       return n.request({
         url: e,
         baseURL: "",
-        ...a,
+        ...o,
         headers: s
       });
     case "text":
       return n.request({
         url: e,
         baseURL: "",
-        ...a,
+        ...o,
         headers: s
       });
     default:
       return n.request({
         url: e,
         baseURL: "",
-        ...a,
+        ...o,
         headers: s
       });
   }
 }
 export {
   u as A,
-  x as a,
-  g as b,
+  E as a,
+  f as b,
   n as c,
-  j as d,
-  I as e,
-  L as f,
-  f as g,
-  E as r
+  T as d,
+  L as e,
+  x as f,
+  y as g,
+  A as r
 };
