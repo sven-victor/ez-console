@@ -38,7 +38,7 @@ const SMTPSettingsForm: React.FC = () => {
       setIsEnabled(data.enabled);
     },
     onError: (error) => {
-      message.error(t('settings.smtp.loadError', { defaultValue: 'Failed to load SMTP settings: {{error}}', error: `${error.message}` }));
+      message.error(t('settings.smtp.loadError', { defaultValue: 'Failed to load SMTP settings: {{error}}', error: `${(error as Error).message}` }));
     }
   });
 
@@ -51,8 +51,8 @@ const SMTPSettingsForm: React.FC = () => {
     onSuccess: () => {
       message.success(t('settings.smtp.saveSuccess', { defaultValue: 'SMTP settings saved successfully.' }));
     },
-    onError: (error: any) => {
-      message.error(t('settings.smtp.saveError', { defaultValue: 'Failed to save SMTP settings: {{error}}', error: `${error.message}` }));
+    onError: (error: unknown) => {
+      message.error(t('settings.smtp.saveError', { defaultValue: 'Failed to save SMTP settings: {{error}}', error: `${(error as Error).message}` }));
     },
   });
 
@@ -67,8 +67,8 @@ const SMTPSettingsForm: React.FC = () => {
     onSuccess: (data: API.SMTPTestResponse) => {
       setTestResult(data);
     },
-    onError: (error: any) => {
-      message.error(t('settings.smtp.testError', { defaultValue: 'SMTP connection test failed: {{error}}', error: `${error.message}` }));
+    onError: (error: unknown) => {
+      message.error(t('settings.smtp.testError', { defaultValue: 'SMTP connection test failed: {{error}}', error: `${(error as Error).message}` }));
     },
     manual: true,
   });

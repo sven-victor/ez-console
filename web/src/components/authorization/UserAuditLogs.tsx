@@ -16,8 +16,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal, message } from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
+import type { Dayjs } from 'dayjs';
 import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { useRequest } from 'ahooks';
@@ -25,13 +28,28 @@ import { useRequest } from 'ahooks';
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
+interface AuditLogFilterFormValues {
+  search?: string;
+  action?: string;
+  status?: string;
+  dateRange?: [Dayjs, Dayjs];
+}
+
+type AuditLogQueryParams = API.getCurrentUserLogsParams & {
+  search?: string;
+  action?: string;
+  status?: string;
+  start_time?: string;
+  end_time?: string;
+};
+
 // Format IP address for display
 const formatIP = (ip: string) => {
   return ip || 'N/A';
 };
 
 // Get status tag
-const getStatusTag = (status: string, t: any) => {
+const getStatusTag = (status: string, t: TFunction) => {
   return status === 'success' ? (
     <Tag color="success">{t('statuses.success')}</Tag>
   ) : (
@@ -41,19 +59,19 @@ const getStatusTag = (status: string, t: any) => {
 
 interface UserAuditLogsProps {
   userId?: string;
-  request?: (params: API.PaginationRequest & API.getCurrentUserLogsParams) => Promise<API.PaginationResponse<API.AuditLog>>;
-  columnsFilter?: (columns: any[]) => any[];
+  request?: (params: API.PaginationRequest & AuditLogQueryParams) => Promise<API.PaginationResponse<API.AuditLog>>;
+  columnsFilter?: (columns: ColumnsType<API.AuditLog>) => ColumnsType<API.AuditLog>;
 }
 
 const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
   userId,
-  request = (params: API.PaginationRequest & API.getCurrentUserLogsParams) => {
+  request = (params: API.PaginationRequest & AuditLogQueryParams) => {
     if (!userId) {
       return api.authorization.getCurrentUserLogs(params);
     }
     return api.authorization.getUserLogs({ id: userId, ...params });
   },
-  columnsFilter = (columns: any[]) => columns,
+  columnsFilter = (columns: ColumnsType<API.AuditLog>) => columns,
 }) => {
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
@@ -62,9 +80,9 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
     pageSize: 10,
     total: 0,
   });
-  const [filters, setFilters] = useState<API.getCurrentUserLogsParams>({});
+  const [filters, setFilters] = useState<AuditLogQueryParams>({});
   const [form] = Form.useForm();
-  const { loading, run, data: { data } = {} } = useRequest(async (params: API.getCurrentUserLogsParams = filters, page = 1, pageSize = 10) => {
+  const { loading, run, data: { data } = {} } = useRequest(async (params: AuditLogQueryParams = filters, page = 1, pageSize = 10) => {
     return request({
       ...params,
       current: page ?? 1,
@@ -88,17 +106,17 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
   }, []);
 
   // Handle table pagination change
-  const handleTableChange = (newPagination: any) => {
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
     setPagination({
       ...pagination,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
+      current: newPagination.current || 1,
+      pageSize: newPagination.pageSize || 10,
     });
     run({}, newPagination.current, newPagination.pageSize);
   };
 
   // Handle filter form submission
-  const handleFilterSubmit = (values: any) => {
+  const handleFilterSubmit = (values: AuditLogFilterFormValues) => {
     run({
       ...values,
       start_time: values.dateRange?.[0]?.toISOString(),
@@ -115,7 +133,7 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
   };
 
   // Table column definitions
-  const columns = [
+  const columns: ColumnsType<API.AuditLog> = [
     {
       title: t('auditLog.timestamp'),
       dataIndex: 'timestamp',
@@ -154,7 +172,7 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
       title: t('auditLog.details'),
       dataIndex: 'details',
       key: 'details',
-      render: (details: any) => {
+      render: (details: API.AuditLogDetail) => {
         return <Button type='link' icon={<EyeOutlined />} onClick={() => {
           Modal.info({
             title: t('auditLog.details'),

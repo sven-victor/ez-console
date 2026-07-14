@@ -27,6 +27,7 @@ import {
   Spin,
   Typography,
 } from 'antd';
+import type { RuleObject } from 'antd/es/form';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
@@ -185,14 +186,14 @@ const UserForm: React.FC = () => {
   );
 
   // Form validation rules
-  const validatePassword = (_: any, value: string) => {
+  const validatePassword = (_: RuleObject, value: string) => {
     if (isEditMode) return Promise.resolve();
     if (!value) return Promise.resolve(); // empty = send activation email
     if (value.length < 8) return Promise.reject(new Error(t('user.passwordTooShort', { defaultValue: 'Password must be at least 8 characters long' })));
     return Promise.resolve();
   };
 
-  const validateConfirmPassword = (_: any, value: string) => {
+  const validateConfirmPassword = (_: RuleObject, value: string) => {
     if (isEditMode) return Promise.resolve();
     const password = form.getFieldValue('password');
     if (!password) return Promise.resolve(); // no password set, no confirmation needed

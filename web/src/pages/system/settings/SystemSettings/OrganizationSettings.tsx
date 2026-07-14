@@ -100,8 +100,8 @@ const OrganizationSettings: React.FC = () => {
         setEditingOrg(null);
         refresh();
       },
-      onError: (error: any) => {
-        message.error(error?.err || t('settings.organizations.createFailed', { defaultValue: 'Failed to create organization' }));
+      onError: (error: unknown) => {
+        message.error((error as { err?: string })?.err || t('settings.organizations.createFailed', { defaultValue: 'Failed to create organization' }));
       },
     }
   );
@@ -118,8 +118,8 @@ const OrganizationSettings: React.FC = () => {
         setEditingOrg(null);
         refresh();
       },
-      onError: (error: any) => {
-        message.error(error?.err || t('settings.organizations.updateFailed', { defaultValue: 'Failed to update organization' }));
+      onError: (error: unknown) => {
+        message.error((error as { err?: string })?.err || t('settings.organizations.updateFailed', { defaultValue: 'Failed to update organization' }));
       },
     }
   );
@@ -133,8 +133,8 @@ const OrganizationSettings: React.FC = () => {
         message.success(t('settings.organizations.deleteSuccess', { defaultValue: 'Organization deleted successfully' }));
         refresh();
       },
-      onError: (error: any) => {
-        message.error(error?.err || t('settings.organizations.deleteFailed', { defaultValue: 'Failed to delete organization' }));
+      onError: (error: unknown) => {
+        message.error((error as { err?: string })?.err || t('settings.organizations.deleteFailed', { defaultValue: 'Failed to delete organization' }));
       },
     }
   );

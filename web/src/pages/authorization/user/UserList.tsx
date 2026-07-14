@@ -165,7 +165,7 @@ const UserList: React.FC = () => {
 
   const [fixUser, setFixUser] = useState<API.User | null>(null);
   // Query parameters
-  const [queryParams, setQueryParams] = useState({
+  const [queryParams, setQueryParams] = useState<API.listUsersParams>({
     current: PAGINATION.DEFAULT_CURRENT,
     page_size: PAGINATION.DEFAULT_PAGE_SIZE,
     keywords: undefined,
@@ -227,7 +227,7 @@ const UserList: React.FC = () => {
   });
 
   // Search form submission
-  const handleSearch = (values: any) => {
+  const handleSearch = (values: { keywords?: string; status?: string }) => {
     setQueryParams({
       ...queryParams,
       current: PAGINATION.DEFAULT_CURRENT, // Reset to the first page
@@ -345,7 +345,7 @@ const UserList: React.FC = () => {
         message.error(
           t('user.exportError', {
             defaultValue: 'Failed to create export task',
-            error: (error as any)?.message ?? String(error),
+            error: error instanceof Error ? error.message : String(error),
           })
         );
       },
@@ -448,7 +448,7 @@ const UserList: React.FC = () => {
     {
       title: t('user.username', { defaultValue: 'Username' }),
       key: 'user',
-      render: (_: any, record: API.User) => (
+      render: (_: unknown, record: API.User) => (
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <Avatar
             size="small"
@@ -517,7 +517,7 @@ const UserList: React.FC = () => {
       title: t('user.roles', { defaultValue: 'Roles' }),
       dataIndex: 'roles',
       key: 'roles',
-      render: (roles: any[]) => (
+      render: (roles: API.Role[]) => (
         <span>
           {roles && roles.length > 0 ? (
             roles.map(role => (
@@ -555,7 +555,7 @@ const UserList: React.FC = () => {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
       width: 150,
-      render: (_: any, record: API.User) => {
+      render: (_: unknown, record: API.User) => {
         const actions: ActionProps[] = [{
           key: 'view',
           permission: "authorization:user:view",

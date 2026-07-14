@@ -25,7 +25,7 @@ import { ColumnType } from 'antd/es/table';
 
 
 interface ImportColumnType<T extends { status: string, ldap_dn: string }> extends Omit<ColumnType<T>, 'render'> {
-  render?: (value: any, record: T, index: number, loading: boolean) => React.ReactNode;
+  render?: (value: unknown, record: T, index: number, loading: boolean) => React.ReactNode;
 }
 
 const ImportLDAPEntryModal = <T extends { status: string, ldap_dn: string }>({ fetchItems, importItems, columns, ...props }: {
@@ -43,7 +43,7 @@ const ImportLDAPEntryModal = <T extends { status: string, ldap_dn: string }>({ f
 
   const { run: loadItems, loading: loadItemsLoading } = useRequest(fetchItems, {
     onError: (error) => {
-      message.error(t('settings.ldap.importError', { error: `${error.message}` }));
+      message.error(t('settings.ldap.importError', { error: `${(error as Error).message}` }));
     },
     onSuccess: (data) => {
       setItems(data);
@@ -109,7 +109,7 @@ const ImportLDAPEntryModal = <T extends { status: string, ldap_dn: string }>({ f
         if (render) {
           return {
             ...column,
-            render: (value: any, record: T, index: number) => {
+            render: (value: unknown, record: T, index: number) => {
               const loading = checkedList.includes(record.ldap_dn) && importLoading && record.status !== "imported";
               return render(value, record, index, loading)
             }
@@ -141,7 +141,7 @@ const LDAPSettingsForm: React.FC = () => {
       setIsEnabled(data.enabled);
     },
     onError: (error) => {
-      message.error(t('settings.ldap.loadError', { defaultValue: 'Failed to load LDAP settings: {{error}}', error: `${error.message}` }));
+      message.error(t('settings.ldap.loadError', { defaultValue: 'Failed to load LDAP settings: {{error}}', error: `${(error as Error).message}` }));
     }
   });
 
@@ -155,7 +155,7 @@ const LDAPSettingsForm: React.FC = () => {
     try {
       await api.system.updateLdapSettings(values);
       message.success(t('settings.ldap.saveSuccess', { defaultValue: 'LDAP settings saved successfully.' }));
-    } catch (error) {
+    } catch {
       message.error(t('settings.ldap.saveError', { defaultValue: 'Failed to save LDAP settings.' }));
     } finally {
       setLoading(false);
@@ -173,7 +173,7 @@ const LDAPSettingsForm: React.FC = () => {
       setTestResult(data);
     },
     onError: (error) => {
-      message.error(t('settings.ldap.testError', { defaultValue: 'LDAP connection test failed: {{error}}', error: `${error.message}` }));
+      message.error(t('settings.ldap.testError', { defaultValue: 'LDAP connection test failed: {{error}}', error: `${(error as Error).message}` }));
     },
     manual: true,
   });

@@ -59,6 +59,13 @@ const ve = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   }
   return !0;
 };
+function Te(e) {
+  try {
+    return { parsed: JSON.parse(e), isJSON: !0 };
+  } catch {
+    return { parsed: null, isJSON: !1 };
+  }
+}
 async function k(e, t) {
   return u("/api/files", {
     method: "GET",
@@ -94,7 +101,7 @@ async function S(e) {
     ...e || {}
   });
 }
-const Te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: A,
   getStatistics: S,
@@ -6825,7 +6832,7 @@ const Te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} seleccionado(s)",
     skillDomain: "Dominio de habilidad"
   }
-}, Z = {
+}, J = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -6895,7 +6902,7 @@ const Te = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     inactive_account_lock_task: "Escanear usuarios cada hora y bloquear automáticamente las cuentas inactivas",
     password_expiry_notification_task: "Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña"
   }
-}, J = {
+}, Z = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -11292,11 +11299,11 @@ g.use(f).use(h).init({
       authorization: G,
       system: W,
       ai: H,
-      task: Z
+      task: J
     },
     "fr-FR": {
       translation: F,
-      common: J,
+      common: Z,
       authorization: Y,
       system: Q,
       ai: $,
@@ -11325,7 +11332,7 @@ g.use(f).use(h).init({
     escapeValue: !1
   }
 });
-const we = {
+const Pe = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
@@ -11339,7 +11346,7 @@ function ce(e) {
 function p(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function Pe(e) {
+function Re(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
@@ -11357,13 +11364,14 @@ function Pe(e) {
 ` + s;
 }
 export {
-  we as P,
-  Se as a,
-  Te as b,
-  Pe as c,
+  Pe as P,
+  ke as a,
+  we as b,
+  Re as c,
+  Te as d,
   ve as f,
   Ae as g,
   ye as i,
   be as m,
-  ke as t
+  Se as t
 };

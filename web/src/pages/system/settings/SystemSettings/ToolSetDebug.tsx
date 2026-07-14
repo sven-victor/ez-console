@@ -39,25 +39,18 @@ import { json } from '@codemirror/lang-json';
 import JsonView from '@uiw/react-json-view';
 import api from '@/service/api';
 import Loading from '@/components/Loading';
+import type { RJSFSchema } from '@rjsf/utils';
+import { tryParseJSON } from '@/utils';
 
 const JsonSchemaConfigForm = lazy(() => import('@/components/JsonSchemaConfigForm'));
 
 const { Text, Title } = Typography;
 
-function tryParseJSON(str: string): { parsed: any; isJSON: boolean } {
-  try {
-    const parsed = JSON.parse(str);
-    return { parsed, isJSON: true };
-  } catch {
-    return { parsed: null, isJSON: false };
-  }
-}
-
 const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
   content,
   maxHeight = 400,
 }) => {
-  const { parsed, isJSON } = tryParseJSON(content);
+  const { parsed, isJSON } = tryParseJSON<object>(content);
   if (isJSON) {
     return (
       <JsonView
@@ -142,10 +135,10 @@ const ToolSetDebug: React.FC = () => {
       onSuccess: (data) => {
         setResult(data?.result ?? '');
       },
-      onError: (error: any) => {
+      onError: (error: unknown) => {
         const errMsg =
-          error?.response?.data?.message ||
-          error?.message ||
+          (error as { response?: { data?: { message?: string } } }).response?.data?.message ||
+          (error as { message?: string }).message ||
           t('settings.toolsets.callToolFailed', { defaultValue: 'Tool call failed' });
         message.error(errMsg);
         setResult(null);
@@ -166,9 +159,9 @@ const ToolSetDebug: React.FC = () => {
       setParamsCodeValue(JSON.stringify(paramsFormData, null, 2));
       setFormMode('code');
     } else {
-      const { parsed, isJSON } = tryParseJSON(paramsCodeValue);
+      const { parsed, isJSON } = tryParseJSON<object>(paramsCodeValue);
       if (isJSON) {
-        setParamsFormData(parsed ?? {});
+        setParamsFormData(parsed as Record<string, unknown>);
         setCodeParseError(null);
       }
       setFormMode('schema');
@@ -179,7 +172,7 @@ const ToolSetDebug: React.FC = () => {
     setParamsCodeValue(value);
     const { parsed, isJSON } = tryParseJSON(value);
     if (isJSON) {
-      setParamsFormData(parsed ?? {});
+      setParamsFormData(parsed as Record<string, unknown>);
       setCodeParseError(null);
     } else {
       setCodeParseError(t('settings.toolsets.invalidJSON', { defaultValue: 'Invalid JSON' }));
@@ -314,7 +307,7 @@ const ToolSetDebug: React.FC = () => {
               selectedTool.function?.parameters ? (
                 <Suspense fallback={<Loading />}>
                   <JsonSchemaConfigForm
-                    schema={selectedTool.function.parameters as any}
+                    schema={selectedTool.function.parameters as RJSFSchema}
                     value={paramsFormData}
                     onChange={setParamsFormData}
                   />

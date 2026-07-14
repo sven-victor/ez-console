@@ -80,7 +80,7 @@ const ToolsetsSelectWidget: Widget = (props) => {
     schema={{
       ...(props.schema || {}),
       'x-data-source': {
-        ...((props.schema as any)?.['x-data-source'] || {}),
+        ...(((props.schema as { 'x-data-source'?: Partial<DataSource> })?.['x-data-source']) || {}),
         type: 'toolsets'
       }
     }}
@@ -234,13 +234,13 @@ When dependent fields change, this field's options should be reloaded */
   /** Filter conditions (flexible filtering for different source types)
 For toolsets: {"type": "webhook"} to filter by toolset type
 For internal: {"status": "active"} to filter by status, etc. */
-  filter: Record<string, any>;
+  filter: Record<string, unknown>;
   /** Response mapping fields (for API and other sources) */
   label_key: string;
   /** HTTP method (GET, POST, etc.) */
   method: string;
   /** Parameters for API requests (query params or request body) */
-  params: Record<string, any>;
+  params: Record<string, unknown>;
   /** Type specifies the data source type */
   type: DataSourceType;
   /** API-specific fields (when Type = "api") */
@@ -262,18 +262,18 @@ const RemoteSelectWidget: Widget = (props) => {
         return (await api.system.listToolSets({
           current: 1,
           page_size: 1000,
-        })).data.map((item: any) => ({ label: item[source.label_key || 'name'], value: item[source.value_key || 'id'] }));
+        })).data.map((item: API.ToolSet) => ({ label: item[source.label_key as keyof API.ToolSet] || item.name, value: item[source.value_key as keyof API.ToolSet] || item.id }));
       case 'api':
         if (source.url.startsWith("/")) {
-          return (await request(source.url, {
+          return ((await request<{ data: unknown; current: number; total: number; page_size: number }>(source.url, {
             method: source.method,
             params: source.params,
-          })).data.map((item: any) => ({ label: item[source.label_key], value: item[source.value_key] }));
+          })).data as Record<string, unknown>[]).map((item: Record<string, unknown>) => ({ label: item[source.label_key], value: item[source.value_key] }));
         }
         return (await axios(source.url, {
           params: source.params,
           method: source.method,
-        })).data.map((item: any) => ({ label: item[source.label_key], value: item[source.value_key] }));
+        })).data.map((item: Record<string, unknown>) => ({ label: item[source.label_key], value: item[source.value_key] }));
       default:
         return [];
     }
@@ -295,8 +295,24 @@ const RemoteSelectWidget: Widget = (props) => {
 }
 
 
-export function buildUiSchema(schema: any) {
-  const defs = schema.$defs || schema.definitions || {}
+type JsonSchemaNode = {
+  $ref?: string;
+  type?: string;
+  properties?: Record<string, JsonSchemaNode>;
+  dependencies?: Record<string, JsonSchemaNode & { oneOf?: JsonSchemaNode[] }>;
+  items?: JsonSchemaNode;
+  oneOf?: JsonSchemaNode[];
+  anyOf?: JsonSchemaNode[];
+  allOf?: JsonSchemaNode[];
+  'x-hidden'?: boolean;
+  'x-disabled'?: boolean;
+  [key: string]: unknown;
+};
+
+type UiSchemaNode = Record<string, unknown>;
+
+export function buildUiSchema(schema: JsonSchemaNode) {
+  const defs = (schema.$defs || schema.definitions || {}) as Record<string, JsonSchemaNode>
 
   function resolveRef(ref: string) {
     if (!ref.startsWith("#/$defs/") && !ref.startsWith("#/definitions/")) {
@@ -308,7 +324,7 @@ export function buildUiSchema(schema: any) {
     return defs[key]
   }
 
-  function walk(node: any): any {
+  function walk(node: JsonSchemaNode | null | undefined): UiSchemaNode {
     if (!node) return {}
 
     if (node.$ref) {
@@ -316,7 +332,7 @@ export function buildUiSchema(schema: any) {
       return walk(resolved)
     }
 
-    const ui: any = {}
+    const ui: UiSchemaNode = {}
 
     Object.keys(node).forEach(key => {
       if (key.startsWith("x-ui-")) {
@@ -337,7 +353,7 @@ export function buildUiSchema(schema: any) {
     // -------- object --------
     if (node.type === "object") {
       if (node.properties) {
-        for (const [key, value] of Object.entries<any>(node.properties)) {
+        for (const [key, value] of Object.entries(node.properties)) {
           const child = walk(value)
           if (Object.keys(child).length > 0) {
             ui[key] = child
@@ -346,21 +362,21 @@ export function buildUiSchema(schema: any) {
       }
       if (node.dependencies) {
         Object.keys(node.dependencies).forEach(key => {
-          const dependency = node.dependencies[key]
+          const dependency = node.dependencies![key]
           if (dependency.properties) {
             Object.keys(dependency.properties).forEach(dependencyKey => {
-              const child = walk(dependency.properties[dependencyKey])
+              const child = walk(dependency.properties![dependencyKey])
               if (Object.keys(child).length > 0) {
                 ui[key] = child
               }
 
             })
           } else if (dependency.oneOf) {
-            dependency.oneOf.forEach((oneOf: any) => {
+            dependency.oneOf.forEach((oneOf) => {
               if (oneOf.properties) {
                 Object.keys(oneOf.properties).forEach(oneOfKey => {
 
-                  const child = walk(oneOf.properties[oneOfKey])
+                  const child = walk(oneOf.properties![oneOfKey])
                   ui[oneOfKey] = child
                 })
               }
@@ -378,22 +394,22 @@ export function buildUiSchema(schema: any) {
     // -------- oneOf / anyOf --------
     if (node.oneOf) {
       ui["ui:options"] = {
-        ...(ui["ui:options"] || {}),
-        oneOf: node.oneOf.map((x: any) => walk(x))
+        ...((ui["ui:options"] as Record<string, unknown>) || {}),
+        oneOf: node.oneOf.map((x) => walk(x))
       }
     }
 
     if (node.anyOf) {
       ui["ui:options"] = {
-        ...(ui["ui:options"] || {}),
-        anyOf: node.anyOf.map((x: any) => walk(x))
+        ...((ui["ui:options"] as Record<string, unknown>) || {}),
+        anyOf: node.anyOf.map((x) => walk(x))
       }
     }
 
     if (node.allOf) {
       ui["ui:options"] = {
-        ...(ui["ui:options"] || {}),
-        allOf: node.allOf.map((x: any) => walk(x))
+        ...((ui["ui:options"] as Record<string, unknown>) || {}),
+        allOf: node.allOf.map((x) => walk(x))
       }
     }
 
@@ -447,7 +463,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
     if (!schema) {
       return {};
     }
-    const autoUi = buildUiSchema(schema)
+    const autoUi = buildUiSchema(schema as JsonSchemaNode)
     return {
       ...autoUi || {},
       ...uiSchema || {}

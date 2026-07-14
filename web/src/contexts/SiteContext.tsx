@@ -90,7 +90,7 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      let cacheOrgId = localStorage.getItem('orgID')
+      const cacheOrgId = localStorage.getItem('orgID')
 
       if (cacheOrgId) {
         const organization = user?.organizations?.find(org => org.id === cacheOrgId);

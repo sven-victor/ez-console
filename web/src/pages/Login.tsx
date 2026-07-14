@@ -121,17 +121,17 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
         }
       }
     } catch (error) {
-      if ((error as any).password_expired) {
+      if ((error as { password_expired?: boolean }).password_expired) {
         setPageType('password_expired');
-        setToken((error as any).token);
+        setToken((error as { token?: string }).token || null);
         setError(null);
-      } else if ((error as any).needsMFA) {
+      } else if ((error as { needsMFA?: boolean }).needsMFA) {
         setError(null);
         setPageType('mfa');
         navigate('/login', { replace: true });
-        setMfaType((error as any).mfaType);
-        setUser((error as any).user);
-        form.setFieldValue('mfa_token', (error as any).mfaToken);
+        setMfaType((error as { mfaType: string }).mfaType);
+        setUser((error as { user: API.User }).user || null);
+        form.setFieldValue('mfa_token', (error as { mfaToken: string }).mfaToken);
       } else if ('username' in values || 'mfa_token' in values) {
         if (error instanceof ApiError) {
           setError(t('login.error', { defaultValue: 'Login failed: {{error}}', error: t(`login.${error}`, { defaultValue: error.message }) }));
@@ -173,7 +173,10 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
     try {
       setProviders(await api.oauth.getProviders() || []);
     } catch (error) {
-      message.error(t('login.fetchOAuthProvidersError', { defaultValue: 'Failed to fetch OAuth providers: {{error}}', error: (error as any).message || (error as any).toString() }));
+      message.error(t('login.fetchOAuthProvidersError', {
+        defaultValue: 'Failed to fetch OAuth providers: {{error}}',
+        error: (error as { message?: string }).message || (error as { toString: () => string }).toString() || String(error)
+      }));
       setProviders([])
     }
   }

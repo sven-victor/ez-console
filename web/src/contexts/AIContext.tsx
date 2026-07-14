@@ -38,7 +38,7 @@ export interface RegisteredClientTool {
 
 
 /** Getter that returns the current page data snapshot (called lazily by the built-in tool). */
-export type PageDataGetter = () => any;
+export type PageDataGetter = () => unknown;
 
 // Options for page-level AI context registration
 export interface PageAIOptions {
@@ -47,7 +47,7 @@ export interface PageAIOptions {
   /** Register a getter for the current page data.  When provided, a built-in
    *  `ui_get_page_data` client tool is automatically created so the AI model
    *  can retrieve the page data on demand. */
-  pageData?: any | PageDataGetter;
+  pageData?: string | Record<string, unknown> | PageDataGetter;
   /** Human-readable description of what `pageData` returns – becomes the
    *  tool's `description` field visible to the model. */
   pageDataDescription?: string;
@@ -82,7 +82,7 @@ export const AIContext = createContext<AIContextType>({
   visible: false,
   setVisible: () => { },
   callAI: () => { },
-  onCallAI: (_: (message: string, messages?: API.SimpleChatMessage[]) => void) => { },
+  onCallAI: () => { },
   loaded: false,
   setLoaded: () => { },
   fetchConversations: () => Promise.resolve([]),

@@ -63,7 +63,7 @@ interface AIModel {
   name: string;
   description: string;
   provider: API.AIModelProvider;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   status: 'enabled' | 'disabled';
   is_default: boolean;
   max_chat_tokens?: number;
@@ -76,7 +76,7 @@ interface AIModelFormData {
   name: string;
   description?: string;
   provider: API.AIModelProvider;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   is_default?: boolean;
   status?: 'enabled' | 'disabled';
   max_chat_tokens?: number;
@@ -216,7 +216,7 @@ const AIModelSettings: React.FC = () => {
     setEditingModel(record);
     setSelectedProvider(record.provider);
     const config = record.config || {};
-    const formData: Record<string, any> = {
+    const formData: AIModelFormData = {
       name: record.name,
       description: record.description,
       provider: record.provider,
@@ -264,7 +264,7 @@ const AIModelSettings: React.FC = () => {
   };
 
   const handleSubmit = (values: AIModelFormData) => {
-    let config: Record<string, any> = values.config ?? {};
+    const config: Record<string, unknown> = values.config ?? {};
 
     const submitData: AIModelFormData = {
       name: values.name,

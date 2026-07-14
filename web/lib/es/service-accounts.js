@@ -1,14 +1,14 @@
 import { j as e, T as de } from "./vendor.js";
 import { useState as V, useEffect as he } from "react";
 import { useRequest as C } from "ahooks";
-import { Form as y, message as h, Modal as W, Radio as ee, Select as Y, Input as Z, Space as F, Button as g, Tooltip as pe, Tag as B, Badge as N, Card as G, Row as fe, Col as ce, Table as me, Typography as ve, Popconfirm as ye, Switch as ze, DatePicker as ke, Alert as Ce, Skeleton as Ee, Empty as H, Spin as ne, Tabs as xe, Descriptions as L } from "antd";
+import { Form as y, message as h, Modal as W, Radio as ee, Select as Y, Input as Z, Space as I, Button as g, Tooltip as pe, Tag as B, Badge as N, Card as G, Row as fe, Col as ce, Table as me, Typography as ve, Popconfirm as ye, Switch as ze, DatePicker as ke, Alert as Ce, Skeleton as Ee, Empty as H, Spin as ne, Tabs as xe, Descriptions as L } from "antd";
 import { TeamOutlined as we, CheckCircleOutlined as ae, CloseCircleOutlined as Fe, EyeOutlined as Ie, EditOutlined as Q, LockOutlined as X, DeleteOutlined as ie, ReloadOutlined as Pe, PlusOutlined as Ae, KeyOutlined as se, SyncOutlined as je, CopyOutlined as Te, ExclamationCircleOutlined as De, RollbackOutlined as Ke, UserOutlined as Re } from "@ant-design/icons";
 import { useNavigate as ge, Link as Oe, useLocation as Ne, useParams as Ue } from "react-router-dom";
-import { f as R, b as Me } from "./components.js";
+import { g as R, b as Me } from "./components.js";
 import { a as b } from "./index.js";
 import { P as te, f as q } from "./base.js";
 import { useTranslation as O } from "react-i18next";
-import { c as oe, u as Ve, b as Le } from "./contexts.js";
+import { a as oe, b as Ve, u as Le } from "./contexts.js";
 import Be from "./not_found.js";
 import qe from "dayjs";
 import { createStyles as Ge } from "antd-style";
@@ -20,22 +20,25 @@ const Se = ({
   enableMultiOrg: u = !1,
   organizations: c = []
 }) => {
-  const { hasGlobalPermission: f } = oe(), { t: o } = O("authorization"), { t: m } = O("common"), { currentOrgId: z } = Ve(), [l] = y.useForm(), [k, I] = V("global"), [A, S] = V(void 0), [D, x] = V(null), { run: K, loading: n } = C((r) => {
+  const { hasGlobalPermission: f } = oe(), { t: i } = O("authorization"), { t: m } = O("common"), { currentOrgId: z } = Ve(), [l] = y.useForm(), [k, P] = V("global"), [A, S] = V(void 0), [D, x] = V(null), { run: K, loading: n } = C((r) => {
     if (t) {
-      const { organization_id: P, ...i } = r;
-      return b.authorization.updateServiceAccount({ id: t }, i);
+      const F = {
+        name: r.name,
+        description: r.description ?? ""
+      };
+      return b.authorization.updateServiceAccount({ id: t }, F);
     }
     const d = {
       name: r.name,
-      description: r.description
+      description: r.description || ""
     };
     return k === "organization" && A && (d.organization_id = A), b.authorization.createServiceAccount(d);
   }, {
     onSuccess: () => {
-      h.success(o("serviceAccount.saveSuccess", { defaultValue: "Service account saved successfully." })), a(), E == null || E();
+      h.success(i("serviceAccount.saveSuccess", { defaultValue: "Service account saved successfully." })), a(), E == null || E();
     },
     onError: () => {
-      h.error(o("serviceAccount.saveError", { defaultValue: "Failed to save service account." }));
+      h.error(i("serviceAccount.saveError", { defaultValue: "Failed to save service account." }));
     },
     manual: !0
   }), { run: v, loading: w } = C(
@@ -43,16 +46,16 @@ const Se = ({
     {
       manual: !0,
       onSuccess: (r) => {
-        var P;
+        var F;
         const d = r.organization_id || "";
-        I(d ? "organization" : "global"), S(d || void 0), x(d ? ((P = r.organization) == null ? void 0 : P.name) ?? d : null), l.setFieldsValue({
+        P(d ? "organization" : "global"), S(d || void 0), x(d ? ((F = r.organization) == null ? void 0 : F.name) ?? d : null), l.setFieldsValue({
           name: r.name,
           description: r.description,
           organization_id: d || void 0
         });
       },
       onError: () => {
-        h.error(o("serviceAccount.loadError", { defaultValue: "Failed to load service account." }));
+        h.error(i("serviceAccount.loadError", { defaultValue: "Failed to load service account." }));
       }
     }
   );
@@ -60,14 +63,14 @@ const Se = ({
     if (_) {
       l.resetFields();
       const r = z || (c.length > 0 ? c[0].id : ""), d = u && r ? "organization" : "global";
-      I(d), S(d === "organization" ? r : void 0), t ? v(t) : (x(null), l.setFieldsValue({
+      P(d), S(d === "organization" ? r : void 0), t ? v(t) : (x(null), l.setFieldsValue({
         organization_id: d === "organization" ? r : void 0
       }));
     }
-  }, [t, _, u, c, z, l, v, o]), /* @__PURE__ */ e.jsx(
+  }, [t, _, u, c, z, l, v, i]), /* @__PURE__ */ e.jsx(
     W,
     {
-      title: t ? o("serviceAccount.edit", { defaultValue: "Edit Service Account" }) : o("serviceAccount.create", { defaultValue: "Create Service Account" }),
+      title: t ? i("serviceAccount.edit", { defaultValue: "Edit Service Account" }) : i("serviceAccount.create", { defaultValue: "Create Service Account" }),
       width: 500,
       loading: w,
       afterOpenChange: (r) => {
@@ -77,7 +80,7 @@ const Se = ({
         l.resetFields(), a();
       },
       open: _,
-      footer: /* @__PURE__ */ e.jsxs(F, { children: [
+      footer: /* @__PURE__ */ e.jsxs(I, { children: [
         /* @__PURE__ */ e.jsx(g, { onClick: a, children: m("cancel", { defaultValue: "Cancel" }) }),
         /* @__PURE__ */ e.jsx(
           g,
@@ -97,21 +100,21 @@ const Se = ({
           onFinish: K,
           children: [
             u && !t && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-              /* @__PURE__ */ e.jsx(y.Item, { label: o("serviceAccount.scope", { defaultValue: "Scope" }), children: /* @__PURE__ */ e.jsxs(
+              /* @__PURE__ */ e.jsx(y.Item, { label: i("serviceAccount.scope", { defaultValue: "Scope" }), children: /* @__PURE__ */ e.jsxs(
                 ee.Group,
                 {
                   value: k,
                   onChange: (r) => {
-                    var i;
+                    var o;
                     const d = r.target.value;
-                    I(d);
-                    const P = d === "organization" ? z || ((i = c[0]) == null ? void 0 : i.id) : void 0;
-                    S(P), l.setFieldsValue({ organization_id: P });
+                    P(d);
+                    const F = d === "organization" ? z || ((o = c[0]) == null ? void 0 : o.id) : void 0;
+                    S(F), l.setFieldsValue({ organization_id: F });
                   },
                   disabled: !f("authorization:service_account:create"),
                   children: [
-                    /* @__PURE__ */ e.jsx(ee, { value: "global", children: o("serviceAccount.global", { defaultValue: "Global" }) }),
-                    /* @__PURE__ */ e.jsx(ee, { value: "organization", children: o("serviceAccount.organizationScoped", { defaultValue: "Organization" }) })
+                    /* @__PURE__ */ e.jsx(ee, { value: "global", children: i("serviceAccount.global", { defaultValue: "Global" }) }),
+                    /* @__PURE__ */ e.jsx(ee, { value: "organization", children: i("serviceAccount.organizationScoped", { defaultValue: "Organization" }) })
                   ]
                 }
               ) }),
@@ -119,12 +122,12 @@ const Se = ({
                 y.Item,
                 {
                   name: "organization_id",
-                  label: o("serviceAccount.organization", { defaultValue: "Organization" }),
-                  rules: [{ required: !0, message: o("serviceAccount.organizationRequired", { defaultValue: "Please select an organization." }) }],
+                  label: i("serviceAccount.organization", { defaultValue: "Organization" }),
+                  rules: [{ required: !0, message: i("serviceAccount.organizationRequired", { defaultValue: "Please select an organization." }) }],
                   children: /* @__PURE__ */ e.jsx(
                     Y,
                     {
-                      placeholder: o("serviceAccount.selectOrganization", { defaultValue: "Select organization" }),
+                      placeholder: i("serviceAccount.selectOrganization", { defaultValue: "Select organization" }),
                       options: c.map((r) => ({ value: r.id, label: r.name })),
                       value: A,
                       onChange: (r) => S(r)
@@ -133,22 +136,22 @@ const Se = ({
                 }
               )
             ] }),
-            u && t && /* @__PURE__ */ e.jsx(y.Item, { label: o("serviceAccount.organization", { defaultValue: "Organization" }), children: /* @__PURE__ */ e.jsx("span", { children: D ?? o("serviceAccount.global", { defaultValue: "Global" }) }) }),
+            u && t && /* @__PURE__ */ e.jsx(y.Item, { label: i("serviceAccount.organization", { defaultValue: "Organization" }), children: /* @__PURE__ */ e.jsx("span", { children: D ?? i("serviceAccount.global", { defaultValue: "Global" }) }) }),
             /* @__PURE__ */ e.jsx(
               y.Item,
               {
-                label: o("serviceAccount.name", { defaultValue: "Name" }),
+                label: i("serviceAccount.name", { defaultValue: "Name" }),
                 name: "name",
-                rules: [{ required: !0, message: o("serviceAccount.nameRequired", { defaultValue: "Please enter a name for the service account." }) }],
-                children: /* @__PURE__ */ e.jsx(Z, { placeholder: o("serviceAccount.namePlaceholder", { defaultValue: "Enter service account name" }) })
+                rules: [{ required: !0, message: i("serviceAccount.nameRequired", { defaultValue: "Please enter a name for the service account." }) }],
+                children: /* @__PURE__ */ e.jsx(Z, { placeholder: i("serviceAccount.namePlaceholder", { defaultValue: "Enter service account name" }) })
               }
             ),
             /* @__PURE__ */ e.jsx(
               y.Item,
               {
-                label: o("serviceAccount.description", { defaultValue: "Description" }),
+                label: i("serviceAccount.description", { defaultValue: "Description" }),
                 name: "description",
-                children: /* @__PURE__ */ e.jsx(de, { rows: 4, placeholder: o("serviceAccount.descriptionPlaceholder", { defaultValue: "Enter service account description (optional)" }) })
+                children: /* @__PURE__ */ e.jsx(de, { rows: 4, placeholder: i("serviceAccount.descriptionPlaceholder", { defaultValue: "Enter service account description (optional)" }) })
               }
             )
           ]
@@ -157,7 +160,7 @@ const Se = ({
     }
   );
 }, $e = () => {
-  const { t } = O("authorization"), { t: a } = O("common"), _ = ge(), [E] = y.useForm(), { siteConfig: u } = Ve(), { user: c } = Le(), f = (c == null ? void 0 : c.organizations) || [], o = (u == null ? void 0 : u.enable_multi_org) ?? !1, [m, z] = V([]), [l, k] = V(0), [I, A] = V(!1), [S, D] = V(null), [x, K] = V({
+  const { t } = O("authorization"), { t: a } = O("common"), _ = ge(), [E] = y.useForm(), { siteConfig: u } = Ve(), { user: c } = Le(), f = (c == null ? void 0 : c.organizations) || [], i = (u == null ? void 0 : u.enable_multi_org) ?? !1, [m, z] = V([]), [l, k] = V(0), [P, A] = V(!1), [S, D] = V(null), [x, K] = V({
     current: te.DEFAULT_CURRENT,
     page_size: te.DEFAULT_PAGE_SIZE,
     search: void 0,
@@ -212,13 +215,13 @@ const Se = ({
       search: s.search,
       organization_id: s.organization_id || void 0
     });
-  }, P = (s, p) => {
+  }, F = (s, p) => {
     K((M) => ({
       ...M,
       current: s,
       page_size: p
     }));
-  }, i = () => {
+  }, o = () => {
     D(null), A(!0);
   }, T = (s) => {
     D(s.id), A(!0);
@@ -242,7 +245,7 @@ const Se = ({
       key: "description",
       render: (s) => /* @__PURE__ */ e.jsx(pe, { title: s, children: /* @__PURE__ */ e.jsx("span", { children: (s == null ? void 0 : s.length) > 30 ? `${s.substring(0, 30)}...` : s }) })
     },
-    ...o ? [
+    ...i ? [
       {
         title: t("serviceAccount.organization", { defaultValue: "Organization" }),
         key: "organization",
@@ -263,7 +266,7 @@ const Se = ({
       key: "roles",
       render: (s, p) => {
         var M;
-        return /* @__PURE__ */ e.jsxs(F, { size: [0, 4], wrap: !0, children: [
+        return /* @__PURE__ */ e.jsxs(I, { size: [0, 4], wrap: !0, children: [
           (M = p.roles) == null ? void 0 : M.map((le) => /* @__PURE__ */ e.jsx(B, { color: "blue", children: le.name }, le.id)),
           (!p.roles || p.roles.length === 0) && /* @__PURE__ */ e.jsx(B, { children: t("serviceAccount.noRoles", { defaultValue: "No Roles" }) })
         ] });
@@ -346,7 +349,7 @@ const Se = ({
         },
         style: { marginBottom: 0 },
         children: /* @__PURE__ */ e.jsxs(fe, { justify: "space-between", align: "middle", gutter: [16, 16], children: [
-          /* @__PURE__ */ e.jsx(ce, { children: /* @__PURE__ */ e.jsxs(F, { children: [
+          /* @__PURE__ */ e.jsx(ce, { children: /* @__PURE__ */ e.jsxs(I, { children: [
             /* @__PURE__ */ e.jsx(y.Item, { name: "search", noStyle: !0, children: /* @__PURE__ */ e.jsx(
               Z.Search,
               {
@@ -358,7 +361,7 @@ const Se = ({
                 style: { width: 300 }
               }
             ) }),
-            !o && /* @__PURE__ */ e.jsx(y.Item, { name: "organization_id", noStyle: !0, children: /* @__PURE__ */ e.jsx(
+            !i && /* @__PURE__ */ e.jsx(y.Item, { name: "organization_id", noStyle: !0, children: /* @__PURE__ */ e.jsx(
               Y,
               {
                 placeholder: t("serviceAccount.filterByOrg", { defaultValue: "All organizations" }),
@@ -371,7 +374,7 @@ const Se = ({
               }
             ) })
           ] }) }),
-          /* @__PURE__ */ e.jsx(ce, { children: /* @__PURE__ */ e.jsxs(F, { children: [
+          /* @__PURE__ */ e.jsx(ce, { children: /* @__PURE__ */ e.jsxs(I, { children: [
             /* @__PURE__ */ e.jsx(
               g,
               {
@@ -387,7 +390,7 @@ const Se = ({
               {
                 type: "primary",
                 icon: /* @__PURE__ */ e.jsx(Ae, {}),
-                onClick: i,
+                onClick: o,
                 children: t("serviceAccount.create", { defaultValue: "Create Service Account" })
               }
             ) })
@@ -406,7 +409,7 @@ const Se = ({
           current: x.current,
           pageSize: x.page_size,
           total: l,
-          onChange: P,
+          onChange: F,
           showSizeChanger: !0,
           showQuickJumper: !0,
           showTotal: (s) => a("totalItems", { defaultValue: `Total ${s} items`, total: s })
@@ -418,8 +421,8 @@ const Se = ({
       {
         serviceAccountID: S,
         onClose: j,
-        open: I,
-        enableMultiOrg: o,
+        open: P,
+        enableMultiOrg: i,
         organizations: f,
         onSuccess: () => {
           v();
@@ -431,8 +434,8 @@ const Se = ({
   __proto__: null,
   default: $e
 }, Symbol.toStringTag, { value: "Module" })), { Text: $, Paragraph: re } = ve, { TextArea: Je } = Z, We = ({ serviceAccountID: t }) => {
-  const { t: a } = O("authorization"), { t: _ } = O("common"), [E, u] = V(!1), [c] = y.useForm(), [f, o] = V(null), [m, z] = V(null), [l, k] = V(!1), {
-    data: I = [],
+  const { t: a } = O("authorization"), { t: _ } = O("common"), [E, u] = V(!1), [c] = y.useForm(), [f, i] = V(null), [m, z] = V(null), [l, k] = V(!1), {
+    data: P = [],
     loading: A,
     refresh: S
   } = C(
@@ -445,7 +448,7 @@ const Se = ({
       }
     }
   ), { run: D } = C(
-    (i) => b.authorization.deleteServiceAccountAccessKey({ id: t, keyId: i }),
+    (o) => b.authorization.deleteServiceAccountAccessKey({ id: t, keyId: o }),
     {
       manual: !0,
       onSuccess: () => {
@@ -457,8 +460,8 @@ const Se = ({
         h.error(a("serviceAccount.deleteKeyError", { defaultValue: "Failed to delete access key." }));
       }
     }
-  ), x = (i) => {
-    navigator.clipboard.writeText(i).then(
+  ), x = (o) => {
+    navigator.clipboard.writeText(o).then(
       () => {
         h.success(a("serviceAccount.copyKeySuccess", { defaultValue: "Copied to clipboard!" }));
       },
@@ -467,32 +470,32 @@ const Se = ({
       }
     );
   }, K = () => {
-    o(null), c.resetFields(), u(!0);
-  }, n = (i) => {
-    o(i), c.setFieldsValue({
-      name: i.name,
-      description: i.description,
-      status: i.status === "active",
-      expires_at: i.expires_at ? qe(i.expires_at) : void 0
+    i(null), c.resetFields(), u(!0);
+  }, n = (o) => {
+    i(o), c.setFieldsValue({
+      name: o.name,
+      description: o.description,
+      status: o.status === "active",
+      expires_at: o.expires_at ? qe(o.expires_at) : void 0
     }), u(!0);
   }, v = () => {
     u(!1), c.resetFields();
   }, { run: w, loading: r } = C(
     async () => {
-      const i = await c.validateFields();
+      const o = await c.validateFields();
       if (f) {
         const T = await b.authorization.updateServiceAccountAccessKey({ id: t, keyId: f.id }, {
-          name: i.name,
-          description: i.description,
-          status: i.status ? "active" : "disabled",
-          expires_at: i.expires_at ? i.expires_at.toISOString() : void 0
+          name: o.name,
+          description: o.description,
+          status: o.status ? "active" : "disabled",
+          expires_at: o.expires_at ? o.expires_at.toISOString() : void 0
         });
         return u(!1), T;
       } else {
         const T = await b.authorization.createServiceAccountAccessKey({ id: t }, {
-          name: i.name,
-          description: i.description,
-          expires_at: i.expires_at ? i.expires_at.toISOString() : void 0
+          name: o.name,
+          description: o.description,
+          expires_at: o.expires_at ? o.expires_at.toISOString() : void 0
         });
         z(T), u(!1), k(!0);
       }
@@ -508,7 +511,7 @@ const Se = ({
     }
   ), d = () => {
     k(!1), z(null);
-  }, P = [
+  }, F = [
     {
       title: a("serviceAccount.keyName", { defaultValue: "Name" }),
       dataIndex: "name",
@@ -518,9 +521,9 @@ const Se = ({
       title: a("serviceAccount.accessKey", { defaultValue: "Access Key ID" }),
       dataIndex: "access_key_id",
       key: "access_key_id",
-      render: (i) => /* @__PURE__ */ e.jsxs(F, { children: [
+      render: (o) => /* @__PURE__ */ e.jsxs(I, { children: [
         /* @__PURE__ */ e.jsx(se, {}),
-        /* @__PURE__ */ e.jsx($, { copyable: !0, children: i })
+        /* @__PURE__ */ e.jsx($, { copyable: !0, children: o })
       ] })
     },
     {
@@ -532,24 +535,24 @@ const Se = ({
       title: a("serviceAccount.keyStatus", { defaultValue: "Status" }),
       dataIndex: "status",
       key: "status",
-      render: (i) => i === "active" ? /* @__PURE__ */ e.jsx(N, { status: "success", text: a("serviceAccount.keyActive", { defaultValue: "Active" }) }) : /* @__PURE__ */ e.jsx(N, { status: "error", text: a("serviceAccount.keyDisabled", { defaultValue: "Disabled" }) })
+      render: (o) => o === "active" ? /* @__PURE__ */ e.jsx(N, { status: "success", text: a("serviceAccount.keyActive", { defaultValue: "Active" }) }) : /* @__PURE__ */ e.jsx(N, { status: "error", text: a("serviceAccount.keyDisabled", { defaultValue: "Disabled" }) })
     },
     {
       title: a("serviceAccount.keyExpires", { defaultValue: "Expires At" }),
       dataIndex: "expires_at",
       key: "expires_at",
-      render: (i) => i ? q(i) : /* @__PURE__ */ e.jsx($, { type: "secondary", children: a("serviceAccount.neverExpires", { defaultValue: "Never" }) })
+      render: (o) => o ? q(o) : /* @__PURE__ */ e.jsx($, { type: "secondary", children: a("serviceAccount.neverExpires", { defaultValue: "Never" }) })
     },
     {
       title: a("serviceAccount.keyLastUsed", { defaultValue: "Last Used" }),
       dataIndex: "last_used",
       key: "last_used",
-      render: (i) => i ? q(i) : /* @__PURE__ */ e.jsx($, { type: "secondary", children: a("serviceAccount.keyNeverUsed", { defaultValue: "Never" }) })
+      render: (o) => o ? q(o) : /* @__PURE__ */ e.jsx($, { type: "secondary", children: a("serviceAccount.keyNeverUsed", { defaultValue: "Never" }) })
     },
     {
       title: _("actions", { defaultValue: "Actions" }),
       key: "action",
-      render: (i, T) => /* @__PURE__ */ e.jsxs(F, { size: "small", children: [
+      render: (o, T) => /* @__PURE__ */ e.jsxs(I, { size: "small", children: [
         /* @__PURE__ */ e.jsx(R, { permission: "authorization:service_account:access_key:update", children: /* @__PURE__ */ e.jsx(pe, { title: a("serviceAccount.updateKey", { defaultValue: "Update Key" }), children: /* @__PURE__ */ e.jsx(
           g,
           {
@@ -582,11 +585,11 @@ const Se = ({
     /* @__PURE__ */ e.jsx(
       G,
       {
-        title: /* @__PURE__ */ e.jsxs(F, { children: [
+        title: /* @__PURE__ */ e.jsxs(I, { children: [
           /* @__PURE__ */ e.jsx(se, {}),
           a("serviceAccount.accessKeys", { defaultValue: "Access Keys" })
         ] }),
-        extra: /* @__PURE__ */ e.jsxs(F, { children: [
+        extra: /* @__PURE__ */ e.jsxs(I, { children: [
           /* @__PURE__ */ e.jsx(
             g,
             {
@@ -609,8 +612,8 @@ const Se = ({
         children: /* @__PURE__ */ e.jsx(
           me,
           {
-            columns: P,
-            dataSource: I,
+            columns: F,
+            dataSource: P,
             rowKey: "id",
             loading: A,
             pagination: !1
@@ -693,7 +696,7 @@ const Se = ({
     /* @__PURE__ */ e.jsxs(
       W,
       {
-        title: /* @__PURE__ */ e.jsxs(F, { children: [
+        title: /* @__PURE__ */ e.jsxs(I, { children: [
           /* @__PURE__ */ e.jsx(De, { style: { color: "#faad14" } }),
           a("serviceAccount.secretNoticeTitle", { defaultValue: "Access Key Created - Important!" })
         ] }),
@@ -733,9 +736,9 @@ const Se = ({
                 type: "primary",
                 icon: /* @__PURE__ */ e.jsx(Te, {}),
                 onClick: () => {
-                  const i = `Access Key: ${m.access_key_id}
+                  const o = `Access Key: ${m.access_key_id}
 Secret Key: ${m.secret_access_key}`;
-                  x(i);
+                  x(o);
                 },
                 block: !0,
                 children: a("serviceAccount.copyToClipboard", { defaultValue: "Copy Keys to Clipboard" })
@@ -747,11 +750,11 @@ Secret Key: ${m.secret_access_key}`;
     )
   ] });
 }, { Text: ue } = ve, He = ({ serviceAccount: t, onRefresh: a, loading: _ }) => {
-  const { id: E } = t || {}, { t: u } = O("authorization"), { t: c } = O("common"), [f, o] = V([]), [m, z] = V([]), { hasPermission: l } = oe();
+  const { id: E } = t || {}, { t: u } = O("authorization"), { t: c } = O("common"), [f, i] = V([]), [m, z] = V([]), { hasPermission: l } = oe();
   he(() => {
     z((t == null ? void 0 : t.roles) || []);
   }, [t]);
-  const [k, I] = V(void 0), A = t == null ? void 0 : t.organization_id, { loading: S } = C(async () => b.authorization.listRoles({
+  const [k, P] = V(void 0), A = t == null ? void 0 : t.organization_id, { loading: S } = C(async () => b.authorization.listRoles({
     current: 1,
     page_size: 20,
     search: k,
@@ -761,7 +764,7 @@ Secret Key: ${m.secret_access_key}`;
       const v = n.data;
       m.forEach((w) => {
         v.find((d) => d.id === w.id) || v.push(w);
-      }), o(v);
+      }), i(v);
     },
     onError: (n) => {
       console.error("Failed to load roles:", n), h.error(u("serviceAccount.loadRolesError", { defaultValue: "Failed to load roles." }));
@@ -789,7 +792,7 @@ Secret Key: ${m.secret_access_key}`;
   return /* @__PURE__ */ e.jsx(
     G,
     {
-      title: /* @__PURE__ */ e.jsxs(F, { children: [
+      title: /* @__PURE__ */ e.jsxs(I, { children: [
         /* @__PURE__ */ e.jsx(X, {}),
         u("serviceAccount.authorization", { defaultValue: "Authorization" })
       ] }),
@@ -827,10 +830,10 @@ Secret Key: ${m.secret_access_key}`;
               placeholder: u("serviceAccount.selectRoles", { defaultValue: "Select roles to assign" }),
               value: m.map((n) => n.id),
               onSearch: (n) => {
-                I(n);
+                P(n);
               },
               onOpenChange: (n) => {
-                n && I(void 0);
+                n && P(void 0);
               },
               disabled: !l("authorization:service_account:role:assign"),
               onChange: K,
@@ -937,11 +940,11 @@ Secret Key: ${m.secret_access_key}`;
       top: 5px;
     `
 })), Ye = () => {
-  const { styles: t } = Xe(), u = Ne().hash.replace("#", "") || "basic", { t: c } = O("authorization"), { t: f } = O("common"), { id: o } = Ue(), m = ge(), { hasPermission: z } = oe(), [l, k] = V(null), [I, A] = V(!1), [S] = y.useForm(), [D, x] = V(!1), { loading: K, refresh: n } = C(
-    () => b.authorization.getServiceAccountById({ id: o }),
+  const { styles: t } = Xe(), u = Ne().hash.replace("#", "") || "basic", { t: c } = O("authorization"), { t: f } = O("common"), { id: i } = Ue(), m = ge(), { hasPermission: z } = oe(), [l, k] = V(null), [P, A] = V(!1), [S] = y.useForm(), [D, x] = V(!1), { loading: K, refresh: n } = C(
+    () => b.authorization.getServiceAccountById({ id: i }),
     {
-      refreshDeps: [o],
-      ready: !!o,
+      refreshDeps: [i],
+      ready: !!i,
       onSuccess: (j) => {
         k(j || null);
       },
@@ -952,7 +955,7 @@ Secret Key: ${m.secret_access_key}`;
   ), v = (j) => {
     m(`#${j}`);
   }, { run: w } = C(
-    () => b.authorization.deleteServiceAccount({ id: o }),
+    () => b.authorization.deleteServiceAccount({ id: i }),
     {
       manual: !0,
       onSuccess: () => {
@@ -968,10 +971,10 @@ Secret Key: ${m.secret_access_key}`;
       }
     }
   ), r = () => {
-    o && w();
-  }, { run: d, loading: P } = C(async () => {
+    i && w();
+  }, { run: d, loading: F } = C(async () => {
     if (l)
-      return b.authorization.updateServiceAccountStatus({ id: o }, {
+      return b.authorization.updateServiceAccountStatus({ id: i }, {
         status: l.status === "active" ? "disabled" : "active"
       });
   }, {
@@ -982,8 +985,8 @@ Secret Key: ${m.secret_access_key}`;
       console.error(c("serviceAccount.statusUpdateError", { defaultValue: "Failed to update service account status." }), j), h.error(c("serviceAccount.statusUpdateError", { defaultValue: "Failed to update service account status." }));
     },
     manual: !0
-  }), { run: i } = C(
-    (j) => b.authorization.setServiceAccountPolicy({ id: o }, { policy_document: j }),
+  }), { run: o } = C(
+    (j) => b.authorization.setServiceAccountPolicy({ id: i }, { policy_document: j }),
     {
       manual: !0,
       onSuccess: () => {
@@ -999,7 +1002,7 @@ Secret Key: ${m.secret_access_key}`;
       }
     }
   ), T = (j) => {
-    if (!o) return;
+    if (!i) return;
     let U;
     try {
       U = JSON.parse(j.policy_document);
@@ -1007,17 +1010,17 @@ Secret Key: ${m.secret_access_key}`;
       h.error(c("serviceAccount.policyInvalidJson", { defaultValue: "Invalid JSON format for policy document." }));
       return;
     }
-    i(U);
+    o(U);
   };
-  return o ? K ? /* @__PURE__ */ e.jsx(ne, { size: "large", style: { display: "flex", justifyContent: "center", padding: "50px" } }) : l ? /* @__PURE__ */ e.jsxs(
+  return i ? K ? /* @__PURE__ */ e.jsx(ne, { size: "large", style: { display: "flex", justifyContent: "center", padding: "50px" } }) : l ? /* @__PURE__ */ e.jsxs(
     G,
     {
-      title: /* @__PURE__ */ e.jsxs(F, { children: [
+      title: /* @__PURE__ */ e.jsxs(I, { children: [
         /* @__PURE__ */ e.jsx(Re, {}),
         l.name,
         l.status === "active" ? /* @__PURE__ */ e.jsx(N, { status: "success", text: c("serviceAccount.statusActive", { defaultValue: "Active" }) }) : /* @__PURE__ */ e.jsx(N, { status: "error", text: c("serviceAccount.statusDisabled", { defaultValue: "Disabled" }) })
       ] }),
-      extra: /* @__PURE__ */ e.jsxs(F, { children: [
+      extra: /* @__PURE__ */ e.jsxs(I, { children: [
         /* @__PURE__ */ e.jsx(R, { permission: "authorization:service_account:update", children: /* @__PURE__ */ e.jsx(
           g,
           {
@@ -1033,7 +1036,7 @@ Secret Key: ${m.secret_access_key}`;
           {
             icon: l.status === "active" ? /* @__PURE__ */ e.jsx(X, {}) : /* @__PURE__ */ e.jsx(ae, {}),
             onClick: d,
-            loading: P,
+            loading: F,
             children: l.status === "active" ? f("disable", { defaultValue: "Disable" }) : f("enable", { defaultValue: "Enable" })
           }
         ) }),
@@ -1067,7 +1070,7 @@ Secret Key: ${m.secret_access_key}`;
                 c("serviceAccount.accessKeys", { defaultValue: "Access Keys" })
               ] }),
               disabled: !z("authorization:service_account:access_key:list"),
-              children: /* @__PURE__ */ e.jsx(We, { serviceAccountID: o })
+              children: /* @__PURE__ */ e.jsx(We, { serviceAccountID: i })
             },
             "access-keys"
           ),
@@ -1118,7 +1121,7 @@ Secret Key: ${m.secret_access_key}`;
           W,
           {
             title: c("serviceAccount.editPolicy", { defaultValue: "Edit Policy" }),
-            open: I,
+            open: P,
             onCancel: () => {
               A(!1), S.resetFields();
             },
@@ -1177,7 +1180,7 @@ Secret Key: ${m.secret_access_key}`;
                   )
                 }
               ),
-              /* @__PURE__ */ e.jsx(y.Item, { children: /* @__PURE__ */ e.jsxs(F, { children: [
+              /* @__PURE__ */ e.jsx(y.Item, { children: /* @__PURE__ */ e.jsxs(I, { children: [
                 /* @__PURE__ */ e.jsx(g, { type: "primary", htmlType: "submit", children: f("save", { defaultValue: "Save" }) }),
                 /* @__PURE__ */ e.jsx(g, { onClick: () => A(!1), children: f("cancel", { defaultValue: "Cancel" }) })
               ] }) })
@@ -1187,7 +1190,7 @@ Secret Key: ${m.secret_access_key}`;
         /* @__PURE__ */ e.jsx(
           Se,
           {
-            serviceAccountID: o,
+            serviceAccountID: i,
             onClose: () => x(!1),
             open: D
           }

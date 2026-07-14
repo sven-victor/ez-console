@@ -43,7 +43,7 @@ const ProfileBasic: React.FC<ProfileBasicProps> = ({ user, onSuccess }) => {
     }
   }, [user, form]);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: API.UpdateCurrentUserRequest) => {
     try {
       setLoading(true);
       await api.authorization.updateCurrentUser(values);

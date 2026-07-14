@@ -32,6 +32,12 @@ interface ServiceAccountFormProps {
   organizations?: API.Organization[];
 }
 
+interface ServiceAccountFormValues {
+  name: string;
+  description?: string;
+  organization_id?: string;
+}
+
 const ServiceAccountForm = ({
   serviceAccountID,
   onClose,
@@ -49,14 +55,17 @@ const ServiceAccountForm = ({
   const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined);
   const [loadedOrgName, setLoadedOrgName] = useState<string | null>(null);
 
-  const { run: saveServiceAccount, loading } = useRequest((values: any) => {
+  const { run: saveServiceAccount, loading } = useRequest((values: ServiceAccountFormValues) => {
     if (serviceAccountID) {
-      const { organization_id: _omit, ...updatePayload } = values;
+      const updatePayload: API.UpdateServiceAccountRequest = {
+        name: values.name,
+        description: values.description ?? '',
+      };
       return api.authorization.updateServiceAccount({ id: serviceAccountID }, updatePayload);
     }
     const createPayload: API.CreateServiceAccountRequest = {
       name: values.name,
-      description: values.description,
+      description: values.description || '',
     };
     if (scopeType === 'organization' && selectedOrgId) {
       createPayload.organization_id = selectedOrgId;

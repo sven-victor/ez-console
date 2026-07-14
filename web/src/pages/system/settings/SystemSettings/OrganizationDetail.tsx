@@ -84,7 +84,7 @@ const OrganizationDetail: React.FC = () => {
 
   // Fetch organization users
   const { data: usersData, loading: usersLoading, refresh: refreshUsers } = useRequest(
-    () => systemApi.listOrganizationUsers({ id: id!, current, page_size: pageSize, search: searchText }) as Promise<any>,
+    () => systemApi.listOrganizationUsers({ id: id!, current, page_size: pageSize, search: searchText }) ,
     {
       ready: !!id,
       refreshDeps: [id, current, pageSize, searchText],
@@ -113,7 +113,7 @@ const OrganizationDetail: React.FC = () => {
 
   // Add user to organization
   const { loading: addingUser, run: addUser } = useRequest(
-    (data: AddUserFormData) => systemApi.addUserToOrganization({ id: id! }, data) as Promise<any>,
+    (data: AddUserFormData) => systemApi.addUserToOrganization({ id: id! }, data) ,
     {
       manual: true,
       onSuccess: () => {
@@ -122,15 +122,15 @@ const OrganizationDetail: React.FC = () => {
         addUserForm.resetFields();
         refreshUsers();
       },
-      onError: (error: any) => {
-        message.error(error?.err || t('settings.organizations.users.addFailed', { defaultValue: 'Failed to add user to organization' }));
+      onError: (error: unknown) => {
+        message.error((error as { err?: string })?.err || t('settings.organizations.users.addFailed', { defaultValue: 'Failed to add user to organization' }));
       },
     }
   );
 
   // Update user roles in organization
   const { loading: updatingRoles, run: updateRoles } = useRequest(
-    (data: UpdateRolesFormData) => systemApi.updateUserOrganizationRoles({ id: id!, user_id: editingUser?.id! }, data) as Promise<any>,
+    (data: UpdateRolesFormData) => systemApi.updateUserOrganizationRoles({ id: id!, user_id: editingUser!.id }, data) ,
     {
       manual: true,
       onSuccess: () => {
@@ -140,23 +140,23 @@ const OrganizationDetail: React.FC = () => {
         setEditingUser(null);
         refreshUsers();
       },
-      onError: (error: any) => {
-        message.error(error?.err || t('settings.organizations.users.updateRolesFailed', { defaultValue: 'Failed to update user roles' }));
+      onError: (error: unknown) => {
+        message.error((error as { err?: string })?.err || t('settings.organizations.users.updateRolesFailed', { defaultValue: 'Failed to update user roles' }));
       },
     }
   );
 
   // Remove user from organization
   const { run: removeUser } = useRequest(
-    (userId: string) => systemApi.removeUserFromOrganization({ id: id!, user_id: userId }) as Promise<any>,
+    (userId: string) => systemApi.removeUserFromOrganization({ id: id!, user_id: userId }) ,
     {
       manual: true,
       onSuccess: () => {
         message.success(t('settings.organizations.users.removeSuccess', { defaultValue: 'User removed from organization successfully' }));
         refreshUsers();
       },
-      onError: (error: any) => {
-        message.error(error?.err || t('settings.organizations.users.removeFailed', { defaultValue: 'Failed to remove user from organization' }));
+      onError: (error: unknown) => {
+        message.error((error as { err?: string })?.err || t('settings.organizations.users.removeFailed', { defaultValue: 'Failed to remove user from organization' }));
       },
     }
   );

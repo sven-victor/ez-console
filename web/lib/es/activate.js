@@ -7,7 +7,7 @@ import { useTranslation as R } from "react-i18next";
 import { a as F } from "./index.js";
 import { A as _ } from "./client.js";
 import { L as z, a as Y } from "./components.js";
-import { u as G } from "./contexts.js";
+import { b as G } from "./contexts.js";
 import { createStyles as M } from "antd-style";
 import c from "classnames";
 const { Title: O } = b, U = M(({ css: a }) => ({

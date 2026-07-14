@@ -36,8 +36,6 @@ const SkillPreview: React.FC = () => {
     }
   );
 
-  const skillData = (skill as any)?.data ?? skill;
-
   const contentTabs = useMemo(() => {
     return previewRes?.map((preview) => {
       return {
@@ -58,7 +56,7 @@ const SkillPreview: React.FC = () => {
   return (
     <Spin spinning={loading}  >
       <Card
-        title={skillData?.name ?? t('settings.skills.editor.previewTitle', { defaultValue: 'Skill Preview' })}
+        title={skill?.name ?? t('settings.skills.editor.previewTitle', { defaultValue: 'Skill Preview' })}
         extra={
           <Button type="link" onClick={() => navigate('/system/settings#skills')}>
             {t('settings.skills.editor.backToSkills', { defaultValue: 'Back to Skills' })}

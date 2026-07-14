@@ -30,7 +30,7 @@ const TaskSettingsForm: React.FC = () => {
   const { t } = useTranslation('system');
   const { t: tTask } = useTranslation('task');
   const { t: tCommon } = useTranslation('common');
-  const [form] = Form.useForm<Record<string, any>>();
+  const [form] = Form.useForm<Record<string, unknown>>();
 
   const { data: backendsList } = useRequest(api.system.listLogStorageBackends);
   const { data: fieldDefs } = useRequest(api.system.getTaskSettingFields);
@@ -62,7 +62,7 @@ const TaskSettingsForm: React.FC = () => {
     },
   });
 
-  const handleSubmit = (values: Record<string, any>) => {
+  const handleSubmit = (values: Record<string, unknown>) => {
     submitUpdate(values);
   };
 
@@ -87,7 +87,7 @@ const TaskSettingsForm: React.FC = () => {
       case 'string_list':
         return <Select mode="tags" tokenSeparators={[',']} />;
       case 'enum':
-        return <Select options={(field as any).enum_options || []} />;
+        return <Select options={(field as API.TaskSettingField & { enum_options?: { label: string; value: string }[] }).enum_options || []} />;
       case 'rich_text':
         return <ReactQuill theme="snow" />;
       default:

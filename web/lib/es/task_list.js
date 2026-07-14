@@ -4,7 +4,7 @@ import { Tag as f, Progress as S, Card as D, Space as k, Input as I, Button as o
 import { EyeOutlined as b, StopOutlined as R, RedoOutlined as A, DownloadOutlined as F, DeleteOutlined as O, SearchOutlined as h, ReloadOutlined as E, CalendarOutlined as L } from "@ant-design/icons";
 import { useTranslation as p } from "react-i18next";
 import { a as i } from "./index.js";
-import { b as P, i as v, f as $ } from "./components.js";
+import { b as P, h as v, g as $ } from "./components.js";
 import { P as y } from "./base.js";
 import { useNavigate as N } from "react-router-dom";
 const z = {
@@ -28,14 +28,14 @@ const z = {
     } catch {
       n.error(a("retryFailed", { defaultValue: "Failed to retry task." }));
     }
-  }, V = async (e) => {
+  }, g = async (e) => {
     var t, l;
     try {
       await i.tasks.deleteTask({ id: e }), n.success(a("deleteSuccess", { defaultValue: "Task deleted." })), (l = (t = r.current) == null ? void 0 : t.reload) == null || l.call(t);
     } catch {
       n.error(a("deleteFailed", { defaultValue: "Failed to delete task." }));
     }
-  }, g = async (e) => {
+  }, V = async (e) => {
     const t = await i.base.downloadFile({ fileKey: e }, { params: { method: "sign" } }), l = `/api/files/${e}?signature=${t.signature}&expires=${t.expires}`;
     window.open(l, "_blank");
   }, j = [
@@ -125,7 +125,7 @@ const z = {
               icon: /* @__PURE__ */ s.jsx(F, {}),
               tooltip: a("download", { defaultValue: "Download" }),
               hidden: !t.artifact_file_key,
-              onClick: () => g(t.artifact_file_key)
+              onClick: () => V(t.artifact_file_key)
             },
             {
               key: "delete",
@@ -135,7 +135,7 @@ const z = {
               permission: "task:delete",
               confirm: {
                 title: a("deleteConfirm", { defaultValue: "Delete this task?" }),
-                onConfirm: () => V(t.id)
+                onConfirm: () => g(t.id)
               }
             }
           ]

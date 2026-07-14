@@ -338,7 +338,7 @@ class AIProvider<
           ...originMessage,
           content: content || '',
           role: 'assistant',
-          pendingClientToolCalls: (chunkJson as any).client_tool_calls as ClientToolPendingCall[],
+          pendingClientToolCalls: chunkJson.client_tool_calls,
           messageId: chunkJson.message_id,
           status,
         } as ChatMessage;
@@ -362,7 +362,7 @@ const providerFactory = (conversationKey: string) => {
             {
               onRequest: async (baseURL, options) => {
                 const orgID = localStorage.getItem('orgID');
-                const { sessionId } = options.params as any;
+                const { sessionId } = (options.params ?? {}) as Partial<ChatStreamInput>;
                 const headers = {
                   ...options.headers,
                   'Accept-Language': localStorage.getItem('i18nextLng') || 'en-US',
@@ -501,7 +501,7 @@ const ChatList: React.FC<ChatListProps> = ({
             height: '100%',
             paddingInline: layout === 'classic' ? 'calc(calc(100% - 700px) /2)' : '20px'
           }}
-          // @ts-ignore
+          // @ts-expect-error Bubble.List roles typing is incomplete for this usage
           roles={{
             assistant: {
               placement: 'start',
@@ -586,20 +586,20 @@ export const AIChat: React.FC<AIChatProps> = ({
 
   const allSkills: { skillType: 'domain' | 'skill'; key: string; label: React.ReactNode }[] = useMemo(() => {
     return [
-      ...((domainsData as string[]) ?? []).map((d) => {
+      ...((domainsData as unknown as string[]) ?? []).map((d) => {
         return {
-          skillType: 'domain',
+          skillType: 'domain' as 'domain' | 'skill',
           key: d,
           label: <><Tag>{t('chat.skillDomain', { defaultValue: 'Skill domain' })}</Tag>{d}</>
         };
       }),
-      ...((skillsListData as any)?.data ?? []).map((s: { id: string; name: string; domain?: string }) => ({
-        skillType: 'skill',
+      ...(skillsListData?.data ?? []).map((s) => ({
+        skillType: 'skill' as 'domain' | 'skill',
         key: s.id,
         label: <><Tag>{t('chat.skill', { defaultValue: 'Skill' })}</Tag>{s.name}</>,
       })),
     ]
-  }, [skillsListData, skillsListData])
+  }, [skillsListData, domainsData])
 
   // Message buffer to be sent
   const [messageBuffer, setMessageBuffer] = useState<{ message: string, sessionId: string }>();
@@ -668,10 +668,11 @@ export const AIChat: React.FC<AIChatProps> = ({
       try {
         const result = await Promise.resolve(tool.handler(call.arguments));
         results.push({ tool_call_id: call.id, content: result });
-      } catch (err: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : String(err);
         results.push({
           tool_call_id: call.id,
-          content: JSON.stringify({ error: err?.message || String(err) }),
+          content: JSON.stringify({ error: message }),
         });
       }
     }

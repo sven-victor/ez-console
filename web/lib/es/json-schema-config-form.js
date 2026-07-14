@@ -149,7 +149,7 @@ const k = (t) => {
         return (await W.system.listToolSets({
           current: 1,
           page_size: 1e3
-        })).data.map((s) => ({ label: s[e.label_key || "name"], value: s[e.value_key || "id"] }));
+        })).data.map((s) => ({ label: s[e.label_key] || s.name, value: s[e.value_key] || s.id }));
       case "api":
         return e.url.startsWith("/") ? (await q(e.url, {
           method: e.method,

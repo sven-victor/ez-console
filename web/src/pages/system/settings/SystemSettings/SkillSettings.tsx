@@ -230,8 +230,8 @@ const SkillSettings: React.FC = () => {
 
   const { data: domainOptions = [] } = useRequest(() => api.system.listSkillDomains());
 
-  const listData = (data as { data?: Skill[] })?.data ?? [];
-  const total = (data as { total?: number })?.total ?? 0;
+  const listData = data?.data || []
+  const total = data?.total || 0
 
   const { run: deleteSkill } = useRequest(
     (id: string) => api.system.deleteSkill({ id }),
@@ -292,10 +292,9 @@ const SkillSettings: React.FC = () => {
             { id: skillId, current: 1, page_size: 1000 },
           ),
         ]);
-        const toolsets = ((tsRes as { data?: ToolSet[] }).data || []).filter((item) => item.status === 'enabled');
+        const toolsets = tsRes.data?.filter((item) => item.status === 'enabled') || [];
         setAiToolsets(toolsets);
-        const bindings = (bindRes as { data?: SkillAIToolBinding[] }).data || [];
-        const { selections, extraPatterns: extra } = mapBindingsToSelections(bindings, toolsets);
+        const { selections, extraPatterns: extra } = mapBindingsToSelections(bindRes.data || [], toolsets);
         setAiToolSelections(selections);
         setExtraPatterns(extra);
       } catch {
@@ -309,7 +308,7 @@ const SkillSettings: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!modalVisible || !editingSkill || !enableSkillToolBinding) {
+    if (!modalVisible || !editingSkill?.id || !enableSkillToolBinding) {
       return;
     }
     void loadAiToolsForSkill(editingSkill.id);

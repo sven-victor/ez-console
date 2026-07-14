@@ -227,7 +227,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      render: (_: any, record: API.ServiceAccountAccessKey) => (
+      render: (_: unknown, record: API.ServiceAccountAccessKey) => (
         <Space size="small">
           <PermissionGuard permission="authorization:service_account:access_key:update">
             <Tooltip title={t('serviceAccount.updateKey', { defaultValue: 'Update Key' })}>

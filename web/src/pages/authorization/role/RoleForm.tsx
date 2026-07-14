@@ -66,6 +66,15 @@ interface TreeDataNodeWithCode extends DataNode {
   children?: TreeDataNodeWithCode[];
 }
 
+interface RoleFormValues {
+  name: string;
+  description: string;
+  role_type?: 'global' | 'organization';
+  organization_id?: string;
+  permissions?: string[];
+  policy_document?: string;
+}
+
 const templateMap = {
   allow_all: {
     policy: {
@@ -166,7 +175,7 @@ const RoleForm: React.FC = () => {
     setSelectedOrgId(currentOrgId || undefined);
   }, []);
 
-  const { data: allPermissions = [] } = useRequest<TreeDataNodeWithCode[], any>(async () => {
+  const { data: allPermissions = [] } = useRequest<TreeDataNodeWithCode[], []>(async () => {
     return api.authorization.listPermissions().then((res) => {
       return res.map((item, idx) => {
         const childNodes = (item.permissions || []).map((p) => ({
@@ -395,7 +404,7 @@ const RoleForm: React.FC = () => {
     try {
       JSON.parse(value);
       return Promise.resolve();
-    } catch (error) {
+    } catch {
       return Promise.reject(
         new Error(t('role.invalidJsonFormat', { defaultValue: 'Invalid JSON format.' })),
       );
@@ -425,7 +434,7 @@ const RoleForm: React.FC = () => {
   }, [t]);
 
   const { run: submitRole, loading: submitLoading } = useRequest(
-    async (values: any) => {
+    async (values: RoleFormValues) => {
       const payload: Record<string, unknown> = { ...values };
 
       if (roleType === 'global') {
@@ -744,7 +753,7 @@ const RoleForm: React.FC = () => {
                           if (isArray(newCheckedKeys)) {
                             values = newCheckedKeys as string[];
                           } else if (has(newCheckedKeys, 'checked')) {
-                            values = (newCheckedKeys as any).checked as string[];
+                            values = (newCheckedKeys as { checked: string[] }).checked;
                           }
                           setCheckedKeys(values);
                           form.setFieldsValue({ permissions: values });

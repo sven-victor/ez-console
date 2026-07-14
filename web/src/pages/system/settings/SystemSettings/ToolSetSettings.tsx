@@ -49,6 +49,7 @@ import api from '@/service/api';
 import Actions from '@/components/Actions';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Loading from '@/components/Loading';
+import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 
 const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({
   default: module.JsonSchemaConfigFormItem
@@ -61,7 +62,7 @@ interface ToolSet {
   name: string;
   description: string;
   type: API.ToolSetType | string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
   status: 'enabled' | 'disabled';
   is_preset?: boolean;
   preset_key?: string;
@@ -73,7 +74,7 @@ interface ToolSetFormData {
   name: string;
   description?: string;
   type: API.ToolSetType | string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
 const ToolSetSettings: React.FC = () => {
@@ -85,7 +86,7 @@ const ToolSetSettings: React.FC = () => {
   const [editingToolSet, setEditingToolSet] = useState<ToolSet | null>(null);
   const [searchText, setSearchText] = useState('');
   const [configModalVisible, setConfigModalVisible] = useState(false);
-  const [selectedConfig, setSelectedConfig] = useState<Record<string, any> | null>(null);
+  const [selectedConfig, setSelectedConfig] = useState<Record<string, unknown> | null>(null);
   const [selectedType, setSelectedType] = useState<string>('');
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
@@ -199,7 +200,7 @@ const ToolSetSettings: React.FC = () => {
     (id: string) => api.system.getToolSetTools({ id }),
     {
       manual: true,
-      onSuccess: (response: any) => {
+      onSuccess: (response) => {
         setSelectedTools(response || []);
         setToolsModalVisible(true);
       },
@@ -263,7 +264,7 @@ const ToolSetSettings: React.FC = () => {
   };
 
 
-  const handleViewConfig = (config: Record<string, any>) => {
+  const handleViewConfig = (config: Record<string, unknown>) => {
     setSelectedConfig(config);
     setConfigModalVisible(true);
   };
@@ -539,8 +540,8 @@ const ToolSetSettings: React.FC = () => {
             <Suspense fallback={<Loading />}>
               <JsonSchemaConfigFormItem
                 name="config"
-                schema={currentTypeDefinition?.config_schema as any}
-                uiSchema={currentTypeDefinition?.ui_schema as any}
+                schema={currentTypeDefinition?.config_schema as unknown as RJSFSchema}
+                uiSchema={currentTypeDefinition?.ui_schema as UiSchema}
               />
             </Suspense>
             <Form.Item hidden name="status" label={t('settings.toolsets.status', { defaultValue: 'Status' })}>

@@ -139,7 +139,7 @@ const ServiceAccountList: React.FC = () => {
   );
 
   // Search form submission
-  const handleSearch = (values: any) => {
+  const handleSearch = (values: { search?: string; organization_id?: string }) => {
     setQueryParams({
       ...queryParams,
       current: PAGINATION.DEFAULT_CURRENT,
@@ -246,7 +246,7 @@ const ServiceAccountList: React.FC = () => {
     {
       title: t('serviceAccount.roles', { defaultValue: 'Roles' }),
       key: 'roles',
-      render: (_: any, record: API.ServiceAccount) => (
+      render: (_: unknown, record: API.ServiceAccount) => (
         <Space size={[0, 4]} wrap>
           {record.roles?.map(role => (
             <Tag color="blue" key={role.id}>
@@ -262,7 +262,7 @@ const ServiceAccountList: React.FC = () => {
     {
       title: t('serviceAccount.hasPolicy', { defaultValue: 'Has Policy' }),
       key: 'policy',
-      render: (_: any, record: API.ServiceAccount) => (
+      render: (_: unknown, record: API.ServiceAccount) => (
         record.policy_document && record.policy_document.Statement && record.policy_document.Statement.length > 0 ?
           <Tag color="green" icon={<CheckCircleOutlined />}>{t('serviceAccount.hasPolicy', { defaultValue: 'Has Policy' })}</Tag> :
           <Tag color="default" icon={<CloseCircleOutlined />}>{t('serviceAccount.noPolicy', { defaultValue: 'No Policy' })}</Tag>
@@ -283,7 +283,7 @@ const ServiceAccountList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      render: (_: any, record: API.ServiceAccount) => (
+      render: (_: unknown, record: API.ServiceAccount) => (
         <Actions
           actions={[
             {

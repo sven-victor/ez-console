@@ -117,14 +117,14 @@ client.interceptors.response.use(
     let errorMessage = new ApiError(error.response?.status.toString() || '500', error.message);
     const contentType = error.response?.headers['content-type']
     if (contentType && isString(contentType) && contentType.includes('application/json')) {
-      const errorResponse = error.response?.data as any;
+      const errorResponse = error.response?.data as { err?: string, error?: string, code?: string };
       if (errorResponse) {
         if (errorResponse.err) {
           // New format error
-          errorMessage = new ApiError(errorResponse.code, errorResponse.err);
+          errorMessage = new ApiError(errorResponse.code || '500', errorResponse.err || 'Unknown error');
         } else if (errorResponse.error) {
           // Old format error
-          errorMessage = new ApiError(errorResponse.code, errorResponse.error);
+          errorMessage = new ApiError(errorResponse.code || '500', errorResponse.error || 'Unknown error');
         }
       }
     }
@@ -137,11 +137,11 @@ export const apiGet = async <T>(url: string, config?: AxiosRequestConfig): Promi
   return client.get<T, T>(url, config);
 };
 
-export const apiPost = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+export const apiPost = async <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
   return client.post<T, T>(url, data, config);
 };
 
-export const apiPut = async <T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<T> => {
+export const apiPut = async <T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T> => {
   return client.put<T, T>(url, data, config);
 };
 
@@ -149,8 +149,8 @@ export const apiDelete = async <T>(url: string, config?: AxiosRequestConfig): Pr
   return client.delete<T, T>(url, config);
 };
 
-type ListResult = { data: any; current: number; total: number; page_size: number };
-type Result<T extends { data: any }> = T extends ListResult ? T : T["data"];
+type ListResult = { data: unknown; current: number; total: number; page_size: number };
+type Result<T extends { data: unknown }> = T extends ListResult ? T : T["data"];
 
 interface SSEConfig extends RequestInit {
   signal?: AbortSignal;
@@ -173,6 +173,7 @@ export async function fetchSSE(url: string, config?: SSEConfig): Promise<Readabl
         const data = await response.json() as API.ErrorResponse;
         errorMessage = `SSE connection failed: ${data.message || data.err}`
       } catch (error) {
+        console.log('SSE connection failed: ', error);
         errorMessage = `SSE connection failed: ${response.statusText}`
       }
     }
@@ -183,7 +184,7 @@ export async function fetchSSE(url: string, config?: SSEConfig): Promise<Readabl
     const data = await response.json() as API.ErrorResponse;
     throw new Error(`SSE connection failed: ${data.message}`);
   }
-  return response.body;
+  return response.body as ReadableStream<Uint8Array<ArrayBuffer>>;
 }
 
 
@@ -207,8 +208,8 @@ export interface SSERequestConfig extends Omit<RequestConfig, 'requestType' | 's
 function normalizeHeaders(headers?: AxiosRequestConfig['headers']): Record<string, string> | undefined {
   if (!headers) return undefined;
 
-  if (typeof (headers as any).toJSON === 'function') {
-    return (headers as any).toJSON();
+  if (typeof (headers as { toJSON: () => Record<string, string> }).toJSON === 'function') {
+    return (headers as { toJSON: () => Record<string, string> }).toJSON();
   }
 
   return Object.fromEntries(
@@ -220,8 +221,8 @@ export function request(url: string, config: ArrayBufferRequestConfig): Promise<
 export function request(url: string, config: BlobRequestConfig): Promise<AxiosResponse<Blob>>;
 export function request(url: string, config: TextRequestConfig): Promise<AxiosResponse<string>>;
 export function request(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
-export function request<T extends { data: any; current?: number; total?: number; page_size?: number }>(url: string, config?: RequestConfig): Promise<Result<T>>;
-export async function request<T extends { data: any; current?: number; total?: number; page_size?: number }>(
+export function request<T extends { data: unknown; current?: number; total?: number; page_size?: number }>(url: string, config?: RequestConfig): Promise<Result<T>>;
+export async function request<T extends { data: unknown; current?: number; total?: number; page_size?: number }>(
   url: string,
   config?: RequestConfig | SSERequestConfig | ArrayBufferRequestConfig
 ): Promise<Result<T> | ReadableStream<Uint8Array<ArrayBuffer>> | AxiosResponse<ArrayBuffer | Blob | string>> {

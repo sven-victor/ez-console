@@ -113,10 +113,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return userData;
     } catch (error) {
       // If it's an MFA required error, rethrow
-      if (error && (error as any).needsMFA) {
+      if (error && (error as { needsMFA?: boolean }).needsMFA) {
         throw error;
       }
-      if (error && (error as any).password_expired) {
+      if (error && (error as { password_expired?: boolean }).password_expired) {
         throw error;
       }
       message.error('Login failed, please check your username and password');
@@ -132,7 +132,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (response && typeof response === 'object') {
         if ('code' in response && response.code === "0" && 'data' in response) {
-          const { token: respToken, user: respUser, needs_mfa, mfa_token, mfa_type } = response.data as any;
+          const { token: respToken, user: respUser, needs_mfa, mfa_token, mfa_type } = (response as { data: API.LoginResponse }).data
 
           // If MFA verification is needed
           if (needs_mfa) {
@@ -141,7 +141,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           token = respToken;
         } else {
-          const { token: respToken, user: respUser, needs_mfa, mfa_token, mfa_type } = response as any;
+          const { token: respToken, user: respUser, needs_mfa, mfa_token, mfa_type } = response;
 
           // If MFA verification is needed
           if (needs_mfa) {
@@ -158,10 +158,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (error) {
       setUser(undefined);
       // If it's an MFA required error, rethrow
-      if (error && (error as any).needsMFA) {
+      if (error && (error as { needsMFA?: boolean }).needsMFA) {
         throw error;
       }
-      if (error && (error as any).passwordExpired) {
+      if (error && (error as { passwordExpired?: boolean }).passwordExpired) {
         throw error;
       }
       throw error;

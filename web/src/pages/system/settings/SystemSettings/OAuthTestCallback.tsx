@@ -29,7 +29,7 @@ const OAuthTestCallback = () => {
   const code = searchParams.get('code');
   const state = searchParams.get('state');
   const [user, setUser] = useState<API.User | null>(null);
-  const [userInfo, setUserInfo] = useState<Record<string, any> | null>(null);
+  const [userInfo, setUserInfo] = useState<Record<string, unknown> | null>(null);
   const [message, setMessage] = useState<{
     status: 'success' | 'error';
     message: string;

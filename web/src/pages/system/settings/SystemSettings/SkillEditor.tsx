@@ -4,8 +4,8 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  */
 
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
-import { Card, Button, Space, Input, message, Tree, Modal, Form, Menu, Alert } from 'antd';
+import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import { Card, Button, Space, Input, message, Tree, Modal, Form, Menu, Alert, Spin } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { FolderOutlined, FileOutlined, SaveOutlined, PlusOutlined, DeleteOutlined, EditOutlined, FolderAddOutlined, FileAddOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -16,6 +16,8 @@ import type { SkillTreeNode } from '@/service/api/typing';
 import { markdownWithMetadataAsTable } from '@/utils/skillPreview';
 import { createStyles } from 'antd-style';
 import Loading from '@/components/Loading';
+import { AxiosResponse } from 'axios';
+import classNames from 'classnames';
 
 const MarkdownViewer = lazy(() => import('@/components/MarkdownViewer'));
 
@@ -29,6 +31,18 @@ const useStyles = createStyles(({ css }) => {
       display: none;
     }
     `,
+    editorSpin: css`
+    flex: 1;
+    display: flex;
+    min-height: 0;
+    min-width: 0;
+    .ant-spin-container{
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      min-width: 0;
+    }
+    `
   }
 })
 
@@ -104,10 +118,8 @@ const SkillEditor: React.FC = () => {
     }
   );
 
-  const skillData = (skill as any)?.data ?? skill;
-  const isPreset = !!(skillData as { is_preset?: boolean })?.is_preset;
-  const rawTree: SkillTreeNode[] = (treeData as any)?.data ?? treeData ?? [];
-  const treeDataNodes = useMemo(() => treeNodesFromSkillTree(rawTree), [rawTree]);
+  const isPreset = !!skill?.is_preset;
+  const treeDataNodes = useMemo(() => treeNodesFromSkillTree(treeData || []), [treeData]);
 
   // Create-under: selected dir, or parent of selected file, or root
   const createBasePath = selectedNodeIsDir && selectedNodeKey
@@ -116,20 +128,16 @@ const SkillEditor: React.FC = () => {
       ? parentPath(selectedFile)
       : '';
 
-  useEffect(() => {
-    if (selectedFile && id) {
-      api.system
-        .getSkillFile({ id, path: selectedFile })
-        .then((res: any) => {
-          setContent(res.data)
-        })
-        .catch(() => message.error(t('settings.skills.editor.failedToLoadFile', { defaultValue: 'Failed to load file' })));
-      setDirty(false);
-    } else {
-      setContent('');
-      setDirty(false);
-    }
-  }, [id, selectedFile, t]);
+  const { loading: skillContentLoading } = useRequest<AxiosResponse<string>, unknown[]>(() => {
+    if (!id || !selectedFile) return Promise.reject(new Error('No id or selected file'));
+    return api.system.getSkillFile({ id, path: selectedFile || '' }) as Promise<AxiosResponse<string>>
+  }, {
+    refreshDeps: [id, selectedFile],
+    ready: !!id && !!selectedFile,
+    onSuccess: (res: AxiosResponse<string>) => { setContent(res.data) },
+    onBefore: () => { setContent('') },
+    onError: () => message.error(t('settings.skills.editor.failedToLoadFile', { defaultValue: 'Failed to load file' })),
+  });
 
   const handleSave = () => {
     if (!id || !selectedFile || isPreset) return;
@@ -327,7 +335,7 @@ const SkillEditor: React.FC = () => {
 
   return (
     <Card
-      title={skillData?.name ?? t('settings.skills.editor.skill', { defaultValue: 'Skill' })}
+      title={skill?.name ?? t('settings.skills.editor.skill', { defaultValue: 'Skill' })}
       extra={
         <Button type="link" onClick={() => navigate('/system/settings#skills')}>
           {t('settings.skills.editor.backToSkills', { defaultValue: 'Back to Skills' })}
@@ -388,32 +396,34 @@ const SkillEditor: React.FC = () => {
                   {t('settings.skills.editor.delete', { defaultValue: 'Delete' })}
                 </Button>
               </Space>
-              {isMarkdownFile(selectedFile) ? (
-                <div style={{ flex: 1, minHeight: 0, minWidth: 0, display: 'flex', gap: 16 }}>
-                  <div style={{ flex: 1, minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                    <TextArea
-                      value={content}
-                      readOnly={isPreset}
-                      onChange={(e) => { setContent(e.target.value); setDirty(true); }}
-                      style={{ flex: 1, minHeight: 0, fontFamily: 'monospace', resize: 'none' }}
-                      spellCheck={false}
-                    />
+              <Spin spinning={skillContentLoading} wrapperClassName={classNames(styles.editorSpin, 'ez-editor-spin')}>
+                {isMarkdownFile(selectedFile) ? (
+                  <div style={{ flex: 1, minHeight: 0, minWidth: 0, display: 'flex', gap: 16 }}>
+                    <div style={{ flex: 1, minHeight: 0, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+                      <TextArea
+                        value={content}
+                        readOnly={isPreset}
+                        onChange={(e) => { setContent(e.target.value); setDirty(true); }}
+                        style={{ flex: 1, minHeight: 0, fontFamily: 'monospace', resize: 'none' }}
+                        spellCheck={false}
+                      />
+                    </div>
+                    <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'auto', border: '1px solid #d9d9d9', borderRadius: 8, padding: 12 }}>
+                      <Suspense fallback={<Loading />}>
+                        <MarkdownViewer content={markdownWithMetadataAsTable(content)} />
+                      </Suspense>
+                    </div>
                   </div>
-                  <div style={{ flex: 1, minHeight: 0, minWidth: 0, overflow: 'auto', border: '1px solid #d9d9d9', borderRadius: 8, padding: 12 }}>
-                    <Suspense fallback={<Loading />}>
-                      <MarkdownViewer content={markdownWithMetadataAsTable(content)} />
-                    </Suspense>
-                  </div>
-                </div>
-              ) : (
-                <TextArea
-                  value={content}
-                  readOnly={isPreset}
-                  onChange={(e) => { setContent(e.target.value); setDirty(true); }}
-                  style={{ flex: 1, minHeight: 0, fontFamily: 'monospace', resize: 'none' }}
-                  spellCheck={false}
-                />
-              )}
+                ) : (
+                  <TextArea
+                    value={content}
+                    readOnly={isPreset}
+                    onChange={(e) => { setContent(e.target.value); setDirty(true); }}
+                    style={{ flex: 1, minHeight: 0, fontFamily: 'monospace', resize: 'none' }}
+                    spellCheck={false}
+                  />
+                )}
+              </Spin>
             </>
           )}
           {!selectedFile && (

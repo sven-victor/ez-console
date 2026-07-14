@@ -2,10 +2,10 @@ import { j as e } from "./vendor.js";
 import { useMemo as H, useState as I, useRef as Ge, useEffect as re, useCallback as fe } from "react";
 import { message as L, Empty as $, Spin as ue, Typography as ge, Tag as O, Descriptions as W, Card as K, Drawer as Ue, Space as M, Form as T, Tooltip as Y, Button as C, Popconfirm as $e, Row as Me, Col as ye, Input as pe, Select as Z, Table as qe, Alert as Be, Tabs as Je, Radio as se, Tree as We, Checkbox as de } from "antd";
 import { TeamOutlined as be, LockOutlined as me, ToolOutlined as He, UserOutlined as Ke, EditOutlined as Qe, CopyOutlined as xe, DeleteOutlined as Ye, ReloadOutlined as Xe, PlusOutlined as Ze, DownOutlined as et, UpOutlined as tt } from "@ant-design/icons";
-import { f as X } from "./components.js";
+import { g as X } from "./components.js";
 import { a as G } from "./index.js";
 import { useTranslation as ee } from "react-i18next";
-import { u as he, b as Ve, c as ze } from "./contexts.js";
+import { b as he, u as Ve, a as ze } from "./contexts.js";
 import { useNavigate as Se, useParams as lt, useSearchParams as ot } from "react-router-dom";
 import { P as ce } from "./base.js";
 import { useRequest as q } from "ahooks";
@@ -109,7 +109,6 @@ const rt = ({ roleId: s, open: S, onClose: o }) => {
         /* @__PURE__ */ e.jsx(W.Item, { label: d("role.createdAt", { defaultValue: "Created At" }), children: new Date(i.created_at).toLocaleString() }),
         /* @__PURE__ */ e.jsx(W.Item, { label: d("role.updatedAt", { defaultValue: "Updated At" }), children: new Date(i.updated_at).toLocaleString() })
       ] }) : null,
-      ,
       /* @__PURE__ */ e.jsx(K, { title: /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
         /* @__PURE__ */ e.jsx(me, { style: { marginRight: 4 } }),
         d("role.permissions", { defaultValue: "Permissions" }),

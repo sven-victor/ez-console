@@ -4,7 +4,7 @@ var p = (e, t, r) => m(e, typeof t != "symbol" ? t + "" : t, r);
 import { g as d } from "./base.js";
 import g from "axios";
 import { isString as l } from "lodash-es";
-const f = "/api", n = g.create({
+const f = "/api", s = g.create({
   baseURL: f,
   timeout: 3e4,
   headers: {
@@ -18,7 +18,7 @@ class u extends Error {
     this.code = r;
   }
 }
-n.interceptors.request.use(
+s.interceptors.request.use(
   (e) => {
     if (!e.withoutAuth) {
       const r = localStorage.getItem("token");
@@ -32,7 +32,7 @@ n.interceptors.request.use(
   },
   (e) => Promise.reject(e)
 );
-n.interceptors.response.use(
+s.interceptors.response.use(
   (e) => {
     const t = e.headers["content-type"];
     if (t && (!l(t) || !t.includes("application/json")))
@@ -46,19 +46,19 @@ n.interceptors.response.use(
     } : r.data : Promise.reject(r || "Unknown error") : e.data;
   },
   (e) => {
-    var a, o, i, s;
-    ((a = e.response) == null ? void 0 : a.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete n.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
+    var a, o, i, n;
+    ((a = e.response) == null ? void 0 : a.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
     let t = new u(((o = e.response) == null ? void 0 : o.status.toString()) || "500", e.message);
     const r = (i = e.response) == null ? void 0 : i.headers["content-type"];
     if (r && l(r) && r.includes("application/json")) {
-      const c = (s = e.response) == null ? void 0 : s.data;
-      c && (c.err ? t = new u(c.code, c.err) : c.error && (t = new u(c.code, c.error)));
+      const c = (n = e.response) == null ? void 0 : n.data;
+      c && (c.err ? t = new u(c.code || "500", c.err || "Unknown error") : c.error && (t = new u(c.code || "500", c.error || "Unknown error")));
     }
     return Promise.reject(t);
   }
 );
-const L = async (e, t) => n.get(e, t), T = async (e, t, r) => n.post(e, t, r), x = async (e, t, r) => n.put(e, t, r), E = async (e, t) => n.delete(e, t);
-async function y(e, t) {
+const E = async (e, t) => s.get(e, t), L = async (e, t, r) => s.post(e, t, r), T = async (e, t, r) => s.put(e, t, r), U = async (e, t) => s.delete(e, t);
+async function S(e, t) {
   const { signal: r, ...a } = t || {}, o = await fetch(e, {
     method: a.method || "GET",
     headers: a.headers,
@@ -69,10 +69,10 @@ async function y(e, t) {
     let i = o.statusText;
     if (o.body)
       try {
-        const s = await o.json();
-        i = `SSE connection failed: ${s.message || s.err}`;
-      } catch {
-        i = `SSE connection failed: ${o.statusText}`;
+        const n = await o.json();
+        i = `SSE connection failed: ${n.message || n.err}`;
+      } catch (n) {
+        console.log("SSE connection failed: ", n), i = `SSE connection failed: ${o.statusText}`;
       }
     throw new Error(i);
   }
@@ -82,17 +82,17 @@ async function y(e, t) {
   }
   return o.body;
 }
-function S(e) {
+function y(e) {
   if (e)
     return typeof e.toJSON == "function" ? e.toJSON() : Object.fromEntries(
       Object.entries(e).map(([t, r]) => [t, String(r)])
     );
 }
-async function A(e, t) {
+async function x(e, t) {
   const { requestType: r, signal: a, ...o } = t || {}, i = o.responseType;
   if (r === "sse") {
     const c = localStorage.getItem("orgID");
-    return y(e, {
+    return S(e, {
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
@@ -100,14 +100,14 @@ async function A(e, t) {
         "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
         ...c ? { "X-Scope-OrgID": c } : {},
-        ...S(o.headers)
+        ...y(o.headers)
       },
       method: o.method,
       body: JSON.stringify(o.data),
       signal: a
     });
   }
-  const s = r === "form" ? {
+  const n = r === "form" ? {
     ...t == null ? void 0 : t.headers,
     "Content-Type": "multipart/form-data",
     "X-Base-Path": d()
@@ -117,43 +117,43 @@ async function A(e, t) {
   };
   switch (i) {
     case "arraybuffer":
-      return n.request({
+      return s.request({
         url: e,
         baseURL: "",
         ...o,
-        headers: s
+        headers: n
       });
     case "blob":
-      return n.request({
+      return s.request({
         url: e,
         baseURL: "",
         ...o,
-        headers: s
+        headers: n
       });
     case "text":
-      return n.request({
+      return s.request({
         url: e,
         baseURL: "",
         ...o,
-        headers: s
+        headers: n
       });
     default:
-      return n.request({
+      return s.request({
         url: e,
         baseURL: "",
         ...o,
-        headers: s
+        headers: n
       });
   }
 }
 export {
   u as A,
-  E as a,
+  U as a,
   f as b,
-  n as c,
-  T as d,
-  L as e,
-  x as f,
-  y as g,
-  A as r
+  E as c,
+  L as d,
+  T as e,
+  s as f,
+  S as g,
+  x as r
 };

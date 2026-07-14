@@ -1,9 +1,9 @@
 import { j as e } from "./vendor.js";
 import { lazy as b, useEffect as n, useState as u } from "react";
-import { Modal as x, Tooltip as f, FloatButton as y } from "antd";
+import { Tooltip as x, FloatButton as f, Modal as y } from "antd";
 import { RobotOutlined as g } from "@ant-design/icons";
 import { useTranslation as v } from "react-i18next";
-import { a as r } from "./contexts.js";
+import { d as r } from "./contexts.js";
 import { w as c } from "./index.js";
 import { R as w } from "./components.js";
 import { createStyles as S } from "antd-style";
@@ -41,7 +41,7 @@ const p = b(() => import("./ai-chat.js")), C = S(({ token: o, css: t }) => ({
   return n(() => {
     a(!0);
   }, [a]), /* @__PURE__ */ e.jsx(
-    x,
+    y,
     {
       className: "ai-chat-modal",
       width: 1200,
@@ -100,14 +100,14 @@ const p = b(() => import("./ai-chat.js")), C = S(({ token: o, css: t }) => ({
 }, E = () => {
   const { setVisible: o, visible: t } = r(), { t: i } = v("ai");
   return /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(
-    f,
+    x,
     {
       title: i("chat.openAssistant", { defaultValue: "Open AI Assistant" }),
       placement: "left",
       style: { display: t ? "none" : "block" },
       className: "ai-chat-tooltip",
       children: /* @__PURE__ */ e.jsx(
-        y,
+        f,
         {
           icon: /* @__PURE__ */ e.jsx(g, {}),
           className: "ai-chat-float-button",

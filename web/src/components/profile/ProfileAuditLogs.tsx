@@ -16,14 +16,31 @@
 
 import React, { useState, useEffect } from 'react';
 import { Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal } from 'antd';
+import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import dayjs from 'dayjs';
+import type { TFunction } from 'i18next';
+import dayjs, { type Dayjs } from 'dayjs';
 import api from '@/service/api';
 import { formatDate } from '@/utils';
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
+
+interface AuditLogFilterFormValues {
+  search?: string;
+  action?: string;
+  status?: string;
+  dateRange?: [Dayjs, Dayjs];
+}
+
+type AuditLogQueryParams = API.getCurrentUserLogsParams & {
+  search?: string;
+  action?: string;
+  status?: string;
+  start_time?: string;
+  end_time?: string;
+};
 
 // Format IP address for display
 const formatIP = (ip: string) => {
@@ -31,7 +48,7 @@ const formatIP = (ip: string) => {
 };
 
 // Get status tag
-const getStatusTag = (status: string, t: any) => {
+const getStatusTag = (status: string, t: TFunction) => {
   return status === 'success' ? (
     <Tag color="success">{t('statuses.success')}</Tag>
   ) : (
@@ -61,7 +78,7 @@ const ProfileAuditLogs: React.FC = () => {
   const loadAuditLogs = async (page = 1, pageSize = 10) => {
     try {
       setLoading(true);
-      const params: any = {
+      const params: AuditLogQueryParams = {
         current: page,
         page_size: pageSize,
       };
@@ -102,16 +119,16 @@ const ProfileAuditLogs: React.FC = () => {
   }, [pagination.current, pagination.pageSize]);
 
   // Handle table pagination change
-  const handleTableChange = (newPagination: any) => {
+  const handleTableChange = (newPagination: TablePaginationConfig) => {
     setPagination({
       ...pagination,
-      current: newPagination.current,
-      pageSize: newPagination.pageSize,
+      current: newPagination.current ?? 1,
+      pageSize: newPagination.pageSize ?? 10,
     });
   };
 
   // Handle filter form submission
-  const handleFilterSubmit = (values: any) => {
+  const handleFilterSubmit = (values: AuditLogFilterFormValues) => {
     const newFilters = {
       action: values.action || '',
       status: values.status || '',
@@ -137,7 +154,7 @@ const ProfileAuditLogs: React.FC = () => {
   };
 
   // Table column definitions
-  const columns = [
+  const columns: ColumnsType<API.AuditLog> = [
     {
       title: t('auditLog.timestamp'),
       dataIndex: 'timestamp',
@@ -176,7 +193,7 @@ const ProfileAuditLogs: React.FC = () => {
       title: t('auditLog.details'),
       dataIndex: 'details',
       key: 'details',
-      render: (details: any) => {
+      render: (details: API.AuditLogDetail) => {
         return <Button type='link' icon={<EyeOutlined />} onClick={() => {
           Modal.info({
             title: t('auditLog.details'),

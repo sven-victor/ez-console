@@ -69,7 +69,7 @@ export const formatRelativeTime = (date: Date | string | number): string => {
 
 // Local storage related
 export const storage = {
-  get: (key: string): any => {
+  get: (key: string): unknown => {
     try {
       const value = localStorage.getItem(key);
       return value ? JSON.parse(value) : null;
@@ -78,7 +78,7 @@ export const storage = {
       return null;
     }
   },
-  set: (key: string, value: any): void => {
+  set: (key: string, value: unknown): void => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
@@ -119,7 +119,7 @@ export const parseQueryParams = (queryString: string = window.location.search): 
 };
 
 // Throttle function
-export const throttle = <T extends (...args: any[]) => any>(
+export const throttle = <T extends (...args: unknown[]) => unknown>(
   fn: T,
   delay: number = 300
 ): ((...args: Parameters<T>) => void) => {
@@ -135,7 +135,7 @@ export const throttle = <T extends (...args: any[]) => any>(
 };
 
 // Debounce function
-export const debounce = <T extends (...args: any[]) => any>(
+export const debounce = <T extends (...args: unknown[]) => unknown>(
   fn: T,
   delay: number = 300
 ): ((...args: Parameters<T>) => void) => {
@@ -156,17 +156,17 @@ export const deepClone = <T>(obj: T): T => {
   }
 
   if (obj instanceof Date) {
-    return new Date(obj.getTime()) as any;
+    return new Date(obj.getTime()) as T;
   }
 
   if (obj instanceof Array) {
-    return obj.map(item => deepClone(item)) as any;
+    return obj.map(item => deepClone(item)) as T;
   }
 
   if (obj instanceof Object) {
-    const copy = {} as Record<string, any>;
+    const copy = {} as Record<string, unknown>;
     Object.keys(obj).forEach(key => {
-      copy[key] = deepClone((obj as Record<string, any>)[key]);
+      copy[key] = deepClone((obj as Record<string, unknown>)[key]);
     });
     return copy as T;
   }
@@ -348,4 +348,14 @@ export const isUnorderedEqual = <T>(
   }
 
   return true;
+}
+
+
+export function tryParseJSON<T>(str: string): { parsed: T; isJSON: true } | { parsed: null; isJSON: false } {
+  try {
+    const parsed = JSON.parse(str);
+    return { parsed, isJSON: true };
+  } catch {
+    return { parsed: null, isJSON: false };
+  }
 }

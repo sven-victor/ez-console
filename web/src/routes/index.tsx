@@ -61,6 +61,7 @@ const TaskScheduleList = lazy(() => import('@/pages/task/TaskScheduleList'));
 
 // Wrap lazy loaded components
 export function withSuspense<
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   T extends React.ComponentType<any>
 >(
   Component: React.LazyExoticComponent<T>,

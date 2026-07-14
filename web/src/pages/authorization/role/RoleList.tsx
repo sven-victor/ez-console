@@ -70,7 +70,7 @@ const RoleList: React.FC = () => {
 
 
 
-  const handleSearch = (values: any) => {
+  const handleSearch = (values: { search?: string; organization_id?: string }) => {
     setQueryParams({
       ...queryParams,
       current: PAGINATION.DEFAULT_CURRENT,
@@ -152,7 +152,7 @@ const RoleList: React.FC = () => {
       title: t('role.organization', { defaultValue: 'Organization' }),
       key: 'organization',
       hidden: !enableMultiOrg,
-      render: (_: any, record: API.Role) => {
+      render: (_: unknown, record: API.Role) => {
         if (record.organization_id) {
           return (
             <Tag icon={<TeamOutlined />} color="blue">
@@ -170,7 +170,7 @@ const RoleList: React.FC = () => {
     {
       title: t('role.permissionCount', { defaultValue: 'Permissions' }),
       key: 'permission_count',
-      render: (_: any, record: API.Role) => (
+      render: (_: unknown, record: API.Role) => (
         <Tag color="blue">
           <LockOutlined /> {record.permissions?.length || 0}
         </Tag>
@@ -185,7 +185,7 @@ const RoleList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      render: (_: any, record: API.Role) => {
+      render: (_: unknown, record: API.Role) => {
         const isSystemRole = record.role_type === 'system';
         return (
           <Space size="small">

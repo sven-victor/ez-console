@@ -12,7 +12,7 @@ import { FormItemProps } from 'antd';
 import { default as i18n } from 'i18next';
 import { Info } from '@ant-design/x/es/bubble/interface';
 import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
-import { JSX as JSX_2 } from 'react/jsx-runtime';
+import { JSX as JSX_2 } from 'react';
 import { LazyExoticComponent } from 'react';
 import { MessageInfo } from '@ant-design/x-sdk';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
@@ -34,7 +34,7 @@ export declare interface ActionProps extends ButtonProps {
     permission?: string;
     icon?: React.ReactNode;
     tooltip?: React.ReactNode;
-    onClick?: () => Promise<any>;
+    onClick?: () => Promise<unknown>;
     hidden?: boolean;
     confirm?: {
         title: React.ReactNode;
@@ -673,9 +673,9 @@ export declare class ApiError extends Error {
 
 export declare const apiGet: <T>(url: string, config?: AxiosRequestConfig) => Promise<T>;
 
-export declare const apiPost: <T>(url: string, data?: any, config?: AxiosRequestConfig) => Promise<T>;
+export declare const apiPost: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) => Promise<T>;
 
-export declare const apiPut: <T>(url: string, data?: any, config?: AxiosRequestConfig) => Promise<T>;
+export declare const apiPut: <T>(url: string, data?: unknown, config?: AxiosRequestConfig) => Promise<T>;
 
 export declare const AppLayout: default_2.FC<AppLayoutProps>;
 
@@ -763,13 +763,13 @@ declare interface AuthContextType {
     error?: Error;
 }
 
-export declare const Avatar: ({ src, fallback, ...props }: AvatarProps) => JSX_2.Element;
+export declare const Avatar: ({ src, fallback, ...props }: AvatarProps) => default_2.JSX.Element;
 
 export declare interface AvatarProps extends AvatarProps_2 {
     fallback?: default_2.ReactNode;
 }
 
-export declare const AvatarUpload: ({ value, onChange, shape, ...props }: AvatarUploadProps) => JSX_2.Element;
+export declare const AvatarUpload: ({ value, onChange, shape, ...props }: AvatarUploadProps) => default_2.JSX.Element;
 
 export declare interface AvatarUploadProps extends Omit<UploadProps, 'onChange'> {
     value?: string;
@@ -1327,9 +1327,9 @@ export declare const HeaderDropdown: default_2.FC<HeaderDropdownProps>;
 export declare type HeaderDropdownProps = {
     overlayClassName?: string;
     hidden?: boolean;
-    overlay?: default_2.ReactNode | (() => default_2.ReactNode) | any;
+    overlay?: DropDownProps['popupRender'];
     placement?: 'bottomLeft' | 'bottomRight' | 'topLeft' | 'topCenter' | 'topRight' | 'bottomCenter';
-} & Omit<DropDownProps, 'overlay'>;
+} & Omit<DropDownProps, 'overlay' | 'dropdownRender'>;
 
 export declare interface HealthResult {
     message: string;
@@ -1531,7 +1531,7 @@ export declare interface listOrganizationUsersParams {
 }
 
 declare type ListResult = {
-    data: any;
+    data: unknown;
     current: number;
     total: number;
     page_size: number;
@@ -1776,14 +1776,14 @@ export declare interface PageAIOptions {
     /** Register a getter for the current page data.  When provided, a built-in
      *  `ui_get_page_data` client tool is automatically created so the AI model
      *  can retrieve the page data on demand. */
-    pageData?: any | PageDataGetter;
+    pageData?: string | Record<string, unknown> | PageDataGetter;
     /** Human-readable description of what `pageData` returns – becomes the
      *  tool's `description` field visible to the model. */
     pageDataDescription?: string;
 }
 
 /** Getter that returns the current page data snapshot (called lazily by the built-in tool). */
-export declare type PageDataGetter = () => any;
+export declare type PageDataGetter = () => unknown;
 
 export declare interface PaginationResponseModelAIChatSession {
     code: string;
@@ -2007,7 +2007,7 @@ export declare function request(url: string, config: TextRequestConfig): Promise
 export declare function request(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
 
 export declare function request<T extends {
-    data: any;
+    data: unknown;
     current?: number;
     total?: number;
     page_size?: number;
@@ -2426,7 +2426,7 @@ export declare interface restoreUserParams {
 }
 
 declare type Result<T extends {
-    data: any;
+    data: unknown;
 }> = T extends ListResult ? T : T["data"];
 
 export declare interface retryTaskParams {
@@ -2875,7 +2875,7 @@ export declare interface SystemSettings {
     name_i18n: Record<string, any>;
 }
 
-export declare const Table: <T extends API.Entity>({ actionRef, ...props }: TableActionRefProps<T>) => JSX_2.Element | null;
+export declare const Table: <T extends API.Entity>({ actionRef, ...props }: TableActionRefProps<T>) => default_2.JSX.Element | null;
 
 export declare interface TableActionRefProps<T extends API.Entity> extends TableProps<T> {
     actionRef?: default_2.LegacyRef<TableRef<T>>;
@@ -3372,7 +3372,7 @@ export declare interface VerifyAndActivateMFARequest {
     token?: string;
 }
 
-export declare function withSuspense<T extends default_2.ComponentType<any>>(Component: default_2.LazyExoticComponent<T>, props?: default_2.ComponentProps<T>): JSX_2.Element;
+export declare function withSuspense<T extends default_2.ComponentType<any>>(Component: default_2.LazyExoticComponent<T>, props?: default_2.ComponentProps<T>): default_2.JSX.Element;
 
 export { }
 

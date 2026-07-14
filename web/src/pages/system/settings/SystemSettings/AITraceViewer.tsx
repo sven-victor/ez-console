@@ -47,6 +47,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRequest } from 'ahooks';
 import JsonView from '@uiw/react-json-view';
 import api from '@/service/api';
+import { tryParseJSON } from '@/utils';
 
 
 const { Text, Title } = Typography;
@@ -64,20 +65,13 @@ const EVENT_TYPE_CONFIG: Record<
   summary: { color: 'geekblue', icon: <FileTextOutlined /> },
 };
 
-function tryParseJSON(str: string): { parsed: any; isJSON: boolean } {
-  try {
-    const parsed = JSON.parse(str);
-    return { parsed, isJSON: true };
-  } catch {
-    return { parsed: null, isJSON: false };
-  }
-}
+
 
 const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
   content,
   maxHeight = 400,
 }) => {
-  const { parsed, isJSON } = tryParseJSON(content);
+  const { parsed, isJSON } = tryParseJSON<object>(content);
   if (isJSON) {
     return (
       <>
@@ -120,11 +114,26 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
   );
 };
 
-const TokenUsageBlock: React.FC<{ content: string; t: any }> = ({
+interface TokenUsageStats {
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  active_tokens: number;
+}
+interface ToolCall {
+  tool: string;
+  arguments: string;
+}
+interface ToolResult {
+  tool_call_id: string;
+  result: string;
+}
+
+const TokenUsageBlock: React.FC<{ content: string; t: (key: string, options?: Record<string, unknown>) => string }> = ({
   content,
   t,
 }) => {
-  const { parsed, isJSON } = tryParseJSON(content);
+  const { parsed, isJSON } = tryParseJSON<TokenUsageStats>(content);
   if (!isJSON) return <JsonBlock content={content} />;
   return (
     <Descriptions size="small" column={2} bordered>
@@ -162,11 +171,11 @@ const TokenUsageBlock: React.FC<{ content: string; t: any }> = ({
   );
 };
 
-const ToolCallBlock: React.FC<{ content: string; t: any }> = ({
+const ToolCallBlock: React.FC<{ content: string; t: (key: string, options?: Record<string, unknown>) => string }> = ({
   content,
   t,
 }) => {
-  const { parsed, isJSON } = tryParseJSON(content);
+  const { parsed, isJSON } = tryParseJSON<ToolCall>(content);
   if (!isJSON) return <JsonBlock content={content} />;
   return (
     <div>
@@ -188,11 +197,11 @@ const ToolCallBlock: React.FC<{ content: string; t: any }> = ({
   );
 };
 
-const ToolResultBlock: React.FC<{ content: string; t: any }> = ({
+const ToolResultBlock: React.FC<{ content: string; t: (key: string, options?: Record<string, unknown>) => string }> = ({
   content,
   t,
 }) => {
-  const { parsed, isJSON } = tryParseJSON(content);
+  const { parsed, isJSON } = tryParseJSON<ToolResult>(content);
   if (!isJSON) return <JsonBlock content={content} />;
   return (
     <div>
@@ -218,7 +227,7 @@ const ToolResultBlock: React.FC<{ content: string; t: any }> = ({
 
 const EventContent: React.FC<{
   event: API.AITraceEvent;
-  t: any;
+  t: (key: string, options?: Record<string, unknown>) => string;
 }> = ({ event, t }) => {
   switch (event.event_type) {
     case 'token_usage':

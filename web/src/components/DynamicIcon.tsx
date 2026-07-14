@@ -17,7 +17,7 @@
 import * as Icons from "@ant-design/icons";
 import { Suspense } from "react";
 
-const iconMap: Record<string, React.ComponentType> = Icons as any;
+const iconMap: Record<string, React.ComponentType> = Icons as unknown as Record<string, React.ComponentType>;
 
 export const getIconByName = (name: string) => {
   return iconMap[name];

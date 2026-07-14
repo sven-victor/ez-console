@@ -17,6 +17,7 @@
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ConfigProvider, type TabsProps as AntTabsProps } from 'antd';
+import type { Locale } from 'antd/es/locale';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
@@ -53,7 +54,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const antdLocales: { [key: string]: any } = {
+const antdLocales: Record<string, Locale> = {
   'zh-CN': zhCN,
   'en-US': enUS,
   'de-DE': deDE,

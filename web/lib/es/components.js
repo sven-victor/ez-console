@@ -1,6 +1,6 @@
 import { j as e } from "./vendor.js";
 import { Navigate as ue, useNavigate as ze } from "react-router-dom";
-import { b as xe, c as se, u as ye, d as Pe } from "./contexts.js";
+import { u as xe, a as se, b as ye, c as Pe } from "./contexts.js";
 import { g as _e, i as De, f as Ee } from "./base.js";
 import { Spin as ne, Result as Z, Dropdown as je, Avatar as Me, Upload as Ve, Modal as q, Popover as Re, List as H, Image as Be, Divider as ve, Skeleton as Oe, Progress as Ne, Typography as ae, Button as w, Tag as O, Popconfirm as Y, Tooltip as me, Space as F, Input as S, Table as re, Form as v, message as j, Alert as G, Segmented as pe, Steps as $e, QRCode as Ue, Empty as we, Card as ee, Row as He, Col as B, Select as te, DatePicker as qe } from "antd";
 import { useTranslation as k } from "react-i18next";
@@ -70,13 +70,11 @@ const fe = () => /* @__PURE__ */ e.jsx("div", { style: {
   children: n,
   ...l
 }) => {
-  if (s)
-    return /* @__PURE__ */ e.jsx(e.Fragment, {});
   const { styles: o } = gt();
-  return /* @__PURE__ */ e.jsx(
+  return s ? /* @__PURE__ */ e.jsx(e.Fragment, {}) : /* @__PURE__ */ e.jsx(
     je,
     {
-      dropdownRender: r,
+      popupRender: r,
       overlayClassName: D(o.container, t),
       ...l,
       children: /* @__PURE__ */ e.jsx("span", { className: o.iconStyle, children: n })
@@ -1174,8 +1172,8 @@ const fe = () => /* @__PURE__ */ e.jsx("div", { style: {
   const y = (h) => {
     i({
       ...o,
-      current: h.current,
-      pageSize: h.pageSize
+      current: h.current || 1,
+      pageSize: h.pageSize || 10
     }), u({}, h.current, h.pageSize);
   }, x = (h) => {
     var T, z, P, M;
@@ -1333,13 +1331,13 @@ export {
   ls as U,
   Gt as a,
   es as b,
-  bt as c,
-  ss as d,
-  jt as e,
-  Se as f,
-  Ct as g,
-  Yt as h,
-  ns as i,
+  Yt as c,
+  jt as d,
+  bt as e,
+  ss as f,
+  Se as g,
+  ns as h,
+  Ct as i,
   as as j,
   rs as k,
   is as l,

@@ -159,6 +159,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
   const [siteIcon, setSiteIcon] = useState<string | null>(null);
   const [siteName, setSiteName] = useState<string>("Loading...");
+  const [collapsed, setCollapsed] = useState(false);
 
   // Reset page-level AI context on route change (before new page mounts)
   useEffect(() => {
@@ -370,7 +371,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
 
   const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
-    const [collapsed, setCollapsed] = useState(false);
     const pageClassName = sanitizeClassName(matchRoutes(routes, location.pathname)?.pop()?.route.name)
     return <Layout className={classNames("main-layout", styles.layout, { [`page-${pageClassName}`]: pageClassName })}>
       <Sider width={siderWidth} collapsible collapsed={collapsed} onCollapse={setCollapsed} className={classNames(styles.menuSider, 'layout-menu-sider')} theme={isDarkMode ? 'light' : menuStyle} >

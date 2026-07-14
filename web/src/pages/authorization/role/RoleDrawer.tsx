@@ -213,7 +213,6 @@ const RoleDrawer: React.FC<RoleDrawerProps> = ({ roleId, open, onClose }) => {
         </Descriptions.Item>
       </Descriptions>
     ) : null,
-      ,
     <Card title={<>
       <LockOutlined style={{ marginRight: 4 }} />
       {t('role.permissions', { defaultValue: 'Permissions' })}

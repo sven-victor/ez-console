@@ -1,8 +1,8 @@
-import { useContext as _, createContext as x, useState as c, useEffect as S, useCallback as P } from "react";
+import { useContext as T, createContext as x, useState as c, useEffect as S, useCallback as P } from "react";
 import { j as D, i as B } from "./vendor.js";
 import { message as F } from "antd";
 import { a as k } from "./index.js";
-import { c as L } from "./client.js";
+import { f as L } from "./client.js";
 import { useRequest as z } from "ahooks";
 import { g as R } from "./base.js";
 import { useTranslation as V } from "react-i18next";
@@ -17,7 +17,7 @@ const O = x({
   updateUser: () => {
   },
   error: void 0
-}), N = () => _(O), b = (i, r = !0) => {
+}), N = () => T(O), b = (i, r = !0) => {
   i ? (r && localStorage.setItem("token", i), L.defaults.headers.common.Authorization = `Bearer ${i}`) : (r && localStorage.removeItem("token"), delete L.defaults.headers.common.Authorization);
 }, te = ({ children: i }) => {
   const [r, o] = c(void 0), [p, u] = c(!0), { run: A, runAsync: h, error: v } = z(async () => {
@@ -95,7 +95,7 @@ const O = x({
     }
   );
 }, se = () => {
-  const i = _(O);
+  const i = T(O);
   if (i === void 0)
     throw new Error("useAuth must be used within an AuthProvider");
   return i;
@@ -119,7 +119,7 @@ const O = x({
   tasksDropdownOpen: !1,
   setTasksDropdownOpen: () => {
   }
-}), $ = () => _(U), oe = ({ children: i }) => {
+}), $ = () => T(U), oe = ({ children: i }) => {
   const { user: r } = N(), { data: o = null, loading: p, runAsync: u, error: A } = z(async () => k.system.getSiteConfig(), {
     manual: !0
   });
@@ -132,7 +132,7 @@ const O = x({
   }, [h]), S(() => {
     var s, e, f;
     if (r) {
-      let l = localStorage.getItem("orgID");
+      const l = localStorage.getItem("orgID");
       if (l) {
         const m = (s = r == null ? void 0 : r.organizations) == null ? void 0 : s.find((g) => g.id === l);
         if (m) {
@@ -178,7 +178,7 @@ const O = x({
   );
 }, re = () => {
   var C;
-  const { user: i } = _(O), { currentOrgId: r } = $(), o = (C = i == null ? void 0 : i.roles) == null ? void 0 : C.filter((n) => !n.organization_id || n.organization_id === r), p = () => o ? o.some((n) => n.name === "admin" && !n.organization_id) : !1, u = (n) => o ? p() ? !0 : o.some((a) => a.permissions ? a.permissions.some((d) => d.code === n) : !1) : !1;
+  const { user: i } = T(O), { currentOrgId: r } = $(), o = (C = i == null ? void 0 : i.roles) == null ? void 0 : C.filter((n) => !n.organization_id || n.organization_id === r), p = () => o ? o.some((n) => n.name === "admin" && !n.organization_id) : !1, u = (n) => o ? p() ? !0 : o.some((a) => a.permissions ? a.permissions.some((d) => d.code === n) : !1) : !1;
   return {
     hasPermission: u,
     hasAllPermissions: (n) => n.every((a) => u(a)),
@@ -196,7 +196,7 @@ const O = x({
   },
   callAI: () => {
   },
-  onCallAI: (i) => {
+  onCallAI: () => {
   },
   loaded: !1,
   setLoaded: () => {
@@ -213,18 +213,18 @@ const O = x({
   },
   resetPageAIContext: () => {
   }
-}), ne = () => _(M), ae = ({ children: i }) => {
+}), ne = () => T(M), ae = ({ children: i }) => {
   const { t: r } = V("ai"), [o, p] = c("sidebar"), [u, A] = c(!1), [h, v] = c(!1), [C, n] = c(void 0), [a, d] = c(), [s, e] = c(null), [f, l] = c([]), [m, g] = c([]), y = P(() => {
     l([]), g([]);
   }, []), I = P((t) => {
     t.ephemeralSystemPrompts && l(t.ephemeralSystemPrompts);
-    const T = t.pageData ? [{
+    const _ = t.pageData ? [{
       name: "ui_get_page_data",
       description: `This is a browser/client-side method. If the user explicitly instructs you to retrieve page data or if you believe it is necessary to retrieve page data, you can try invoking this method. ${t.pageDataDescription || "Returns a JSON snapshot of the current page data."}`,
       parameters: { type: "object", properties: {}, required: [] },
       handler: () => B(t.pageData) ? t.pageData : J(t.pageData) ? JSON.stringify(t.pageData()) : JSON.stringify(t.pageData)
     }] : [];
-    return g([...T, ...t.tools ?? []]), () => {
+    return g([..._, ...t.tools ?? []]), () => {
       y();
     };
   }, [y]);
@@ -232,8 +232,8 @@ const O = x({
     const t = localStorage.getItem("activeConversationKey");
     t && n(t);
   }, []);
-  const w = P((t, T) => {
-    A(!0), s ? s(t, T) : d([t, T]);
+  const w = P((t, _) => {
+    A(!0), s ? s(t, _) : d([t, _]);
   }, [s, A]);
   S(() => {
     s && a && (s(a[0], a[1]), d(void 0));
@@ -283,10 +283,10 @@ const O = x({
 export {
   te as A,
   oe as S,
-  ne as a,
-  se as b,
-  re as c,
-  N as d,
+  re as a,
+  $ as b,
+  N as c,
+  ne as d,
   ae as e,
-  $ as u
+  se as u
 };

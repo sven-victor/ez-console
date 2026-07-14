@@ -249,7 +249,7 @@ const ServiceAccountDetail: React.FC = () => {
     },
   );
 
-  const handleUpdatePolicy = (values: any) => {
+  const handleUpdatePolicy = (values: { policy_document: string }) => {
     if (!id) return;
 
     let policyObj: API.PolicyDocument;

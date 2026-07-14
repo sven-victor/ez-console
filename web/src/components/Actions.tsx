@@ -25,7 +25,7 @@ export interface ActionProps extends ButtonProps {
   permission?: string;
   icon?: React.ReactNode;
   tooltip?: React.ReactNode;
-  onClick?: () => Promise<any>;
+  onClick?: () => Promise<unknown>;
   hidden?: boolean;
   confirm?: {
     title: React.ReactNode;
