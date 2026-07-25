@@ -557,7 +557,7 @@ const UserList: React.FC = () => {
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
       key: 'action',
-      width: 150,
+      width: 160,
       render: (_: unknown, record: API.User) => {
         const actions: ActionProps[] = [{
           key: 'view',
