@@ -21,6 +21,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/invopop/jsonschema"
+	"github.com/sven-victor/ez-agent/message"
+	aimodel "github.com/sven-victor/ez-agent/model"
 	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
@@ -274,19 +276,23 @@ func (s *aiModelService) TestAIModel(ctx context.Context, organizationID, id str
 	}
 
 	// Prepend global prompts for stream calls
-	messages := prependGlobalPrompts([]ai.ChatMessage{
-		{
-			Role:    model.AIChatMessageRoleUser,
-			Content: "Hello, how are you?",
+	resp, err := client.Complete(ctx, aimodel.Request{
+		Messages: []message.Message{
+			{
+				Role: message.RoleUser,
+				Parts: []message.Part{
+					message.Text{
+						Text: "Hello, how are you?",
+					},
+				},
+			},
 		},
-	}, ai.GlobalPromptCategoryNonStream)
-
-	resp, err := client.Chat(ctx, messages, nil)
+	})
 	if err != nil {
-		return fmt.Errorf("failed to create chat: %w", err)
+		return fmt.Errorf("failed to test AI model: %w", err)
 	}
-	if resp == nil || resp.Content == "" {
-		return fmt.Errorf("failed to create chat: no response")
+	if resp.Message.Parts == nil || len(resp.Message.Parts) == 0 {
+		return fmt.Errorf("failed to test AI model: no response")
 	}
 	return nil
 }

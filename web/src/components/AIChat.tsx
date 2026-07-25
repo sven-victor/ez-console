@@ -310,7 +310,18 @@ class AIProvider<
         status,
       } as ChatMessage;
     }
-    const chunkJson = JSON.parse(chunk.data) as API.ChatStreamEvent;
+    let chunkJson: API.ChatStreamEvent;
+    try {
+      chunkJson = JSON.parse(chunk.data) as API.ChatStreamEvent;
+    } catch {
+      // Incomplete SSE frame (e.g. connection closed mid-chunk) — keep current message.
+      return {
+        ...originMessage,
+        content: originMessage?.content || '',
+        role: 'assistant',
+        status,
+      } as ChatMessage;
+    }
     const content = chunkJson.message_id === originMessage?.messageId ?
       `${originMessage?.content || ''}${chunkJson.content || ''}` :
       chunkJson.content || '';
@@ -340,6 +351,14 @@ class AIProvider<
           role: 'assistant',
           pendingClientToolCalls: chunkJson.client_tool_calls,
           messageId: chunkJson.message_id,
+          status,
+        } as ChatMessage;
+      default:
+        return {
+          ...originMessage,
+          content: content || originMessage?.content || '',
+          role: 'assistant',
+          messageId: chunkJson.message_id || originMessage?.messageId,
           status,
         } as ChatMessage;
     }

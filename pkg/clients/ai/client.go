@@ -20,6 +20,7 @@ import (
 
 	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
+	aimodel "github.com/sven-victor/ez-agent/model"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -54,7 +55,7 @@ type TestClient interface {
 // AIClientFactory is the interface for AI client factories
 type AIClientFactory interface {
 	// CreateClient creates an AI client from configuration
-	CreateClient(ctx context.Context, organizationID string, config map[string]interface{}) (AIClient, error)
+	CreateClient(ctx context.Context, organizationID string, config map[string]interface{}) (aimodel.Provider, error)
 	// GetConfigFields returns the configuration fields for frontend form rendering
 	GetConfigFields() []util.ConfigField
 	// GetName returns the name of the AI provider
@@ -154,6 +155,40 @@ func ChatMessagesFromModel(messages []model.AIChatMessage) []ChatMessage {
 			}
 		}
 		if msg.Content == "" && len(toolCalls) == 0 {
+			continue
+		}
+		role := msg.Role
+		if role == model.AIChatMessageRolePrompt {
+			role = model.AIChatMessageRoleUser
+		}
+		result = append(result, ChatMessage{
+			Role:       role,
+			Content:    msg.Content,
+			ToolCalls:  toolCalls,
+			ToolCallID: msg.ToolCallID,
+		})
+	}
+	return result
+}
+
+// ChatMessagesFromModelAll converts model rows without dropping unpaired tool calls.
+// Used by SessionStore.Load so mid-HITL history (assistant tool_calls awaiting client results) is preserved.
+func ChatMessagesFromModelAll(messages []model.AIChatMessage) []ChatMessage {
+	result := make([]ChatMessage, 0, len(messages))
+	for _, msg := range messages {
+		var toolCalls []ToolCall
+		for _, tc := range msg.ToolCalls {
+			toolCalls = append(toolCalls, ToolCall{
+				Index: tc.Index,
+				ID:    tc.ID,
+				Type:  openai.ToolType(tc.Type),
+				Function: FunctionCall{
+					Name:      tc.Function.Name,
+					Arguments: tc.Function.Arguments,
+				},
+			})
+		}
+		if msg.Content == "" && len(toolCalls) == 0 && msg.ToolCallID == "" {
 			continue
 		}
 		role := msg.Role

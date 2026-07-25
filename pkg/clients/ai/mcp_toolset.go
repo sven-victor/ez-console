@@ -15,19 +15,22 @@
 package ai
 
 import (
-	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"os"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
+	"github.com/sven-victor/ez-agent/message"
+	"github.com/sven-victor/ez-agent/tool"
+	mcp "github.com/sven-victor/ez-agent/tool/mcp"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-utils/safe"
 	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
@@ -41,7 +44,44 @@ type MCPToolSet struct {
 	password    string
 	token       string
 	config      map[string]interface{}
-	httpClient  *http.Client
+	client      *mcp.Client
+}
+
+func (m *MCPToolSet) dialClient() (*mcp.Client, error) {
+	if m.client == nil {
+		var opts []mcp.Option
+		if m.username != "" && m.password != "" {
+			password, err := safe.NewEncryptedString(m.password, os.Getenv(safe.SecretEnvName)).UnsafeString()
+			if err != nil {
+				return nil, fmt.Errorf("failed to decrypt password: %w", err)
+			}
+			opts = append(opts, mcp.WithHeaders(map[string]string{
+				"Authorization": "Basic " + base64.StdEncoding.EncodeToString([]byte(m.username+":"+password)),
+			}))
+		}
+		if m.token != "" {
+			opts = append(opts, mcp.WithHeaders(map[string]string{
+				"Authorization": "Bearer " + m.token,
+			}))
+		}
+		switch m.protocol {
+		case "http":
+			client, err := mcp.DialHTTP(context.Background(), m.endpoint, opts...)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create MCP client: %w", err)
+			}
+			m.client = client
+		case "websocket":
+			client, err := mcp.DialSSE(context.Background(), m.endpoint, opts...)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create MCP client: %w", err)
+			}
+			m.client = client
+		default:
+			return nil, fmt.Errorf("unsupported protocol: %s", m.protocol)
+		}
+	}
+	return m.client, nil
 }
 
 // MCPRequest represents an MCP request
@@ -96,9 +136,6 @@ func NewMCPToolSet(name, description, endpoint, protocol string, username, passw
 		password:    password,
 		token:       token,
 		config:      config,
-		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
-		},
 	}
 }
 
@@ -146,67 +183,55 @@ func (m *MCPToolSet) Call(ctx context.Context, name string, parameters string) (
 		return "", fmt.Errorf("failed to unmarshal parameters: %w", err)
 	}
 
-	// HTTP tool call
-	request := MakeMCPRequest("tools/call", map[string]interface{}{
-		"name":      name,
-		"arguments": params,
+	client, err := m.dialClient()
+	if err != nil {
+		return "", fmt.Errorf("failed to dial client: %w", err)
+	}
+
+	toolHandler, ok := client.Lookup(name)
+	if !ok {
+		return "", fmt.Errorf("tool %s not found", name)
+	}
+	var input json.RawMessage
+	if err := json.Unmarshal([]byte(parameters), &input); err != nil {
+		return "", fmt.Errorf("failed to unmarshal parameters: %w", err)
+	}
+	result, err := toolHandler(ctx, tool.Call{
+		ID:    uuid.New().String(),
+		Name:  name,
+		Input: input,
 	})
-
-	response, err := m.makeHTTPRequest(ctx, request)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("failed to call tool: %w", err)
 	}
-
-	if response.Error != nil {
-		return "", fmt.Errorf("MCP error %d: %s", response.Error.Code, response.Error.Message)
+	if !result.OK {
+		return "", fmt.Errorf("tool %s failed: %w", name, result.Err)
 	}
-
-	// Convert result to string
-	if response.Result == nil {
-		return "", nil
+	if result.Content == nil {
+		return "", fmt.Errorf("tool %s returned no content", name)
 	}
-
-	resultBytes, err := json.Marshal(response.Result)
-	if err != nil {
-		return "", fmt.Errorf("failed to marshal result: %w", err)
+	if len(result.Content) == 0 {
+		return "", fmt.Errorf("tool %s returned no content", name)
 	}
-
-	return string(resultBytes), nil
+	var parts []string
+	for _, part := range result.Content {
+		if textPart, ok := part.(message.Text); ok {
+			parts = append(parts, textPart.Text)
+		}
+	}
+	return strings.Join(parts, "\n"), nil
 }
 
 // ListTools lists available tools from the MCP server
 func (m *MCPToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
-	if m.protocol == "websocket" {
-		// TODO: Implement WebSocket tool listing
-		return nil, fmt.Errorf("websocket protocol not implemented yet")
-	}
-
-	// HTTP tool listing
-	request := MakeMCPRequest("tools/list", nil)
-
-	response, err := m.makeHTTPRequest(ctx, request)
+	client, err := m.dialClient()
 	if err != nil {
-		return nil, err
-	}
-
-	if response.Error != nil {
-		return nil, fmt.Errorf("MCP error %d: %s", response.Error.Code, response.Error.Message)
-	}
-
-	// Parse the response
-	resultBytes, err := json.Marshal(response.Result)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal result: %w", err)
-	}
-
-	var listResponse MCPListToolsResponse
-	if err := json.Unmarshal(resultBytes, &listResponse); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal tools response: %w", err)
+		return nil, fmt.Errorf("failed to dial client: %w", err)
 	}
 
 	// Convert MCP tools to OpenAI tools
 	var openaiTools []openai.Tool
-	for _, mcpTool := range listResponse.Tools {
+	for _, mcpTool := range client.Specs() {
 		openaiTool := openai.Tool{
 			Type: openai.ToolTypeFunction,
 			Function: &openai.FunctionDefinition{
@@ -219,62 +244,6 @@ func (m *MCPToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 	}
 
 	return openaiTools, nil
-}
-
-// makeHTTPRequest makes an HTTP request to the MCP server
-func (m *MCPToolSet) makeHTTPRequest(ctx context.Context, request MCPRequest) (*MCPResponse, error) {
-	requestBytes, err := json.Marshal(request)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
-	}
-
-	req, err := http.NewRequest("POST", m.endpoint, bytes.NewBuffer(requestBytes))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	if m.token != "" {
-		req.Header.Set("Authorization", "Bearer "+m.token)
-	}
-	if m.username != "" && m.password != "" {
-		req.SetBasicAuth(m.username, m.password)
-	}
-	if m.config["headers"] != nil {
-		headers, ok := m.config["headers"].(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("invalid headers type in config, expected map[string]interface{}")
-		}
-		for key, value := range headers {
-			switch value.(type) {
-			case string:
-				req.Header.Set(key, value.(string))
-			case []interface{}:
-				values := []string{}
-				for _, v := range value.([]interface{}) {
-					values = append(values, fmt.Sprintf("%v", v))
-				}
-				req.Header.Set(key, strings.Join(values, ","))
-			}
-		}
-	}
-
-	resp, err := m.httpClient.Do(req.WithContext(ctx))
-	if err != nil {
-		return nil, fmt.Errorf("failed to make request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("HTTP error: %d %s", resp.StatusCode, resp.Status)
-	}
-
-	var response MCPResponse
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	return &response, nil
 }
 
 // MCPToolSetConfig is the config shape for the MCP toolset (for JSON Schema reflection).

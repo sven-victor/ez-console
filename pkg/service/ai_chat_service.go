@@ -690,66 +690,15 @@ func (s *aiChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	return stream, nil
 }
 
-// appendTraceChatOptionsIfEnabled appends tracing wrappers when AI debug tracing is enabled.
+// appendTraceChatOptionsIfEnabled attaches TraceWriter/TraceCounter when AI debug tracing is enabled.
+// ez-agent hooks in buildAgentHooks persist llm_request/response, tools, summary, and token usage.
 func (s *aiChatService) appendTraceChatOptionsIfEnabled(ctx context.Context, options []ai.WithChatOptions) []ai.WithChatOptions {
 	if !s.aiTraceService.IsTraceEnabled(ctx) {
 		return options
 	}
-	origOnTokenUsage := findOnTokenUsage(options)
-	origOnToolResult := findOnToolCallResultChanged(options)
-	origOnSummary := findOnSummary(options)
-
 	writer := s.aiTraceService.NewTraceEventWriter()
 	counter := &ai.TraceCounter{}
-	options = append(options, ai.WithChatAIClientWrapper(func(c ai.AIClient) ai.AIClient {
-		return ai.NewTracingAIClient(c, writer, counter)
-	}))
-	options = append(options, ai.WithChatOnTokenUsage(func(ctx context.Context, stats ai.TokenUsageStats) {
-		ai.WriteTraceTokenUsage(ctx, writer, counter, stats)
-		if origOnTokenUsage != nil {
-			origOnTokenUsage(ctx, stats)
-		}
-	}))
-	options = append(options, ai.WithChatOnToolCallResultChanged(func(ctx context.Context, toolCallID string, result string) {
-		ai.WriteTraceToolResult(ctx, writer, counter, toolCallID, result)
-		if origOnToolResult != nil {
-			origOnToolResult(ctx, toolCallID, result)
-		}
-	}))
-	options = append(options, ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
-		ai.WriteTraceSummary(ctx, writer, counter, messages)
-		if origOnSummary != nil {
-			origOnSummary(ctx, messages)
-		}
-	}))
-	return options
-}
-
-// findOnTokenUsage extracts the OnTokenUsage callback from options if present.
-func findOnTokenUsage(options []ai.WithChatOptions) func(context.Context, ai.TokenUsageStats) {
-	opts := ai.ChatCompletionOptions{}
-	for _, o := range options {
-		o(&opts)
-	}
-	return opts.OnTokenUsage
-}
-
-// findOnToolCallResultChanged extracts the OnToolCallResultChanged callback from options if present.
-func findOnToolCallResultChanged(options []ai.WithChatOptions) func(context.Context, string, string) {
-	opts := ai.ChatCompletionOptions{}
-	for _, o := range options {
-		o(&opts)
-	}
-	return opts.OnToolCallResultChanged
-}
-
-// findOnSummary extracts the OnSummary callback from options if present.
-func findOnSummary(options []ai.WithChatOptions) func(context.Context, []ai.ChatMessage) {
-	opts := ai.ChatCompletionOptions{}
-	for _, o := range options {
-		o(&opts)
-	}
-	return opts.OnSummary
+	return append(options, ai.WithChatTrace(writer, counter))
 }
 
 // GetAvailableTools gets all available tools from enabled toolsets

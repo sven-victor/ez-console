@@ -23,6 +23,7 @@ import (
 	"unicode"
 
 	"github.com/sashabaranov/go-openai"
+	"github.com/sven-victor/ez-agent/memory"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 )
@@ -107,6 +108,11 @@ type ChatStream interface {
 	Close() error
 }
 
+// usageProvider is implemented by streams that expose token usage from the last API call.
+type usageProvider interface {
+	TokenUsage() *TokenUsage
+}
+
 func WithChatToolSetsProvider(factory toolset.ToolSetsProvider) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.ToolSetsProvider = toolset.NewCachedToolSetsProvider(factory)
@@ -178,10 +184,22 @@ type ChatCompletionOptions struct {
 	RefreshToolSetsEachIteration bool
 	ClientTools                  []openai.Tool // Tools to be executed on the client side (browser)
 
+	// SessionID + SessionStore enable ez-agent WithSession (DB-backed effective window).
+	SessionID    string
+	SessionStore memory.SessionStore
+
+	// EphemeralSystemPrompts are page-level prompts merged into the agent system
+	// prompt for this run only (not persisted via SessionStore).
+	EphemeralSystemPrompts []string
+
 	OnSummary               func(ctx context.Context, messages []ChatMessage)
 	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
 	OnMessageAdded          func(ctx context.Context, message ChatMessage)
 	OnTokenUsage            func(ctx context.Context, stats TokenUsageStats)
+
+	// TraceWriter/TraceCounter enable ez-agent hook-based tracing (replaces AIClientWrapper for Exchange).
+	TraceWriter  TraceEventWriter
+	TraceCounter *TraceCounter
 
 	// AIClientWrapper optionally wraps the underlying AIClient before it is
 	// used for LLM calls. This allows injecting cross-cutting concerns such
@@ -260,6 +278,29 @@ func WithChatAIClientWrapper(wrapper func(client AIClient) AIClient) WithChatOpt
 func WithChatOnTokenUsage(onTokenUsage func(ctx context.Context, stats TokenUsageStats)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.OnTokenUsage = onTokenUsage
+	}
+}
+
+// WithChatSession enables DB-backed ez-agent session persistence for this run.
+func WithChatSession(sessionID string, store memory.SessionStore) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.SessionID = sessionID
+		options.SessionStore = store
+	}
+}
+
+// WithChatEphemeralSystemPrompts merges page-level prompts into the agent system prompt (not persisted).
+func WithChatEphemeralSystemPrompts(prompts []string) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.EphemeralSystemPrompts = append([]string(nil), prompts...)
+	}
+}
+
+// WithChatTrace attaches ez-agent hook-based tracing sinks.
+func WithChatTrace(writer TraceEventWriter, counter *TraceCounter) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.TraceWriter = writer
+		options.TraceCounter = counter
 	}
 }
 

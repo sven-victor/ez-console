@@ -104,6 +104,13 @@ export default {
     toolCallId: 'Tool Call ID',
     expandAll: 'Expand All',
     collapseAll: 'Collapse All',
+    viewSequence: 'Sequence',
+    viewTimeline: 'Timeline',
+    actors: {
+      agent: 'Agent',
+      llm: 'LLM',
+      tool: 'Tool',
+    },
   },
   chat: {
     openAssistant: 'Open AI Assistant',

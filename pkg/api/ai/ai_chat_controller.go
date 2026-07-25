@@ -394,41 +394,32 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		return
 	}
 
-	// Persist and append client tool results (before user message per §4.4)
-	for _, ctr := range req.ClientToolResults {
-		_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleTool, ctr.Content, nil, ctr.ToolCallID)
-		if err != nil {
-			level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
-			return
+	// Build only NEW messages for this turn; history is loaded by SessionStore.
+	var chatMessages []ai.ChatMessage
+	if len(req.ClientToolResults) > 0 {
+		for _, ctr := range req.ClientToolResults {
+			chatMessages = append(chatMessages, ai.ChatMessage{
+				Role:       model.AIChatMessageRoleTool,
+				Content:    ctr.Content,
+				ToolCallID: ctr.ToolCallID,
+			})
 		}
 	}
-
-	// Get chat messages
-	messages, err := c.service.GetChatMessages(ctx, organizationID, userID.(string), sessionID)
-	if err != nil {
-		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat messages", err)))
-		return
-	}
-
-	// Convert from model.AIChatMessage to ai.ChatMessage
-	chatMessages := ai.ChatMessagesFromModel(messages)
-
-	// Add and persist the new user message (only if content is non-empty)
 	if contentTrimmed != "" {
 		chatMessages = append(chatMessages, ai.ChatMessage{
 			Role:    model.AIChatMessageRoleUser,
 			Content: req.Content,
 		})
-		_, err = c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleUser, req.Content, nil, "")
-		if err != nil {
-			util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to add chat message", err)))
-			return
-		}
 	}
 
-	// Track initial message count (excluding tool messages)
+	// Track whether this is the first user turn (for auto title).
+	existingMessages, err := c.service.GetChatMessages(ctx, organizationID, userID.(string), sessionID)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat messages", err)))
+		return
+	}
 	initialMessageCount := 0
-	for _, msg := range messages {
+	for _, msg := range existingMessages {
 		if msg.Role != model.AIChatMessageRoleTool {
 			initialMessageCount++
 		}
@@ -451,79 +442,49 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}
 	}
 
-	options := []ai.WithChatOptions{
-		ai.WithChatOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
-			if len(message.ToolCalls) > 0 {
-				var aiToolCalls model.AIToolCalls
-				for _, toolCall := range message.ToolCalls {
-					aiToolCalls = append(aiToolCalls, model.AIToolCall{
-						Index: toolCall.Index,
-						ID:    toolCall.ID,
-						Type:  string(toolCall.Type),
-						Function: model.AIFunctionCall{
-							Name:      toolCall.Function.Name,
-							Arguments: toolCall.Function.Arguments,
-						},
-					})
-				}
-				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, "", aiToolCalls, "")
-				if err != nil {
-					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
-					return
-				}
-			} else if message.ToolCallID != "" {
-				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleTool, message.Content, nil, message.ToolCallID)
-				if err != nil {
-					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
-					return
-				}
-			} else if len(message.Content) > 0 {
-				_, err := c.service.AddChatMessage(ctx, organizationID, userID.(string), sessionID, model.AIChatMessageRoleAssistant, message.Content, nil, "")
-				if err != nil {
-					level.Error(logger).Log("msg", "Failed to add chat message", "error", err)
-					return
-				}
-				// Check if this is the first conversation (exactly 2 messages: 1 user + 1 assistant)
-				if initialMessageCount == 0 {
-					go func() {
-						bgCtx := context.Background()
-						bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
-						if userID != nil {
-							bgCtx = context.WithValue(bgCtx, "user_id", userID)
-						}
-						if roles != nil {
-							bgCtx = context.WithValue(bgCtx, "roles", roles)
-						}
+	sessionStore := &ai.DBSessionStore{
+		OrganizationID: organizationID,
+		UserID:         userIDStr,
+	}
 
-						title, err := c.service.GenerateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, session.ModelID)
-						if err != nil {
-							level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
-							return
-						}
-						if err := c.service.UpdateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, title); err != nil {
-							level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
-							return
-						}
-						level.Info(logger).Log("msg", "Auto-generated chat session title", "sessionId", sessionID, "title", title)
-					}()
-				}
+	options := []ai.WithChatOptions{
+		ai.WithChatSession(sessionID, sessionStore),
+		ai.WithChatOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
+			// Persistence is handled by SessionStore.Append; only auto-title on first assistant text.
+			if len(message.ToolCalls) > 0 || message.ToolCallID != "" || len(message.Content) == 0 {
+				return
 			}
+			if initialMessageCount != 0 {
+				return
+			}
+			initialMessageCount = -1 // only once
+			go func() {
+				bgCtx := context.Background()
+				bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
+				if userID != nil {
+					bgCtx = context.WithValue(bgCtx, "user_id", userID)
+				}
+				if roles != nil {
+					bgCtx = context.WithValue(bgCtx, "roles", roles)
+				}
+				title, err := c.service.GenerateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, session.ModelID)
+				if err != nil {
+					level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
+					return
+				}
+				if err := c.service.UpdateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, title); err != nil {
+					level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
+					return
+				}
+				level.Info(logger).Log("msg", "Auto-generated chat session title", "sessionId", sessionID, "title", title)
+			}()
 		}),
 		ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
+			// Persistence is handled by SessionStore.ReplaceAll; clear skill activation on summarize.
 			if skillLoader != nil {
 				skillLoader.Clear()
 				if err := c.service.ClearSessionActivatedSkills(ctx, organizationID, userIDStr, sessionID); err != nil {
 					level.Error(logger).Log("msg", "Failed to clear activated skills after summary", "error", err)
-				}
-			}
-			if err := c.service.MarkSessionMessagesSummarized(ctx, organizationID, userIDStr, sessionID); err != nil {
-				level.Error(logger).Log("msg", "Failed to mark messages as summarized", "error", err)
-				return
-			}
-			for _, message := range messages {
-				if _, err := c.service.AddSummaryChatMessage(ctx, organizationID, userIDStr, sessionID, message.Role, message.Content); err != nil {
-					level.Error(logger).Log("msg", "Failed to add summary chat message", "error", err)
-					return
 				}
 			}
 		}),
@@ -552,23 +513,9 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		options = append(options, ai.WithChatClientTools(clientOpenAITools))
 	}
 
-	// Prepend ephemeral system prompts (page-level, memory-only).
-	// These are sent with the "prompt" role so they are delivered to the LLM
-	// as user messages rather than system messages, and excluded from chat
-	// history by GetSimpleChatMessages.
+	// Ephemeral system prompts: merged into agent system prompt (not persisted).
 	if len(req.EphemeralSystemPrompts) > 0 {
-		var ephemeralMessages []ai.ChatMessage
-		for _, prompt := range req.EphemeralSystemPrompts {
-			if trimmed := strings.TrimSpace(prompt); trimmed != "" {
-				ephemeralMessages = append(ephemeralMessages, ai.ChatMessage{
-					Role:    model.AIChatMessageRolePrompt,
-					Content: trimmed,
-				})
-			}
-		}
-		if len(ephemeralMessages) > 0 {
-			chatMessages = append(ephemeralMessages, chatMessages...)
-		}
+		options = append(options, ai.WithChatEphemeralSystemPrompts(req.EphemeralSystemPrompts))
 	}
 
 	// Create streaming chat completion
@@ -579,13 +526,23 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	}
 	defer stream.Close()
 
+	// SSE responses can outlive the default server write_timeout (10s). Clear the
+	// write deadline for this request so the stream is not killed mid-response.
+	if rc := http.NewResponseController(ctx.Writer); rc != nil {
+		_ = rc.SetWriteDeadline(time.Time{})
+	}
+
 	ctx.Writer.Header().Set("Content-Type", "text/event-stream")
 	ctx.Writer.Header().Set("Cache-Control", "no-cache")
 	ctx.Writer.Header().Set("Connection", "keep-alive")
 	ctx.Stream(func(w io.Writer) bool {
 		event, err := stream.Recv(ctx)
 		if err != nil {
-			if err == io.EOF || errors.Is(err, ai.ErrClientToolHandoff) {
+			// Clean end: EOF, HITL handoff, or client/server canceled the request.
+			if err == io.EOF ||
+				errors.Is(err, ai.ErrClientToolHandoff) ||
+				errors.Is(err, context.Canceled) ||
+				errors.Is(err, context.DeadlineExceeded) {
 				return false
 			}
 			ctx.SSEvent("message", ai.ChatStreamEvent{

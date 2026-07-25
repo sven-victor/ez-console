@@ -104,6 +104,13 @@ export default {
     toolCallId: 'Werkzeugaufruf-ID',
     expandAll: 'Alle aufklappen',
     collapseAll: 'Alle zuklappen',
+    viewSequence: 'Sequenzdiagramm',
+    viewTimeline: 'Zeitlinie',
+    actors: {
+      agent: 'Agent',
+      llm: 'LLM',
+      tool: 'Tool',
+    },
   },
   chat: {
     openAssistant: 'KI-Assistent öffnen',

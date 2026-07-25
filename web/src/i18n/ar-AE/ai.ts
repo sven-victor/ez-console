@@ -104,6 +104,13 @@ export default {
     toolCallId: 'معرف الاستدعاء',
     expandAll: 'توسيع الكل',
     collapseAll: 'طي الكل',
+    viewSequence: 'مخطط التسلسل',
+    viewTimeline: 'الجدول الزمني',
+    actors: {
+      agent: 'Agent',
+      llm: 'LLM',
+      tool: 'أداة',
+    },
   },
   chat: {
     openAssistant: 'فتح مساعد الذكاء الاصطناعي',

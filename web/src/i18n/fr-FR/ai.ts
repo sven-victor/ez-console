@@ -104,6 +104,13 @@ export default {
     toolCallId: "ID d'Appel",
     expandAll: 'Tout déplier',
     collapseAll: 'Tout replier',
+    viewSequence: 'Séquence',
+    viewTimeline: 'Chronologie',
+    actors: {
+      agent: 'Agent',
+      llm: 'LLM',
+      tool: 'Outil',
+    },
   },
   chat: {
     openAssistant: 'Ouvrir l\'assistant IA',

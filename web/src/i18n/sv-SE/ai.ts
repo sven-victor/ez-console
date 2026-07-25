@@ -104,6 +104,13 @@ export default {
     toolCallId: 'Anrops-ID',
     expandAll: 'Expandera alla',
     collapseAll: 'Komprimera alla',
+    viewSequence: 'Sekvensdiagram',
+    viewTimeline: 'Tidslinje',
+    actors: {
+      agent: 'Agent',
+      llm: 'LLM',
+      tool: 'Verktyg',
+    },
   },
   chat: {
     openAssistant: 'Öppna AI-assistent',

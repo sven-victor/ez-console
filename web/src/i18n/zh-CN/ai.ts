@@ -103,6 +103,13 @@ export default {
     toolCallId: '工具调用ID',
     expandAll: '展开全部',
     collapseAll: '收起全部',
+    viewSequence: '时序图',
+    viewTimeline: '时间线',
+    actors: {
+      agent: 'Agent',
+      llm: 'LLM',
+      tool: 'Tool',
+    },
   },
   chat: {
     openAssistant: '打开智能助手',
