@@ -16,13 +16,13 @@
 
 import React, { useState } from 'react';
 import {
+  App,
   Card,
   Descriptions,
   Button,
   Space,
   Tabs,
   Spin,
-  message,
   Popconfirm,
   Badge,
   Row,
@@ -145,6 +145,8 @@ const useStyle = createStyles(({ css }) => {
 
 // Service Account Detail Page
 const ServiceAccountDetail: React.FC = () => {
+  const { message } = App.useApp();
+
   const { styles } = useStyle();
   const location = useLocation();
   const hash = location.hash;

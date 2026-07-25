@@ -16,13 +16,13 @@
 
 import React, { useCallback, useMemo, useState } from 'react';
 import {
+  App,
   Card,
   Form,
   Input,
   Button,
   Select,
   Space,
-  message,
   Switch,
   Spin,
   Typography,
@@ -50,6 +50,8 @@ interface UserFormValues {
 }
 
 const UserForm: React.FC = () => {
+  const { message } = App.useApp();
+
   const { id = "" } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation("authorization");

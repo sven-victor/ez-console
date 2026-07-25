@@ -16,6 +16,7 @@
 
 import React, { useState } from 'react';
 import {
+  App,
   Card,
   Table,
   Button,
@@ -23,7 +24,6 @@ import {
   Modal,
   Form,
   Input,
-  message,
   Tag,
 } from 'antd';
 import {
@@ -56,6 +56,7 @@ interface OrganizationFormData {
 }
 
 const OrganizationSettings: React.FC = () => {
+  const { message } = App.useApp();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');

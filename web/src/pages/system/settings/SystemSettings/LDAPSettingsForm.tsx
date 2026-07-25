@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Switch, Button, message, Modal, Spin, Steps, Skeleton, Descriptions, Divider, Tag, Table } from 'antd';
+import { App, Form, Input, Switch, Button, Modal, Spin, Steps, Skeleton, Descriptions, Divider, Tag, Table } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
@@ -35,6 +35,7 @@ const ImportLDAPEntryModal = <T extends { status: string, ldap_dn: string }>({ f
   importItems: (dn: string[]) => Promise<T[]>,
   columns: ImportColumnType<T>[],
 }) => {
+  const { message } = App.useApp();
   const { t } = useTranslation('system');
   const [items, setItems] = useState<T[]>([]);
 
@@ -125,6 +126,7 @@ const ImportLDAPEntryModal = <T extends { status: string, ldap_dn: string }>({ f
 }
 
 const LDAPSettingsForm: React.FC = () => {
+  const { message } = App.useApp();
   const { t } = useTranslation('system');
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);

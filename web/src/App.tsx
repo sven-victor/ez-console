@@ -16,7 +16,7 @@
 
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ConfigProvider, type TabsProps as AntTabsProps } from 'antd';
+import { App as AntdApp, ConfigProvider, type TabsProps as AntTabsProps } from 'antd';
 import type { Locale } from 'antd/es/locale';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
@@ -142,17 +142,19 @@ function App({
     <QueryClientProvider client={queryClient} >
       <ThemeProvider>
         <ConfigProvider locale={antdLocale}>
-          <AuthProvider>
-            <SiteProvider>
-              <AIProvider>
-                <Router basename={getURL()}>
-                  <Routes>
-                    {renderRoutes(routes)}
-                  </Routes>
-                </Router>
-              </AIProvider>
-            </SiteProvider>
-          </AuthProvider>
+          <AntdApp>
+            <AuthProvider>
+              <SiteProvider>
+                <AIProvider>
+                  <Router basename={getURL()}>
+                    <Routes>
+                      {renderRoutes(routes)}
+                    </Routes>
+                  </Router>
+                </AIProvider>
+              </SiteProvider>
+            </AuthProvider>
+          </AntdApp>
         </ConfigProvider>
       </ThemeProvider>
     </QueryClientProvider>

@@ -15,7 +15,7 @@
  */
 
 import { useRequest } from "ahooks";
-import { Modal, Space, Button, Input, Form, message, Radio, Select } from "antd";
+import { App, Modal, Space, Button, Input, Form, Radio, Select } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import api from '@/service/api';
 import { useTranslation } from "react-i18next";
@@ -46,6 +46,8 @@ const ServiceAccountForm = ({
   enableMultiOrg = false,
   organizations = [],
 }: ServiceAccountFormProps) => {
+  const { message } = App.useApp();
+
   const { hasGlobalPermission } = usePermission();
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');

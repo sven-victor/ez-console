@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, Select, Button, message, Tag, Space, Typography, Skeleton, Empty } from 'antd';
+import { App, Card, Select, Button, Tag, Space, Typography, Skeleton, Empty } from 'antd';
 import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
 import { SyncOutlined, LockOutlined } from '@ant-design/icons';
@@ -32,6 +32,8 @@ interface ServiceAuthorizationProps {
 const { Text } = Typography;
 
 const ServiceAccountAuthorization: React.FC<ServiceAuthorizationProps> = ({ serviceAccount, onRefresh, loading }) => {
+  const { message } = App.useApp();
+
   const { id: serviceAccountId } = serviceAccount || {};
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');

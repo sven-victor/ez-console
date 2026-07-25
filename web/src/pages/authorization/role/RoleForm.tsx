@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
+  App,
   Alert,
   Card,
   Form,
@@ -26,7 +27,6 @@ import {
   Tree,
   Button,
   Space,
-  message,
   Spin,
   Empty,
   Checkbox,
@@ -142,6 +142,8 @@ const templateMap = {
 const defaultPolicyDocument = JSON.stringify({ Statement: [] }, null, 2);
 
 const RoleForm: React.FC = () => {
+  const { message } = App.useApp();
+
   const { styles } = useStyle();
   const { hasGlobalPermission } = usePermission();
   const { t } = useTranslation('authorization');

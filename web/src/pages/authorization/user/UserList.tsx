@@ -16,6 +16,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import {
+  App,
   Table,
   Card,
   Button,
@@ -26,7 +27,6 @@ import {
   Col,
   Form,
   Select,
-  message,
   Badge,
   Typography,
   Modal,
@@ -63,6 +63,7 @@ import { useAI } from '@/contexts/AIContext';
 const { Option } = Select;
 
 const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onClose: () => void, onSuccess: () => void }) => {
+  const { message } = App.useApp();
   const { t } = useTranslation("authorization");
 
   const [fixMethod, setFixMethod] = useState<'local' | 'bind' | null>(null);
@@ -150,6 +151,8 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
 
 // User list page
 const UserList: React.FC = () => {
+  const { message } = App.useApp();
+
   const { registerPageAI } = useAI();
   const { addTask } = useSite();
   const navigate = useNavigate();

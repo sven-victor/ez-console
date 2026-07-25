@@ -16,6 +16,7 @@
 
 import React, { useCallback } from 'react';
 import {
+  App,
   Card,
   Descriptions,
   Button,
@@ -24,7 +25,6 @@ import {
   Tabs,
   Typography,
   Spin,
-  message,
   Badge,
 } from 'antd';
 import {
@@ -47,6 +47,8 @@ const { Title } = Typography;
 const { TabPane } = Tabs;
 
 const UserDetail: React.FC = () => {
+  const { message } = App.useApp();
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation("authorization");

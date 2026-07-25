@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Row, Col, Card, Statistic, message, Skeleton } from 'antd';
+import { App, Row, Col, Card, Statistic, Skeleton } from 'antd';
 import { useAuth } from '../hooks/useAuth';
 import { useTranslation } from 'react-i18next';
 import {
@@ -42,6 +42,8 @@ ChartJS.register(
   Legend
 );
 const Dashboard: React.FC = () => {
+  const { message } = App.useApp();
+
   const { user } = useAuth();
   const { t } = useTranslation();
 

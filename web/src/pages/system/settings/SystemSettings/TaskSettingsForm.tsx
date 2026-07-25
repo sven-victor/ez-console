@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Form, Input, InputNumber, Switch, Button, message, Space, Spin, Select } from 'antd';
+import { App, Form, Input, InputNumber, Switch, Button, Space, Spin, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined, CalendarOutlined } from '@ant-design/icons';
@@ -26,6 +26,8 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 const TaskSettingsForm: React.FC = () => {
+  const { message } = App.useApp();
+
   const navigate = useNavigate();
   const { t } = useTranslation('system');
   const { t: tTask } = useTranslation('task');

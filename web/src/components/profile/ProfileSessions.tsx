@@ -15,7 +15,7 @@
  */
 
 import React, { useState } from 'react';
-import { Table, Button, Tag, Popconfirm, message, Space, Typography, Empty } from 'antd';
+import { App, Table, Button, Tag, Popconfirm, Space, Typography, Empty } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { GlobalOutlined, ClockCircleOutlined, LaptopOutlined, EnvironmentOutlined } from '@ant-design/icons';
@@ -25,6 +25,8 @@ const { Text } = Typography;
 
 
 const ProfileSessions: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [terminatingId, setTerminatingId] = useState<string | null>(null);

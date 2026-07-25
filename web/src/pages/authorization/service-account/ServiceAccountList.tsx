@@ -17,6 +17,7 @@
 import React, { useState } from 'react';
 import { useRequest } from 'ahooks';
 import {
+  App,
   Table,
   Card,
   Button,
@@ -27,7 +28,6 @@ import {
   Col,
   Form,
   Tooltip,
-  message,
   Badge,
   Select,
 } from 'antd';
@@ -55,6 +55,8 @@ import Actions from '@/components/Actions';
 
 // Service Account List Page
 const ServiceAccountList: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();

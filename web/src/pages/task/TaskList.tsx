@@ -15,7 +15,7 @@
  */
 
 import React, { useRef, useState } from 'react';
-import { Card, Button, Space, message, Input, Tag, Progress } from 'antd';
+import { App, Card, Button, Space, Input, Tag, Progress } from 'antd';
 import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined, EyeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -36,6 +36,8 @@ const statusColors: Record<API.TaskStatus, string> = {
 };
 
 const TaskList: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('task');
   const { t: tCommon } = useTranslation('common');
   const tableRef = useRef<TableRef<API.Task>>(null);

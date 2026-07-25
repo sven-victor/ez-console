@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Form, Switch, Select, Input, Button, Space, message, Spin, Divider, Alert } from 'antd';
+import { App, Form, Switch, Select, Input, Button, Space, Spin, Divider, Alert } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -110,6 +110,8 @@ const PROVIDER_FIELD_MAPPINGS = {
 };
 
 const OAuthSettingsForm: React.FC<OAuthSettingsFormProps> = ({ initialData, onRefresh }) => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm<API.OAuthSettings>();

@@ -16,6 +16,7 @@
 
 import React, { useState, useMemo, lazy, Suspense } from 'react';
 import {
+  App,
   Card,
   Table,
   Button,
@@ -26,7 +27,6 @@ import {
   InputNumber,
   Select,
   Switch,
-  message,
   Tag,
   Tooltip,
   Row,
@@ -86,6 +86,8 @@ interface AIModelFormData {
 }
 
 const AIModelSettings: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();

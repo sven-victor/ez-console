@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Form, Input, Select, Switch, Button, message, Modal, Spin, Radio, Divider, InputNumber } from 'antd';
+import { App, Form, Input, Select, Switch, Button, Modal, Spin, Radio, Divider, InputNumber } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
@@ -24,6 +24,8 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 const SMTPSettingsForm: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm<API.SMTPSettings>();

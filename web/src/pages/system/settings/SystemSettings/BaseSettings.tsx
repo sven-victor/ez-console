@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Form, Button, message, Space, Spin, Input, Tabs, Switch, Popconfirm } from 'antd';
+import { App, Form, Button, Space, Spin, Input, Tabs, Switch, Popconfirm } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined, ClearOutlined } from '@ant-design/icons';
@@ -25,6 +25,8 @@ import { PermissionGuard } from '@/components/PermissionGuard';
 
 
 const BaseSettingsForm: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t, i18n } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();

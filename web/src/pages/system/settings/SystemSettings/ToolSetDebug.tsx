@@ -14,13 +14,13 @@
 
 import React, { useState, lazy, Suspense, useCallback } from 'react';
 import {
+  App,
   Card,
   Button,
   Space,
   Select,
   Tag,
   Typography,
-  message,
   Descriptions,
   Spin,
   Tooltip,
@@ -91,6 +91,8 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
 };
 
 const ToolSetDebug: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();

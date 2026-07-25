@@ -17,6 +17,7 @@
 import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  App,
   Card,
   Table,
   Button,
@@ -25,7 +26,6 @@ import {
   Form,
   Input,
   Select,
-  message,
   Tag,
   Row,
   Col,
@@ -78,6 +78,8 @@ interface ToolSetFormData {
 }
 
 const ToolSetSettings: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();

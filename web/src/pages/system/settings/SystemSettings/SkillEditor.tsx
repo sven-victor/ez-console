@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
-import { Card, Button, Space, Input, message, Tree, Modal, Form, Menu, Alert, Spin } from 'antd';
+import { App, Card, Button, Space, Input, Tree, Modal, Form, Menu, Alert, Spin } from 'antd';
 import type { DataNode } from 'antd/es/tree';
 import { FolderOutlined, FileOutlined, SaveOutlined, PlusOutlined, DeleteOutlined, EditOutlined, FolderAddOutlined, FileAddOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -66,6 +66,8 @@ function parentPath(path: string): string {
 }
 
 const SkillEditor: React.FC = () => {
+  const { message } = App.useApp();
+
   const { styles } = useStyles();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

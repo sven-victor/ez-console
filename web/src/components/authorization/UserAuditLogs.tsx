@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal, message } from 'antd';
+import { App, Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -73,6 +73,7 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
   },
   columnsFilter = (columns: ColumnsType<API.AuditLog>) => columns,
 }) => {
+  const { message } = App.useApp();
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [pagination, setPagination] = useState({

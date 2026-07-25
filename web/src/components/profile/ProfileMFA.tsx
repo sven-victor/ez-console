@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Button, Steps, Input, Alert, message, Result, QRCode, Space, Modal, Segmented, Divider } from 'antd';
+import { App, Button, Steps, Input, Alert, Result, QRCode, Space, Modal, Segmented, Divider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { ClockCircleFilled, EyeInvisibleOutlined, EyeOutlined, MailOutlined } from '@ant-design/icons';
@@ -27,6 +27,8 @@ interface ProfileMFAProps {
 }
 
 const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [currentStep, setCurrentStep] = useState(0);

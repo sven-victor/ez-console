@@ -37,7 +37,7 @@ import { type ComponentProps, XMarkdown, XMarkdownProps } from '@ant-design/x-ma
 import { LuPanelRight, LuPanelRightDashed, LuExternalLink, LuBookOpenText } from "react-icons/lu";
 
 import { useRequest } from 'ahooks';
-import { Button, Dropdown, Flex, Radio, Space, Spin, Tag, message } from 'antd';
+import { App, Button, Dropdown, Flex, Radio, Space, Spin, Tag } from 'antd';
 import { createStyles, useThemeMode } from 'antd-style';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -592,7 +592,7 @@ export const AIChat: React.FC<AIChatProps> = ({
     setDefaultActiveConversationKey(activeConversationKey)
   }, [activeConversationKey])
 
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message: messageApi } = App.useApp();
 
   const [inputValue, setInputValue] = useState('');
   const [skillsVisible, setSkillsVisible] = useState(false);
@@ -738,7 +738,7 @@ export const AIChat: React.FC<AIChatProps> = ({
   }, {
     manual: true,
     onError: () => {
-      message.error(t('chat.fetchConversationFailed', { defaultValue: 'Failed to fetch conversation' }));
+      messageApi.error(t('chat.fetchConversationFailed', { defaultValue: 'Failed to fetch conversation' }));
     },
     onSuccess: (data) => {
       if (messages && messages.length > 0 && (messages[messages.length - 1].status === 'loading' || messages.length > data.messages.length)) {
@@ -803,7 +803,7 @@ export const AIChat: React.FC<AIChatProps> = ({
   }, {
     manual: true,
     onError: () => {
-      message.error(t('chat.createConversationFailed', { defaultValue: 'Failed to create conversation' }));
+      messageApi.error(t('chat.createConversationFailed', { defaultValue: 'Failed to create conversation' }));
     },
     onSuccess: (data, [message]) => {
       addConversation(convertConversation(data), 'prepend');
@@ -996,7 +996,6 @@ export const AIChat: React.FC<AIChatProps> = ({
   // ==================== Render =================
   return (
     <XProvider>
-      {contextHolder}
       <ChatContext.Provider value={{ onReload, setMessage }}>
         <div style={{ height: '50px', width: '100%', position: 'relative' }}>
           <Radio.Group

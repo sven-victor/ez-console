@@ -15,7 +15,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Button, Space, message, Tag, Switch, Progress } from 'antd';
+import { App, Card, Button, Space, Tag, Switch, Progress } from 'antd';
 import { ReloadOutlined, PlayCircleOutlined, HistoryOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -38,6 +38,8 @@ const statusColors: Record<API.TaskStatus, string> = {
 };
 
 const TaskScheduleList: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('task');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();

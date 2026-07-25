@@ -6,7 +6,7 @@
  */
 
 import React, { useMemo, lazy, Suspense } from 'react';
-import { Card, Button, Spin, message } from 'antd';
+import { App, Card, Button, Spin } from 'antd';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
@@ -17,6 +17,8 @@ import { Loading } from '@/index';
 const MarkdownViewer = lazy(() => import('@/components/MarkdownViewer'));
 
 const SkillPreview: React.FC = () => {
+  const { message } = App.useApp();
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('system');

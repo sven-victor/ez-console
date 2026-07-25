@@ -54,7 +54,7 @@ const baseConfig: UserConfig = {
         entryFileNames: 'assets/[name].[hash].js',
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
-        manualChunks(id, meta) {
+        manualChunks(id) {
           if (id.includes('/node_modules/chart.js/') || id.includes('/node_modules/react-chartjs-2/')) return 'chartjs';
           if (id.includes('/node_modules/highlight.js/')) return 'highlight';
           if (id.includes('/src/components/AIChat.tsx')) return 'ai-chat';

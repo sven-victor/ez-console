@@ -15,7 +15,7 @@
  */
 
 import React, { useState } from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { App, Form, Input, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { AvatarUpload } from '../Avatar';
@@ -26,6 +26,8 @@ interface ProfileBasicProps {
 }
 
 const ProfileBasic: React.FC<ProfileBasicProps> = ({ user, onSuccess }) => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();

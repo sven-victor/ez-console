@@ -16,11 +16,11 @@
 
 import React, { useState } from 'react';
 import {
+  App,
   Card,
   Button,
   Table,
   Space,
-  message,
   Modal,
   Form,
   Input,
@@ -56,6 +56,8 @@ const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
 
 const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAccountID: serviceAccountId }) => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [modalVisible, setModalVisible] = useState(false);

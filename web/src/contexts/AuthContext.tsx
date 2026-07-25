@@ -15,7 +15,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { message } from 'antd';
+import { App } from 'antd';
 import api from '@/service/api';
 import client from '@/service/client';
 import { useRequest } from 'ahooks';
@@ -67,6 +67,8 @@ const setAuthToken = (token: string | null, writeToLocalStorage: boolean = true)
 
 // Auth provider component
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const { message } = App.useApp();
+
   const [user, setUser] = useState<API.User | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
 

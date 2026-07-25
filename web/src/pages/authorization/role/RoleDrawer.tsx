@@ -15,7 +15,7 @@
  */
 
 import React, { useMemo } from 'react';
-import { Drawer, Descriptions, Tag, Spin, Empty, message, Typography, Card, Space } from 'antd';
+import { App, Drawer, Descriptions, Tag, Spin, Empty, Typography, Card, Space } from 'antd';
 import { TeamOutlined, LockOutlined, ToolOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useSite } from '@/contexts/SiteContext';
@@ -36,6 +36,8 @@ interface RoleDrawerProps {
 }
 
 const RoleDrawer: React.FC<RoleDrawerProps> = ({ roleId, open, onClose }) => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('authorization');
   const { siteConfig } = useSite();
   const enableMultiOrg = siteConfig?.enable_multi_org ?? false;

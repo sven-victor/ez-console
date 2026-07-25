@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Form, Switch, Select, InputNumber, Button, message, Space, Spin } from 'antd';
+import { App, Form, Switch, Select, InputNumber, Button, Space, Spin } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { SaveOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -23,6 +23,8 @@ import api from '@/service/api';
 
 
 const SecuritySettingForm: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();

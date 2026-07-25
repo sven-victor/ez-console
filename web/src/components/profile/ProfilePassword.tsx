@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Form, Input, Button, message } from 'antd';
+import { App, Form, Input, Button } from 'antd';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
@@ -23,6 +23,7 @@ import { ApiError } from '@/service/client';
 import classNames from 'classnames';
 
 const ProfilePassword: React.FC<{ className?: string, onSuccess?: () => void, token?: string }> = ({ className, onSuccess, token }) => {
+  const { message } = App.useApp();
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();

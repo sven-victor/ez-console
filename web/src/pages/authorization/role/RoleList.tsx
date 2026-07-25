@@ -15,7 +15,7 @@
  */
 
 import React, { useState } from 'react';
-import { Card, Button, Space, message, Popconfirm, Tag, Row, Col, Tooltip, Table, Form, Input, Select } from 'antd';
+import { App, Card, Button, Space, Popconfirm, Tag, Row, Col, Tooltip, Table, Form, Input, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, LockOutlined, ReloadOutlined, TeamOutlined, CopyOutlined } from '@ant-design/icons';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import api from '@/service/api';
@@ -30,6 +30,8 @@ import RoleDrawer from './RoleDrawer';
 import { useRequest } from 'ahooks';
 
 const RoleList: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation("authorization");
   const { t: tCommon } = useTranslation('common');
   const { siteConfig } = useSite();

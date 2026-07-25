@@ -7,6 +7,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  App,
   Card,
   Table,
   Button,
@@ -16,7 +17,6 @@ import {
   Input,
   Select,
   AutoComplete,
-  message,
   Tag,
   Upload,
   Checkbox,
@@ -170,6 +170,8 @@ function buildPatternToolNameOptions(
 }
 
 const SkillSettings: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();

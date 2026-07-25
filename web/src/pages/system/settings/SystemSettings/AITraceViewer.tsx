@@ -16,6 +16,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
+  App,
   Card,
   Button,
   Input,
@@ -24,7 +25,6 @@ import {
   Timeline,
   Tag,
   Typography,
-  message,
   Empty,
   Spin,
   Descriptions,
@@ -684,6 +684,8 @@ const SequenceDiagram: React.FC<{
 };
 
 const AITraceViewer: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('ai');
   const navigate = useNavigate();
   const [traceId, setTraceId] = useState('');

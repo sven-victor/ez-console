@@ -16,7 +16,7 @@
 
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
-import { message } from 'antd';
+import { App } from 'antd';
 import React, { createContext, useContext, ReactNode, useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type StrictRJSFSchema as JSONSchema7 } from '@rjsf/utils';
@@ -106,6 +106,8 @@ interface AIProviderProps {
 
 // AI provider component
 export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('ai');
   const [layout, setLayout] = useState<'classic' | 'sidebar' | 'float-sidebar'>('sidebar');
   const [visible, setVisible] = useState(false);

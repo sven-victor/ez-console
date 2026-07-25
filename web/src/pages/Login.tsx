@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Form, Input, Button, Card, message, Typography, Alert, Divider, Space, Avatar, Result } from 'antd';
+import { App, Form, Input, Button, Card, Typography, Alert, Divider, Space, Avatar, Result } from 'antd';
 import { LockOutlined, UserOutlined, GithubOutlined, KeyOutlined } from '@ant-design/icons';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -72,6 +72,8 @@ const useStyle = createStyles(({ css }) => {
   }
 })
 const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
+  const { message } = App.useApp();
+
   const { styles } = useStyle();
   const navigate = useNavigate();
   const location = useLocation();

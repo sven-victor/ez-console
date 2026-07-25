@@ -15,7 +15,7 @@
  */
 
 import React from 'react';
-import { Card, Descriptions, Button, Tag, Space, Progress, Spin, message } from 'antd';
+import { App, Card, Descriptions, Button, Tag, Space, Progress, Spin } from 'antd';
 import { ArrowLeftOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +34,8 @@ const statusColors: Record<API.TaskStatus, string> = {
 };
 
 const TaskDetail: React.FC = () => {
+  const { message } = App.useApp();
+
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation('task');

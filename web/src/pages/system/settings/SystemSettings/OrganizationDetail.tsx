@@ -16,6 +16,7 @@
 
 import React, { useState } from 'react';
 import {
+  App,
   Card,
   Table,
   Button,
@@ -23,7 +24,6 @@ import {
   Modal,
   Form,
   Input,
-  message,
   Tag,
   Descriptions,
   Select,
@@ -57,6 +57,8 @@ interface UpdateRolesFormData {
 }
 
 const OrganizationDetail: React.FC = () => {
+  const { message } = App.useApp();
+
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation('system');

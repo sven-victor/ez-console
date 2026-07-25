@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Card, Tabs, message } from 'antd';
+import { App, Card, Tabs } from 'antd';
 import { useTranslation } from 'react-i18next';
 import ProfileBasic from '../components/profile/ProfileBasic';
 import ProfilePassword from '../components/profile/ProfilePassword';
@@ -27,6 +27,8 @@ import UserAuditLogs from '@/components/authorization/UserAuditLogs';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const Profile: React.FC = () => {
+  const { message } = App.useApp();
+
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const { user, updateUser } = useAuth();
