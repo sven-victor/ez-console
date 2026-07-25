@@ -313,6 +313,9 @@ func collectSystemText(opts *ChatCompletionOptions) string {
 	// Skill metadata is injected by PrepareChatCompletionSkillLoader into message
 	// system prompts and merged via splitSystemFromMessages.
 	if opts != nil {
+		if p := strings.TrimSpace(opts.ModelSystemPrompt); p != "" {
+			b.WriteString(p)
+		}
 		for _, p := range opts.EphemeralSystemPrompts {
 			p = strings.TrimSpace(p)
 			if p == "" {

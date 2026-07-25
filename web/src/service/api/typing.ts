@@ -110,16 +110,18 @@ export interface AIModel {
   name: string;
   /** Organization ID */
   organization_id: string;
-  /** Provider (openai, etc.) */
+  /** Provider (openai, anthropic, gemini, etc.) */
   provider: AIModelProvider;
   /** Status */
   status: AIModelStatus;
+  /** System prompt prepended to every conversation (optional) */
+  system_prompt: string;
   updated_at: string;
   /** Last updater user ID */
   updated_by: string;
 }
 
-export type AIModelProvider = "openai";
+export type AIModelProvider = "openai" | "anthropic" | "gemini";
 
 export type AIModelStatus = "enabled" | "disabled";
 
@@ -304,6 +306,7 @@ export interface CreateAIModelRequest {
   max_chat_tokens?: number;
   name: string;
   provider: AIModelProvider;
+  system_prompt?: string;
 }
 
 export interface CreateChatSessionRequest {
@@ -2239,6 +2242,7 @@ export interface UpdateAIModelRequest {
   name: string;
   provider: AIModelProvider;
   status?: AIModelStatus;
+  system_prompt?: string;
 }
 
 export interface UpdateCurrentUserRequest {

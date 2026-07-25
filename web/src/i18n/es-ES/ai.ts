@@ -35,6 +35,9 @@ export default {
     cloneLoadFailed: 'No se pudo cargar el modelo para clonar',
     editTooltip: 'Editar modelo',
     deleteTooltip: 'Eliminar modelo',
+    systemPrompt: 'Prompt del sistema',
+    systemPromptHelp: 'Prompt del sistema opcional antepuesto a cada conversación de este modelo.',
+    systemPromptPlaceholder: 'Introduzca el prompt del sistema (opcional)',
     maxChatTokens: 'Máx. tokens de chat (contexto / resumen)',
     maxChatTokensHelp:
       '0 usa solo max_tokens de la configuración del proveedor. Un valor positivo fija la ventana de contexto para el resumen de este modelo.',

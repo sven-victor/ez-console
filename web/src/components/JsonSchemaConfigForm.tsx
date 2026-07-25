@@ -37,6 +37,7 @@ const useStyle = createStyles(({ css }) => {
       .ant-form-item-control-input-content>#root {
         border-width: 0;
         padding: 0px;
+        display: contents;
       }
       >.ant-btn-submit{
         display: none;
@@ -52,6 +53,7 @@ const useStyle = createStyles(({ css }) => {
       }
       .ant-form-item-additional{
         height: 24px;
+        overflow: hidden;
       }
       .ant-form-item-additional:has(>.ant-form-item-explain){
         >.ant-form-item-extra{

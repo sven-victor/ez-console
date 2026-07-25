@@ -188,6 +188,9 @@ type ChatCompletionOptions struct {
 	SessionID    string
 	SessionStore memory.SessionStore
 
+	// ModelSystemPrompt is the AIModel-level system prompt (base instruction).
+	ModelSystemPrompt string
+
 	// EphemeralSystemPrompts are page-level prompts merged into the agent system
 	// prompt for this run only (not persisted via SessionStore).
 	EphemeralSystemPrompts []string
@@ -286,6 +289,13 @@ func WithChatSession(sessionID string, store memory.SessionStore) WithChatOption
 	return func(options *ChatCompletionOptions) {
 		options.SessionID = sessionID
 		options.SessionStore = store
+	}
+}
+
+// WithChatModelSystemPrompt sets the AIModel-level system prompt (applied before ephemeral prompts).
+func WithChatModelSystemPrompt(prompt string) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.ModelSystemPrompt = prompt
 	}
 }
 

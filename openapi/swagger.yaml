@@ -157,6 +157,8 @@ definitions:
         type: string
       provider:
         $ref: '#/definitions/model.AIModelProvider'
+      system_prompt:
+        type: string
     required:
     - config
     - name
@@ -258,6 +260,8 @@ definitions:
         $ref: '#/definitions/model.AIModelProvider'
       status:
         $ref: '#/definitions/model.AIModelStatus'
+      system_prompt:
+        type: string
     required:
     - name
     - provider
@@ -1060,11 +1064,14 @@ definitions:
       provider:
         allOf:
         - $ref: '#/definitions/model.AIModelProvider'
-        description: Provider (openai, etc.)
+        description: Provider (openai, anthropic, gemini, etc.)
       status:
         allOf:
         - $ref: '#/definitions/model.AIModelStatus'
         description: Status
+      system_prompt:
+        description: System prompt prepended to every conversation (optional)
+        type: string
       updated_at:
         type: string
       updated_by:
@@ -1083,15 +1090,20 @@ definitions:
     - organization_id
     - provider
     - status
+    - system_prompt
     - updated_at
     - updated_by
     type: object
   model.AIModelProvider:
     enum:
     - openai
+    - anthropic
+    - gemini
     type: string
     x-enum-varnames:
     - AIModelProviderOpenAI
+    - AIModelProviderAnthropic
+    - AIModelProviderGemini
   model.AIModelStatus:
     enum:
     - enabled

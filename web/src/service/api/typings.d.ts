@@ -112,16 +112,18 @@ declare global {
       name: string;
       /** Organization ID */
       organization_id: string;
-      /** Provider (openai, etc.) */
+      /** Provider (openai, anthropic, gemini, etc.) */
       provider: AIModelProvider;
       /** Status */
       status: AIModelStatus;
+      /** System prompt prepended to every conversation (optional) */
+      system_prompt: string;
       updated_at: string;
       /** Last updater user ID */
       updated_by: string;
     }
   
-    type AIModelProvider = "openai";
+    type AIModelProvider = "openai" | "anthropic" | "gemini";
   
     type AIModelStatus = "enabled" | "disabled";
   
@@ -306,6 +308,7 @@ declare global {
       max_chat_tokens?: number;
       name: string;
       provider: AIModelProvider;
+      system_prompt?: string;
     }
   
     interface CreateChatSessionRequest {
@@ -2241,6 +2244,7 @@ declare global {
       name: string;
       provider: AIModelProvider;
       status?: AIModelStatus;
+      system_prompt?: string;
     }
   
     interface UpdateCurrentUserRequest {

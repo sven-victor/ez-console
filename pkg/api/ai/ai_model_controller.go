@@ -61,6 +61,7 @@ type CreateAIModelRequest struct {
 	Provider          model.AIModelProvider `json:"provider" binding:"required"`
 	Config            model.AIModelConfig   `json:"config" binding:"required" swaggertype:"object"`
 	IsDefault         bool                  `json:"is_default" validate:"optional"`
+	SystemPrompt      string                `json:"system_prompt" validate:"optional"`
 	MaxChatTokens     int                   `json:"max_chat_tokens" validate:"optional"`
 	MaxChatIterations int                   `json:"max_chat_iterations" validate:"optional"`
 }
@@ -73,6 +74,7 @@ type UpdateAIModelRequest struct {
 	Config            model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
 	IsDefault         bool                  `json:"is_default" validate:"optional"`
 	Status            model.AIModelStatus   `json:"status" validate:"optional"`
+	SystemPrompt      string                `json:"system_prompt" validate:"optional"`
 	MaxChatTokens     int                   `json:"max_chat_tokens" validate:"optional"`
 	MaxChatIterations int                   `json:"max_chat_iterations" validate:"optional"`
 }
@@ -198,6 +200,17 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 		}
 	}
 
+	// Promote legacy config.system_prompt if the top-level field is empty.
+	systemPrompt := req.SystemPrompt
+	if systemPrompt == "" && req.Config != nil {
+		if sp, ok := req.Config["system_prompt"].(string); ok {
+			systemPrompt = sp
+		}
+	}
+	if req.Config != nil {
+		delete(req.Config, "system_prompt")
+	}
+
 	aiModel := model.NewAIModel(
 		organizationID,
 		req.Name,
@@ -207,6 +220,7 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 		userID.(string),
 	)
 	aiModel.IsDefault = req.IsDefault
+	aiModel.SystemPrompt = systemPrompt
 	aiModel.MaxChatTokens = req.MaxChatTokens
 	aiModel.MaxChatIterations = req.MaxChatIterations
 
@@ -325,6 +339,16 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 		}
 	}
 
+	systemPrompt := req.SystemPrompt
+	if systemPrompt == "" && req.Config != nil {
+		if sp, ok := req.Config["system_prompt"].(string); ok {
+			systemPrompt = sp
+		}
+	}
+	if req.Config != nil {
+		delete(req.Config, "system_prompt")
+	}
+
 	aiModel := &model.AIModel{
 		Name:              req.Name,
 		Description:       req.Description,
@@ -333,6 +357,7 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 		IsDefault:         req.IsDefault,
 		UpdatedBy:         userID.(string),
 		Status:            req.Status,
+		SystemPrompt:      systemPrompt,
 		MaxChatTokens:     req.MaxChatTokens,
 		MaxChatIterations: req.MaxChatIterations,
 	}

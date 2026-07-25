@@ -67,11 +67,10 @@ func newOpenAIClientFromConfig(config map[string]interface{}) (*openai.Provider,
 
 // OpenAIConfig is the config shape for the OpenAI provider (for JSON Schema reflection).
 type OpenAIConfig struct {
-	APIKey         string `json:"api_key" jsonschema:"description=OpenAI API key (encrypted),format=password"`
-	ModelID        string `json:"model_id" jsonschema:"description=OpenAI model ID (e.g.\\, gpt-4\\, gpt-3.5-turbo)"`
-	BaseURL        string `json:"base_url,omitempty" jsonschema:"description=Custom API endpoint URL (optional)"`
-	OrganizationID string `json:"organization_id,omitempty" jsonschema:"description=OpenAI organization ID (optional)"`
-	SystemPrompt   string `json:"system_prompt,omitempty" jsonschema:"description=System prompt prepended to every conversation (optional)" jsonschema_extras:"x-ui-widget=textarea"`
+	APIKey         string `json:"api_key" jsonschema:"title=API Key,description=OpenAI API key (encrypted),format=password"`
+	ModelID        string `json:"model_id" jsonschema:"title=Model ID,description=OpenAI model ID (e.g.\\, gpt-4\\, gpt-3.5-turbo)"`
+	BaseURL        string `json:"base_url,omitempty" jsonschema:"title=Base URL,description=Custom API endpoint URL (optional)"`
+	OrganizationID string `json:"organization_id,omitempty" jsonschema:"title=Organization ID,description=OpenAI organization ID (optional)"`
 }
 
 // OpenAIClientFactory implements AIClientFactory for OpenAI
@@ -117,11 +116,6 @@ func (f *OpenAIClientFactory) GetConfigSchema() (*jsonschema.Schema, map[string]
 						"xs":       12,
 						"children": []string{"organization_id"},
 					},
-				}, {
-					"ui:col": {
-						"xs":       24,
-						"children": []string{"system_prompt"},
-					},
 				}},
 			},
 		},
@@ -161,13 +155,6 @@ func (f *OpenAIClientFactory) GetConfigFields() []util.ConfigField {
 			Name:        "organization_id",
 			DisplayName: "Organization ID",
 			Description: "OpenAI organization ID (optional)",
-			Type:        util.FieldTypeString,
-			Required:    false,
-		},
-		{
-			Name:        "system_prompt",
-			DisplayName: "System Prompt",
-			Description: "System prompt prepended to every conversation (optional)",
 			Type:        util.FieldTypeString,
 			Required:    false,
 		},

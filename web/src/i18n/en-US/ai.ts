@@ -35,6 +35,9 @@ export default {
     cloneLoadFailed: 'Failed to load model for clone',
     editTooltip: 'Edit model',
     deleteTooltip: 'Delete model',
+    systemPrompt: 'System Prompt',
+    systemPromptHelp: 'Optional system prompt prepended to every conversation for this model.',
+    systemPromptPlaceholder: 'Enter system prompt (optional)',
     maxChatTokens: 'Max chat tokens (context / summarization)',
     maxChatTokensHelp:
       '0 uses provider config max_tokens only. A positive value sets the context window for summarization for this model.',

@@ -66,6 +66,7 @@ interface AIModel {
   config: Record<string, unknown>;
   status: 'enabled' | 'disabled';
   is_default: boolean;
+  system_prompt?: string;
   max_chat_tokens?: number;
   max_chat_iterations?: number;
   created_at: string;
@@ -79,6 +80,7 @@ interface AIModelFormData {
   config?: Record<string, unknown>;
   is_default?: boolean;
   status?: 'enabled' | 'disabled';
+  system_prompt?: string;
   max_chat_tokens?: number;
   max_chat_iterations?: number;
 }
@@ -223,6 +225,7 @@ const AIModelSettings: React.FC = () => {
       is_default: record.is_default,
       config: config, // Spread config fields to form
       status: record.status,
+      system_prompt: record.system_prompt ?? '',
       max_chat_tokens: record.max_chat_tokens ?? 0,
       max_chat_iterations: record.max_chat_iterations ?? 0,
     };
@@ -247,6 +250,7 @@ const AIModelSettings: React.FC = () => {
         config: cfg,
         is_default: false,
         status: 'enabled' as const,
+        system_prompt: m.system_prompt ?? '',
         max_chat_tokens: m.max_chat_tokens ?? 0,
         max_chat_iterations: m.max_chat_iterations ?? 0,
       });
@@ -273,6 +277,7 @@ const AIModelSettings: React.FC = () => {
       config,
       is_default: values.is_default,
       status: values.status,
+      system_prompt: values.system_prompt ?? '',
       max_chat_tokens: values.max_chat_tokens ?? 0,
       max_chat_iterations: values.max_chat_iterations ?? 0,
     };
@@ -496,6 +501,20 @@ const AIModelSettings: React.FC = () => {
                 />
               </Suspense>
             </Form.Item>)}
+            <Form.Item
+              name="system_prompt"
+              label={t('models.systemPrompt', { defaultValue: 'System Prompt' })}
+              tooltip={t('models.systemPromptHelp', {
+                defaultValue: 'Optional system prompt prepended to every conversation for this model.',
+              })}
+            >
+              <TextArea
+                rows={4}
+                placeholder={t('models.systemPromptPlaceholder', {
+                  defaultValue: 'Enter system prompt (optional)',
+                })}
+              />
+            </Form.Item>
             <Row gutter={16}>
               <Col span={12}>
                 <Form.Item

@@ -490,7 +490,7 @@ func (s *aiChatService) GenerateChatSessionTitle(ctx context.Context, organizati
 	return title, nil
 }
 
-// withAIModelChatTokenAndIterationOptions returns default MaxChatTokens / MaxChatIterations from the AIModel.
+// withAIModelChatTokenAndIterationOptions returns default MaxChatTokens / MaxChatIterations / SystemPrompt from the AIModel.
 // Apply caller-supplied WithChatOptions after this slice so callers can override these defaults.
 func withAIModelChatTokenAndIterationOptions(aiModel *model.AIModel) []ai.WithChatOptions {
 	maxTokens := aiModel.MaxChatTokens
@@ -502,6 +502,16 @@ func withAIModelChatTokenAndIterationOptions(aiModel *model.AIModel) []ai.WithCh
 		}
 	}
 	var out []ai.WithChatOptions
+	systemPrompt := aiModel.SystemPrompt
+	// Backward compatibility: legacy OpenAI config stored system_prompt inside Config.
+	if systemPrompt == "" && aiModel.Config != nil {
+		if sp, ok := aiModel.Config["system_prompt"].(string); ok {
+			systemPrompt = sp
+		}
+	}
+	if systemPrompt != "" {
+		out = append(out, ai.WithChatModelSystemPrompt(systemPrompt))
+	}
 	if maxTokens > 0 {
 		out = append(out, ai.WithChatMaxTokens(maxTokens))
 	}

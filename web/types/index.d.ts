@@ -207,16 +207,18 @@ export declare interface AIModel {
     name: string;
     /** Organization ID */
     organization_id: string;
-    /** Provider (openai, etc.) */
+    /** Provider (openai, anthropic, gemini, etc.) */
     provider: AIModelProvider;
     /** Status */
     status: AIModelStatus;
+    /** System prompt prepended to every conversation (optional) */
+    system_prompt: string;
     updated_at: string;
     /** Last updater user ID */
     updated_by: string;
 }
 
-export declare type AIModelProvider = "openai";
+export declare type AIModelProvider = "openai" | "anthropic" | "gemini";
 
 export declare type AIModelStatus = "enabled" | "disabled";
 
@@ -885,6 +887,7 @@ export declare interface CreateAIModelRequest {
     max_chat_tokens?: number;
     name: string;
     provider: AIModelProvider;
+    system_prompt?: string;
 }
 
 export declare interface CreateChatSessionRequest {
@@ -3102,6 +3105,7 @@ export declare interface UpdateAIModelRequest {
     name: string;
     provider: AIModelProvider;
     status?: AIModelStatus;
+    system_prompt?: string;
 }
 
 export declare interface UpdateCurrentUserRequest {

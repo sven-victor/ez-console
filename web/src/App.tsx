@@ -141,7 +141,7 @@ function App({
   return (
     <QueryClientProvider client={queryClient} >
       <ThemeProvider>
-        <ConfigProvider locale={antdLocale}        >
+        <ConfigProvider locale={antdLocale}>
           <AuthProvider>
             <SiteProvider>
               <AIProvider>

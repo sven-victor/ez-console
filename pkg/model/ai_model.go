@@ -24,7 +24,9 @@ import (
 type AIModelProvider string
 
 const (
-	AIModelProviderOpenAI AIModelProvider = "openai"
+	AIModelProviderOpenAI    AIModelProvider = "openai"
+	AIModelProviderAnthropic AIModelProvider = "anthropic"
+	AIModelProviderGemini    AIModelProvider = "gemini"
 )
 
 // AIModelStatus represents the AI model status
@@ -67,9 +69,10 @@ type AIModel struct {
 	OrganizationID    string          `gorm:"size:36;not null" json:"organization_id"`                         // Organization ID
 	Name              string          `gorm:"size:100;not null" json:"name" binding:"required"`                // Model name
 	Description       string          `gorm:"size:500" json:"description"`                                     // Model description
-	Provider          AIModelProvider `gorm:"size:50;not null" json:"provider" binding:"required"`             // Provider (openai, etc.)
+	Provider          AIModelProvider `gorm:"size:50;not null" json:"provider" binding:"required"`             // Provider (openai, anthropic, gemini, etc.)
 	Config            AIModelConfig   `gorm:"type:text" json:"config" binding:"required" swaggertype:"object"` // Additional configuration`          // Configuration (includes api_key, model_id, base_url, etc.)
 	Status            AIModelStatus   `gorm:"size:20;not null;default:'enabled'" json:"status"`                // Status
+	SystemPrompt      string          `gorm:"type:text" json:"system_prompt"`                                  // System prompt prepended to every conversation (optional)
 	MaxChatTokens     int             `gorm:"not null;default:0" json:"max_chat_tokens"`                       // Context window for auto-summarization; 0 uses config fallback only
 	MaxChatIterations int             `gorm:"not null;default:0" json:"max_chat_iterations"`                   // Max tool-call iterations; 0 uses client default
 	IsDefault         bool            `gorm:"not null;default:false" json:"is_default"`                        // Whether this is the default model

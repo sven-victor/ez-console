@@ -35,6 +35,9 @@ export default {
     cloneLoadFailed: 'Échec du chargement du modèle pour le clonage',
     editTooltip: 'Modifier le modèle',
     deleteTooltip: 'Supprimer le modèle',
+    systemPrompt: 'Invite système',
+    systemPromptHelp: 'Invite système facultative ajoutée au début de chaque conversation pour ce modèle.',
+    systemPromptPlaceholder: 'Entrez l\'invite système (facultatif)',
     maxChatTokens: 'Jetons de conversation max. (contexte / résumé)',
     maxChatTokensHelp:
       '0 n\'utilise que max_tokens de la configuration du fournisseur. Une valeur positive définit la fenêtre de contexte pour le résumé de ce modèle.',

@@ -35,6 +35,9 @@ export default {
     cloneLoadFailed: 'Kunde inte ladda modell för kloning',
     editTooltip: 'Redigera modell',
     deleteTooltip: 'Ta bort modell',
+    systemPrompt: 'Systemprompt',
+    systemPromptHelp: 'Valfri systemprompt som läggs till före varje konversation för denna modell.',
+    systemPromptPlaceholder: 'Ange systemprompt (valfritt)',
     maxChatTokens: 'Max chattokens (kontext / sammanfattning)',
     maxChatTokensHelp:
       '0 använder endast max_tokens från leverantörskonfigurationen. Ett positivt värde anger kontextfönster för sammanfattning för denna modell.',

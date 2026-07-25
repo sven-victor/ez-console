@@ -35,6 +35,9 @@ export default {
     cloneLoadFailed: 'فشل تحميل النموذج للاستنساخ',
     editTooltip: 'تحرير النموذج',
     deleteTooltip: 'حذف النموذج',
+    systemPrompt: 'موجه النظام',
+    systemPromptHelp: 'موجه نظام اختياري يُضاف في بداية كل محادثة لهذا النموذج.',
+    systemPromptPlaceholder: 'أدخل موجه النظام (اختياري)',
     maxChatTokens: 'الحد الأقصى لرموز المحادثة (السياق / التلخيص)',
     maxChatTokensHelp:
       '0 يستخدم فقط max_tokens من إعدادات المزود. قيمة موجبة تحدد نافذة السياق للتلخيص لهذا النموذج.',

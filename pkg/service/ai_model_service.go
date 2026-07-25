@@ -116,11 +116,23 @@ func (s *aiModelService) GetAIModelForAPI(ctx context.Context, organizationID, i
 		return nil, fmt.Errorf("failed to get AI model: %w", err)
 	}
 
+	promoteLegacySystemPrompt(&aiModel)
 	// Don't return the API key
 	if aiModel.Config != nil {
 		aiModel.Config["api_key"] = ""
 	}
 	return &aiModel, nil
+}
+
+// promoteLegacySystemPrompt moves config.system_prompt onto the model field for API consumers.
+func promoteLegacySystemPrompt(aiModel *model.AIModel) {
+	if aiModel == nil || aiModel.SystemPrompt != "" || aiModel.Config == nil {
+		return
+	}
+	if sp, ok := aiModel.Config["system_prompt"].(string); ok && sp != "" {
+		aiModel.SystemPrompt = sp
+	}
+	delete(aiModel.Config, "system_prompt")
 }
 
 // UpdateAIModel updates an AI model
@@ -152,7 +164,7 @@ func (s *aiModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 
 		if err := tx.Model(&model.AIModel{}).
 			Where("organization_id = ? AND resource_id = ?", organizationID, id).
-			Select("config", "name", "description", "provider", "is_default", "updated_by", "status", "max_chat_tokens", "max_chat_iterations").
+			Select("config", "name", "description", "provider", "is_default", "updated_by", "status", "system_prompt", "max_chat_tokens", "max_chat_iterations").
 			Updates(req).Error; err != nil {
 			return fmt.Errorf("failed to update AI model: %w", err)
 		}
@@ -206,6 +218,10 @@ func (s *aiModelService) ListAIModels(ctx context.Context, organizationID string
 	offset := (current - 1) * pageSize
 	if err := query.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&models).Error; err != nil {
 		return nil, 0, fmt.Errorf("failed to list AI models: %w", err)
+	}
+
+	for i := range models {
+		promoteLegacySystemPrompt(&models[i])
 	}
 
 	return models, total, nil

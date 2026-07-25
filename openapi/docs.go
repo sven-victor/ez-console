@@ -6984,6 +6984,9 @@ const docTemplate = `{
                 },
                 "provider": {
                     "$ref": "#/definitions/model.AIModelProvider"
+                },
+                "system_prompt": {
+                    "type": "string"
                 }
             }
         },
@@ -7128,6 +7131,9 @@ const docTemplate = `{
                 },
                 "status": {
                     "$ref": "#/definitions/model.AIModelStatus"
+                },
+                "system_prompt": {
+                    "type": "string"
                 }
             }
         },
@@ -8227,6 +8233,7 @@ const docTemplate = `{
                 "organization_id",
                 "provider",
                 "status",
+                "system_prompt",
                 "updated_at",
                 "updated_by"
             ],
@@ -8270,7 +8277,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "provider": {
-                    "description": "Provider (openai, etc.)",
+                    "description": "Provider (openai, anthropic, gemini, etc.)",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.AIModelProvider"
@@ -8285,6 +8292,10 @@ const docTemplate = `{
                         }
                     ]
                 },
+                "system_prompt": {
+                    "description": "System prompt prepended to every conversation (optional)",
+                    "type": "string"
+                },
                 "updated_at": {
                     "type": "string"
                 },
@@ -8297,10 +8308,14 @@ const docTemplate = `{
         "model.AIModelProvider": {
             "type": "string",
             "enum": [
-                "openai"
+                "openai",
+                "anthropic",
+                "gemini"
             ],
             "x-enum-varnames": [
-                "AIModelProviderOpenAI"
+                "AIModelProviderOpenAI",
+                "AIModelProviderAnthropic",
+                "AIModelProviderGemini"
             ]
         },
         "model.AIModelStatus": {
