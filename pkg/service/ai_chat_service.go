@@ -304,8 +304,7 @@ func (s *aiChatService) GetSimpleChatMessages(ctx context.Context, organizationI
 	if err := db.Session(ctx).
 		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
 		Where("role in ? and (tool_calls is null or tool_calls = '')", []model.AIChatMessageRole{model.AIChatMessageRoleUser, model.AIChatMessageRoleAssistant}).
-		Where("is_summary = ?", false).
-		Order("message_time ASC").Find(&messages).Error; err != nil {
+		Order("message_time ASC").Limit(100).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("failed to get chat messages: %w", err)
 	}
 
