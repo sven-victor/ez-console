@@ -473,6 +473,8 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
   }, [schema, uiSchema]);
   return (
     <Form
+      // Render as div so this can nest inside an outer antd <Form> without invalid nested <form>s.
+      tagName="div"
       className={classNames(styles.jsonSchemaForm, 'json-schema-config-form')}
       schema={schema || {}}
       formData={formData}

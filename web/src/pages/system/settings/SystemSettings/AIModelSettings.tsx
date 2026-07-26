@@ -544,8 +544,9 @@ const AIModelSettings: React.FC = () => {
             <Form.Item
               name="is_default"
               valuePropName="checked"
+              label={t('models.setAsDefault', { defaultValue: 'Set as default model' })}
             >
-              <Switch /> <span style={{ marginLeft: 8 }}>{t('models.setAsDefault', { defaultValue: 'Set as default model' })}</span>
+              <Switch />
             </Form.Item>
             <Form.Item hidden name="status" label={t('models.status', { defaultValue: 'Status' })}>
               <Input />

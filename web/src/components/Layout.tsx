@@ -34,6 +34,7 @@ import OrganizationSwitcher from './OrganizationSwitcher';
 import TaskListDropdown from './TaskListDropdown';
 import { useTranslation } from 'react-i18next';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
+import { type ItemType as MenuItemType } from 'antd/es/menu/interface';
 import usePermission from '@/hooks/usePermission';
 import { flatMapDeep, snakeCase } from 'lodash-es';
 import { getURL, toSmartTitle } from '@/utils';
@@ -44,7 +45,6 @@ import { useThemeMode, createStyles } from 'antd-style';
 import classNames from 'classnames';
 import { type AIChatProps } from './AIChat';
 const { Header, Content, Footer, Sider } = Layout;
-const { SubMenu } = Menu;
 
 const useStyle = createStyles(({ token, css }) => {
   return {
@@ -130,7 +130,7 @@ export interface AppLayoutProps {
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
   menuStyle?: 'dark' | 'light';
   transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
-  renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+  renderLayout?: (siteIconUrl: string | null, menuItems: MenuItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
   aiChatProps?: AIChatProps;
 }
 
@@ -254,7 +254,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 
   const defaultOpenKeys: string[] = flatMapDeep(routes, item => 'children' in item && item.children ? item.children : []).map(item => item?.name).filter(item => item !== undefined)
 
-  const renderMenuItems = (routes: IRoute[], parent: (string | undefined)[] = []): React.ReactNode[] => {
+  const renderMenuItems = (routes: IRoute[], parent: (string | undefined)[] = []): MenuItemType[] => {
     const toTitle = (name: string | undefined) => {
       if (!name) return name;
       return name.replace(/_/g, ' ').split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ");
@@ -264,7 +264,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         return route.children;
       }
       return [route];
-    }).map((route) => {
+    }).map((route): MenuItemType | null => {
       if ('hideInMenu' in route && route.hideInMenu) {
         return null
       }
@@ -276,26 +276,29 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         return null;
       }
       if ('children' in route && route.children) {
-        const children: React.ReactNode[] = renderMenuItems(route.children, [...parent, route.name])
+        const children: MenuItemType[] = renderMenuItems(route.children, [...parent, route.name])
         if (children.length == 0) {
           if (route.path) {
-            return <Menu.Item key={route.path} icon={route.icon}>
-              <Link to={route.path}>{t(`menu.${[...parent, route.name].join('.')}`, { defaultValue: title })}</Link>
-            </Menu.Item>
+            return {
+              key: route.path,
+              icon: route.icon,
+              label: <Link to={route.path}>{t(`menu.${[...parent, route.name].join('.')}`, { defaultValue: title })}</Link>,
+            }
           }
         }
-        return (
-          <SubMenu key={route.path ?? route.name} icon={route.icon} title={t(`menu.${[...parent, route.name, route.name].join('.')}`, { defaultValue: title })}>
-            {children}
-          </SubMenu>
-        );
+        return {
+          key: route.path ?? route.name,
+          icon: route.icon,
+          label: t(`menu.${[...parent, route.name, route.name].join('.')}`, { defaultValue: title }),
+          children: children,
+        }
       }
       if (route.name && route.path) {
-        return (
-          <Menu.Item key={route.path} icon={route.icon}>
-            <Link to={route.path}>{t(`menu.${[...parent, route.name].join('.')}`, { defaultValue: title })}</Link>
-          </Menu.Item>
-        );
+        return {
+          key: route.path,
+          icon: route.icon,
+          label: <Link to={route.path}>{t(`menu.${[...parent, route.name].join('.')}`, { defaultValue: title })}</Link>,
+        }
       }
       return null;
     }).filter(Boolean);
@@ -370,18 +373,24 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   }
 
 
-  const defaultRenderLayout = (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
+  const defaultRenderLayout = (siteIconUrl: string | null, menuItems: MenuItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
     const pageClassName = sanitizeClassName(matchRoutes(routes, location.pathname)?.pop()?.route.name)
     return <Layout className={classNames("main-layout", styles.layout, { [`page-${pageClassName}`]: pageClassName })}>
       <Sider width={siderWidth} collapsible collapsed={collapsed} onCollapse={setCollapsed} className={classNames(styles.menuSider, 'layout-menu-sider')} theme={isDarkMode ? 'light' : menuStyle} >
         <div className={classNames("logo", styles.layoutLogo)}>
           <div className={classNames("layout-logo-container", styles.layoutLogoContainer)}>
-            {siteIconUrl ? <img src={siteIconUrl} alt="logo" className={styles.layoutLogoImage} /> : <Spin size="large" tip="Loading..." />}
+            {siteIconUrl ? <img src={siteIconUrl} alt="logo" className={styles.layoutLogoImage} /> : <Spin />}
           </div>
         </div>
-        <Menu className={classNames("layout-menu", styles.menu)} theme={isDarkMode ? 'light' : menuStyle} defaultOpenKeys={defaultOpenKeys} defaultSelectedKeys={['1']} mode="inline" selectedKeys={[selectedMenuKeys]}>
-          {menuItems}
-        </Menu>
+        <Menu
+          className={classNames("layout-menu", styles.menu)}
+          theme={isDarkMode ? 'light' : menuStyle}
+          defaultOpenKeys={defaultOpenKeys}
+          defaultSelectedKeys={['1']}
+          mode="inline"
+          selectedKeys={[selectedMenuKeys]}
+          items={menuItems}
+        />
       </Sider>
       <Layout className={classNames("site-layout", "main-layout", styles.mainLayout)}>
         <Header className={classNames("site-header", styles.header)}>
