@@ -69,9 +69,17 @@ func WriteTraceToolCall(ctx context.Context, writer TraceEventWriter, counter *T
 }
 
 // WriteTraceToolResult records a tool call result event.
-func WriteTraceToolResult(ctx context.Context, writer TraceEventWriter, counter *TraceCounter, toolCallID string, result string) {
+// ok indicates whether the tool execution succeeded (false for tool errors / deny / cancel).
+func WriteTraceToolResult(ctx context.Context, writer TraceEventWriter, counter *TraceCounter, toolCallID string, result string, ok bool) {
+	if writer == nil || counter == nil {
+		return
+	}
 	traceID := log.GetTraceId(ctx)
-	payload := map[string]string{"tool_call_id": toolCallID, "result": result}
+	payload := map[string]any{
+		"tool_call_id": toolCallID,
+		"result":       result,
+		"ok":           ok,
+	}
 	content, _ := json.Marshal(payload)
 	writer(ctx, model.AITraceEvent{
 		TraceID:   traceID,

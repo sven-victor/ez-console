@@ -45,6 +45,7 @@ import {
   DashboardOutlined,
   UnorderedListOutlined,
   ApartmentOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -197,6 +198,15 @@ const useStyles = createStyles(({ token, css }) => ({
     overflow: hidden;
     text-overflow: ellipsis;
     pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  `,
+  arrowLabelFailed: css`
+    background: ${token.colorErrorBg};
+    border-color: ${token.colorErrorBorder};
+    color: ${token.colorError} !important;
+    font-weight: 600;
   `,
   noteBox: css`
     grid-column: 1 / -1;
@@ -208,6 +218,21 @@ const useStyles = createStyles(({ token, css }) => ({
     background: ${token.colorFillQuaternary};
     font-size: 12px;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  `,
+  noteBoxFailed: css`
+    background: ${token.colorErrorBg};
+    border-style: solid;
+    border-color: ${token.colorErrorBorder};
+    color: ${token.colorError};
+    font-weight: 600;
+  `,
+  failIcon: css`
+    font-size: 12px;
+    flex-shrink: 0;
   `,
   stepMeta: css`
     position: absolute;
@@ -277,6 +302,34 @@ interface ToolCall {
 interface ToolResult {
   tool_call_id: string;
   result: string;
+  /** Present on newer traces; false means tool execution failed. */
+  ok?: boolean;
+}
+
+const FAIL_COLOR = '#ff4d4f';
+
+/** Heuristic for older tool_result events that lack an explicit `ok` field. */
+function isToolResultFailed(parsed: ToolResult | null | undefined, isJSON: boolean): boolean {
+  if (!isJSON || !parsed) return false;
+  if (typeof parsed.ok === 'boolean') return !parsed.ok;
+  const result = (parsed.result || '').trim();
+  if (!result) return false;
+  if (result === 'tool call failed') return true;
+  if (/^unknown tool:/i.test(result)) return true;
+  if (/^tool .+ failed:/i.test(result)) return true;
+  return false;
+}
+
+function buildToolNameByCallId(events: API.AITraceEvent[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const event of events) {
+    if (event.event_type !== 'tool_call') continue;
+    const { parsed, isJSON } = tryParseJSON<ToolCall>(event.content);
+    if (isJSON && parsed.tool_call_id && parsed.tool) {
+      map.set(parsed.tool_call_id, parsed.tool);
+    }
+  }
+  return map;
 }
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -366,6 +419,7 @@ const ToolResultBlock: React.FC<{ content: string; t: Translate, maxHeight?: num
 }) => {
   const { parsed, isJSON } = tryParseJSON<ToolResult>(content);
   if (!isJSON) return <JsonBlock content={content} maxHeight={maxHeight} />;
+  const failed = isToolResultFailed(parsed, isJSON);
   return (
     <div>
       {parsed.tool_call_id && (
@@ -374,6 +428,16 @@ const ToolResultBlock: React.FC<{ content: string; t: Translate, maxHeight?: num
             {t('trace.toolCallId', { defaultValue: 'Tool Call ID' })}:{' '}
           </Text>
           <Text code>{parsed.tool_call_id}</Text>
+        </div>
+      )}
+      {(typeof parsed.ok === 'boolean' || failed) && (
+        <div style={{ marginBottom: 8 }}>
+          <Text strong>{t('trace.status', { defaultValue: 'Status' })}: </Text>
+          <Tag color={failed ? 'error' : 'success'}>
+            {failed
+              ? t('trace.failed', { defaultValue: 'Failed' })
+              : t('trace.succeeded', { defaultValue: 'Succeeded' })}
+          </Tag>
         </div>
       )}
       {parsed.result && (
@@ -433,17 +497,29 @@ interface SeqMessage {
   label: string;
   kind: 'call' | 'return' | 'note';
   color: string;
+  failed?: boolean;
 }
 
 function actorIndex(id: ActorId): number {
   return ACTORS.indexOf(id);
 }
 
+function formatDurationSuffix(durationMs: number, t: Translate): string {
+  if (!(durationMs > 0)) return '';
+  return ` (${t('trace.durationMs', {
+    ms: durationMs,
+    defaultValue: `${durationMs}ms`,
+  })})`;
+}
+
 function buildSequenceMessages(
   events: API.AITraceEvent[],
   t: Translate
 ): SeqMessage[] {
-  return events.map((event) => {
+  const toolNameByCallId = buildToolNameByCallId(events);
+  const failedLabel = t('trace.failed', { defaultValue: 'Failed' });
+
+  return events.map((event, index) => {
     const typeLabel = t(`trace.eventTypes.${event.event_type}`, {
       defaultValue: event.event_type,
     });
@@ -461,19 +537,12 @@ function buildSequenceMessages(
           color,
         };
       case 'llm_response': {
-        const dur =
-          event.duration_ms > 0
-            ? ` (${t('trace.durationMs', {
-              ms: event.duration_ms,
-              defaultValue: `${event.duration_ms}ms`,
-            })})`
-            : '';
         return {
           id: event.id,
           event,
           from: 'llm',
           to: 'agent',
-          label: `${typeLabel}${dur}`,
+          label: `${typeLabel}${formatDurationSuffix(event.duration_ms, t)}`,
           kind: 'return',
           color,
         };
@@ -491,16 +560,28 @@ function buildSequenceMessages(
           color,
         };
       }
-      case 'tool_result':
+      case 'tool_result': {
+        const { parsed, isJSON } = tryParseJSON<ToolResult>(event.content);
+        const failed = isToolResultFailed(parsed, isJSON);
+        const toolName =
+          (isJSON &&
+            parsed.tool_call_id &&
+            toolNameByCallId.get(parsed.tool_call_id)) ||
+          '';
+        const label = toolName
+          ? `${typeLabel}: ${toolName}`
+          : typeLabel;
         return {
           id: event.id,
           event,
           from: 'tool',
           to: 'agent',
-          label: typeLabel,
+          label: failed ? `${label} · ${failedLabel}` : label,
           kind: 'return',
-          color,
+          color: failed ? FAIL_COLOR : color,
+          failed,
         };
+      }
       case 'summary':
         return {
           id: event.id,
@@ -527,7 +608,34 @@ function buildSequenceMessages(
           color,
         };
       }
-      case 'error':
+      case 'error': {
+        const prev = index > 0 ? events[index - 1] : undefined;
+        // Model attempt failures are written instead of llm_response.
+        const asFailedLlmReturn = prev?.event_type === 'llm_request';
+        const label = `${typeLabel}${formatDurationSuffix(event.duration_ms, t)} · ${failedLabel}`;
+        if (asFailedLlmReturn) {
+          return {
+            id: event.id,
+            event,
+            from: 'llm',
+            to: 'agent',
+            label,
+            kind: 'return',
+            color: FAIL_COLOR,
+            failed: true,
+          };
+        }
+        return {
+          id: event.id,
+          event,
+          from: 'agent',
+          to: 'agent',
+          label,
+          kind: 'note',
+          color: FAIL_COLOR,
+          failed: true,
+        };
+      }
       default:
         return {
           id: event.id,
@@ -548,8 +656,10 @@ const SequenceArrow: React.FC<{
   label: string;
   color: string;
   kind: 'call' | 'return';
+  failed?: boolean;
   styles: ReturnType<typeof useStyles>['styles'];
-}> = ({ from, to, label, color, kind, styles }) => {
+  cx: ReturnType<typeof useStyles>['cx'];
+}> = ({ from, to, label, color, kind, failed, styles, cx }) => {
   const fromIdx = actorIndex(from);
   const toIdx = actorIndex(to);
   const leftPct = (Math.min(fromIdx, toIdx) + 0.5) * (100 / 3);
@@ -583,8 +693,13 @@ const SequenceArrow: React.FC<{
             }
         }
       />
-      <div className={styles.arrowLabel} style={{ color, borderColor: color }}>
-        {label}
+      <div
+        className={cx(styles.arrowLabel, failed && styles.arrowLabelFailed)}
+        style={{ color, borderColor: color }}
+        title={label}
+      >
+        {failed && <CloseCircleOutlined className={styles.failIcon} />}
+        <span>{label}</span>
       </div>
     </div>
   );
@@ -660,10 +775,17 @@ const SequenceDiagram: React.FC<{
               <span className={styles.stepMeta}>#{msg.event.step_order}</span>
               {msg.kind === 'note' ? (
                 <div
-                  className={styles.noteBox}
+                  className={cx(
+                    styles.noteBox,
+                    msg.failed && styles.noteBoxFailed
+                  )}
                   style={{ borderColor: msg.color, color: msg.color }}
+                  title={msg.label}
                 >
-                  {msg.label}
+                  {msg.failed && (
+                    <CloseCircleOutlined className={styles.failIcon} />
+                  )}
+                  <span>{msg.label}</span>
                 </div>
               ) : (
                 <SequenceArrow
@@ -672,7 +794,9 @@ const SequenceDiagram: React.FC<{
                   label={msg.label}
                   color={msg.color}
                   kind={msg.kind}
+                  failed={msg.failed}
                   styles={styles}
+                  cx={cx}
                 />
               )}
             </div>

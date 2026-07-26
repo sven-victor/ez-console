@@ -163,7 +163,7 @@ func buildAgentHooks(opts *ChatCompletionOptions) (*hook.Registry, *agentTraceSi
 				resultText = e.Result.Err.Error()
 			}
 			if tracing {
-				WriteTraceToolResult(ctx, sink.writer, sink.counter, e.Call.ID, resultText)
+				WriteTraceToolResult(ctx, sink.writer, sink.counter, e.Call.ID, resultText, e.Result.OK)
 			}
 			if onToolRes != nil {
 				onToolRes(ctx, e.Call.ID, resultText)
