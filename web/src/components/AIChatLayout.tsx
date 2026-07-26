@@ -15,15 +15,14 @@
  */
 
 import React, { lazy, useEffect, useState } from 'react';
-import { FloatButton, Modal, Tooltip } from 'antd';
-import { RobotOutlined } from '@ant-design/icons';
-import { useTranslation } from 'react-i18next';
+import { Modal } from 'antd';
 import { useAI } from '@/contexts/AIContext';
 import { withSuspense } from '@/routes';
 import ResizeDivider from './ResizeDivider';
 import { createStyles } from 'antd-style';
 import classNames from 'classnames';
 import { type AIChatProps } from './AIChat';
+import { AIChatFloatButton } from './AIChatFloatButton';
 const AIChatDialog = lazy(() => import('./AIChat'));
 
 
@@ -127,31 +126,5 @@ export const AIChatSider: React.FC<AIChatProps> = (props) => {
 }
 
 
-export const AIChatButton: React.FC = () => {
-  const { setVisible, visible } = useAI()
-  const { t } = useTranslation('ai');
-
-  return (
-    <>
-      <Tooltip
-        title={t('chat.openAssistant', { defaultValue: 'Open AI Assistant' })}
-        placement="left"
-        style={{ display: visible ? 'none' : 'block' }}
-        className="ai-chat-tooltip"
-      >
-        <FloatButton
-          icon={<RobotOutlined />}
-          className="ai-chat-float-button"
-          type="primary"
-          onClick={() => setVisible(true)}
-          style={{
-            right: 24,
-            bottom: 24,
-            display: visible ? 'none' : 'block'
-          }}
-        />
-      </Tooltip>
-    </>
-  );
-};
+export const AIChatButton: React.FC = () => <AIChatFloatButton />;
 
