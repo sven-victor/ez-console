@@ -248,11 +248,6 @@ func (m *MCPToolSet) Test(ctx context.Context) error {
 
 // Call calls a tool function
 func (m *MCPToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal([]byte(parameters), &params); err != nil {
-		return "", fmt.Errorf("failed to unmarshal parameters: %w", err)
-	}
-
 	client, err := m.dialClient()
 	if err != nil {
 		return "", fmt.Errorf("failed to dial client: %w", err)
