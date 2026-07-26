@@ -33,7 +33,9 @@ type DBSessionStore struct {
 
 	// OnAppend is invoked for each persisted ChatMessage after Append (e.g. title generation).
 	OnAppend func(ctx context.Context, msg ChatMessage)
-	// OnReplaceAll is invoked after ReplaceAll persists the new window (e.g. clear skills / tracing).
+	// OnReplaceAll is invoked after ReplaceAll persists the new window (condense, offload, or
+	// summarization). Do not use this to clear skill activation — ReplaceAll is not summary-only;
+	// use ChatCompletionOptions.OnSummary (wired to AfterSummary) instead.
 	OnReplaceAll func(ctx context.Context, msgs []ChatMessage)
 }
 

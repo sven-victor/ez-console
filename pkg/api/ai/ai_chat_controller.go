@@ -480,7 +480,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 			}()
 		}),
 		ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
-			// Persistence is handled by SessionStore.ReplaceAll; clear skill activation on summarize.
+			// Fired only after successful LLM summarization (AfterSummary), not on condense/offload ReplaceAll.
+			// Persistence of the new window is handled by SessionStore.ReplaceAll separately.
 			if skillLoader != nil {
 				skillLoader.Clear()
 				if err := c.service.ClearSessionActivatedSkills(ctx, organizationID, userIDStr, sessionID); err != nil {

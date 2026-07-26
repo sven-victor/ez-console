@@ -104,6 +104,7 @@ func (t *agentTraceSink) recordError(ctx context.Context, errMsg string) {
 //   - AfterModel always fires (success or failure; Err set on failure)
 //   - AfterTool fires unless BeforeTool returned an error
 //   - AfterSummary always fires (success, skip, or failure; Err set on skip/failure)
+//   - OnSummary runs only when AfterSummary succeeds (Err == nil), not on condense ReplaceAll
 //
 // The returned sink is non-nil when TraceWriter is set; stream/sync paths use it for RunError.
 func buildAgentHooks(opts *ChatCompletionOptions) (*hook.Registry, *agentTraceSink) {
@@ -121,6 +122,7 @@ func buildAgentHooks(opts *ChatCompletionOptions) (*hook.Registry, *agentTraceSi
 
 	onToolRes := opts.OnToolCallResultChanged
 	onToken := opts.OnTokenUsage
+	onSummary := opts.OnSummary
 
 	if tracing {
 		h.OnBeforeModel(func(ctx context.Context, e *hook.BeforeModel) error {
@@ -170,17 +172,31 @@ func buildAgentHooks(opts *ChatCompletionOptions) (*hook.Registry, *agentTraceSi
 		})
 	}
 
-	if tracing {
+	// OnSummary must run only on successful LLM summarization (AfterSummary with nil Err),
+	// not on SessionStore.ReplaceAll from condense/offload window sync — that incorrectly
+	// cleared skill activation and dropped progressive skill–tool bindings mid-run.
+	if tracing || onSummary != nil {
 		h.OnAfterSummary(func(ctx context.Context, e *hook.AfterSummary) error {
 			// Always fired after each summarization attempt (success, skip, or failure).
 			if e.Err != nil {
 				return nil
 			}
-			msgs := AgentMessagesToChat(e.Input)
-			if len(msgs) == 0 {
-				msgs = AgentMessagesToChat([]message.Message{e.Summary})
+			if tracing {
+				msgs := AgentMessagesToChat(e.Input)
+				if len(msgs) == 0 {
+					msgs = AgentMessagesToChat([]message.Message{e.Summary})
+				}
+				WriteTraceSummary(ctx, sink.writer, sink.counter, msgs)
 			}
-			WriteTraceSummary(ctx, sink.writer, sink.counter, msgs)
+			if onSummary != nil {
+				var msgs []ChatMessage
+				if e.State != nil && len(e.State.Messages) > 0 {
+					msgs = AgentMessagesToChat(e.State.Messages)
+				} else if e.Summary.Role != "" || len(e.Summary.Parts) > 0 {
+					msgs = AgentMessagesToChat([]message.Message{e.Summary})
+				}
+				onSummary(ctx, msgs)
+			}
 			return nil
 		})
 	}

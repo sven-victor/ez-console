@@ -103,9 +103,6 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		if opts.OnMessageAdded != nil && store.OnAppend == nil {
 			store.OnAppend = opts.OnMessageAdded
 		}
-		if opts.OnSummary != nil && store.OnReplaceAll == nil {
-			store.OnReplaceAll = opts.OnSummary
-		}
 	}
 
 	return runEZAgent(ctx, c.aiClient, messages, opts)
@@ -133,9 +130,6 @@ func (c *classicChatClient) ExchangeStream(ctx context.Context, messages []ChatM
 	if store, ok := opts.SessionStore.(*DBSessionStore); ok && store != nil {
 		if opts.OnMessageAdded != nil && store.OnAppend == nil {
 			store.OnAppend = opts.OnMessageAdded
-		}
-		if opts.OnSummary != nil && store.OnReplaceAll == nil {
-			store.OnReplaceAll = opts.OnSummary
 		}
 	}
 

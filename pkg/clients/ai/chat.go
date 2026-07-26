@@ -195,6 +195,8 @@ type ChatCompletionOptions struct {
 	// prompt for this run only (not persisted via SessionStore).
 	EphemeralSystemPrompts []string
 
+	// OnSummary is called after a successful LLM conversation summarization (ez-agent AfterSummary
+	// with nil Err). It is not called for context condense/offload SessionStore.ReplaceAll.
 	OnSummary               func(ctx context.Context, messages []ChatMessage)
 	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
 	OnMessageAdded          func(ctx context.Context, message ChatMessage)
