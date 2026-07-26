@@ -200,7 +200,7 @@ function ObjectField(props: FieldProps) {
         </div>
       )}
       <div className='ant-form-item-label'>
-        <label className={required ? "ant-form-item-required" : "ant-form-item-optional"}>{name}</label>
+        <label className={required ? "ant-form-item-required" : "ant-form-item-optional"}>{schema.title || name}</label>
       </div>
       <ReactCodeMirror
         value={localValue}
