@@ -22,8 +22,8 @@ import { SaveOutlined, ReloadOutlined, CalendarOutlined } from '@ant-design/icon
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import { useNavigate } from 'react-router-dom';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const TaskSettingsForm: React.FC = () => {
   const { message } = App.useApp();
