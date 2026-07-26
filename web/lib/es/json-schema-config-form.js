@@ -1,21 +1,22 @@
 import { j as n } from "./vendor.js";
-import F, { useImperativeHandle as C, useCallback as v, useRef as g, useState as S, useEffect as I } from "react";
+import F, { useImperativeHandle as C, useCallback as j, useRef as g, useState as S, useEffect as I } from "react";
 import J from "@rjsf/antd";
-import E from "@rjsf/validator-ajv8";
+import N from "@rjsf/validator-ajv8";
 import { createStyles as T } from "antd-style";
 import { useRequest as D } from "ahooks";
 import { a as W } from "./index.js";
 import { r as q } from "./client.js";
-import { Form as P, Select as _ } from "antd";
-import U from "axios";
-import L from "@uiw/react-codemirror";
-import { json as V } from "@codemirror/lang-json";
-import z from "classnames";
-const A = 2, M = T(({ css: t }) => ({
+import { Form as A, Select as _ } from "antd";
+import P from "axios";
+import U from "@uiw/react-codemirror";
+import { json as L } from "@codemirror/lang-json";
+import V from "classnames";
+const z = 2, M = T(({ css: t }) => ({
   jsonSchemaForm: t`
       .ant-form-item-control-input-content>#root {
         border-width: 0;
         padding: 0px;
+        display: contents;
       }
       >.ant-btn-submit{
         display: none;
@@ -31,6 +32,7 @@ const A = 2, M = T(({ css: t }) => ({
       }
       .ant-form-item-additional{
         height: 24px;
+        overflow: hidden;
       }
       .ant-form-item-additional:has(>.ant-form-item-explain){
         >.ant-form-item-extra{
@@ -39,7 +41,7 @@ const A = 2, M = T(({ css: t }) => ({
       }
     `
 })), G = (t) => {
-  var o;
+  var s;
   return /* @__PURE__ */ n.jsx(
     k,
     {
@@ -47,59 +49,61 @@ const A = 2, M = T(({ css: t }) => ({
       schema: {
         ...t.schema || {},
         "x-data-source": {
-          ...((o = t.schema) == null ? void 0 : o["x-data-source"]) || {},
+          ...((s = t.schema) == null ? void 0 : s["x-data-source"]) || {},
           type: "toolsets"
         }
       }
     }
   );
 };
-function j(t) {
+function b(t) {
   if (t == null)
     return "";
   try {
-    return JSON.stringify(t, null, A);
+    return JSON.stringify(t, null, z);
   } catch {
     return "";
   }
 }
-function N(t) {
-  const o = t.trim();
-  if (o !== "")
+function E(t) {
+  const s = t.trim();
+  if (s !== "")
     try {
-      return JSON.parse(o);
+      return JSON.parse(s);
     } catch {
       return;
     }
 }
 function H(t) {
-  const { formData: o, schema: c, onChange: r, disabled: e, id: i, required: a, name: s, fieldPathId: l } = t, u = Array.isArray(c.examples) ? c.examples : [], f = g(void 0), p = g(!1), [y, x] = S(() => j(o)), [O, h] = S(null);
+  const { formData: s, schema: l, onChange: r, disabled: e, id: i, required: a, name: o, fieldPathId: c } = t, u = Array.isArray(l.examples) ? l.examples : [], f = g(void 0), h = g(!1), [v, x] = S(() => b(s)), [O, y] = S(null);
   I(() => {
-    if (p.current) {
-      p.current = !1;
+    if (h.current) {
+      h.current = !1;
       return;
     }
-    f.current !== o && (f.current = o, x(j(o)), h(null));
-  }, [o]);
-  const $ = v(
+    f.current !== s && (f.current = s, x(b(s)), y(null));
+  }, [s]);
+  const $ = j(
     (m) => {
       x(m);
-      const d = N(m);
+      const d = E(m);
       if (d === void 0 && m.trim() !== "") {
-        h("Invalid JSON");
+        y("Invalid JSON");
         return;
       }
-      h(null), f.current = d, p.current = !0, r(d, l.path);
+      y(null), f.current = d, h.current = !0, r(d, c.path);
     },
-    [r, l]
-  ), w = v(
+    [r, c]
+  ), w = j(
     (m) => {
       const d = u[m];
       if (d === void 0) return;
-      const b = typeof d == "string" ? N(d) : d, R = j(b);
-      x(R), h(null), f.current = b, p.current = !0, r(b, l.path);
+      let p = typeof d == "string" ? E(d) : d;
+      p && typeof p == "object" && !Array.isArray(p) && "value" in p && p.value !== void 0 && (p = p.value);
+      const R = b(p);
+      x(R), y(null), f.current = p, h.current = !0, r(p, c.path);
     },
-    [r, u, l]
+    [r, u, c]
   );
   return /* @__PURE__ */ n.jsxs("div", { id: i, style: { position: "relative" }, children: [
     u.length > 0 && /* @__PURE__ */ n.jsx(
@@ -127,13 +131,13 @@ function H(t) {
         )
       }
     ),
-    /* @__PURE__ */ n.jsx("div", { className: "ant-form-item-label", children: /* @__PURE__ */ n.jsx("label", { className: a ? "ant-form-item-required" : "ant-form-item-optional", children: s }) }),
+    /* @__PURE__ */ n.jsx("div", { className: "ant-form-item-label", children: /* @__PURE__ */ n.jsx("label", { className: a ? "ant-form-item-required" : "ant-form-item-optional", children: l.title || o }) }),
     /* @__PURE__ */ n.jsx(
-      L,
+      U,
       {
-        value: y,
+        value: v,
         height: "200px",
-        extensions: [V()],
+        extensions: [L()],
         onChange: $,
         editable: !e,
         basicSetup: { lineNumbers: !0, foldGutter: !0 }
@@ -143,21 +147,21 @@ function H(t) {
   ] });
 }
 const k = (t) => {
-  const { schema: o, value: c, onChange: r } = t, e = o["x-data-source"], { data: i, loading: a } = D(async () => {
+  const { schema: s, value: l, onChange: r } = t, e = s["x-data-source"], { data: i, loading: a } = D(async () => {
     switch (e.type) {
       case "toolsets":
         return (await W.system.listToolSets({
           current: 1,
           page_size: 1e3
-        })).data.map((s) => ({ label: s[e.label_key] || s.name, value: s[e.value_key] || s.id }));
+        })).data.map((o) => ({ label: o[e.label_key] || o.name, value: o[e.value_key] || o.id }));
       case "api":
         return e.url.startsWith("/") ? (await q(e.url, {
           method: e.method,
           params: e.params
-        })).data.map((s) => ({ label: s[e.label_key], value: s[e.value_key] })) : (await U(e.url, {
+        })).data.map((o) => ({ label: o[e.label_key], value: o[e.value_key] })) : (await P(e.url, {
           params: e.params,
           method: e.method
-        })).data.map((s) => ({ label: s[e.label_key], value: s[e.value_key] }));
+        })).data.map((o) => ({ label: o[e.label_key], value: o[e.value_key] }));
       default:
         return [];
     }
@@ -170,25 +174,25 @@ const k = (t) => {
     _,
     {
       options: i,
-      value: c,
+      value: l,
       loading: a,
-      onChange: (s) => r == null ? void 0 : r(s),
+      onChange: (o) => r == null ? void 0 : r(o),
       style: { width: "100%" }
     }
   );
 };
 function B(t) {
-  const o = t.$defs || t.definitions || {};
-  function c(e) {
+  const s = t.$defs || t.definitions || {};
+  function l(e) {
     if (!e.startsWith("#/$defs/") && !e.startsWith("#/definitions/"))
       return null;
     const i = e.split("/").pop();
-    return i ? o[i] : null;
+    return i ? s[i] : null;
   }
   function r(e) {
     if (!e) return {};
     if (e.$ref) {
-      const a = c(e.$ref);
+      const a = l(e.$ref);
       return r(a);
     }
     const i = {};
@@ -196,18 +200,18 @@ function B(t) {
       a.startsWith("x-ui-") && (i[`ui:${a.slice(5)}`] = e[a]);
     }), e["x-hidden"] && (i["ui:widget"] = "hidden"), e["x-disabled"] && (i["ui:disabled"] = !0), e.type === "object") {
       if (e.properties)
-        for (const [a, s] of Object.entries(e.properties)) {
-          const l = r(s);
-          Object.keys(l).length > 0 && (i[a] = l);
+        for (const [a, o] of Object.entries(e.properties)) {
+          const c = r(o);
+          Object.keys(c).length > 0 && (i[a] = c);
         }
       e.dependencies && Object.keys(e.dependencies).forEach((a) => {
-        const s = e.dependencies[a];
-        s.properties ? Object.keys(s.properties).forEach((l) => {
-          const u = r(s.properties[l]);
+        const o = e.dependencies[a];
+        o.properties ? Object.keys(o.properties).forEach((c) => {
+          const u = r(o.properties[c]);
           Object.keys(u).length > 0 && (i[a] = u);
-        }) : s.oneOf && s.oneOf.forEach((l) => {
-          l.properties && Object.keys(l.properties).forEach((u) => {
-            const f = r(l.properties[u]);
+        }) : o.oneOf && o.oneOf.forEach((c) => {
+          c.properties && Object.keys(c.properties).forEach((u) => {
+            const f = r(c.properties[u]);
             i[u] = f;
           });
         });
@@ -225,31 +229,31 @@ function B(t) {
     }), i;
   }
   if (t.$ref) {
-    const e = c(t.$ref);
+    const e = l(t.$ref);
     return r(e);
   }
   return r(t);
 }
 const K = ({
   schema: t,
-  value: o,
-  onChange: c,
+  value: s,
+  onChange: l,
   uiSchema: r,
   disabled: e = !1,
   formRef: i
 }) => {
-  const { styles: a } = M(), s = o ?? {};
+  const { styles: a } = M(), o = s ?? {};
   C(i, () => ({
     validate: (f) => {
-      const p = E.validateFormData(f, t, void 0, void 0, u);
-      return p.errors.filter((y) => y.message !== "must NOT have additional properties").length > 0 ? Promise.reject(p.errors[0].message) : Promise.resolve();
+      const h = N.validateFormData(f, t, void 0, void 0, u);
+      return h.errors.filter((v) => v.message !== "must NOT have additional properties").length > 0 ? Promise.reject(h.errors[0].message) : Promise.resolve();
     }
   }));
-  const l = v(
+  const c = j(
     ({ formData: f }) => {
-      c == null || c(f ?? {});
+      l == null || l(f ?? {});
     },
-    [c]
+    [l]
   ), u = F.useMemo(() => t ? {
     ...B(t) || {},
     ...r || {}
@@ -257,11 +261,12 @@ const K = ({
   return /* @__PURE__ */ n.jsx(
     J,
     {
-      className: z(a.jsonSchemaForm, "json-schema-config-form"),
+      tagName: "div",
+      className: V(a.jsonSchemaForm, "json-schema-config-form"),
       schema: t || {},
-      formData: s,
-      onChange: l,
-      validator: E,
+      formData: o,
+      onChange: c,
+      validator: N,
       uiSchema: u || {},
       disabled: e,
       showErrorList: !1,
@@ -270,20 +275,20 @@ const K = ({
       fields: {
         objectEditor: H
       },
-      transformErrors: (f) => f.filter((p) => p.message !== "must NOT have additional properties"),
+      transformErrors: (f) => f.filter((h) => h.message !== "must NOT have additional properties"),
       widgets: {
         remoteSelect: k,
         toolsetsSelect: G
       }
     }
   );
-}, ce = ({ schema: t, uiSchema: o, ...c }) => {
+}, ce = ({ schema: t, uiSchema: s, ...l }) => {
   const r = g(null);
   return /* @__PURE__ */ n.jsx(
-    P.Item,
+    A.Item,
     {
       noStyle: !0,
-      ...c,
+      ...l,
       rules: [{
         validator: (e, i) => {
           var a;
@@ -291,7 +296,7 @@ const K = ({
         },
         message: ""
       }],
-      children: /* @__PURE__ */ n.jsx(K, { schema: t, formRef: r, uiSchema: o })
+      children: /* @__PURE__ */ n.jsx(K, { schema: t, formRef: r, uiSchema: s })
     }
   );
 };

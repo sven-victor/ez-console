@@ -1,20 +1,20 @@
 import { j as s } from "./vendor.js";
 import { useRef as C, useState as _ } from "react";
-import { Tag as f, Progress as S, Card as D, Space as k, Input as I, Button as o, message as n } from "antd";
-import { EyeOutlined as b, StopOutlined as R, RedoOutlined as A, DownloadOutlined as F, DeleteOutlined as O, SearchOutlined as h, ReloadOutlined as E, CalendarOutlined as L } from "@ant-design/icons";
-import { useTranslation as p } from "react-i18next";
+import { App as S, Tag as f, Progress as D, Card as I, Space as p, Input as b, Button as o } from "antd";
+import { EyeOutlined as A, StopOutlined as R, RedoOutlined as F, DownloadOutlined as O, DeleteOutlined as E, SearchOutlined as k, ReloadOutlined as L, CalendarOutlined as P } from "@ant-design/icons";
+import { useTranslation as h } from "react-i18next";
 import { a as i } from "./index.js";
-import { b as P, h as v, g as $ } from "./components.js";
+import { b as v, h as $, g as N } from "./components.js";
 import { P as y } from "./base.js";
-import { useNavigate as N } from "react-router-dom";
-const z = {
+import { useNavigate as z } from "react-router-dom";
+const B = {
   pending: "default",
   running: "processing",
   success: "success",
   failed: "error",
   cancelled: "default"
-}, Q = () => {
-  const { t: a } = p("task"), { t: d } = p("common"), r = C(null), [c, m] = _(""), u = N(), x = async (e) => {
+}, W = () => {
+  const { message: n } = S.useApp(), { t: a } = h("task"), { t: d } = h("common"), r = C(null), [c, m] = _(""), u = z(), x = async (e) => {
     var t, l;
     try {
       await i.tasks.cancelTask({ id: e }), n.success(a("cancelSuccess", { defaultValue: "Task cancelled." })), (l = (t = r.current) == null ? void 0 : t.reload) == null || l.call(t);
@@ -54,14 +54,14 @@ const z = {
       dataIndex: "status",
       key: "status",
       width: 100,
-      render: (e) => /* @__PURE__ */ s.jsx(f, { color: z[e] || "default", children: a(`status.${e}`, { defaultValue: e }) })
+      render: (e) => /* @__PURE__ */ s.jsx(f, { color: B[e] || "default", children: a(`status.${e}`, { defaultValue: e }) })
     },
     {
       title: a("progress", { defaultValue: "Progress" }),
       dataIndex: "progress",
       key: "progress",
       width: 100,
-      render: (e, t) => t.status === "running" || t.status === "success" || t.status === "pending" ? /* @__PURE__ */ s.jsx(S, { percent: e, size: "small" }) : "-"
+      render: (e, t) => t.status === "running" || t.status === "success" || t.status === "pending" ? /* @__PURE__ */ s.jsx(D, { percent: e, size: "small" }) : "-"
     },
     {
       title: a("creatorId", { defaultValue: "Creator" }),
@@ -90,12 +90,12 @@ const z = {
       width: 100,
       fixed: "right",
       render: (e, t) => /* @__PURE__ */ s.jsx(
-        P,
+        v,
         {
           actions: [
             {
               key: "view",
-              icon: /* @__PURE__ */ s.jsx(b, {}),
+              icon: /* @__PURE__ */ s.jsx(A, {}),
               tooltip: a("view", { defaultValue: "View" }),
               onClick: async () => {
                 u(`/tasks/${t.id}`);
@@ -114,7 +114,7 @@ const z = {
             },
             {
               key: "retry",
-              icon: /* @__PURE__ */ s.jsx(A, {}),
+              icon: /* @__PURE__ */ s.jsx(F, {}),
               tooltip: a("retry", { defaultValue: "Retry" }),
               hidden: t.status !== "failed" && t.status !== "cancelled",
               permission: "task:retry",
@@ -122,14 +122,14 @@ const z = {
             },
             {
               key: "download",
-              icon: /* @__PURE__ */ s.jsx(F, {}),
+              icon: /* @__PURE__ */ s.jsx(O, {}),
               tooltip: a("download", { defaultValue: "Download" }),
               hidden: !t.artifact_file_key,
               onClick: () => V(t.artifact_file_key)
             },
             {
               key: "delete",
-              icon: /* @__PURE__ */ s.jsx(O, {}),
+              icon: /* @__PURE__ */ s.jsx(E, {}),
               tooltip: a("delete", { defaultValue: "Delete" }),
               danger: !0,
               permission: "task:delete",
@@ -148,17 +148,17 @@ const z = {
     search: c || void 0
   });
   return /* @__PURE__ */ s.jsx(
-    D,
+    I,
     {
       title: a("listTitle", { defaultValue: "Task List" }),
-      extra: /* @__PURE__ */ s.jsx($, { permission: "task:schedule:list", children: /* @__PURE__ */ s.jsx(o, { type: "link", icon: /* @__PURE__ */ s.jsx(L, {}), onClick: () => u("/tasks/schedules"), children: a("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) }),
-      children: /* @__PURE__ */ s.jsxs(k, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
-        /* @__PURE__ */ s.jsxs(k, { wrap: !0, children: [
+      extra: /* @__PURE__ */ s.jsx(N, { permission: "task:schedule:list", children: /* @__PURE__ */ s.jsx(o, { type: "link", icon: /* @__PURE__ */ s.jsx(P, {}), onClick: () => u("/tasks/schedules"), children: a("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) }),
+      children: /* @__PURE__ */ s.jsxs(p, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
+        /* @__PURE__ */ s.jsxs(p, { wrap: !0, children: [
           /* @__PURE__ */ s.jsx(
-            I,
+            b,
             {
               placeholder: a("searchPlaceholder", { defaultValue: "Search by type or ID" }),
-              prefix: /* @__PURE__ */ s.jsx(h, {}),
+              prefix: /* @__PURE__ */ s.jsx(k, {}),
               value: c,
               onChange: (e) => m(e.target.value),
               onPressEnter: () => {
@@ -169,17 +169,17 @@ const z = {
               allowClear: !0
             }
           ),
-          /* @__PURE__ */ s.jsx(o, { icon: /* @__PURE__ */ s.jsx(h, {}), onClick: () => {
+          /* @__PURE__ */ s.jsx(o, { icon: /* @__PURE__ */ s.jsx(k, {}), onClick: () => {
             var e, t;
             (t = (e = r.current) == null ? void 0 : e.reload) == null || t.call(e);
           }, children: d("search", { defaultValue: "Search" }) }),
-          /* @__PURE__ */ s.jsx(o, { icon: /* @__PURE__ */ s.jsx(E, {}), onClick: () => {
+          /* @__PURE__ */ s.jsx(o, { icon: /* @__PURE__ */ s.jsx(L, {}), onClick: () => {
             var e, t;
             return (t = (e = r.current) == null ? void 0 : e.reload) == null ? void 0 : t.call(e);
           }, children: d("refresh", { defaultValue: "Refresh" }) })
         ] }),
         /* @__PURE__ */ s.jsx(
-          v,
+          $,
           {
             actionRef: r,
             request: T,
@@ -193,5 +193,5 @@ const z = {
   );
 };
 export {
-  Q as default
+  W as default
 };

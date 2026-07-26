@@ -11,7 +11,8 @@ import { FC } from 'react';
 import { FormItemProps } from 'antd';
 import { default as i18n } from 'i18next';
 import { Info } from '@ant-design/x/es/bubble/interface';
-import { ItemType } from 'antd/es/breadcrumb/Breadcrumb';
+import { ItemType } from 'antd/es/menu/interface';
+import { ItemType as ItemType_2 } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react';
 import { LazyExoticComponent } from 'react';
 import { MessageInfo } from '@ant-design/x-sdk';
@@ -688,7 +689,7 @@ export declare interface AppLayoutProps {
     transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
     menuStyle?: 'dark' | 'light';
     transformHeaderItems?: (items: default_2.ReactNode[]) => default_2.ReactNode[];
-    renderLayout?: (siteIconUrl: string | null, menuItems: default_2.ReactNode[], headerItems: default_2.ReactNode[], breadcrumbs: ItemType[], content: default_2.ReactNode) => default_2.ReactNode;
+    renderLayout?: (siteIconUrl: string | null, menuItems: ItemType[], headerItems: default_2.ReactNode[], breadcrumbs: ItemType_2[], content: default_2.ReactNode) => default_2.ReactNode;
     aiChatProps?: AIChatProps;
 }
 
@@ -1112,7 +1113,7 @@ export declare interface EZAppProps {
     extraPublicRoutes?: IRoute[];
     menuStyle?: 'dark' | 'light';
     transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
-    renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+    renderLayout?: (siteIconUrl: string | null, menuItems: ItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType_2[], content: React.ReactNode) => React.ReactNode;
     aiChatProps?: AIChatProps;
 }
 

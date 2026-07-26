@@ -1,10 +1,10 @@
-"use strict";const t=require("./vendor.js"),o=require("react"),d=require("antd"),b=require("@ant-design/icons"),m=require("react-i18next"),n=require("./contexts.js"),u=require("./index.js"),f=require("./components.js"),y=require("antd-style"),j=require("classnames"),x=o.lazy(()=>Promise.resolve().then(()=>require("./ai-chat.js"))),g=y.createStyles(({token:s,css:e})=>({siderLayout:e`
+"use strict";const s=require("./vendor.js"),i=require("react"),b=require("antd"),d=require("./contexts.js"),c=require("./index.js"),u=require("./components.js"),f=require("antd-style"),m=require("classnames"),h=i.lazy(()=>Promise.resolve().then(()=>require("./ai-chat.js"))),y=f.createStyles(({token:t,css:e})=>({siderLayout:e`
       position: relative;
       height: 100vh;
     `,siderLayoutContent:e`
       height: 100%;
       width: 100%;
-      background-color: ${s.colorBgContainer};
+      background-color: ${t.colorBgContainer};
       overflow: hidden;
     `,floatSiderLayout:e`
       position: fixed;
@@ -16,10 +16,10 @@
       z-index: 1000;
       overflow: hidden;
       backdrop-filter: blur(8px);
-      border: 1px solid ${s.colorBorderSecondary};
+      border: 1px solid ${t.colorBorderSecondary};
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       
       &:hover {
         box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1);
       }
-    `})),v=s=>{const{visible:e,setVisible:i,setLoaded:r}=n.useAI();return o.useEffect(()=>{r(!0)},[r]),t.jsxRuntimeExports.jsx(d.Modal,{className:"ai-chat-modal",width:1200,open:e,closable:!1,onCancel:()=>i(!1),footer:null,children:u.withSuspense(x,s)})},I=s=>{const{styles:e}=g(),{layout:i,visible:r}=n.useAI(),[l,h]=o.useState(()=>{const a=localStorage.getItem("ai-sidebar-width");return a?parseInt(a,10):400}),{setLoaded:c}=n.useAI();o.useEffect(()=>{c(!0)},[c]),o.useEffect(()=>{localStorage.setItem("ai-sidebar-width",l.toString())},[l]);const p=a=>{h(a)};return t.jsxRuntimeExports.jsxs("div",{style:{width:`${l}px`,display:r?"flex":"none",overflow:"hidden",flexShrink:0},className:j("ai-sidebar-layout",i==="float-sidebar"?e.floatSiderLayout:e.siderLayout),children:[t.jsxRuntimeExports.jsx(f.ResizeDivider,{onResize:p,minWidth:300,maxWidth:window.innerWidth*.5}),t.jsxRuntimeExports.jsx("div",{style:{borderRadius:i==="float-sidebar"?"12px":"0"},className:e.siderLayoutContent,children:t.jsxRuntimeExports.jsx("div",{children:u.withSuspense(x,s)})})]})},S=()=>{const{setVisible:s,visible:e}=n.useAI(),{t:i}=m.useTranslation("ai");return t.jsxRuntimeExports.jsx(t.jsxRuntimeExports.Fragment,{children:t.jsxRuntimeExports.jsx(d.Tooltip,{title:i("chat.openAssistant",{defaultValue:"Open AI Assistant"}),placement:"left",style:{display:e?"none":"block"},className:"ai-chat-tooltip",children:t.jsxRuntimeExports.jsx(d.FloatButton,{icon:t.jsxRuntimeExports.jsx(b.RobotOutlined,{}),className:"ai-chat-float-button",type:"primary",onClick:()=>s(!0),style:{right:24,bottom:24,display:e?"none":"block"}})})})};exports.AIChatButton=S;exports.AIChatModal=v;exports.AIChatSider=I;
+    `})),S=t=>{const{visible:e,setVisible:o,setLoaded:r}=d.useAI();return i.useEffect(()=>{r(!0)},[r]),s.jsxRuntimeExports.jsx(b.Modal,{className:"ai-chat-modal",width:1200,open:e,closable:!1,onCancel:()=>o(!1),footer:null,children:c.withSuspense(h,t)})},v=t=>{const{styles:e}=y(),{layout:o,visible:r}=d.useAI(),[n,x]=i.useState(()=>{const a=localStorage.getItem("ai-sidebar-width");return a?parseInt(a,10):400}),{setLoaded:l}=d.useAI();i.useEffect(()=>{l(!0)},[l]),i.useEffect(()=>{localStorage.setItem("ai-sidebar-width",n.toString())},[n]);const p=a=>{x(a)};return s.jsxRuntimeExports.jsxs("div",{style:{width:`${n}px`,display:r?"flex":"none",overflow:"hidden",flexShrink:0},className:m("ai-sidebar-layout",o==="float-sidebar"?e.floatSiderLayout:e.siderLayout),children:[s.jsxRuntimeExports.jsx(u.ResizeDivider,{onResize:p,minWidth:300,maxWidth:window.innerWidth*.5}),s.jsxRuntimeExports.jsx("div",{style:{borderRadius:o==="float-sidebar"?"12px":"0"},className:e.siderLayoutContent,children:s.jsxRuntimeExports.jsx("div",{children:c.withSuspense(h,t)})})]})},g=()=>s.jsxRuntimeExports.jsx(u.AIChatFloatButton,{});exports.AIChatButton=g;exports.AIChatModal=S;exports.AIChatSider=v;

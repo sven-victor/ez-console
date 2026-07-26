@@ -1,67 +1,67 @@
 import { j as e } from "./vendor.js";
-import { useState as h, useEffect as p } from "react";
-import { Card as b, Tabs as g, message as j } from "antd";
+import { useState as h, useEffect as b } from "react";
+import { App as g, Card as x, Tabs as y } from "antd";
 import { useTranslation as l } from "react-i18next";
-import { k as x, j as y, l as P, m as V, U as k } from "./components.js";
+import { l as P, k as j, m as A, n as V, U as k } from "./components.js";
 import { c as w } from "./contexts.js";
-import { a as A } from "./index.js";
-import { useNavigate as L, useLocation as S } from "react-router-dom";
-const _ = () => {
-  const { t: a } = l("authorization"), { t: n } = l("common"), { user: s, updateUser: c } = w(), [f, r] = h(!1), u = L(), i = S(), d = i.hash.replace("#", "") || "basic", o = async () => {
+import { a as L } from "./index.js";
+import { useNavigate as S, useLocation as F } from "react-router-dom";
+const $ = () => {
+  const { message: n } = g.useApp(), { t: s } = l("authorization"), { t: c } = l("common"), { user: a, updateUser: f } = w(), [u, r] = h(!1), d = S(), i = F(), m = i.hash.replace("#", "") || "basic", o = async () => {
     try {
       r(!0);
-      const t = await A.authorization.getCurrentUser();
-      c(t);
+      const t = await L.authorization.getCurrentUser();
+      f(t);
     } catch (t) {
-      j.error(n("fetchFailed", { defaultValue: "Failed to fetch data" })), console.error("Failed to fetch user profile:", t);
+      n.error(c("fetchFailed", { defaultValue: "Failed to fetch data" })), console.error("Failed to fetch user profile:", t);
     } finally {
       r(!1);
     }
   };
-  p(() => {
+  b(() => {
     o();
   }, []);
-  const m = [
+  const p = [
     {
       key: "basic",
-      label: a("profile.basic", { defaultValue: "Basic Information" }),
-      children: /* @__PURE__ */ e.jsx(x, { user: s, onSuccess: o })
+      label: s("profile.basic", { defaultValue: "Basic Information" }),
+      children: /* @__PURE__ */ e.jsx(P, { user: a, onSuccess: o })
     },
     {
       key: "password",
-      label: a("profile.password", { defaultValue: "Password" }),
-      disabled: s == null ? void 0 : s.disable_change_password,
-      children: /* @__PURE__ */ e.jsx(y, {})
+      label: s("profile.password", { defaultValue: "Password" }),
+      disabled: a == null ? void 0 : a.disable_change_password,
+      children: /* @__PURE__ */ e.jsx(j, {})
     },
     {
       key: "mfa",
-      label: a("profile.mfa", { defaultValue: "Multi-Factor Authentication" }),
-      children: /* @__PURE__ */ e.jsx(P, { user: s, onSuccess: o })
+      label: s("profile.mfa", { defaultValue: "Multi-Factor Authentication" }),
+      children: /* @__PURE__ */ e.jsx(A, { user: a, onSuccess: o })
     },
     {
       key: "sessions",
-      label: a("profile.sessions", { defaultValue: "Sessions" }),
+      label: s("profile.sessions", { defaultValue: "Sessions" }),
       children: /* @__PURE__ */ e.jsx(V, {})
     },
     {
       key: "auditLogs",
-      label: a("profile.auditLogs", { defaultValue: "Audit Logs" }),
+      label: s("profile.auditLogs", { defaultValue: "Audit Logs" }),
       children: /* @__PURE__ */ e.jsx(k, {})
     }
   ];
   return /* @__PURE__ */ e.jsx(
-    b,
+    x,
     {
-      title: a("profile.title", { defaultValue: "Profile Settings" }),
-      loading: f,
+      title: s("profile.title", { defaultValue: "Profile Settings" }),
+      loading: u,
       children: /* @__PURE__ */ e.jsx(
-        g,
+        y,
         {
-          defaultActiveKey: d,
+          defaultActiveKey: m,
           onChange: (t) => {
-            u(`${i.pathname}#${t}`);
+            d(`${i.pathname}#${t}`);
           },
-          items: m,
+          items: p,
           destroyInactiveTabPane: !0
         }
       )
@@ -69,5 +69,5 @@ const _ = () => {
   );
 };
 export {
-  _ as default
+  $ as default
 };

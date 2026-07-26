@@ -406,10 +406,6 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
 github.com/subosito/gotenv v1.6.0/go.mod h1:Dk4QP5c2W3ibzajGcXpNraDfq2IrhjMIvMSWPKKo0FU=
-github.com/sven-victor/ez-agent v0.0.0-20260725045839-d202038ed23d h1:zrd7uzZhCd5yoMWRrdTV/rDQP04sJuZlAoEMPYuQlfk=
-github.com/sven-victor/ez-agent v0.0.0-20260725045839-d202038ed23d/go.mod h1:t16qWqBdh1XUvjygN72wWuvRGW/DtTKO+v5Op9fB5AU=
-github.com/sven-victor/ez-agent v0.0.0-20260725073233-3af8b26e48cc h1:Spylam98FVP8+zyARzi84iFtW35E7Ixri/AX7Lt4SwA=
-github.com/sven-victor/ez-agent v0.0.0-20260725073233-3af8b26e48cc/go.mod h1:t16qWqBdh1XUvjygN72wWuvRGW/DtTKO+v5Op9fB5AU=
 github.com/sven-victor/ez-agent v0.0.0-20260725092123-8357dc5eb848 h1:jWy+ZCWVkJgQGLelziAXRpPC9xTmizfKmP0Yb9VC9Ns=
 github.com/sven-victor/ez-agent v0.0.0-20260725092123-8357dc5eb848/go.mod h1:t16qWqBdh1XUvjygN72wWuvRGW/DtTKO+v5Op9fB5AU=
 github.com/sven-victor/ez-utils v1.0.1 h1:wPNsrk12DNl6D36OWnJPKn+iwD0W/6cZ/v5AsIh/UrE=

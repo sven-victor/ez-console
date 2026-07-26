@@ -514,7 +514,10 @@ async function Z(t, a, n) {
   const e = new FormData();
   return a && e.append("file", a), Object.keys(t).forEach((i) => {
     const o = t[i];
-    o != null && (typeof o == "object" && !(o instanceof File) ? o instanceof Array ? o.forEach((r) => e.append(i, r || "")) : e.append(i, JSON.stringify(o)) : e.append(i, o));
+    o != null && (typeof o == "object" && !(o instanceof File) ? o instanceof Array ? o.forEach((r) => e.append(i, r || "")) : e.append(
+      i,
+      new Blob([JSON.stringify(o)], { type: "application/json" })
+    ) : e.append(i, o));
   }), s("/api/system/skills/upload", {
     method: "POST",
     data: e,

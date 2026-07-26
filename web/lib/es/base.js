@@ -79,7 +79,10 @@ async function b(e, t, a) {
   const r = new FormData();
   return t && r.append("file", t), Object.keys(e).forEach((n) => {
     const s = e[n];
-    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((o) => r.append(n, o || "")) : r.append(n, JSON.stringify(s)) : r.append(n, s));
+    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((o) => r.append(n, o || "")) : r.append(
+      n,
+      new Blob([JSON.stringify(s)], { type: "application/json" })
+    ) : r.append(n, s));
   }), u("/api/files", {
     method: "POST",
     data: r,
@@ -1671,6 +1674,9 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     cloneLoadFailed: "Failed to load model for clone",
     editTooltip: "Edit model",
     deleteTooltip: "Delete model",
+    systemPrompt: "System Prompt",
+    systemPromptHelp: "Optional system prompt prepended to every conversation for this model.",
+    systemPromptPlaceholder: "Enter system prompt (optional)",
     maxChatTokens: "Max chat tokens (context / summarization)",
     maxChatTokensHelp: "0 uses provider config max_tokens only. A positive value sets the context window for summarization for this model.",
     maxChatIterations: "Max chat iterations (tool rounds)",
@@ -1737,8 +1743,18 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     arguments: "Arguments",
     result: "Result",
     toolCallId: "Tool Call ID",
+    failed: "Failed",
+    succeeded: "Succeeded",
+    status: "Status",
     expandAll: "Expand All",
-    collapseAll: "Collapse All"
+    collapseAll: "Collapse All",
+    viewSequence: "Sequence",
+    viewTimeline: "Timeline",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "Tool"
+    }
   },
   chat: {
     openAssistant: "Open AI Assistant",
@@ -2389,7 +2405,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, _ = {
+}, L = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2529,7 +2545,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, L = {
+}, _ = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -3836,6 +3852,9 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     cloneLoadFailed: "加载模型以克隆失败",
     editTooltip: "编辑模型",
     deleteTooltip: "删除模型",
+    systemPrompt: "系统提示词",
+    systemPromptHelp: "可选。该模型每次对话前都会附加的系统提示词。",
+    systemPromptPlaceholder: "请输入系统提示词（可选）",
     maxChatTokens: "最大对话 Token（上下文 / 摘要）",
     maxChatTokensHelp: "0 表示仅使用提供商配置中的 max_tokens；大于 0 时为该模型设置摘要用的上下文窗口。",
     maxChatIterations: "最大对话轮次（工具调用）",
@@ -3902,8 +3921,18 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     arguments: "参数",
     result: "结果",
     toolCallId: "工具调用ID",
+    failed: "失败",
+    succeeded: "成功",
+    status: "状态",
     expandAll: "展开全部",
-    collapseAll: "收起全部"
+    collapseAll: "收起全部",
+    viewSequence: "时序图",
+    viewTimeline: "时间线",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "Tool"
+    }
   },
   chat: {
     openAssistant: "打开智能助手",
@@ -5290,6 +5319,9 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     cloneLoadFailed: "Modell zum Klonen konnte nicht geladen werden",
     editTooltip: "Modell bearbeiten",
     deleteTooltip: "Modell löschen",
+    systemPrompt: "Systemprompt",
+    systemPromptHelp: "Optionaler Systemprompt, der jeder Unterhaltung für dieses Modell vorangestellt wird.",
+    systemPromptPlaceholder: "Systemprompt eingeben (optional)",
     maxChatTokens: "Max. Chat-Tokens (Kontext / Zusammenfassung)",
     maxChatTokensHelp: "0 nutzt nur max_tokens der Anbieterkonfiguration. Ein positiver Wert setzt das Kontextfenster für die Zusammenfassung dieses Modells.",
     maxChatIterations: "Max. Chat-Iterationen (Tool-Runden)",
@@ -5357,7 +5389,14 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     result: "Ergebnis",
     toolCallId: "Werkzeugaufruf-ID",
     expandAll: "Alle aufklappen",
-    collapseAll: "Alle zuklappen"
+    collapseAll: "Alle zuklappen",
+    viewSequence: "Sequenzdiagramm",
+    viewTimeline: "Zeitlinie",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "Tool"
+    }
   },
   chat: {
     openAssistant: "KI-Assistent öffnen",
@@ -6100,7 +6139,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, W = {
+}, H = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -6723,7 +6762,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, H = {
+}, W = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -6744,6 +6783,9 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     cloneLoadFailed: "No se pudo cargar el modelo para clonar",
     editTooltip: "Editar modelo",
     deleteTooltip: "Eliminar modelo",
+    systemPrompt: "Prompt del sistema",
+    systemPromptHelp: "Prompt del sistema opcional antepuesto a cada conversación de este modelo.",
+    systemPromptPlaceholder: "Introduzca el prompt del sistema (opcional)",
     maxChatTokens: "Máx. tokens de chat (contexto / resumen)",
     maxChatTokensHelp: "0 usa solo max_tokens de la configuración del proveedor. Un valor positivo fija la ventana de contexto para el resumen de este modelo.",
     maxChatIterations: "Máx. iteraciones de chat (rondas de herramientas)",
@@ -6811,7 +6853,14 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     result: "Resultado",
     toolCallId: "ID de Llamada",
     expandAll: "Expandir todo",
-    collapseAll: "Contraer todo"
+    collapseAll: "Contraer todo",
+    viewSequence: "Secuencia",
+    viewTimeline: "Línea de tiempo",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "Herramienta"
+    }
   },
   chat: {
     openAssistant: "Abrir asistente de IA",
@@ -8198,6 +8247,9 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     cloneLoadFailed: "Échec du chargement du modèle pour le clonage",
     editTooltip: "Modifier le modèle",
     deleteTooltip: "Supprimer le modèle",
+    systemPrompt: "Invite système",
+    systemPromptHelp: "Invite système facultative ajoutée au début de chaque conversation pour ce modèle.",
+    systemPromptPlaceholder: "Entrez l'invite système (facultatif)",
     maxChatTokens: "Jetons de conversation max. (contexte / résumé)",
     maxChatTokensHelp: "0 n'utilise que max_tokens de la configuration du fournisseur. Une valeur positive définit la fenêtre de contexte pour le résumé de ce modèle.",
     maxChatIterations: "Itérations de conversation max. (tours d'outils)",
@@ -8265,7 +8317,14 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     result: "Résultat",
     toolCallId: "ID d'Appel",
     expandAll: "Tout déplier",
-    collapseAll: "Tout replier"
+    collapseAll: "Tout replier",
+    viewSequence: "Séquence",
+    viewTimeline: "Chronologie",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "Outil"
+    }
   },
   chat: {
     openAssistant: "Ouvrir l'assistant IA",
@@ -9652,6 +9711,9 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     cloneLoadFailed: "فشل تحميل النموذج للاستنساخ",
     editTooltip: "تحرير النموذج",
     deleteTooltip: "حذف النموذج",
+    systemPrompt: "موجه النظام",
+    systemPromptHelp: "موجه نظام اختياري يُضاف في بداية كل محادثة لهذا النموذج.",
+    systemPromptPlaceholder: "أدخل موجه النظام (اختياري)",
     maxChatTokens: "الحد الأقصى لرموز المحادثة (السياق / التلخيص)",
     maxChatTokensHelp: "0 يستخدم فقط max_tokens من إعدادات المزود. قيمة موجبة تحدد نافذة السياق للتلخيص لهذا النموذج.",
     maxChatIterations: "الحد الأقصى لتكرارات المحادثة (جولات الأدوات)",
@@ -9719,7 +9781,14 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     result: "النتيجة",
     toolCallId: "معرف الاستدعاء",
     expandAll: "توسيع الكل",
-    collapseAll: "طي الكل"
+    collapseAll: "طي الكل",
+    viewSequence: "مخطط التسلسل",
+    viewTimeline: "الجدول الزمني",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "أداة"
+    }
   },
   chat: {
     openAssistant: "فتح مساعد الذكاء الاصطناعي",
@@ -11106,6 +11175,9 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     cloneLoadFailed: "Kunde inte ladda modell för kloning",
     editTooltip: "Redigera modell",
     deleteTooltip: "Ta bort modell",
+    systemPrompt: "Systemprompt",
+    systemPromptHelp: "Valfri systemprompt som läggs till före varje konversation för denna modell.",
+    systemPromptPlaceholder: "Ange systemprompt (valfritt)",
     maxChatTokens: "Max chattokens (kontext / sammanfattning)",
     maxChatTokensHelp: "0 använder endast max_tokens från leverantörskonfigurationen. Ett positivt värde anger kontextfönster för sammanfattning för denna modell.",
     maxChatIterations: "Max chattiterationer (verktygsrundor)",
@@ -11173,7 +11245,14 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     result: "Resultat",
     toolCallId: "Anrops-ID",
     expandAll: "Expandera alla",
-    collapseAll: "Komprimera alla"
+    collapseAll: "Komprimera alla",
+    viewSequence: "Sekvensdiagram",
+    viewTimeline: "Tidslinje",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "Verktyg"
+    }
   },
   chat: {
     openAssistant: "Öppna AI-assistent",
@@ -11271,7 +11350,7 @@ g.use(f).use(h).init({
   resources: {
     "zh-CN": {
       translation: y,
-      common: L,
+      common: _,
       authorization: M,
       system: U,
       ai: q,
@@ -11297,8 +11376,8 @@ g.use(f).use(h).init({
       translation: C,
       common: j,
       authorization: G,
-      system: W,
-      ai: H,
+      system: H,
+      ai: W,
       task: J
     },
     "fr-FR": {
@@ -11318,7 +11397,7 @@ g.use(f).use(h).init({
       task: re
     },
     "sv-SE": {
-      translation: _,
+      translation: L,
       common: se,
       authorization: oe,
       system: ne,
