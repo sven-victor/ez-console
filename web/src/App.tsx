@@ -21,6 +21,7 @@ import type { Locale } from 'antd/es/locale';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useState } from 'react';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
+import { type ItemType as MenuItemType } from 'antd/es/menu/interface';
 
 import zhCN from 'antd/lib/locale/zh_CN';
 import enUS from 'antd/lib/locale/en_US';
@@ -41,8 +42,22 @@ import { getURL } from './utils';
 import { LanguageConfig } from './components/LanguageSwitch';
 import { SiteProvider } from './contexts/SiteContext';
 import { AIProvider } from './contexts/AIContext';
-import { ThemeProvider } from 'antd-style';
+import { ThemeProvider, type ThemeMode } from 'antd-style';
 import { type AIChatProps } from './components/AIChat';
+
+const THEME_MODE_STORAGE_KEY = 'theme-mode';
+
+function getStoredThemeMode(): ThemeMode {
+  try {
+    const stored = localStorage.getItem(THEME_MODE_STORAGE_KEY);
+    if (stored === 'light' || stored === 'dark' || stored === 'auto') {
+      return stored;
+    }
+  } catch {
+    // ignore storage errors
+  }
+  return 'light';
+}
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -73,7 +88,7 @@ export interface AppProps {
   extraPublicRoutes?: IRoute[];
   menuStyle?: 'dark' | 'light';
   transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
-  renderLayout?: (siteIconUrl: string | null, menuItems: React.ReactNode[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+  renderLayout?: (siteIconUrl: string | null, menuItems: MenuItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
   aiChatProps?: AIChatProps;
 }
 
@@ -140,7 +155,16 @@ function App({
   }
   return (
     <QueryClientProvider client={queryClient} >
-      <ThemeProvider>
+      <ThemeProvider
+        defaultThemeMode={getStoredThemeMode()}
+        onThemeModeChange={(mode) => {
+          try {
+            localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
+          } catch {
+            // ignore storage errors
+          }
+        }}
+      >
         <ConfigProvider locale={antdLocale}>
           <AntdApp>
             <AuthProvider>
