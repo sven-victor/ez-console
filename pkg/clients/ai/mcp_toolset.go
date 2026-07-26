@@ -248,13 +248,13 @@ func (m *MCPToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 
 // MCPToolSetConfig is the config shape for the MCP toolset (for JSON Schema reflection).
 type MCPToolSetConfig struct {
-	Endpoint string                 `json:"endpoint" jsonschema:"required,description=The endpoint of the MCP server"`
-	Protocol string                 `json:"protocol" jsonschema:"required,description=The protocol of the MCP server,enum=http,enum=websocket,default=http" jsonschema_extras:"x-ui-col-xs=12"`
-	AuthType string                 `json:"auth_type" jsonschema:"required,description=The authentication type,enum=basic,enum=bearer,default=basic" jsonschema_extras:"x-ui-col-xs=12"`
-	Username string                 `json:"username,omitempty" jsonschema:"description=The username for the MCP server" jsonschema_extras:"x-ui-col-xs=12"`
-	Password string                 `json:"password,omitempty" jsonschema:"description=The password for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=12"`
-	Token    string                 `json:"token,omitempty" jsonschema:"description=The bearer token for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=24"`
-	Args     map[string]interface{} `json:"args,omitempty" jsonschema:"description=The arguments for the MCP server" jsonschema_extras:"x-ui-field=objectEditor"`
+	Endpoint string                 `json:"endpoint" jsonschema:"required,title=Endpoint,description=The endpoint of the MCP server"`
+	Protocol string                 `json:"protocol" jsonschema:"required,title=Protocol,description=The protocol of the MCP server,enum=http,enum=websocket,default=http" jsonschema_extras:"x-ui-col-xs=12"`
+	AuthType string                 `json:"auth_type" jsonschema:"required,title=Authentication Type,description=The authentication type,enum=none,enum=basic,enum=bearer,default=basic" jsonschema_extras:"x-ui-col-xs=12"`
+	Username string                 `json:"username,omitempty" jsonschema:"title=Username,description=The username for the MCP server" jsonschema_extras:"x-ui-col-xs=12"`
+	Password string                 `json:"password,omitempty" jsonschema:"title=Password,description=The password for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=12"`
+	Token    string                 `json:"token,omitempty" jsonschema:"title=Bearer Token,description=The bearer token for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=24"`
+	Args     map[string]interface{} `json:"args,omitempty" jsonschema:"title=Arguments,description=The arguments for the MCP server" jsonschema_extras:"x-ui-field=objectEditor"`
 }
 
 var mcpConfigFields = []util.ConfigField{
@@ -347,6 +347,16 @@ func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]an
 			def.Extras["dependencies"] = map[string]*jsonschema.Schema{
 				"auth_type": &jsonschema.Schema{
 					OneOf: []*jsonschema.Schema{
+						&jsonschema.Schema{
+							Properties: orderedmap.New[string, *jsonschema.Schema](
+								orderedmap.WithInitialData(
+									orderedmap.Pair[string, *jsonschema.Schema]{Key: "auth_type", Value: &jsonschema.Schema{
+										Enum: []any{"none"},
+									}},
+								),
+							),
+							Required: []string{},
+						},
 						&jsonschema.Schema{
 							Properties: orderedmap.New[string, *jsonschema.Schema](
 								orderedmap.WithInitialData(
