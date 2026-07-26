@@ -155,6 +155,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const { siteConfig, clearCurrentOrgId } = useSite();
+  const canUseAIChat = !!siteConfig?.attrs?.ai_enabled && hasPermission('ai:chat:create');
 
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
   const [siteIcon, setSiteIcon] = useState<string | null>(null);
@@ -418,12 +419,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           <div className={classNames("site-content-container", styles.contentContainer)}>
             {content}
           </div>
-          {siteConfig?.attrs?.ai_enabled && <AIChatButton />}
-          {siteConfig?.attrs?.ai_enabled && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
+          {canUseAIChat && <AIChatButton />}
+          {canUseAIChat && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
         </Content>
         <Footer className={classNames("site-footer", styles.footer)}> ©{new Date().getFullYear()} {siteName}</Footer>
       </Layout>
-      {(siteConfig?.attrs?.ai_enabled && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider {...aiChatProps} />)}
+      {(canUseAIChat && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider {...aiChatProps} />)}
     </Layout>
   }
 
