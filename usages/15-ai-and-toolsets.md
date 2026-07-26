@@ -559,12 +559,44 @@ Model Context Protocol (MCP) toolset for connecting to MCP-compatible servers.
 
 **Configuration Fields:**
 
-- `name` (required): Toolset name
 - `endpoint` (required): MCP server endpoint URL
-- `protocol` (optional): Protocol type (http, websocket)
-- `username` (optional): Authentication username
-- `password` (optional): Authentication password
-- `token` (optional): Authentication token
+- `protocol` (optional): Protocol type (`http`, `websocket`; websocket uses SSE transport)
+- `auth_type` (optional): `none`, `basic`, or `bearer`
+- `username` / `password` (optional): Basic authentication credentials
+- `token` (optional): Bearer token (when `auth_type` is `bearer`)
+- `args` (optional): Extra MCP client options as a JSON object. Supported keys:
+  - `headers` (or alias `header`): object of HTTP header name → value pairs sent with HTTP/SSE requests
+  - `proxy`: proxy URL for HTTP/SSE (`http`, `https`, `socks5`, `socks5h`)
+
+Form-level auth (`username`/`password` or `token`) is applied after `args.headers`, so it overrides an `Authorization` header from `args` when both are set.
+
+**`args` examples:**
+
+```json
+{
+  "headers": {
+    "X-API-Key": "your-api-key",
+    "X-Tenant-ID": "tenant-1"
+  }
+}
+```
+
+```json
+{
+  "proxy": "http://127.0.0.1:7890"
+}
+```
+
+```json
+{
+  "headers": {
+    "X-Custom-Header": "value"
+  },
+  "proxy": "socks5://user:pass@127.0.0.1:1080"
+}
+```
+
+In the admin UI, the Arguments editor exposes these as loadable schema examples.
 
 #### 3. Skill Loader Toolset (Runtime)
 
@@ -631,7 +663,15 @@ Authorization: Bearer <token>
   "type": "mcp",
   "config": {
     "endpoint": "https://mcp-server.example.com",
-    "token": "your-token-here"
+    "protocol": "http",
+    "auth_type": "bearer",
+    "token": "your-token-here",
+    "args": {
+      "headers": {
+        "X-Tenant-ID": "tenant-1"
+      },
+      "proxy": "socks5://127.0.0.1:1080"
+    }
   }
 }
 ```
@@ -870,7 +910,7 @@ type MCPToolSetConfig struct {
     Username string                 `json:"username,omitempty" jsonschema:"description=The username for the MCP server"`
     Password string                 `json:"password,omitempty" jsonschema:"description=The password for the MCP server,format=password"`
     Token    string                 `json:"token,omitempty"    jsonschema:"description=The bearer token for the MCP server,format=password"`
-    Args     map[string]interface{} `json:"args,omitempty"     jsonschema:"description=The arguments for the MCP server" jsonschema_extras:"x-ui-field=objectEditor"`
+    Args     map[string]interface{} `json:"args,omitempty"     jsonschema_extras:"x-ui-field=objectEditor"` // headers/header + proxy; see GetConfigSchema examples
 }
 ```
 

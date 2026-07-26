@@ -50,6 +50,12 @@ type MCPToolSet struct {
 func (m *MCPToolSet) dialClient() (*mcp.Client, error) {
 	if m.client == nil {
 		var opts []mcp.Option
+		if headers := mcpArgsHeaders(m.config); len(headers) > 0 {
+			opts = append(opts, mcp.WithHeaders(headers))
+		}
+		if proxy := mcpArgsProxy(m.config); proxy != "" {
+			opts = append(opts, mcp.WithProxy(proxy))
+		}
 		if m.username != "" && m.password != "" {
 			password, err := safe.NewEncryptedString(m.password, os.Getenv(safe.SecretEnvName)).UnsafeString()
 			if err != nil {
@@ -71,7 +77,7 @@ func (m *MCPToolSet) dialClient() (*mcp.Client, error) {
 				return nil, fmt.Errorf("failed to create MCP client: %w", err)
 			}
 			m.client = client
-		case "websocket":
+		case "sse":
 			client, err := mcp.DialSSE(context.Background(), m.endpoint, opts...)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create MCP client: %w", err)
@@ -82,6 +88,79 @@ func (m *MCPToolSet) dialClient() (*mcp.Client, error) {
 		}
 	}
 	return m.client, nil
+}
+
+// mcpArgsHeaders reads optional HTTP headers from args.
+// Accepted keys: "headers" (preferred) or "header".
+func mcpArgsHeaders(args map[string]interface{}) map[string]string {
+	if len(args) == 0 {
+		return nil
+	}
+	raw, ok := args["headers"]
+	if !ok || raw == nil {
+		raw, ok = args["header"]
+		if !ok || raw == nil {
+			return nil
+		}
+	}
+	switch v := raw.(type) {
+	case map[string]string:
+		if len(v) == 0 {
+			return nil
+		}
+		out := make(map[string]string, len(v))
+		for k, val := range v {
+			if k == "" {
+				continue
+			}
+			out[k] = val
+		}
+		return out
+	case map[string]interface{}:
+		if len(v) == 0 {
+			return nil
+		}
+		out := make(map[string]string, len(v))
+		for k, val := range v {
+			if k == "" || val == nil {
+				continue
+			}
+			switch s := val.(type) {
+			case string:
+				out[k] = s
+			case fmt.Stringer:
+				out[k] = s.String()
+			default:
+				out[k] = fmt.Sprint(s)
+			}
+		}
+		if len(out) == 0 {
+			return nil
+		}
+		return out
+	default:
+		return nil
+	}
+}
+
+// mcpArgsProxy reads an optional proxy URL from args ("proxy").
+// Supported schemes: http, https, socks5, socks5h.
+func mcpArgsProxy(args map[string]interface{}) string {
+	if len(args) == 0 {
+		return ""
+	}
+	raw, ok := args["proxy"]
+	if !ok || raw == nil {
+		return ""
+	}
+	switch v := raw.(type) {
+	case string:
+		return strings.TrimSpace(v)
+	case fmt.Stringer:
+		return strings.TrimSpace(v.String())
+	default:
+		return strings.TrimSpace(fmt.Sprint(v))
+	}
 }
 
 // MCPRequest represents an MCP request
@@ -154,7 +233,7 @@ func (m *MCPToolSet) Validate() error {
 	if m.endpoint == "" {
 		return fmt.Errorf("endpoint is required")
 	}
-	if m.protocol != "http" && m.protocol != "websocket" {
+	if m.protocol != "http" && m.protocol != "sse" {
 		return fmt.Errorf("unsupported protocol: %s", m.protocol)
 	}
 	return nil
@@ -162,11 +241,6 @@ func (m *MCPToolSet) Validate() error {
 
 // Test tests the connection to the MCP server
 func (m *MCPToolSet) Test(ctx context.Context) error {
-	if m.protocol == "websocket" {
-		// TODO: Implement WebSocket connection test
-		return fmt.Errorf("websocket protocol test not implemented yet")
-	}
-
 	// Test HTTP connection by listing tools
 	_, err := m.ListTools(ctx)
 	return err
@@ -174,10 +248,6 @@ func (m *MCPToolSet) Test(ctx context.Context) error {
 
 // Call calls a tool function
 func (m *MCPToolSet) Call(ctx context.Context, name string, parameters string) (string, error) {
-	if m.protocol == "websocket" {
-		// TODO: Implement WebSocket tool call
-		return "", fmt.Errorf("websocket protocol not implemented yet")
-	}
 	var params map[string]interface{}
 	if err := json.Unmarshal([]byte(parameters), &params); err != nil {
 		return "", fmt.Errorf("failed to unmarshal parameters: %w", err)
@@ -254,7 +324,7 @@ type MCPToolSetConfig struct {
 	Username string                 `json:"username,omitempty" jsonschema:"title=Username,description=The username for the MCP server" jsonschema_extras:"x-ui-col-xs=12"`
 	Password string                 `json:"password,omitempty" jsonschema:"title=Password,description=The password for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=12"`
 	Token    string                 `json:"token,omitempty" jsonschema:"title=Bearer Token,description=The bearer token for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=24"`
-	Args     map[string]interface{} `json:"args,omitempty" jsonschema:"title=Arguments,description=The arguments for the MCP server" jsonschema_extras:"x-ui-field=objectEditor"`
+	Args     map[string]interface{} `json:"args,omitempty" jsonschema:"title=Arguments" jsonschema_extras:"x-ui-field=objectEditor"`
 }
 
 var mcpConfigFields = []util.ConfigField{
@@ -295,14 +365,14 @@ var mcpConfigFields = []util.ConfigField{
 				Value: "http",
 			},
 			{
-				Label: "WebSocket",
-				Value: "websocket",
+				Label: "SSE",
+				Value: "sse",
 			},
 		},
 	}, {
 		Name:        "args",
 		DisplayName: "Arguments",
-		Description: "The arguments for the MCP server",
+		Description: "Optional MCP client options (headers/header, proxy)",
 		Type:        "object",
 		Required:    false,
 		Default:     "{}",
@@ -332,6 +402,41 @@ func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]an
 		schema.Extras = make(map[string]any)
 	}
 	if def, ok := schema.Definitions["MCPToolSetConfig"]; ok {
+		if argsDef, ok := def.Properties.Get("args"); ok && argsDef != nil {
+			argsDef.Description = "Optional MCP client options. Supported keys: headers (or header) as an object of HTTP header name/value pairs; proxy as an http/https/socks5/socks5h URL."
+			argsDef.Examples = []any{
+				map[string]any{
+					"title": "Custom headers",
+					"value": map[string]any{
+						"headers": map[string]string{
+							"X-API-Key":   "your-api-key",
+							"X-Tenant-ID": "tenant-1",
+						},
+					},
+				},
+				map[string]any{
+					"title": "HTTP proxy",
+					"value": map[string]any{
+						"proxy": "http://127.0.0.1:7890",
+					},
+				},
+				map[string]any{
+					"title": "SOCKS5 proxy",
+					"value": map[string]any{
+						"proxy": "socks5://127.0.0.1:1080",
+					},
+				},
+				map[string]any{
+					"title": "Headers + proxy",
+					"value": map[string]any{
+						"headers": map[string]string{
+							"X-Custom-Header": "value",
+						},
+						"proxy": "socks5://user:pass@127.0.0.1:1080",
+					},
+				},
+			}
+		}
 		authTypeDef, _ := def.Properties.Get("auth_type")
 		usernameDef, _ := def.Properties.Get("username")
 		passwordDef, _ := def.Properties.Get("password")
@@ -448,14 +553,14 @@ func (f *MCPToolSetFactory) CreateToolSet(configJSON string) (toolset.ToolSet, e
 		Username    string                 `json:"username"`
 		Password    string                 `json:"password"`
 		Token       string                 `json:"token"`
-		Config      map[string]interface{} `json:"config"`
+		Args        map[string]interface{} `json:"args"`
 	}
 
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal MCP config: %w", err)
 	}
 
-	return NewMCPToolSet(config.Name, config.Description, config.Endpoint, config.Protocol, config.Username, config.Password, config.Token, config.Config), nil
+	return NewMCPToolSet(config.Name, config.Description, config.Endpoint, config.Protocol, config.Username, config.Password, config.Token, config.Args), nil
 }
 
 const (

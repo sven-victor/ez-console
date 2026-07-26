@@ -159,7 +159,18 @@ function ObjectField(props: FieldProps) {
     (index: number) => {
       const example = examples[index];
       if (example === undefined) return;
-      const obj = typeof example === 'string' ? parseJson(example) : example;
+      let obj: unknown =
+        typeof example === 'string' ? parseJson(example) : example;
+      // Support { title, value } wrappers so labels stay out of form data.
+      if (
+        obj &&
+        typeof obj === 'object' &&
+        !Array.isArray(obj) &&
+        'value' in (obj as Record<string, unknown>) &&
+        (obj as Record<string, unknown>).value !== undefined
+      ) {
+        obj = (obj as { value: unknown }).value;
+      }
       const str = formatJson(obj);
       setLocalValue(str);
       setParseError(null);

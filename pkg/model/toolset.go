@@ -22,14 +22,6 @@ import (
 	"github.com/sven-victor/ez-console/pkg/toolset"
 )
 
-// ToolSetProtocol represents the protocol used by the toolset
-type ToolSetProtocol string
-
-const (
-	ToolSetProtocolHTTP      ToolSetProtocol = "http"
-	ToolSetProtocolWebSocket ToolSetProtocol = "websocket"
-)
-
 // ToolSetStatus represents the AI toolset status
 type ToolSetStatus string
 
@@ -81,7 +73,7 @@ type ToolSet struct {
 	Config         ToolSetConfig       `gorm:"type:text" json:"config" swaggertype:"object"`     // Additional configuration
 	Status         ToolSetStatus       `gorm:"size:20;not null;default:'enabled'" json:"status"` // Status
 	IsPreset       bool                `gorm:"not null;default:false" json:"is_preset"`          // Created/managed by preset sync (immutable metadata)
-	PresetKey      string              `gorm:"size:64" json:"preset_key,omitempty"`             // Stable key within an org (e.g. utils)
+	PresetKey      string              `gorm:"size:64" json:"preset_key,omitempty"`              // Stable key within an org (e.g. utils)
 	CreatedBy      string              `gorm:"size:36;not null" json:"created_by"`               // Creator user ID
 	UpdatedBy      string              `gorm:"size:36" json:"updated_by"`                        // Last updater user ID
 	Tools          []ToolDefinition    `gorm:"-" json:"tools,omitempty"`                         // Available tools (runtime only)
