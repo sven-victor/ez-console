@@ -84,7 +84,7 @@ func (s *toolSetService) CreateToolSet(ctx context.Context, req *model.ToolSet) 
 // GetToolSet gets an toolset by ID
 func (s *toolSetService) GetToolSet(ctx context.Context, organizationID, id string) (*model.ToolSet, error) {
 	var toolset model.ToolSet
-	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ? and status = ?", organizationID, id, model.ToolSetStatusEnabled).First(&toolset).Error; err != nil {
+	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).First(&toolset).Error; err != nil {
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
 	}
 
@@ -267,6 +267,9 @@ func (s *toolSetService) GetToolSetInstance(ctx context.Context, organizationID,
 	toolset, err := s.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get toolset: %w", err)
+	}
+	if toolset.Status != model.ToolSetStatusEnabled {
+		return nil, fmt.Errorf("toolset is not enabled")
 	}
 
 	return s.CreateToolSetInstance(toolset)
@@ -457,6 +460,9 @@ func (s *toolSetService) buildAuthorizedToolSetItems(ctx context.Context, organi
 			toolSet, err := s.GetToolSet(ctx, organizationID, toolSetID)
 			if err != nil {
 				return nil, fmt.Errorf("failed to get toolset: %w", err)
+			}
+			if toolSet.Status != model.ToolSetStatusEnabled {
+				continue
 			}
 			instance, err := s.CreateToolSetInstance(toolSet)
 			if err != nil {
