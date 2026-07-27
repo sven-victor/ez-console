@@ -12,29 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package ai
+package service
 
 import (
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-agent/message"
+	"github.com/sven-victor/ez-console/pkg/clients/ai"
 	"github.com/sven-victor/ez-console/pkg/model"
 )
 
 func TestChatMessagesToAgentRoundTripToolBatch(t *testing.T) {
-	in := []ChatMessage{
+	in := []ai.ChatMessage{
 		{Role: model.AIChatMessageRoleUser, Content: "hi"},
 		{
 			Role: model.AIChatMessageRoleAssistant,
-			ToolCalls: []ToolCall{
-				{ID: "a", Type: openai.ToolTypeFunction, Function: FunctionCall{Name: "echo", Arguments: `{"text":"x"}`}},
-				{ID: "b", Type: openai.ToolTypeFunction, Function: FunctionCall{Name: "ui_nav", Arguments: `{}`}},
+			ToolCalls: []ai.ToolCall{
+				{ID: "a", Type: openai.ToolTypeFunction, Function: ai.FunctionCall{Name: "echo", Arguments: `{"text":"x"}`}},
+				{ID: "b", Type: openai.ToolTypeFunction, Function: ai.FunctionCall{Name: "ui_nav", Arguments: `{}`}},
 			},
 		},
 		{Role: model.AIChatMessageRoleTool, Content: `{"text":"x"}`, ToolCallID: "a"},
 	}
-	agentMsgs := ChatMessagesToAgent(in)
+	agentMsgs := ai.ChatMessagesToAgent(in)
 	if len(agentMsgs) != 3 {
 		t.Fatalf("expected 3 agent messages, got %d", len(agentMsgs))
 	}
@@ -44,7 +45,7 @@ func TestChatMessagesToAgentRoundTripToolBatch(t *testing.T) {
 	if agentMsgs[2].Role != message.RoleUser {
 		t.Fatalf("tool results role: %s", agentMsgs[2].Role)
 	}
-	back := AgentMessagesToChat(agentMsgs)
+	back := ai.AgentMessagesToChat(agentMsgs)
 	if len(back) != 3 {
 		t.Fatalf("round-trip len=%d", len(back))
 	}

@@ -175,36 +175,3 @@ func toolResultText(r message.ToolResult) string {
 	}
 	return b.String()
 }
-
-// ModelMessagesToAgent converts persisted AIChatMessage rows to ez-agent messages.
-func ModelMessagesToAgent(msgs []model.AIChatMessage) []message.Message {
-	return ChatMessagesToAgent(ChatMessagesFromModel(msgs))
-}
-
-// AgentMessageToModelRows converts one ez-agent message into one or more DB rows.
-// id is applied to the first row; subsequent tool rows get empty ResourceID (auto-generated).
-func AgentMessageToModelRows(organizationID, userID, sessionID string, msg message.Message, isSummary bool) []*model.AIChatMessage {
-	chatMsgs := agentMessageToChat(msg)
-	rows := make([]*model.AIChatMessage, 0, len(chatMsgs))
-	for i, cm := range chatMsgs {
-		var toolCalls model.AIToolCalls
-		for _, tc := range cm.ToolCalls {
-			toolCalls = append(toolCalls, model.AIToolCall{
-				Index: tc.Index,
-				ID:    tc.ID,
-				Type:  string(tc.Type),
-				Function: model.AIFunctionCall{
-					Name:      tc.Function.Name,
-					Arguments: tc.Function.Arguments,
-				},
-			})
-		}
-		row := model.NewAIChatMessage(organizationID, userID, sessionID, cm.Role, cm.Content, toolCalls, cm.ToolCallID)
-		row.IsSummary = isSummary
-		if i == 0 && msg.ID != "" {
-			row.ResourceID = msg.ID
-		}
-		rows = append(rows, row)
-	}
-	return rows
-}

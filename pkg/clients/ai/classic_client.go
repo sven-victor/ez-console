@@ -99,12 +99,6 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 		return nil, err
 	}
 
-	if store, ok := opts.SessionStore.(*DBSessionStore); ok && store != nil {
-		if opts.OnMessageAdded != nil && store.OnAppend == nil {
-			store.OnAppend = opts.OnMessageAdded
-		}
-	}
-
 	return runEZAgent(ctx, c.aiClient, messages, opts)
 }
 
@@ -125,12 +119,6 @@ func (c *classicChatClient) ExchangeStream(ctx context.Context, messages []ChatM
 	messages, err = PrepareChatCompletionSkillLoader(ctx, &opts, messages)
 	if err != nil {
 		return nil, err
-	}
-
-	if store, ok := opts.SessionStore.(*DBSessionStore); ok && store != nil {
-		if opts.OnMessageAdded != nil && store.OnAppend == nil {
-			store.OnAppend = opts.OnMessageAdded
-		}
 	}
 
 	return newEZAgentStream(ctx, c.aiClient, messages, opts, false)

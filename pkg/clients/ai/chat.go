@@ -199,7 +199,6 @@ type ChatCompletionOptions struct {
 	// with nil Err). It is not called for context condense/offload SessionStore.ReplaceAll.
 	OnSummary               func(ctx context.Context, messages []ChatMessage)
 	OnToolCallResultChanged func(ctx context.Context, toolCallID string, result string)
-	OnMessageAdded          func(ctx context.Context, message ChatMessage)
 	OnTokenUsage            func(ctx context.Context, stats TokenUsageStats)
 
 	// TraceWriter/TraceCounter enable ez-agent hook-based tracing (replaces AIClientWrapper for Exchange).
@@ -223,12 +222,6 @@ func WithChatOnSummary(onSummary func(ctx context.Context, messages []ChatMessag
 func WithChatOnToolCallResultChanged(onToolCallResultChanged func(ctx context.Context, toolCallID string, result string)) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.OnToolCallResultChanged = onToolCallResultChanged
-	}
-}
-
-func WithChatOnMessageAdded(onMessageAdded func(ctx context.Context, message ChatMessage)) WithChatOptions {
-	return func(options *ChatCompletionOptions) {
-		options.OnMessageAdded = onMessageAdded
 	}
 }
 

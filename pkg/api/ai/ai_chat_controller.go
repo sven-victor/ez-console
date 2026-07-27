@@ -442,43 +442,10 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}
 	}
 
-	sessionStore := &ai.DBSessionStore{
-		OrganizationID: organizationID,
-		UserID:         userIDStr,
-	}
+	sessionStore := c.service.GetSessionStore(ctx, organizationID, userIDStr)
 
 	options := []ai.WithChatOptions{
 		ai.WithChatSession(sessionID, sessionStore),
-		ai.WithChatOnMessageAdded(func(ctx context.Context, message ai.ChatMessage) {
-			// Persistence is handled by SessionStore.Append; only auto-title on first assistant text.
-			if len(message.ToolCalls) > 0 || message.ToolCallID != "" || len(message.Content) == 0 {
-				return
-			}
-			if initialMessageCount != 0 {
-				return
-			}
-			initialMessageCount = -1 // only once
-			go func() {
-				bgCtx := context.Background()
-				bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
-				if userID != nil {
-					bgCtx = context.WithValue(bgCtx, "user_id", userID)
-				}
-				if roles != nil {
-					bgCtx = context.WithValue(bgCtx, "roles", roles)
-				}
-				title, err := c.service.GenerateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, session.ModelID)
-				if err != nil {
-					level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
-					return
-				}
-				if err := c.service.UpdateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, title); err != nil {
-					level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
-					return
-				}
-				level.Info(logger).Log("msg", "Auto-generated chat session title", "sessionId", sessionID, "title", title)
-			}()
-		}),
 		ai.WithChatOnSummary(func(ctx context.Context, messages []ai.ChatMessage) {
 			// Fired only after successful LLM summarization (AfterSummary), not on condense/offload ReplaceAll.
 			// Persistence of the new window is handled by SessionStore.ReplaceAll separately.
@@ -491,7 +458,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		}),
 
 		ai.WithChatOnTokenUsage(func(ctx context.Context, stats ai.TokenUsageStats) {
-			if err := c.service.UpdateSessionTokenUsage(ctx, organizationID, userID.(string), sessionID, stats.PromptTokens, stats.CompletionTokens, stats.ActiveTokens); err != nil {
+			if err := c.service.UpdateSessionTokenUsage(ctx, organizationID, userIDStr, sessionID, stats.PromptTokens, stats.CompletionTokens, stats.ActiveTokens); err != nil {
 				level.Error(logger).Log("msg", "Failed to update session token usage", "error", err)
 			}
 		}),
@@ -572,6 +539,28 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		ctx.SSEvent("message", event)
 		return true
 	})
+
+	go func() {
+		bgCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		bgCtx = context.WithValue(bgCtx, "organization_id", organizationID)
+		if userID != nil {
+			bgCtx = context.WithValue(bgCtx, "user_id", userID)
+		}
+		if roles != nil {
+			bgCtx = context.WithValue(bgCtx, "roles", roles)
+		}
+		title, err := c.service.GenerateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, session.ModelID)
+		if err != nil {
+			level.Error(logger).Log("msg", "Failed to auto-generate chat session title", "error", err, "sessionId", sessionID)
+			return
+		}
+		if err := c.service.UpdateChatSessionTitle(bgCtx, organizationID, userID.(string), sessionID, title); err != nil {
+			level.Error(logger).Log("msg", "Failed to update chat session title", "error", err, "sessionId", sessionID)
+			return
+		}
+		level.Info(logger).Log("msg", "Auto-generated chat session title", "sessionId", sessionID, "title", title)
+	}()
 }
 
 // GenerateChatSessionTitle generates or updates a chat session title
