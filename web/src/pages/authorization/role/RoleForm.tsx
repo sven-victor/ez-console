@@ -169,6 +169,9 @@ const RoleForm: React.FC = () => {
   const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined);
   const [isSystemRole, setIsSystemRole] = useState(false);
 
+  // When multi-org is off, global roles may configure AI tools; when on, only organization roles.
+  const canConfigureAITools = !enableMultiOrg || roleType === 'organization';
+
   useEffect(() => {
     aiToolSelectionsRef.current = aiToolSelections;
   }, [aiToolSelections]);
@@ -267,8 +270,14 @@ const RoleForm: React.FC = () => {
       setRoleType(currentRoleType);
 
       const initialSelection = mapPermissionsToSelections(detailedRole.ai_tool_permissions || []);
-      if (currentRoleType === 'organization' && orgId) {
-        await runFetchAiToolsets({ organizationId: orgId, initialSelection });
+      const aiOrgId =
+        currentRoleType === 'organization' && orgId
+          ? orgId
+          : !enableMultiOrg
+            ? currentOrgId || organizations[0]?.id || ''
+            : '';
+      if (aiOrgId) {
+        await runFetchAiToolsets({ organizationId: aiOrgId, initialSelection });
       } else {
         setAiToolsets([]);
         setAiToolSelections(isClone ? initialSelection : {});
@@ -314,8 +323,14 @@ const RoleForm: React.FC = () => {
     });
     setCheckedKeys([]);
     setAiToolSelections({});
-    if (defaultRoleType === 'organization' && defaultOrgId) {
-      void runFetchAiToolsets({ organizationId: defaultOrgId, initialSelection: {} });
+    const aiOrgId =
+      defaultRoleType === 'organization' && defaultOrgId
+        ? defaultOrgId
+        : !enableMultiOrg
+          ? defaultOrgId
+          : '';
+    if (aiOrgId) {
+      void runFetchAiToolsets({ organizationId: aiOrgId, initialSelection: {} });
     } else {
       setAiToolsets([]);
     }
@@ -453,7 +468,7 @@ const RoleForm: React.FC = () => {
       delete payload.role_type;
 
       const aiAssignments =
-        roleType === 'organization'
+        canConfigureAITools
           ? Object.entries(aiToolSelections)
             .map(([toolsetId, tools]) => ({
               toolset_id: toolsetId,
@@ -769,11 +784,11 @@ const RoleForm: React.FC = () => {
             {
               key: 'ai-tools',
               label: t('role.aiPermissions', { defaultValue: 'AI Tool Permissions' }),
-              disabled: roleType === 'global',
+              disabled: !canConfigureAITools,
               children: (
                 <div style={{ marginBottom: '24px' }}>
                   <Spin spinning={aiToolsetsLoading}>
-                    {roleType === 'organization' ? (
+                    {canConfigureAITools ? (
                       aiToolsets.length > 0 ? (
                         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
                           {aiToolsets.map((toolset) => {
@@ -850,7 +865,7 @@ const RoleForm: React.FC = () => {
                       <Empty
                         image={Empty.PRESENTED_IMAGE_SIMPLE}
                         description={t('role.aiPermissionsGlobalInfo', {
-                          defaultValue: 'AI tool permissions are only available for organization roles.',
+                          defaultValue: 'AI tool permissions are only available for organization roles when multi-organization is enabled.',
                         })}
                       />
                     )}

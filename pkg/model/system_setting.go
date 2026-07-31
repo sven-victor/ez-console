@@ -37,6 +37,9 @@ const (
 
 	SettingSystemEnableMultiOrg SettingKey = "system_enable_multi_org" // Whether to enable multi-organization feature
 
+	// SettingSystemDefaultOrganizationID is the organization used when multi-org is disabled.
+	SettingSystemDefaultOrganizationID SettingKey = "system_default_organization_id"
+
 	SettingSystemEnableSkillToolBinding SettingKey = "system_enable_skill_tool_binding" // Whether to link AI tools to skills for chat
 )
 
@@ -47,6 +50,7 @@ var SystemSettingKeys = []SettingKey{
 	SettingSystemHomePage,
 	SettingSystemDisableLocalUserLogin,
 	SettingSystemEnableMultiOrg,
+	SettingSystemDefaultOrganizationID,
 	SettingSystemEnableSkillToolBinding,
 }
 
@@ -58,9 +62,10 @@ type SystemSettings struct {
 	Logo     string            `json:"logo"`
 	HomePage string            `json:"home_page"`
 
-	DisableLocalUserLogin       bool `json:"disable_local_user_login"`
-	EnableMultiOrg              bool `json:"enable_multi_org"`
-	EnableSkillToolBinding      bool `json:"enable_skill_tool_binding"`
+	DisableLocalUserLogin  bool   `json:"disable_local_user_login"`
+	EnableMultiOrg         bool   `json:"enable_multi_org"`
+	DefaultOrganizationID  string `json:"default_organization_id"`
+	EnableSkillToolBinding bool   `json:"enable_skill_tool_binding"`
 }
 
 func init() {

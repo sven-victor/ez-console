@@ -79,17 +79,47 @@ func deduplicateStrings(values []string) []string {
 	return result
 }
 
-func (s *roleService) validateAIToolAssignments(ctx context.Context, organizationID *string, assignments []RoleAIToolAssignment) error {
+// resolveAIToolOrganizationID returns the organization ID used to validate and store AI tool
+// permissions. When multi-org is disabled, global roles may configure AI tools against the
+// default organization; when multi-org is enabled, only organization roles may configure them.
+func resolveAIToolOrganizationID(ctx context.Context, organizationID *string, assignments []RoleAIToolAssignment) (string, error) {
 	if len(assignments) == 0 {
-		return nil
+		return "", nil
 	}
 
-	if organizationID == nil || *organizationID == "" {
-		return util.ErrorResponse{
-			HTTPCode: http.StatusBadRequest,
-			Code:     "E4001",
-			Err:      errors.New("AI tool permissions can only be configured for organization roles"),
+	enableMultiOrg, err := middleware.GetSettingService().GetBoolSetting(ctx, model.SettingSystemEnableMultiOrg, false)
+	if err != nil {
+		return "", err
+	}
+
+	isGlobalRole := organizationID == nil || *organizationID == ""
+	if isGlobalRole {
+		if enableMultiOrg {
+			return "", util.ErrorResponse{
+				HTTPCode: http.StatusBadRequest,
+				Code:     "E4001",
+				Err:      errors.New("AI tool permissions can only be configured for organization roles"),
+			}
 		}
+		defaultOrgID, err := middleware.GetSettingService().GetStringSetting(ctx, model.SettingSystemDefaultOrganizationID, model.DefaultOrganizationID)
+		if err != nil {
+			return "", err
+		}
+		if defaultOrgID == "" {
+			defaultOrgID = model.DefaultOrganizationID
+		}
+		return defaultOrgID, nil
+	}
+	return *organizationID, nil
+}
+
+func (s *roleService) validateAIToolAssignments(ctx context.Context, organizationID *string, assignments []RoleAIToolAssignment) error {
+	effectiveOrgID, err := resolveAIToolOrganizationID(ctx, organizationID, assignments)
+	if err != nil {
+		return err
+	}
+	if effectiveOrgID == "" {
+		return nil
 	}
 
 	toolSetIDSet := make(map[string]struct{}, len(assignments))
@@ -132,7 +162,7 @@ func (s *roleService) validateAIToolAssignments(ctx context.Context, organizatio
 
 	toolSetMap := make(map[string]model.ToolSet, len(toolSets))
 	for _, toolSet := range toolSets {
-		if toolSet.OrganizationID != *organizationID {
+		if toolSet.OrganizationID != effectiveOrgID {
 			return util.ErrorResponse{
 				HTTPCode: http.StatusBadRequest,
 				Code:     "E4001",
@@ -152,7 +182,7 @@ func (s *roleService) validateAIToolAssignments(ctx context.Context, organizatio
 
 	if s.toolSetService != nil {
 		for _, assignment := range assignments {
-			toolDefinitions, err := s.toolSetService.GetToolSetToolDefinitions(ctx, *organizationID, assignment.ToolSetID)
+			toolDefinitions, err := s.toolSetService.GetToolSetToolDefinitions(ctx, effectiveOrgID, assignment.ToolSetID)
 			if err != nil {
 				return util.NewError("E5001", err)
 			}
@@ -209,11 +239,15 @@ func (s *roleService) replaceRoleAIToolPermissions(ctx context.Context, tx *gorm
 		return err
 	}
 
-	if organizationID == nil || *organizationID == "" || len(assignments) == 0 {
+	effectiveOrgID, err := resolveAIToolOrganizationID(ctx, organizationID, assignments)
+	if err != nil {
+		return err
+	}
+	if effectiveOrgID == "" || len(assignments) == 0 {
 		return nil
 	}
 
-	records := buildRoleAIToolPermissions(roleID, *organizationID, assignments)
+	records := buildRoleAIToolPermissions(roleID, effectiveOrgID, assignments)
 	if len(records) == 0 {
 		return nil
 	}

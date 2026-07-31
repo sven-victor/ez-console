@@ -31,6 +31,10 @@ type Organization struct {
 const (
 	OrganizationStatusActive   = "active"
 	OrganizationStatusDisabled = "disabled"
+
+	// DefaultOrganizationID is the resource ID of the seeded default organization
+	// and the fallback value for SettingSystemDefaultOrganizationID.
+	DefaultOrganizationID = "00000000000000000000000000000000"
 )
 
 // IsActive checks if the organization is active

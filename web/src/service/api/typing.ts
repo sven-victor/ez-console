@@ -1907,6 +1907,7 @@ export interface SimpleChatMessage {
 
 export interface SiteConfig {
   attrs: Record<string, any>;
+  default_organization_id: string;
   disable_local_user_login: boolean;
   enable_multi_org: boolean;
   enable_skill_tool_binding: boolean;
@@ -2037,6 +2038,7 @@ export interface SystemInfo {
 }
 
 export interface SystemSettings {
+  default_organization_id: string;
   disable_local_user_login: boolean;
   enable_multi_org: boolean;
   enable_skill_tool_binding: boolean;

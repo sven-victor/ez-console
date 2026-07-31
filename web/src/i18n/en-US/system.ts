@@ -171,7 +171,14 @@ export default {
       disableLocalUserLogin: 'Disable Local User Login',
       disableLocalUserLoginTooltip: 'Disable local user login, It is only valid when other authentication methods are enabled.',
       enableMultiOrg: 'Enable Multi-Organization',
-      enableMultiOrgTooltip: 'Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab.',
+      enableMultiOrgTooltip:
+        'Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab. When disabled, the current organization becomes the default organization.',
+      defaultOrganization: 'Default Organization',
+      defaultOrganizationTooltip:
+        'Used when multi-organization is disabled. Switching multi-organization off sets this to the currently selected organization.',
+      currentOrganization: 'Current Organization',
+      currentOrganizationTooltip:
+        'If you disable multi-organization, this organization will become the default organization.',
       enableSkillToolBinding: 'Link AI tools to skills',
       enableSkillToolBindingTooltip:
         'When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools.',

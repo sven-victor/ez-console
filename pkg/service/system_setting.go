@@ -18,6 +18,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"strconv"
 	"sync"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/log"
 	w "github.com/sven-victor/ez-utils/wrapper"
 	"go.opentelemetry.io/otel"
@@ -291,6 +293,11 @@ var defaultSettings = []DefaultSetting{
 		Comment: "Enable multi-organization feature",
 	},
 	{
+		Key:     model.SettingSystemDefaultOrganizationID,
+		Value:   model.DefaultOrganizationID,
+		Comment: "Default organization ID used when multi-organization is disabled",
+	},
+	{
 		Key:     model.SettingSystemEnableSkillToolBinding,
 		Value:   "false",
 		Comment: "When enabled, AI chat restricts tools by skill bindings when skills are in scope",
@@ -351,6 +358,10 @@ func (s *settingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 	disableLocalUserLogin, _ := strconv.ParseBool(settings[string(model.SettingSystemDisableLocalUserLogin)])
 	enableMultiOrg, _ := strconv.ParseBool(settings[string(model.SettingSystemEnableMultiOrg)])
 	enableSkillToolBinding, _ := strconv.ParseBool(settings[string(model.SettingSystemEnableSkillToolBinding)])
+	defaultOrganizationID := settings[string(model.SettingSystemDefaultOrganizationID)]
+	if defaultOrganizationID == "" {
+		defaultOrganizationID = model.DefaultOrganizationID
+	}
 	baseSettings := &model.SystemSettings{
 		Name:     settings[string(model.SettingSystemName)],
 		NameI18n: map[string]string{},
@@ -359,6 +370,7 @@ func (s *settingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 
 		DisableLocalUserLogin:  disableLocalUserLogin,
 		EnableMultiOrg:         enableMultiOrg,
+		DefaultOrganizationID:  defaultOrganizationID,
 		EnableSkillToolBinding: enableSkillToolBinding,
 	}
 	if err := json.Unmarshal([]byte(settings[string(model.SettingSystemNameI18n)]), &baseSettings.NameI18n); err != nil {
@@ -368,16 +380,65 @@ func (s *settingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 	return baseSettings, nil
 }
 
+func organizationIDFromContext(ctx context.Context) string {
+	if orgID, ok := ctx.Value("organization_id").(string); ok {
+		return orgID
+	}
+	return ""
+}
+
+func (s *settingService) resolveDefaultOrganizationID(ctx context.Context, prev *model.SystemSettings, settings model.SystemSettings) (string, error) {
+	defaultOrgID := settings.DefaultOrganizationID
+	if defaultOrgID == "" {
+		defaultOrgID = prev.DefaultOrganizationID
+	}
+
+	// When switching from multi-org enabled to disabled, use the current scoped organization.
+	if prev.EnableMultiOrg && !settings.EnableMultiOrg {
+		if currentOrgID := organizationIDFromContext(ctx); currentOrgID != "" {
+			defaultOrgID = currentOrgID
+		}
+	}
+
+	if defaultOrgID == "" {
+		defaultOrgID = model.DefaultOrganizationID
+	}
+
+	var count int64
+	if err := db.Session(ctx).Model(&model.Organization{}).Where("resource_id = ?", defaultOrgID).Count(&count).Error; err != nil {
+		return "", err
+	}
+	if count == 0 {
+		return "", util.ErrorResponse{
+			HTTPCode: http.StatusBadRequest,
+			Code:     "E4001",
+			Err:      errors.New("default organization not found"),
+		}
+	}
+	return defaultOrgID, nil
+}
+
 func (s *settingService) UpdateSystemSettings(ctx context.Context, settings model.SystemSettings) error {
+	prev, err := s.GetSystemSettings(ctx)
+	if err != nil {
+		return err
+	}
+
+	defaultOrgID, err := s.resolveDefaultOrganizationID(ctx, prev, settings)
+	if err != nil {
+		return err
+	}
+
 	settingsMap := map[string]string{
 		string(model.SettingSystemName):     settings.Name,
 		string(model.SettingSystemNameI18n): w.JSONStringer(settings.NameI18n).String(),
 		string(model.SettingSystemLogo):     settings.Logo,
 		string(model.SettingSystemHomePage): settings.HomePage,
 
-		string(model.SettingSystemDisableLocalUserLogin):  strconv.FormatBool(settings.DisableLocalUserLogin),
-		string(model.SettingSystemEnableMultiOrg):         strconv.FormatBool(settings.EnableMultiOrg),
-		string(model.SettingSystemEnableSkillToolBinding): strconv.FormatBool(settings.EnableSkillToolBinding),
+		string(model.SettingSystemDisableLocalUserLogin):   strconv.FormatBool(settings.DisableLocalUserLogin),
+		string(model.SettingSystemEnableMultiOrg):          strconv.FormatBool(settings.EnableMultiOrg),
+		string(model.SettingSystemDefaultOrganizationID):   defaultOrgID,
+		string(model.SettingSystemEnableSkillToolBinding):  strconv.FormatBool(settings.EnableSkillToolBinding),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }

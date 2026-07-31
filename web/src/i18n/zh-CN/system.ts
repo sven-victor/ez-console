@@ -168,7 +168,12 @@ export default {
       disableLocalUserLogin: '禁用本地用户登录',
       disableLocalUserLoginTooltip: '禁用本地用户登录，仅在其他认证方法启用时有效',
       enableMultiOrg: '启用多组织',
-      enableMultiOrgTooltip: '启用多组织功能。启用后，可在“组织管理”标签中管理组织。',
+      enableMultiOrgTooltip:
+        '启用多组织功能。启用后，可在“组织管理”标签中管理组织。关闭时，会将当前选中的组织设为默认组织。',
+      defaultOrganization: '默认组织',
+      defaultOrganizationTooltip: '在关闭多组织时使用。从启用多组织切换为关闭时，会将当前选中的组织设为默认组织。',
+      currentOrganization: '当前组织',
+      currentOrganizationTooltip: '如果关闭多组织，该组织将成为默认组织。',
       enableSkillToolBinding: '将 AI 工具与技能关联',
       enableSkillToolBindingTooltip:
         '启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。',

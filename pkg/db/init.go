@@ -490,7 +490,7 @@ func seedUsers(tx *gorm.DB) error {
 func seedOrganizations(tx *gorm.DB) error {
 	defaultOrganization := model.Organization{
 		Base: model.Base{
-			ResourceID: "00000000000000000000000000000000",
+			ResourceID: model.DefaultOrganizationID,
 		},
 		Name:        "Default",
 		Description: "Default organization",

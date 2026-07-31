@@ -23,6 +23,7 @@ import (
 	"github.com/invopop/jsonschema"
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-console/pkg/db"
+	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
@@ -580,8 +581,11 @@ func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map
 		return result
 	}
 
+	enableMultiOrg, _ := middleware.GetSettingService().GetBoolSetting(ctx, model.SettingSystemEnableMultiOrg, false)
+
 	for _, role := range roles {
-		if (role.OrganizationID == nil || *role.OrganizationID == "") && role.Name == "admin" {
+		isGlobalRole := role.OrganizationID == nil || *role.OrganizationID == ""
+		if isGlobalRole && role.Name == "admin" {
 			return map[string]map[string]struct{}{
 				"*": {
 					"*": {},
@@ -595,7 +599,11 @@ func getAllowedAIToolPermissions(ctx context.Context, organizationID string) map
 				},
 			}
 		}
-		if role.OrganizationID != nil && *role.OrganizationID != "" && *role.OrganizationID != organizationID {
+		// When multi-org is enabled, AI tool permissions on global roles are ignored.
+		if enableMultiOrg && isGlobalRole {
+			continue
+		}
+		if !isGlobalRole && *role.OrganizationID != organizationID {
 			continue
 		}
 		for _, perm := range role.AIToolPermissions {

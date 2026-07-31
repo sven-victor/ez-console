@@ -9562,6 +9562,7 @@ const docTemplate = `{
         "model.SystemSettings": {
             "type": "object",
             "required": [
+                "default_organization_id",
                 "disable_local_user_login",
                 "enable_multi_org",
                 "enable_skill_tool_binding",
@@ -9571,6 +9572,9 @@ const docTemplate = `{
                 "name_i18n"
             ],
             "properties": {
+                "default_organization_id": {
+                    "type": "string"
+                },
                 "disable_local_user_login": {
                     "type": "boolean"
                 },
@@ -10497,6 +10501,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "attrs",
+                "default_organization_id",
                 "disable_local_user_login",
                 "enable_multi_org",
                 "enable_skill_tool_binding",
@@ -10511,6 +10516,9 @@ const docTemplate = `{
                 "attrs": {
                     "type": "object",
                     "additionalProperties": {}
+                },
+                "default_organization_id": {
+                    "type": "string"
                 },
                 "disable_local_user_login": {
                     "type": "boolean"
@@ -11480,7 +11488,11 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000
+                3600000000000,
+                1,
+                1000,
+                1000000,
+                1000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -11504,7 +11516,11 @@ const docTemplate = `{
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour"
+                "Hour",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second"
             ]
         },
         "toolset.ToolSetType": {

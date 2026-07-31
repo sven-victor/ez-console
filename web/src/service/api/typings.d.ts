@@ -1909,6 +1909,7 @@ declare global {
   
     interface SiteConfig {
       attrs: Record<string, any>;
+      default_organization_id: string;
       disable_local_user_login: boolean;
       enable_multi_org: boolean;
       enable_skill_tool_binding: boolean;
@@ -2039,6 +2040,7 @@ declare global {
     }
   
     interface SystemSettings {
+      default_organization_id: string;
       disable_local_user_login: boolean;
       enable_multi_org: boolean;
       enable_skill_tool_binding: boolean;

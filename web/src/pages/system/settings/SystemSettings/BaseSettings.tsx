@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { App, Form, Button, Space, Spin, Input, Tabs, Switch, Popconfirm } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
@@ -22,6 +22,8 @@ import { SaveOutlined, ReloadOutlined, ClearOutlined } from '@ant-design/icons';
 import api from '@/service/api';
 import { AllLangUIConfig } from '@/components/LanguageSwitch';
 import { PermissionGuard } from '@/components/PermissionGuard';
+import { useSite } from '@/contexts/SiteContext';
+import { useAuth } from '@/hooks/useAuth';
 
 
 const BaseSettingsForm: React.FC = () => {
@@ -30,6 +32,27 @@ const BaseSettingsForm: React.FC = () => {
   const { t, i18n } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
   const [form] = Form.useForm();
+  const { fetchSiteConfig, currentOrgId } = useSite();
+  const { user } = useAuth();
+
+  const enableMultiOrg = Form.useWatch('enable_multi_org', form);
+  const defaultOrganizationId = Form.useWatch('default_organization_id', form);
+
+  const currentOrgLabel = useMemo(() => {
+    const org = user?.organizations?.find((item) => item.id === currentOrgId);
+    if (org?.name) {
+      return `${org.name} (${currentOrgId})`;
+    }
+    return currentOrgId || '';
+  }, [user?.organizations, currentOrgId]);
+
+  const defaultOrgLabel = useMemo(() => {
+    const org = user?.organizations?.find((item) => item.id === defaultOrganizationId);
+    if (org?.name) {
+      return `${org.name} (${defaultOrganizationId})`;
+    }
+    return defaultOrganizationId || '';
+  }, [user?.organizations, defaultOrganizationId]);
 
   // Get system settings data
   const { loading, data, refresh } = useRequest(api.system.getSystemBaseSettings, {
@@ -45,9 +68,10 @@ const BaseSettingsForm: React.FC = () => {
   // Handle form submission
   const { loading: submitting, run: submitUpdate } = useRequest(api.system.updateSystemBaseSettings, {
     manual: true,
-    onSuccess: () => {
+    onSuccess: async () => {
       message.success(t('settings.updateSuccess', { defaultValue: 'Settings updated successfully' }));
-      refresh(); // Refresh data
+      refresh();
+      await fetchSiteConfig();
     },
     onError: (error) => {
       message.error(t('settings.updateFailed', { defaultValue: 'Failed to update settings' }));
@@ -116,10 +140,38 @@ const BaseSettingsForm: React.FC = () => {
       <Form.Item
         label={t('settings.base.enableMultiOrg', { defaultValue: 'Enable Multi-Organization' })}
         name="enable_multi_org"
-        tooltip={t('settings.base.enableMultiOrgTooltip', { defaultValue: 'Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab.' })}
+        tooltip={t('settings.base.enableMultiOrgTooltip', {
+          defaultValue:
+            'Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab. When disabled, the current organization becomes the default organization.',
+        })}
       >
         <Switch />
       </Form.Item>
+      <Form.Item name="default_organization_id" hidden>
+        <Input />
+      </Form.Item>
+      {!enableMultiOrg && (
+        <Form.Item
+          label={t('settings.base.defaultOrganization', { defaultValue: 'Default Organization' })}
+          tooltip={t('settings.base.defaultOrganizationTooltip', {
+            defaultValue:
+              'Used when multi-organization is disabled. Switching multi-organization off sets this to the currently selected organization.',
+          })}
+        >
+          <Input value={defaultOrgLabel} disabled />
+        </Form.Item>
+      )}
+      {enableMultiOrg && currentOrgLabel && (
+        <Form.Item
+          label={t('settings.base.currentOrganization', { defaultValue: 'Current Organization' })}
+          tooltip={t('settings.base.currentOrganizationTooltip', {
+            defaultValue:
+              'If you disable multi-organization, this organization will become the default organization.',
+          })}
+        >
+          <Input value={currentOrgLabel} disabled />
+        </Form.Item>
+      )}
       <Form.Item
         label={t('settings.base.enableSkillToolBinding', { defaultValue: 'Link AI tools to skills' })}
         name="enable_skill_tool_binding"
@@ -169,4 +221,4 @@ const BaseSettingsForm: React.FC = () => {
   </Spin>
 };
 
-export default BaseSettingsForm; 
+export default BaseSettingsForm;

@@ -89,20 +89,28 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
   }, [currentOrgId]);
 
   useEffect(() => {
-    if (user) {
-      const cacheOrgId = localStorage.getItem('orgID')
-
-      if (cacheOrgId) {
-        const organization = user?.organizations?.find(org => org.id === cacheOrgId);
-        if (organization) {
-          setCurrentOrgId(organization.id);
-
-          return
-        }
-      }
-      setCurrentOrgId(user?.organizations?.[0]?.id ?? null);
+    if (!user) {
+      return;
     }
 
+    const enableMultiOrg = siteConfig?.enable_multi_org ?? false;
+    const defaultOrgId = siteConfig?.default_organization_id;
+
+    // When multi-org is disabled, always scope to the configured default organization.
+    if (!enableMultiOrg && defaultOrgId) {
+      setCurrentOrgId(defaultOrgId);
+      return;
+    }
+
+    const cacheOrgId = localStorage.getItem('orgID');
+    if (cacheOrgId) {
+      const organization = user?.organizations?.find((org) => org.id === cacheOrgId);
+      if (organization) {
+        setCurrentOrgId(organization.id);
+        return;
+      }
+    }
+    setCurrentOrgId(user?.organizations?.[0]?.id ?? null);
   }, [siteConfig, user?.organizations]);
 
   const [tasksDropdownOpen, setTasksDropdownOpen] = useState<boolean>(false);
