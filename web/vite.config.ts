@@ -20,7 +20,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import dts from 'vite-plugin-dts'
 import path from 'path'
 import pkg from './package.json'
-
+import fs from 'fs'
 
 function toSnakeCase(str: string) {
   return str.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
@@ -113,6 +113,15 @@ export default defineConfig((env: ConfigEnv) => {
           outDir: 'types',
           copyDtsFiles: true,
           rollupTypes: true,
+          afterBuild(emittedFiles) {
+            for (const key of Array.from(emittedFiles.keys())) {
+              let content = emittedFiles.get(key) || '';
+              if (content.includes('export declare namespace API_RENAME')) {
+                content = content.replace('export declare namespace API_RENAME', 'export declare namespace API');
+              }
+              fs.writeFileSync(key, content);
+            }
+          },
         })
       ],
       build: {

@@ -95,3 +95,5 @@ export {
   MarkdownCode,
   AIChat,
 }
+
+export type * as API_RENAME from '@/service/api/typing';
