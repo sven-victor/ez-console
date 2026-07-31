@@ -18,6 +18,18 @@ import 'axios';
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
+    /** Skip attaching Authorization / org headers for this request. */
     withoutAuth?: boolean;
+    /**
+     * Skip response unwrapping.
+     * When true, the response interceptor returns the full AxiosResponse
+     * (including `{ code, data, err }` envelopes) instead of unwrapping `data`.
+     */
+    rawResponse?: boolean;
+    /**
+     * Skip the default error interceptor.
+     * When true, rejects with the original AxiosError (no 401 redirect, no ApiError wrapping).
+     */
+    skipErrorHandler?: boolean;
   }
 }

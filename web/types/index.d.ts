@@ -843,7 +843,8 @@ export declare interface CheckPasswordComplexityResponse {
     is_valid: boolean;
 }
 
-export declare const client: AxiosInstance;
+/** Shared replaceable HTTP client used by api helpers and `request()`. */
+export declare const client: HttpClient;
 
 export declare interface ClientToolDefinition {
     description: string;
@@ -1339,6 +1340,37 @@ export declare interface HealthResult {
     message: string;
     reason: string;
     status: string;
+}
+
+/**
+ * Replaceable HTTP client wrapper around AxiosInstance.
+ * Method calls always delegate to the current underlying instance.
+ */
+export declare class HttpClient {
+    private _instance;
+    constructor(instance?: AxiosInstance, options?: SetInstanceOptions);
+    /** Current underlying Axios instance. */
+    get instance(): AxiosInstance;
+    /** Axios defaults of the current instance (live binding). */
+    get defaults(): AxiosInstance['defaults'];
+    /** Axios interceptors of the current instance (live binding). */
+    get interceptors(): AxiosInstance['interceptors'];
+    /**
+     * Replace the underlying AxiosInstance.
+     * Existing imports of `client` keep working because methods always delegate to `_instance`.
+     */
+    setInstance(instance: AxiosInstance, options?: SetInstanceOptions): void;
+    request: AxiosInstance['request'];
+    get: AxiosInstance['get'];
+    delete: AxiosInstance['delete'];
+    head: AxiosInstance['head'];
+    options: AxiosInstance['options'];
+    post: AxiosInstance['post'];
+    put: AxiosInstance['put'];
+    patch: AxiosInstance['patch'];
+    postForm: AxiosInstance['postForm'];
+    putForm: AxiosInstance['putForm'];
+    patchForm: AxiosInstance['patchForm'];
 }
 
 export { i18n }
@@ -1977,6 +2009,10 @@ export declare interface putSkillFileParams {
     path: string;
 }
 
+declare interface RawRequestConfig extends Omit<RequestConfig, 'rawResponse'> {
+    rawResponse: true;
+}
+
 export declare interface RegisteredClientTool {
     /** Must start with "ui_" prefix */
     name: string;
@@ -2009,6 +2045,8 @@ export declare function request(url: string, config: BlobRequestConfig): Promise
 export declare function request(url: string, config: TextRequestConfig): Promise<AxiosResponse<string>>;
 
 export declare function request(url: string, config: SSERequestConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
+
+export declare function request<T = unknown>(url: string, config: RawRequestConfig): Promise<AxiosResponse<T>>;
 
 export declare function request<T extends {
     data: unknown;
@@ -2431,7 +2469,7 @@ export declare interface restoreUserParams {
 
 declare type Result<T extends {
     data: unknown;
-}> = T extends ListResult ? T : T["data"];
+}> = T extends ListResult ? T : T['data'];
 
 export declare interface retryTaskParams {
     /** Task ID (UUID) */
@@ -2669,9 +2707,20 @@ export declare interface SessionInfo {
     user_agent: string;
 }
 
+/** Replace the shared client's underlying AxiosInstance. */
+export declare function setClient(instance: AxiosInstance, options?: SetInstanceOptions): void;
+
 export declare interface setDefaultAIModelParams {
     /** AI model ID */
     id: string;
+}
+
+declare interface SetInstanceOptions {
+    /**
+     * Whether to attach the default request/response interceptors to the new instance.
+     * Defaults to true. Set false when the instance is already fully configured.
+     */
+    applyInterceptors?: boolean;
 }
 
 export declare interface setRolePolicyParams {
@@ -3385,6 +3434,18 @@ export { }
 
 declare module 'axios' {
   export interface AxiosRequestConfig {
+    /** Skip attaching Authorization / org headers for this request. */
     withoutAuth?: boolean;
+    /**
+     * Skip response unwrapping.
+     * When true, the response interceptor returns the full AxiosResponse
+     * (including `{ code, data, err }` envelopes) instead of unwrapping `data`.
+     */
+    rawResponse?: boolean;
+    /**
+     * Skip the default error interceptor.
+     * When true, rejects with the original AxiosError (no 401 redirect, no ApiError wrapping).
+     */
+    skipErrorHandler?: boolean;
   }
 }

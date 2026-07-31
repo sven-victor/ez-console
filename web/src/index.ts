@@ -57,7 +57,18 @@ export { usePermission } from '@/hooks/usePermission'
 export { useAI } from '@/contexts/AIContext'
 export type { PageAIOptions, RegisteredClientTool, ClientToolHandler, PageDataGetter } from '@/contexts/AIContext'
 
-export { apiDelete, apiPost, apiGet, apiPut, ApiError, client, request, fetchSSE } from '@/service/client';
+export {
+  apiDelete,
+  apiPost,
+  apiGet,
+  apiPut,
+  ApiError,
+  client,
+  setClient,
+  HttpClient,
+  request,
+  fetchSSE,
+} from '@/service/client';
 import * as authorizationapi from '@/service/api/authorization';
 import * as baseapi from '@/service/api/base';
 import * as oauthapi from '@/service/api/oauth';

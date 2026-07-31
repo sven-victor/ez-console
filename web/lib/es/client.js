@@ -1,159 +1,214 @@
-var h = Object.defineProperty;
-var m = (e, t, r) => t in e ? h(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r }) : e[t] = r;
-var p = (e, t, r) => m(e, typeof t != "symbol" ? t + "" : t, r);
+var g = Object.defineProperty;
+var y = (s, e, t) => e in s ? g(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
+var a = (s, e, t) => y(s, typeof e != "symbol" ? e + "" : e, t);
 import { g as d } from "./base.js";
-import g from "axios";
-import { isString as l } from "lodash-es";
-const f = "/api", s = g.create({
-  baseURL: f,
-  timeout: 3e4,
-  headers: {
-    "Content-Type": "application/json"
-  }
-});
-class u extends Error {
-  constructor(r, a) {
-    super(a);
-    p(this, "code");
-    this.code = r;
+import S from "axios";
+import { isString as f } from "lodash-es";
+const w = "/api";
+class h extends Error {
+  constructor(t, n) {
+    super(n);
+    a(this, "code");
+    this.code = t;
   }
 }
-s.interceptors.request.use(
-  (e) => {
-    if (!e.withoutAuth) {
-      const r = localStorage.getItem("token");
-      if (r && (e.headers = e.headers || {}, e.headers.Authorization = `Bearer ${r}`, !e.headers["X-Scope-OrgID"])) {
-        const a = localStorage.getItem("orgID");
-        a && (e.headers["X-Scope-OrgID"] = a);
-      }
-    }
-    const t = localStorage.getItem("i18nextLng");
-    return t && (e.headers["Accept-Language"] = t), e;
-  },
-  (e) => Promise.reject(e)
-);
-s.interceptors.response.use(
-  (e) => {
-    const t = e.headers["content-type"];
-    if (t && (!l(t) || !t.includes("application/json")))
-      return e;
-    const r = e.data;
-    return r && r.code !== void 0 ? r.code === "0" ? r.total !== void 0 && r.current !== void 0 && r.page_size !== void 0 ? {
-      data: r.data,
-      total: r.total,
-      current: r.current,
-      page_size: r.page_size
-    } : r.data : Promise.reject(r || "Unknown error") : e.data;
-  },
-  (e) => {
-    var a, o, i, n;
-    ((a = e.response) == null ? void 0 : a.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
-    let t = new u(((o = e.response) == null ? void 0 : o.status.toString()) || "500", e.message);
-    const r = (i = e.response) == null ? void 0 : i.headers["content-type"];
-    if (r && l(r) && r.includes("application/json")) {
-      const c = (n = e.response) == null ? void 0 : n.data;
-      c && (c.err ? t = new u(c.code || "500", c.err || "Unknown error") : c.error && (t = new u(c.code || "500", c.error || "Unknown error")));
-    }
-    return Promise.reject(t);
-  }
-);
-const E = async (e, t) => s.get(e, t), L = async (e, t, r) => s.post(e, t, r), T = async (e, t, r) => s.put(e, t, r), U = async (e, t) => s.delete(e, t);
-async function S(e, t) {
-  const { signal: r, ...a } = t || {}, o = await fetch(e, {
-    method: a.method || "GET",
-    headers: a.headers,
-    body: a.body,
-    signal: r
+function I(s) {
+  return S.create({
+    baseURL: w,
+    timeout: 3e4,
+    headers: {
+      "Content-Type": "application/json"
+    },
+    ...s
   });
-  if (!o.ok || !o.body) {
-    let i = o.statusText;
-    if (o.body)
+}
+function m(s) {
+  s.instance.interceptors.request.use(
+    (e) => {
+      if (!e.withoutAuth) {
+        const n = localStorage.getItem("token");
+        if (n && (e.headers = e.headers || {}, e.headers.Authorization = `Bearer ${n}`, !e.headers["X-Scope-OrgID"])) {
+          const r = localStorage.getItem("orgID");
+          r && (e.headers["X-Scope-OrgID"] = r);
+        }
+      }
+      const t = localStorage.getItem("i18nextLng");
+      return t && (e.headers["Accept-Language"] = t), e;
+    },
+    (e) => Promise.reject(e)
+  ), s.instance.interceptors.response.use(
+    (e) => {
+      if (e.config.rawResponse)
+        return e;
+      const t = e.headers["content-type"];
+      if (t && (!f(t) || !t.includes("application/json")))
+        return e;
+      const n = e.data;
+      return n && n.code !== void 0 ? n.code === "0" ? n.total !== void 0 && n.current !== void 0 && n.page_size !== void 0 ? {
+        data: n.data,
+        total: n.total,
+        current: n.current,
+        page_size: n.page_size
+      } : n.data : Promise.reject(n || "Unknown error") : e.data;
+    },
+    (e) => {
+      var r, i, o, u, l;
+      if ((r = e.config) != null && r.skipErrorHandler)
+        return Promise.reject(e);
+      ((i = e.response) == null ? void 0 : i.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
+      let t = new h(((o = e.response) == null ? void 0 : o.status.toString()) || "500", e.message);
+      const n = (u = e.response) == null ? void 0 : u.headers["content-type"];
+      if (n && f(n) && n.includes("application/json")) {
+        const p = (l = e.response) == null ? void 0 : l.data;
+        p && (p.err ? t = new h(p.code || "500", p.err || "Unknown error") : p.error && (t = new h(p.code || "500", p.error || "Unknown error")));
+      }
+      return Promise.reject(t);
+    }
+  );
+}
+class _ {
+  constructor(e, t = {}) {
+    a(this, "_instance");
+    a(this, "request", (e) => this._instance.request(e));
+    a(this, "get", (e, t) => this._instance.get(e, t));
+    a(this, "delete", (e, t) => this._instance.delete(e, t));
+    a(this, "head", (e, t) => this._instance.head(e, t));
+    a(this, "options", (e, t) => this._instance.options(e, t));
+    a(this, "post", (e, t, n) => this._instance.post(e, t, n));
+    a(this, "put", (e, t, n) => this._instance.put(e, t, n));
+    a(this, "patch", (e, t, n) => this._instance.patch(e, t, n));
+    a(this, "postForm", (e, t, n) => this._instance.postForm(e, t, n));
+    a(this, "putForm", (e, t, n) => this._instance.putForm(e, t, n));
+    a(this, "patchForm", (e, t, n) => this._instance.patchForm(e, t, n));
+    this._instance = e ?? I(), t.applyInterceptors !== !1 && m(this);
+  }
+  /** Current underlying Axios instance. */
+  get instance() {
+    return this._instance;
+  }
+  /** Axios defaults of the current instance (live binding). */
+  get defaults() {
+    return this._instance.defaults;
+  }
+  /** Axios interceptors of the current instance (live binding). */
+  get interceptors() {
+    return this._instance.interceptors;
+  }
+  /**
+   * Replace the underlying AxiosInstance.
+   * Existing imports of `client` keep working because methods always delegate to `_instance`.
+   */
+  setInstance(e, t = {}) {
+    this._instance = e, t.applyInterceptors !== !1 && m(this);
+  }
+}
+const c = new _();
+function q(s, e) {
+  c.setInstance(s, e);
+}
+const x = async (s, e) => c.get(s, e), T = async (s, e, t) => c.post(s, e, t), A = async (s, e, t) => c.put(s, e, t), k = async (s, e) => c.delete(s, e);
+async function b(s, e) {
+  const { signal: t, ...n } = e || {}, r = await fetch(s, {
+    method: n.method || "GET",
+    headers: n.headers,
+    body: n.body,
+    signal: t
+  });
+  if (!r.ok || !r.body) {
+    let i = r.statusText;
+    if (r.body)
       try {
-        const n = await o.json();
-        i = `SSE connection failed: ${n.message || n.err}`;
-      } catch (n) {
-        console.log("SSE connection failed: ", n), i = `SSE connection failed: ${o.statusText}`;
+        const o = await r.json();
+        i = `SSE connection failed: ${o.message || o.err}`;
+      } catch (o) {
+        console.log("SSE connection failed: ", o), i = `SSE connection failed: ${r.statusText}`;
       }
     throw new Error(i);
   }
-  if (o.status !== 200) {
-    const i = await o.json();
+  if (r.status !== 200) {
+    const i = await r.json();
     throw new Error(`SSE connection failed: ${i.message}`);
   }
-  return o.body;
+  return r.body;
 }
-function y(e) {
-  if (e)
-    return typeof e.toJSON == "function" ? e.toJSON() : Object.fromEntries(
-      Object.entries(e).map(([t, r]) => [t, String(r)])
-    );
+function j(s) {
+  if (s)
+    return typeof s.toJSON == "function" ? s.toJSON() : Object.fromEntries(Object.entries(s).map(([e, t]) => [e, String(t)]));
 }
-async function x(e, t) {
-  const { requestType: r, signal: a, ...o } = t || {}, i = o.responseType;
-  if (r === "sse") {
-    const c = localStorage.getItem("orgID");
-    return S(e, {
+async function D(s, e) {
+  const { requestType: t, signal: n, ...r } = e || {}, i = r.responseType;
+  if (t === "sse") {
+    const u = localStorage.getItem("orgID");
+    return b(s, {
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
         "X-Base-Path": d(),
         "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
-        ...c ? { "X-Scope-OrgID": c } : {},
-        ...y(o.headers)
+        ...u ? { "X-Scope-OrgID": u } : {},
+        ...j(r.headers)
       },
-      method: o.method,
-      body: JSON.stringify(o.data),
-      signal: a
+      method: r.method,
+      body: JSON.stringify(r.data),
+      signal: n
     });
   }
-  const n = r === "form" ? {
-    ...t == null ? void 0 : t.headers,
+  const o = t === "form" ? {
+    ...e == null ? void 0 : e.headers,
     "Content-Type": "multipart/form-data",
     "X-Base-Path": d()
   } : {
-    ...t == null ? void 0 : t.headers,
+    ...e == null ? void 0 : e.headers,
     "X-Base-Path": d()
   };
   switch (i) {
     case "arraybuffer":
-      return s.request({
-        url: e,
+      return c.request({
+        url: s,
         baseURL: "",
-        ...o,
-        headers: n
+        ...r,
+        headers: o
       });
     case "blob":
-      return s.request({
-        url: e,
+      return c.request({
+        url: s,
         baseURL: "",
-        ...o,
-        headers: n
+        ...r,
+        headers: o
       });
     case "text":
-      return s.request({
-        url: e,
+      return c.request({
+        url: s,
         baseURL: "",
-        ...o,
-        headers: n
+        ...r,
+        headers: o
       });
     default:
-      return s.request({
-        url: e,
+      return r.rawResponse ? c.request({
+        url: s,
         baseURL: "",
-        ...o,
-        headers: n
+        ...r,
+        headers: o,
+        rawResponse: !0
+      }) : c.request({
+        url: s,
+        baseURL: "",
+        ...r,
+        headers: o
       });
   }
 }
 export {
-  u as A,
-  U as a,
-  f as b,
-  E as c,
-  L as d,
-  T as e,
-  s as f,
-  S as g,
-  x as r
+  h as A,
+  _ as H,
+  k as a,
+  w as b,
+  x as c,
+  T as d,
+  A as e,
+  c as f,
+  b as g,
+  D as r,
+  q as s
 };
