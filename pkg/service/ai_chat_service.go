@@ -136,7 +136,7 @@ var (
 // NewAIChatService creates a new AI chat service.
 func NewAIChatService(ctx context.Context, baseService BaseService, aiModelService AIModelService, aiTraceService AITraceService, skillService SkillService) AIChatService {
 	aiChatServiceOnce.Do(func() {
-		sessionService := ctx.Value(sessionServiceKey{}).(AISessionService)
+		sessionService, _ := ctx.Value(sessionServiceKey{}).(AISessionService)
 		if sessionService == nil {
 			sessionService = NewDBSessionService()
 		}
