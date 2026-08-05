@@ -452,21 +452,28 @@ Configure session behavior through system settings:
 
 ### Manual Session Management
 
-```go
-func (s *SessionService) InvalidateSession(ctx context.Context, sessionID string) error {
-	return db.Session(ctx).
-		Model(&model.Session{}).
-		Where("resource_id = ?", sessionID).
-		Update("is_valid", false).Error
-}
+Prefer the session service APIs — they update the DB **and** broadcast L1 cache invalidation via EventBus:
 
-func (s *SessionService) InvalidateAllUserSessions(ctx context.Context, userID string) error {
-	return db.Session(ctx).
-		Model(&model.Session{}).
-		Where("user_id = ?", userID).
-		Update("is_valid", false).Error
-}
+```go
+import (
+    "github.com/sven-victor/ez-console/pkg/cache"
+    "github.com/sven-victor/ez-console/pkg/db"
+)
+
+// Terminate one session by resource ID (also PublishInvalidate on the token hash)
+err := sessionSvc.TerminateSession(ctx, sessionID, currentUserID)
+
+// Terminate all other sessions for the user (keep the current one)
+err = sessionSvc.TerminateOtherSessions(ctx, userID, currentSessionID)
+
+// Delete by user + token hash
+err = sessionSvc.DeleteSession(ctx, userID, tokenHash)
+
+// Disable a user: mark all sessions invalid in DB and invalidate L1 on all nodes
+cache.InvalidateAndDisableUserSessions(ctx, db.Session(ctx), userID)
 ```
+
+Do **not** only `UPDATE t_session SET is_valid=false` without cache invalidation — other nodes (and this node’s L1) may keep serving the session until the **45s** session TTL expires. See [Caching](./20-caching.md).
 
 ## External Authentication
 
@@ -491,21 +498,28 @@ oauth:
 
 ### LDAP/Active Directory
 
-Configure LDAP through system settings UI or config file:
+LDAP is configured via **system settings** (UI or settings API), **not** a top-level `ldap:` block in `config.yaml`. Keys live in `pkg/model/system_ldap_setting.go`:
 
-```yaml
-ldap:
-  enabled: true
-  host: "ldap.example.com"
-  port: 389
-  bind_dn: "cn=admin,dc=example,dc=com"
-  bind_password: "password"
-  base_dn: "ou=users,dc=example,dc=com"
-  user_filter: "(uid=%s)"
-  attr_username: "uid"
-  attr_email: "mail"
-  attr_display_name: "displayName"
-```
+| Setting key | Purpose |
+|-------------|---------|
+| `ldap_enabled` | Enable LDAP authentication |
+| `ldap_server_url` | LDAP server URL |
+| `ldap_bind_dn` / `ldap_bind_password` | Bind credentials |
+| `ldap_base_dn` | Base DN |
+| `ldap_user_filter` | User filter (e.g. contains `%s` for username) |
+| `ldap_user_attr` / `ldap_email_attr` / `ldap_display_name_attr` | Attribute mapping |
+| `ldap_default_role` | Default role for new LDAP users |
+| `ldap_start_tls` / `ldap_ca_cert` / `ldap_client_cert` / `ldap_client_key` / `ldap_insecure` | TLS |
+| `ldap_timeout` | Timeout |
+| `ldap_allow_manage_user_password` | Whether console may manage LDAP user passwords |
+
+### Ephemeral tokens (MFA / OAuth / activation)
+
+Short-lived one-time tokens that must work on **any** node are stored in `t_ephemeral_token` via `EphemeralTokenService` — not in L1 cache. Purposes include `oauth_state`, `mfa_login`, `mfa_activation`, `mfa_disable`, `user_activation`. See [Distributed Deployment](./19-distributed-deployment.md#ephemeral-tokens-ephemeraltokenservice).
+
+### Multi-Factor Authentication (MFA)
+
+Enable and tune MFA through system settings (TOTP and/or email). Login / activation / disable flows use ephemeral tokens above so multi-node deployments stay consistent. Users can be forced to enroll when MFA is enforced globally or per user.
 
 ## Security Best Practices
 
@@ -519,32 +533,9 @@ Configure through system settings:
 - Password history (prevent reuse)
 - Account lockout after failed attempts
 
-### Multi-Factor Authentication (MFA)
-
-Enable MFA through system settings:
-
-```go
-// MFA can be enforced globally or per-user
-// Supports TOTP (Google Authenticator, Authy) and Email-based MFA
-```
-
 ### API Rate Limiting
 
-```go
-import (
-	"context"
-	"github.com/sven-victor/ez-console/pkg/middleware"
-)
-
-func (c *APIController) RegisterRoutes(ctx context.Context, router *gin.RouterGroup) {
-	// Apply rate limiting
-	limited := router.Group("/api")
-	limited.Use(middleware.RateLimitMiddleware(100, time.Minute)) // 100 requests per minute
-	{
-		limited.GET("/products", c.ListProducts)
-	}
-}
-```
+There is **no** built-in `middleware.RateLimitMiddleware` in `pkg/middleware`. If you need rate limiting, implement a Gin middleware (see the custom example in [Middleware](./08-middleware.md)) or terminate at the reverse proxy / API gateway.
 
 ### Audit Logging
 

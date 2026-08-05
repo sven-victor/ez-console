@@ -24,18 +24,21 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 18. [Code Generation CLI](./18-code-generation-cli.md) - `ez-console generate` / `ez-console init` usage
 19. [Distributed Deployment](./19-distributed-deployment.md) - Multi-node setup, cluster APIs, EventBus, and cache invalidation
 20. [Caching](./20-caching.md) - L1 typed caches, invalidation, TTLs, metrics, and related mechanisms
+21. [Email Notification Module](./21-email-notification-module.md) - SMTP fields, templates, password-expiry and lock jobs
 
 ## Framework Features
 
 ### Backend (Go + Gin)
 - **RESTful API**: Built with Gin framework
-- **Database ORM**: GORM with support for SQLite, MySQL, PostgreSQL
+- **Database ORM**: GORM with support for **SQLite** (default) and **MySQL** (multi-node / production)
 - **Authentication**: JWT-based with session management
 - **Authorization**: RBAC with policy-based permissions
-- **Middleware**: Built-in authentication, CORS, logging, rate limiting
+- **Middleware**: Built-in authentication, CORS, logging (rate limiting is custom / proxy-level)
 - **File Management**: Upload/download with storage support
 - **Audit Logging**: Automatic tracking of user actions
 - **Multi-tenancy**: Organization-based resource isolation
+- **Caching**: Per-node L1 typed caches with EventBus invalidation
+- **AI**: ez-agent chat, toolsets, skills
 
 ### Frontend (React + TypeScript)
 - **Modern Stack**: React 18 + TypeScript + Vite
@@ -51,6 +54,7 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 - **Source Code**: Check the `/examples` directory for working examples
 - **API Documentation**: Available at `/swagger` when the server is running. The API contract is defined in the backend (Swag comments in `pkg/api/`); run `make clean-openapi clean-openapi2ts openapi2ts` to regenerate the OpenAPI spec and frontend API client (see [API Best Practices](./09-api-best-practices.md)).
 - **Configuration Reference**: See [Configuration Guide](./05-configuration.md)
+- **Multi-node / cache**: See [Distributed Deployment](./19-distributed-deployment.md) and [Caching](./20-caching.md)
 
 ## Getting Help
 
@@ -63,7 +67,7 @@ For detailed information on specific topics, navigate to the corresponding guide
 ## Prerequisites
 
 Before starting, ensure you have:
-- Go 1.20 or higher
+- Go **1.25** or higher (see `go.mod`)
 - Node.js 18 or higher
 - pnpm (for frontend development)
 - Basic knowledge of Go and React

@@ -322,13 +322,12 @@ import (
 func (c *ProductController) UpdateProduct(ctx *gin.Context) {
     // ... update product in DB ...
 
-    // If you add a custom TypedCache for products, invalidate like built-in caches:
-    // Prefer PublishInvalidate so all cluster nodes drop the entry.
-    // cache.PublishInvalidate(ctx, "products", productID)
-
-    // Built-in example: settings change
+    // Built-in example: settings change — only CacheName* logical names are wired for EventBus
     cache.PublishInvalidate(ctx.Request.Context(), cache.CacheNameSettings, "my_setting_key")
     cache.PublishInvalidate(ctx.Request.Context(), cache.CacheNameAllSettings, "all")
+
+    // Note: PublishInvalidate("products", id) does nothing unless you extend
+    // logicalNameToCache in pkg/cache/init.go — there is no public register API today.
 
     util.RespondWithSuccess(ctx, http.StatusOK, product)
 }

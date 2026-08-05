@@ -7,7 +7,7 @@ This guide describes the Task Management module: background task execution, regi
 The Task Management module provides:
 
 - **Background task execution**: Tasks run in a worker pool with configurable concurrency.
-- **Registry-based task types**: Extensible task types via `pkg/taskscheduler`; no built-in task types by default.
+- **Registry-based task types**: Extensible via `pkg/taskscheduler`. The framework also registers built-in types for scheduled jobs (password-expiry notification, inactive-account lock, ephemeral-token cleanup, task/audit log cleanup, AI chat session retention, user export, etc.).
 - **Real-time progress and status**: Progress (0–100) and status (pending, running, success, failed, cancelled) are stored and can be polled by the frontend.
 - **Cancellation and retry**: Running or pending tasks can be cancelled; failed or cancelled tasks can be retried.
 - **Artifact download**: Tasks can attach an artifact file key; users download via the existing file API.
@@ -16,6 +16,20 @@ The Task Management module provides:
 - **Configurable log storage**: Task settings let you choose where task logs are stored (e.g. database); the list of backends is provided by a registry in `pkg/taskscheduler`.
 - **Multi-node safe**: Tasks are claimed from the DB atomically (SKIP LOCKED / single-statement UPDATE); each node runs its own poller. A lease mechanism and a leader-elected reaper recover tasks from crashed nodes.
 - **Execution time windows**: Tasks can carry `not_before` and `not_after` deadlines. Scheduled (cron) tasks automatically receive a time window matching their fire interval so stale runs are discarded rather than executed late.
+
+### Built-in framework task types (examples)
+
+| Task type | Purpose |
+|-----------|---------|
+| `password_expiry_notification_task` | Email users whose password is about to expire |
+| `inactive_account_lock_task` | Lock / disable inactive accounts |
+| `ephemeral_token_cleanup` | Delete expired rows from `t_ephemeral_token` |
+| `task_log_cleanup_task` | Purge old task execution logs |
+| `audit_log_cleanup_task` | Purge old audit logs |
+| `ai_chat_session_cleanup_task` | Delete AI chat sessions past retention |
+| `user_export` | Export users (on-demand, not necessarily cron) |
+
+Register additional types with `taskscheduler.RegisterTaskType` / `RegisterFuncTaskType`, or scheduled jobs with `RegisterScheduledJob`.
 
 ## Architecture
 
@@ -452,10 +466,10 @@ After `claimUntilIdle` returns (either condition), the fallback timer is reset t
 `claimNextPending` transitions one `pending` task to `running` atomically, enforcing `not_before ≤ NOW < not_after` (if set):
 
 - **MySQL**: single `UPDATE … ORDER BY created_at ASC LIMIT 1` — no explicit transaction needed.
-- **PostgreSQL**: single `UPDATE … WHERE resource_id = (SELECT … FOR UPDATE SKIP LOCKED)` — no explicit transaction.
 - **SQLite**: `SELECT … FOR UPDATE` inside a transaction (SQLite serializes writes via its file lock; `SKIP LOCKED` is not supported but unnecessary).
+- **PostgreSQL-style dialect** (in `pkg/db/dialect`, not a config driver today): `UPDATE … WHERE resource_id = (SELECT … FOR UPDATE SKIP LOCKED)`.
 
-On success, the task row has `status='running'`, `worker_id`, `started_at`, and `lease_expires_at = NOW + leaseTTL` (default 60 s). The poller then retrieves the row by `claim_token` (MySQL/PostgreSQL) or direct reference (SQLite) and pushes it into the local `taskQueue` channel.
+On success, the task row has `status='running'`, `worker_id`, `started_at`, and `lease_expires_at = NOW + leaseTTL` (default 60 s). The poller then retrieves the row by `claim_token` (MySQL) or direct reference (SQLite) and pushes it into the local `taskQueue` channel.
 
 ### Lease renewal and cancellation
 

@@ -26,7 +26,7 @@ For multi-node networking and EventBus setup, see [Distributed Deployment](./19-
 EZ-Console caches hot authentication and configuration data **per process** to avoid repeated DB reads:
 
 - **L1 only**: each node keeps its own `TypedCache[T]` maps. There is **no shared Redis or DB cache layer** in production today.
-- **Database is the source of truth**: on miss (or after TTL expiry), data is reloaded from MySQL/PostgreSQL/SQLite.
+- **Database is the source of truth**: on miss (or after TTL expiry), data is reloaded from MySQL/SQLite.
 - **Cross-node consistency**: after a write, call `cache.PublishInvalidate` so peers drop the same key via EventBus (`cache.invalidate`). Events are **best-effort**; short TTLs (especially sessions) are the safety net.
 - **Do not** use L1 caches for one-time tokens that must be correct across nodes — use `EphemeralTokenService` (DB-backed).
 

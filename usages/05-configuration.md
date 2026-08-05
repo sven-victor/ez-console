@@ -31,11 +31,16 @@ server:
   geoip_db_path: "./dist/GeoLite2-City.mmdb"  # Optional
 
 # Database configuration
+# Supported drivers today: sqlite | mysql
 database:
-  driver: "sqlite"  # sqlite, mysql, or clickhouse
+  driver: "sqlite"  # sqlite | mysql
   path: "ez-console.db"  # For SQLite only
   table_prefix: "t_"
   slow_threshold: "3s"
+
+# Cluster (required when database.driver is not sqlite — see usages/19-distributed-deployment.md)
+cluster:
+  enabled: false
 
 # JWT configuration (optional — auto-generated if not provided)
 jwt:
@@ -91,22 +96,24 @@ database:
   slow_threshold: "3s"
 ```
 
-#### ClickHouse
+Use MySQL for multi-node / production. You **must** set `cluster.enabled` explicitly when `driver` is not `sqlite` (see [Distributed Deployment](./19-distributed-deployment.md)).
+
+> Drivers: only **`sqlite`** and **`mysql`** are wired in `pkg/config`. ClickHouse / PostgreSQL are not supported app DB drivers today.
+
+### Cluster Configuration
 
 ```yaml
-database:
-  driver: "clickhouse"
-  host: "localhost"
-  port: 9000
-  username: "default"
-  password: "your-password"
-  schema: "ez_console"
-  read_timeout: "20s"
-  dial_timeout: "10s"
-  max_execution_time: 60
-  table_prefix: "t_"
-  slow_threshold: "3s"
+cluster:
+  enabled: false          # required explicit value when database.driver != sqlite
+  # gossip:
+  #   bind_addr: "0.0.0.0"
+  #   bind_port: 7946
+  #   advertise_addr: "10.0.0.1"
+  #   advertise_port: 7946
+  #   join: ["10.0.0.2:7946"]
 ```
+
+Full gossip / lease options: [Distributed Deployment](./19-distributed-deployment.md).
 
 ### OAuth Configuration
 
@@ -214,7 +221,7 @@ tracing:
 #### Database Options
 
 ```bash
---database.driver=STRING           # Database driver: sqlite|mysql|clickhouse (default: "sqlite")
+--database.driver=STRING           # Database driver: sqlite|mysql (default: "sqlite")
 --database.path=PATH               # Database path (SQLite only, default: "ez-console.db")
 --database.host=STRING             # Database host (default: "localhost")
 --database.port=INT                # Database port

@@ -36,7 +36,7 @@ EZ-Console is a comprehensive full-stack framework designed for rapidly building
                    │
 ┌──────────────────▼──────────────────────────────────────┐
 │                  Database                                │
-│         SQLite / MySQL / PostgreSQL                     │
+│         SQLite / MySQL                                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -236,7 +236,7 @@ System analytics:
 ## Technology Stack Summary
 
 ### Backend
-- **Language**: Go 1.20+
+- **Language**: Go 1.25+
 - **Web Framework**: Gin
 - **ORM**: GORM
 - **Authentication**: JWT
@@ -256,10 +256,10 @@ System analytics:
 - **i18n**: react-i18next
 
 ### Database Support
-- SQLite (default, great for development)
-- MySQL/MariaDB (production)
-- PostgreSQL (production)
-- ClickHouse (analytics, optional)
+- SQLite (default, development / single-node)
+- MySQL/MariaDB (production / multi-node)
+
+> **Note:** `pkg/config` currently wires **`sqlite`** and **`mysql`** only. Dialect helpers may mention PostgreSQL-style SQL for future use, but `database.driver=postgres` (and ClickHouse as an app DB) are **not** supported startup options today.
 
 ## What Makes EZ-Console Different?
 

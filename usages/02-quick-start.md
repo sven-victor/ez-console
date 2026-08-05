@@ -6,7 +6,7 @@ This guide will help you create your first EZ-Console application in minutes.
 
 Ensure you have the following installed:
 
-- **Go**: Version 1.20 or higher
+- **Go**: Version 1.25 or higher
 - **Node.js**: Version 18 or higher  
 - **pnpm**: Package manager (install via `npm install -g pnpm`)
 - **Git**: For cloning repositories

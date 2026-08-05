@@ -4,7 +4,7 @@
 
 **A modern, production-ready full-stack framework for building enterprise management systems**
 
-[![Go Version](https://img.shields.io/badge/Go-1.20+-00ADD8?style=flat&logo=go)](https://golang.org)
+[![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![React Version](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -32,7 +32,7 @@
 ### Backend (Go + Gin)
 
 - **RESTful API Framework** - Built on high-performance Gin framework
-- **Database ORM** - GORM with support for SQLite, MySQL, PostgreSQL
+- **Database ORM** - GORM with support for SQLite and MySQL
 - **Authentication & Authorization**
   - JWT-based stateless authentication
   - Role-Based Access Control (RBAC)
@@ -46,9 +46,12 @@
   - Email and SMTP configuration
 - **Audit Logging** - Automatic tracking of all user actions
 - **File Management** - Upload/download with storage abstraction
-- **Middleware** - Built-in authentication, CORS, logging, rate limiting
+- **Middleware** - Built-in authentication, CORS, logging (add rate limiting via custom middleware or gateway)
 - **Observability** - OpenTelemetry integration for tracing
 - **CLI Tools** - Cobra-based command-line interface
+- **AI Assistant** - ez-agent chat, toolsets, skills, MCP
+- **Background Tasks** - Distributed task scheduler with leases
+- **Caching** - Per-node L1 caches with EventBus invalidation
 
 ### Frontend (React + TypeScript)
 
@@ -79,7 +82,7 @@
 
 Ensure you have the following installed:
 
-- **Go**: 1.20 or higher ([Download](https://golang.org/dl/))
+- **Go**: 1.25 or higher ([Download](https://golang.org/dl/))
 - **Node.js**: 18 or higher ([Download](https://nodejs.org/))
 - **pnpm**: Package manager (`npm install -g pnpm`)
 - **Make**: Build automation (optional)
@@ -225,12 +228,16 @@ Comprehensive guides are available in the [`usages/`](./usages/) directory:
 ### Configuration & Deployment
 - [Configuration Guide](./usages/05-configuration.md) - Application configuration
 - [Deployment](./usages/12-deployment.md) - Production deployment strategies
+- [Distributed Deployment](./usages/19-distributed-deployment.md) - Multi-node, EventBus, leases
+- [Caching](./usages/20-caching.md) - L1 caches and invalidation
 
 ### Advanced Topics
 - [Advanced Topics](./usages/13-advanced-topics.md) - Hooks, events, plugins
-- [AI and Toolsets](./usages/15-ai-and-toolsets.md) - AI model integration
+- [AI and Toolsets](./usages/15-ai-and-toolsets.md) - ez-agent chat, providers, toolsets, MCP
 - [AI Agent Skills](./usages/16-skills.md) - Reusable instruction sets for AI agents
 - [Task Management](./usages/17-task-management.md) - Background task execution and scheduling
+- [Code Generation CLI](./usages/18-code-generation-cli.md) - `ez-console generate` / `init`
+- [Email Notification Module](./usages/21-email-notification-module.md) - SMTP fields and notification jobs
 - [Troubleshooting](./usages/14-troubleshooting.md) - Common issues and solutions
 
 ### API Documentation
@@ -270,7 +277,7 @@ EZ-Console follows a clean, layered architecture:
                    │
 ┌──────────────────▼──────────────────────────────────────┐
 │                  Database                                │
-│         SQLite / MySQL / PostgreSQL                     │
+│         SQLite / MySQL                                  │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -298,14 +305,18 @@ server:
   shutdown_timeout: 10s
 
 database:
-  driver: "sqlite"  # or "mysql", "postgres"
+  driver: "sqlite"  # or "mysql"
   path: "ez-console.db"
-  # For MySQL/PostgreSQL:
+  # For MySQL:
   # host: "localhost"
   # port: 3306
   # username: "dbuser"
   # password: "dbpass"
-  # dbname: "ez_console"
+  # schema: "ez_console"
+
+# Required when driver is not sqlite (multi-node must set enabled: true)
+cluster:
+  enabled: false
 
 log:
   level: "info"  # debug, info, warn, error

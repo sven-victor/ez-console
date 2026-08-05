@@ -4,17 +4,19 @@ This guide explains how EZ-Console supports multi-node deployment behind a load 
 
 ## Overview
 
-By default EZ-Console runs on **SQLite** in **single-node** mode. For production workloads that require horizontal scaling, switch to **MySQL** or **PostgreSQL** and enable the cluster module.
+By default EZ-Console runs on **SQLite** in **single-node** mode. For production workloads that require horizontal scaling, switch to **MySQL** and enable the cluster module.
 
 Multi-node mode provides:
 
 - **DB-backed coordination**: leader election, task claiming, and migration serialization via `t_cluster_lease`.
 - **EventBus (Gossip/serf)**: low-latency cache invalidation, task wake-up, and cross-node cancellation. Events are best-effort; every path has a DB fallback.
-- **L1-only caches**: Settings, roles, and sessions are cached per node. Writes invalidate local cache and broadcast to peers via EventBus; misses fall back to the database.
+- **L1-only caches**: Settings, roles, sessions, organizations, and service accounts are cached per node. Writes invalidate local cache and broadcast to peers via EventBus; misses fall back to the database. See [Caching](./20-caching.md).
 - **Ephemeral tokens in DB**: OAuth state, MFA codes, and activation links are stored in `t_ephemeral_token` with atomic one-time consumption.
 - **Distributed task execution**: any node can claim and run pending tasks; cron scheduling is deduplicated by `schedule_fire_key`.
 
 **SQLite remains single-node only.** When `database.driver=sqlite`, `cluster.enabled` must be `false`.
+
+> **Supported shared DB today:** MySQL. `database.driver` accepts `sqlite` | `mysql` only (`pkg/config`). Dialect helpers may include PostgreSQL-style SQL for claiming/ephemeral consume, but Postgres is not a wired startup driver.
 
 ## Architecture
 
@@ -46,7 +48,7 @@ Multi-node mode provides:
 
 When `database.driver` is not `sqlite`, **`cluster.enabled` must be explicitly set** (`true` or `false`). Omitting it causes startup to fail fast.
 
-### Single-node with MySQL/PostgreSQL
+### Single-node with MySQL
 
 Use this when you run one instance but want a shared database:
 
@@ -67,9 +69,9 @@ cluster:
 
 ```yaml
 database:
-  driver: postgres   # mysql | postgres
+  driver: mysql
   host: db.example.com
-  port: 5432
+  port: 3306
   username: myapp
   password: "${DATABASE_PASSWORD}"
   schema: myapp
@@ -91,6 +93,7 @@ cluster:
 
 global:
   encrypt-key: "<same value on every node>"
+```
 
 server:
   file_upload_path: "/shared/uploads"   # must be visible to all nodes
@@ -103,7 +106,7 @@ server:
 |----------|---------|-------------|
 | `GLOBAL_ENCRYPT_KEY` | `global.encrypt-key` | Required; must be identical on all nodes |
 | `GOSSIP_ADVERTISE_ADDR` | `cluster.gossip.advertise_addr` | Pod IP or host:port peers can reach |
-| `DATABASE_DRIVER` | `database.driver` | `mysql`, `postgres`, or `sqlite` |
+| `DATABASE_DRIVER` | `database.driver` | `mysql` or `sqlite` |
 | `CLUSTER_ENABLED` | `cluster.enabled` | `true` or `false` |
 
 ### Startup validation rules
@@ -330,9 +333,10 @@ Built-in purposes (`model.EphemeralTokenPurpose`):
 | `EphemeralTokenOAuthState` | OAuth CSRF state |
 | `EphemeralTokenMFALogin` | Email MFA login code |
 | `EphemeralTokenMFAActivation` | MFA setup token |
+| `EphemeralTokenMFADisable` | MFA disable confirmation |
 | `EphemeralTokenUserActivation` | Account activation link |
 
-For a new purpose, add a constant in `model/ephemeral_token.go` and use the same `Create` / `ConsumeAndGetPayload` API. Consumption is atomic: PostgreSQL uses `DELETE ... RETURNING`; MySQL/SQLite use `SELECT FOR UPDATE` + `DELETE` in one transaction.
+For a new purpose, add a constant in `model/ephemeral_token.go` and use the same `Create` / `ConsumeAndGetPayload` API. Consumption is atomic (MySQL/SQLite use `SELECT FOR UPDATE` + `DELETE` in one transaction; dialect helpers also describe a PostgreSQL `DELETE … RETURNING` variant for future drivers).
 
 **Do not** store strong-consistency, write-then-read data in L1 `TypedCache` or in-memory maps; use `EphemeralTokenService` or a dedicated DB table. See [Caching](./20-caching.md).
 
@@ -388,7 +392,7 @@ Task execution logs in multi-node deployments should use the **`database`** log 
 
 ## Deployment Checklist
 
-- [ ] Use MySQL or PostgreSQL (not SQLite)
+- [ ] Use MySQL (not SQLite) for multi-node
 - [ ] Set `cluster.enabled: true` explicitly
 - [ ] Use the **same** `global.encrypt-key` on every node (e.g. K8s Secret)
 - [ ] Open gossip port (default **7946**) between nodes; set `advertise_addr` to a reachable address

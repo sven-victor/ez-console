@@ -52,6 +52,13 @@ Adds artificial delay (useful for testing):
 engine.Use(middleware.DelayMiddleware())
 ```
 
+### Recovery & Metrics
+
+- `middleware.Recovery()` — used with `gin.CustomRecovery` in `server/server.go`
+- `middleware.PrometheusMetrics()` — Prometheus HTTP metrics middleware
+
+Built-in packages under `pkg/middleware/`: authentication, permission, cors, log, recovery, metrics, delay, settings. There is **no** built-in rate-limit middleware.
+
 ## Creating Custom Middleware
 
 ### Basic Middleware
@@ -76,6 +83,8 @@ router.Use(MyMiddleware())
 ```
 
 ### Middleware with Configuration
+
+Example of a **custom** rate limiter (not shipped in `pkg/middleware`):
 
 ```go
 func RateLimitMiddleware(limit int, window time.Duration) gin.HandlerFunc {
@@ -182,7 +191,7 @@ Chain multiple middleware:
 router.POST("/products",
 	middleware.AuthenticationMiddleware(),
 	middleware.RequirePermission("product:create"),
-	RateLimitMiddleware(10, time.Minute),
+	// RateLimitMiddleware is a custom example above — not built into pkg/middleware
 	controller.CreateProduct)
 ```
 

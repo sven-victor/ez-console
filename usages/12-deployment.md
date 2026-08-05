@@ -299,14 +299,7 @@ database:
 
 ### PostgreSQL Production Setup
 
-```sql
--- Create database
-CREATE DATABASE myapp WITH ENCODING 'UTF8';
-
--- Create user
-CREATE USER myapp WITH PASSWORD 'secure-password';
-GRANT ALL PRIVILEGES ON DATABASE myapp TO myapp;
-```
+PostgreSQL is **not** a supported `database.driver` value in the current config unmarshaller (`pkg/config` wires `sqlite` and `mysql` only). Prefer MySQL for multi-node production. Dialect helpers in `pkg/db/dialect` may still contain PostgreSQL-style SQL for future use.
 
 ## Environment Variables
 
@@ -404,14 +397,6 @@ mysqldump -h db.example.com -u myapp -p myapp > backup_$DATE.sql
 gzip backup_$DATE.sql
 ```
 
-PostgreSQL:
-```bash
-#!/bin/bash
-DATE=$(date +%Y%m%d_%H%M%S)
-pg_dump -h db.example.com -U myapp myapp > backup_$DATE.sql
-gzip backup_$DATE.sql
-```
-
 ### File Backup
 
 ```bash
@@ -442,7 +427,7 @@ tar -czf uploads_backup_$DATE.tar.gz /opt/myapp/uploads
 - Add indexes on frequently queried fields
 - Use connection pooling
 - Enable query caching
-- Regular VACUUM (PostgreSQL)
+- Regular `OPTIMIZE TABLE` / maintenance as appropriate for MySQL
 
 ### Application
 
@@ -483,7 +468,7 @@ tar -czf uploads_backup_$DATE.tar.gz /opt/myapp/uploads
 
 ## Multi-Node Deployment
 
-For running multiple instances behind a load balancer with MySQL or PostgreSQL, see [Distributed Deployment](./19-distributed-deployment.md) and [Caching](./20-caching.md). Those guides cover cluster configuration, gossip networking, shared storage, EventBus invalidation, and L1 typed caches used when extending the framework.
+For running multiple instances behind a load balancer with **MySQL**, see [Distributed Deployment](./19-distributed-deployment.md) and [Caching](./20-caching.md). Those guides cover cluster configuration, gossip networking, shared storage, EventBus invalidation, and L1 typed caches used when extending the framework.
 
 ## Next Steps
 
