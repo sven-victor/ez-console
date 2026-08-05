@@ -309,13 +309,27 @@ const ServiceAccountDetail: React.FC = () => {
           </PermissionGuard>
 
           <PermissionGuard permission="authorization:service_account:update">
-            <Button
-              icon={serviceAccount.status === 'active' ? <LockOutlined /> : <CheckCircleOutlined />}
-              onClick={handleToggleStatus}
-              loading={updateStatusLoading}
+            <Popconfirm
+              title={
+                serviceAccount.status === 'active'
+                  ? t('serviceAccount.disableConfirm', {
+                      defaultValue: 'Are you sure you want to disable this service account?',
+                    })
+                  : t('serviceAccount.enableConfirm', {
+                      defaultValue: 'Are you sure you want to enable this service account?',
+                    })
+              }
+              onConfirm={handleToggleStatus}
+              okText={tCommon('confirm', { defaultValue: 'Confirm' })}
+              cancelText={tCommon('cancel', { defaultValue: 'Cancel' })}
             >
-              {serviceAccount.status === 'active' ? tCommon('disable', { defaultValue: 'Disable' }) : tCommon('enable', { defaultValue: 'Enable' })}
-            </Button>
+              <Button
+                icon={serviceAccount.status === 'active' ? <LockOutlined /> : <CheckCircleOutlined />}
+                loading={updateStatusLoading}
+              >
+                {serviceAccount.status === 'active' ? tCommon('disable', { defaultValue: 'Disable' }) : tCommon('enable', { defaultValue: 'Enable' })}
+              </Button>
+            </Popconfirm>
           </PermissionGuard>
 
           <PermissionGuard permission="authorization:service_account:delete">

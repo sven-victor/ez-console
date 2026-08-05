@@ -66,7 +66,7 @@ function parentPath(path: string): string {
 }
 
 const SkillEditor: React.FC = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const { styles } = useStyles();
   const { id } = useParams<{ id: string }>();
@@ -192,7 +192,7 @@ const SkillEditor: React.FC = () => {
           break;
         }
         case 'delete':
-          Modal.confirm({
+          modal.confirm({
             title: t('settings.skills.editor.deleteConfirm', { defaultValue: 'Delete?' }),
             content: isDir
               ? t('settings.skills.editor.deleteConfirmContentDir', { path, defaultValue: `Delete ${path}? This will remove the folder and all its contents.` })
@@ -314,7 +314,7 @@ const SkillEditor: React.FC = () => {
   const handleDelete = () => {
     const pathToDelete = selectedNodeKey || selectedFile;
     if (!id || !pathToDelete || isPreset) return;
-    Modal.confirm({
+    modal.confirm({
       title: t('settings.skills.editor.deleteConfirm', { defaultValue: 'Delete?' }),
       content: t('settings.skills.editor.deleteConfirmContent', { path: pathToDelete, defaultValue: `Delete ${pathToDelete}?` }),
       onOk: () =>

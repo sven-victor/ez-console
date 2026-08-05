@@ -309,7 +309,19 @@ const ServiceAccountList: React.FC = () => {
                 record.status === 'active'
                   ? t('serviceAccount.actionTooltipDisable', { defaultValue: 'Disable this service account' })
                   : t('serviceAccount.actionTooltipEnable', { defaultValue: 'Enable this service account' }),
-              onClick: async () => handleToggleStatus(record),
+              confirm: {
+                title:
+                  record.status === 'active'
+                    ? t('serviceAccount.disableConfirm', {
+                        defaultValue: 'Are you sure you want to disable this service account?',
+                      })
+                    : t('serviceAccount.enableConfirm', {
+                        defaultValue: 'Are you sure you want to enable this service account?',
+                      }),
+                onConfirm: async () => handleToggleStatus(record),
+                okText: tCommon('confirm', { defaultValue: 'Confirm' }),
+                cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
+              },
               permission: 'authorization:service_account:update',
             },
             {

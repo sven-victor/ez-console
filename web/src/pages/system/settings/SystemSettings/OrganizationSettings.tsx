@@ -56,7 +56,7 @@ interface OrganizationFormData {
 }
 
 const OrganizationSettings: React.FC = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
@@ -159,7 +159,7 @@ const OrganizationSettings: React.FC = () => {
   };
 
   const handleDelete = (org: API.Organization) => {
-    Modal.confirm({
+    modal.confirm({
       title: t('settings.organizations.deleteConfirm', { defaultValue: 'Delete Organization' }),
       content: t('settings.organizations.deleteConfirmContent', {
         defaultValue: `Are you sure you want to delete organization "${org.name}"? This action cannot be undone.`

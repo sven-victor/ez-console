@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { App, Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal } from 'antd';
+import { App, Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -73,7 +73,7 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
   },
   columnsFilter = (columns: ColumnsType<API.AuditLog>) => columns,
 }) => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [pagination, setPagination] = useState({
@@ -175,7 +175,7 @@ const UserAuditLogs: React.FC<UserAuditLogsProps> = ({
       key: 'details',
       render: (details: API.AuditLogDetail) => {
         return <Button type='link' icon={<EyeOutlined />} onClick={() => {
-          Modal.info({
+          modal.info({
             title: t('auditLog.details'),
             content: JSON.stringify(details),
           });

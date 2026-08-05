@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { Button, ButtonProps, Popconfirm, Tooltip, Dropdown, MenuProps, Modal } from 'antd';
+import { App, Button, ButtonProps, Popconfirm, Tooltip, Dropdown, MenuProps } from 'antd';
 import { MoreOutlined } from '@ant-design/icons';
 import { PermissionGuard } from './PermissionGuard';
 import { useState } from 'react';
@@ -109,6 +109,7 @@ export interface ActionsProps {
 }
 
 export const Actions: React.FC<ActionsProps> = ({ actions, maxVisibleItems }) => {
+  const { modal } = App.useApp();
   const visibleActions = actions.filter(action => !action.hidden);
 
   // If no limit or actions fit within limit, render all normally
@@ -126,7 +127,7 @@ export const Actions: React.FC<ActionsProps> = ({ actions, maxVisibleItems }) =>
 
     const handleMenuClick = async () => {
       if (confirm) {
-        Modal.confirm({
+        modal.confirm({
           title: confirm.title,
           content: confirm.description,
           onOk: confirm.onConfirm || onClick,

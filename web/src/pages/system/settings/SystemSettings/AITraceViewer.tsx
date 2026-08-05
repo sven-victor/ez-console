@@ -28,7 +28,6 @@ import {
   Empty,
   Spin,
   Descriptions,
-  Modal,
   Collapse,
   Segmented,
   Drawer,
@@ -808,7 +807,7 @@ const SequenceDiagram: React.FC<{
 };
 
 const AITraceViewer: React.FC = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const { t } = useTranslation('ai');
   const navigate = useNavigate();
@@ -901,7 +900,7 @@ const AITraceViewer: React.FC = () => {
             'Disable AI debug tracing? All stored trace data will be deleted.',
         });
 
-      Modal.confirm({
+      modal.confirm({
         title: checked
           ? t('trace.debugEnabled', { defaultValue: 'AI Debug Enabled' })
           : t('trace.debugDisabled', { defaultValue: 'AI Debug Disabled' }),
@@ -909,7 +908,7 @@ const AITraceViewer: React.FC = () => {
         onOk: () => toggleTrace(checked),
       });
     },
-    [t, toggleTrace]
+    [t, toggleTrace, modal]
   );
 
   const handleDownload = useCallback(async () => {

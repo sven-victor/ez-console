@@ -151,7 +151,7 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
 
 // User list page
 const UserList: React.FC = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const { registerPageAI } = useAI();
   const { addTask } = useSite();
@@ -282,7 +282,7 @@ const UserList: React.FC = () => {
         const p = params[0];
         message.success(t('user.resetPasswordSuccess', { defaultValue: 'Password reset successfully' }));
         if (res.new_password) {
-          Modal.info({
+          modal.info({
             title: t('user.resetPasswordSuccess', { defaultValue: 'Password Reset Successfully' }),
             content: (
               <Typography.Text copyable={{ text: res.new_password }}>
@@ -294,7 +294,7 @@ const UserList: React.FC = () => {
             ),
           });
         } else {
-          Modal.info({
+          modal.info({
             title: t('user.resetPasswordSuccess', { defaultValue: 'Password Reset Successfully' }),
             content: t('user.resetPasswordSuccessSendByEmail', {
               defaultValue: 'The new password has been sent to the user email: {{email}}',
@@ -311,7 +311,7 @@ const UserList: React.FC = () => {
 
   // Reset password
   const handleResetPassword = (id: string, username: string, email: string) => {
-    Modal.confirm({
+    modal.confirm({
       title: t('user.resetPasswordTitle', { defaultValue: 'Reset Password' }),
       content: t('user.resetPasswordConfirm', {
         defaultValue: `Are you sure you want to reset the password for ${username}?`,
@@ -376,7 +376,7 @@ const UserList: React.FC = () => {
   );
 
   const handleUnlock = (user: API.User) => {
-    Modal.confirm({
+    modal.confirm({
       title: t('user.unlockTitle', { defaultValue: 'Unlock User' }),
       content: t('user.unlockConfirm', {
         defaultValue: 'Are you sure you want to unlock this user?',
@@ -406,7 +406,7 @@ const UserList: React.FC = () => {
   );
 
   const handleAdminDisableMFA = (user: API.User) => {
-    Modal.confirm({
+    modal.confirm({
       title: t('user.adminDisableMFATitle', { defaultValue: 'Disable MFA' }),
       content: t('user.adminDisableMFAConfirm', {
         defaultValue: 'Are you sure you want to disable MFA for this user? They will be logged out of all sessions.',
@@ -436,7 +436,7 @@ const UserList: React.FC = () => {
   );
 
   const handleResendActivation = (user: API.User) => {
-    Modal.confirm({
+    modal.confirm({
       title: t('user.resendActivationTitle', { defaultValue: 'Resend Activation Email' }),
       content: t('user.resendActivationConfirm', {
         defaultValue: 'Resend activation email to {{email}}?',

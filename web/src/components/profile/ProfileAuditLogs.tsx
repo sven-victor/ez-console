@@ -15,7 +15,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select, Modal } from 'antd';
+import { App, Table, Card, Tag, Space, Form, Input, DatePicker, Button, Row, Col, Select } from 'antd';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import { EyeOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -57,6 +57,7 @@ const getStatusTag = (status: string, t: TFunction) => {
 };
 
 const ProfileAuditLogs: React.FC = () => {
+  const { modal } = App.useApp();
   const { t } = useTranslation('authorization');
   const { t: tCommon } = useTranslation('common');
   const [loading, setLoading] = useState(false);
@@ -195,7 +196,7 @@ const ProfileAuditLogs: React.FC = () => {
       key: 'details',
       render: (details: API.AuditLogDetail) => {
         return <Button type='link' icon={<EyeOutlined />} onClick={() => {
-          Modal.info({
+          modal.info({
             title: t('auditLog.details'),
             content: JSON.stringify(details),
           });

@@ -57,7 +57,7 @@ interface UpdateRolesFormData {
 }
 
 const OrganizationDetail: React.FC = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -177,7 +177,7 @@ const OrganizationDetail: React.FC = () => {
   };
 
   const handleRemoveUser = (user: OrganizationUser) => {
-    Modal.confirm({
+    modal.confirm({
       title: t('settings.organizations.users.removeConfirm', { defaultValue: 'Remove User' }),
       content: t('settings.organizations.users.removeConfirmContent', {
         defaultValue: `Are you sure you want to remove user "${user.full_name || user.username}" from this organization? This will also remove all their roles in this organization.`

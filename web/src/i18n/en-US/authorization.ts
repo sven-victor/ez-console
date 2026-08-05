@@ -473,6 +473,8 @@ export default {
     actionTooltipDisable: 'Disable this service account',
     viewDetail: 'View Service Account Details',
     deleteConfirm: 'Are you sure you want to delete this service account?',
+    disableConfirm: 'Are you sure you want to disable this service account?',
+    enableConfirm: 'Are you sure you want to enable this service account?',
     loadError: 'Failed to load service account list',
     deleteSuccess: 'Service account deleted successfully',
     deleteError: 'Failed to delete service account',

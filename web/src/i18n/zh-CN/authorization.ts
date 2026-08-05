@@ -498,6 +498,8 @@ export default {
     actionTooltipDisable: '禁用此服务账户',
     viewDetail: '查看服务账户详情',
     deleteConfirm: '确定要删除这个服务账户吗？',
+    disableConfirm: '确定要禁用这个服务账户吗？',
+    enableConfirm: '确定要启用这个服务账户吗？',
     loadError: '加载服务账户列表失败',
     deleteSuccess: '服务账户已删除',
     deleteError: '删除服务账户失败',
