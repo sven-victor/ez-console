@@ -23,6 +23,7 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 17. [Task Management](./17-task-management.md) - Background tasks, registry-based task types, and usage
 18. [Code Generation CLI](./18-code-generation-cli.md) - `ez-console generate` / `ez-console init` usage
 19. [Distributed Deployment](./19-distributed-deployment.md) - Multi-node setup, cluster APIs, EventBus, and cache invalidation
+20. [Caching](./20-caching.md) - L1 typed caches, invalidation, TTLs, metrics, and related mechanisms
 
 ## Framework Features
 

@@ -245,7 +245,7 @@ In a standard app you do not call this yourself; `server` initializes the bus an
 
 ### L1 cache and cross-node invalidation (`pkg/cache`)
 
-Caches are **per-node L1 only**. There is no shared Redis or DB cache layer.
+Caches are **per-node L1 only**. There is no shared Redis or DB cache layer in the live path. Full detail: [Caching](./20-caching.md).
 
 Global typed caches:
 
@@ -255,6 +255,8 @@ Global typed caches:
 | `cache.Roles` | `roles` | `t_role` | 10m |
 | `cache.Settings` | `settings` | `t_setting` | 10m |
 | `cache.AllSettings` | `all_settings` | `t_setting` | 10m |
+| `cache.Organizations` | `organizations` | `t_organization` | 10m |
+| `cache.ServiceAccounts` | `service_accounts` | SA + role IDs | 10m |
 
 When your code updates data that is cached, **always use `PublishInvalidate`** so other nodes evict the same key:
 
@@ -270,6 +272,10 @@ cache.PublishInvalidate(ctx, cache.CacheNameRoles, roleID)
 
 // After revoking a session
 cache.PublishInvalidate(ctx, cache.CacheNameSessions, tokenHash)
+
+// Organizations / service accounts
+cache.PublishInvalidate(ctx, cache.CacheNameOrganizations, orgID)
+cache.InvalidateServiceAccount(ctx, serviceAccountID)
 
 // Clear an entire cache on all nodes
 cache.PublishInvalidate(ctx, cache.CacheNameRoles, "*")
@@ -328,7 +334,7 @@ Built-in purposes (`model.EphemeralTokenPurpose`):
 
 For a new purpose, add a constant in `model/ephemeral_token.go` and use the same `Create` / `ConsumeAndGetPayload` API. Consumption is atomic: PostgreSQL uses `DELETE ... RETURNING`; MySQL/SQLite use `SELECT FOR UPDATE` + `DELETE` in one transaction.
 
-**Do not** store strong-consistency, write-then-read data in `cache.Store` or in-memory maps; use `EphemeralTokenService` or a dedicated DB table.
+**Do not** store strong-consistency, write-then-read data in L1 `TypedCache` or in-memory maps; use `EphemeralTokenService` or a dedicated DB table. See [Caching](./20-caching.md).
 
 ## Distributed Tasks and Scheduling
 
@@ -428,7 +434,7 @@ volumeMounts:
 
 ### Do not
 
-- Rely on in-process maps or `cache.Store` for cross-request state in multi-node setups.
+- Rely on in-process maps or L1-only caches for cross-request state that must be correct on every node.
 - Use `time.Now()` in DB WHERE clauses for lease or expiry checks.
 - Write raw dialect SQL for coordination logic (use GORM + `pkg/db/dialect`).
 - Assume EventBus delivery is reliable.

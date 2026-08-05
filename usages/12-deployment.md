@@ -483,7 +483,7 @@ tar -czf uploads_backup_$DATE.tar.gz /opt/myapp/uploads
 
 ## Multi-Node Deployment
 
-For running multiple instances behind a load balancer with MySQL or PostgreSQL, see [Distributed Deployment](./19-distributed-deployment.md). That guide covers cluster configuration, gossip networking, shared storage, and the APIs (`ClusterBackend`, `EventBus`, `EphemeralTokenService`, cache invalidation) used when extending the framework.
+For running multiple instances behind a load balancer with MySQL or PostgreSQL, see [Distributed Deployment](./19-distributed-deployment.md) and [Caching](./20-caching.md). Those guides cover cluster configuration, gossip networking, shared storage, EventBus invalidation, and L1 typed caches used when extending the framework.
 
 ## Next Steps
 

@@ -42,9 +42,16 @@ jwt:
   algorithm: "ES256"                    # Signing algorithm (e.g. ES256, RS256)
   private_key: "your-private-key-pem"   # PEM-encoded private key
 
-# Cache configuration
+# Cache configuration (optional; mostly unused by cache.Init today)
+# Live path is in-process L1 + EventBus invalidation — see usages/20-caching.md
 cache:
-  size: 1000  # Number of entries
+  driver: memory   # ignored by Init (historical: memory|db|redis)
+  size: 1000       # ignored by Init (no max-entry cap on TypedCache)
+  # redis:
+  #   addr: "127.0.0.1:6379"
+  #   password: ""
+  #   db: 0
+  #   prefix: "ez:"
 
 # Tracing configuration (optional)
 tracing:
@@ -393,7 +400,8 @@ database:
   slow_threshold: "5s"
 
 cache:
-  size: 10000
+  driver: memory
+  size: 10000  # ignored by cache.Init; see usages/20-caching.md
 
 tracing:
   enabled: true

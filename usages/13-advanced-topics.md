@@ -307,47 +307,23 @@ func (w *Worker) Submit(job Job) {
 
 ## Caching Strategies
 
-### In-Memory Cache
+Do **not** invent ad-hoc process maps or wire Redis yourself for framework auth/settings data. Use the built-in L1 caches:
 
 ```go
-var cache = make(map[string]interface{})
-var cacheMutex sync.RWMutex
+import "github.com/sven-victor/ez-console/pkg/cache"
 
-func GetFromCache(key string) (interface{}, bool) {
-	cacheMutex.RLock()
-	defer cacheMutex.RUnlock()
-	value, ok := cache[key]
-	return value, ok
-}
+// Read (example pattern used inside auth middleware for roles)
+role, err := cache.Roles.GetOrLoad(ctx, roleID, func() (model.Role, error) {
+    return loadRole(ctx, roleID)
+})
 
-func SetCache(key string, value interface{}) {
-	cacheMutex.Lock()
-	defer cacheMutex.Unlock()
-	cache[key] = value
-}
+// After a write — always broadcast invalidation in multi-node setups
+cache.PublishInvalidate(ctx, cache.CacheNameRoles, roleID)
 ```
 
-### Redis Cache
+Details (TTLs, all globals, metrics, ephemeral tokens vs L1): **[Caching](./20-caching.md)**. Multi-node EventBus: **[Distributed Deployment](./19-distributed-deployment.md)**.
 
-```go
-import "github.com/go-redis/redis/v8"
-
-var rdb *redis.Client
-
-func init() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
-	})
-}
-
-func GetFromRedis(ctx context.Context, key string) (string, error) {
-	return rdb.Get(ctx, key).Result()
-}
-
-func SetRedis(ctx context.Context, key string, value interface{}, expiration time.Duration) error {
-	return rdb.Set(ctx, key, value, expiration).Err()
-}
-```
+Redis / DB-backed L2 constructors exist in `pkg/cache` but are **not** activated by `cache.Init`. Cross-node correctness for one-time tokens uses `EphemeralTokenService`, not Redis.
 
 ## File Storage
 

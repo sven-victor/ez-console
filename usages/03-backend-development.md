@@ -161,12 +161,22 @@ DeleteSetting(ctx context.Context, key model.SettingKey) error
 GetSMTPSettings(ctx context.Context) (*model.SMTPSettings, error)
 ```
 
-#### Cache Service
+#### Caching (`pkg/cache`)
+
+Application caches are **in-process L1 typed caches** with EventBus invalidation. There is no service-layer `CreateCache` / `GetCache` / `DeleteCache` API anymore.
+
 ```go
-CreateCache(ctx context.Context, key, value string, expiredAt time.Time) (*model.TempData, error)
-DeleteCache(ctx context.Context, key string) error
-GetCache(ctx context.Context, key string) (*model.TempData, error)
+import "github.com/sven-victor/ez-console/pkg/cache"
+
+// After updating DB data that is cached:
+cache.PublishInvalidate(ctx, cache.CacheNameSettings, string(key))
+cache.PublishInvalidate(ctx, cache.CacheNameAllSettings, "all")
+
+// Sessions for a user (looks up token hashes, broadcasts):
+cache.InvalidateUserSessions(ctx, tx, userID)
 ```
+
+Globals: `Sessions`, `Roles`, `Settings`, `AllSettings`, `Organizations`, `ServiceAccounts`. See [Caching](./20-caching.md).
 
 #### Authorization Service
 ```go
@@ -300,41 +310,31 @@ func init() {
 }
 ```
 
-**Example: Using Cache Service**
+**Example: Invalidating Cache After a Write**
 
 ```go
 import (
-    "time"
     "github.com/gin-gonic/gin"
-    "github.com/sven-victor/ez-console/server"
+    "github.com/sven-victor/ez-console/pkg/cache"
     "github.com/sven-victor/ez-console/pkg/util"
 )
 
-func (c *ProductController) GetProductWithCache(ctx *gin.Context) {
-    id := ctx.Param("id")
-    cacheKey := "product:" + id
+func (c *ProductController) UpdateProduct(ctx *gin.Context) {
+    // ... update product in DB ...
 
-    // Try to get from cache first
-    cached, err := c.svc.GetCache(ctx.Request.Context(), cacheKey)
-    if err == nil && cached != nil {
-        util.RespondWithSuccess(ctx, http.StatusOK, cached.Value)
-        return
-    }
+    // If you add a custom TypedCache for products, invalidate like built-in caches:
+    // Prefer PublishInvalidate so all cluster nodes drop the entry.
+    // cache.PublishInvalidate(ctx, "products", productID)
 
-    // Get from database
-    product, err := c.productService.GetProduct(ctx.Request.Context(), id)
-    if err != nil {
-        util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get product", err))
-        return
-    }
-
-    // Store in cache (expires in 1 hour)
-    expiredAt := time.Now().Add(1 * time.Hour)
-    c.svc.CreateCache(ctx.Request.Context(), cacheKey, product.ToJSON(), expiredAt)
+    // Built-in example: settings change
+    cache.PublishInvalidate(ctx.Request.Context(), cache.CacheNameSettings, "my_setting_key")
+    cache.PublishInvalidate(ctx.Request.Context(), cache.CacheNameAllSettings, "all")
 
     util.RespondWithSuccess(ctx, http.StatusOK, product)
 }
 ```
+
+For full cache APIs, TTLs, and metrics, see [Caching](./20-caching.md).
 
 ## Creating a Controller
 

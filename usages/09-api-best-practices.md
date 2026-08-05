@@ -362,28 +362,15 @@ type ProductResponse struct {
 
 ### Use Caching
 
+Built-in auth/settings caches live in `pkg/cache` (L1 + `PublishInvalidate`). For domain-specific data, prefer DB + explicit invalidation over ad-hoc globals. See [Caching](./20-caching.md).
+
 ```go
-func (c *ProductController) GetProduct(ctx *gin.Context) {
-	id := ctx.Param("id")
-	
-	// Check cache
-	cacheKey := fmt.Sprintf("product:%s", id)
-	if cached, ok := cache.Get(cacheKey); ok {
-		util.RespondWithSuccess(ctx, http.StatusOK, cached)
-		return
-	}
-	
-	// Fetch from database
-	product, err := c.service.GetProduct(ctx, id)
-	if err != nil {
-		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to get product", err))
-		return
-	}
-	
-	// Cache result
-	cache.Set(cacheKey, product, 5*time.Minute)
-	
-	util.RespondWithSuccess(ctx, http.StatusOK, product)
+import "github.com/sven-victor/ez-console/pkg/cache"
+
+func (c *SettingController) AfterUpdate(ctx *gin.Context, key string) {
+    // After writing t_setting — broadcast so all nodes drop stale L1 entries
+    cache.PublishInvalidate(ctx, cache.CacheNameSettings, key)
+    cache.PublishInvalidate(ctx, cache.CacheNameAllSettings, "all")
 }
 ```
 
