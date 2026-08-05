@@ -18,8 +18,8 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 12. [Deployment](./12-deployment.md) - Deploying to production
 13. [Advanced Topics](./13-advanced-topics.md) - Advanced features and customization
 14. [Troubleshooting](./14-troubleshooting.md) - Common issues and solutions
-15. [AI and Toolsets](./15-ai-and-toolsets.md) - AI model integration and custom toolsets
-16. [Skills](./16-skills.md) - AI Agent Skills management and chat integration
+15. [AI and Toolsets](./15-ai-and-toolsets.md) - ez-agent chat runtime, providers, toolsets, MCP, tracing
+16. [Skills](./16-skills.md) - AI Agent Skills, progressive loading, and skill–tool bindings
 17. [Task Management](./17-task-management.md) - Background tasks, registry-based task types, and usage
 18. [Code Generation CLI](./18-code-generation-cli.md) - `ez-console generate` / `ez-console init` usage
 19. [Distributed Deployment](./19-distributed-deployment.md) - Multi-node setup, cluster APIs, EventBus, and cache invalidation

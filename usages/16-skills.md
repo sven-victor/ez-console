@@ -12,6 +12,7 @@ This guide describes the AI Agent Skills feature in EZ-Console: how skills are s
 - [APIs](#apis)
 - [AI Integration](#ai-integration)
   - [Skills and organization tools loading](#skills-and-organization-tools-loading)
+- [Companion skills (per toolset)](#companion-skills-per-toolset)
 - [Default (preset) skills](#default-preset-skills)
 - [Registering Custom Domains](#registering-custom-domains)
 
@@ -163,19 +164,20 @@ make clean-openapi clean-openapi2ts openapi2ts
 
 Implementation reference (streaming chat path):
 
-- `pkg/api/ai/ai_chat_controller.go` — `StreamChat`: calls `SkillService.CreateSkillLoader`, wires `skillLoader.OnContentLoaded` to persist activated skills, passes `skillLoader` to `CreateChatCompletionStream`, clears activation on `OnSummary`.
+- `pkg/api/ai/ai_chat_controller.go` — `StreamChat`: calls `SkillService.CreateSkillLoader`, wires `skillLoader.OnContentLoaded` to persist activated skills, passes `skillLoader` to `CreateChatCompletionStream`, clears activation on `OnSummary`. Always appends domains **`core`** and **`chat`**.
 - `pkg/service/skill_service.go` — `CreateSkillLoader(ctx, organizationID, domains, skillIDs, activatedSkillIDs)`: loads skills and returns `*ai.SkillLoader`.
-- `pkg/service/ai_chat_service.go` — `CreateChatCompletionStream(ctx, organizationID, modelID, messages, skillLoader, options...)`: accepts `skillLoader *ai.SkillLoader`; internally wires `RefreshToolSetsEachIteration` when skill–tool binding is enabled.
-- `pkg/service/toolset_service.go` — `GetAuthorizedToolSets`, `SkillChatBindingMode`.
-- `pkg/clients/ai/skill_driven_toolset.go` — `SkillLoader`, `SkillDrivenToolset`: handles progressive tool visibility based on loaded skill IDs.
+- `pkg/service/ai_chat_service.go` — `CreateChatCompletionStream` / `CreateChatCompletion`: merge authorized toolsets + skill loader; wires `RefreshToolSetsEachIteration` when skill–tool binding is enabled.
+- `pkg/service/toolset_service.go` — `GetAuthorizedToolSets`, `SkillChatBindingMode`, companion-skill sync.
+- `pkg/clients/ai/classic_client.go` + `ezagent_*.go` — `Exchange` / `ExchangeStream` run **ez-agent** `Agent.Run` / `RunStream`; `toolSetsRegistry` reloads Specs/Lookup live each turn.
+- `pkg/clients/ai/chat_skill_prep.go` — `PrepareChatCompletionSkillLoader`: injects metadata; wraps `SkillDrivenToolset` when binding refresh is on.
+- `pkg/clients/ai/skill_driven_toolset.go` — `SkillLoader`, `SkillDrivenToolset`: progressive tool visibility based on loaded skill IDs.
 - `pkg/model/ai_chat.go` — `AIChatSession.ActivatedSkillIDs` (`JSONStringSlice`).
-- `pkg/clients/ai/classic_client.go` — refreshes merged tool sets before each LLM iteration when the option is set.
 - `pkg/clients/ai/skill_content_redact.go` — redacts `skill_loader_get_skill_content` tool results for summarization.
 
 There are **two tool layers** in chat:
 
-1. **Organization toolsets** (MCP, utils, custom toolsets, …): whatever the user’s roles allow in the current org, subject to skill–tool binding rules below.
-2. **Skill loader** (map key `skill_loader`): registered only when `CreateSkillLoader` returns a loader with skills. The model sees tools as **`skill_loader_get_skill_content`** (namespace prefix + tool name).
+1. **Organization toolsets** (MCP, utils, custom toolsets, …): whatever the user’s roles allow in the current org, subject to skill–tool binding rules below. Map keys are **`{type}{numeric_id}`**; the model sees names like **`utils1_now`**.
+2. **Skill loader** (map key `skill_loader`): registered only when `CreateSkillLoader` returns a loader with skills. The model sees **`skill_loader_get_skill_content`**.
 
 ### Skills and organization tools loading
 
@@ -200,9 +202,9 @@ There are **two tool layers** in chat:
 | Yes | On, **no** skill activated yet (`get_skill_content` never succeeded this session) | **None** (`SkillChatBindingAwaitingActivation`) — empty org tool map; only `skill_loader`, client tools, etc. |
 | Yes | On, **at least one** activated skill ID | Narrowed by rows in **`t_skill_ai_tool_bindings`** for those activated IDs only (`SkillChatBindingApply`). If there are **no** binding rows for that set, behavior matches “no bindings”: **full** authorized org tools. |
 
-**Summarization (token-driven auto-summary in the stream client)**
+**Summarization (ez-agent memory + stream hooks)**
 
-- **`OnSummary`**: calls **`skillLoader.Clear()`** and **`ClearSessionActivatedSkills`** (wipes `activated_skill_ids` in DB).
+- **`OnSummary`**: called only after successful LLM summarization (`AfterSummary`); calls **`skillLoader.Clear()`** and **`ClearSessionActivatedSkills`** (wipes `activated_skill_ids` in DB). Not fired for plain condense/offload `ReplaceAll`.
 - Summarizer input uses **`RedactGetSkillContentToolResultsForSummary`**: large **`get_skill_content`** tool results are replaced with a short placeholder so summaries stay small. The model must call **`get_skill_content`** again after a summary if it needs file bodies.
 
 ### Chat request
@@ -240,6 +242,20 @@ When **`system_enable_skill_tool_binding`** is enabled:
 - **UI**: Base system settings expose the toggle. The Skills edit modal shows the tool picker when the feature is on (`listToolSets?include_tools=true`, `X-Scope-OrgID`), same pattern as role AI tool permissions.
 
 When the setting is **off**, bindings are ignored and the Skills UI does not show tool linking. See [Skills and organization tools loading](#skills-and-organization-tools-loading) for the full decision table and persistence behavior.
+
+## Companion skills (per toolset)
+
+Non-preset toolsets get an automatic **companion skill** so agents can discover tools via progressive skill loading when **`system_enable_skill_tool_binding`** is on:
+
+| Property | Value |
+|----------|--------|
+| `preset_key` | `toolset:{toolset_resource_id}` |
+| Domain | `chat` |
+| Category | `toolset` |
+| Binding | that toolset resource ID, tool `*` |
+| Lifecycle | create/update/delete with the toolset; org sync via `SyncToolsetCompanionSkillsForOrganization` |
+
+Details: [Companion Skills](./15-ai-and-toolsets.md#companion-skills) in the AI & Toolsets guide. The chat controller always includes domain **`chat`**, so companion skills are in scope for normal chat sessions.
 
 ## Default (preset) skills
 
