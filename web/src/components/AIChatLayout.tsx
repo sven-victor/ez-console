@@ -126,5 +126,12 @@ export const AIChatSider: React.FC<AIChatProps> = (props) => {
 }
 
 
-export const AIChatButton: React.FC = () => <AIChatFloatButton />;
+export interface AIChatButtonProps {
+  /** Custom float button icon; overrides the default blinking robot when provided. */
+  icon?: React.ReactNode;
+}
+
+export const AIChatButton: React.FC<AIChatButtonProps> = ({ icon }) => (
+  <AIChatFloatButton icon={icon} />
+);
 

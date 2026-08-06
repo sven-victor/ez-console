@@ -432,7 +432,9 @@ export interface AIChatProps {
     components?: {
       [tagName: string]: React.ComponentType<ComponentProps & { onSendMessage: (val: string) => void }> | keyof JSX.IntrinsicElements;
     };
-  }
+  };
+  /** Custom AI float button icon; overrides the default blinking robot when provided. */
+  floatButtonIcon?: React.ReactNode;
 }
 
 interface ChatListProps {

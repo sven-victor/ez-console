@@ -419,7 +419,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           <div className={classNames("site-content-container", styles.contentContainer)}>
             {content}
           </div>
-          {canUseAIChat && <AIChatButton />}
+          {canUseAIChat && <AIChatButton icon={aiChatProps?.floatButtonIcon} />}
           {canUseAIChat && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
         </Content>
         <Footer className={classNames("site-footer", styles.footer)}> ©{new Date().getFullYear()} {siteName}</Footer>

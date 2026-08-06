@@ -261,7 +261,12 @@ const BlinkingRobot: React.FC<{ className?: string; eyeClassName?: string }> = (
   </svg>
 );
 
-export const AIChatFloatButton: React.FC = () => {
+export interface AIChatFloatButtonProps {
+  /** Custom float button icon; overrides the default blinking robot when provided. */
+  icon?: React.ReactNode;
+}
+
+export const AIChatFloatButton: React.FC<AIChatFloatButtonProps> = ({ icon }) => {
   const { styles } = useStyle();
   const { setVisible, visible } = useAI();
   const { t } = useTranslation('ai');
@@ -392,9 +397,9 @@ export const AIChatFloatButton: React.FC = () => {
         onPointerUp={finishPointer}
         onPointerCancel={finishPointer}
       >
-        <span className={styles.body}>
+        {icon ?? <span className={styles.body}>
           <BlinkingRobot className={styles.robot} eyeClassName={styles.eye} />
-        </span>
+        </span>}
       </button>
     </Tooltip>,
     document.body
