@@ -111,6 +111,7 @@ func (c *TaskController) ListUserTasks(ctx *gin.Context) {
 //	@Param			current		query		int		false	"Current page number"	default(1)
 //	@Param			page_size	query		int		false	"Number of items per page"	default(10)
 //	@Param			search		query		string	false	"Search keyword"
+//	@Param			type		query		string	false	"Filter by task type"
 //	@Success		200			{object}	util.PaginationResponse[model.Task]
 //	@Failure		500			{object}	util.ErrorResponse
 //	@Router			/api/tasks [get]
@@ -118,13 +119,14 @@ func (c *TaskController) ListTasks(ctx *gin.Context) {
 	current, _ := strconv.Atoi(ctx.DefaultQuery("current", "1"))
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("page_size", "10"))
 	search := ctx.Query("search")
+	taskType := ctx.Query("type")
 	if current < 1 {
 		current = 1
 	}
 	if pageSize < 1 || pageSize > 100 {
 		pageSize = 10
 	}
-	list, total, err := c.service.ListTasks(ctx, current, pageSize, search)
+	list, total, err := c.service.ListTasks(ctx, current, pageSize, search, taskType)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewErrorMessage("E5001", "Failed to list tasks", err))
 		return

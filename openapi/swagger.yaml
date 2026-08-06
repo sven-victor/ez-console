@@ -2063,6 +2063,11 @@ definitions:
         description: user or system
       created_at:
         type: string
+      creator:
+        description: |-
+          Creator is the display name for the creator: "system" when CreatorID is system,
+          the user's username when found, or empty when the user no longer exists.
+        type: string
       creator_id:
         type: string
       cron_schedule_id:
@@ -2109,6 +2114,7 @@ definitions:
     - auto_retry_count
     - category
     - created_at
+    - creator
     - creator_id
     - cron_schedule_id
     - error
@@ -3383,8 +3389,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3397,10 +3401,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
     type: integer
     x-enum-varnames:
     - minDuration
@@ -3411,8 +3411,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -3425,10 +3423,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
   toolset.ToolSetType:
     enum:
     - utils
@@ -9052,6 +9046,10 @@ paths:
       - description: Search keyword
         in: query
         name: search
+        type: string
+      - description: Filter by task type
+        in: query
+        name: type
         type: string
       produces:
       - application/json

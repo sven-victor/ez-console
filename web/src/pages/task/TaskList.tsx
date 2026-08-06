@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import React, { useRef, useState } from 'react';
-import { App, Card, Button, Space, Input, Tag, Progress } from 'antd';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { App, Card, Button, Space, Input, Tag, Progress, Select } from 'antd';
 import { ReloadOutlined, SearchOutlined, StopOutlined, RedoOutlined, DeleteOutlined, DownloadOutlined, EyeOutlined, CalendarOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import api from '@/service/api';
@@ -42,7 +42,28 @@ const TaskList: React.FC = () => {
   const { t: tCommon } = useTranslation('common');
   const tableRef = useRef<TableRef<API.Task>>(null);
   const [search, setSearch] = useState('');
+  const [taskType, setTaskType] = useState<string>();
+  const skipTypeReload = useRef(true);
   const navigate = useNavigate();
+
+  const typeOptions = useMemo(() => {
+    const types = t('type', { returnObjects: true });
+    if (!types || typeof types !== 'object') {
+      return [];
+    }
+    return Object.entries(types as Record<string, string>).map(([value, label]) => ({
+      value,
+      label,
+    }));
+  }, [t]);
+
+  useEffect(() => {
+    if (skipTypeReload.current) {
+      skipTypeReload.current = false;
+      return;
+    }
+    tableRef.current?.reload?.();
+  }, [taskType]);
 
   const handleCancel = async (id: string) => {
     try {
@@ -112,10 +133,11 @@ const TaskList: React.FC = () => {
     },
     {
       title: t('creatorId', { defaultValue: 'Creator' }),
-      dataIndex: 'creator_id',
-      key: 'creator_id',
+      dataIndex: 'creator',
+      key: 'creator',
       width: 120,
       ellipsis: true,
+      render: (creator: string) => creator || '-',
     },
     {
       title: t('notBefore', { defaultValue: 'Not Before' }),
@@ -193,6 +215,7 @@ const TaskList: React.FC = () => {
       current: params.current ?? PAGINATION.DEFAULT_CURRENT,
       page_size: params.page_size ?? PAGINATION.DEFAULT_PAGE_SIZE,
       search: search || undefined,
+      type: taskType || undefined,
     });
 
   return (
@@ -208,13 +231,21 @@ const TaskList: React.FC = () => {
     >
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
         <Space wrap>
+          <Select
+            placeholder={t('typeFilterPlaceholder', { defaultValue: 'Filter by type' })}
+            value={taskType}
+            onChange={(value) => setTaskType(value)}
+            options={typeOptions}
+            allowClear
+            style={{ width: 240 }}
+          />
           <Input
             placeholder={t('searchPlaceholder', { defaultValue: 'Search by type or ID' })}
             prefix={<SearchOutlined />}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onPressEnter={() => tableRef.current?.reload?.()}
-            style={{ width: 520 }}
+            style={{ width: 320 }}
             allowClear
           />
           <Button icon={<SearchOutlined />} onClick={() => {

@@ -6501,6 +6501,12 @@ const docTemplate = `{
                         "description": "Search keyword",
                         "name": "search",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by task type",
+                        "name": "type",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -9609,6 +9615,7 @@ const docTemplate = `{
                 "auto_retry_count",
                 "category",
                 "created_at",
+                "creator",
                 "creator_id",
                 "cron_schedule_id",
                 "error",
@@ -9645,6 +9652,10 @@ const docTemplate = `{
                     ]
                 },
                 "created_at": {
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "Creator is the display name for the creator: \"system\" when CreatorID is system,\nthe user's username when found, or empty when the user no longer exists.",
                     "type": "string"
                 },
                 "creator_id": {
@@ -11475,8 +11486,6 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -11488,11 +11497,7 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000
+                3600000000000
             ],
             "x-enum-varnames": [
                 "minDuration",
@@ -11503,8 +11508,6 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
@@ -11516,11 +11519,7 @@ const docTemplate = `{
                 "Millisecond",
                 "Second",
                 "Minute",
-                "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second"
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {

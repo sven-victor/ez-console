@@ -18,7 +18,7 @@ import React from 'react';
 import { App, Form, Input, InputNumber, Switch, Button, Space, Spin, Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
-import { SaveOutlined, ReloadOutlined, CalendarOutlined } from '@ant-design/icons';
+import { SaveOutlined, ReloadOutlined, CalendarOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import { useNavigate } from 'react-router-dom';
@@ -146,6 +146,9 @@ const TaskSettingsForm: React.FC = () => {
             </Button>
             <Button onClick={() => refresh()} icon={<ReloadOutlined />}>
               {tCommon('refresh', { defaultValue: 'Refresh' })}
+            </Button>
+            <Button icon={<UnorderedListOutlined />} onClick={() => navigate('/tasks')}>
+              {tTask('listTitle', { defaultValue: 'Task List' })}
             </Button>
             <PermissionGuard permission="task:schedule:list">
               <Button icon={<CalendarOutlined />} onClick={() => navigate('/tasks/schedules')}>

@@ -211,7 +211,14 @@ const TaskScheduleList: React.FC = () => {
       render: (progress: number, record: API.Task) =>
         record.status === 'running' || record.status === 'success' || record.status === 'pending' ? <Progress percent={progress} size="small" /> : '-',
     },
-    { title: t('creatorId', { defaultValue: 'Creator' }), dataIndex: 'creator_id', key: 'creator_id', width: 120, ellipsis: true },
+    {
+      title: t('creatorId', { defaultValue: 'Creator' }),
+      dataIndex: 'creator',
+      key: 'creator',
+      width: 120,
+      ellipsis: true,
+      render: (creator: string) => creator || '-',
+    },
     {
       title: t('notBefore', { defaultValue: 'Not Before' }),
       dataIndex: 'not_before',

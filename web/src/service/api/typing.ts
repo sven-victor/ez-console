@@ -870,6 +870,8 @@ export interface listTasksParams {
   page_size?: number;
   /** Search keyword */
   search?: string;
+  /** Filter by task type */
+  type?: string;
 }
 
 export interface listToolSetsParams {
@@ -2055,6 +2057,9 @@ export interface Task {
   /** user or system */
   category: TaskCategory;
   created_at: string;
+  /** Creator is the display name for the creator: "system" when CreatorID is system,
+the user's username when found, or empty when the user no longer exists. */
+  creator: string;
   creator_id: string;
   /** set when task was created by a scheduled job */
   cron_schedule_id: string;

@@ -105,7 +105,7 @@ const (
 type TaskService interface {
 	CreateTask(ctx context.Context, taskType model.TaskType, opts ...CreateTaskOption) (*model.Task, error)
 	GetTask(ctx context.Context, id string) (*model.Task, error)
-	ListTasks(ctx context.Context, current, pageSize int, search string) ([]*model.Task, int64, error)
+	ListTasks(ctx context.Context, current, pageSize int, search, taskType string) ([]*model.Task, int64, error)
 	ListTasksByCronScheduleID(ctx context.Context, cronScheduleID string, current, pageSize int) ([]*model.Task, int64, error)
 	ListUserTasks(ctx context.Context, userID string) ([]*model.Task, error)
 	RetryTask(ctx context.Context, id string) error
@@ -286,14 +286,17 @@ func isGlobalAdmin(ctx context.Context) bool {
 
 // ListTasks returns paginated tasks.
 // Access rule: admin or users with task:list can see all; others only their own.
-func (s *taskService) ListTasks(ctx context.Context, current, pageSize int, search string) ([]*model.Task, int64, error) {
+func (s *taskService) ListTasks(ctx context.Context, current, pageSize int, search, taskType string) ([]*model.Task, int64, error) {
 	query := db.Session(ctx).Model(&model.Task{})
 	if !s.canAccess(ctx, "", "task:list") {
 		userID := middleware.GetUserIDFromContext(ctx)
-		query = query.Where("creator_id = ?", userID)
+		query = query.Where("t_task.creator_id = ?", userID)
+	}
+	if taskType != "" {
+		query = query.Where("t_task.type = ?", taskType)
 	}
 	if search != "" {
-		query = query.Where("type LIKE ? OR resource_id LIKE ?", "%"+search+"%", "%"+search+"%")
+		query = query.Where("t_task.type LIKE ? OR t_task.resource_id LIKE ?", "%"+search+"%", "%"+search+"%")
 	}
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
@@ -301,7 +304,7 @@ func (s *taskService) ListTasks(ctx context.Context, current, pageSize int, sear
 	}
 	var list []*model.Task
 	offset := (current - 1) * pageSize
-	if err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&list).Error; err != nil {
+	if err := query.Joins("LEFT JOIN t_user ON t_task.category != 'system' AND t_user.resource_id = t_task.creator_id").Select("t_task.*, t_user.full_name as creator").Order("t_task.created_at DESC").Offset(offset).Limit(pageSize).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, total, nil
@@ -312,7 +315,7 @@ func (s *taskService) ListTasksByCronScheduleID(ctx context.Context, cronSchedul
 	query := db.Session(ctx).Model(&model.Task{}).Where("cron_schedule_id = ?", cronScheduleID)
 	if !s.canAccess(ctx, "", "task:list") {
 		userID := middleware.GetUserIDFromContext(ctx)
-		query = query.Where("creator_id = ?", userID)
+		query = query.Where("t_task.creator_id = ?", userID)
 	}
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
@@ -320,7 +323,8 @@ func (s *taskService) ListTasksByCronScheduleID(ctx context.Context, cronSchedul
 	}
 	var list []*model.Task
 	offset := (current - 1) * pageSize
-	if err := query.Order("created_at DESC").Offset(offset).Limit(pageSize).Find(&list).Error; err != nil {
+	if err := query.Joins("LEFT JOIN t_user ON t_task.category != 'system' AND t_user.resource_id = t_task.creator_id").Select("t_task.*, t_user.full_name as creator").
+		Order("t_task.created_at DESC").Offset(offset).Limit(pageSize).Find(&list).Error; err != nil {
 		return nil, 0, err
 	}
 	return list, total, nil
@@ -329,11 +333,12 @@ func (s *taskService) ListTasksByCronScheduleID(ctx context.Context, cronSchedul
 // ListUserTasks returns recent tasks for the header dropdown: only tasks with category "user" for the given user.
 func (s *taskService) ListUserTasks(ctx context.Context, userID string) ([]*model.Task, error) {
 	query := db.Session(ctx).Model(&model.Task{}).
-		Where("creator_id = ?", userID).
-		Where("category = ?", model.TaskCategoryUser).
-		Where("(created_at > ?) OR (status in ?)", time.Now().Add(-time.Hour*24), []model.TaskStatus{model.TaskStatusRunning, model.TaskStatusPending})
+		Where("t_task.creator_id = ?", userID).
+		Where("t_task.category = ?", model.TaskCategoryUser).
+		Where("(t_task.created_at > ?) OR (t_task.status in ?)", time.Now().Add(-time.Hour*24), []model.TaskStatus{model.TaskStatusRunning, model.TaskStatusPending}).
+		Joins("LEFT JOIN t_user ON t_task.category != 'system' AND t_user.resource_id = t_task.creator_id")
 	var list []*model.Task
-	if err := query.Order("created_at DESC").Limit(10).Find(&list).Error; err != nil {
+	if err := query.Select("t_task.*, t_user.full_name as creator").Order("t_task.created_at DESC").Limit(10).Find(&list).Error; err != nil {
 		return nil, err
 	}
 	return list, nil
@@ -354,7 +359,9 @@ func (s *taskService) canAccess(ctx context.Context, creatorID string, permissio
 
 func (s *taskService) getTaskByID(ctx context.Context, id string) (*model.Task, error) {
 	var t model.Task
-	if err := db.Session(ctx).Where("resource_id = ?", id).First(&t).Error; err != nil {
+	if err := db.Session(ctx).Where("t_task.resource_id = ?", id).
+		Joins("LEFT JOIN t_user ON t_task.category != 'system' AND t_user.resource_id = t_task.creator_id").Select("t_task.*, t_user.full_name as creator").
+		First(&t).Error; err != nil {
 		return nil, err
 	}
 	return &t, nil

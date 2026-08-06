@@ -139,7 +139,7 @@ const TaskDetail: React.FC = () => {
             )}
             {task.status !== 'running' && task.status !== 'pending' && '-'}
           </Descriptions.Item>
-          <Descriptions.Item label={t('creatorId', { defaultValue: 'Creator' })}>{task.creator_id}</Descriptions.Item>
+          <Descriptions.Item label={t('creatorId', { defaultValue: 'Creator' })}>{task.creator || '-'}</Descriptions.Item>
           <Descriptions.Item label={t('createdAt', { defaultValue: 'Created At' })}>
             {task.created_at ? new Date(task.created_at).toLocaleString() : '-'}
           </Descriptions.Item>

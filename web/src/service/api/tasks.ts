@@ -84,6 +84,7 @@ export async function listTasks(
       current: "1",
       // page_size has a default value: 10
       page_size: "10",
+
       ...params,
     },
     ...(options || {}),

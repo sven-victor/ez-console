@@ -50,6 +50,7 @@ type Task struct {
 	Result           string     `gorm:"type:text" json:"result,omitempty"`
 	Error            string     `gorm:"type:text" json:"error,omitempty"`
 	CreatorID        string     `gorm:"size:36;not null;index" json:"creator_id"`
+	Creator          string     `gorm:"-:migration;<-:false" json:"creator"`
 	ArtifactFileKey  string     `gorm:"size:64" json:"artifact_file_key,omitempty"`
 	ArtifactFileName string     `json:"artifact_file_name,omitempty"`
 	RetryCount       int        `gorm:"default:0" json:"retry_count"`
@@ -69,10 +70,10 @@ type Task struct {
 	// string — all major databases allow multiple NULL values in a unique index.
 	ScheduleFireKey *string `gorm:"column:schedule_fire_key;uniqueIndex;size:128" json:"-"`
 	// WorkerID is the NodeID of the instance currently executing this task.
-	WorkerID        string     `gorm:"column:worker_id;size:64" json:"-"`
+	WorkerID string `gorm:"column:worker_id;size:64" json:"-"`
 	// LeaseExpiresAt is refreshed by the running worker; the reaper reclaims
 	// tasks whose lease has expired (node crashed or became unresponsive).
-	LeaseExpiresAt  *time.Time `gorm:"column:lease_expires_at;index" json:"-"`
+	LeaseExpiresAt *time.Time `gorm:"column:lease_expires_at;index" json:"-"`
 	// CancelRequested is set to true when a cancellation is requested for a
 	// running task.  Workers check this column as a fallback when EventBus
 	// task.cancel events are not received.
