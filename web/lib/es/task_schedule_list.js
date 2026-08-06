@@ -148,7 +148,14 @@ const G = {
       width: 100,
       render: (e, t) => t.status === "running" || t.status === "success" || t.status === "pending" ? /* @__PURE__ */ s.jsx(z, { percent: e, size: "small" }) : "-"
     },
-    { title: a("creatorId", { defaultValue: "Creator" }), dataIndex: "creator_id", key: "creator_id", width: 120, ellipsis: !0 },
+    {
+      title: a("creatorId", { defaultValue: "Creator" }),
+      dataIndex: "creator",
+      key: "creator",
+      width: 120,
+      ellipsis: !0,
+      render: (e) => e || "-"
+    },
     {
       title: a("notBefore", { defaultValue: "Not Before" }),
       dataIndex: "not_before",

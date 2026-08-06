@@ -41,10 +41,10 @@ const ve = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, Ae = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Se = (e) => {
+}, Ae = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", ye = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((a, r) => r !== 0 && t.includes(a) ? a : a.charAt(0).toUpperCase() + a.slice(1)).join(" ");
-}, ye = (e, t, a) => {
+}, Se = (e, t, a) => {
   if (e === void 0 && t === void 0) return !0;
   if (e === void 0 || t === void 0 || e.length !== t.length) return !1;
   const r = new Array(t.length).fill(!1);
@@ -98,7 +98,7 @@ async function A(e, t) {
     ...t || {}
   });
 }
-async function S(e) {
+async function y(e) {
   return u("/api/statistics", {
     method: "GET",
     ...e || {}
@@ -107,10 +107,10 @@ async function S(e) {
 const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: A,
-  getStatistics: S,
+  getStatistics: y,
   listFiles: k,
   uploadFile: b
-}, Symbol.toStringTag, { value: "Module" })), y = {
+}, Symbol.toStringTag, { value: "Module" })), S = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -922,6 +922,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     actionTooltipDisable: "Disable this service account",
     viewDetail: "View Service Account Details",
     deleteConfirm: "Are you sure you want to delete this service account?",
+    disableConfirm: "Are you sure you want to disable this service account?",
+    enableConfirm: "Are you sure you want to enable this service account?",
     loadError: "Failed to load service account list",
     deleteSuccess: "Service account deleted successfully",
     deleteError: "Failed to delete service account",
@@ -1186,7 +1188,11 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "Disable Local User Login",
       disableLocalUserLoginTooltip: "Disable local user login, It is only valid when other authentication methods are enabled.",
       enableMultiOrg: "Enable Multi-Organization",
-      enableMultiOrgTooltip: "Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab.",
+      enableMultiOrgTooltip: "Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab. When disabled, the current organization becomes the default organization.",
+      defaultOrganization: "Default Organization",
+      defaultOrganizationTooltip: "Used when multi-organization is disabled. Switching multi-organization off sets this to the currently selected organization.",
+      currentOrganization: "Current Organization",
+      currentOrganizationTooltip: "If you disable multi-organization, this organization will become the default organization.",
       enableSkillToolBinding: "Link AI tools to skills",
       enableSkillToolBindingTooltip: "When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools.",
       clearSiteCache: "Clear site cache",
@@ -1785,7 +1791,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ai_chat_session_cleanup_task: "AI Chat Session Cleanup",
     task_log_cleanup_task: "Task Log Cleanup",
     inactive_account_lock_task: "Inactive Account Lock Task",
-    password_expiry_notification_task: "Password Expiry Notification Task"
+    password_expiry_notification_task: "Password Expiry Notification Task",
+    ephemeral_token_cleanup: "Ephemeral Token Cleanup"
   },
   statusLabel: "Status",
   progress: "Progress",
@@ -1812,6 +1819,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteFailed: "Failed to delete task.",
   notFound: "Task not found.",
   backToList: "Back to list",
+  typeFilterPlaceholder: "Filter by type",
   searchPlaceholder: "Search by type or ID",
   tasks: "Tasks",
   more: "More",
@@ -2405,7 +2413,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, L = {
+}, _ = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2545,7 +2553,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, _ = {
+}, L = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -3081,7 +3089,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     organization: "组织",
     global: "全局",
     scope: "范围",
-    filterByOrg: "全部组织",
+    filterByOrg: "所有组织",
     selectOrganization: "选择组织",
     organizationRequired: "请选择组织。",
     organizationScoped: "组织",
@@ -3102,6 +3110,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     actionTooltipDisable: "禁用此服务账户",
     viewDetail: "查看服务账户详情",
     deleteConfirm: "确定要删除这个服务账户吗？",
+    disableConfirm: "确定要禁用这个服务账户吗？",
+    enableConfirm: "确定要启用这个服务账户吗？",
     loadError: "加载服务账户列表失败",
     deleteSuccess: "服务账户已删除",
     deleteError: "删除服务账户失败",
@@ -3362,7 +3372,11 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       disableLocalUserLogin: "禁用本地用户登录",
       disableLocalUserLoginTooltip: "禁用本地用户登录，仅在其他认证方法启用时有效",
       enableMultiOrg: "启用多组织",
-      enableMultiOrgTooltip: "启用多组织功能。启用后，可在“组织管理”标签中管理组织。",
+      enableMultiOrgTooltip: "启用多组织功能。启用后，可在“组织管理”标签中管理组织。关闭时，会将当前选中的组织设为默认组织。",
+      defaultOrganization: "默认组织",
+      defaultOrganizationTooltip: "在关闭多组织时使用。从启用多组织切换为关闭时，会将当前选中的组织设为默认组织。",
+      currentOrganization: "当前组织",
+      currentOrganizationTooltip: "如果关闭多组织，该组织将成为默认组织。",
       enableSkillToolBinding: "将 AI 工具与技能关联",
       enableSkillToolBindingTooltip: "启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。",
       clearSiteCache: "清理站点缓存",
@@ -3963,7 +3977,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ai_chat_session_cleanup_task: "AI 会话清理任务",
     task_log_cleanup_task: "任务日志清理任务",
     inactive_account_lock_task: "不活跃账户锁定任务",
-    password_expiry_notification_task: "密码到期提醒任务"
+    password_expiry_notification_task: "密码到期提醒任务",
+    ephemeral_token_cleanup: "临时令牌清理"
   },
   statusLabel: "状态",
   progress: "进度",
@@ -3990,6 +4005,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteFailed: "删除任务失败。",
   notFound: "任务不存在。",
   backToList: "返回列表",
+  typeFilterPlaceholder: "按类型筛选",
   searchPlaceholder: "按类型或 ID 搜索",
   tasks: "任务",
   more: "更多",
@@ -5427,7 +5443,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ai_chat_session_cleanup_task: "Bereinigung von AI-Chat-Sitzungen",
     task_log_cleanup_task: "Bereinigung von Aufgaben-Logs",
     inactive_account_lock_task: "Sperrung inaktiver Konten",
-    password_expiry_notification_task: "Benachrichtigung bei Passwortablauf"
+    password_expiry_notification_task: "Benachrichtigung bei Passwortablauf",
+    ephemeral_token_cleanup: "Bereinigung kurzlebiger Tokens"
   },
   statusLabel: "Status",
   progress: "Fortschritt",
@@ -5454,6 +5471,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteFailed: "Aufgabe konnte nicht gelöscht werden.",
   notFound: "Aufgabe nicht gefunden.",
   backToList: "Zurück zur Liste",
+  typeFilterPlaceholder: "Nach Typ filtern",
   searchPlaceholder: "Nach Typ oder ID suchen",
   tasks: "Aufgaben",
   more: "Mehr",
@@ -6891,7 +6909,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ai_chat_session_cleanup_task: "Limpieza de sesiones de chat de IA",
     task_log_cleanup_task: "Limpieza de registros de tareas",
     inactive_account_lock_task: "Bloqueo de cuentas inactivas",
-    password_expiry_notification_task: "Notificación de vencimiento de contraseña"
+    password_expiry_notification_task: "Notificación de vencimiento de contraseña",
+    ephemeral_token_cleanup: "Limpieza de tokens efímeros"
   },
   statusLabel: "Estado",
   progress: "Progreso",
@@ -6918,6 +6937,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteFailed: "Error al eliminar la tarea.",
   notFound: "Tarea no encontrada.",
   backToList: "Volver a la lista",
+  typeFilterPlaceholder: "Filtrar por tipo",
   searchPlaceholder: "Buscar por tipo o ID",
   tasks: "Tareas",
   more: "Más",
@@ -8355,7 +8375,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ai_chat_session_cleanup_task: "Nettoyage des sessions de chat IA",
     task_log_cleanup_task: "Nettoyage des journaux de tâches",
     inactive_account_lock_task: "Verrouillage des comptes inactifs",
-    password_expiry_notification_task: "Notification d'expiration du mot de passe"
+    password_expiry_notification_task: "Notification d'expiration du mot de passe",
+    ephemeral_token_cleanup: "Nettoyage des jetons éphémères"
   },
   statusLabel: "Statut",
   progress: "Progression",
@@ -8382,6 +8403,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteFailed: "Échec de la suppression de la tâche.",
   notFound: "Tâche introuvable.",
   backToList: "Retour à la liste",
+  typeFilterPlaceholder: "Filtrer par type",
   searchPlaceholder: "Rechercher par type ou ID",
   tasks: "Tâches",
   more: "Plus",
@@ -9819,7 +9841,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ai_chat_session_cleanup_task: "تنظيف جلسات محادثات الذكاء الاصطناعي",
     task_log_cleanup_task: "تنظيف سجلات المهام",
     inactive_account_lock_task: "مهمة قفل الحسابات غير النشطة",
-    password_expiry_notification_task: "مهمة إشعار انتهاء صلاحية كلمة المرور"
+    password_expiry_notification_task: "مهمة إشعار انتهاء صلاحية كلمة المرور",
+    ephemeral_token_cleanup: "تنظيف الرموز المؤقتة"
   },
   statusLabel: "الحالة",
   progress: "التقدم",
@@ -9846,6 +9869,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteFailed: "فشل حذف المهمة.",
   notFound: "المهمة غير موجودة.",
   backToList: "العودة إلى القائمة",
+  typeFilterPlaceholder: "تصفية حسب النوع",
   searchPlaceholder: "البحث حسب النوع أو المعرّف",
   tasks: "المهام",
   more: "المزيد",
@@ -11283,7 +11307,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ai_chat_session_cleanup_task: "Rensning av AI-chattsessioner",
     task_log_cleanup_task: "Rensning av uppgiftsloggar",
     inactive_account_lock_task: "Låsning av inaktiva konton",
-    password_expiry_notification_task: "Avisering om lösenordsutgång"
+    password_expiry_notification_task: "Avisering om lösenordsutgång",
+    ephemeral_token_cleanup: "Rensning av tillfälliga tokens"
   },
   statusLabel: "Status",
   progress: "Framsteg",
@@ -11310,6 +11335,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   deleteFailed: "Kunde inte ta bort uppgiften.",
   notFound: "Uppgiften hittades inte.",
   backToList: "Tillbaka till listan",
+  typeFilterPlaceholder: "Filtrera efter typ",
   searchPlaceholder: "Sök på typ eller ID",
   tasks: "Uppgifter",
   more: "Mer",
@@ -11349,8 +11375,8 @@ g.use(f).use(h).init({
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: y,
-      common: _,
+      translation: S,
+      common: L,
       authorization: M,
       system: U,
       ai: q,
@@ -11397,7 +11423,7 @@ g.use(f).use(h).init({
       task: re
     },
     "sv-SE": {
-      translation: L,
+      translation: _,
       common: se,
       authorization: oe,
       system: ne,
@@ -11450,7 +11476,7 @@ export {
   Te as d,
   ve as f,
   Ae as g,
-  ye as i,
+  Se as i,
   be as m,
-  Se as t
+  ye as t
 };

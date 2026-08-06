@@ -80,7 +80,12 @@ export declare const AdminGuard: default_2.FC<Omit<PermissionGuardProps, 'permis
 
 export declare const AIChat: LazyExoticComponent<FC<AIChatProps>>;
 
-export declare const AIChatButton: default_2.FC;
+export declare const AIChatButton: default_2.FC<AIChatButtonProps>;
+
+declare interface AIChatButtonProps {
+    /** Custom float button icon; overrides the default blinking robot when provided. */
+    icon?: default_2.ReactNode;
+}
 
 export declare interface AIChatMessage {
     /** Message content */
@@ -132,6 +137,8 @@ export declare interface AIChatProps {
             }> | keyof JSX.IntrinsicElements;
         };
     };
+    /** Custom AI float button icon; overrides the default blinking robot when provided. */
+    floatButtonIcon?: default_2.ReactNode;
 }
 
 export declare interface AIChatSession {
@@ -1944,6 +1951,8 @@ export declare interface listTasksParams {
     page_size?: number;
     /** Search keyword */
     search?: string;
+    /** Filter by task type */
+    type?: string;
 }
 
 export declare interface listToolSetsParams {
@@ -3085,6 +3094,7 @@ export declare interface SimpleChatMessage {
 
 export declare interface SiteConfig {
     attrs: Record<string, any>;
+    default_organization_id: string;
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
     enable_skill_tool_binding: boolean;
@@ -3241,6 +3251,7 @@ export declare interface SystemInfo {
 }
 
 export declare interface SystemSettings {
+    default_organization_id: string;
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
     enable_skill_tool_binding: boolean;
@@ -3284,6 +3295,9 @@ export declare interface Task {
     /** user or system */
     category: TaskCategory;
     created_at: string;
+    /** Creator is the display name for the creator: "system" when CreatorID is system,
+     the user's username when found, or empty when the user no longer exists. */
+    creator: string;
     creator_id: string;
     /** set when task was created by a scheduled job */
     cron_schedule_id: string;

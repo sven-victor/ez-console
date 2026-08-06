@@ -1,6 +1,6 @@
 import { j as t } from "./vendor.js";
 import b from "react";
-import { App as T, Card as o, Spin as _, Button as n, Space as u, Descriptions as r, Tag as C, Progress as D } from "antd";
+import { App as T, Card as o, Spin as C, Button as n, Space as u, Descriptions as r, Tag as _, Progress as D } from "antd";
 import { DownloadOutlined as S, StopOutlined as I, RedoOutlined as A, DeleteOutlined as F, ArrowLeftOutlined as L } from "@ant-design/icons";
 import { useParams as R, useNavigate as v } from "react-router-dom";
 import { useTranslation as m } from "react-i18next";
@@ -52,7 +52,7 @@ const $ = {
     window.open(`/api/files/${e.artifact_file_key}`, "_blank");
   };
   if (x && !e)
-    return /* @__PURE__ */ t.jsx(o, { children: /* @__PURE__ */ t.jsx(_, { spinning: !0 }) });
+    return /* @__PURE__ */ t.jsx(o, { children: /* @__PURE__ */ t.jsx(C, { spinning: !0 }) });
   if (!e)
     return /* @__PURE__ */ t.jsxs(o, { children: [
       /* @__PURE__ */ t.jsx("p", { children: a("notFound", { defaultValue: "Task not found." }) }),
@@ -67,12 +67,12 @@ const $ = {
       children: /* @__PURE__ */ t.jsxs(u, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
         /* @__PURE__ */ t.jsxs(r, { bordered: !0, column: 1, size: "small", labelStyle: { minWidth: 150 }, children: [
           /* @__PURE__ */ t.jsx(r.Item, { label: a("typeLabel", { defaultValue: "Type" }), children: a(`type.${e.type}`, { defaultValue: e.type }) }),
-          /* @__PURE__ */ t.jsx(r.Item, { label: a("statusLabel", { defaultValue: "Status" }), children: /* @__PURE__ */ t.jsx(C, { color: $[e.status] || "default", children: a(`status.${e.status}`, { defaultValue: e.status }) }) }),
+          /* @__PURE__ */ t.jsx(r.Item, { label: a("statusLabel", { defaultValue: "Status" }), children: /* @__PURE__ */ t.jsx(_, { color: $[e.status] || "default", children: a(`status.${e.status}`, { defaultValue: e.status }) }) }),
           /* @__PURE__ */ t.jsxs(r.Item, { label: a("progress", { defaultValue: "Progress" }), children: [
             (e.status === "running" || e.status === "pending") && /* @__PURE__ */ t.jsx(D, { percent: e.progress ?? 0, size: "small", style: { maxWidth: 200 } }),
             e.status !== "running" && e.status !== "pending" && "-"
           ] }),
-          /* @__PURE__ */ t.jsx(r.Item, { label: a("creatorId", { defaultValue: "Creator" }), children: e.creator_id }),
+          /* @__PURE__ */ t.jsx(r.Item, { label: a("creatorId", { defaultValue: "Creator" }), children: e.creator || "-" }),
           /* @__PURE__ */ t.jsx(r.Item, { label: a("createdAt", { defaultValue: "Created At" }), children: e.created_at ? new Date(e.created_at).toLocaleString() : "-" }),
           /* @__PURE__ */ t.jsx(r.Item, { label: a("startedAt", { defaultValue: "Started At" }), children: e.started_at ? new Date(e.started_at).toLocaleString() : "-" }),
           /* @__PURE__ */ t.jsx(r.Item, { label: a("finishedAt", { defaultValue: "Finished At" }), children: e.finished_at ? new Date(e.finished_at).toLocaleString() : "-" }),

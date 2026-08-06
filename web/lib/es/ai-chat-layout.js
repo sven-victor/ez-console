@@ -95,7 +95,7 @@ const c = b(() => import("./ai-chat.js")), w = g(({ token: t, css: e }) => ({
       ]
     }
   );
-}, N = () => /* @__PURE__ */ o.jsx(f, {});
+}, N = ({ icon: t }) => /* @__PURE__ */ o.jsx(f, { icon: t });
 export {
   N as A,
   W as a,

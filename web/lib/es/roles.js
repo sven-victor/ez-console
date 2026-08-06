@@ -1,43 +1,43 @@
 import { j as e } from "./vendor.js";
-import { useMemo as H, useState as I, useRef as Ue, useEffect as re, useCallback as ge } from "react";
-import { App as pe, Empty as $, Spin as ue, Typography as ye, Tag as O, Descriptions as W, Card as K, Drawer as $e, Space as M, Form as T, Tooltip as Y, Button as C, Popconfirm as Me, Row as qe, Col as xe, Input as he, Select as Z, Table as Be, Alert as Je, Tabs as We, Radio as se, Tree as He, Checkbox as de } from "antd";
-import { TeamOutlined as Ve, LockOutlined as me, ToolOutlined as Ke, UserOutlined as Qe, EditOutlined as Ye, CopyOutlined as je, DeleteOutlined as Xe, ReloadOutlined as Ze, PlusOutlined as et, DownOutlined as tt, UpOutlined as lt } from "@ant-design/icons";
+import { useMemo as H, useState as I, useRef as qe, useEffect as se, useCallback as xe } from "react";
+import { App as he, Empty as M, Spin as me, Typography as je, Tag as O, Descriptions as W, Card as K, Drawer as Be, Space as q, Form as v, Tooltip as Y, Button as C, Popconfirm as Je, Row as We, Col as _e, Input as fe, Select as Z, Table as He, Alert as Ke, Tabs as Qe, Radio as de, Tree as Ye, Checkbox as ce } from "antd";
+import { TeamOutlined as Se, LockOutlined as pe, ToolOutlined as Xe, UserOutlined as Ze, EditOutlined as et, CopyOutlined as be, DeleteOutlined as tt, ReloadOutlined as lt, PlusOutlined as ot, DownOutlined as it, UpOutlined as at } from "@ant-design/icons";
 import { g as X } from "./components.js";
 import { a as G } from "./index.js";
 import { useTranslation as ee } from "react-i18next";
-import { b as fe, u as ze, a as Se } from "./contexts.js";
-import { useNavigate as Re, useParams as ot, useSearchParams as it } from "react-router-dom";
-import { P as ce } from "./base.js";
-import { useRequest as q } from "ahooks";
-import { isArray as at, has as nt } from "lodash-es";
-import { createStyles as rt } from "antd-style";
-const st = ({ roleId: y, open: s, onClose: D }) => {
-  const { message: o } = pe.useApp(), { t: d } = ee("authorization"), { siteConfig: P } = fe(), R = (P == null ? void 0 : P.enable_multi_org) ?? !1, { data: i, loading: U } = q(async () => y ? G.authorization.getRole({ id: y }) : null, {
-    refreshDeps: [y, s],
-    ready: !!y && s,
+import { b as ge, u as Re, a as Te } from "./contexts.js";
+import { useNavigate as ve, useParams as nt, useSearchParams as rt } from "react-router-dom";
+import { P as ue } from "./base.js";
+import { useRequest as B } from "ahooks";
+import { isArray as st, has as dt } from "lodash-es";
+import { createStyles as ct } from "antd-style";
+const ut = ({ roleId: x, open: s, onClose: D }) => {
+  const { message: o } = he.useApp(), { t: d } = ee("authorization"), { siteConfig: P } = ge(), S = (P == null ? void 0 : P.enable_multi_org) ?? !1, { data: i, loading: U } = B(async () => x ? G.authorization.getRole({ id: x }) : null, {
+    refreshDeps: [x, s],
+    ready: !!x && s,
     onError: () => {
       o.error(d("role.loadDetailError", { defaultValue: "Failed to load role details" }));
     }
   }), {
-    data: x,
-    loading: V,
-    error: B
-  } = q(async () => G.authorization.listPermissions(), {
+    data: j,
+    loading: g,
+    error: $
+  } = B(async () => G.authorization.listPermissions(), {
     refreshDeps: [s],
     ready: s
-  }), A = x ?? [], S = H(() => {
-    var _;
-    if (!((_ = i == null ? void 0 : i.permissions) != null && _.length)) return {};
+  }), A = j ?? [], z = H(() => {
+    var b;
+    if (!((b = i == null ? void 0 : i.permissions) != null && b.length)) return {};
     const p = {};
-    for (const v of i.permissions) {
-      const f = v.code.split(":"), r = f.length >= 2 ? `${f[0]}:${f[1]}` : f[0];
-      p[r] || (p[r] = []), p[r].push(v);
+    for (const R of i.permissions) {
+      const f = R.code.split(":"), r = f.length >= 2 ? `${f[0]}:${f[1]}` : f[0];
+      p[r] || (p[r] = []), p[r].push(R);
     }
     return p;
-  }, [i == null ? void 0 : i.permissions]), j = H(() => {
+  }, [i == null ? void 0 : i.permissions]), _ = H(() => {
     var f;
     if (!((f = i == null ? void 0 : i.permissions) != null && f.length))
-      return /* @__PURE__ */ e.jsx($, { description: d("role.noPermissions", { defaultValue: "No permissions assigned" }) });
+      return /* @__PURE__ */ e.jsx(M, { description: d("role.noPermissions", { defaultValue: "No permissions assigned" }) });
     const p = {
       maxHeight: 420,
       overflowY: "auto",
@@ -45,41 +45,41 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       borderRadius: 6,
       padding: "12px 12px 4px"
     };
-    if (V && A.length === 0 && !B)
-      return /* @__PURE__ */ e.jsx("div", { style: { ...p, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 140 }, children: /* @__PURE__ */ e.jsx(ue, {}) });
-    const _ = [], v = new Set(i.permissions.map((r) => r.id));
+    if (g && A.length === 0 && !$)
+      return /* @__PURE__ */ e.jsx("div", { style: { ...p, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 140 }, children: /* @__PURE__ */ e.jsx(me, {}) });
+    const b = [], R = new Set(i.permissions.map((r) => r.id));
     if (A.length > 0) {
       const r = /* @__PURE__ */ new Set();
       for (const m of A)
         for (const w of m.permissions || [])
           r.add(w.id);
       A.forEach((m, w) => {
-        const z = (m.permissions || []).filter((n) => v.has(n.id));
-        z.length && _.push({
+        const T = (m.permissions || []).filter((n) => R.has(n.id));
+        T.length && b.push({
           key: `catalog-${w}`,
           groupTitleKey: `permission.title.${m.name.replace(/ /g, "_")}`,
           groupTitleDefault: m.name,
-          permissions: z
+          permissions: T
         });
       });
       const u = i.permissions.filter((m) => !r.has(m.id));
-      u.length && _.push({
+      u.length && b.push({
         key: "orphans",
         groupTitleKey: "role.otherPermissions",
         groupTitleDefault: "Other permissions",
         permissions: u
       });
     } else
-      Object.entries(S).forEach(([r, u], m) => {
-        _.push({
+      Object.entries(z).forEach(([r, u], m) => {
+        b.push({
           key: `fallback-${m}`,
           groupTitleKey: `permission.title.${r.replace(/:/g, ".")}`,
           groupTitleDefault: r,
           permissions: u
         });
       });
-    return /* @__PURE__ */ e.jsx("div", { style: p, children: _.map((r) => /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 12 }, children: [
-      /* @__PURE__ */ e.jsx(ye.Text, { strong: !0, style: { display: "block", marginBottom: 8 }, children: d(r.groupTitleKey, { defaultValue: r.groupTitleDefault }) }),
+    return /* @__PURE__ */ e.jsx("div", { style: p, children: b.map((r) => /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 12 }, children: [
+      /* @__PURE__ */ e.jsx(je.Text, { strong: !0, style: { display: "block", marginBottom: 8 }, children: d(r.groupTitleKey, { defaultValue: r.groupTitleDefault }) }),
       /* @__PURE__ */ e.jsx(
         "div",
         {
@@ -92,28 +92,28 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
         }
       )
     ] }, r.key)) });
-  }, [i, A, V, B, S, d]), N = H(() => {
+  }, [i, A, g, $, z, d]), N = H(() => {
     var p;
     return i != null && i.policy_document ? ((p = i.policy_document.Statement) == null ? void 0 : p.length) > 0 : !1;
   }, [i == null ? void 0 : i.policy_document]), k = H(() => {
     var p;
     return (((p = i == null ? void 0 : i.ai_tool_permissions) == null ? void 0 : p.length) || 0) > 0;
   }, [i == null ? void 0 : i.ai_tool_permissions]), F = H(() => {
-    var _, v;
+    var b, R;
     const p = [
       i ? /* @__PURE__ */ e.jsxs(W, { column: 1, bordered: !0, size: "small", children: [
         /* @__PURE__ */ e.jsx(W.Item, { label: d("role.name", { defaultValue: "Role Name" }), children: i.name }),
         /* @__PURE__ */ e.jsx(W.Item, { label: d("role.description", { defaultValue: "Description" }), children: i.description || "-" }),
         /* @__PURE__ */ e.jsx(W.Item, { label: d("role.roleType", { defaultValue: "Role Type" }), children: i.role_type === "system" ? /* @__PURE__ */ e.jsx(O, { color: "orange", children: d("role.typeSystem", { defaultValue: "System" }) }) : /* @__PURE__ */ e.jsx(O, { color: "default", children: d("role.typeUser", { defaultValue: "User" }) }) }),
-        R && /* @__PURE__ */ e.jsx(W.Item, { label: d("role.organization", { defaultValue: "Organization" }), children: i.organization_id ? /* @__PURE__ */ e.jsx(O, { icon: /* @__PURE__ */ e.jsx(Ve, {}), color: "blue", children: ((_ = i.organization) == null ? void 0 : _.name) || i.organization_id }) : /* @__PURE__ */ e.jsx(O, { color: "default", children: d("role.global", { defaultValue: "Global" }) }) }),
+        S && /* @__PURE__ */ e.jsx(W.Item, { label: d("role.organization", { defaultValue: "Organization" }), children: i.organization_id ? /* @__PURE__ */ e.jsx(O, { icon: /* @__PURE__ */ e.jsx(Se, {}), color: "blue", children: ((b = i.organization) == null ? void 0 : b.name) || i.organization_id }) : /* @__PURE__ */ e.jsx(O, { color: "default", children: d("role.global", { defaultValue: "Global" }) }) }),
         /* @__PURE__ */ e.jsx(W.Item, { label: d("role.createdAt", { defaultValue: "Created At" }), children: new Date(i.created_at).toLocaleString() }),
         /* @__PURE__ */ e.jsx(W.Item, { label: d("role.updatedAt", { defaultValue: "Updated At" }), children: new Date(i.updated_at).toLocaleString() })
       ] }) : null,
       /* @__PURE__ */ e.jsx(K, { title: /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-        /* @__PURE__ */ e.jsx(me, { style: { marginRight: 4 } }),
+        /* @__PURE__ */ e.jsx(pe, { style: { marginRight: 4 } }),
         d("role.permissions", { defaultValue: "Permissions" }),
-        (v = i == null ? void 0 : i.permissions) != null && v.length ? ` (${i.permissions.length})` : ""
-      ] }), children: j })
+        (R = i == null ? void 0 : i.permissions) != null && R.length ? ` (${i.permissions.length})` : ""
+      ] }), children: _ })
     ];
     if (N && p.push(
       /* @__PURE__ */ e.jsx(
@@ -137,47 +137,47 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
         f[u] || (f[u] = { toolset: r.toolset, tools: [] }), f[u].tools.push(r.tool_name);
       }
       p.push(/* @__PURE__ */ e.jsx(K, { title: /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-        /* @__PURE__ */ e.jsx(Ke, { style: { marginRight: 4 } }),
+        /* @__PURE__ */ e.jsx(Xe, { style: { marginRight: 4 } }),
         d("role.aiPermissions", { defaultValue: "AI Tool Permissions" })
       ] }), children: Object.entries(f).map(([r, { toolset: u, tools: m }]) => /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 12 }, children: [
-        /* @__PURE__ */ e.jsx(ye.Text, { strong: !0, style: { display: "block", marginBottom: 4 }, children: (u == null ? void 0 : u.name) || r }),
+        /* @__PURE__ */ e.jsx(je.Text, { strong: !0, style: { display: "block", marginBottom: 4 }, children: (u == null ? void 0 : u.name) || r }),
         /* @__PURE__ */ e.jsx("div", { children: m.map((w) => /* @__PURE__ */ e.jsx(O, { color: "blue", style: { marginBottom: 4 }, children: w }, w)) })
       ] }, r)) }));
     }
     return p;
-  }, [i, j, N, k, R, d]);
+  }, [i, _, N, k, S, d]);
   return /* @__PURE__ */ e.jsx(
-    $e,
+    Be,
     {
       title: d("role.viewTitle", { defaultValue: "View Role" }),
       open: s,
       onClose: D,
       width: 800,
       destroyOnHidden: !0,
-      children: /* @__PURE__ */ e.jsx(ue, { spinning: U, children: /* @__PURE__ */ e.jsx(M, { direction: "vertical", children: i ? F : !U && /* @__PURE__ */ e.jsx($, {}) }) })
+      children: /* @__PURE__ */ e.jsx(me, { spinning: U, children: /* @__PURE__ */ e.jsx(q, { direction: "vertical", children: i ? F : !U && /* @__PURE__ */ e.jsx(M, {}) }) })
     }
   );
-}, dt = () => {
-  const { message: y } = pe.useApp(), { t: s } = ee("authorization"), { t: D } = ee("common"), { siteConfig: o } = fe(), d = (o == null ? void 0 : o.enable_multi_org) ?? !1, P = Re(), { user: R } = ze(), { hasGlobalPermission: i } = Se(), U = (R == null ? void 0 : R.organizations) || [], [x] = T.useForm(), [V, B] = I({
-    current: ce.DEFAULT_CURRENT,
-    page_size: ce.DEFAULT_PAGE_SIZE,
+}, mt = () => {
+  const { message: x } = he.useApp(), { t: s } = ee("authorization"), { t: D } = ee("common"), { siteConfig: o } = ge(), d = (o == null ? void 0 : o.enable_multi_org) ?? !1, P = ve(), { user: S } = Re(), { hasGlobalPermission: i } = Te(), U = (S == null ? void 0 : S.organizations) || [], [j] = v.useForm(), [g, $] = I({
+    current: ue.DEFAULT_CURRENT,
+    page_size: ue.DEFAULT_PAGE_SIZE,
     search: void 0,
     organization_id: void 0
-  }), [A, S] = I(!1), [j, N] = I(null), { run: k, data: F, loading: p } = q(async () => G.authorization.listRoles(V), {
+  }), [A, z] = I(!1), [_, N] = I(null), { run: k, data: F, loading: p } = B(async () => G.authorization.listRoles(g), {
     debounceWait: 300,
-    refreshDeps: [V],
+    refreshDeps: [g],
     onError: () => {
-      y.error(s("role.loadError", { defaultValue: "Failed to load role list" }));
+      x.error(s("role.loadError", { defaultValue: "Failed to load role list" }));
     }
-  }), _ = (n) => {
-    B({
-      ...V,
-      current: ce.DEFAULT_CURRENT,
+  }), b = (n) => {
+    $({
+      ...g,
+      current: ue.DEFAULT_CURRENT,
       search: n.search,
       organization_id: n.organization_id || void 0
     });
-  }, v = (n, h) => {
-    B((E) => ({
+  }, R = (n, h) => {
+    $((E) => ({
       ...E,
       current: n,
       page_size: h
@@ -186,15 +186,15 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
     P(`/authorization/roles/${n}/edit`);
   }, r = (n) => {
     P(`/authorization/roles/create?cloneFrom=${encodeURIComponent(n)}`);
-  }, { run: u } = q(
+  }, { run: u } = B(
     async ({ id: n }) => G.authorization.deleteRole({ id: n }),
     {
       manual: !0,
       onSuccess: () => {
-        y.success(s("role.deleteSuccess", { defaultValue: "Role deleted successfully." })), k();
+        x.success(s("role.deleteSuccess", { defaultValue: "Role deleted successfully." })), k();
       },
       onError: (n) => {
-        y.error(
+        x.error(
           s("role.deleteError", {
             defaultValue: "Failed to delete role: {{error}}",
             error: n instanceof Error ? n.message : String(n)
@@ -203,14 +203,14 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       }
     }
   ), m = (n) => {
-    N(n), S(!0);
-  }, w = d && i("authorization:role:view"), z = [
+    N(n), z(!0);
+  }, w = d && i("authorization:role:view"), T = [
     {
       title: s("role.name", { defaultValue: "Role Name" }),
       dataIndex: "name",
       key: "name",
-      render: (n, h) => /* @__PURE__ */ e.jsxs(M, { children: [
-        /* @__PURE__ */ e.jsx(Qe, {}),
+      render: (n, h) => /* @__PURE__ */ e.jsxs(q, { children: [
+        /* @__PURE__ */ e.jsx(Ze, {}),
         /* @__PURE__ */ e.jsx("a", { onClick: () => m(h.id), children: n })
       ] })
     },
@@ -230,7 +230,7 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       hidden: !d,
       render: (n, h) => {
         var E;
-        return h.organization_id ? /* @__PURE__ */ e.jsx(O, { icon: /* @__PURE__ */ e.jsx(Ve, {}), color: "blue", children: ((E = h.organization) == null ? void 0 : E.name) || h.organization_id }) : /* @__PURE__ */ e.jsx(O, { color: "default", children: s("role.global", { defaultValue: "Global" }) });
+        return h.organization_id ? /* @__PURE__ */ e.jsx(O, { icon: /* @__PURE__ */ e.jsx(Se, {}), color: "blue", children: ((E = h.organization) == null ? void 0 : E.name) || h.organization_id }) : /* @__PURE__ */ e.jsx(O, { color: "default", children: s("role.global", { defaultValue: "Global" }) });
       }
     },
     {
@@ -239,7 +239,7 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       render: (n, h) => {
         var E;
         return /* @__PURE__ */ e.jsxs(O, { color: "blue", children: [
-          /* @__PURE__ */ e.jsx(me, {}),
+          /* @__PURE__ */ e.jsx(pe, {}),
           " ",
           ((E = h.permissions) == null ? void 0 : E.length) || 0
         ] });
@@ -256,14 +256,14 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       key: "action",
       render: (n, h) => {
         const E = h.role_type === "system";
-        return /* @__PURE__ */ e.jsxs(M, { size: "small", children: [
+        return /* @__PURE__ */ e.jsxs(q, { size: "small", children: [
           !E && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
             /* @__PURE__ */ e.jsx(X, { permission: "authorization:role:update", children: /* @__PURE__ */ e.jsx(Y, { title: s("role.edit", { defaultValue: "Edit Role" }), children: /* @__PURE__ */ e.jsx(
               C,
               {
                 type: "text",
                 size: "small",
-                icon: /* @__PURE__ */ e.jsx(Ye, {}),
+                icon: /* @__PURE__ */ e.jsx(et, {}),
                 onClick: () => f(h.id)
               }
             ) }) }),
@@ -272,12 +272,12 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
               {
                 type: "text",
                 size: "small",
-                icon: /* @__PURE__ */ e.jsx(je, {}),
+                icon: /* @__PURE__ */ e.jsx(be, {}),
                 onClick: () => r(h.id)
               }
             ) }) }),
             /* @__PURE__ */ e.jsx(X, { permission: "authorization:role:delete", children: /* @__PURE__ */ e.jsx(Y, { title: s("role.delete", { defaultValue: "Delete Role" }), children: /* @__PURE__ */ e.jsx(
-              Me,
+              Je,
               {
                 title: s("role.deleteConfirm", { defaultValue: "Are you sure you want to delete this role?" }),
                 onConfirm: () => u({ id: h.id }),
@@ -289,20 +289,20 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                     type: "text",
                     size: "small",
                     danger: !0,
-                    icon: /* @__PURE__ */ e.jsx(Xe, {})
+                    icon: /* @__PURE__ */ e.jsx(tt, {})
                   }
                 )
               }
             ) }) })
           ] }),
           E && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-            /* @__PURE__ */ e.jsx(Y, { title: s("role.systemRoleCannotModify", { defaultValue: "System roles cannot be modified." }), children: /* @__PURE__ */ e.jsx("span", { children: /* @__PURE__ */ e.jsx(C, { type: "text", size: "small", icon: /* @__PURE__ */ e.jsx(me, {}), disabled: !0 }) }) }),
+            /* @__PURE__ */ e.jsx(Y, { title: s("role.systemRoleCannotModify", { defaultValue: "System roles cannot be modified." }), children: /* @__PURE__ */ e.jsx("span", { children: /* @__PURE__ */ e.jsx(C, { type: "text", size: "small", icon: /* @__PURE__ */ e.jsx(pe, {}), disabled: !0 }) }) }),
             /* @__PURE__ */ e.jsx(X, { permission: "authorization:role:create", children: /* @__PURE__ */ e.jsx(Y, { title: s("role.cloneTooltip", { defaultValue: "Clone role to create page with prefilled form" }), children: /* @__PURE__ */ e.jsx(
               C,
               {
                 type: "text",
                 size: "small",
-                icon: /* @__PURE__ */ e.jsx(je, {}),
+                icon: /* @__PURE__ */ e.jsx(be, {}),
                 onClick: () => r(h.id)
               }
             ) }) })
@@ -313,37 +313,37 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
   ];
   return /* @__PURE__ */ e.jsxs("div", { children: [
     /* @__PURE__ */ e.jsx(K, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsx(
-      T,
+      v,
       {
-        form: x,
+        form: j,
         layout: "vertical",
-        onFinish: _,
+        onFinish: b,
         name: "roleSearchForm",
         initialValues: {
-          search: V.search,
-          organization_id: V.organization_id
+          search: g.search,
+          organization_id: g.organization_id
         },
         style: { marginBottom: 0 },
-        children: /* @__PURE__ */ e.jsxs(qe, { justify: "space-between", align: "middle", gutter: [16, 16], children: [
-          /* @__PURE__ */ e.jsx(xe, { children: /* @__PURE__ */ e.jsxs(M, { children: [
-            /* @__PURE__ */ e.jsx(T.Item, { name: "search", noStyle: !0, children: /* @__PURE__ */ e.jsx(
-              he.Search,
+        children: /* @__PURE__ */ e.jsxs(We, { justify: "space-between", align: "middle", gutter: [16, 16], children: [
+          /* @__PURE__ */ e.jsx(_e, { children: /* @__PURE__ */ e.jsxs(q, { children: [
+            /* @__PURE__ */ e.jsx(v.Item, { name: "search", noStyle: !0, children: /* @__PURE__ */ e.jsx(
+              fe.Search,
               {
                 placeholder: s("role.searchPlaceholder", { defaultValue: "Role name/description" }),
                 allowClear: !0,
                 onSearch: () => {
-                  _(x.getFieldsValue());
+                  b(j.getFieldsValue());
                 },
                 style: { width: 300 }
               }
             ) }),
-            w && /* @__PURE__ */ e.jsx(T.Item, { name: "organization_id", noStyle: !0, children: /* @__PURE__ */ e.jsx(
+            w && /* @__PURE__ */ e.jsx(v.Item, { name: "organization_id", noStyle: !0, children: /* @__PURE__ */ e.jsx(
               Z,
               {
                 placeholder: s("role.allOrganizations", { defaultValue: "All Organizations" }),
                 allowClear: !0,
                 onChange: () => {
-                  _(x.getFieldsValue());
+                  b(j.getFieldsValue());
                 },
                 style: { minWidth: 180 },
                 options: [
@@ -353,14 +353,14 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
               }
             ) })
           ] }) }),
-          /* @__PURE__ */ e.jsx(xe, { children: /* @__PURE__ */ e.jsxs(M, { children: [
+          /* @__PURE__ */ e.jsx(_e, { children: /* @__PURE__ */ e.jsxs(q, { children: [
             /* @__PURE__ */ e.jsx(
               C,
               {
                 onClick: () => {
-                  _(x.getFieldsValue());
+                  b(j.getFieldsValue());
                 },
-                icon: /* @__PURE__ */ e.jsx(Ze, {}),
+                icon: /* @__PURE__ */ e.jsx(lt, {}),
                 children: D("refresh", { defaultValue: "Refresh" })
               }
             ),
@@ -368,7 +368,7 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
               C,
               {
                 type: "primary",
-                icon: /* @__PURE__ */ e.jsx(et, {}),
+                icon: /* @__PURE__ */ e.jsx(ot, {}),
                 onClick: () => P("/authorization/roles/create"),
                 children: s("role.create", { defaultValue: "Create Role" })
               }
@@ -378,17 +378,17 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       }
     ) }),
     /* @__PURE__ */ e.jsx(K, { children: /* @__PURE__ */ e.jsx(
-      Be,
+      He,
       {
         rowKey: "id",
         loading: p,
         dataSource: (F == null ? void 0 : F.data) ?? [],
-        columns: z,
+        columns: T,
         pagination: {
-          current: V.current,
-          pageSize: V.page_size,
+          current: g.current,
+          pageSize: g.page_size,
           total: (F == null ? void 0 : F.total) ?? 0,
-          onChange: v,
+          onChange: R,
           showSizeChanger: !0,
           showQuickJumper: !0,
           showTotal: (n) => D("totalItems", { defaultValue: `Total ${n} items`, total: n })
@@ -396,29 +396,29 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       }
     ) }),
     /* @__PURE__ */ e.jsx(
-      st,
+      ut,
       {
-        roleId: j,
+        roleId: _,
         open: A,
-        onClose: () => S(!1)
+        onClose: () => z(!1)
       }
     )
   ] });
-}, vt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Et = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: dt
-}, Symbol.toStringTag, { value: "Module" })), { TextArea: _e } = he, ct = rt(({ css: y }) => ({
-  rolePermissionExtra: y`
+  default: mt
+}, Symbol.toStringTag, { value: "Module" })), { TextArea: Ve } = fe, pt = ct(({ css: x }) => ({
+  rolePermissionExtra: x`
       float: right;
       z-index: 1001;
       position: sticky;
     `,
-  rolePolicyExtra: y`
+  rolePolicyExtra: x`
       position: absolute;
       right: 5px;
       top: 5px;
     `
-})), ut = {
+})), ht = {
   allow_all: {
     policy: {
       Statement: [
@@ -480,15 +480,15 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       }
     ]
   }
-}, be = JSON.stringify({ Statement: [] }, null, 2), mt = () => {
-  const { message: y } = pe.useApp(), { styles: s } = ct(), { hasGlobalPermission: D } = Se(), { t: o } = ee("authorization"), { t: d } = ee("common"), P = Re(), { id: R } = ot(), [i] = it(), U = i.get("cloneFrom") || void 0, x = !!R, { enableMultiOrg: V, currentOrgId: B } = fe(), { user: A } = ze(), S = (A == null ? void 0 : A.organizations) || [], [j] = T.useForm(), [N, k] = I([]), [F, p] = I([]), [_, v] = I(!0), [f, r] = I([]), [u, m] = I({}), w = Ue({}), [z, n] = I("global"), [h, E] = I(void 0), [ve, Te] = I(!1);
-  re(() => {
+}, ze = JSON.stringify({ Statement: [] }, null, 2), ft = () => {
+  const { message: x } = he.useApp(), { styles: s } = pt(), { hasGlobalPermission: D } = Te(), { t: o } = ee("authorization"), { t: d } = ee("common"), P = ve(), { id: S } = nt(), [i] = rt(), U = i.get("cloneFrom") || void 0, j = !!S, { enableMultiOrg: g, currentOrgId: $ } = ge(), { user: A } = Re(), z = (A == null ? void 0 : A.organizations) || [], [_] = v.useForm(), [N, k] = I([]), [F, p] = I([]), [b, R] = I(!0), [f, r] = I([]), [u, m] = I({}), w = qe({}), [T, n] = I("global"), [h, E] = I(void 0), [we, Ee] = I(!1), ne = !g || T === "organization";
+  se(() => {
     w.current = u;
-  }, [u]), re(() => {
-    E(B || void 0);
+  }, [u]), se(() => {
+    E($ || void 0);
   }, []);
-  const { data: te = [] } = q(async () => G.authorization.listPermissions().then((l) => l.map((t, a) => {
-    const g = (t.permissions || []).map((c) => ({
+  const { data: te = [] } = B(async () => G.authorization.listPermissions().then((l) => l.map((t, a) => {
+    const y = (t.permissions || []).map((c) => ({
       key: c.id,
       code: c.code.replace(/:/g, "."),
       title: c.name,
@@ -498,13 +498,13 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       key: `[group]-${a}`,
       title: t.name,
       code: t.name.replace(/ /g, "_"),
-      children: g
+      children: y
     };
   })), {
     onError: () => {
-      y.error(o("role.loadError", { defaultValue: "Failed to load role list" }));
+      x.error(o("role.loadError", { defaultValue: "Failed to load role list" }));
     }
-  }), we = (l) => l ? l.reduce((t, a) => (!a.toolset_id || !a.tool_name || (t[a.toolset_id] || (t[a.toolset_id] = []), t[a.toolset_id].includes(a.tool_name) || t[a.toolset_id].push(a.tool_name)), t), {}) : {}, { run: Q, loading: Ee } = q(
+  }), Pe = (l) => l ? l.reduce((t, a) => (!a.toolset_id || !a.tool_name || (t[a.toolset_id] || (t[a.toolset_id] = []), t[a.toolset_id].includes(a.tool_name) || t[a.toolset_id].push(a.tool_name)), t), {}) : {}, { run: Q, loading: Ae } = B(
     async (l) => {
       const { organizationId: t, initialSelection: a } = l;
       if (!t) {
@@ -516,34 +516,34 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
         { headers: { "X-Scope-OrgID": t } }
       )).data || []).filter((L) => L.status === "enabled");
       r(c);
-      const b = a || w.current || {}, J = {};
+      const V = a || w.current || {}, J = {};
       c.forEach((L) => {
-        const oe = b[L.id] || [];
+        const oe = V[L.id] || [];
         J[L.id] = oe.filter(
-          (ie) => (L.tools || []).some((ne) => ne.name === ie)
+          (ie) => (L.tools || []).some((ae) => ae.name === ie)
         );
       }), m(J);
     },
     {
       manual: !0,
       onError: (l, t) => {
-        y.error(o("role.loadAiToolsetsError", { defaultValue: "Failed to load AI toolsets." })), r([]);
+        x.error(o("role.loadAiToolsetsError", { defaultValue: "Failed to load AI toolsets." })), r([]);
         const a = t == null ? void 0 : t[0];
         m((a == null ? void 0 : a.initialSelection) || {});
       }
     }
-  ), { run: ae, loading: Pe } = q(
+  ), { run: re, loading: Ie } = B(
     async (l) => {
-      var ie;
-      const { roleId: t, clone: a } = l, g = a === !0, c = await G.authorization.getRole({ id: t });
-      Te(!g && c.role_type === "system");
-      const b = ((ie = c.permissions) == null ? void 0 : ie.map((ne) => ne.id)) || [];
-      k(b), j.setFieldsValue({ permissions: b });
+      var ae, ye;
+      const { roleId: t, clone: a } = l, y = a === !0, c = await G.authorization.getRole({ id: t });
+      Ee(!y && c.role_type === "system");
+      const V = ((ae = c.permissions) == null ? void 0 : ae.map((Me) => Me.id)) || [];
+      k(V), _.setFieldsValue({ permissions: V });
       const J = c.organization_id || "", L = J ? "organization" : "global";
       n(L);
-      const oe = we(c.ai_tool_permissions || []);
-      L === "organization" && J ? await Q({ organizationId: J, initialSelection: oe }) : (r([]), m(g ? oe : {})), j.setFieldsValue({
-        name: g ? `${c.name} (copy)` : c.name,
+      const oe = Pe(c.ai_tool_permissions || []), ie = L === "organization" && J ? J : g ? "" : $ || ((ye = z[0]) == null ? void 0 : ye.id) || "";
+      ie ? await Q({ organizationId: ie, initialSelection: oe }) : (r([]), m(y ? oe : {})), _.setFieldsValue({
+        name: y ? `${c.name} (copy)` : c.name,
         description: c.description,
         role_type: L,
         organization_id: J || void 0,
@@ -553,68 +553,70 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
     {
       manual: !0,
       onError: () => {
-        y.error(o("role.detailLoadError", { defaultValue: "Failed to load role details" })), P("/authorization/roles");
+        x.error(o("role.detailLoadError", { defaultValue: "Failed to load role details" })), P("/authorization/roles");
       }
     }
   );
-  re(() => {
-    if (x && R) {
-      ae({ roleId: R });
+  se(() => {
+    if (j && S) {
+      re({ roleId: S });
       return;
     }
     if (U) {
-      ae({ roleId: U, clone: !0 });
+      re({ roleId: U, clone: !0 });
       return;
     }
-    const l = h || (S.length > 0 ? S[0].id : ""), t = V && l ? "organization" : "global";
-    n(t), j.setFieldsValue({
+    const l = h || (z.length > 0 ? z[0].id : ""), t = g && l ? "organization" : "global";
+    n(t), _.setFieldsValue({
       role_type: t,
       organization_id: t === "organization" ? l : void 0,
-      policy_document: be,
+      policy_document: ze,
       permissions: []
-    }), k([]), m({}), t === "organization" && l ? Q({ organizationId: l, initialSelection: {} }) : r([]);
+    }), k([]), m({});
+    const a = t === "organization" && l ? l : g ? "" : l;
+    a ? Q({ organizationId: a, initialSelection: {} }) : r([]);
   }, [
     U,
     Q,
-    j,
-    R,
-    x,
+    _,
     S,
+    j,
+    z,
     h,
-    V,
-    ae
+    g,
+    re
   ]);
-  const Ae = H(() => z === "global" ? te : te.map((t) => {
+  const Ce = H(() => T === "global" ? te : te.map((t) => {
     const a = (t.children || []).filter(
-      (g) => g.orgPermission === !0
+      (y) => y.orgPermission === !0
     );
     return {
       ...t,
       children: a
     };
-  }).filter((t) => t.children && t.children.length > 0), [te, z]), Ie = (l) => {
-    p(l), v(!1);
-  }, Ce = () => {
+  }).filter((t) => t.children && t.children.length > 0), [te, T]), Oe = (l) => {
+    p(l), R(!1);
+  }, ke = () => {
     const l = te.map((t) => t.key);
-    p(l), v(!0);
-  }, Oe = () => {
-    p([]), v(!1);
-  }, ke = ge((l, t) => {
+    p(l), R(!0);
+  }, Fe = () => {
+    p([]), R(!1);
+  }, De = xe((l, t) => {
     m((a) => ({
       ...a,
       [l]: t
     }));
-  }, []), Fe = ge((l, t) => {
+  }, []), Ne = xe((l, t) => {
     const a = f.find((c) => c.id === l);
     if (!a)
       return;
-    const g = (a.tools || []).map((c) => c.name);
+    const y = (a.tools || []).map((c) => c.name);
     m((c) => ({
       ...c,
-      [l]: t ? g : []
+      [l]: t ? y : []
     }));
-  }, [f]), De = (l, t) => {
-    if (z === "organization")
+  }, [f]), Le = (l, t) => {
+    if (T === "organization")
       return Promise.resolve();
     if (!t || t.trim() === "" || t === "{}" || t === '{"Statement":[]}')
       return N.length === 0 ? Promise.reject(
@@ -631,7 +633,7 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
         new Error(o("role.invalidJsonFormat", { defaultValue: "Invalid JSON format." }))
       );
     }
-  }, Ne = H(() => ({
+  }, Ge = H(() => ({
     placeholder: o("role.insertTemplate", { defaultValue: "Insert Template" }),
     options: [
       { label: o("role.allowAll", { defaultValue: "Allow All" }), value: "allow_all" },
@@ -649,42 +651,42 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
         value: "allow_with_uri"
       }
     ]
-  }), [o]), { run: Le, loading: Ge } = q(
+  }), [o]), { run: Ue, loading: $e } = B(
     async (l) => {
       const t = { ...l };
-      z === "global" ? t.policy_document = JSON.parse(l.policy_document ?? "{}") : t.policy_document = { Statement: [] }, t.role_type === "organization" ? t.organization_id = t.organization_id || void 0 : t.organization_id = void 0, delete t.role_type;
-      const a = z === "organization" ? Object.entries(u).map(([g, c]) => ({
-        toolset_id: g,
+      T === "global" ? t.policy_document = JSON.parse(l.policy_document ?? "{}") : t.policy_document = { Statement: [] }, t.role_type === "organization" ? t.organization_id = t.organization_id || void 0 : t.organization_id = void 0, delete t.role_type;
+      const a = ne ? Object.entries(u).map(([y, c]) => ({
+        toolset_id: y,
         tools: Array.from(new Set(c))
-      })).filter((g) => g.tools.length > 0) : [];
-      t.ai_tool_permissions = a, t.permissions = N.filter((g) => !g.startsWith("[group]-")), x && R ? await G.authorization.updateRole({ id: R }, t) : await G.authorization.createRole(t);
+      })).filter((y) => y.tools.length > 0) : [];
+      t.ai_tool_permissions = a, t.permissions = N.filter((y) => !y.startsWith("[group]-")), j && S ? await G.authorization.updateRole({ id: S }, t) : await G.authorization.createRole(t);
     },
     {
       manual: !0,
       onSuccess: () => {
-        y.success(
-          x ? o("role.updateSuccess", { defaultValue: "Role updated successfully." }) : o("role.createSuccess", { defaultValue: "Role created successfully." })
+        x.success(
+          j ? o("role.updateSuccess", { defaultValue: "Role updated successfully." }) : o("role.createSuccess", { defaultValue: "Role created successfully." })
         ), P("/authorization/roles");
       },
       onError: (l) => {
-        y.error(
+        x.error(
           o("role.saveError", {
             error: l instanceof Error ? l.message : `${l}`,
             defaultValue: "Failed to save role.",
-            action: x ? d("update", { defaultValue: "Update" }) : d("create", { defaultValue: "Create" })
+            action: j ? d("update", { defaultValue: "Update" }) : d("create", { defaultValue: "Create" })
           })
         );
       }
     }
-  ), le = x && ve;
+  ), le = j && we;
   return /* @__PURE__ */ e.jsxs(
     K,
     {
-      title: le ? o("role.viewTitle", { defaultValue: "View Role" }) : x ? o("role.editTitle", { defaultValue: "Edit Role" }) : o("role.createTitle", { defaultValue: "Create Role" }),
-      loading: Pe,
+      title: le ? o("role.viewTitle", { defaultValue: "View Role" }) : j ? o("role.editTitle", { defaultValue: "Edit Role" }) : o("role.createTitle", { defaultValue: "Create Role" }),
+      loading: Ie,
       children: [
         le && /* @__PURE__ */ e.jsx(
-          Je,
+          Ke,
           {
             type: "info",
             message: o("role.systemRoleCannotModify", { defaultValue: "System roles cannot be modified." }),
@@ -693,19 +695,19 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
           }
         ),
         /* @__PURE__ */ e.jsxs(
-          T,
+          v,
           {
-            form: j,
+            form: _,
             layout: "vertical",
             disabled: le,
             initialValues: {
-              policy_document: be,
+              policy_document: ze,
               permissions: []
             },
-            onFinish: Le,
+            onFinish: Ue,
             children: [
               /* @__PURE__ */ e.jsx(
-                We,
+                Qe,
                 {
                   items: [
                     {
@@ -713,7 +715,7 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                       label: o("role.basicInfo", { defaultValue: "Basic Information" }),
                       children: /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
                         /* @__PURE__ */ e.jsx(
-                          T.Item,
+                          v.Item,
                           {
                             label: o("role.name", { defaultValue: "Role Name" }),
                             name: "name",
@@ -725,16 +727,16 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                                 })
                               }
                             ],
-                            children: /* @__PURE__ */ e.jsx(he, { placeholder: o("role.namePlaceholder", { defaultValue: "Enter role name" }) })
+                            children: /* @__PURE__ */ e.jsx(fe, { placeholder: o("role.namePlaceholder", { defaultValue: "Enter role name" }) })
                           }
                         ),
                         /* @__PURE__ */ e.jsx(
-                          T.Item,
+                          v.Item,
                           {
                             label: o("role.description", { defaultValue: "Description" }),
                             name: "description",
                             children: /* @__PURE__ */ e.jsx(
-                              _e,
+                              Ve,
                               {
                                 rows: 4,
                                 placeholder: o("role.descriptionPlaceholder", {
@@ -745,11 +747,11 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                           }
                         ),
                         /* @__PURE__ */ e.jsx(
-                          T.Item,
+                          v.Item,
                           {
                             label: o("role.roleType", { defaultValue: "Role Type" }),
                             name: "role_type",
-                            hidden: !V,
+                            hidden: !g,
                             rules: [
                               {
                                 required: !0,
@@ -758,38 +760,38 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                                 })
                               }
                             ],
-                            extra: x ? o("role.roleTypeCannotChange", {
+                            extra: j ? o("role.roleTypeCannotChange", {
                               defaultValue: "Role type cannot be changed after creation."
                             }) : "",
                             children: /* @__PURE__ */ e.jsxs(
-                              se.Group,
+                              de.Group,
                               {
-                                disabled: x || !D("authorization:role:create"),
+                                disabled: j || !D("authorization:role:create"),
                                 onChange: (l) => {
                                   const t = l.target.value;
                                   if (n(t), t === "global")
-                                    j.setFieldsValue({ organization_id: void 0 }), r([]), m({});
+                                    _.setFieldsValue({ organization_id: void 0 }), r([]), m({});
                                   else {
-                                    const a = h || (S.length > 0 ? S[0].id : "");
-                                    j.setFieldsValue({ organization_id: a }), a ? Q({
+                                    const a = h || (z.length > 0 ? z[0].id : "");
+                                    _.setFieldsValue({ organization_id: a }), a ? Q({
                                       organizationId: a,
                                       initialSelection: w.current
                                     }) : (r([]), m({}));
                                   }
-                                  k([]), j.setFieldsValue({ permissions: [] });
+                                  k([]), _.setFieldsValue({ permissions: [] });
                                 },
                                 children: [
-                                  /* @__PURE__ */ e.jsx(se, { value: "global", children: o("role.globalRole", { defaultValue: "Global Role" }) }),
-                                  /* @__PURE__ */ e.jsx(se, { value: "organization", children: o("role.organizationRole", { defaultValue: "Organization Role" }) })
+                                  /* @__PURE__ */ e.jsx(de, { value: "global", children: o("role.globalRole", { defaultValue: "Global Role" }) }),
+                                  /* @__PURE__ */ e.jsx(de, { value: "organization", children: o("role.organizationRole", { defaultValue: "Organization Role" }) })
                                 ]
                               }
                             )
                           }
                         ),
-                        z === "organization" && /* @__PURE__ */ e.jsx(
-                          T.Item,
+                        T === "organization" && /* @__PURE__ */ e.jsx(
+                          v.Item,
                           {
-                            hidden: !V,
+                            hidden: !g,
                             label: o("role.organization", { defaultValue: "Organization" }),
                             name: "organization_id",
                             rules: [
@@ -800,23 +802,23 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                                 })
                               }
                             ],
-                            extra: S.length > 0 ? o("role.organizationHelp", {
+                            extra: z.length > 0 ? o("role.organizationHelp", {
                               defaultValue: "Select the organization this role belongs to"
                             }) : o("role.noOrganizationsAvailable", {
                               defaultValue: "No organizations available. Please contact your administrator."
                             }),
-                            children: S.length > 0 ? /* @__PURE__ */ e.jsx(
+                            children: z.length > 0 ? /* @__PURE__ */ e.jsx(
                               Z,
                               {
                                 placeholder: o("role.selectOrganization", {
                                   defaultValue: "Select Organization"
                                 }),
                                 onChange: (l) => {
-                                  k([]), j.setFieldsValue({ permissions: [] });
+                                  k([]), _.setFieldsValue({ permissions: [] });
                                   const t = l || "";
                                   t ? Q({ organizationId: t, initialSelection: {} }) : (r([]), m({}));
                                 },
-                                children: S.map((l) => /* @__PURE__ */ e.jsx(Z.Option, { value: l.id, children: l.name }, l.id))
+                                children: z.map((l) => /* @__PURE__ */ e.jsx(Z.Option, { value: l.id, children: l.name }, l.id))
                               }
                             ) : /* @__PURE__ */ e.jsx(
                               Z,
@@ -835,15 +837,15 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                       key: "permissions",
                       label: o("role.permissions", { defaultValue: "Permissions" }),
                       children: /* @__PURE__ */ e.jsx(
-                        T.Item,
+                        v.Item,
                         {
                           name: "permissions",
                           rules: [
                             {
                               validator() {
                                 if (N.length === 0)
-                                  if (z === "global") {
-                                    const l = j.getFieldValue("policy_document");
+                                  if (T === "global") {
+                                    const l = _.getFieldValue("policy_document");
                                     if (!l || l.trim() === "" || l === "{}" || l === '{"Statement":[]}')
                                       return Promise.reject(
                                         new Error(
@@ -875,13 +877,13 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                               },
                               children: [
                                 /* @__PURE__ */ e.jsxs("span", { className: s.rolePermissionExtra, children: [
-                                  /* @__PURE__ */ e.jsx(C, { type: "link", onClick: Ce, icon: /* @__PURE__ */ e.jsx(tt, {}), children: d("expandAll", { defaultValue: "Expand All" }) }),
-                                  /* @__PURE__ */ e.jsx(C, { type: "link", onClick: Oe, icon: /* @__PURE__ */ e.jsx(lt, {}), children: d("collapseAll", { defaultValue: "Collapse All" }) })
+                                  /* @__PURE__ */ e.jsx(C, { type: "link", onClick: ke, icon: /* @__PURE__ */ e.jsx(it, {}), children: d("expandAll", { defaultValue: "Expand All" }) }),
+                                  /* @__PURE__ */ e.jsx(C, { type: "link", onClick: Fe, icon: /* @__PURE__ */ e.jsx(at, {}), children: d("collapseAll", { defaultValue: "Collapse All" }) })
                                 ] }),
                                 /* @__PURE__ */ e.jsx(
-                                  He,
+                                  Ye,
                                   {
-                                    treeData: Ae,
+                                    treeData: Ce,
                                     titleRender: (l) => {
                                       const t = l, a = typeof t.title == "string" ? t.title : String(t.title ?? "");
                                       return /* @__PURE__ */ e.jsx("span", { children: o(`permission.title.${t.code}`, { defaultValue: a }) });
@@ -889,12 +891,12 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                                     checkable: !0,
                                     disabled: le,
                                     expandedKeys: F,
-                                    autoExpandParent: _,
-                                    onExpand: Ie,
+                                    autoExpandParent: b,
+                                    onExpand: Oe,
                                     checkedKeys: N,
                                     onCheck: (l) => {
                                       let t = [];
-                                      at(l) ? t = l : nt(l, "checked") && (t = l.checked), k(t), j.setFieldsValue({ permissions: t });
+                                      st(l) ? t = l : dt(l, "checked") && (t = l.checked), k(t), _.setFieldsValue({ permissions: t });
                                     }
                                   }
                                 )
@@ -907,49 +909,49 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                     {
                       key: "ai-tools",
                       label: o("role.aiPermissions", { defaultValue: "AI Tool Permissions" }),
-                      disabled: z === "global",
-                      children: /* @__PURE__ */ e.jsx("div", { style: { marginBottom: "24px" }, children: /* @__PURE__ */ e.jsx(ue, { spinning: Ee, children: z === "organization" ? f.length > 0 ? /* @__PURE__ */ e.jsx(M, { direction: "vertical", size: "middle", style: { width: "100%" }, children: f.map((l) => {
-                        const t = (l.tools || []).map((b) => b.name), a = u[l.id] || [], g = t.length > 0 && a.length === t.length, c = a.length > 0 && a.length < t.length;
+                      disabled: !ne,
+                      children: /* @__PURE__ */ e.jsx("div", { style: { marginBottom: "24px" }, children: /* @__PURE__ */ e.jsx(me, { spinning: Ae, children: ne ? f.length > 0 ? /* @__PURE__ */ e.jsx(q, { direction: "vertical", size: "middle", style: { width: "100%" }, children: f.map((l) => {
+                        const t = (l.tools || []).map((V) => V.name), a = u[l.id] || [], y = t.length > 0 && a.length === t.length, c = a.length > 0 && a.length < t.length;
                         return /* @__PURE__ */ e.jsx(
                           K,
                           {
                             size: "small",
                             title: /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", alignItems: "center", gap: "8px" }, children: [
                               /* @__PURE__ */ e.jsx(
-                                de,
+                                ce,
                                 {
-                                  checked: g,
+                                  checked: y,
                                   indeterminate: c,
-                                  onChange: (b) => Fe(l.id, b.target.checked)
+                                  onChange: (V) => Ne(l.id, V.target.checked)
                                 }
                               ),
                               /* @__PURE__ */ e.jsx("span", { children: l.name })
                             ] }),
                             extra: l.description ? /* @__PURE__ */ e.jsx("span", { children: l.description }) : void 0,
                             children: (l.tools || []).length > 0 ? /* @__PURE__ */ e.jsx(
-                              de.Group,
+                              ce.Group,
                               {
                                 style: { width: "100%" },
                                 value: u[l.id] || [],
-                                onChange: (b) => ke(l.id, b),
-                                children: /* @__PURE__ */ e.jsx(M, { direction: "vertical", style: { width: "100%" }, children: (l.tools || []).map((b) => /* @__PURE__ */ e.jsx(de, { value: b.name, children: /* @__PURE__ */ e.jsxs("div", { children: [
-                                  /* @__PURE__ */ e.jsx("div", { children: b.name }),
-                                  b.description && /* @__PURE__ */ e.jsx(
+                                onChange: (V) => De(l.id, V),
+                                children: /* @__PURE__ */ e.jsx(q, { direction: "vertical", style: { width: "100%" }, children: (l.tools || []).map((V) => /* @__PURE__ */ e.jsx(ce, { value: V.name, children: /* @__PURE__ */ e.jsxs("div", { children: [
+                                  /* @__PURE__ */ e.jsx("div", { children: V.name }),
+                                  V.description && /* @__PURE__ */ e.jsx(
                                     "div",
                                     {
                                       style: {
                                         color: "rgba(0,0,0,0.45)",
                                         fontSize: 12
                                       },
-                                      children: b.description
+                                      children: V.description
                                     }
                                   )
-                                ] }) }, b.name)) })
+                                ] }) }, V.name)) })
                               }
                             ) : /* @__PURE__ */ e.jsx(
-                              $,
+                              M,
                               {
-                                image: $.PRESENTED_IMAGE_SIMPLE,
+                                image: M.PRESENTED_IMAGE_SIMPLE,
                                 description: o("role.aiToolsetNoTools", {
                                   defaultValue: "No tools available in this toolset."
                                 })
@@ -959,19 +961,19 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                           l.id
                         );
                       }) }) : /* @__PURE__ */ e.jsx(
-                        $,
+                        M,
                         {
-                          image: $.PRESENTED_IMAGE_SIMPLE,
+                          image: M.PRESENTED_IMAGE_SIMPLE,
                           description: o("role.aiToolsetsEmpty", {
                             defaultValue: "No AI toolsets available for this organization."
                           })
                         }
                       ) : /* @__PURE__ */ e.jsx(
-                        $,
+                        M,
                         {
-                          image: $.PRESENTED_IMAGE_SIMPLE,
+                          image: M.PRESENTED_IMAGE_SIMPLE,
                           description: o("role.aiPermissionsGlobalInfo", {
-                            defaultValue: "AI tool permissions are only available for organization roles."
+                            defaultValue: "AI tool permissions are only available for organization roles when multi-organization is enabled."
                           })
                         }
                       ) }) })
@@ -979,32 +981,32 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                     {
                       key: "policy",
                       label: o("role.policyDocument", { defaultValue: "Policy Document" }),
-                      disabled: z === "organization",
+                      disabled: T === "organization",
                       forceRender: !0,
                       children: /* @__PURE__ */ e.jsx(
-                        T.Item,
+                        v.Item,
                         {
                           name: "policy_document",
                           rules: [
                             {
-                              validator: De
+                              validator: Le
                             }
                           ],
                           extra: /* @__PURE__ */ e.jsx("span", { className: s.rolePolicyExtra, children: /* @__PURE__ */ e.jsx(
                             Z,
                             {
                               style: { width: 160 },
-                              ...Ne,
+                              ...Ge,
                               onChange: (l) => {
                                 if (typeof l == "string") {
-                                  const t = ut[l];
-                                  t && j.setFieldValue("policy_document", JSON.stringify(t, null, 2));
+                                  const t = ht[l];
+                                  t && _.setFieldValue("policy_document", JSON.stringify(t, null, 2));
                                 }
                               }
                             }
                           ) }),
                           children: /* @__PURE__ */ e.jsx(
-                            _e,
+                            Ve,
                             {
                               rows: 15,
                               style: { fontFamily: "monospace" },
@@ -1036,14 +1038,14 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
                   ]
                 }
               ),
-              /* @__PURE__ */ e.jsx(T.Item, { children: /* @__PURE__ */ e.jsxs(M, { children: [
+              /* @__PURE__ */ e.jsx(v.Item, { children: /* @__PURE__ */ e.jsxs(q, { children: [
                 /* @__PURE__ */ e.jsx(
                   C,
                   {
                     type: "primary",
                     htmlType: "submit",
-                    loading: Ge,
-                    children: x ? d("update", { defaultValue: "Update" }) : d("create", { defaultValue: "Create" })
+                    loading: $e,
+                    children: j ? d("update", { defaultValue: "Update" }) : d("create", { defaultValue: "Create" })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
@@ -1060,11 +1062,11 @@ const st = ({ roleId: y, open: s, onClose: D }) => {
       ]
     }
   );
-}, Tt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Pt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: mt
+  default: ft
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  vt as R,
-  Tt as a
+  Et as R,
+  Pt as a
 };
