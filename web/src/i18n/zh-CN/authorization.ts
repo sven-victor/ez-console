@@ -477,7 +477,7 @@ export default {
     organization: '组织',
     global: '全局',
     scope: '范围',
-    filterByOrg: '全部组织',
+    filterByOrg: '所有组织',
     selectOrganization: '选择组织',
     organizationRequired: '请选择组织。',
     organizationScoped: '组织',

@@ -313,11 +313,11 @@ const ServiceAccountList: React.FC = () => {
                 title:
                   record.status === 'active'
                     ? t('serviceAccount.disableConfirm', {
-                        defaultValue: 'Are you sure you want to disable this service account?',
-                      })
+                      defaultValue: 'Are you sure you want to disable this service account?',
+                    })
                     : t('serviceAccount.enableConfirm', {
-                        defaultValue: 'Are you sure you want to enable this service account?',
-                      }),
+                      defaultValue: 'Are you sure you want to enable this service account?',
+                    }),
                 onConfirm: async () => handleToggleStatus(record),
                 okText: tCommon('confirm', { defaultValue: 'Confirm' }),
                 cancelText: tCommon('cancel', { defaultValue: 'Cancel' }),
@@ -371,7 +371,7 @@ const ServiceAccountList: React.FC = () => {
                     style={{ width: 300 }}
                   />
                 </Form.Item>
-                {!enableMultiOrg && (
+                {enableMultiOrg && (
                   <Form.Item name="organization_id" noStyle>
                     <Select
                       placeholder={t('serviceAccount.filterByOrg', { defaultValue: 'All organizations' })}
