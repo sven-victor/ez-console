@@ -46,11 +46,11 @@ func (s *dbSessionService) CreateChatSession(ctx context.Context, organizationID
 	session := model.NewAIChatSession(organizationID, userID, title, modelID, anonymous)
 
 	err := db.Session(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := db.Session(ctx).Create(session).Error; err != nil {
+		if err := tx.Create(session).Error; err != nil {
 			return fmt.Errorf("failed to create chat session: %w", err)
 		}
 		for _, message := range messages {
-			if err := db.Session(ctx).Create(&model.AIChatMessage{
+			if err := tx.Create(&model.AIChatMessage{
 				OrganizationID: organizationID,
 				UserID:         userID,
 				SessionID:      session.ResourceID,
