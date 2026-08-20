@@ -45,6 +45,8 @@ import {
   UnorderedListOutlined,
   ApartmentOutlined,
   CloseCircleOutlined,
+  AlignLeftOutlined,
+  CodeOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -243,30 +245,54 @@ const useStyles = createStyles(({ token, css }) => ({
   `,
 }));
 
+/**
+ * Defers rendering of heavy children until the browser has painted at least
+ * one frame, so the loading fallback is visible before the expensive render.
+ */
+const DeferredRender: React.FC<{
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}> = ({ children, fallback }) => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    // Double rAF guarantees the fallback has been painted before we start
+    // the expensive render.
+    let raf2 = 0;
+    const raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => setReady(true));
+    });
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      window.cancelAnimationFrame(raf2);
+    };
+  }, []);
+
+  if (!ready) {
+    return (
+      <>
+        {fallback ?? (
+          <div style={{ textAlign: 'center', padding: '16px 0' }}>
+            <Spin size="small" />
+          </div>
+        )}
+      </>
+    );
+  }
+  return <>{children}</>;
+};
+
 const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
   content,
   maxHeight,
 }) => {
-  const { parsed, isJSON } = tryParseJSON<object>(content);
-  if (isJSON) {
-    return (
-      <JsonView
-        style={{
-          background: 'var(--ant-color-bg-container)',
-          border: '1px solid var(--ant-color-border)',
-          borderRadius: 6,
-          padding: 12,
-          maxHeight,
-          overflow: 'auto',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-all',
-          margin: 0,
-        }}
-        value={parsed}
-      />
-    );
-  }
-  return (
+  const [mode, setMode] = useState<'raw' | 'json'>('raw');
+  const { parsed, isJSON } = useMemo(
+    () => tryParseJSON<object>(content),
+    [content]
+  );
+
+  const preBlock = (
     <pre
       style={{
         background: 'var(--ant-color-bg-container)',
@@ -284,6 +310,44 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
     >
       {content}
     </pre>
+  );
+
+  if (!isJSON) return preBlock;
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 2 }}>
+        <Segmented
+          size="small"
+          value={mode}
+          onChange={(v) => setMode(v as 'raw' | 'json')}
+          options={[
+            { value: 'raw', icon: <AlignLeftOutlined />, title: 'Raw' },
+            { value: 'json', icon: <CodeOutlined />, title: 'JSON' },
+          ]}
+        />
+      </div>
+      {mode === 'json' ? (
+        <DeferredRender>
+          <JsonView
+            style={{
+              background: 'var(--ant-color-bg-container)',
+              border: '1px solid var(--ant-color-border)',
+              borderRadius: 6,
+              padding: 12,
+              maxHeight,
+              overflow: 'auto',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-all',
+              margin: 0,
+            }}
+            value={parsed}
+          />
+        </DeferredRender>
+      ) : (
+        preBlock
+      )}
+    </div>
   );
 };
 
@@ -338,7 +402,10 @@ const TokenUsageBlock: React.FC<{ content: string; t: Translate, maxHeight?: num
   t,
   maxHeight,
 }) => {
-  const { parsed, isJSON } = tryParseJSON<TokenUsageStats>(content);
+  const { parsed, isJSON } = useMemo(
+    () => tryParseJSON<TokenUsageStats>(content),
+    [content]
+  );
   if (!isJSON) return <JsonBlock content={content} maxHeight={maxHeight} />;
   return (
     <Descriptions size="small" column={2} bordered style={{ maxHeight: maxHeight, overflow: 'auto' }}>
@@ -381,7 +448,10 @@ const ToolCallBlock: React.FC<{ content: string; t: Translate, maxHeight?: numbe
   t,
   maxHeight,
 }) => {
-  const { parsed, isJSON } = tryParseJSON<ToolCall>(content);
+  const { parsed, isJSON } = useMemo(
+    () => tryParseJSON<ToolCall>(content),
+    [content]
+  );
   if (!isJSON) return <JsonBlock content={content} maxHeight={maxHeight} />;
   return (
     <div>
@@ -416,7 +486,10 @@ const ToolResultBlock: React.FC<{ content: string; t: Translate, maxHeight?: num
   t,
   maxHeight,
 }) => {
-  const { parsed, isJSON } = tryParseJSON<ToolResult>(content);
+  const { parsed, isJSON } = useMemo(
+    () => tryParseJSON<ToolResult>(content),
+    [content]
+  );
   if (!isJSON) return <JsonBlock content={content} maxHeight={maxHeight} />;
   const failed = isToolResultFailed(parsed, isJSON);
   return (
@@ -986,7 +1059,11 @@ const AITraceViewer: React.FC = () => {
                       </Text>
                     </Space>
                   ),
-                  children: <EventContent event={event} t={t} maxHeight={400} />,
+                  children: (
+                    <DeferredRender>
+                      <EventContent event={event} t={t} maxHeight={400} />
+                    </DeferredRender>
+                  ),
                 },
               ]}
             />
@@ -1138,7 +1215,11 @@ const AITraceViewer: React.FC = () => {
         onClose={() => setSelectedEvent(null)}
         width={560}
       >
-        {selectedEvent && <EventContent event={selectedEvent} t={t} />}
+        {selectedEvent && (
+          <DeferredRender key={selectedEvent.id}>
+            <EventContent event={selectedEvent} t={t} />
+          </DeferredRender>
+        )}
       </Drawer>
     </div>
   );
