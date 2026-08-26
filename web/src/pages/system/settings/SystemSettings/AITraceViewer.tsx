@@ -245,6 +245,102 @@ const useStyles = createStyles(({ token, css }) => ({
   `,
 }));
 
+interface JsonPayload {
+  /** Text rendered by the default <pre> view. */
+  text: string;
+  /** Parsed object for the JsonView toggle; absent when text is not a JSON object/array. */
+  value?: object;
+}
+
+/**
+ * Trace event pre-parsed once per fetch (see buildParsedEvents), so render
+ * components never call JSON.parse on the potentially multi-MB contents.
+ */
+interface ParsedTraceEvent {
+  event: API.AITraceEvent;
+  isJSON: boolean;
+  /** Result of parsing event.content (null when not JSON). */
+  parsed: unknown;
+  /** Default display payload; for llm_response the wire-level raw fields are stripped. */
+  display: JsonPayload;
+  /** Wire-level request body, attached to llm_request from the paired llm_response. */
+  rawRequest?: JsonPayload;
+  /** Wire-level response body, kept on the llm_response event. */
+  rawResponse?: JsonPayload;
+}
+
+function toJsonPayload(text: string): JsonPayload {
+  const { parsed, isJSON } = tryParseJSON<unknown>(text);
+  if (isJSON && typeof parsed === 'object' && parsed !== null) {
+    return { text, value: parsed };
+  }
+  return { text };
+}
+
+function rawValueToPayload(value: unknown): JsonPayload {
+  // Stream adapters store newline-joined SSE payloads as plain strings.
+  if (typeof value === 'string') return { text: value };
+  const text = JSON.stringify(value, null, 2);
+  return typeof value === 'object' && value !== null
+    ? { text, value }
+    : { text };
+}
+
+interface LlmResponsePayload {
+  raw_request?: unknown;
+  raw_response?: unknown;
+  [key: string]: unknown;
+}
+
+/**
+ * Single preprocessing pass over the fetched events:
+ * - parses each event.content exactly once;
+ * - strips raw_request / raw_response from the llm_response default view;
+ * - pairs raw_request with the nearest preceding llm_request so the
+ *   wire-level request is browsable from the request event.
+ */
+function buildParsedEvents(events: API.AITraceEvent[]): ParsedTraceEvent[] {
+  const entries: ParsedTraceEvent[] = events.map((event) => {
+    const { parsed, isJSON } = tryParseJSON<unknown>(event.content);
+    return {
+      event,
+      isJSON,
+      parsed,
+      display: {
+        text: event.content,
+        value:
+          isJSON && typeof parsed === 'object' && parsed !== null
+            ? parsed
+            : undefined,
+      },
+    };
+  });
+
+  let pendingRequest: ParsedTraceEvent | null = null;
+  for (const entry of entries) {
+    const type = entry.event.event_type;
+    if (type === 'llm_request') {
+      pendingRequest = entry;
+      continue;
+    }
+    if (type !== 'llm_response') continue;
+
+    const payload = entry.display.value as LlmResponsePayload | undefined;
+    if (payload && ('raw_request' in payload || 'raw_response' in payload)) {
+      const { raw_request, raw_response, ...rest } = payload;
+      entry.display = { text: JSON.stringify(rest, null, 2), value: rest };
+      if (raw_request !== undefined && pendingRequest) {
+        pendingRequest.rawRequest = rawValueToPayload(raw_request);
+      }
+      if (raw_response !== undefined) {
+        entry.rawResponse = rawValueToPayload(raw_response);
+      }
+    }
+    pendingRequest = null;
+  }
+  return entries;
+}
+
 /**
  * Defers rendering of heavy children until the browser has painted at least
  * one frame, so the loading fallback is visible before the expensive render.
@@ -282,15 +378,11 @@ const DeferredRender: React.FC<{
   return <>{children}</>;
 };
 
-const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
-  content,
+const JsonBlock: React.FC<{ payload: JsonPayload; maxHeight?: number }> = ({
+  payload,
   maxHeight,
 }) => {
   const [mode, setMode] = useState<'raw' | 'json'>('raw');
-  const { parsed, isJSON } = useMemo(
-    () => tryParseJSON<object>(content),
-    [content]
-  );
 
   const preBlock = (
     <pre
@@ -308,11 +400,11 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
         margin: 0,
       }}
     >
-      {content}
+      {payload.text}
     </pre>
   );
 
-  if (!isJSON) return preBlock;
+  if (!payload.value) return preBlock;
 
   return (
     <div style={{ position: 'relative' }}>
@@ -341,7 +433,7 @@ const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
               wordBreak: 'break-all',
               margin: 0,
             }}
-            value={parsed}
+            value={payload.value}
           />
         </DeferredRender>
       ) : (
@@ -383,30 +475,17 @@ function isToolResultFailed(parsed: ToolResult | null | undefined, isJSON: boole
   return false;
 }
 
-function buildToolNameByCallId(events: API.AITraceEvent[]): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const event of events) {
-    if (event.event_type !== 'tool_call') continue;
-    const { parsed, isJSON } = tryParseJSON<ToolCall>(event.content);
-    if (isJSON && parsed.tool_call_id && parsed.tool) {
-      map.set(parsed.tool_call_id, parsed.tool);
-    }
-  }
-  return map;
-}
-
 type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-const TokenUsageBlock: React.FC<{ content: string; t: Translate, maxHeight?: number }> = ({
-  content,
+const TokenUsageBlock: React.FC<{ entry: ParsedTraceEvent; t: Translate, maxHeight?: number }> = ({
+  entry,
   t,
   maxHeight,
 }) => {
-  const { parsed, isJSON } = useMemo(
-    () => tryParseJSON<TokenUsageStats>(content),
-    [content]
-  );
-  if (!isJSON) return <JsonBlock content={content} maxHeight={maxHeight} />;
+  if (!entry.isJSON) {
+    return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
+  }
+  const parsed = entry.parsed as TokenUsageStats;
   return (
     <Descriptions size="small" column={2} bordered style={{ maxHeight: maxHeight, overflow: 'auto' }}>
       {parsed.prompt_tokens !== undefined && (
@@ -443,16 +522,19 @@ const TokenUsageBlock: React.FC<{ content: string; t: Translate, maxHeight?: num
   );
 };
 
-const ToolCallBlock: React.FC<{ content: string; t: Translate, maxHeight?: number }> = ({
-  content,
+const ToolCallBlock: React.FC<{ entry: ParsedTraceEvent; t: Translate, maxHeight?: number }> = ({
+  entry,
   t,
   maxHeight,
 }) => {
-  const { parsed, isJSON } = useMemo(
-    () => tryParseJSON<ToolCall>(content),
-    [content]
+  const parsed = entry.isJSON ? (entry.parsed as ToolCall) : null;
+  const argumentsPayload = useMemo(
+    () => (parsed?.arguments ? toJsonPayload(parsed.arguments) : null),
+    [parsed]
   );
-  if (!isJSON) return <JsonBlock content={content} maxHeight={maxHeight} />;
+  if (!parsed) {
+    return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
+  }
   return (
     <div>
       {parsed.tool_call_id && (
@@ -469,29 +551,32 @@ const ToolCallBlock: React.FC<{ content: string; t: Translate, maxHeight?: numbe
           <Tag color="blue">{parsed.tool}</Tag>
         </div>
       )}
-      {parsed.arguments && (
+      {argumentsPayload && (
         <div>
           <Text strong>
             {t('trace.arguments', { defaultValue: 'Arguments' })}:
           </Text>
-          <JsonBlock content={parsed.arguments} maxHeight={maxHeight} />
+          <JsonBlock payload={argumentsPayload} maxHeight={maxHeight} />
         </div>
       )}
     </div>
   );
 };
 
-const ToolResultBlock: React.FC<{ content: string; t: Translate, maxHeight?: number }> = ({
-  content,
+const ToolResultBlock: React.FC<{ entry: ParsedTraceEvent; t: Translate, maxHeight?: number }> = ({
+  entry,
   t,
   maxHeight,
 }) => {
-  const { parsed, isJSON } = useMemo(
-    () => tryParseJSON<ToolResult>(content),
-    [content]
+  const parsed = entry.isJSON ? (entry.parsed as ToolResult) : null;
+  const resultPayload = useMemo(
+    () => (parsed?.result ? toJsonPayload(parsed.result) : null),
+    [parsed]
   );
-  if (!isJSON) return <JsonBlock content={content} maxHeight={maxHeight} />;
-  const failed = isToolResultFailed(parsed, isJSON);
+  if (!parsed) {
+    return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
+  }
+  const failed = isToolResultFailed(parsed, true);
   return (
     <div>
       {parsed.tool_call_id && (
@@ -512,30 +597,133 @@ const ToolResultBlock: React.FC<{ content: string; t: Translate, maxHeight?: num
           </Tag>
         </div>
       )}
-      {parsed.result && (
+      {resultPayload && (
         <div style={{ overflow: 'auto' }}>
           <Text strong>
             {t('trace.result', { defaultValue: 'Result' })}:
           </Text>
-          <JsonBlock content={parsed.result} maxHeight={maxHeight} />
+          <JsonBlock payload={resultPayload} maxHeight={maxHeight} />
         </div>
       )}
     </div>
   );
 };
 
-const EventContent: React.FC<{
-  event: API.AITraceEvent;
+const rawToggleHeaderStyle: React.CSSProperties = {
+  display: 'flex',
+  justifyContent: 'flex-end',
+  marginBottom: 8,
+};
+
+/**
+ * llm_request event. When the paired llm_response carried a raw_request
+ * (wire-level request body), offers a toggle between the normalized request
+ * and the raw one.
+ */
+const LlmRequestBlock: React.FC<{
+  entry: ParsedTraceEvent;
   t: Translate;
   maxHeight?: number;
-}> = ({ event, t, maxHeight }) => {
+}> = ({ entry, t, maxHeight }) => {
+  const [view, setView] = useState<'request' | 'raw'>('request');
+
+  if (!entry.rawRequest) {
+    return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
+  }
+
+  return (
+    <div>
+      <div style={rawToggleHeaderStyle}>
+        <Segmented
+          size="small"
+          value={view}
+          onChange={(v) => setView(v as 'request' | 'raw')}
+          options={[
+            {
+              value: 'request',
+              label: t('trace.request', { defaultValue: 'Request' }),
+            },
+            {
+              value: 'raw',
+              label: t('trace.rawRequest', { defaultValue: 'Raw Request' }),
+            },
+          ]}
+        />
+      </div>
+      {view === 'raw' ? (
+        <DeferredRender>
+          <JsonBlock payload={entry.rawRequest} maxHeight={maxHeight} />
+        </DeferredRender>
+      ) : (
+        <JsonBlock payload={entry.display} maxHeight={maxHeight} />
+      )}
+    </div>
+  );
+};
+
+/**
+ * llm_response event. The default view shows the payload with wire-level
+ * raw_request / raw_response stripped (raw_request is surfaced on the paired
+ * llm_request instead); raw_response stays reachable via a toggle.
+ */
+const LlmResponseBlock: React.FC<{
+  entry: ParsedTraceEvent;
+  t: Translate;
+  maxHeight?: number;
+}> = ({ entry, t, maxHeight }) => {
+  const [view, setView] = useState<'response' | 'raw'>('response');
+
+  if (!entry.rawResponse) {
+    return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
+  }
+
+  return (
+    <div>
+      <div style={rawToggleHeaderStyle}>
+        <Segmented
+          size="small"
+          value={view}
+          onChange={(v) => setView(v as 'response' | 'raw')}
+          options={[
+            {
+              value: 'response',
+              label: t('trace.response', { defaultValue: 'Response' }),
+            },
+            {
+              value: 'raw',
+              label: t('trace.rawResponse', { defaultValue: 'Raw Response' }),
+            },
+          ]}
+        />
+      </div>
+      {view === 'raw' ? (
+        <DeferredRender>
+          <JsonBlock payload={entry.rawResponse} maxHeight={maxHeight} />
+        </DeferredRender>
+      ) : (
+        <JsonBlock payload={entry.display} maxHeight={maxHeight} />
+      )}
+    </div>
+  );
+};
+
+const EventContent: React.FC<{
+  entry: ParsedTraceEvent;
+  t: Translate;
+  maxHeight?: number;
+}> = ({ entry, t, maxHeight }) => {
+  const { event } = entry;
   switch (event.event_type) {
+    case 'llm_request':
+      return <LlmRequestBlock entry={entry} t={t} maxHeight={maxHeight} />;
+    case 'llm_response':
+      return <LlmResponseBlock entry={entry} t={t} maxHeight={maxHeight} />;
     case 'token_usage':
-      return <TokenUsageBlock content={event.content} t={t} maxHeight={maxHeight} />;
+      return <TokenUsageBlock entry={entry} t={t} maxHeight={maxHeight} />;
     case 'tool_call':
-      return <ToolCallBlock content={event.content} t={t} maxHeight={maxHeight} />;
+      return <ToolCallBlock entry={entry} t={t} maxHeight={maxHeight} />;
     case 'tool_result':
-      return <ToolResultBlock content={event.content} t={t} maxHeight={maxHeight} />;
+      return <ToolResultBlock entry={entry} t={t} maxHeight={maxHeight} />;
     case 'error':
       return (
         <pre
@@ -557,13 +745,13 @@ const EventContent: React.FC<{
         </pre>
       );
     default:
-      return <JsonBlock content={event.content} maxHeight={maxHeight} />;
+      return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
   }
 };
 
 interface SeqMessage {
   id: string;
-  event: API.AITraceEvent;
+  entry: ParsedTraceEvent;
   from: ActorId;
   to: ActorId;
   label: string;
@@ -585,13 +773,21 @@ function formatDurationSuffix(durationMs: number, t: Translate): string {
 }
 
 function buildSequenceMessages(
-  events: API.AITraceEvent[],
+  entries: ParsedTraceEvent[],
   t: Translate
 ): SeqMessage[] {
-  const toolNameByCallId = buildToolNameByCallId(events);
+  const toolNameByCallId = new Map<string, string>();
+  for (const entry of entries) {
+    if (entry.event.event_type !== 'tool_call' || !entry.isJSON) continue;
+    const parsed = entry.parsed as ToolCall;
+    if (parsed.tool_call_id && parsed.tool) {
+      toolNameByCallId.set(parsed.tool_call_id, parsed.tool);
+    }
+  }
   const failedLabel = t('trace.failed', { defaultValue: 'Failed' });
 
-  return events.map((event, index) => {
+  return entries.map((entry, index) => {
+    const { event } = entry;
     const typeLabel = t(`trace.eventTypes.${event.event_type}`, {
       defaultValue: event.event_type,
     });
@@ -601,7 +797,7 @@ function buildSequenceMessages(
       case 'llm_request':
         return {
           id: event.id,
-          event,
+          entry,
           from: 'agent',
           to: 'llm',
           label: typeLabel,
@@ -611,7 +807,7 @@ function buildSequenceMessages(
       case 'llm_response': {
         return {
           id: event.id,
-          event,
+          entry,
           from: 'llm',
           to: 'agent',
           label: `${typeLabel}${formatDurationSuffix(event.duration_ms, t)}`,
@@ -620,11 +816,11 @@ function buildSequenceMessages(
         };
       }
       case 'tool_call': {
-        const { parsed, isJSON } = tryParseJSON<ToolCall>(event.content);
-        const toolName = isJSON && parsed.tool ? parsed.tool : typeLabel;
+        const parsed = entry.isJSON ? (entry.parsed as ToolCall) : null;
+        const toolName = parsed?.tool || typeLabel;
         return {
           id: event.id,
-          event,
+          entry,
           from: 'agent',
           to: 'tool',
           label: toolName,
@@ -633,11 +829,10 @@ function buildSequenceMessages(
         };
       }
       case 'tool_result': {
-        const { parsed, isJSON } = tryParseJSON<ToolResult>(event.content);
-        const failed = isToolResultFailed(parsed, isJSON);
+        const parsed = entry.isJSON ? (entry.parsed as ToolResult) : null;
+        const failed = isToolResultFailed(parsed, entry.isJSON);
         const toolName =
-          (isJSON &&
-            parsed.tool_call_id &&
+          (parsed?.tool_call_id &&
             toolNameByCallId.get(parsed.tool_call_id)) ||
           '';
         const label = toolName
@@ -645,7 +840,7 @@ function buildSequenceMessages(
           : typeLabel;
         return {
           id: event.id,
-          event,
+          entry,
           from: 'tool',
           to: 'agent',
           label: failed ? `${label} · ${failedLabel}` : label,
@@ -657,7 +852,7 @@ function buildSequenceMessages(
       case 'summary':
         return {
           id: event.id,
-          event,
+          entry,
           from: 'agent',
           to: 'llm',
           label: typeLabel,
@@ -665,14 +860,12 @@ function buildSequenceMessages(
           color,
         };
       case 'token_usage': {
-        const { parsed, isJSON } = tryParseJSON<TokenUsageStats>(event.content);
+        const parsed = entry.isJSON ? (entry.parsed as TokenUsageStats) : null;
         const extra =
-          isJSON && parsed.total_tokens != null
-            ? ` · ${parsed.total_tokens}`
-            : '';
+          parsed?.total_tokens != null ? ` · ${parsed.total_tokens}` : '';
         return {
           id: event.id,
-          event,
+          entry,
           from: 'agent',
           to: 'agent',
           label: `${typeLabel}${extra}`,
@@ -681,14 +874,14 @@ function buildSequenceMessages(
         };
       }
       case 'error': {
-        const prev = index > 0 ? events[index - 1] : undefined;
+        const prev = index > 0 ? entries[index - 1].event : undefined;
         // Model attempt failures are written instead of llm_response.
         const asFailedLlmReturn = prev?.event_type === 'llm_request';
         const label = `${typeLabel}${formatDurationSuffix(event.duration_ms, t)} · ${failedLabel}`;
         if (asFailedLlmReturn) {
           return {
             id: event.id,
-            event,
+            entry,
             from: 'llm',
             to: 'agent',
             label,
@@ -699,7 +892,7 @@ function buildSequenceMessages(
         }
         return {
           id: event.id,
-          event,
+          entry,
           from: 'agent',
           to: 'agent',
           label,
@@ -711,7 +904,7 @@ function buildSequenceMessages(
       default:
         return {
           id: event.id,
-          event,
+          entry,
           from: 'agent',
           to: 'agent',
           label: typeLabel,
@@ -778,15 +971,15 @@ const SequenceArrow: React.FC<{
 };
 
 const SequenceDiagram: React.FC<{
-  events: API.AITraceEvent[];
+  entries: ParsedTraceEvent[];
   t: Translate;
   selectedId?: string;
-  onSelect: (event: API.AITraceEvent) => void;
-}> = ({ events, t, selectedId, onSelect }) => {
+  onSelect: (entry: ParsedTraceEvent) => void;
+}> = ({ entries, t, selectedId, onSelect }) => {
   const { styles, cx } = useStyles();
   const messages = useMemo(
-    () => buildSequenceMessages(events, t),
-    [events, t]
+    () => buildSequenceMessages(entries, t),
+    [entries, t]
   );
 
   const actorLabel = (id: ActorId) =>
@@ -836,15 +1029,15 @@ const SequenceDiagram: React.FC<{
                 styles.messageRow,
                 selectedId === msg.id && styles.messageRowActive
               )}
-              onClick={() => onSelect(msg.event)}
+              onClick={() => onSelect(msg.entry)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
-                  onSelect(msg.event);
+                  onSelect(msg.entry);
                 }
               }}
             >
-              <span className={styles.stepMeta}>#{msg.event.step_order}</span>
+              <span className={styles.stepMeta}>#{msg.entry.event.step_order}</span>
               {msg.kind === 'note' ? (
                 <div
                   className={cx(
@@ -887,7 +1080,7 @@ const AITraceViewer: React.FC = () => {
   const [traceId, setTraceId] = useState('');
   const [searchedTraceId, setSearchedTraceId] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('sequence');
-  const [selectedEvent, setSelectedEvent] = useState<API.AITraceEvent | null>(
+  const [selectedEvent, setSelectedEvent] = useState<ParsedTraceEvent | null>(
     null
   );
 
@@ -1016,13 +1209,18 @@ const AITraceViewer: React.FC = () => {
 
   const eventList = useMemo(() => events ?? [], [events]);
 
+  // One-shot preprocessing: parse every event content, strip raw fields from
+  // llm_response and pair raw_request onto the preceding llm_request.
+  const parsedEvents = useMemo(() => buildParsedEvents(eventList), [eventList]);
+
   useEffect(() => {
     setSelectedEvent(null);
   }, [searchedTraceId, viewMode]);
 
   const timelineItems = useMemo(
     () =>
-      eventList.map((event: API.AITraceEvent) => {
+      parsedEvents.map((entry) => {
+        const { event } = entry;
         const config = EVENT_TYPE_CONFIG[event.event_type] || {
           color: 'gray',
           icon: <FileTextOutlined />,
@@ -1061,7 +1259,7 @@ const AITraceViewer: React.FC = () => {
                   ),
                   children: (
                     <DeferredRender>
-                      <EventContent event={event} t={t} maxHeight={400} />
+                      <EventContent entry={entry} t={t} maxHeight={400} />
                     </DeferredRender>
                   ),
                 },
@@ -1070,11 +1268,11 @@ const AITraceViewer: React.FC = () => {
           ),
         };
       }),
-    [eventList, t]
+    [parsedEvents, t]
   );
 
   const selectedConfig = selectedEvent
-    ? EVENT_TYPE_CONFIG[selectedEvent.event_type]
+    ? EVENT_TYPE_CONFIG[selectedEvent.event.event_type]
     : null;
 
   return (
@@ -1181,9 +1379,9 @@ const AITraceViewer: React.FC = () => {
         >
           {viewMode === 'sequence' ? (
             <SequenceDiagram
-              events={eventList}
+              entries={parsedEvents}
               t={t}
-              selectedId={selectedEvent?.id}
+              selectedId={selectedEvent?.event.id}
               onSelect={setSelectedEvent}
             />
           ) : (
@@ -1197,15 +1395,15 @@ const AITraceViewer: React.FC = () => {
           selectedEvent ? (
             <Space>
               <Tag color={selectedConfig?.color || 'default'}>
-                {t(`trace.eventTypes.${selectedEvent.event_type}`, {
-                  defaultValue: selectedEvent.event_type,
+                {t(`trace.eventTypes.${selectedEvent.event.event_type}`, {
+                  defaultValue: selectedEvent.event.event_type,
                 })}
               </Tag>
-              <Text type="secondary">#{selectedEvent.step_order}</Text>
-              {selectedEvent.duration_ms > 0 && (
+              <Text type="secondary">#{selectedEvent.event.step_order}</Text>
+              {selectedEvent.event.duration_ms > 0 && (
                 <Text type="secondary">
                   {t('trace.duration', { defaultValue: 'Duration' })}:{' '}
-                  {selectedEvent.duration_ms}ms
+                  {selectedEvent.event.duration_ms}ms
                 </Text>
               )}
             </Space>
@@ -1216,8 +1414,8 @@ const AITraceViewer: React.FC = () => {
         width={560}
       >
         {selectedEvent && (
-          <DeferredRender key={selectedEvent.id}>
-            <EventContent event={selectedEvent} t={t} />
+          <DeferredRender key={selectedEvent.event.id}>
+            <EventContent entry={selectedEvent} t={t} />
           </DeferredRender>
         )}
       </Drawer>
