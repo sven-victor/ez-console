@@ -1,7 +1,7 @@
 var Le = Object.defineProperty;
 var Ae = (r, n, a) => n in r ? Le(r, n, { enumerable: !0, configurable: !0, writable: !0, value: a }) : r[n] = a;
 var ee = (r, n, a) => Ae(r, typeof n != "symbol" ? n + "" : n, a);
-import { j as s, g as Ie, h as Fe, k as Pe, l as Re } from "./vendor.js";
+import { j as s, k as Ie, l as Fe, m as Pe, n as Re } from "./vendor.js";
 import { a as C } from "./index.js";
 import { PlusOutlined as te, ReloadOutlined as $e, DeleteOutlined as Ne, HistoryOutlined as Ve, CloseOutlined as Be } from "@ant-design/icons";
 import { Conversations as Ee, Sender as ne, XProvider as ze, Bubble as De, Mermaid as Oe, CodeHighlighter as qe } from "@ant-design/x";
@@ -393,22 +393,22 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
     group: H(e.start_time).isSame(H(), "day") ? i("chat.today") : H(e.start_time).format("YYYY-MM-DD")
   }), {
     conversations: M,
-    activeConversationKey: g,
+    activeConversationKey: p,
     setActiveConversationKey: B,
     addConversation: de,
     setConversations: ue,
     getConversation: E,
     setConversation: _,
     removeConversation: me,
-    getMessages: ge
+    getMessages: pe
   } = He({
     defaultActiveConversationKey: d,
     defaultConversations: (h == null ? void 0 : h.map((e) => w(e))) || []
   });
   S(() => {
-    x(g);
-  }, [g]);
-  const { message: P } = Je.useApp(), [J, Y] = V(""), [pe, fe] = V(!1), [T, he] = V([]), { data: G } = j(() => C.system.listSkillDomains()), { data: R } = j(
+    x(p);
+  }, [p]);
+  const { message: P } = Je.useApp(), [J, Y] = V(""), [ge, fe] = V(!1), [T, he] = V([]), { data: G } = j(() => C.system.listSkillDomains()), { data: R } = j(
     () => C.system.listSkills({ current: 1, page_size: 500 })
   ), W = K(() => [
     ...(G ?? []).map((e) => ({
@@ -427,10 +427,10 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
         e.name
       ] })
     }))
-  ], [R, G]), [L, U] = V(), { onRequest: $, messages: p, isRequesting: z, abort: xe, onReload: be, setMessages: ye, setMessage: ke } = Xe({
-    provider: at(g),
+  ], [R, G]), [L, U] = V(), { onRequest: $, messages: g, isRequesting: z, abort: xe, onReload: be, setMessages: ye, setMessage: ke } = Xe({
+    provider: at(p),
     // every conversation has its own provider
-    conversationKey: g,
+    conversationKey: p,
     defaultMessages: [],
     requestPlaceholder: () => ({
       content: k("loading"),
@@ -485,18 +485,18 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
   }, [y, $, A]);
   S(() => {
     var e, t;
-    if (!z && p && p.length > 0) {
-      const o = p[p.length - 1];
+    if (!z && g && g.length > 0) {
+      const o = g[g.length - 1];
       if ((t = (e = o == null ? void 0 : o.message) == null ? void 0 : e.pendingClientToolCalls) != null && t.length) {
         const l = o.message.pendingClientToolCalls;
         D.current !== l && (D.current = l, Q(l));
       } else
         D.current = null;
     }
-  }, [z, p, Q]);
+  }, [z, g, Q]);
   const Z = (e) => {
     if (e) {
-      if (!g) {
+      if (!p) {
         v(e);
         return;
       }
@@ -513,7 +513,7 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
       P.error(i("chat.fetchConversationFailed", { defaultValue: "Failed to fetch conversation" }));
     },
     onSuccess: (e) => {
-      if (p && p.length > 0 && (p[p.length - 1].status === "loading" || p.length > e.messages.length))
+      if (g && g.length > 0 && (g[g.length - 1].status === "loading" || g.length > e.messages.length))
         return;
       const t = [];
       let o = { id: "", message: { content: "", role: "assistant" }, status: "success" };
@@ -589,7 +589,7 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
     }
   });
   S(() => {
-    if (g && (L == null ? void 0 : L.sessionId) === g) {
+    if (p && (L == null ? void 0 : L.sessionId) === p) {
       const e = L.message;
       setTimeout(() => {
         $({
@@ -598,14 +598,14 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
         });
       }, 1e3), U(void 0);
     }
-  }, [g, L, A]), S(() => {
-    if (g) {
-      const e = ge(g);
+  }, [p, L, A]), S(() => {
+    if (p) {
+      const e = pe(p);
       if (e && e.length > 0)
         return;
-      ve(g);
+      ve(p);
     }
-  }, [g]), S(() => {
+  }, [p]), S(() => {
     c && v && c((e, t) => {
       v(e, t, !0);
     });
@@ -628,7 +628,7 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
       Ee,
       {
         items: M,
-        activeKey: g,
+        activeKey: p,
         onActiveChange: async (e) => {
           e && B(e);
         },
@@ -665,7 +665,7 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
         /* @__PURE__ */ s.jsx(q, { gap: "small", align: "center", children: /* @__PURE__ */ s.jsx(
           re,
           {
-            open: pe,
+            open: ge,
             onOpenChange: (t, o) => {
               (o.source === "trigger" || t) && fe(t);
             },
@@ -776,7 +776,7 @@ const X = /* @__PURE__ */ new Map(), at = (r) => (X.get(r) || X.set(
           it,
           {
             bubble: r,
-            messages: p,
+            messages: g,
             loading: Ce || O,
             layout: n,
             onSendMessage: Z

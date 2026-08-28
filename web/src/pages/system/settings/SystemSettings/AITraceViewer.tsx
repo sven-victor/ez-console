@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import {
   App,
   Card,
@@ -48,8 +48,9 @@ import {
   AlignLeftOutlined,
   CodeOutlined,
 } from '@ant-design/icons';
+import { LuMessageSquareText, LuCable } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useRequest } from 'ahooks';
 import JsonView from '@uiw/react-json-view';
 import { createStyles } from 'antd-style';
@@ -91,6 +92,23 @@ const EVENT_ARROW_COLORS: Record<string, string> = {
   error: '#ff4d4f',
   summary: '#2f54eb',
 };
+
+const useRawBlockStyles = createStyles(({ css }) => ({
+  rawToggleWrap: css`
+  position: relative;
+  .json-block-mode-toggle{
+    right: 90px !important;
+  }
+`,
+
+  rawToggleHeader: css`
+    position: absolute;
+    top: 6px;
+    right: 20px;
+    z-index: 2;
+  `,
+
+}));
 
 const useStyles = createStyles(({ token, css }) => ({
   sequenceWrap: css`
@@ -408,7 +426,7 @@ const JsonBlock: React.FC<{ payload: JsonPayload; maxHeight?: number }> = ({
 
   return (
     <div style={{ position: 'relative' }}>
-      <div style={{ position: 'absolute', top: 6, right: 6, zIndex: 2 }}>
+      <div className='json-block-mode-toggle' style={{ position: 'absolute', top: 6, right: 6, zIndex: 2 }}>
         <Segmented
           size="small"
           value={mode}
@@ -609,11 +627,8 @@ const ToolResultBlock: React.FC<{ entry: ParsedTraceEvent; t: Translate, maxHeig
   );
 };
 
-const rawToggleHeaderStyle: React.CSSProperties = {
-  display: 'flex',
-  justifyContent: 'flex-end',
-  marginBottom: 8,
-};
+// Lucide icons are plain SVGs; nudge them onto the Segmented text baseline.
+const rawToggleIconStyle: React.CSSProperties = { verticalAlign: '-2px' };
 
 /**
  * llm_request event. When the paired llm_response carried a raw_request
@@ -627,13 +642,16 @@ const LlmRequestBlock: React.FC<{
 }> = ({ entry, t, maxHeight }) => {
   const [view, setView] = useState<'request' | 'raw'>('request');
 
+  const { styles } = useRawBlockStyles({ isRaw: view === 'raw' });
+
   if (!entry.rawRequest) {
     return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
   }
 
+
   return (
-    <div>
-      <div style={rawToggleHeaderStyle}>
+    <div className={styles.rawToggleWrap}>
+      <div className={styles.rawToggleHeader}>
         <Segmented
           size="small"
           value={view}
@@ -641,11 +659,13 @@ const LlmRequestBlock: React.FC<{
           options={[
             {
               value: 'request',
-              label: t('trace.request', { defaultValue: 'Request' }),
+              icon: <LuMessageSquareText style={rawToggleIconStyle} />,
+              title: t('trace.request', { defaultValue: 'Request' }),
             },
             {
               value: 'raw',
-              label: t('trace.rawRequest', { defaultValue: 'Raw Request' }),
+              icon: <LuCable style={rawToggleIconStyle} />,
+              title: t('trace.rawRequest', { defaultValue: 'Raw Request' }),
             },
           ]}
         />
@@ -673,13 +693,15 @@ const LlmResponseBlock: React.FC<{
 }> = ({ entry, t, maxHeight }) => {
   const [view, setView] = useState<'response' | 'raw'>('response');
 
+  const { styles } = useRawBlockStyles({ isRaw: view === 'raw' });
+
   if (!entry.rawResponse) {
     return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
   }
 
   return (
-    <div>
-      <div style={rawToggleHeaderStyle}>
+    <div className={styles.rawToggleWrap}>
+      <div className={styles.rawToggleHeader}>
         <Segmented
           size="small"
           value={view}
@@ -687,11 +709,13 @@ const LlmResponseBlock: React.FC<{
           options={[
             {
               value: 'response',
-              label: t('trace.response', { defaultValue: 'Response' }),
+              icon: <LuMessageSquareText style={rawToggleIconStyle} />,
+              title: t('trace.response', { defaultValue: 'Response' }),
             },
             {
               value: 'raw',
-              label: t('trace.rawResponse', { defaultValue: 'Raw Response' }),
+              icon: <LuCable style={rawToggleIconStyle} />,
+              title: t('trace.rawResponse', { defaultValue: 'Raw Response' }),
             },
           ]}
         />
@@ -1077,6 +1101,7 @@ const AITraceViewer: React.FC = () => {
 
   const { t } = useTranslation('ai');
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [traceId, setTraceId] = useState('');
   const [searchedTraceId, setSearchedTraceId] = useState('');
   const [viewMode, setViewMode] = useState<ViewMode>('sequence');
@@ -1147,12 +1172,44 @@ const AITraceViewer: React.FC = () => {
     }
   );
 
+  const runSearch = useCallback(
+    (tid: string) => {
+      setSearchedTraceId(tid);
+      setSelectedEvent(null);
+      fetchEvents(tid);
+    },
+    [fetchEvents]
+  );
+
+  // On initial render, search right away when the URL carries a trace ID.
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+    const initialTraceId = searchParams.get('trace_id')?.trim();
+    if (initialTraceId) {
+      setTraceId(initialTraceId);
+      runSearch(initialTraceId);
+    }
+    const initialView = searchParams.get('view')?.trim();
+    if (initialView) {
+      setViewMode(initialView as ViewMode);
+    }
+  }, [searchParams, runSearch, setViewMode]);
+
   const handleSearch = useCallback(() => {
-    if (!traceId.trim()) return;
-    setSearchedTraceId(traceId.trim());
-    setSelectedEvent(null);
-    fetchEvents(traceId.trim());
-  }, [traceId, fetchEvents]);
+    const tid = traceId.trim();
+    if (!tid) return;
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.set('trace_id', tid);
+        return next;
+      },
+      { replace: true }
+    );
+    runSearch(tid);
+  }, [traceId, runSearch, setSearchParams]);
 
   const handleToggle = useCallback(
     (checked: boolean) => {
@@ -1357,7 +1414,17 @@ const AITraceViewer: React.FC = () => {
           title={
             <Segmented
               value={viewMode}
-              onChange={(v) => setViewMode(v as ViewMode)}
+              onChange={(v) => {
+                setViewMode(v as ViewMode);
+                setSearchParams(
+                  (prev) => {
+                    const next = new URLSearchParams(prev);
+                    next.set('view', v as ViewMode);
+                    return next;
+                  },
+                  { replace: true }
+                );
+              }}
               options={[
                 {
                   label: t('trace.viewSequence', {
