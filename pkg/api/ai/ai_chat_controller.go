@@ -61,7 +61,11 @@ func (c *AIChatController) RegisterRoutes(router *gin.RouterGroup) {
 
 // CreateChatSessionRequest represents the request to create a chat session
 type CreateChatSessionRequest struct {
-	Title     string                 `json:"title" binding:"required"`
+	Title string `json:"title" binding:"required"`
+	// Initial session messages. Use role "prompt" for page/context instructions
+	// that should reach the model but stay hidden from the chat history UI;
+	// role "system" is downgraded to "prompt" on persistence (session history
+	// never feeds the agent system prompt).
 	Messages  []ai.SimpleChatMessage `json:"messages"`
 	ModelID   string                 `json:"model_id"`
 	Anonymous bool                   `json:"anonymous"`
@@ -168,7 +172,7 @@ func (c *AIChatController) ListChatSessions(ctx *gin.Context) {
 // CreateChatSession creates a new chat session
 //
 //	@Summary		Create chat session
-//	@Description	Create a new chat session
+//	@Description	Create a new chat session. Initial messages with role "system" are stored as role "prompt": hidden from chat history but sent to the model as leading user context.
 //	@ID             createChatSession
 //	@Tags			AI/Chat
 //	@Accept			json

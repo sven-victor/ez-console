@@ -50,11 +50,21 @@ func (s *dbSessionService) CreateChatSession(ctx context.Context, organizationID
 			return fmt.Errorf("failed to create chat session: %w", err)
 		}
 		for _, message := range messages {
+			role := message.Role
+			// Downgrade system messages to prompt role: persisted system messages
+			// are never lifted into the agent system prompt (ChatMessagesToAgent
+			// drops them when the session history is loaded), and a session-long
+			// system prompt would keep steering attention after the topic drifts.
+			// Prompt-role messages are hidden from chat history but sent to the
+			// model as user context, and naturally decay via summarization.
+			if role == model.AIChatMessageRoleSystem {
+				role = model.AIChatMessageRolePrompt
+			}
 			if err := tx.Create(&model.AIChatMessage{
 				OrganizationID: organizationID,
 				UserID:         userID,
 				SessionID:      session.ResourceID,
-				Role:           message.Role,
+				Role:           role,
 				Content:        message.Content,
 				Status:         model.AIChatMessageStatusCompleted,
 				MessageTime:    time.Now(),
