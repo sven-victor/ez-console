@@ -52,36 +52,49 @@ func (s *ezAgentChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) 
 		return nil, ErrClientToolHandoff
 	}
 	select {
-	case <-s.closeCh:
-		return nil, io.EOF
-	case err := <-s.errCh:
-		if err == nil {
-			return nil, io.EOF
-		}
-		return nil, err
 	case ev, ok := <-s.pending:
-		if !ok {
-			return nil, io.EOF
-		}
-		if ev.EventType == EventTypeClientToolPending {
-			s.handoff = true
-		}
-		return ev, nil
+		return s.takePending(ev, ok)
+	case <-s.closeCh:
+		return s.recvPreferPending(io.EOF)
 	case <-ctx.Done():
-		// Prefer draining a finished stream over surfacing cancel as a hard error.
-		select {
-		case ev, ok := <-s.pending:
-			if !ok {
-				return nil, io.EOF
-			}
-			if ev.EventType == EventTypeClientToolPending {
-				s.handoff = true
-			}
-			return ev, nil
-		default:
-			return nil, ctx.Err()
-		}
+		return s.recvPreferPending(ctx.Err())
 	}
+}
+
+// recvPreferPending returns a queued event even when the caller is canceling
+// or closing, so already-produced tokens are not dropped. stopErr is used
+// only when pending has nothing ready.
+func (s *ezAgentChatStream) recvPreferPending(stopErr error) (*ChatStreamEvent, error) {
+	select {
+	case ev, ok := <-s.pending:
+		return s.takePending(ev, ok)
+	default:
+		return nil, stopErr
+	}
+}
+
+func (s *ezAgentChatStream) takePending(ev *ChatStreamEvent, ok bool) (*ChatStreamEvent, error) {
+	if !ok {
+		return nil, s.streamEndErr()
+	}
+	if ev.EventType == EventTypeClientToolPending {
+		s.handoff = true
+	}
+	return ev, nil
+}
+
+// streamEndErr is called after pending is closed. errCh is closed first in
+// pump, so a real error (if any) is already available; a closed empty errCh
+// is a clean EOF.
+func (s *ezAgentChatStream) streamEndErr() error {
+	select {
+	case err := <-s.errCh:
+		if err != nil {
+			return err
+		}
+	default:
+	}
+	return io.EOF
 }
 
 func (s *ezAgentChatStream) Close() error {
