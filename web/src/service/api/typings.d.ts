@@ -313,6 +313,10 @@ declare global {
   
     interface CreateChatSessionRequest {
       anonymous: boolean;
+      /** Initial session messages. Use role "prompt" for page/context instructions
+  that should reach the model but stay hidden from the chat history UI;
+  role "system" is downgraded to "prompt" on persistence (session history
+  never feeds the agent system prompt). */
       messages: SimpleChatMessage[];
       model_id: string;
       title: string;
@@ -2059,8 +2063,6 @@ declare global {
       /** user or system */
       category: TaskCategory;
       created_at: string;
-      /** Creator is the display name for the creator: "system" when CreatorID is system,
-  the user's username when found, or empty when the user no longer exists. */
       creator: string;
       creator_id: string;
       /** set when task was created by a scheduled job */

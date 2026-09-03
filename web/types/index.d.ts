@@ -176,6 +176,18 @@ declare interface AIContextType {
     setLayout: (layout: 'classic' | 'sidebar' | 'float-sidebar') => void;
     visible: boolean;
     setVisible: (visible: boolean) => void;
+    /**
+     * Open the AI chat and start a new anonymous conversation.
+     *
+     * @param message  The user message to send as the first turn.
+     * @param messages Optional context messages persisted with the session.
+     *   Use role `'prompt'` for page/context instructions: they are sent to the
+     *   model as leading user context but hidden from the chat history UI, and
+     *   naturally fade out via conversation summarization as the chat grows.
+     *   Role `'system'` is downgraded to `'prompt'` by the backend — session
+     *   messages never feed the model's system prompt. For prompts that must
+     *   apply to every request, use `registerPageAI({ ephemeralSystemPrompts })`.
+     */
     callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
     onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
     loaded: boolean;
@@ -1223,6 +1235,10 @@ export declare interface CreateAIModelRequest {
 
 export declare interface CreateChatSessionRequest {
     anonymous: boolean;
+    /** Initial session messages. Use role "prompt" for page/context instructions
+     that should reach the model but stay hidden from the chat history UI;
+     role "system" is downgraded to "prompt" on persistence (session history
+     never feeds the agent system prompt). */
     messages: SimpleChatMessage[];
     model_id: string;
     title: string;
@@ -3295,8 +3311,6 @@ export declare interface Task {
     /** user or system */
     category: TaskCategory;
     created_at: string;
-    /** Creator is the display name for the creator: "system" when CreatorID is system,
-     the user's username when found, or empty when the user no longer exists. */
     creator: string;
     creator_id: string;
     /** set when task was created by a scheduled job */

@@ -59,6 +59,18 @@ export interface AIContextType {
   setLayout: (layout: 'classic' | 'sidebar' | 'float-sidebar') => void;
   visible: boolean;
   setVisible: (visible: boolean) => void;
+  /**
+   * Open the AI chat and start a new anonymous conversation.
+   *
+   * @param message  The user message to send as the first turn.
+   * @param messages Optional context messages persisted with the session.
+   *   Use role `'prompt'` for page/context instructions: they are sent to the
+   *   model as leading user context but hidden from the chat history UI, and
+   *   naturally fade out via conversation summarization as the chat grows.
+   *   Role `'system'` is downgraded to `'prompt'` by the backend — session
+   *   messages never feed the model's system prompt. For prompts that must
+   *   apply to every request, use `registerPageAI({ ephemeralSystemPrompts })`.
+   */
   callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
   onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
   loaded: boolean;

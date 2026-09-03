@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new chat session",
+                "description": "Create a new chat session. Initial messages with role \"system\" are stored as role \"prompt\": hidden from chat history but sent to the model as leading user context.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7009,6 +7009,7 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "messages": {
+                    "description": "Initial session messages. Use role \"prompt\" for page/context instructions\nthat should reach the model but stay hidden from the chat history UI;\nrole \"system\" is downgraded to \"prompt\" on persistence (session history\nnever feeds the agent system prompt).",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ai.SimpleChatMessage"
@@ -9655,7 +9656,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "creator": {
-                    "description": "Creator is the display name for the creator: \"system\" when CreatorID is system,\nthe user's username when found, or empty when the user no longer exists.",
                     "type": "string"
                 },
                 "creator_id": {
@@ -11486,12 +11486,16 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -11508,12 +11512,16 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

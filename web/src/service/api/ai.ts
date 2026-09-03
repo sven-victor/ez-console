@@ -23,7 +23,7 @@ export async function listChatSessions(
   );
 }
 
-/** Create chat session Create a new chat session POST /api/ai/chat/sessions */
+/** Create chat session Create a new chat session. Initial messages with role "system" are stored as role "prompt": hidden from chat history but sent to the model as leading user context. POST /api/ai/chat/sessions */
 export async function createChatSession(
   body: API.CreateChatSessionRequest,
   options?: { [key: string]: any }
