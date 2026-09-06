@@ -25,8 +25,24 @@ server:
   read_timeout: 10s
   write_timeout: 10s
   shutdown_timeout: 10s
+  # file_upload_path / skills_path accept a plain string (local directory) or
+  # a storage driver config map. Built-in drivers: local, db; the s3 driver is
+  # a separate module registered via blank import.
+  # See usages/19-distributed-deployment.md ("Shared File Storage") for details.
   file_upload_path: "./uploads"
+  # file_upload_path:
+  #   driver: db          # store files in the database (multi-node without shared volume)
+  #   namespace: uploads
+  # file_upload_path:
+  #   driver: s3          # requires: import _ "github.com/sven-victor/ez-console/pkg/storage/s3"
+  #   endpoint: http://minio.internal:9000
+  #   region: us-east-1
+  #   bucket: ez-console
+  #   access_key_id: "..."
+  #   secret_access_key: "..."
+  #   force_path_style: true
   skills_path: "./skills"  # Optional: path for skill files (defaults to file_upload_path + "/skills")
+  skills_cache_path: "./skills-cache"  # Local cache for skill materialization (used only when skills_path is a remote driver)
   max_upload_size: 10485760  # 10MB in bytes
   geoip_db_path: "./dist/GeoLite2-City.mmdb"  # Optional
 
@@ -213,8 +229,9 @@ tracing:
 --server.read_timeout=DURATION # Read timeout (default: "10s")
 --server.write_timeout=DURATION # Write timeout (default: "10s")
 --server.shutdown_timeout=DURATION # Shutdown timeout (default: "10s")
---server.file_upload_path=PATH # File upload path (default: "./uploads")
---server.skills_path=PATH      # Skills file path (default: "./skills")
+--server.file_upload_path=PATH # File upload path (default: "./uploads"; storage driver maps only via config file)
+--server.skills_path=PATH      # Skills file path (default: "./skills"; storage driver maps only via config file)
+--server.skills_cache_path=PATH # Local skill materialization cache (default: "./skills-cache")
 --server.geoip_db_path=PATH    # GeoIP database path
 ```
 

@@ -192,12 +192,13 @@ func (c *FileController) DownloadFile(ctx *gin.Context) {
 		}
 		ctx.Writer.Header().Set("Content-Security-Policy", "default-src 'none'")
 		forceAttachment := isDangerousMIME(file.MimiType, file.Name)
+		var contentDisposition string
 		if forceAttachment || method == "download" {
-			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("attachment", file.Name))
+			contentDisposition = safeContentDisposition("attachment", file.Name)
 		} else {
-			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("inline", file.Name))
+			contentDisposition = safeContentDisposition("inline", file.Name)
 		}
-		err := c.service.DownloadFile(ctx, file.Path)
+		err := c.service.DownloadFile(ctx, file.Path, contentDisposition)
 		if err != nil {
 			util.RespondWithError(ctx, util.NewError("E5001", err))
 		}
@@ -240,6 +241,7 @@ accessMode:
 	}
 	ctx.Writer.Header().Set("Content-Security-Policy", "default-src 'none'")
 	forceAttachment := isDangerousMIME(file.MimiType, file.Name)
+	var contentDisposition string
 	switch method {
 	case "sign":
 		signature, expires, err := c.service.SignDownloadURL(fileKey)
@@ -250,15 +252,15 @@ accessMode:
 		util.RespondWithSuccess(ctx, http.StatusOK, gin.H{"signature": signature, "expires": expires})
 		return
 	case "download":
-		ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("attachment", file.Name))
+		contentDisposition = safeContentDisposition("attachment", file.Name)
 	default:
 		if forceAttachment {
-			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("attachment", file.Name))
+			contentDisposition = safeContentDisposition("attachment", file.Name)
 		} else {
-			ctx.Writer.Header().Set("Content-Disposition", safeContentDisposition("inline", file.Name))
+			contentDisposition = safeContentDisposition("inline", file.Name)
 		}
 	}
-	err = c.service.DownloadFile(ctx, file.Path)
+	err = c.service.DownloadFile(ctx, file.Path, contentDisposition)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return

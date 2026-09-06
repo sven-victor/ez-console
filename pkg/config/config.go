@@ -18,7 +18,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strconv"
 	"time"
@@ -28,6 +27,7 @@ import (
 	"github.com/prometheus/common/model"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
+	"github.com/sven-victor/ez-console/pkg/storage"
 	"github.com/sven-victor/ez-console/pkg/util/jwt"
 	"github.com/sven-victor/ez-utils/clients/tracing"
 
@@ -164,7 +164,31 @@ type ServerConfig struct {
 	MaxUploadSize   int64         `yaml:"max_upload_size" mapstructure:"max_upload_size"`
 	FileUploadPath  afero.Afero   `yaml:"file_upload_path" mapstructure:"file_upload_path"`
 	SkillsPath      afero.Afero   `yaml:"skills_path" mapstructure:"skills_path"`
-	GeoIPDBPath     string        `yaml:"geoip_db_path" mapstructure:"geoip_db_path"`
+	// SkillsCachePath is a local directory used to materialize skill files
+	// when skills_path is backed by a remote storage driver (db / s3).
+	SkillsCachePath string `yaml:"skills_cache_path" mapstructure:"skills_cache_path"`
+	skillCacheFs    afero.Fs
+
+	GeoIPDBPath string `yaml:"geoip_db_path" mapstructure:"geoip_db_path"`
+}
+
+// GetSkillsCacheFs returns the local-disk afero.Fs used to materialize skill
+// files when skills_path is remote. The directory defaults to ./skills-cache
+// when SkillsCachePath is unset. The Fs is created once and reused.
+func (c *ServerConfig) GetSkillsCacheFs() (afero.Fs, error) {
+	if c.skillCacheFs != nil {
+		return c.skillCacheFs, nil
+	}
+	skillCachePath := c.SkillsCachePath
+	if skillCachePath == "" {
+		skillCachePath = "./skills-cache"
+	}
+	fs, err := storage.NewLocalFs(skillCachePath)
+	if err != nil {
+		return nil, err
+	}
+	c.skillCacheFs = fs
+	return fs, nil
 }
 
 type UploadConfig struct {
@@ -531,22 +555,32 @@ func jwtConfigUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (an
 	return data, nil
 }
 
+// aferoUnmarshallerHookFunc decodes storage locations (server.file_upload_path,
+// server.skills_path) into afero.Afero. Two forms are supported:
+//   - string: a local directory path (backward compatible; equals driver "local")
+//   - map:    a storage driver config with a "driver" key, resolved through the
+//     pkg/storage driver registry (e.g. driver: db / s3)
 func aferoUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (any, error) {
 	if (t != reflect.TypeOf(afero.Afero{})) {
 		return data, nil
 	}
-	if data, ok := data.(string); ok {
-		absPath, err := filepath.Abs(data)
+	switch data := data.(type) {
+	case string:
+		fs, err := storage.NewLocalFs(data)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get absolute path: %w", err)
+			return nil, err
 		}
-		if _, err := os.Stat(absPath); os.IsNotExist(err) {
-			err := os.MkdirAll(absPath, 0755)
-			if err != nil {
-				return nil, fmt.Errorf("failed to create directory: %w", err)
-			}
+		return afero.Afero{Fs: fs}, nil
+	case map[string]any:
+		driver, _ := data["driver"].(string)
+		if driver == "" {
+			return nil, fmt.Errorf("storage config requires a non-empty \"driver\" field (available: %v)", storage.Drivers())
 		}
-		return afero.Afero{Fs: afero.NewBasePathFs(afero.NewOsFs(), absPath)}, nil
+		fs, err := storage.Create(driver, data)
+		if err != nil {
+			return nil, err
+		}
+		return afero.Afero{Fs: fs}, nil
 	}
-	return nil, fmt.Errorf("unsupported type: %T", data)
+	return nil, fmt.Errorf("unsupported storage config type: %T", data)
 }

@@ -1161,7 +1161,7 @@ Skills are markdown-based instruction packs stored on disk that can be injected 
 
 ### Skill Structure
 
-Each skill is stored as a directory under the configured `skills_path` (or `file_upload_path/skills`), keyed by skill **resource ID**:
+Each skill is stored as a directory under the configured `skills_path` (local disk, database, or S3-compatible object storage — see [Distributed Deployment](./19-distributed-deployment.md)), keyed by skill **resource ID**:
 
 ```
 skills/

@@ -32,6 +32,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/storage"
 	"gopkg.in/yaml.v3"
 	"gorm.io/gorm"
 )
@@ -184,7 +185,7 @@ func NewSkillService() SkillService {
 
 const (
 	maxSkillZipSize  = 10 * 1024 * 1024 // 10 MB — maximum compressed ZIP size
-	maxSkillFileSize = 64 * 1024         // 64 KB — maximum size for a single skill file / frontmatter
+	maxSkillFileSize = 64 * 1024        // 64 KB — maximum size for a single skill file / frontmatter
 )
 
 // UploadSkill creates a skill from an uploaded file (single .md or .zip). Parses SKILL.md/SKILLS.md frontmatter for name/description.
@@ -304,6 +305,11 @@ func (s *skillService) uploadSkillZip(ctx context.Context, organizationID string
 			_ = skillFs.MkdirAll(filepath.ToSlash(dir), 0o755)
 		}
 		_ = afero.WriteFile(skillFs, path, f.content, 0o644)
+	}
+	if len(filesToCopy) > 0 {
+		if err := bumpSkillFilesVersion(ctx, organizationID, created.ResourceID); err != nil {
+			return nil, err
+		}
 	}
 	return created, nil
 }
@@ -479,6 +485,9 @@ func (s *skillService) Create(ctx context.Context, skill *model.Skill, initialCo
 		_ = db.Session(ctx).Delete(skill)
 		return nil, fmt.Errorf("failed to write SKILL.md: %w", err)
 	}
+	if err := bumpSkillFilesVersion(ctx, skill.OrganizationID, skill.ResourceID); err != nil {
+		return nil, err
+	}
 
 	return skill, nil
 }
@@ -573,6 +582,9 @@ func (s *skillService) CloneSkill(ctx context.Context, sourceSkillID string, new
 		_ = db.Session(ctx).Delete(newSkill)
 		return nil, err
 	}
+	if err := bumpSkillFilesVersion(ctx, organizationID, newSkill.ResourceID); err != nil {
+		return nil, err
+	}
 
 	if err := s.UpdateSkillFrontmatter(ctx, newSkill); err != nil {
 		_ = fs.RemoveAll(newSkill.ResourceID)
@@ -631,7 +643,7 @@ func (s *skillService) UpdateSkillFrontmatter(ctx context.Context, skill *model.
 		if err := afero.WriteFile(skillFs, name, []byte(newContent), 0o644); err != nil {
 			return fmt.Errorf("failed to sync SKILL.md with metadata: %w", err)
 		}
-		return nil
+		return bumpSkillFilesVersion(ctx, skill.OrganizationID, skill.ResourceID)
 	}
 	return fmt.Errorf("failed to update skill frontmatter")
 }
@@ -654,7 +666,10 @@ func (s *skillService) EnsurePresetSkillMarkdown(ctx context.Context, organizati
 	if err := s.ensureSkillDirectoryExists(skill); err != nil {
 		return err
 	}
-	return afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644)
+	if err := afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644); err != nil {
+		return err
+	}
+	return bumpSkillFilesVersion(ctx, organizationID, skillID)
 }
 
 // SyncPresetSkillMainMarkdown overwrites SKILL.md for a skill (used for system-managed preset content such as toolset companion skills).
@@ -669,7 +684,10 @@ func (s *skillService) SyncPresetSkillMainMarkdown(ctx context.Context, organiza
 	if err != nil {
 		return err
 	}
-	return afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644)
+	if err := afero.WriteFile(skillFs, skillMainFile, []byte(markdown), 0o644); err != nil {
+		return err
+	}
+	return bumpSkillFilesVersion(ctx, organizationID, skillID)
 }
 
 // UpdateSkillStatus sets skill enabled/disabled (allowed for preset skills).
@@ -726,6 +744,7 @@ func (s *skillService) Delete(ctx context.Context, organizationID, id string) er
 	if err := fs.RemoveAll(skill.ResourceID); err != nil {
 		return fmt.Errorf("failed to remove skill directory: %w", err)
 	}
+	s.cleanupSkillLocalCache(skill.ResourceID)
 	if err := db.Session(ctx).Where("skill_id = ? AND organization_id = ?", skill.ResourceID, skill.OrganizationID).
 		Unscoped().Delete(&model.SkillAIToolBinding{}).Error; err != nil {
 		return fmt.Errorf("failed to delete skill AI tool bindings: %w", err)
@@ -750,6 +769,7 @@ func (s *skillService) ForceDeleteSkill(ctx context.Context, organizationID, id 
 	if err := fs.RemoveAll(skill.ResourceID); err != nil {
 		return fmt.Errorf("failed to remove skill directory: %w", err)
 	}
+	s.cleanupSkillLocalCache(skill.ResourceID)
 	if err := db.Session(ctx).Where("skill_id = ? AND organization_id = ?", skill.ResourceID, skill.OrganizationID).
 		Unscoped().Delete(&model.SkillAIToolBinding{}).Error; err != nil {
 		return fmt.Errorf("failed to delete skill AI tool bindings: %w", err)
@@ -760,7 +780,24 @@ func (s *skillService) ForceDeleteSkill(ctx context.Context, organizationID, id 
 	return nil
 }
 
-// getSkillFs returns afero.Fs scoped to the skill's directory and the skill record
+// cleanupSkillLocalCache removes the local materialized copy of a deleted
+// skill on this node (no-op when skills storage is local).
+func (s *skillService) cleanupSkillLocalCache(skillID string) {
+	if !storage.IsRemote(s.getSkillsRootFs()) {
+		return
+	}
+	cacheFs, err := config.GetConfig().Server.GetSkillsCacheFs()
+	if err != nil {
+		return
+	}
+	skillMat.invalidate(skillID, cacheFs)
+}
+
+// getSkillFs returns the WRITE afero.Fs scoped to the skill's directory on
+// the skills root storage (the source of truth) and the skill record.
+// Callers that mutate files through it must call bumpSkillFilesVersion
+// afterwards so other nodes invalidate their materialized copies.
+// Read-only paths should use getSkillReadFs instead.
 func (s *skillService) getSkillFs(ctx context.Context, organizationID, skillID string) (*model.Skill, afero.Fs, error) {
 	skill, err := s.GetByID(ctx, organizationID, skillID)
 	if err != nil {
@@ -768,6 +805,18 @@ func (s *skillService) getSkillFs(ctx context.Context, organizationID, skillID s
 	}
 	fs := s.getSkillsRootFs()
 	return skill, afero.NewBasePathFs(fs, skill.ResourceID), nil
+}
+
+// bumpSkillFilesVersion marks the skill's files as changed. It must be called
+// after every successful mutation of skill files so that nodes with a stale
+// local materialization re-sync on their next read.
+func bumpSkillFilesVersion(ctx context.Context, organizationID, skillID string) error {
+	if err := db.Session(ctx).Model(&model.Skill{}).
+		Where("resource_id = ? AND organization_id = ?", skillID, organizationID).
+		UpdateColumn("files_version", gorm.Expr("files_version + ?", 1)).Error; err != nil {
+		return fmt.Errorf("failed to bump skill files version: %w", err)
+	}
+	return nil
 }
 
 // getSkillsRootFs returns the root afero.Fs for skills storage (from config or default under file_upload_path)
@@ -796,7 +845,7 @@ type SkillFilePreview struct {
 // GetSkillPreview returns concatenated preview fragments from SKILL.md/SKILLS.md and other .md files under the skill.
 // Disabled skills are still previewable so administrators can manage them; AI consumption paths filter by status separately.
 func (s *skillService) GetSkillPreview(ctx context.Context, organizationID, skillID string) ([]SkillFilePreview, error) {
-	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillReadFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -843,7 +892,7 @@ func (s *skillService) GetSkillPreview(ctx context.Context, organizationID, skil
 // GetSkillContent reads SKILL.md (or SKILLS.md).
 // It does not check skill status so disabled skills remain manageable; AI consumption paths filter by status separately.
 func (s *skillService) GetSkillContent(ctx context.Context, organizationID, skillID string) (string, error) {
-	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillReadFs(ctx, organizationID, skillID)
 	if err != nil {
 		return "", err
 	}
@@ -873,7 +922,7 @@ type SkillTreeNode struct {
 
 // ListFilesTree returns the full file tree for a skill (one shot). Only .md and .txt files are included.
 func (s *skillService) ListFilesTree(ctx context.Context, organizationID, skillID string) ([]SkillTreeNode, error) {
-	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillReadFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -932,7 +981,7 @@ func buildSkillTree(paths []string, prefix string) []SkillTreeNode {
 
 // ListFiles lists entries under skillID/relativePath (relativePath "" = root). Returns name and isDir.
 func (s *skillService) ListFiles(ctx context.Context, organizationID, skillID, relativePath string) ([]SkillFileEntry, error) {
-	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillReadFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -954,7 +1003,7 @@ func (s *skillService) ListFiles(ctx context.Context, organizationID, skillID, r
 // GetFile returns the content of a file under the skill. Path must be relative; only .md and .txt allowed.
 // It does not check skill status so disabled skills remain manageable; AI consumption paths filter by status separately.
 func (s *skillService) GetFile(ctx context.Context, organizationID, skillID, relativePath string) ([]byte, error) {
-	_, skillFs, err := s.getSkillFs(ctx, organizationID, skillID)
+	_, skillFs, err := s.getSkillReadFs(ctx, organizationID, skillID)
 	if err != nil {
 		return nil, err
 	}
@@ -988,6 +1037,9 @@ func (s *skillService) PutFile(ctx context.Context, organizationID, skillID, rel
 	if err := afero.WriteFile(skillFs, path, content, 0o644); err != nil {
 		return err
 	}
+	if err := bumpSkillFilesVersion(ctx, organizationID, skillID); err != nil {
+		return err
+	}
 	base := filepath.Base(path)
 	if base == skillMainFile || base == skillMainFileAlt {
 		name, description, category, parseErr := parseSkillFrontmatter(content)
@@ -1019,7 +1071,10 @@ func (s *skillService) CreateDir(ctx context.Context, organizationID, skillID, r
 	if path == "" || path == "." {
 		return fmt.Errorf("invalid path: cannot create root")
 	}
-	return skillFs.MkdirAll(path, 0o755)
+	if err := skillFs.MkdirAll(path, 0o755); err != nil {
+		return err
+	}
+	return bumpSkillFilesVersion(ctx, organizationID, skillID)
 }
 
 // removeDirRecursive removes a directory and all its contents (files and subdirs).
@@ -1064,9 +1119,13 @@ func (s *skillService) DeletePath(ctx context.Context, organizationID, skillID, 
 		return fmt.Errorf("failed to stat path: %w", err)
 	}
 	if info.IsDir() {
-		return removeDirRecursive(skillFs, path)
+		if err := removeDirRecursive(skillFs, path); err != nil {
+			return err
+		}
+	} else if err := skillFs.Remove(path); err != nil {
+		return err
 	}
-	return skillFs.Remove(path)
+	return bumpSkillFilesVersion(ctx, organizationID, skillID)
 }
 
 // MovePath moves a file or directory from fromPath to toPath within the same skill. Rename is supported (same parent, new name).
@@ -1112,7 +1171,10 @@ func (s *skillService) MovePath(ctx context.Context, organizationID, skillID, fr
 		if err := s.moveDir(skillFs, from, to); err != nil {
 			return err
 		}
-		return removeDirRecursive(skillFs, from)
+		if err := removeDirRecursive(skillFs, from); err != nil {
+			return err
+		}
+		return bumpSkillFilesVersion(ctx, organizationID, skillID)
 	}
 	// File: validate destination has allowed extension
 	if _, err := validateSkillPath(toPath, true); err != nil {
@@ -1131,7 +1193,10 @@ func (s *skillService) MovePath(ctx context.Context, organizationID, skillID, fr
 	if err := afero.WriteFile(skillFs, to, content, 0o644); err != nil {
 		return fmt.Errorf("failed to write destination: %w", err)
 	}
-	return skillFs.Remove(from)
+	if err := skillFs.Remove(from); err != nil {
+		return err
+	}
+	return bumpSkillFilesVersion(ctx, organizationID, skillID)
 }
 
 // moveDir copies a directory tree from src to dst (dst must not exist). Does not remove src.

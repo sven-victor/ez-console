@@ -38,7 +38,11 @@ type Skill struct {
 	Status         SkillStatus `gorm:"type:varchar(20);not null;default:'enabled'" json:"status"`
 	IsPreset       bool        `gorm:"not null;default:false" json:"is_preset"`
 	PresetKey      string      `gorm:"type:varchar(64)" json:"preset_key,omitempty"`
-	Tools          []SkillTool `gorm:"-" json:"tools,omitempty"`
+	// FilesVersion is incremented on every skill file mutation. Nodes compare
+	// it against their local materialization metadata to decide whether the
+	// locally cached copy of the skill files is stale (remote storage only).
+	FilesVersion int64       `gorm:"not null;default:0" json:"-"`
+	Tools        []SkillTool `gorm:"-" json:"tools,omitempty"`
 }
 
 // TableName returns the table name for Skill

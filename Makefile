@@ -47,6 +47,11 @@ dist/server:
 	go mod tidy
 	go build -ldflags "-s -w -X github.com/sven-victor/ez-console/cmd.VERSION=$(VERSION)" -o dist/server main.go
 
+.PHONY: test
+test:
+	go test ./pkg/...
+	cd pkg/storage/s3 && go build ./... && go test ./...
+
 clean:clean-web-lib
 	rm -rf dist/server
 	rm -rf server/static

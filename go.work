@@ -1,0 +1,12 @@
+go 1.25.0
+
+use (
+	.
+	./pkg/storage/s3
+)
+
+// Workspace-only fix: gorm.io/driver/clickhouse pulls the pre-split
+// github.com/ugorji/go v1.1.4 (which still contains the codec package) into
+// the merged workspace build list, conflicting with github.com/ugorji/go/codec.
+// v1.2.x no longer provides the codec package from the parent module.
+replace github.com/ugorji/go => github.com/ugorji/go v1.2.12

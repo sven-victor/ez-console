@@ -93,11 +93,13 @@ cluster:
 
 global:
   encrypt-key: "<same value on every node>"
-```
 
 server:
   file_upload_path: "/shared/uploads"   # must be visible to all nodes
   skills_path: "/shared/skills"
+  # Alternatively use a storage driver instead of a shared volume,
+  # e.g. {driver: db, namespace: uploads} or {driver: s3, bucket: ...}.
+  # See "Shared File Storage" below.
 ```
 
 ### Environment variables
@@ -117,6 +119,8 @@ The server fails fast when:
 - `driver!=sqlite` and `cluster.enabled` is not explicitly set
 - `cluster.enabled=true` but `global.encrypt-key` is missing (serf encryption requires it)
 - `encrypt-key` cannot decrypt an existing encrypted setting in the database
+
+The server logs a warning (does not fail) when `cluster.enabled=true` and `file_upload_path` / `skills_path` still use the local-disk driver: every node must share that volume, or switch to `driver: db` / `driver: s3`.
 
 See [Configuration Guide](./05-configuration.md) for general config options and [Deployment Guide](./12-deployment.md) for build and deploy steps.
 
@@ -383,10 +387,59 @@ if !held {
 
 File download signing keys are stored encrypted in `t_setting` (`file_signature_key`) so all nodes share the same HMAC secret.
 
-Upload and skill files must be visible to every node:
+Upload and skill files must be visible to every node. `server.file_upload_path` and `server.skills_path` accept either a plain string (local directory) or a storage driver configuration:
 
-- **Recommended (phase 1):** mount a shared volume (NFS, CephFS) and point `server.file_upload_path` and `server.skills_path` at the mount.
-- **Future:** optional S3/MinIO backend via `afero.Fs` (not yet exposed in config).
+| Driver | Config form | Extra infrastructure | Notes |
+|--------|-------------|----------------------|-------|
+| `local` | plain string or `{driver: local, path: ...}` | shared volume (NFS/CephFS) for multi-node | default |
+| `db` | `{driver: db, ...}` | none (uses the shared database) | built into the server binary; best for small/medium files |
+| `s3` | `{driver: s3, ...}` | S3 / MinIO / OSS bucket | separate Go module; requires a blank import (see below) |
+
+### db driver (no extra infrastructure)
+
+Files are stored in the shared database as chunked BLOB rows (`t_storage_file` / `t_storage_chunk`), so multi-node deployments need no shared volume:
+
+```yaml
+server:
+  file_upload_path:
+    driver: db
+    namespace: uploads        # isolates mount points in the shared tables
+    max_file_size: 10MB       # per-file cap (default 64MB); writes are buffered in memory
+  skills_path:
+    driver: db
+    namespace: skills
+```
+
+Suitable for the framework's typical file workload (avatars, exports, skill files). Large files or high-throughput downloads should use the `s3` driver: every db-stored download streams through the database and the application server.
+
+### s3 driver (S3 / MinIO / OSS)
+
+The s3 driver lives in a separate Go module (`github.com/sven-victor/ez-console/pkg/storage/s3`) so the AWS SDK is only pulled in when needed. The in-repo server binary does **not** include it; applications must register it with a blank import in their main package:
+
+```go
+import _ "github.com/sven-victor/ez-console/pkg/storage/s3"
+```
+
+```yaml
+server:
+  file_upload_path:
+    driver: s3
+    endpoint: http://minio.internal:9000  # empty = AWS S3; OSS: https://oss-cn-hangzhou.aliyuncs.com
+    region: us-east-1
+    bucket: ez-console
+    prefix: uploads/                      # optional key prefix
+    access_key_id: minioadmin             # empty = default AWS credential chain (env / IAM role)
+    secret_access_key: minioadmin         # supports encrypted values
+    force_path_style: true                # required for MinIO; must be false for OSS
+    presign_enabled: true                 # default true
+    presign_expiry: 10m
+```
+
+When the storage backend supports presigned URLs, file downloads are redirected (HTTP 302) directly to the object storage, bypassing server bandwidth. Set `presign_enabled: false` when the endpoint is not reachable from user browsers (e.g. internal MinIO); downloads then stream through the server as with the other drivers.
+
+### Skill materialization (remote storage only)
+
+When `skills_path` uses a remote driver (`db` / `s3`), each node materializes skill files into a local cache directory (`server.skills_cache_path`, default `./skills-cache`) before reading them. The remote storage plus the `t_skill.files_version` column remain the source of truth: every skill file mutation bumps the version, and nodes re-sync their local copy when the cached version no longer matches. No configuration is required beyond optionally overriding the cache path.
 
 Task execution logs in multi-node deployments should use the **`database`** log storage backend, not node-local files.
 
@@ -397,7 +450,7 @@ Task execution logs in multi-node deployments should use the **`database`** log 
 - [ ] Use the **same** `global.encrypt-key` on every node (e.g. K8s Secret)
 - [ ] Open gossip port (default **7946**) between nodes; set `advertise_addr` to a reachable address
 - [ ] Configure `cluster.gossip.join` or a headless service for peer discovery
-- [ ] Mount **shared storage** for uploads and skills
+- [ ] Make uploads and skills visible to all nodes: shared volume (`local` driver), `db` driver (zero extra infra), or `s3` driver
 - [ ] Set task log storage to `database` (System Settings → Task Settings)
 - [ ] Put instances behind a load balancer with **sticky sessions optional** (JWT auth is stateless; sessions rebuild from DB on cache miss)
 - [ ] Prefer **rolling restarts** over simultaneous full-cluster restarts

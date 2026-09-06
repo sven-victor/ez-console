@@ -95,10 +95,11 @@ The service uses `parseSkillFrontmatter` and `defaultSkillMDContent` in `pkg/ser
 
 In `pkg/config/config.go`, `ServerConfig` has:
 
-- **skills_path** (optional): Root directory for skill files. If empty, the system uses `file_upload_path + "/skills"`.
-- **file_upload_path**: Used when `skills_path` is not set.
+- **skills_path**: Skill file storage. Accepts a local directory string (default `./skills`) or a storage driver map (`driver: local|db|s3`). See [Distributed Deployment](./19-distributed-deployment.md) ("Shared File Storage").
+- **skills_cache_path**: Local cache directory used only when `skills_path` is a remote driver (`db` / `s3`). Each node materializes skill files here; `t_skill.files_version` is the source of truth.
+- **file_upload_path**: Upload storage (same string-or-driver forms as `skills_path`). Not used as a fallback for skills.
 
-Ensure the process has read/write permissions to the chosen directory.
+Ensure the process has read/write permissions to local directories when using the `local` driver.
 
 ## Management in the Console
 

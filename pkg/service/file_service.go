@@ -38,6 +38,7 @@ import (
 	dbdialect "github.com/sven-victor/ez-console/pkg/db/dialect"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/storage"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -59,7 +60,7 @@ type FileService interface {
 	SignDownloadURL(fileKey string) (string, int64, error)
 	VerifyDownloadURL(fileKey string, signature string, expires int64) bool
 	GetFileInfo(c *gin.Context, fileKey string) (*model.File, error)
-	DownloadFile(c *gin.Context, path string) error
+	DownloadFile(c *gin.Context, path string, contentDisposition string) error
 	ListFiles(ctx context.Context, current int, pageSize int, fileType, accessType, search string) ([]model.File, int64, error)
 }
 
@@ -222,11 +223,28 @@ func (s *fileService) GetFileInfo(c *gin.Context, fileKey string) (*model.File, 
 	return &file, nil
 }
 
-// DownloadFile handles file downloads
-func (s *fileService) DownloadFile(c *gin.Context, path string) error {
+// presignDownloadExpiry bounds presigned URL lifetime; it matches the
+// HMAC-signed download URL lifetime used by SignDownloadURL.
+const presignDownloadExpiry = 10 * time.Minute
+
+// DownloadFile handles file downloads. When the upload storage backend
+// supports presigned URLs (storage.PresignerStorage), the client is
+// redirected to download directly from the backend; otherwise the file is
+// streamed through the server. contentDisposition is the full
+// Content-Disposition header value (may be empty).
+func (s *fileService) DownloadFile(c *gin.Context, path string, contentDisposition string) error {
 	uploadDir, err := config.GetConfig().GetUploadDir()
 	if err != nil {
 		return fmt.Errorf("failed to get upload dir: %v", err)
+	}
+	if url, err := storage.PresignGetURL(c, uploadDir, path, presignDownloadExpiry, contentDisposition); err == nil {
+		c.Redirect(http.StatusFound, url)
+		return nil
+	} else if !errors.Is(err, storage.ErrPresignNotSupported) {
+		return fmt.Errorf("failed to presign download URL: %v", err)
+	}
+	if contentDisposition != "" {
+		c.Writer.Header().Set("Content-Disposition", contentDisposition)
 	}
 	c.FileFromFS(path, afero.NewHttpFs(uploadDir))
 	return nil

@@ -16,6 +16,7 @@ require (
 require (
 	github.com/MicahParks/keyfunc/v3 v3.4.0
 	github.com/gin-contrib/static v1.1.5
+	github.com/glebarez/sqlite v1.8.0
 	github.com/go-kit/log v0.2.1
 	github.com/go-ldap/ldap/v3 v3.4.11
 	github.com/go-logfmt/logfmt v0.5.1
@@ -79,7 +80,6 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/gin-contrib/sse v1.1.0 // indirect
 	github.com/glebarez/go-sqlite v1.21.1 // indirect
-	github.com/glebarez/sqlite v1.8.0 // indirect
 	github.com/go-asn1-ber/asn1-ber v1.5.8-0.20250403174932-29230038a667 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect

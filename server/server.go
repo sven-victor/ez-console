@@ -53,6 +53,9 @@ import (
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
+	"github.com/sven-victor/ez-console/pkg/storage"
+	// Register the built-in "db" storage driver (local is registered by pkg/storage itself).
+	_ "github.com/sven-victor/ez-console/pkg/storage/dbfs"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
@@ -75,6 +78,7 @@ func initFlags(rootCmd *cobra.Command) {
 	serverFlagSet.String("server.shutdown_timeout", "10s", "server shutdown timeout")
 	serverFlagSet.String("server.file_upload_path", "./uploads", "server file upload path")
 	serverFlagSet.String("server.skills_path", "./skills", "server skills storage path")
+	serverFlagSet.String("server.skills_cache_path", "./skills-cache", "local cache directory for skill materialization (used when skills_path is remote storage)")
 	serverFlagSet.String("server.geoip_db_path", "", "GeoIP database path")
 	rootCmd.Flags().AddFlagSet(serverFlagSet)
 
@@ -337,6 +341,22 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 		gin.SetMode(gin.ReleaseMode)
 	}
 	logger := log.GetContextLogger(ctx)
+
+	if cfg.Cluster.Enabled {
+		var localMounts []string
+		if !storage.IsRemote(cfg.Server.FileUploadPath) {
+			localMounts = append(localMounts, "server.file_upload_path")
+		}
+		if !storage.IsRemote(cfg.Server.SkillsPath) {
+			localMounts = append(localMounts, "server.skills_path")
+		}
+		if len(localMounts) > 0 {
+			level.Warn(logger).Log(
+				"msg", "cluster.enabled=true with local disk storage; all nodes must share the same volume, or switch to driver db or s3",
+				"mounts", strings.Join(localMounts, ", "),
+			)
+		}
+	}
 
 	// Initialise cluster EventBus (serf for multi-node, noop for single-node).
 	bus, busErr := eventbus.New(&cfg.Cluster)
