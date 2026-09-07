@@ -91,6 +91,10 @@ func initFlags(rootCmd *cobra.Command) {
 	clusterFlagSet.StringSlice("cluster.gossip.join", []string{}, "cluster gossip join addresses")
 	rootCmd.Flags().AddFlagSet(clusterFlagSet)
 
+	rootCmd.Flags().AddFlagSet(newDatabaseFlagSet(rootCmd.Use))
+}
+
+func newDatabaseFlagSet(serviceName string) *pflag.FlagSet {
 	databaseFlagSet := pflag.NewFlagSet("database", pflag.ExitOnError)
 	databaseFlagSet.String("database.driver", "sqlite", "database driver")
 	databaseFlagSet.String("database.username", "root", "database username (only used for mysql or clickhouse)")
@@ -100,16 +104,16 @@ func initFlags(rootCmd *cobra.Command) {
 	databaseFlagSet.String("database.enable_compression", "true", "database enable compression (only used for mysql or clickhouse)")
 	databaseFlagSet.String("database.max_idle_connections", "2", "database max idle connections (only used for mysql or clickhouse)")
 	databaseFlagSet.String("database.max_open_connections", "100", "database max open connections (only used for mysql or clickhouse)")
-	databaseFlagSet.String("database.schema", util.ToSnakeCase(rootCmd.Use), "database schema (only used for mysql or clickhouse)")
+	databaseFlagSet.String("database.schema", util.ToSnakeCase(serviceName), "database schema (only used for mysql or clickhouse)")
 	databaseFlagSet.String("database.charset", "utf8mb4", "database charset (only used for mysql)")
 	databaseFlagSet.String("database.collation", "utf8mb4_unicode_ci", "database collation (only used for mysql)")
 	databaseFlagSet.String("database.read_timeout", "10s", "database read timeout (only used for clickhouse)")
 	databaseFlagSet.String("database.dial_timeout", "10s", "database dial timeout (only used for clickhouse)")
 	databaseFlagSet.String("database.max_execution_time", "60s", "database max execution time (only used for clickhouse)")
-	databaseFlagSet.String("database.path", rootCmd.Use+".db", "database path (only used for sqlite)")
+	databaseFlagSet.String("database.path", serviceName+".db", "database path (only used for sqlite)")
 	databaseFlagSet.String("database.slow_threshold", "3s", "database slow threshold")
 	databaseFlagSet.String("database.table_prefix", "t_", "database table prefix")
-	rootCmd.Flags().AddFlagSet(databaseFlagSet)
+	return databaseFlagSet
 }
 
 type CommandServer struct {
@@ -263,6 +267,7 @@ func NewCommandServer(serviceName string, version string, description string, op
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yaml)")
 	initFlags(rootCmd)
+	rootCmd.AddCommand(newStorageCommand(serviceName, &cfgFile, false))
 	rootCmd.Flags().SortFlags = false
 	return &CommandServer{Command: rootCmd}
 }

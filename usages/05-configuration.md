@@ -47,6 +47,9 @@ server:
   max_upload_size: 10485760  # 10MB in bytes
   geoip_db_path: "./dist/GeoLite2-City.mmdb"  # Optional
 
+# To move existing files onto another driver, use `storage migrate`
+# (see usages/19-distributed-deployment.md, "Migrating between storage backends").
+
 # Database configuration
 # Supported drivers today: sqlite | mysql
 database:

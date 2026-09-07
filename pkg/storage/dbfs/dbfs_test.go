@@ -227,6 +227,24 @@ func TestMaxFileSize(t *testing.T) {
 	assert.Contains(t, err.Error(), "maximum allowed size")
 }
 
+func TestMigrateLocalToDB(t *testing.T) {
+	src := afero.NewMemMapFs()
+	require.NoError(t, afero.WriteFile(src, "2026-01/a.txt", []byte("hello"), 0o644))
+	require.NoError(t, afero.WriteFile(src, "nested/b.txt", []byte("world"), 0o644))
+
+	dst := newTestFs(t, DefaultChunkSize)
+	result, err := storage.Migrate(context.Background(), src, dst, storage.MigrateOptions{Concurrency: 1})
+	require.NoError(t, err)
+	assert.Equal(t, 2, result.Copied)
+
+	b, err := afero.ReadFile(dst, "2026-01/a.txt")
+	require.NoError(t, err)
+	assert.Equal(t, "hello", string(b))
+	b, err = afero.ReadFile(dst, "nested/b.txt")
+	require.NoError(t, err)
+	assert.Equal(t, "world", string(b))
+}
+
 func TestOpenSemantics(t *testing.T) {
 	fs := newTestFs(t, DefaultChunkSize)
 	// Missing file without O_CREATE.

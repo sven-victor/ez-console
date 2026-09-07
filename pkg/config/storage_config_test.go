@@ -19,6 +19,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/sven-victor/ez-console/pkg/storage"
 )
 
 func TestParseStorageConfig(t *testing.T) {
@@ -142,7 +143,7 @@ func TestParseStorageConfig(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got, err := parseStorageConfig(tc.in)
+			got, err := storage.ParseCompactConfig(tc.in)
 			if tc.wantErr {
 				require.Error(t, err)
 				return

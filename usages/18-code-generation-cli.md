@@ -1,8 +1,8 @@
 # Code generation and project scaffolding CLI
 
-This guide describes the **`generate`** subcommand (Controller / Model / Service stubs) and the **`init`** subcommand (minimal full-stack project scaffold) shipped with the `ez-console` binary.
+This guide describes the **`generate`** subcommand (Controller / Model / Service stubs), the **`init`** subcommand (minimal full-stack project scaffold), and the **`storage migrate`** command (copy files between storage backends) shipped with the `ez-console` binary.
 
-> **Note:** Under the current root command, the HTTP server is started via the **`ez-console`** nested subcommand (for example: `ez-console ez-console`). The **`generate`** and **`init`** subcommands are siblings of that server command.
+> **Note:** Under the current root command, the HTTP server is started via the **`ez-console`** nested subcommand (for example: `ez-console ez-console`). The **`generate`**, **`init`**, and **`storage`** subcommands are siblings of that server command. Downstream applications built with `server.NewCommandServer` expose **`storage migrate`** on their own root command.
 
 ## Prerequisites
 
@@ -18,6 +18,7 @@ This guide describes the **`generate`** subcommand (Controller / Model / Service
 | `ez-console generate model <Name>` | Generate a GORM model with a UUID primary key |
 | `ez-console generate service <Name>` | Generate a service stub using `pkg/db` |
 | `ez-console init <target-dir>` | Scaffold a minimal buildable backend + web project |
+| `ez-console storage migrate` | Copy files between storage backends (`local` / `db` / `s3`) |
 
 Help:
 
@@ -25,6 +26,7 @@ Help:
 ez-console generate --help
 ez-console generate controller --help
 ez-console init --help
+ez-console storage migrate --help
 ```
 
 ---
@@ -149,10 +151,24 @@ After generation, add fields, validation, permissions, and Swag comments yoursel
 
 | Area | Location |
 |------|----------|
-| Cobra registration | `cmd/generate.go`, `cmd/init.go` (`rootCmd.AddCommand` in `init()`) |
+| Cobra registration | `cmd/generate.go`, `cmd/init.go`, `cmd/storage.go` (`rootCmd.AddCommand` in `init()`); `server.NewCommandServer` also attaches `storage` |
 | Logic and templates | `internal/codegen/` |
 | Text templates | `internal/codegen/templates/*.tpl` |
 | Unit tests | `internal/codegen/codegen_test.go` |
+| Storage migrate | `pkg/storage/migrate.go`, `server/migrate_storage.go` |
+
+---
+
+## `ez-console storage migrate`: copy files between backends
+
+Copies the upload or skills file tree from one storage driver to another (`local`, `db`, or `s3`) without rewriting database file keys. Full cut-over steps live in [Distributed Deployment](./19-distributed-deployment.md) ("Migrating between storage backends").
+
+```bash
+ez-console storage migrate --from ./uploads --to 'driver=db,namespace=uploads'
+ez-console storage migrate --from ./uploads --to 'driver=db,namespace=uploads' --dry-run
+```
+
+Downstream apps get the same command as `<app> storage migrate`. The `s3` driver must be blank-imported in that binary.
 
 ---
 

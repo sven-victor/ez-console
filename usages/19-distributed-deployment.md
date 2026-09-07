@@ -441,6 +441,74 @@ When the storage backend supports presigned URLs, file downloads are redirected 
 
 When `skills_path` uses a remote driver (`db` / `s3`), each node materializes skill files into a local cache directory (`server.skills_cache_path`, default `./skills-cache`) before reading them. The remote storage plus the `t_skill.files_version` column remain the source of truth: every skill file mutation bumps the version, and nodes re-sync their local copy when the cached version no longer matches. No configuration is required beyond optionally overriding the cache path.
 
+### Migrating between storage backends
+
+`storage migrate` copies the file tree between any registered drivers (`local`, `db`, `s3`) while preserving relative paths, so `t_file.path` and skill resource-id directories stay valid after you switch `server.file_upload_path` / `server.skills_path`.
+
+The framework binary exposes it as a sibling of `generate` / `init`. Downstream apps that use `server.NewCommandServer` get the same group as a subcommand of the server command:
+
+```bash
+# Framework binary
+ez-console storage migrate --from ./uploads --to 'driver=db,namespace=uploads'
+
+# Downstream app (NewCommandServer root)
+myapp storage migrate --from ./uploads --to 'driver=db,namespace=uploads'
+```
+
+**Cut-over (recommended):**
+
+1. Stop writers (or the whole process) so new uploads are not missed.
+2. Copy while config still points at the source. Run once per mount:
+
+```bash
+ez-console storage migrate \
+  --config ./config.yaml \
+  --global.encrypt-key="$ENCRYPT_KEY" \
+  --from ./uploads \
+  --to 'driver=db,namespace=uploads'
+
+ez-console storage migrate \
+  --config ./config.yaml \
+  --global.encrypt-key="$ENCRYPT_KEY" \
+  --from ./skills \
+  --to 'driver=db,namespace=skills'
+```
+
+`--to 'driver=db,...'` only selects the **storage** driver. The MySQL/SQLite connection (host, user, password, schema, `cluster.enabled`, …) is the same application database the HTTP server uses, loaded by `config.LoadConfig`:
+
+| Source | What to set |
+|--------|-------------|
+| `--config` / `./config.yaml` (recommended) | `database.driver`, `database.host`, `database.username`, `database.password`, `database.schema`, and `cluster.enabled` when driver is not sqlite |
+| CLI flags | `--database.password=...`, `--database.host=...`, and the other `--database.*` flags listed in [Configuration](./05-configuration.md). Flags override the file. |
+| Encrypt key | `--global.encrypt-key` or `GLOBAL_ENCRYPT_KEY` (required). Needed to decrypt a `safe.String` password in YAML. |
+
+Example `config.yaml` fragment (same as a normal server start):
+
+```yaml
+global:
+  encrypt-key: "..."   # or pass --global.encrypt-key / GLOBAL_ENCRYPT_KEY instead
+database:
+  driver: mysql
+  host: mysql.internal
+  port: 3306
+  username: ez
+  password: "your-password"   # may be an encrypted safe.String value
+  schema: ez_console
+cluster:
+  enabled: true               # required whenever database.driver is not sqlite
+```
+
+Do not put the DB password inside the compact `--to` string. `driver=db,namespace=uploads` only isolates rows in `t_storage_file`; the connection always comes from `database.*`.
+
+SQLite cannot accept concurrent writers. When `database.driver` is sqlite (the default), `storage migrate` automatically uses `--concurrency=1` and a single DB connection. Re-run after a `SQLITE_BUSY` failure: already-copied files are skipped.
+
+3. Point `server.file_upload_path` / `server.skills_path` at the destination and restart.
+4. Leave the source in place until you have verified downloads and skill loading. Then delete it yourself.
+
+`--from-current uploads|skills` and `--to-current uploads|skills` use the mount already loaded from config (useful if you already switched the YAML and need to copy from the old location via `--from`). `--dry-run` lists files without writing. Existing destination files with the same size are skipped; pass `--overwrite` to replace them. Re-running after an interrupted copy finishes missing or size-mismatched files.
+
+The `db` driver creates `t_storage_file` / `t_storage_chunk` if needed. The `s3` driver must already be registered in the binary (`import _ "github.com/sven-victor/ez-console/pkg/storage/s3"`). Compact spec syntax is the same as `--server.file_upload_path` (`driver=s3,bucket=ez,prefix="uploads/",force_path_style=true`). Do not migrate `server.skills_cache_path`: it is a local cache and is rebuilt from the remote tree on demand.
+
 Task execution logs in multi-node deployments should use the **`database`** log storage backend, not node-local files.
 
 ## Deployment Checklist
@@ -451,6 +519,7 @@ Task execution logs in multi-node deployments should use the **`database`** log 
 - [ ] Open gossip port (default **7946**) between nodes; set `advertise_addr` to a reachable address
 - [ ] Configure `cluster.gossip.join` or a headless service for peer discovery
 - [ ] Make uploads and skills visible to all nodes: shared volume (`local` driver), `db` driver (zero extra infra), or `s3` driver
+- [ ] If switching storage drivers, run `storage migrate` before changing config (see "Migrating between storage backends")
 - [ ] Set task log storage to `database` (System Settings → Task Settings)
 - [ ] Put instances behind a load balancer with **sticky sessions optional** (JWT auth is stateless; sessions rebuild from DB on cache miss)
 - [ ] Prefer **rolling restarts** over simultaneous full-cluster restarts
