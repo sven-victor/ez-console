@@ -1,12 +1,12 @@
 import { r as u } from "./client.js";
-import g from "i18next";
-import { initReactI18next as h } from "react-i18next";
-import f from "i18next-browser-languagedetector";
-import { load as v } from "js-yaml";
-const ve = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
+import h from "i18next";
+import { initReactI18next as f } from "react-i18next";
+import v from "i18next-browser-languagedetector";
+import { load as k } from "js-yaml";
+const Pe = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = e instanceof Date ? e : new Date(e), r = a.getFullYear(), n = String(a.getMonth() + 1).padStart(2, "0"), s = String(a.getDate()).padStart(2, "0"), o = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
   return t.replace("YYYY", String(r)).replace("MM", n).replace("DD", s).replace("HH", o).replace("mm", i).replace("ss", l);
-}, ke = (e, t) => {
+}, Re = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
   const a = e.trim().toLowerCase();
@@ -36,15 +36,15 @@ const ve = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, be = (e) => {
+}, De = (e) => {
   if (!e)
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, Ae = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", ye = (e) => {
+}, ze = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Ee = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((a, r) => r !== 0 && t.includes(a) ? a : a.charAt(0).toUpperCase() + a.slice(1)).join(" ");
-}, Se = (e, t, a) => {
+}, Ce = (e, t, a) => {
   if (e === void 0 && t === void 0) return !0;
   if (e === void 0 || t === void 0 || e.length !== t.length) return !1;
   const r = new Array(t.length).fill(!1);
@@ -59,14 +59,14 @@ const ve = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   }
   return !0;
 };
-function Te(e) {
+function Fe(e) {
   try {
     return { parsed: JSON.parse(e), isJSON: !0 };
   } catch {
     return { parsed: null, isJSON: !1 };
   }
 }
-async function k(e, t) {
+async function b(e, t) {
   return u("/api/files", {
     method: "GET",
     params: {
@@ -75,7 +75,7 @@ async function k(e, t) {
     ...t || {}
   });
 }
-async function b(e, t, a) {
+async function A(e, t, a) {
   const r = new FormData();
   return t && r.append("file", t), Object.keys(e).forEach((n) => {
     const s = e[n];
@@ -90,7 +90,7 @@ async function b(e, t, a) {
     ...a || {}
   });
 }
-async function A(e, t) {
+async function y(e, t) {
   const { fileKey: a, ...r } = e;
   return u(`/api/files/${a}`, {
     method: "GET",
@@ -98,19 +98,33 @@ async function A(e, t) {
     ...t || {}
   });
 }
-async function y(e) {
+async function S(e) {
   return u("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const _e = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: A,
-  getStatistics: y,
-  listFiles: k,
-  uploadFile: b
-}, Symbol.toStringTag, { value: "Module" })), S = {
+  downloadFile: y,
+  getStatistics: S,
+  listFiles: b,
+  uploadFile: A
+}, Symbol.toStringTag, { value: "Module" }));
+function g(e) {
+  const t = e.payload;
+  return t && typeof t == "object" && !Array.isArray(t) ? t : {};
+}
+function Ie(e, t) {
+  return e(`types.${t.type}`, { defaultValue: t.type, ...g(t) });
+}
+function Le(e, t) {
+  return e(`typeDescriptions.${t.type}`, { defaultValue: "", ...g(t) });
+}
+function Me(e) {
+  return !e.read_at;
+}
+const T = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -196,6 +210,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       authorization: "授权管理"
     },
     tasks: "任务",
+    inbox: "站内信",
     system: {
       system: "系统管理",
       settings: "系统设置",
@@ -236,6 +251,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     profile: "个人中心",
     settings: "设置",
     tasks: "任务",
+    inbox: "站内信",
     taskSchedules: "定时任务",
     tasks_taskList: "任务列表"
   },
@@ -255,7 +271,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "确认",
     cancel: "取消"
   }
-}, T = {
+}, w = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -341,6 +357,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       authorization: "Authorization Management"
     },
     tasks: "Tasks",
+    inbox: "Inbox",
     settings: "Setting",
     dashboard: "Dashboard",
     system: {
@@ -377,6 +394,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     profile: "Profile",
     settings: "Setting",
     tasks: "Tasks",
+    inbox: "Inbox",
     taskSchedules: "Task Schedules",
     tasks_taskList: "Task List"
   },
@@ -396,7 +414,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, w = {
+}, P = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -469,7 +487,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, P = {
+}, R = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -1034,7 +1052,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policy Management"
     }
   }
-}, R = {
+}, D = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1659,7 +1677,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, D = {
+}, z = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1785,7 +1803,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} selected",
     skillDomain: "Skill domain"
   }
-}, z = {
+}, E = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1796,7 +1814,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task_log_cleanup_task: "Task Log Cleanup",
     inactive_account_lock_task: "Inactive Account Lock Task",
     password_expiry_notification_task: "Password Expiry Notification Task",
-    ephemeral_token_cleanup: "Ephemeral Token Cleanup"
+    ephemeral_token_cleanup: "Ephemeral Token Cleanup",
+    inbox_cleanup_task: "Inbox Cleanup"
   },
   statusLabel: "Status",
   progress: "Progress",
@@ -1855,9 +1874,34 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit_log_cleanup_task: "Cleanup audit logs",
     task_log_cleanup_task: "Cleanup task logs and historical task run records",
     inactive_account_lock_task: "Scan users hourly and lock inactive accounts automatically",
-    password_expiry_notification_task: "Scan users hourly and send password expiry reminders once per password cycle"
+    password_expiry_notification_task: "Scan users hourly and send password expiry reminders once per password cycle",
+    inbox_cleanup_task: "Delete expired in-app messages and enforce the per-user cap"
   }
-}, E = {
+}, C = {
+  title: "Inbox",
+  bell: "Notifications",
+  empty: "No messages",
+  viewAll: "View all",
+  markAllRead: "Mark all as read",
+  markRead: "Mark as read",
+  unread: "Unread",
+  read: "Read",
+  typeLabel: "Type",
+  createdAt: "Time",
+  unreadCount: "{{count}} unread",
+  filterAll: "All",
+  filterUnread: "Unread only",
+  types: {
+    password_expiry: "Password expiring soon",
+    login_failure_lock: "Account locked after failed sign-in",
+    mfa_disabled: "MFA disabled"
+  },
+  typeDescriptions: {
+    password_expiry: "Your password expires in {{DaysLeft}} days.",
+    login_failure_lock: "Your account was locked after too many failed sign-in attempts.",
+    mfa_disabled: "Multi-factor authentication was disabled on your account."
+  }
+}, F = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -1944,6 +1988,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     },
     settings: "Einstellung",
     dashboard: "Dashboard",
+    inbox: "Posteingang",
     system: {
       settings: "Systemeinstellungen",
       audit: "Audit-Protokoll",
@@ -1978,6 +2023,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     profile: "Profil",
     settings: "Einstellung",
     tasks: "Aufgaben",
+    inbox: "Posteingang",
     taskSchedules: "Geplante Aufgaben",
     tasks_taskList: "Aufgabenliste"
   },
@@ -1997,7 +2043,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, C = {
+}, _ = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -2084,6 +2130,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     },
     settings: "Ajustes",
     dashboard: "Dashboard",
+    inbox: "Bandeja de entrada",
     system: {
       settings: "Ajustes del sistema",
       audit: "Registro de auditoría",
@@ -2118,6 +2165,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     profile: "Perfil",
     settings: "Ajustes",
     tasks: "Tareas",
+    inbox: "Bandeja de entrada",
     taskSchedules: "Tareas programadas",
     tasks_taskList: "Lista de tareas"
   },
@@ -2137,7 +2185,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, F = {
+}, I = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -2224,6 +2272,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     },
     settings: "Paramètres",
     dashboard: "Tableau de bord",
+    inbox: "Boîte de réception",
     system: {
       settings: "Paramètres système",
       audit: "Journal d'audit",
@@ -2258,6 +2307,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     profile: "Profil",
     settings: "Paramètres",
     tasks: "Tâches",
+    inbox: "Boîte de réception",
     taskSchedules: "Tâches planifiées",
     tasks_taskList: "Liste des tâches"
   },
@@ -2277,7 +2327,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, I = {
+}, L = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -2364,6 +2414,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     },
     settings: "الإعدادات",
     dashboard: "لوحة التحكم",
+    inbox: "صندوق الوارد",
     system: {
       settings: "إعدادات النظام",
       audit: "سجل التدقيق",
@@ -2398,6 +2449,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     profile: "الملف الشخصي",
     settings: "الإعدادات",
     tasks: "المهام",
+    inbox: "صندوق الوارد",
     taskSchedules: "المهام المجدولة",
     tasks_taskList: "قائمة المهام"
   },
@@ -2417,7 +2469,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, _ = {
+}, M = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2504,6 +2556,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     },
     settings: "Inställningar",
     dashboard: "Instrumentpanel",
+    inbox: "Inkorg",
     system: {
       settings: "Systeminställningar",
       audit: "Granskningslogg",
@@ -2538,6 +2591,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     profile: "Profil",
     settings: "Inställningar",
     tasks: "Uppgifter",
+    inbox: "Inkorg",
     taskSchedules: "Schemalagda uppgifter",
     tasks_taskList: "Uppgiftslista"
   },
@@ -2557,7 +2611,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, L = {
+}, U = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2636,7 +2690,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, M = {
+}, q = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -3222,7 +3276,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "策略管理"
     }
   }
-}, U = {
+}, N = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -3849,7 +3903,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "系统设置",
     audit: "审计日志"
   }
-}, q = {
+}, x = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3975,7 +4029,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "已选 {{count}} 个",
     skillDomain: "技能域"
   }
-}, N = {
+}, O = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -3986,7 +4040,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task_log_cleanup_task: "任务日志清理任务",
     inactive_account_lock_task: "不活跃账户锁定任务",
     password_expiry_notification_task: "密码到期提醒任务",
-    ephemeral_token_cleanup: "临时令牌清理"
+    ephemeral_token_cleanup: "临时令牌清理",
+    inbox_cleanup_task: "站内信清理"
   },
   statusLabel: "状态",
   progress: "进度",
@@ -4045,9 +4100,34 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit_log_cleanup_task: "清理审计日志",
     task_log_cleanup_task: "清理任务日志及历史运行记录",
     inactive_account_lock_task: "每小时扫描用户并自动锁定不活跃账户",
-    password_expiry_notification_task: "每小时扫描用户，并在每个密码周期内发送一次密码到期提醒"
+    password_expiry_notification_task: "每小时扫描用户，并在每个密码周期内发送一次密码到期提醒",
+    inbox_cleanup_task: "删除过期站内信并限制每位用户的消息数量"
   }
-}, O = {
+}, B = {
+  title: "站内信",
+  bell: "通知",
+  empty: "暂无消息",
+  viewAll: "查看全部",
+  markAllRead: "全部标为已读",
+  markRead: "标为已读",
+  unread: "未读",
+  read: "已读",
+  typeLabel: "类型",
+  createdAt: "时间",
+  unreadCount: "{{count}} 条未读",
+  filterAll: "全部",
+  filterUnread: "仅未读",
+  types: {
+    password_expiry: "密码即将过期",
+    login_failure_lock: "登录失败次数过多，账号已锁定",
+    mfa_disabled: "已关闭多因素认证"
+  },
+  typeDescriptions: {
+    password_expiry: "您的密码将在 {{DaysLeft}} 天后过期。",
+    login_failure_lock: "由于登录失败次数过多，您的账号已被锁定。",
+    mfa_disabled: "您账号的多因素认证已被关闭。"
+  }
+}, V = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -4119,7 +4199,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, x = {
+}, K = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -4699,7 +4779,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Richtlinienverwaltung"
     }
   }
-}, B = {
+}, j = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -5322,7 +5402,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, V = {
+}, G = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -5448,7 +5528,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} ausgewählt",
     skillDomain: "Fähigkeitsbereich"
   }
-}, K = {
+}, H = {
   listTitle: "Aufgabenliste",
   detailTitle: "Aufgabendetails",
   typeLabel: "Typ",
@@ -5459,7 +5539,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task_log_cleanup_task: "Bereinigung von Aufgaben-Logs",
     inactive_account_lock_task: "Sperrung inaktiver Konten",
     password_expiry_notification_task: "Benachrichtigung bei Passwortablauf",
-    ephemeral_token_cleanup: "Bereinigung kurzlebiger Tokens"
+    ephemeral_token_cleanup: "Bereinigung kurzlebiger Tokens",
+    inbox_cleanup_task: "Posteingang-Bereinigung"
   },
   statusLabel: "Status",
   progress: "Fortschritt",
@@ -5518,9 +5599,34 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit_log_cleanup_task: "Audit-Logs bereinigen",
     task_log_cleanup_task: "Aufgabenprotokolle und historische Ausführungseinträge bereinigen",
     inactive_account_lock_task: "Benutzer stündlich prüfen und inaktive Konten automatisch sperren",
-    password_expiry_notification_task: "Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden"
+    password_expiry_notification_task: "Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden",
+    inbox_cleanup_task: "Abgelaufene In-App-Nachrichten löschen und die Obergrenze pro Benutzer durchsetzen"
   }
-}, j = {
+}, W = {
+  title: "Posteingang",
+  bell: "Benachrichtigungen",
+  empty: "Keine Nachrichten",
+  viewAll: "Alle anzeigen",
+  markAllRead: "Alle als gelesen markieren",
+  markRead: "Als gelesen markieren",
+  unread: "Ungelesen",
+  read: "Gelesen",
+  typeLabel: "Typ",
+  createdAt: "Zeit",
+  unreadCount: "{{count}} ungelesen",
+  filterAll: "Alle",
+  filterUnread: "Nur ungelesen",
+  types: {
+    password_expiry: "Passwort läuft bald ab",
+    login_failure_lock: "Konto nach fehlgeschlagenen Anmeldungen gesperrt",
+    mfa_disabled: "MFA deaktiviert"
+  },
+  typeDescriptions: {
+    password_expiry: "Ihr Passwort läuft in {{DaysLeft}} Tagen ab.",
+    login_failure_lock: "Ihr Konto wurde nach zu vielen fehlgeschlagenen Anmeldeversuchen gesperrt.",
+    mfa_disabled: "Die Multi-Faktor-Authentifizierung wurde für Ihr Konto deaktiviert."
+  }
+}, J = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -5592,7 +5698,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, G = {
+}, Z = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -6172,7 +6278,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestión de políticas"
     }
   }
-}, H = {
+}, Y = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -6795,7 +6901,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, W = {
+}, Q = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -6921,7 +7027,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} seleccionado(s)",
     skillDomain: "Dominio de habilidad"
   }
-}, J = {
+}, $ = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -6932,7 +7038,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task_log_cleanup_task: "Limpieza de registros de tareas",
     inactive_account_lock_task: "Bloqueo de cuentas inactivas",
     password_expiry_notification_task: "Notificación de vencimiento de contraseña",
-    ephemeral_token_cleanup: "Limpieza de tokens efímeros"
+    ephemeral_token_cleanup: "Limpieza de tokens efímeros",
+    inbox_cleanup_task: "Limpieza de bandeja de entrada"
   },
   statusLabel: "Estado",
   progress: "Progreso",
@@ -6991,9 +7098,34 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit_log_cleanup_task: "Limpiar registros de auditoría",
     task_log_cleanup_task: "Limpiar registros de tareas y registros de ejecución histórica",
     inactive_account_lock_task: "Escanear usuarios cada hora y bloquear automáticamente las cuentas inactivas",
-    password_expiry_notification_task: "Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña"
+    password_expiry_notification_task: "Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña",
+    inbox_cleanup_task: "Eliminar mensajes internos caducados y aplicar el límite por usuario"
   }
-}, Z = {
+}, X = {
+  title: "Bandeja de entrada",
+  bell: "Notificaciones",
+  empty: "No hay mensajes",
+  viewAll: "Ver todos",
+  markAllRead: "Marcar todos como leídos",
+  markRead: "Marcar como leído",
+  unread: "No leído",
+  read: "Leído",
+  typeLabel: "Tipo",
+  createdAt: "Hora",
+  unreadCount: "{{count}} no leídos",
+  filterAll: "Todos",
+  filterUnread: "Solo no leídos",
+  types: {
+    password_expiry: "La contraseña caduca pronto",
+    login_failure_lock: "Cuenta bloqueada tras inicios de sesión fallidos",
+    mfa_disabled: "MFA desactivada"
+  },
+  typeDescriptions: {
+    password_expiry: "Su contraseña caduca en {{DaysLeft}} días.",
+    login_failure_lock: "Su cuenta se bloqueó tras demasiados intentos de inicio de sesión fallidos.",
+    mfa_disabled: "La autenticación multifactor se desactivó en su cuenta."
+  }
+}, ee = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -7065,7 +7197,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, Y = {
+}, te = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -7645,7 +7777,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Gestion des politiques"
     }
   }
-}, Q = {
+}, ae = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -8268,7 +8400,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, $ = {
+}, ie = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -8394,7 +8526,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} sélectionné(s)",
     skillDomain: "Domaine de compétence"
   }
-}, X = {
+}, re = {
   listTitle: "Liste des tâches",
   detailTitle: "Détail de la tâche",
   typeLabel: "Type",
@@ -8405,7 +8537,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task_log_cleanup_task: "Nettoyage des journaux de tâches",
     inactive_account_lock_task: "Verrouillage des comptes inactifs",
     password_expiry_notification_task: "Notification d'expiration du mot de passe",
-    ephemeral_token_cleanup: "Nettoyage des jetons éphémères"
+    ephemeral_token_cleanup: "Nettoyage des jetons éphémères",
+    inbox_cleanup_task: "Nettoyage de la boîte de réception"
   },
   statusLabel: "Statut",
   progress: "Progression",
@@ -8464,9 +8597,34 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit_log_cleanup_task: "Nettoyer les journaux d'audit",
     task_log_cleanup_task: "Nettoyer les journaux de tâches et les enregistrements historiques",
     inactive_account_lock_task: "Analyser les utilisateurs toutes les heures et verrouiller automatiquement les comptes inactifs",
-    password_expiry_notification_task: "Analyser les utilisateurs toutes les heures et envoyer des rappels d'expiration du mot de passe une fois par cycle de mot de passe"
+    password_expiry_notification_task: "Analyser les utilisateurs toutes les heures et envoyer des rappels d'expiration du mot de passe une fois par cycle de mot de passe",
+    inbox_cleanup_task: "Supprimer les messages internes expirés et appliquer le plafond par utilisateur"
   }
-}, ee = {
+}, se = {
+  title: "Boîte de réception",
+  bell: "Notifications",
+  empty: "Aucun message",
+  viewAll: "Tout voir",
+  markAllRead: "Tout marquer comme lu",
+  markRead: "Marquer comme lu",
+  unread: "Non lu",
+  read: "Lu",
+  typeLabel: "Type",
+  createdAt: "Heure",
+  unreadCount: "{{count}} non lus",
+  filterAll: "Tous",
+  filterUnread: "Non lus uniquement",
+  types: {
+    password_expiry: "Mot de passe bientôt expiré",
+    login_failure_lock: "Compte verrouillé après des échecs de connexion",
+    mfa_disabled: "MFA désactivée"
+  },
+  typeDescriptions: {
+    password_expiry: "Votre mot de passe expire dans {{DaysLeft}} jours.",
+    login_failure_lock: "Votre compte a été verrouillé après trop de tentatives de connexion échouées.",
+    mfa_disabled: "L'authentification multifacteur a été désactivée sur votre compte."
+  }
+}, oe = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -8538,7 +8696,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, te = {
+}, ne = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -9118,7 +9276,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "إدارة السياسات"
     }
   }
-}, ae = {
+}, le = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -9741,7 +9899,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, ie = {
+}, de = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -9867,7 +10025,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} محدد",
     skillDomain: "مجال المهارة"
   }
-}, re = {
+}, ce = {
   listTitle: "قائمة المهام",
   detailTitle: "تفاصيل المهمة",
   typeLabel: "النوع",
@@ -9878,7 +10036,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task_log_cleanup_task: "تنظيف سجلات المهام",
     inactive_account_lock_task: "مهمة قفل الحسابات غير النشطة",
     password_expiry_notification_task: "مهمة إشعار انتهاء صلاحية كلمة المرور",
-    ephemeral_token_cleanup: "تنظيف الرموز المؤقتة"
+    ephemeral_token_cleanup: "تنظيف الرموز المؤقتة",
+    inbox_cleanup_task: "تنظيف صندوق الوارد"
   },
   statusLabel: "الحالة",
   progress: "التقدم",
@@ -9937,9 +10096,34 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit_log_cleanup_task: "تنظيف سجلات التدقيق",
     task_log_cleanup_task: "تنظيف سجلات المهام وسجلات التشغيل التاريخية",
     inactive_account_lock_task: "فحص المستخدمين كل ساعة وقفل الحسابات غير النشطة تلقائياً",
-    password_expiry_notification_task: "فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور"
+    password_expiry_notification_task: "فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور",
+    inbox_cleanup_task: "حذف الرسائل الداخلية المنتهية وتطبيق الحد الأقصى لكل مستخدم"
   }
-}, se = {
+}, ue = {
+  title: "صندوق الوارد",
+  bell: "الإشعارات",
+  empty: "لا توجد رسائل",
+  viewAll: "عرض الكل",
+  markAllRead: "تعيين الكل كمقروء",
+  markRead: "تعيين كمقروء",
+  unread: "غير مقروء",
+  read: "مقروء",
+  typeLabel: "النوع",
+  createdAt: "الوقت",
+  unreadCount: "{{count}} غير مقروء",
+  filterAll: "الكل",
+  filterUnread: "غير المقروء فقط",
+  types: {
+    password_expiry: "كلمة المرور ستنتهي قريبًا",
+    login_failure_lock: "تم قفل الحساب بعد محاولات تسجيل دخول فاشلة",
+    mfa_disabled: "تم تعطيل المصادقة متعددة العوامل"
+  },
+  typeDescriptions: {
+    password_expiry: "ستنتهي صلاحية كلمة المرور خلال {{DaysLeft}} يومًا.",
+    login_failure_lock: "تم قفل حسابك بعد محاولات تسجيل دخول فاشلة كثيرة.",
+    mfa_disabled: "تم تعطيل المصادقة متعددة العوامل على حسابك."
+  }
+}, pe = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -10011,7 +10195,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, oe = {
+}, me = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -10591,7 +10775,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
       policy: "Policyhantering"
     }
   }
-}, ne = {
+}, ge = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -11214,7 +11398,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, le = {
+}, he = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -11340,7 +11524,7 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     skillsSelected: "{{count}} valda",
     skillDomain: "Färdighetsdomän"
   }
-}, de = {
+}, fe = {
   listTitle: "Uppgiftslista",
   detailTitle: "Uppgiftsdetaljer",
   typeLabel: "Typ",
@@ -11351,7 +11535,8 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     task_log_cleanup_task: "Rensning av uppgiftsloggar",
     inactive_account_lock_task: "Låsning av inaktiva konton",
     password_expiry_notification_task: "Avisering om lösenordsutgång",
-    ephemeral_token_cleanup: "Rensning av tillfälliga tokens"
+    ephemeral_token_cleanup: "Rensning av tillfälliga tokens",
+    inbox_cleanup_task: "Rensning av inkorgen"
   },
   statusLabel: "Status",
   progress: "Framsteg",
@@ -11410,68 +11595,100 @@ const we = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     audit_log_cleanup_task: "Rensa granskningsloggar",
     task_log_cleanup_task: "Rensa uppgiftsloggar och historiska körningsdata",
     inactive_account_lock_task: "Skanna användare varje timme och lås inaktiva konton automatiskt",
-    password_expiry_notification_task: "Skanna användare varje timme och skicka påminnelser om lösenordsutgång en gång per lösenordscykel"
+    password_expiry_notification_task: "Skanna användare varje timme och skicka påminnelser om lösenordsutgång en gång per lösenordscykel",
+    inbox_cleanup_task: "Ta bort utgångna meddelanden i appen och tillämpa taket per användare"
+  }
+}, ve = {
+  title: "Inkorg",
+  bell: "Aviseringar",
+  empty: "Inga meddelanden",
+  viewAll: "Visa alla",
+  markAllRead: "Markera alla som lästa",
+  markRead: "Markera som läst",
+  unread: "Oläst",
+  read: "Läst",
+  typeLabel: "Typ",
+  createdAt: "Tid",
+  unreadCount: "{{count}} olästa",
+  filterAll: "Alla",
+  filterUnread: "Endast olästa",
+  types: {
+    password_expiry: "Lösenordet går ut snart",
+    login_failure_lock: "Kontot låstes efter misslyckade inloggningar",
+    mfa_disabled: "MFA inaktiverad"
+  },
+  typeDescriptions: {
+    password_expiry: "Ditt lösenord går ut om {{DaysLeft}} dagar.",
+    login_failure_lock: "Ditt konto låstes efter för många misslyckade inloggningsförsök.",
+    mfa_disabled: "Multifaktorautentisering inaktiverades på ditt konto."
   }
 };
-g.use(f).use(h).init({
-  ns: ["common", "authorization", "system", "ai", "task"],
+h.use(v).use(f).init({
+  ns: ["common", "authorization", "system", "ai", "task", "inbox"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: S,
-      common: L,
-      authorization: M,
-      system: U,
-      ai: q,
-      task: N
+      translation: T,
+      common: U,
+      authorization: q,
+      system: N,
+      ai: x,
+      task: O,
+      inbox: B
     },
     "en-US": {
-      translation: T,
-      common: w,
-      authorization: P,
-      system: R,
-      ai: D,
-      task: z
+      translation: w,
+      common: P,
+      authorization: R,
+      system: D,
+      ai: z,
+      task: E,
+      inbox: C
     },
     "de-DE": {
-      translation: E,
-      common: O,
-      authorization: x,
-      system: B,
-      ai: V,
-      task: K
+      translation: F,
+      common: V,
+      authorization: K,
+      system: j,
+      ai: G,
+      task: H,
+      inbox: W
     },
     "es-ES": {
-      translation: C,
-      common: j,
-      authorization: G,
-      system: H,
-      ai: W,
-      task: J
+      translation: _,
+      common: J,
+      authorization: Z,
+      system: Y,
+      ai: Q,
+      task: $,
+      inbox: X
     },
     "fr-FR": {
-      translation: F,
-      common: Z,
-      authorization: Y,
-      system: Q,
-      ai: $,
-      task: X
-    },
-    "ar-AE": {
       translation: I,
       common: ee,
       authorization: te,
       system: ae,
       ai: ie,
-      task: re
+      task: re,
+      inbox: se
+    },
+    "ar-AE": {
+      translation: L,
+      common: oe,
+      authorization: ne,
+      system: le,
+      ai: de,
+      task: ce,
+      inbox: ue
     },
     "sv-SE": {
-      translation: _,
-      common: se,
-      authorization: oe,
-      system: ne,
-      ai: le,
-      task: de
+      translation: M,
+      common: pe,
+      authorization: me,
+      system: ge,
+      ai: he,
+      task: fe,
+      inbox: ve
     }
   },
   fallbackLng: "en-US",
@@ -11480,30 +11697,30 @@ g.use(f).use(h).init({
     escapeValue: !1
   }
 });
-const Pe = {
+const Ue = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
-function ce(e) {
+function ke(e) {
   try {
-    return v(e);
+    return k(e);
   } catch (t) {
     return console.error(t), {};
   }
 }
-function p(e) {
+function m(e) {
   return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function Re(e) {
+function qe(e) {
   if (!e || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
   const a = t.slice(3), r = a.indexOf(`
 ---`);
   if (r === -1) return e;
-  const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = ce(n), i = Object.keys(o);
+  const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = ke(n), i = Object.keys(o);
   if (i.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(o[m] ?? "") + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((p) => "| " + m(p) + " | " + m(o[p] ?? "") + " |").join(`
 `);
   return l + `
 ` + d + `
@@ -11512,14 +11729,17 @@ function Re(e) {
 ` + s;
 }
 export {
-  Pe as P,
-  ke as a,
-  we as b,
-  Re as c,
-  Te as d,
-  ve as f,
-  Ae as g,
-  Se as i,
-  be as m,
-  ye as t
+  Ue as P,
+  Me as a,
+  Le as b,
+  Ie as c,
+  _e as d,
+  Re as e,
+  Pe as f,
+  ze as g,
+  qe as h,
+  Ce as i,
+  Fe as j,
+  De as m,
+  Ee as t
 };

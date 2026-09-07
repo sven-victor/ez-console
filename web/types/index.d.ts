@@ -798,6 +798,10 @@ export declare namespace API {
         HealthResult,
         ID,
         ImportLDAPUsersRequest,
+        InboxMessage,
+        InboxMessageType,
+        InboxStreamEvent,
+        InboxUnreadCount,
         LDAPSettings,
         LDAPTestMessage,
         LDAPTestRequest,
@@ -805,6 +809,7 @@ export declare namespace API {
         listAIModelsParams,
         listChatSessionsParams,
         listFilesParams,
+        listInboxMessagesParams,
         listOrganizationsParams,
         listOrganizationUsersParams,
         listRolesParams,
@@ -817,6 +822,7 @@ export declare namespace API {
         LoginRequest,
         LoginResponse,
         LogStorageBackendOption,
+        markInboxMessageReadParams,
         MenuConfig,
         MessageData,
         moveSkillPathParams,
@@ -834,6 +840,7 @@ export declare namespace API {
         PaginationResponseModelAIModel,
         PaginationResponseModelAuditLog,
         PaginationResponseModelFile,
+        PaginationResponseModelInboxMessage,
         PaginationResponseModelOrganization,
         PaginationResponseModelRole,
         PaginationResponseModelServiceAccount,
@@ -881,8 +888,10 @@ export declare namespace API {
         ResponseAuthorizationapiResetUserPasswordResponse,
         ResponseAuthorizationapiSendDisableMFACodeResponse,
         ResponseAuthorizationapiTokenResponse,
+        ResponseInboxapiInboxUnreadCount,
         ResponseModelAIChatSession,
         ResponseModelAIModel,
+        ResponseModelInboxMessage,
         ResponseModelLDAPTestResponse,
         ResponseModelOAuthSettings,
         ResponseModelOrganization,
@@ -1726,6 +1735,28 @@ export declare interface ImportLDAPUsersRequest {
     user_dn?: string[];
 }
 
+export declare interface InboxMessage {
+    created_at: string;
+    id: string;
+    payload: Record<string, any>;
+    read_at: string;
+    type: InboxMessageType;
+    updated_at: string;
+    user_id: string;
+}
+
+export declare type InboxMessageType = "password_expiry" | "login_failure_lock" | "mfa_disabled";
+
+export declare interface InboxStreamEvent {
+    event_type: string;
+    message: InboxMessage;
+    unread_count: number;
+}
+
+export declare interface InboxUnreadCount {
+    unread_count: number;
+}
+
 export declare type IRoute = IRouteItem | IRouteGroup;
 
 export declare interface IRouteGroup {
@@ -1891,6 +1922,15 @@ export declare interface listFilesParams {
     access?: string;
 }
 
+export declare interface listInboxMessagesParams {
+    /** Current page number */
+    current?: number;
+    /** Number of items per page */
+    page_size?: number;
+    /** If true, only unread messages */
+    unread?: boolean;
+}
+
 export declare interface listOrganizationsParams {
     /** Current page */
     current?: number;
@@ -2032,6 +2072,11 @@ export declare interface MarkdownViewerProps {
     components?: default_2.ComponentProps<typeof XMarkdown>['components'];
     paragraphTag?: keyof JSX.IntrinsicElements;
     rootClassName?: string;
+}
+
+export declare interface markInboxMessageReadParams {
+    /** Message ID (UUID) */
+    id: string;
 }
 
 export declare interface MenuConfig {
@@ -2199,6 +2244,15 @@ export declare interface PaginationResponseModelFile {
     code: string;
     current: number;
     data: File_2[];
+    page_size: number;
+    total: number;
+    trace_id: string;
+}
+
+export declare interface PaginationResponseModelInboxMessage {
+    code: string;
+    current: number;
+    data: InboxMessage[];
     page_size: number;
     total: number;
     trace_id: string;
@@ -2599,6 +2653,13 @@ export declare interface ResponseAuthorizationapiTokenResponse {
     trace_id: string;
 }
 
+export declare interface ResponseInboxapiInboxUnreadCount {
+    code: string;
+    data: InboxUnreadCount;
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseModelAIChatSession {
     code: string;
     data: AIChatSession;
@@ -2609,6 +2670,13 @@ export declare interface ResponseModelAIChatSession {
 export declare interface ResponseModelAIModel {
     code: string;
     data: AIModel;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelInboxMessage {
+    code: string;
+    data: InboxMessage;
     err: string;
     trace_id: string;
 }
@@ -3137,6 +3205,10 @@ declare interface SiteContextType {
     addTask: (task: API.Task) => void;
     tasksDropdownOpen: boolean;
     setTasksDropdownOpen: (open: boolean) => void;
+    inboxUnreadCount: number;
+    setInboxUnreadCount: (count: number) => void;
+    inboxRevision: number;
+    bumpInboxRevision: () => void;
 }
 
 export declare interface Skill {

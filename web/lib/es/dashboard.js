@@ -7,7 +7,7 @@ import { Bar as T } from "react-chartjs-2";
 import { D as w } from "./components.js";
 import { useRequest as A } from "ahooks";
 import { a as D } from "./index.js";
-import { a as k } from "./base.js";
+import { e as k } from "./base.js";
 h.register(
   C,
   S,
