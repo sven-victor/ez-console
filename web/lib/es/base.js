@@ -1,12 +1,12 @@
 import { r as u } from "./client.js";
-import h from "i18next";
-import { initReactI18next as f } from "react-i18next";
-import v from "i18next-browser-languagedetector";
-import { load as k } from "js-yaml";
-const Pe = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
+import f from "i18next";
+import { initReactI18next as v } from "react-i18next";
+import k from "i18next-browser-languagedetector";
+import { load as b } from "js-yaml";
+const Re = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = e instanceof Date ? e : new Date(e), r = a.getFullYear(), n = String(a.getMonth() + 1).padStart(2, "0"), s = String(a.getDate()).padStart(2, "0"), o = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
   return t.replace("YYYY", String(r)).replace("MM", n).replace("DD", s).replace("HH", o).replace("mm", i).replace("ss", l);
-}, Re = (e, t) => {
+}, De = (e, t) => {
   if (typeof e != "string")
     throw new Error("Color must be a string.");
   const a = e.trim().toLowerCase();
@@ -36,15 +36,15 @@ const Pe = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, De = (e) => {
+}, ze = (e) => {
   if (!e)
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, ze = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Ee = (e) => {
+}, Ee = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Ce = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((a, r) => r !== 0 && t.includes(a) ? a : a.charAt(0).toUpperCase() + a.slice(1)).join(" ");
-}, Ce = (e, t, a) => {
+}, Fe = (e, t, a) => {
   if (e === void 0 && t === void 0) return !0;
   if (e === void 0 || t === void 0 || e.length !== t.length) return !1;
   const r = new Array(t.length).fill(!1);
@@ -59,14 +59,14 @@ const Pe = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   }
   return !0;
 };
-function Fe(e) {
+function _e(e) {
   try {
     return { parsed: JSON.parse(e), isJSON: !0 };
   } catch {
     return { parsed: null, isJSON: !1 };
   }
 }
-async function b(e, t) {
+async function A(e, t) {
   return u("/api/files", {
     method: "GET",
     params: {
@@ -75,7 +75,7 @@ async function b(e, t) {
     ...t || {}
   });
 }
-async function A(e, t, a) {
+async function y(e, t, a) {
   const r = new FormData();
   return t && r.append("file", t), Object.keys(e).forEach((n) => {
     const s = e[n];
@@ -90,7 +90,7 @@ async function A(e, t, a) {
     ...a || {}
   });
 }
-async function y(e, t) {
+async function S(e, t) {
   const { fileKey: a, ...r } = e;
   return u(`/api/files/${a}`, {
     method: "GET",
@@ -98,33 +98,33 @@ async function y(e, t) {
     ...t || {}
   });
 }
-async function S(e) {
+async function T(e) {
   return u("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const _e = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  downloadFile: y,
-  getStatistics: S,
-  listFiles: b,
-  uploadFile: A
+  downloadFile: S,
+  getStatistics: T,
+  listFiles: A,
+  uploadFile: y
 }, Symbol.toStringTag, { value: "Module" }));
 function g(e) {
   const t = e.payload;
   return t && typeof t == "object" && !Array.isArray(t) ? t : {};
 }
-function Ie(e, t) {
+function Le(e, t) {
   return e(`types.${t.type}`, { defaultValue: t.type, ...g(t) });
 }
-function Le(e, t) {
+function Me(e, t) {
   return e(`typeDescriptions.${t.type}`, { defaultValue: "", ...g(t) });
 }
-function Me(e) {
+function Ue(e) {
   return !e.read_at;
 }
-const T = {
+const w = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -271,7 +271,7 @@ const T = {
     confirm: "确认",
     cancel: "取消"
   }
-}, w = {
+}, P = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -414,7 +414,7 @@ const T = {
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, P = {
+}, R = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -487,7 +487,7 @@ const T = {
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, R = {
+}, D = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -1052,7 +1052,7 @@ const T = {
       policy: "Policy Management"
     }
   }
-}, D = {
+}, z = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1677,7 +1677,7 @@ const T = {
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, z = {
+}, E = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1803,7 +1803,7 @@ const T = {
     skillsSelected: "{{count}} selected",
     skillDomain: "Skill domain"
   }
-}, E = {
+}, C = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1877,7 +1877,7 @@ const T = {
     password_expiry_notification_task: "Scan users hourly and send password expiry reminders once per password cycle",
     inbox_cleanup_task: "Delete expired in-app messages and enforce the per-user cap"
   }
-}, C = {
+}, F = {
   title: "Inbox",
   bell: "Notifications",
   empty: "No messages",
@@ -1901,7 +1901,7 @@ const T = {
     login_failure_lock: "Your account was locked after too many failed sign-in attempts.",
     mfa_disabled: "Multi-factor authentication was disabled on your account."
   }
-}, F = {
+}, _ = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -2043,7 +2043,7 @@ const T = {
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, _ = {
+}, I = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -2185,7 +2185,7 @@ const T = {
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, I = {
+}, L = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -2327,7 +2327,7 @@ const T = {
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, L = {
+}, M = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -2469,7 +2469,7 @@ const T = {
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, M = {
+}, U = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2611,7 +2611,7 @@ const T = {
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, U = {
+}, q = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2690,7 +2690,7 @@ const T = {
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, q = {
+}, N = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -3276,7 +3276,7 @@ const T = {
       policy: "策略管理"
     }
   }
-}, N = {
+}, x = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -3903,7 +3903,7 @@ const T = {
     settings: "系统设置",
     audit: "审计日志"
   }
-}, x = {
+}, O = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -4029,7 +4029,7 @@ const T = {
     skillsSelected: "已选 {{count}} 个",
     skillDomain: "技能域"
   }
-}, O = {
+}, B = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -4103,7 +4103,7 @@ const T = {
     password_expiry_notification_task: "每小时扫描用户，并在每个密码周期内发送一次密码到期提醒",
     inbox_cleanup_task: "删除过期站内信并限制每位用户的消息数量"
   }
-}, B = {
+}, V = {
   title: "站内信",
   bell: "通知",
   empty: "暂无消息",
@@ -4127,7 +4127,7 @@ const T = {
     login_failure_lock: "由于登录失败次数过多，您的账号已被锁定。",
     mfa_disabled: "您账号的多因素认证已被关闭。"
   }
-}, V = {
+}, K = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -4199,7 +4199,7 @@ const T = {
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, K = {
+}, j = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -4779,7 +4779,7 @@ const T = {
       policy: "Richtlinienverwaltung"
     }
   }
-}, j = {
+}, G = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -5402,7 +5402,7 @@ const T = {
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, G = {
+}, H = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -5528,7 +5528,7 @@ const T = {
     skillsSelected: "{{count}} ausgewählt",
     skillDomain: "Fähigkeitsbereich"
   }
-}, H = {
+}, W = {
   listTitle: "Aufgabenliste",
   detailTitle: "Aufgabendetails",
   typeLabel: "Typ",
@@ -5602,7 +5602,7 @@ const T = {
     password_expiry_notification_task: "Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden",
     inbox_cleanup_task: "Abgelaufene In-App-Nachrichten löschen und die Obergrenze pro Benutzer durchsetzen"
   }
-}, W = {
+}, J = {
   title: "Posteingang",
   bell: "Benachrichtigungen",
   empty: "Keine Nachrichten",
@@ -5626,7 +5626,7 @@ const T = {
     login_failure_lock: "Ihr Konto wurde nach zu vielen fehlgeschlagenen Anmeldeversuchen gesperrt.",
     mfa_disabled: "Die Multi-Faktor-Authentifizierung wurde für Ihr Konto deaktiviert."
   }
-}, J = {
+}, Z = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -5698,7 +5698,7 @@ const T = {
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, Z = {
+}, Y = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -6278,7 +6278,7 @@ const T = {
       policy: "Gestión de políticas"
     }
   }
-}, Y = {
+}, Q = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -6901,7 +6901,7 @@ const T = {
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, Q = {
+}, $ = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -7027,7 +7027,7 @@ const T = {
     skillsSelected: "{{count}} seleccionado(s)",
     skillDomain: "Dominio de habilidad"
   }
-}, $ = {
+}, X = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -7101,7 +7101,7 @@ const T = {
     password_expiry_notification_task: "Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña",
     inbox_cleanup_task: "Eliminar mensajes internos caducados y aplicar el límite por usuario"
   }
-}, X = {
+}, ee = {
   title: "Bandeja de entrada",
   bell: "Notificaciones",
   empty: "No hay mensajes",
@@ -7125,7 +7125,7 @@ const T = {
     login_failure_lock: "Su cuenta se bloqueó tras demasiados intentos de inicio de sesión fallidos.",
     mfa_disabled: "La autenticación multifactor se desactivó en su cuenta."
   }
-}, ee = {
+}, te = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -7197,7 +7197,7 @@ const T = {
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, te = {
+}, ae = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -7777,7 +7777,7 @@ const T = {
       policy: "Gestion des politiques"
     }
   }
-}, ae = {
+}, ie = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -8400,7 +8400,7 @@ const T = {
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, ie = {
+}, re = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -8526,7 +8526,7 @@ const T = {
     skillsSelected: "{{count}} sélectionné(s)",
     skillDomain: "Domaine de compétence"
   }
-}, re = {
+}, se = {
   listTitle: "Liste des tâches",
   detailTitle: "Détail de la tâche",
   typeLabel: "Type",
@@ -8600,7 +8600,7 @@ const T = {
     password_expiry_notification_task: "Analyser les utilisateurs toutes les heures et envoyer des rappels d'expiration du mot de passe une fois par cycle de mot de passe",
     inbox_cleanup_task: "Supprimer les messages internes expirés et appliquer le plafond par utilisateur"
   }
-}, se = {
+}, oe = {
   title: "Boîte de réception",
   bell: "Notifications",
   empty: "Aucun message",
@@ -8624,7 +8624,7 @@ const T = {
     login_failure_lock: "Votre compte a été verrouillé après trop de tentatives de connexion échouées.",
     mfa_disabled: "L'authentification multifacteur a été désactivée sur votre compte."
   }
-}, oe = {
+}, ne = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -8696,7 +8696,7 @@ const T = {
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, ne = {
+}, le = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -9276,7 +9276,7 @@ const T = {
       policy: "إدارة السياسات"
     }
   }
-}, le = {
+}, de = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -9899,7 +9899,7 @@ const T = {
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, de = {
+}, ce = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -10025,7 +10025,7 @@ const T = {
     skillsSelected: "{{count}} محدد",
     skillDomain: "مجال المهارة"
   }
-}, ce = {
+}, ue = {
   listTitle: "قائمة المهام",
   detailTitle: "تفاصيل المهمة",
   typeLabel: "النوع",
@@ -10099,7 +10099,7 @@ const T = {
     password_expiry_notification_task: "فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور",
     inbox_cleanup_task: "حذف الرسائل الداخلية المنتهية وتطبيق الحد الأقصى لكل مستخدم"
   }
-}, ue = {
+}, pe = {
   title: "صندوق الوارد",
   bell: "الإشعارات",
   empty: "لا توجد رسائل",
@@ -10123,7 +10123,7 @@ const T = {
     login_failure_lock: "تم قفل حسابك بعد محاولات تسجيل دخول فاشلة كثيرة.",
     mfa_disabled: "تم تعطيل المصادقة متعددة العوامل على حسابك."
   }
-}, pe = {
+}, me = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -10195,7 +10195,7 @@ const T = {
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, me = {
+}, ge = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -10775,7 +10775,7 @@ const T = {
       policy: "Policyhantering"
     }
   }
-}, ge = {
+}, he = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -11398,7 +11398,7 @@ const T = {
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, he = {
+}, fe = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -11524,7 +11524,7 @@ const T = {
     skillsSelected: "{{count}} valda",
     skillDomain: "Färdighetsdomän"
   }
-}, fe = {
+}, ve = {
   listTitle: "Uppgiftslista",
   detailTitle: "Uppgiftsdetaljer",
   typeLabel: "Typ",
@@ -11598,7 +11598,7 @@ const T = {
     password_expiry_notification_task: "Skanna användare varje timme och skicka påminnelser om lösenordsutgång en gång per lösenordscykel",
     inbox_cleanup_task: "Ta bort utgångna meddelanden i appen och tillämpa taket per användare"
   }
-}, ve = {
+}, ke = {
   title: "Inkorg",
   bell: "Aviseringar",
   empty: "Inga meddelanden",
@@ -11623,72 +11623,72 @@ const T = {
     mfa_disabled: "Multifaktorautentisering inaktiverades på ditt konto."
   }
 };
-h.use(v).use(f).init({
+f.use(k).use(v).init({
   ns: ["common", "authorization", "system", "ai", "task", "inbox"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: T,
-      common: U,
-      authorization: q,
-      system: N,
-      ai: x,
-      task: O,
-      inbox: B
+      translation: w,
+      common: q,
+      authorization: N,
+      system: x,
+      ai: O,
+      task: B,
+      inbox: V
     },
     "en-US": {
-      translation: w,
-      common: P,
-      authorization: R,
-      system: D,
-      ai: z,
-      task: E,
-      inbox: C
+      translation: P,
+      common: R,
+      authorization: D,
+      system: z,
+      ai: E,
+      task: C,
+      inbox: F
     },
     "de-DE": {
-      translation: F,
-      common: V,
-      authorization: K,
-      system: j,
-      ai: G,
-      task: H,
-      inbox: W
+      translation: _,
+      common: K,
+      authorization: j,
+      system: G,
+      ai: H,
+      task: W,
+      inbox: J
     },
     "es-ES": {
-      translation: _,
-      common: J,
-      authorization: Z,
-      system: Y,
-      ai: Q,
-      task: $,
-      inbox: X
+      translation: I,
+      common: Z,
+      authorization: Y,
+      system: Q,
+      ai: $,
+      task: X,
+      inbox: ee
     },
     "fr-FR": {
-      translation: I,
-      common: ee,
-      authorization: te,
-      system: ae,
-      ai: ie,
-      task: re,
-      inbox: se
+      translation: L,
+      common: te,
+      authorization: ae,
+      system: ie,
+      ai: re,
+      task: se,
+      inbox: oe
     },
     "ar-AE": {
-      translation: L,
-      common: oe,
-      authorization: ne,
-      system: le,
-      ai: de,
-      task: ce,
-      inbox: ue
+      translation: M,
+      common: ne,
+      authorization: le,
+      system: de,
+      ai: ce,
+      task: ue,
+      inbox: pe
     },
     "sv-SE": {
-      translation: M,
-      common: pe,
-      authorization: me,
-      system: ge,
-      ai: he,
-      task: fe,
-      inbox: ve
+      translation: U,
+      common: me,
+      authorization: ge,
+      system: he,
+      ai: fe,
+      task: ve,
+      inbox: ke
     }
   },
   fallbackLng: "en-US",
@@ -11697,30 +11697,48 @@ h.use(v).use(f).init({
     escapeValue: !1
   }
 });
-const Ue = {
+const qe = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
-function ke(e) {
+function be(e) {
   try {
-    return k(e);
+    const t = b(e);
+    return t && typeof t == "object" && !Array.isArray(t) ? t : {};
   } catch (t) {
     return console.error(t), {};
   }
 }
-function m(e) {
-  return e.replace(/\|/g, "\\|").replace(/\n/g, " ");
+function h(e) {
+  if (e == null) return "";
+  if (typeof e == "string") return e;
+  if (typeof e == "number" || typeof e == "boolean" || typeof e == "bigint")
+    return String(e);
+  if (e instanceof Date)
+    return e.toISOString();
+  if (Array.isArray(e))
+    return e.map((t) => h(t)).join(", ");
+  if (typeof e == "object")
+    try {
+      return JSON.stringify(e);
+    } catch {
+      return "";
+    }
+  return String(e);
 }
-function qe(e) {
-  if (!e || !e.trim()) return e;
+function m(e) {
+  return h(e).replace(/\|/g, "\\|").replace(/\n/g, " ");
+}
+function Ne(e) {
+  if (typeof e != "string" || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
   const a = t.slice(3), r = a.indexOf(`
 ---`);
   if (r === -1) return e;
-  const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = ke(n), i = Object.keys(o);
+  const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = be(n), i = Object.keys(o);
   if (i.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((p) => "| " + m(p) + " | " + m(o[p] ?? "") + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((p) => "| " + m(p) + " | " + m(o[p]) + " |").join(`
 `);
   return l + `
 ` + d + `
@@ -11729,17 +11747,17 @@ function qe(e) {
 ` + s;
 }
 export {
-  Ue as P,
-  Me as a,
-  Le as b,
-  Ie as c,
-  _e as d,
-  Re as e,
-  Pe as f,
-  ze as g,
-  qe as h,
-  Ce as i,
-  Fe as j,
-  De as m,
-  Ee as t
+  qe as P,
+  Ue as a,
+  Me as b,
+  Le as c,
+  Ie as d,
+  De as e,
+  Re as f,
+  Ee as g,
+  Ne as h,
+  Fe as i,
+  _e as j,
+  ze as m,
+  Ce as t
 };
