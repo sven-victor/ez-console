@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { createContext, useContext, useEffect, ReactNode, useState } from 'react';
+import React, { createContext, useContext, useEffect, ReactNode, useState, useCallback } from 'react';
 import api from '@/service/api';
 import { useRequest } from 'ahooks';
 import { useAuth } from './AuthContext';
@@ -35,6 +35,10 @@ export interface SiteContextType {
   addTask: (task: API.Task) => void;
   tasksDropdownOpen: boolean
   setTasksDropdownOpen: (open: boolean) => void;
+  inboxUnreadCount: number;
+  setInboxUnreadCount: (count: number) => void;
+  inboxRevision: number;
+  bumpInboxRevision: () => void;
 }
 
 // Create site context
@@ -53,6 +57,10 @@ export const SiteContext = createContext<SiteContextType>({
   addTask: () => { },
   tasksDropdownOpen: false,
   setTasksDropdownOpen: () => { },
+  inboxUnreadCount: 0,
+  setInboxUnreadCount: () => { },
+  inboxRevision: 0,
+  bumpInboxRevision: () => { },
 });
 
 export const useSite = () => useContext(SiteContext);
@@ -116,6 +124,11 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
   const [tasksDropdownOpen, setTasksDropdownOpen] = useState<boolean>(false);
 
   const [tasks, setTasks] = useState<API.Task[]>([]);
+  const [inboxUnreadCount, setInboxUnreadCount] = useState(0);
+  const [inboxRevision, setInboxRevision] = useState(0);
+  const bumpInboxRevision = useCallback(() => {
+    setInboxRevision((n) => n + 1);
+  }, []);
 
   return (
     <SiteContext.Provider
@@ -144,7 +157,11 @@ export const SiteProvider: React.FC<SiteProviderProps> = ({ children }) => {
         addTask: (task: API.Task) => {
           setTasks((tasks) => [task, ...tasks]);
           setTasksDropdownOpen(true)
-        }
+        },
+        inboxUnreadCount,
+        setInboxUnreadCount,
+        inboxRevision,
+        bumpInboxRevision,
       }}
     >
       {children}

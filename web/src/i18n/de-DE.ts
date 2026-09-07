@@ -102,6 +102,7 @@ export default {
     },
     settings: 'Einstellung',
     dashboard: 'Dashboard',
+    inbox: 'Posteingang',
     system: {
       settings: 'Systemeinstellungen',
       audit: 'Audit-Protokoll',
@@ -136,6 +137,7 @@ export default {
     profile: 'Profil',
     settings: 'Einstellung',
     tasks: 'Aufgaben',
+    inbox: 'Posteingang',
     taskSchedules: 'Geplante Aufgaben',
     tasks_taskList: 'Aufgabenliste',
   },

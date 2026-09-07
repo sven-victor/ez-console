@@ -54,6 +54,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/service"
 	"github.com/sven-victor/ez-console/pkg/storage"
+
 	// Register the built-in "db" storage driver (local is registered by pkg/storage itself).
 	_ "github.com/sven-victor/ez-console/pkg/storage/dbfs"
 	"github.com/sven-victor/ez-console/pkg/util"

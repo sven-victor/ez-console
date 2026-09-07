@@ -102,6 +102,7 @@ export default {
     },
     settings: 'الإعدادات',
     dashboard: 'لوحة التحكم',
+    inbox: 'صندوق الوارد',
     system: {
       settings: 'إعدادات النظام',
       audit: 'سجل التدقيق',
@@ -136,6 +137,7 @@ export default {
     profile: 'الملف الشخصي',
     settings: 'الإعدادات',
     tasks: 'المهام',
+    inbox: 'صندوق الوارد',
     taskSchedules: 'المهام المجدولة',
     tasks_taskList: 'قائمة المهام',
   },

@@ -26,6 +26,7 @@ export default {
     inactive_account_lock_task: '不活跃账户锁定任务',
     password_expiry_notification_task: '密码到期提醒任务',
     ephemeral_token_cleanup: '临时令牌清理',
+    inbox_cleanup_task: '站内信清理',
   },
   statusLabel: '状态',
   progress: '进度',
@@ -85,5 +86,6 @@ export default {
     task_log_cleanup_task: '清理任务日志及历史运行记录',
     inactive_account_lock_task: '每小时扫描用户并自动锁定不活跃账户',
     password_expiry_notification_task: '每小时扫描用户，并在每个密码周期内发送一次密码到期提醒',
+    inbox_cleanup_task: '删除过期站内信并限制每位用户的消息数量',
   },
 };

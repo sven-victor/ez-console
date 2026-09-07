@@ -26,6 +26,7 @@ export default {
     inactive_account_lock_task: 'Sperrung inaktiver Konten',
     password_expiry_notification_task: 'Benachrichtigung bei Passwortablauf',
     ephemeral_token_cleanup: 'Bereinigung kurzlebiger Tokens',
+    inbox_cleanup_task: 'Posteingang-Bereinigung',
   },
   statusLabel: 'Status',
   progress: 'Fortschritt',
@@ -85,5 +86,6 @@ export default {
     task_log_cleanup_task: 'Aufgabenprotokolle und historische Ausführungseinträge bereinigen',
     inactive_account_lock_task: 'Benutzer stündlich prüfen und inaktive Konten automatisch sperren',
     password_expiry_notification_task: 'Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden',
+    inbox_cleanup_task: 'Abgelaufene In-App-Nachrichten löschen und die Obergrenze pro Benutzer durchsetzen',
   },
 };

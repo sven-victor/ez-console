@@ -25,6 +25,7 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 19. [Distributed Deployment](./19-distributed-deployment.md) - Multi-node setup, cluster APIs, EventBus, and cache invalidation
 20. [Caching](./20-caching.md) - L1 typed caches, invalidation, TTLs, metrics, and related mechanisms
 21. [Email Notification Module](./21-email-notification-module.md) - SMTP fields, templates, password-expiry and lock jobs
+22. [In-App Messages (Inbox)](./22-inbox.md) - User inbox, REST list/read APIs, and SSE push channel
 
 ## Framework Features
 

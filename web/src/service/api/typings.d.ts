@@ -727,6 +727,31 @@ declare global {
       user_dn?: string[];
     }
   
+    interface InboxMessage {
+      created_at: string;
+      id: string;
+      payload: Record<string, any>;
+      read_at: string;
+      type: InboxMessageType;
+      updated_at: string;
+      user_id: string;
+    }
+  
+    type InboxMessageType =
+      | "password_expiry"
+      | "login_failure_lock"
+      | "mfa_disabled";
+  
+    interface InboxStreamEvent {
+      event_type: string;
+      message: InboxMessage;
+      unread_count: number;
+    }
+  
+    interface InboxUnreadCount {
+      unread_count: number;
+    }
+  
     interface LDAPSettings {
       base_dn: string;
       bind_dn: string;
@@ -805,6 +830,15 @@ declare global {
       file_type?: string;
       /** Access Type */
       access?: string;
+    }
+  
+    interface listInboxMessagesParams {
+      /** Current page number */
+      current?: number;
+      /** Number of items per page */
+      page_size?: number;
+      /** If true, only unread messages */
+      unread?: boolean;
     }
   
     interface listOrganizationsParams {
@@ -926,6 +960,11 @@ declare global {
       id: string;
       /** Display name for UI */
       name: string;
+    }
+  
+    interface markInboxMessageReadParams {
+      /** Message ID (UUID) */
+      id: string;
     }
   
     interface MenuConfig {
@@ -1078,6 +1117,15 @@ declare global {
       code: string;
       current: number;
       data: File[];
+      page_size: number;
+      total: number;
+      trace_id: string;
+    }
+  
+    interface PaginationResponseModelInboxMessage {
+      code: string;
+      current: number;
+      data: InboxMessage[];
       page_size: number;
       total: number;
       trace_id: string;
@@ -1408,6 +1456,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseInboxapiInboxUnreadCount {
+      code: string;
+      data: InboxUnreadCount;
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseModelAIChatSession {
       code: string;
       data: AIChatSession;
@@ -1418,6 +1473,13 @@ declare global {
     interface ResponseModelAIModel {
       code: string;
       data: AIModel;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelInboxMessage {
+      code: string;
+      data: InboxMessage;
       err: string;
       trace_id: string;
     }

@@ -3256,6 +3256,222 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/inbox/messages": {
+            "get": {
+                "description": "List in-app messages for the current user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox"
+                ],
+                "summary": "List inbox messages",
+                "operationId": "listInboxMessages",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Current page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "If true, only unread messages",
+                        "name": "unread",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_InboxMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inbox/messages/{id}/read": {
+            "post": {
+                "description": "Mark a single in-app message as read.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox"
+                ],
+                "summary": "Mark inbox message read",
+                "operationId": "markInboxMessageRead",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Message ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_InboxMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inbox/read-all": {
+            "post": {
+                "description": "Mark every unread in-app message as read for the current user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox"
+                ],
+                "summary": "Mark all inbox messages read",
+                "operationId": "markAllInboxMessagesRead",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-inboxapi_InboxUnreadCount"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inbox/stream": {
+            "get": {
+                "description": "Long-lived SSE stream for in-app messages. Sends inbox events and heartbeats.",
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "Inbox"
+                ],
+                "summary": "Inbox event stream",
+                "operationId": "streamInbox",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Last received message ID for catch-up",
+                        "name": "Last-Event-ID",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event stream",
+                        "schema": {
+                            "$ref": "#/definitions/inboxapi.InboxStreamEvent"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/inbox/unread-count": {
+            "get": {
+                "description": "Return the unread in-app message count for the current user.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Inbox"
+                ],
+                "summary": "Inbox unread count",
+                "operationId": "getInboxUnreadCount",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-inboxapi_InboxUnreadCount"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/ldap-settings/test": {
             "post": {
                 "description": "Test LDAP connection",
@@ -7983,6 +8199,36 @@ const docTemplate = `{
                 }
             }
         },
+        "inboxapi.InboxStreamEvent": {
+            "type": "object",
+            "required": [
+                "event_type",
+                "message",
+                "unread_count"
+            ],
+            "properties": {
+                "event_type": {
+                    "type": "string"
+                },
+                "message": {
+                    "$ref": "#/definitions/model.InboxMessage"
+                },
+                "unread_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "inboxapi.InboxUnreadCount": {
+            "type": "object",
+            "required": [
+                "unread_count"
+            ],
+            "properties": {
+                "unread_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "jsonschema.Definitions": {
             "type": "object",
             "additionalProperties": {
@@ -8567,6 +8813,55 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "FileTypeImage",
                 "FileTypeExport"
+            ]
+        },
+        "model.InboxMessage": {
+            "type": "object",
+            "required": [
+                "created_at",
+                "id",
+                "payload",
+                "read_at",
+                "type",
+                "updated_at",
+                "user_id"
+            ],
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "payload": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "read_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/model.InboxMessageType"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.InboxMessageType": {
+            "type": "string",
+            "enum": [
+                "password_expiry",
+                "login_failure_lock",
+                "mfa_disabled"
+            ],
+            "x-enum-varnames": [
+                "InboxMessagePasswordExpiry",
+                "InboxMessageLoginFailureLock",
+                "InboxMessageMFADisabled"
             ]
         },
         "model.LDAPTestMessage": {
@@ -11501,9 +11796,25 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -11694,6 +12005,40 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.File"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.PaginationResponse-model_InboxMessage": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.InboxMessage"
                     }
                 },
                 "page_size": {
@@ -12648,6 +12993,29 @@ const docTemplate = `{
                 }
             }
         },
+        "util.Response-inboxapi_InboxUnreadCount": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/inboxapi.InboxUnreadCount"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-model_AIChatSession": {
             "type": "object",
             "required": [
@@ -12685,6 +13053,29 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/model.AIModel"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_InboxMessage": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.InboxMessage"
                 },
                 "err": {
                     "type": "string"

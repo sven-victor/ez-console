@@ -102,6 +102,7 @@ export default {
     },
     settings: 'Ajustes',
     dashboard: 'Dashboard',
+    inbox: 'Bandeja de entrada',
     system: {
       settings: 'Ajustes del sistema',
       audit: 'Registro de auditoría',
@@ -136,6 +137,7 @@ export default {
     profile: 'Perfil',
     settings: 'Ajustes',
     tasks: 'Tareas',
+    inbox: 'Bandeja de entrada',
     taskSchedules: 'Tareas programadas',
     tasks_taskList: 'Lista de tareas',
   },

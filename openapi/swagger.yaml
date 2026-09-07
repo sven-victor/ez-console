@@ -856,6 +856,26 @@ definitions:
     - uniqueItems
     - writeOnly
     type: object
+  inboxapi.InboxStreamEvent:
+    properties:
+      event_type:
+        type: string
+      message:
+        $ref: '#/definitions/model.InboxMessage'
+      unread_count:
+        type: integer
+    required:
+    - event_type
+    - message
+    - unread_count
+    type: object
+  inboxapi.InboxUnreadCount:
+    properties:
+      unread_count:
+        type: integer
+    required:
+    - unread_count
+    type: object
   jsonschema.Definitions:
     additionalProperties:
       $ref: '#/definitions/github_com_invopop_jsonschema.Schema'
@@ -1290,6 +1310,42 @@ definitions:
     x-enum-varnames:
     - FileTypeImage
     - FileTypeExport
+  model.InboxMessage:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      payload:
+        additionalProperties: {}
+        type: object
+      read_at:
+        type: string
+      type:
+        $ref: '#/definitions/model.InboxMessageType'
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    required:
+    - created_at
+    - id
+    - payload
+    - read_at
+    - type
+    - updated_at
+    - user_id
+    type: object
+  model.InboxMessageType:
+    enum:
+    - password_expiry
+    - login_failure_lock
+    - mfa_disabled
+    type: string
+    x-enum-varnames:
+    - InboxMessagePasswordExpiry
+    - InboxMessageLoginFailureLock
+    - InboxMessageMFADisabled
   model.LDAPTestMessage:
     properties:
       message:
@@ -3407,8 +3463,24 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
+    - 1
+    - 1000
+    - 1000000
+    - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
+    - Nanosecond
+    - Microsecond
+    - Millisecond
+    - Second
+    - Minute
+    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -3542,6 +3614,30 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.File'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+      trace_id:
+        type: string
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    - trace_id
+    type: object
+  util.PaginationResponse-model_InboxMessage:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.InboxMessage'
         type: array
       page_size:
         type: integer
@@ -4213,6 +4309,22 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-inboxapi_InboxUnreadCount:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/inboxapi.InboxUnreadCount'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-model_AIChatSession:
     properties:
       code:
@@ -4235,6 +4347,22 @@ definitions:
         type: string
       data:
         $ref: '#/definitions/model.AIModel'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-model_InboxMessage:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.InboxMessage'
       err:
         type: string
       trace_id:
@@ -6882,6 +7010,151 @@ paths:
       summary: Download file
       tags:
       - File Management
+  /api/inbox/messages:
+    get:
+      consumes:
+      - application/json
+      description: List in-app messages for the current user.
+      operationId: listInboxMessages
+      parameters:
+      - default: 1
+        description: Current page number
+        in: query
+        name: current
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      - description: If true, only unread messages
+        in: query
+        name: unread
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_InboxMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List inbox messages
+      tags:
+      - Inbox
+  /api/inbox/messages/{id}/read:
+    post:
+      consumes:
+      - application/json
+      description: Mark a single in-app message as read.
+      operationId: markInboxMessageRead
+      parameters:
+      - description: Message ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_InboxMessage'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Mark inbox message read
+      tags:
+      - Inbox
+  /api/inbox/read-all:
+    post:
+      consumes:
+      - application/json
+      description: Mark every unread in-app message as read for the current user.
+      operationId: markAllInboxMessagesRead
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-inboxapi_InboxUnreadCount'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Mark all inbox messages read
+      tags:
+      - Inbox
+  /api/inbox/stream:
+    get:
+      description: Long-lived SSE stream for in-app messages. Sends inbox events and
+        heartbeats.
+      operationId: streamInbox
+      parameters:
+      - description: Last received message ID for catch-up
+        in: header
+        name: Last-Event-ID
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: Event stream
+          schema:
+            $ref: '#/definitions/inboxapi.InboxStreamEvent'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Inbox event stream
+      tags:
+      - Inbox
+  /api/inbox/unread-count:
+    get:
+      consumes:
+      - application/json
+      description: Return the unread in-app message count for the current user.
+      operationId: getInboxUnreadCount
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-inboxapi_InboxUnreadCount'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Inbox unread count
+      tags:
+      - Inbox
   /api/ldap-settings/test:
     post:
       consumes:

@@ -141,3 +141,4 @@ Do not manually edit generated files in:
 - Keep all comments and error messages in English.
 - For new SMTP dynamic fields, prefer registration + `/fields` contract instead of hardcoded frontend form items.
 - For any new reminder requiring per-cycle deduplication, extend `UserExt` instead of embedding transient state in scheduler memory.
+- Password-expiry, login-failure lock, and MFA-disabled also write an in-app inbox row. Inactive auto-lock remains email-only. See [In-App Messages (Inbox)](./22-inbox.md).

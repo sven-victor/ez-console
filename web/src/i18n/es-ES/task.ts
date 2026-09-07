@@ -26,6 +26,7 @@ export default {
     inactive_account_lock_task: 'Bloqueo de cuentas inactivas',
     password_expiry_notification_task: 'Notificación de vencimiento de contraseña',
     ephemeral_token_cleanup: 'Limpieza de tokens efímeros',
+    inbox_cleanup_task: 'Limpieza de bandeja de entrada',
   },
   statusLabel: 'Estado',
   progress: 'Progreso',
@@ -85,5 +86,6 @@ export default {
     task_log_cleanup_task: 'Limpiar registros de tareas y registros de ejecución histórica',
     inactive_account_lock_task: 'Escanear usuarios cada hora y bloquear automáticamente las cuentas inactivas',
     password_expiry_notification_task: 'Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña',
+    inbox_cleanup_task: 'Eliminar mensajes internos caducados y aplicar el límite por usuario',
   },
 };

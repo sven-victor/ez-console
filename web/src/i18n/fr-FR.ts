@@ -102,6 +102,7 @@ export default {
     },
     settings: 'Paramètres',
     dashboard: 'Tableau de bord',
+    inbox: 'Boîte de réception',
     system: {
       settings: 'Paramètres système',
       audit: 'Journal d\'audit',
@@ -136,6 +137,7 @@ export default {
     profile: 'Profil',
     settings: 'Paramètres',
     tasks: 'Tâches',
+    inbox: 'Boîte de réception',
     taskSchedules: 'Tâches planifiées',
     tasks_taskList: 'Liste des tâches',
   },

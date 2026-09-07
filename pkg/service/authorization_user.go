@@ -326,6 +326,7 @@ func (s *userService) UserLoginFailed(ctx context.Context, user *model.User) err
 				"FullName": updated.FullName,
 			})
 		}
+		tryCreateInboxForUser(ctx, s.baseService, &updated, model.InboxMessageLoginFailureLock, nil)
 	}
 
 	return dbConn.Transaction(func(tx *gorm.DB) error {
@@ -1908,6 +1909,7 @@ func (s *userService) disableMFAForUser(ctx context.Context, user *model.User) e
 			level.Warn(log.GetContextLogger(ctx)).Log("msg", "failed to send MFA disabled notification email", "user_id", user.ResourceID, "error", mailErr)
 		}
 	}
+	tryCreateInboxForUser(ctx, s.baseService, user, model.InboxMessageMFADisabled, nil)
 	return nil
 }
 

@@ -32,6 +32,8 @@ import HeaderDropdown from './HeaderDropdown';
 import Avatar from './Avatar';
 import OrganizationSwitcher from './OrganizationSwitcher';
 import TaskListDropdown from './TaskListDropdown';
+import InboxDropdown from './InboxDropdown';
+import { useInboxStream } from '@/hooks/useInboxStream';
 import { useTranslation } from 'react-i18next';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { type ItemType as MenuItemType } from 'antd/es/menu/interface';
@@ -155,6 +157,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const { siteConfig, clearCurrentOrgId } = useSite();
+  useInboxStream();
   const canUseAIChat = !!siteConfig?.attrs?.ai_enabled && hasPermission('ai:chat:create');
 
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
@@ -339,13 +342,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <SwapOutlined />
     </HeaderDropdown>,
     ...(siteConfig?.enable_multi_org ? [<OrganizationSwitcher key="org-switcher" className="header-item org-switcher" />] : []),
+    <InboxDropdown key="inbox-dropdown" className="header-item inbox-dropdown" />,
     <TaskListDropdown key="task-dropdown" className="header-item task-dropdown" />,
     <HeaderDropdown
       key="user-dropdown"
       className="header-item user-dropdown"
       menu={{ items: userMenu }}
     >
-      {user?.avatar ? <Avatar src={user.avatar} /> : <Avatar icon={<UserOutlined />} />}
+      {user?.avatar ? <Avatar src={user.avatar} size={'small'} /> : <Avatar icon={<UserOutlined />} size={'small'} />}
       <span className={classNames("header-user-name", styles.userName)}>{user?.full_name || user?.username}</span>
     </HeaderDropdown>,
     <LanguageSwitch key="language-switch" className="header-item language-switch" transformLangConfig={transformLangConfig} />,

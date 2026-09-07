@@ -48,6 +48,8 @@ generateService({
     },
     afterOpenApiDataInited: (data) => {
       delete(data.paths['/api/ai/chat/sessions/{sessionId}'].post)
+      // SSE is consumed via request({ requestType: 'sse' }); do not emit a JSON client.
+      delete data.paths['/api/inbox/stream']
     }
   },
 

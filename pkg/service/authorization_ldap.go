@@ -618,6 +618,7 @@ func (s *ldapService) AuthenticateLDAPUser(ctx context.Context, username, passwo
 					"FullName": existingUser.FullName,
 				})
 			}
+			tryCreateInboxForUser(ctx, s.baseService, &existingUser, model.InboxMessageLoginFailureLock, nil)
 		}
 		userUpdateFields = append(userUpdateFields, "LockedUntil")
 		level.Error(logger).Log("msg", "Failed to bind with user credentials", "err", err.Error())

@@ -28,6 +28,7 @@ const Login = lazy(() => import('@/pages/Login'));
 const Activate = lazy(() => import('@/pages/Activate'));
 // Temporarily comment out non-existent components, create later
 const Profile = lazy(() => import('@/pages/Profile'));
+const InboxList = lazy(() => import('@/pages/inbox/InboxList'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const Forbidden = lazy(() => import('@/pages/Forbidden'));
 
@@ -128,6 +129,13 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
           element: withSuspense(Profile),
           hideInMenu: true,
           name: 'profile',
+          index: false,
+        },
+        {
+          path: '/inbox',
+          element: withSuspense(InboxList),
+          hideInMenu: true,
+          name: 'inbox',
           index: false,
         },
         ...extraPrivateRoutes,

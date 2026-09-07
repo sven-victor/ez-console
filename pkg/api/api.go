@@ -25,6 +25,7 @@ import (
 	statisticsapi "github.com/sven-victor/ez-console/pkg/api/statistics"
 	systemapi "github.com/sven-victor/ez-console/pkg/api/system"
 	taskapi "github.com/sven-victor/ez-console/pkg/api/task"
+	inboxapi "github.com/sven-victor/ez-console/pkg/api/inbox"
 	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-console/pkg/service"
 )
@@ -56,6 +57,9 @@ var controllers = []ControllerGenerator{
 	},
 	func(ctx context.Context, svc *service.Service) Controller {
 		return taskapi.NewTaskController(svc)
+	},
+	func(ctx context.Context, svc *service.Service) Controller {
+		return inboxapi.NewController(svc)
 	},
 }
 

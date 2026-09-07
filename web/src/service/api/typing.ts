@@ -725,6 +725,31 @@ export interface ImportLDAPUsersRequest {
   user_dn?: string[];
 }
 
+export interface InboxMessage {
+  created_at: string;
+  id: string;
+  payload: Record<string, any>;
+  read_at: string;
+  type: InboxMessageType;
+  updated_at: string;
+  user_id: string;
+}
+
+export type InboxMessageType =
+  | "password_expiry"
+  | "login_failure_lock"
+  | "mfa_disabled";
+
+export interface InboxStreamEvent {
+  event_type: string;
+  message: InboxMessage;
+  unread_count: number;
+}
+
+export interface InboxUnreadCount {
+  unread_count: number;
+}
+
 export interface LDAPSettings {
   base_dn: string;
   bind_dn: string;
@@ -803,6 +828,15 @@ export interface listFilesParams {
   file_type?: string;
   /** Access Type */
   access?: string;
+}
+
+export interface listInboxMessagesParams {
+  /** Current page number */
+  current?: number;
+  /** Number of items per page */
+  page_size?: number;
+  /** If true, only unread messages */
+  unread?: boolean;
 }
 
 export interface listOrganizationsParams {
@@ -924,6 +958,11 @@ export interface LogStorageBackendOption {
   id: string;
   /** Display name for UI */
   name: string;
+}
+
+export interface markInboxMessageReadParams {
+  /** Message ID (UUID) */
+  id: string;
 }
 
 export interface MenuConfig {
@@ -1076,6 +1115,15 @@ export interface PaginationResponseModelFile {
   code: string;
   current: number;
   data: File[];
+  page_size: number;
+  total: number;
+  trace_id: string;
+}
+
+export interface PaginationResponseModelInboxMessage {
+  code: string;
+  current: number;
+  data: InboxMessage[];
   page_size: number;
   total: number;
   trace_id: string;
@@ -1406,6 +1454,13 @@ export interface ResponseAuthorizationapiTokenResponse {
   trace_id: string;
 }
 
+export interface ResponseInboxapiInboxUnreadCount {
+  code: string;
+  data: InboxUnreadCount;
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseModelAIChatSession {
   code: string;
   data: AIChatSession;
@@ -1416,6 +1471,13 @@ export interface ResponseModelAIChatSession {
 export interface ResponseModelAIModel {
   code: string;
   data: AIModel;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelInboxMessage {
+  code: string;
+  data: InboxMessage;
   err: string;
   trace_id: string;
 }

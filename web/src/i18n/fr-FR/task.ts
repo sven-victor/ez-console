@@ -26,6 +26,7 @@ export default {
     inactive_account_lock_task: 'Verrouillage des comptes inactifs',
     password_expiry_notification_task: 'Notification d\'expiration du mot de passe',
     ephemeral_token_cleanup: 'Nettoyage des jetons éphémères',
+    inbox_cleanup_task: 'Nettoyage de la boîte de réception',
   },
   statusLabel: 'Statut',
   progress: 'Progression',
@@ -85,5 +86,6 @@ export default {
     task_log_cleanup_task: 'Nettoyer les journaux de tâches et les enregistrements historiques',
     inactive_account_lock_task: 'Analyser les utilisateurs toutes les heures et verrouiller automatiquement les comptes inactifs',
     password_expiry_notification_task: 'Analyser les utilisateurs toutes les heures et envoyer des rappels d\'expiration du mot de passe une fois par cycle de mot de passe',
+    inbox_cleanup_task: 'Supprimer les messages internes expirés et appliquer le plafond par utilisateur',
   },
 };

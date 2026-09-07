@@ -30,9 +30,17 @@ const (
 	EventCacheInvalidate = "cache.invalidate"
 	EventTaskNew         = "task.new"
 	EventTaskCancel      = "task.cancel"
-	EventScheduleChanged         = "schedule.changed"
-	EventSchedulerLeaseReleased  = "scheduler.lease.released"
+	EventScheduleChanged        = "schedule.changed"
+	EventSchedulerLeaseReleased = "scheduler.lease.released"
+	EventInboxWakeup            = "inbox.wakeup"
 )
+
+// InboxWakeupPayload is the JSON payload for inbox.wakeup events.
+// Keep it small; serf user events are capped at 512 bytes and coalesce=true
+// may drop payloads in a burst. Receivers must catch up from the inbox table.
+type InboxWakeupPayload struct {
+	UserID string `json:"user_id"`
+}
 
 // Handler is called for every received event.  It must not block for long.
 type Handler func(event string, payload []byte)

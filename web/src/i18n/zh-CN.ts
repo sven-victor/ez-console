@@ -100,6 +100,7 @@ export default {
       authorization: '授权管理',
     },
     tasks: '任务',
+    inbox: '站内信',
     system: {
       system: '系统管理',
       settings: '系统设置',
@@ -140,6 +141,7 @@ export default {
     profile: '个人中心',
     settings: '设置',
     tasks: '任务',
+    inbox: '站内信',
     taskSchedules: '定时任务',
     tasks_taskList: '任务列表',
   },

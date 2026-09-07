@@ -26,6 +26,7 @@ export default {
     inactive_account_lock_task: 'مهمة قفل الحسابات غير النشطة',
     password_expiry_notification_task: 'مهمة إشعار انتهاء صلاحية كلمة المرور',
     ephemeral_token_cleanup: 'تنظيف الرموز المؤقتة',
+    inbox_cleanup_task: 'تنظيف صندوق الوارد',
   },
   statusLabel: 'الحالة',
   progress: 'التقدم',
@@ -85,5 +86,6 @@ export default {
     task_log_cleanup_task: 'تنظيف سجلات المهام وسجلات التشغيل التاريخية',
     inactive_account_lock_task: 'فحص المستخدمين كل ساعة وقفل الحسابات غير النشطة تلقائياً',
     password_expiry_notification_task: 'فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور',
+    inbox_cleanup_task: 'حذف الرسائل الداخلية المنتهية وتطبيق الحد الأقصى لكل مستخدم',
   },
 };

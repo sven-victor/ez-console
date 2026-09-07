@@ -46,6 +46,7 @@ type BaseService interface {
 	EmailService
 	GeoIPService
 	ToolSetService
+	InboxService
 }
 
 type baseService struct {
@@ -53,6 +54,7 @@ type baseService struct {
 	SettingService
 	GeoIPService
 	ToolSetService
+	InboxService
 }
 
 // NewService builds the application service layer. Pass ServiceOption values to replace
@@ -78,12 +80,14 @@ func NewService(ctx context.Context, opts ...ServiceOption) *Service {
 
 	settingService := options.settingServiceFactory(ctx)
 	emailService := options.emailServiceFactory(settingService)
+	inboxService := options.inboxServiceFactory(ctx)
 
 	base := &baseService{
 		EmailService:   emailService,
 		SettingService: settingService,
 		GeoIPService:   options.geoIPServiceFactory(ctx),
 		ToolSetService: options.toolSetServiceFactory(),
+		InboxService:   inboxService,
 	}
 
 	s := &Service{

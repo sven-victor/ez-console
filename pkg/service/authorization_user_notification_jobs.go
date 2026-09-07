@@ -60,7 +60,7 @@ func (s *userService) runPasswordExpiryNotificationJob(ctx context.Context, _ *m
 			return nil, taskscheduler.ErrCancelled
 		default:
 		}
-		if user.Email == "" || user.Status == model.UserStatusPendingActivation || user.PasswordChangedAt.IsZero() {
+		if user.Status == model.UserStatusPendingActivation || user.PasswordChangedAt.IsZero() {
 			continue
 		}
 		if user.IsLDAPUser() && !allowLDAPManagePassword {
@@ -88,17 +88,22 @@ func (s *userService) runPasswordExpiryNotificationJob(ctx context.Context, _ *m
 			level.Error(logger).Log("msg", "failed to mark password expiry reminder sent", "user_id", user.ResourceID, "err", err)
 			continue
 		}
-		if err := s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "Password Expiry Reminder", model.SettingSMTPPasswordExpiryTemplate, map[string]any{
-			"Username":          user.Username,
-			"UserID":            user.ResourceID,
-			"Email":             user.Email,
-			"Avatar":            user.Avatar,
-			"FullName":          user.FullName,
+		tryCreateInboxForUser(ctx, s.baseService, &user, model.InboxMessagePasswordExpiry, map[string]any{
 			"DaysLeft":          daysLeft,
 			"PasswordExpiresAt": expireAt,
-		}); err != nil {
-			level.Error(logger).Log("msg", "failed to send password expiry reminder", "user_id", user.ResourceID, "err", err)
-			continue
+		})
+		if user.Email != "" {
+			if err := s.baseService.SendEmailFromTemplate(ctx, []string{user.Email}, "Password Expiry Reminder", model.SettingSMTPPasswordExpiryTemplate, map[string]any{
+				"Username":          user.Username,
+				"UserID":            user.ResourceID,
+				"Email":             user.Email,
+				"Avatar":            user.Avatar,
+				"FullName":          user.FullName,
+				"DaysLeft":          daysLeft,
+				"PasswordExpiresAt": expireAt,
+			}); err != nil {
+				level.Error(logger).Log("msg", "failed to send password expiry reminder", "user_id", user.ResourceID, "err", err)
+			}
 		}
 		sent++
 		progressCallback((idx + 1) * 100 / len(users))

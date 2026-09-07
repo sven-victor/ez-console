@@ -101,6 +101,7 @@ export default {
       authorization: 'Authorization Management',
     },
     tasks: 'Tasks',
+    inbox: 'Inbox',
     settings: 'Setting',
     dashboard: 'Dashboard',
     system: {
@@ -137,6 +138,7 @@ export default {
     profile: 'Profile',
     settings: 'Setting',
     tasks: 'Tasks',
+    inbox: 'Inbox',
     taskSchedules: 'Task Schedules',
     tasks_taskList: 'Task List',
   },

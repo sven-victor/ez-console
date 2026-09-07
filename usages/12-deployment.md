@@ -221,13 +221,21 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # API
+    # API (Chat POST SSE and inbox GET SSE share this location)
     location /api {
         proxy_pass http://localhost:8080;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_cache off;
+        # Greater than the inbox SSE heartbeat (15s). Do not raise the Go
+        # server.write_timeout globally; Chat clears the write deadline per
+        # request, and inbox refreshes SetWriteDeadline on every write.
+        proxy_read_timeout 75s;
     }
 
     # WebSocket support (if needed)
@@ -239,6 +247,8 @@ server {
     }
 }
 ```
+
+Long-lived SSE endpoints under `/api` are **Chat** (`POST /api/ai/chat/sessions/:id`) and **inbox** (`GET /api/inbox/stream`). Keep `proxy_buffering off`, `proxy_http_version 1.1`, and `proxy_read_timeout` greater than the inbox heartbeat (15s; 75s is a safe example). The inbox handler also sends `X-Accel-Buffering: no` so nginx will not buffer if `proxy_buffering` is left on. Do **not** raise the global Go `server.write_timeout` to keep SSE alive.
 
 ### Traefik
 

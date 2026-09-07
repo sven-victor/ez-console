@@ -26,6 +26,7 @@ export default {
     inactive_account_lock_task: 'Inactive Account Lock Task',
     password_expiry_notification_task: 'Password Expiry Notification Task',
     ephemeral_token_cleanup: 'Ephemeral Token Cleanup',
+    inbox_cleanup_task: 'Inbox Cleanup',
   },
   statusLabel: 'Status',
   progress: 'Progress',
@@ -85,5 +86,6 @@ export default {
     task_log_cleanup_task: 'Cleanup task logs and historical task run records',
     inactive_account_lock_task: 'Scan users hourly and lock inactive accounts automatically',
     password_expiry_notification_task: 'Scan users hourly and send password expiry reminders once per password cycle',
+    inbox_cleanup_task: 'Delete expired in-app messages and enforce the per-user cap',
   },
 };

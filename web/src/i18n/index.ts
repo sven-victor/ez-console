@@ -24,6 +24,7 @@ import enUSAuthorization from './en-US/authorization';
 import enUSSystem from './en-US/system';
 import enUSAi from './en-US/ai';
 import enUSTask from './en-US/task';
+import enUSInbox from './en-US/inbox';
 import deDE from './de-DE';
 import esES from './es-ES';
 import frFR from './fr-FR';
@@ -35,43 +36,49 @@ import zhCNAuthorization from './zh-CN/authorization';
 import zhCNSystem from './zh-CN/system';
 import zhCNAi from './zh-CN/ai';
 import zhCNTask from './zh-CN/task';
+import zhCNInbox from './zh-CN/inbox';
 
 import deDECommon from './de-DE/common';
 import deDEAuthorization from './de-DE/authorization';
 import deDESystem from './de-DE/system';
 import deDEAi from './de-DE/ai';
 import deDETask from './de-DE/task';
+import deDEInbox from './de-DE/inbox';
 
 import esESCommon from './es-ES/common';
 import esESAuthorization from './es-ES/authorization';
 import esESSystem from './es-ES/system';
 import esESAi from './es-ES/ai';
 import esESTask from './es-ES/task';
+import esESInbox from './es-ES/inbox';
 
 import frFRCommon from './fr-FR/common';
 import frFRAuthorization from './fr-FR/authorization';
 import frFRSystem from './fr-FR/system';
 import frFRAi from './fr-FR/ai';
 import frFRTask from './fr-FR/task';
+import frFRInbox from './fr-FR/inbox';
 
 import arAECommon from './ar-AE/common';
 import arAEAuthorization from './ar-AE/authorization';
 import arAESystem from './ar-AE/system';
 import arAEAi from './ar-AE/ai';
 import arAETask from './ar-AE/task';
+import arAEInbox from './ar-AE/inbox';
 
 import svSECommon from './sv-SE/common';
 import svSEAuthorization from './sv-SE/authorization';
 import svSESystem from './sv-SE/system';
 import svSEAi from './sv-SE/ai';
 import svSETask from './sv-SE/task';
+import svSEInbox from './sv-SE/inbox';
 
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    ns: ['common', 'authorization', 'system', 'ai', 'task'],
+    ns: ['common', 'authorization', 'system', 'ai', 'task', 'inbox'],
     defaultNS: 'translation',
     resources: {
       'zh-CN': {
@@ -81,6 +88,7 @@ i18n
         system: zhCNSystem,
         ai: zhCNAi,
         task: zhCNTask,
+        inbox: zhCNInbox,
       },
       'en-US': {
         translation: enUS,
@@ -89,6 +97,7 @@ i18n
         system: enUSSystem,
         ai: enUSAi,
         task: enUSTask,
+        inbox: enUSInbox,
       },
       'de-DE': {
         translation: deDE,
@@ -97,6 +106,7 @@ i18n
         system: deDESystem,
         ai: deDEAi,
         task: deDETask,
+        inbox: deDEInbox,
       },
       'es-ES': {
         translation: esES,
@@ -105,6 +115,7 @@ i18n
         system: esESSystem,
         ai: esESAi,
         task: esESTask,
+        inbox: esESInbox,
       },
       'fr-FR': {
         translation: frFR,
@@ -113,6 +124,7 @@ i18n
         system: frFRSystem,
         ai: frFRAi,
         task: frFRTask,
+        inbox: frFRInbox,
       },
       'ar-AE': {
         translation: arAE,
@@ -121,6 +133,7 @@ i18n
         system: arAESystem,
         ai: arAEAi,
         task: arAETask,
+        inbox: arAEInbox,
       },
       'sv-SE': {
         translation: svSE,
@@ -129,6 +142,7 @@ i18n
         system: svSESystem,
         ai: svSEAi,
         task: svSETask,
+        inbox: svSEInbox,
       },
     },
     fallbackLng: 'en-US',

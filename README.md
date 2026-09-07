@@ -238,6 +238,7 @@ Comprehensive guides are available in the [`usages/`](./usages/) directory:
 - [Task Management](./usages/17-task-management.md) - Background task execution and scheduling
 - [Code Generation CLI](./usages/18-code-generation-cli.md) - `ez-console generate` / `init`
 - [Email Notification Module](./usages/21-email-notification-module.md) - SMTP fields and notification jobs
+- [In-App Messages (Inbox)](./usages/22-inbox.md) - User inbox, REST APIs, and SSE push
 - [Troubleshooting](./usages/14-troubleshooting.md) - Common issues and solutions
 
 ### API Documentation

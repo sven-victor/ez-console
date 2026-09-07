@@ -37,6 +37,7 @@ type StatsServiceFactory func(ctx context.Context, base BaseService) StatsServic
 type OrganizationServiceFactory func(ctx context.Context, base BaseService) OrganizationService
 type AIServiceFactory func(ctx context.Context, base BaseService) AIService
 type TaskSchedulerServiceFactory func(ctx context.Context, base BaseService) TaskSchedulerService
+type InboxServiceFactory func(ctx context.Context) InboxService
 
 type serviceOptions struct {
 	settingServiceFactory        SettingServiceFactory
@@ -55,6 +56,7 @@ type serviceOptions struct {
 	organizationServiceFactory   OrganizationServiceFactory
 	aiServiceFactory             AIServiceFactory
 	taskSchedulerServiceFactory  TaskSchedulerServiceFactory
+	inboxServiceFactory          InboxServiceFactory
 }
 
 // ServiceOption configures service construction in NewService.
@@ -124,6 +126,10 @@ func WithTaskSchedulerServiceFactory(f TaskSchedulerServiceFactory) ServiceOptio
 	return func(o *serviceOptions) { o.taskSchedulerServiceFactory = f }
 }
 
+func WithInboxServiceFactory(f InboxServiceFactory) ServiceOption {
+	return func(o *serviceOptions) { o.inboxServiceFactory = f }
+}
+
 func applyServiceDefaults(o *serviceOptions) {
 	if o.settingServiceFactory == nil {
 		o.settingServiceFactory = NewSettingService
@@ -172,5 +178,8 @@ func applyServiceDefaults(o *serviceOptions) {
 	}
 	if o.taskSchedulerServiceFactory == nil {
 		o.taskSchedulerServiceFactory = NewSchedulerService
+	}
+	if o.inboxServiceFactory == nil {
+		o.inboxServiceFactory = NewInboxService
 	}
 }

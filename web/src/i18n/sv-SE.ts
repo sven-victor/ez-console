@@ -102,6 +102,7 @@ export default {
     },
     settings: 'Inställningar',
     dashboard: 'Instrumentpanel',
+    inbox: 'Inkorg',
     system: {
       settings: 'Systeminställningar',
       audit: 'Granskningslogg',
@@ -136,6 +137,7 @@ export default {
     profile: 'Profil',
     settings: 'Inställningar',
     tasks: 'Uppgifter',
+    inbox: 'Inkorg',
     taskSchedules: 'Schemalagda uppgifter',
     tasks_taskList: 'Uppgiftslista',
   },

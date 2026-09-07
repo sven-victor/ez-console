@@ -24,6 +24,7 @@ The Task Management module provides:
 | `password_expiry_notification_task` | Email users whose password is about to expire |
 | `inactive_account_lock_task` | Lock / disable inactive accounts |
 | `ephemeral_token_cleanup` | Delete expired rows from `t_ephemeral_token` |
+| `inbox_cleanup_task` | Delete expired in-app messages (90 days) and enforce the per-user cap (500) |
 | `task_log_cleanup_task` | Purge old task execution logs |
 | `audit_log_cleanup_task` | Purge old audit logs |
 | `ai_chat_session_cleanup_task` | Delete AI chat sessions past retention |

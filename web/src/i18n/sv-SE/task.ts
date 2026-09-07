@@ -26,6 +26,7 @@ export default {
     inactive_account_lock_task: 'Låsning av inaktiva konton',
     password_expiry_notification_task: 'Avisering om lösenordsutgång',
     ephemeral_token_cleanup: 'Rensning av tillfälliga tokens',
+    inbox_cleanup_task: 'Rensning av inkorgen',
   },
   statusLabel: 'Status',
   progress: 'Framsteg',
@@ -85,5 +86,6 @@ export default {
     task_log_cleanup_task: 'Rensa uppgiftsloggar och historiska körningsdata',
     inactive_account_lock_task: 'Skanna användare varje timme och lås inaktiva konton automatiskt',
     password_expiry_notification_task: 'Skanna användare varje timme och skicka påminnelser om lösenordsutgång en gång per lösenordscykel',
+    inbox_cleanup_task: 'Ta bort utgångna meddelanden i appen och tillämpa taket per användare',
   },
 };
