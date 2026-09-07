@@ -25,9 +25,10 @@ server:
   read_timeout: 10s
   write_timeout: 10s
   shutdown_timeout: 10s
-  # file_upload_path / skills_path accept a plain string (local directory) or
-  # a storage driver config map. Built-in drivers: local, db; the s3 driver is
-  # a separate module registered via blank import.
+  # file_upload_path / skills_path accept a plain string (local directory),
+  # a storage driver config map, or a compact CLI string
+  # (driver=s3,bucket=ez,prefix="a,b"). Built-in drivers: local, db; the s3
+  # driver is a separate module registered via blank import.
   # See usages/19-distributed-deployment.md ("Shared File Storage") for details.
   file_upload_path: "./uploads"
   # file_upload_path:
@@ -229,8 +230,8 @@ tracing:
 --server.read_timeout=DURATION # Read timeout (default: "10s")
 --server.write_timeout=DURATION # Write timeout (default: "10s")
 --server.shutdown_timeout=DURATION # Shutdown timeout (default: "10s")
---server.file_upload_path=PATH # File upload path (default: "./uploads"; storage driver maps only via config file)
---server.skills_path=PATH      # Skills file path (default: "./skills"; storage driver maps only via config file)
+--server.file_upload_path=PATH # File upload path (default: "./uploads"; or compact driver map: driver=s3,bucket=ez,prefix="a,b")
+--server.skills_path=PATH      # Skills file path (default: "./skills"; same string-or-driver forms as file_upload_path)
 --server.skills_cache_path=PATH # Local skill materialization cache (default: "./skills-cache")
 --server.geoip_db_path=PATH    # GeoIP database path
 ```

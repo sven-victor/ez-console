@@ -44,7 +44,7 @@ func TestNewRegistersRemoteAndPresign(t *testing.T) {
 		"access_key_id":     "AKIAEXAMPLE",
 		"secret_access_key": "secret",
 		"endpoint":          "http://127.0.0.1:9000",
-		"force_path_style":  true,
+		"force_path_style":  "true",
 	})
 	if err != nil {
 		t.Fatalf("New: %v", err)

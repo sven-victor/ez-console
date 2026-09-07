@@ -387,7 +387,7 @@ if !held {
 
 File download signing keys are stored encrypted in `t_setting` (`file_signature_key`) so all nodes share the same HMAC secret.
 
-Upload and skill files must be visible to every node. `server.file_upload_path` and `server.skills_path` accept either a plain string (local directory) or a storage driver configuration:
+Upload and skill files must be visible to every node. `server.file_upload_path` and `server.skills_path` accept either a plain string (local directory), a storage driver YAML map, or a compact CLI string `driver=s3,bucket=ez,prefix="a,b",force_path_style=true`. Commas and equals inside a value must be quoted; a backslash escapes the next character inside quotes (`\"`, `\\`).
 
 | Driver | Config form | Extra infrastructure | Notes |
 |--------|-------------|----------------------|-------|

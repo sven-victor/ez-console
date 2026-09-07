@@ -70,7 +70,14 @@ type Config struct {
 // New creates a db storage driver instance from its raw config map.
 func New(cfg map[string]any) (afero.Fs, error) {
 	var c Config
-	if err := mapstructure.Decode(cfg, &c); err != nil {
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:           &c,
+		WeaklyTypedInput: true, // CLI compact form keeps numbers as strings
+	})
+	if err != nil {
+		return nil, err
+	}
+	if err := decoder.Decode(cfg); err != nil {
 		return nil, fmt.Errorf("invalid db storage config: %w", err)
 	}
 	if c.Namespace == "" {

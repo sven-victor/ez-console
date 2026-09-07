@@ -20,6 +20,7 @@ import (
 	"os"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gogo/protobuf/types"
@@ -555,9 +556,131 @@ func jwtConfigUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (an
 	return data, nil
 }
 
+// parseStorageConfig parses a compact CLI storage config string of the form
+// `key=value,key=value`. Delimiters are only significant outside quotes:
+//
+//	pair   := key '=' value
+//	value  := quoted | bare
+//	quoted := '"' { '\' any | not('"') } '"' | "'" { '\' any | not("'") } "'"
+//	bare   := until the next unquoted comma (may contain '=')
+//
+// Quoted values are always strings (including "true" / "123"). Bare true/false
+// become bool, bare null becomes nil, everything else stays a string. Empty
+// values (endpoint=) are allowed; unterminated quotes and trailing garbage
+// after a quoted value are errors.
+func parseStorageConfig(data string) (map[string]any, error) {
+	result := make(map[string]any)
+	i, n := 0, len(data)
+	skipSpace := func() {
+		for i < n {
+			switch data[i] {
+			case ' ', '\t', '\n', '\r':
+				i++
+			default:
+				return
+			}
+		}
+	}
+	for i < n {
+		skipSpace()
+		if i >= n {
+			break
+		}
+		if data[i] == ',' {
+			i++
+			continue
+		}
+
+		keyStart := i
+		for i < n && data[i] != '=' && data[i] != ',' && data[i] != '"' && data[i] != '\'' {
+			i++
+		}
+		key := strings.TrimSpace(data[keyStart:i])
+		if key == "" || i >= n || data[i] != '=' {
+			return nil, fmt.Errorf("invalid storage config: %s", data)
+		}
+		i++ // skip '='
+		skipSpace()
+
+		var value any
+		if i < n && (data[i] == '"' || data[i] == '\'') {
+			quoted, consumed, err := parseQuotedStorageValue(data[i:])
+			if err != nil {
+				return nil, fmt.Errorf("invalid storage config: %s: %w", data, err)
+			}
+			value = quoted
+			i += consumed
+			skipSpace()
+			if i < n && data[i] != ',' {
+				return nil, fmt.Errorf("invalid storage config: %s", data)
+			}
+		} else {
+			valStart := i
+			for i < n && data[i] != ',' {
+				i++
+			}
+			value = coerceBareStorageValue(strings.TrimSpace(data[valStart:i]))
+		}
+
+		result[key] = value
+		if i < n && data[i] == ',' {
+			i++
+		}
+	}
+	if len(result) == 0 {
+		return nil, fmt.Errorf("invalid storage config: %s", data)
+	}
+	return result, nil
+}
+
+// parseQuotedStorageValue scans a single- or double-quoted string starting at
+// s[0]. A backslash escapes the next character (so \" and \' work inside the
+// matching quotes; \\ is a literal backslash). Other \x sequences are kept as
+// the literal character x. Returns the unquoted value and the number of bytes
+// consumed, including the surrounding quotes.
+func parseQuotedStorageValue(s string) (string, int, error) {
+	if s == "" {
+		return "", 0, fmt.Errorf("unterminated quoted string")
+	}
+	quote := s[0]
+	var b strings.Builder
+	escaped := false
+	for i := 1; i < len(s); i++ {
+		c := s[i]
+		if escaped {
+			b.WriteByte(c)
+			escaped = false
+			continue
+		}
+		if c == '\\' {
+			escaped = true
+			continue
+		}
+		if c == quote {
+			return b.String(), i + 1, nil
+		}
+		b.WriteByte(c)
+	}
+	return "", 0, fmt.Errorf("unterminated quoted string")
+}
+
+func coerceBareStorageValue(raw string) any {
+	switch raw {
+	case "true":
+		return true
+	case "false":
+		return false
+	case "null":
+		return nil
+	default:
+		return raw
+	}
+}
+
 // aferoUnmarshallerHookFunc decodes storage locations (server.file_upload_path,
 // server.skills_path) into afero.Afero. Two forms are supported:
-//   - string: a local directory path (backward compatible; equals driver "local")
+//   - string: a local directory path (backward compatible; equals driver "local"),
+//     or a compact CLI map `driver=s3,bucket=ez,prefix="a,b",force_path_style=true`
 //   - map:    a storage driver config with a "driver" key, resolved through the
 //     pkg/storage driver registry (e.g. driver: db / s3)
 func aferoUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (any, error) {
@@ -566,6 +689,17 @@ func aferoUnmarshallerHookFunc(f reflect.Type, t reflect.Type, data any) (any, e
 	}
 	switch data := data.(type) {
 	case string:
+		if strings.Contains(data, "=") {
+			cfg, err := parseStorageConfig(data)
+			if err != nil {
+				return nil, err
+			}
+
+			driver, _ := cfg["driver"].(string)
+			if driver != "" {
+				return aferoUnmarshallerHookFunc(f, t, cfg)
+			}
+		}
 		fs, err := storage.NewLocalFs(data)
 		if err != nil {
 			return nil, err

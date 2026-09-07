@@ -47,9 +47,13 @@ func TestFactory(t *testing.T) {
 	fs, err := storage.Create("db", map[string]any{
 		"namespace":     "uploads",
 		"max_file_size": "10MB",
+		"chunk_size":    "4096",
 	})
 	require.NoError(t, err)
 	assert.True(t, storage.IsRemote(fs))
+	dbfs, ok := fs.(*Fs)
+	require.True(t, ok)
+	assert.Equal(t, 4096, dbfs.chunkSize)
 	_, err = storage.PresignGetURL(context.Background(), fs, "k.txt", 0, "")
 	assert.ErrorIs(t, err, storage.ErrPresignNotSupported)
 }

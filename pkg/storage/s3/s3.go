@@ -94,7 +94,8 @@ type Config struct {
 func New(cfg map[string]any) (afero.Fs, error) {
 	var c Config
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result: &c,
+		Result:           &c,
+		WeaklyTypedInput: true, // CLI compact form keeps numbers as strings
 		DecodeHook: mapstructure.ComposeDecodeHookFunc(
 			mapstructure.StringToTimeDurationHookFunc(),
 			safe.SafeStringHookFunc(),
