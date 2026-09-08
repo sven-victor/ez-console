@@ -1,8 +1,8 @@
 # Code generation and project scaffolding CLI
 
-This guide describes the **`generate`** subcommand (Controller / Model / Service stubs), the **`init`** subcommand (minimal full-stack project scaffold), and the **`storage migrate`** command (copy files between storage backends) shipped with the `ez-console` binary.
+This guide describes the **`generate`** subcommand (Controller / Model / Service stubs), the **`init`** subcommand (minimal full-stack project scaffold), the **`storage migrate`** command (copy files between storage backends), and the **`encrypt rotate`** / **`encrypt reencrypt`** commands shipped with the `ez-console` binary.
 
-> **Note:** Under the current root command, the HTTP server is started via the **`ez-console`** nested subcommand (for example: `ez-console ez-console`). The **`generate`**, **`init`**, and **`storage`** subcommands are siblings of that server command. Downstream applications built with `server.NewCommandServer` expose **`storage migrate`** on their own root command.
+> **Note:** Under the current root command, the HTTP server is started via the **`ez-console`** nested subcommand (for example: `ez-console ez-console`). The **`generate`**, **`init`**, **`storage`**, and **`encrypt`** subcommands are siblings of that server command. Downstream applications built with `server.NewCommandServer` expose **`storage migrate`** and **`encrypt rotate`** on their own root command.
 
 ## Prerequisites
 
@@ -19,6 +19,8 @@ This guide describes the **`generate`** subcommand (Controller / Model / Service
 | `ez-console generate service <Name>` | Generate a service stub using `pkg/db` |
 | `ez-console init <target-dir>` | Scaffold a minimal buildable backend + web project |
 | `ez-console storage migrate` | Copy files between storage backends (`local` / `db` / `s3`) |
+| `ez-console encrypt rotate` | Re-encrypt database (and config YAML) `{CRYPT}` values with a new key |
+| `ez-console encrypt reencrypt` | Re-encrypt a single `{CRYPT}` value (CLI / env / Secret) |
 
 Help:
 
@@ -27,6 +29,8 @@ ez-console generate --help
 ez-console generate controller --help
 ez-console init --help
 ez-console storage migrate --help
+ez-console encrypt rotate --help
+ez-console encrypt reencrypt --help
 ```
 
 ---
@@ -151,11 +155,12 @@ After generation, add fields, validation, permissions, and Swag comments yoursel
 
 | Area | Location |
 |------|----------|
-| Cobra registration | `cmd/generate.go`, `cmd/init.go`, `cmd/storage.go` (`rootCmd.AddCommand` in `init()`); `server.NewCommandServer` also attaches `storage` |
+| Cobra registration | `cmd/generate.go`, `cmd/init.go`, `cmd/storage.go`, `cmd/encrypt.go` (`rootCmd.AddCommand` in `init()`); `server.NewCommandServer` also attaches `storage` and `encrypt` |
 | Logic and templates | `internal/codegen/` |
 | Text templates | `internal/codegen/templates/*.tpl` |
 | Unit tests | `internal/codegen/codegen_test.go` |
 | Storage migrate | `pkg/storage/migrate.go`, `server/migrate_storage.go` |
+| Encrypt rotate | `pkg/util/encryption.go`, `pkg/db/encrypt_rotate.go`, `server/encrypt_rotate.go` |
 
 ---
 
@@ -169,6 +174,20 @@ ez-console storage migrate --from ./uploads --to 'driver=db,namespace=uploads' -
 ```
 
 Downstream apps get the same command as `<app> storage migrate`. The `s3` driver must be blank-imported in that binary.
+
+---
+
+## `ez-console encrypt rotate`: replace global.encrypt-key
+
+Stop-the-world re-encryption of `{CRYPT}` values in registered GORM models and (by default) in the loaded config file. Runtime stays a single key. Full procedure: [Rotating the encryption key](./05-configuration.md#rotating-the-encryption-key).
+
+```bash
+ez-console encrypt rotate --config ./config.yaml --new-key "$NEW_KEY"
+ez-console encrypt rotate --config ./config.yaml --new-key "$NEW_KEY" --dry-run
+ez-console encrypt reencrypt --old-key "$OLD" --new-key "$NEW" --value '{CRYPT}$...'
+```
+
+Downstream apps get the same commands as `<app> encrypt rotate`.
 
 ---
 

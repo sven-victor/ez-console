@@ -112,7 +112,7 @@ The server will start on `http://localhost:8080` by default. Access the admin co
 - Username: `admin`
 - Password: `Admin@123` (change immediately in production)
 
-> **Security Note:** The `--global.encrypt-key` must be 8, 16, 24, or 32 bytes. This key is used for encrypting sensitive data. **Never change it after initial setup** or existing encrypted data will be unrecoverable.
+> **Security Note:** The `--global.encrypt-key` must be 8, 16, 24, or 32 bytes. It encrypts sensitive data at rest. To replace a leaked or retired key, stop every node and run `encrypt rotate` (see [Configuration](usages/05-configuration.md#rotating-the-encryption-key)); changing the key without rotating ciphertext makes existing secrets unrecoverable.
 
 ### Option 2: Create Your Own Application
 

@@ -49,7 +49,7 @@ type ServiceAccountAccessKey struct {
 	Name             string     `json:"name" gorm:"size:255;not null"`
 	ServiceAccountID string     `json:"service_account_id" gorm:"size:36;not null;index"`
 	AccessKeyID      string     `json:"access_key_id" gorm:"size:100;not null;uniqueIndex"`
-	SecretAccessKey  string     `json:"-" gorm:"size:255;not null"`
+	SecretAccessKey  string     `json:"-" gorm:"size:255;not null" encrypt:"inline"`
 	Status           string     `json:"status" gorm:"size:20;default:'active'"`
 	Description      string     `json:"description" gorm:"size:255"`
 	LastUsed         *time.Time `json:"last_used" gorm:"default:null"`

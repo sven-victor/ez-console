@@ -66,17 +66,17 @@ func (c *ToolSetConfig) Scan(value interface{}) error {
 // ToolSet represents an AI toolset configuration
 type ToolSet struct {
 	Base
-	OrganizationID string              `gorm:"size:36;not null" json:"organization_id"`          // Organization ID
-	Name           string              `gorm:"size:100;not null" json:"name" binding:"required"` // Toolset name
-	Description    string              `gorm:"size:500" json:"description"`                      // Toolset description
-	Type           toolset.ToolSetType `gorm:"size:50;not null" json:"type" binding:"required"`  // Toolset type (mcp, etc.)
-	Config         ToolSetConfig       `gorm:"type:text" json:"config" swaggertype:"object"`     // Additional configuration
-	Status         ToolSetStatus       `gorm:"size:20;not null;default:'enabled'" json:"status"` // Status
-	IsPreset       bool                `gorm:"not null;default:false" json:"is_preset"`          // Created/managed by preset sync (immutable metadata)
-	PresetKey      string              `gorm:"size:64" json:"preset_key,omitempty"`              // Stable key within an org (e.g. utils)
-	CreatedBy      string              `gorm:"size:36;not null" json:"created_by"`               // Creator user ID
-	UpdatedBy      string              `gorm:"size:36" json:"updated_by"`                        // Last updater user ID
-	Tools          []ToolDefinition    `gorm:"-" json:"tools,omitempty"`                         // Available tools (runtime only)
+	OrganizationID string              `gorm:"size:36;not null" json:"organization_id"`                     // Organization ID
+	Name           string              `gorm:"size:100;not null" json:"name" binding:"required"`            // Toolset name
+	Description    string              `gorm:"size:500" json:"description"`                                 // Toolset description
+	Type           toolset.ToolSetType `gorm:"size:50;not null" json:"type" binding:"required"`             // Toolset type (mcp, etc.)
+	Config         ToolSetConfig       `gorm:"type:text" json:"config" encrypt:"json" swaggertype:"object"` // Additional configuration
+	Status         ToolSetStatus       `gorm:"size:20;not null;default:'enabled'" json:"status"`            // Status
+	IsPreset       bool                `gorm:"not null;default:false" json:"is_preset"`                     // Created/managed by preset sync (immutable metadata)
+	PresetKey      string              `gorm:"size:64" json:"preset_key,omitempty"`                         // Stable key within an org (e.g. utils)
+	CreatedBy      string              `gorm:"size:36;not null" json:"created_by"`                          // Creator user ID
+	UpdatedBy      string              `gorm:"size:36" json:"updated_by"`                                   // Last updater user ID
+	Tools          []ToolDefinition    `gorm:"-" json:"tools,omitempty"`                                    // Available tools (runtime only)
 }
 
 // TableName returns the table name for ToolSet

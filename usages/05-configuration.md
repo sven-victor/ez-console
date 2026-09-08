@@ -345,7 +345,45 @@ The encryption key is used for encrypting sensitive data in the database:
 --global.encrypt-key=1234567890123456 # 16 bytes
 ```
 
-**Important**: Do not change the encryption key after deployment, as existing encrypted data cannot be decrypted.
+**Important:** Do not change `global.encrypt-key` in config or env until ciphertext has been re-encrypted. Use the stop-the-world procedure below.
+
+### Rotating the encryption key
+
+Runtime still uses a single key. All nodes must be stopped so nothing writes ciphertext with the old key while you rotate.
+
+```bash
+# 1. Stop every node. Backup the database (and config.yaml if it contains {CRYPT} values).
+
+# 2. Re-encrypt DB rows and YAML {CRYPT} scalars. Config must still hold the OLD key.
+ez-console encrypt rotate --config ./config.yaml --new-key "$NEW_KEY"
+# Preview:
+ez-console encrypt rotate --config ./config.yaml --new-key "$NEW_KEY" --dry-run
+
+# Optional: also write global.encrypt-key in that YAML (skip if the key lives only in env / K8s Secret)
+ez-console encrypt rotate --config ./config.yaml --new-key "$NEW_KEY" --write-encrypt-key
+
+# 3. Point GLOBAL_ENCRYPT_KEY / --global.encrypt-key at $NEW_KEY.
+#    Re-encrypt CLI / env / Secret ciphertexts:
+ez-console encrypt reencrypt --old-key "$OLD_KEY" --new-key "$NEW_KEY" --value '{CRYPT}$...'
+
+# 4. Start the nodes. Discard the old key.
+```
+
+Downstream apps that use `server.NewCommandServer` expose the same commands as `myapp encrypt rotate` / `myapp encrypt reencrypt`.
+
+The rotator walks `db.RegisterModels` (the same list as AutoMigrate):
+
+- Default: `safe.String` / `*safe.String` fields (for example `User.MFASecret`)
+- `encrypt:"inline"` — string columns whose value starts with `{CRYPT}`
+- `encrypt:"json"` — JSON/map fields; only `{CRYPT}` string leaves are rewritten
+- `encrypt:"-"` — skip
+- Implement `util.EncryptRotator` on the model to replace the default scan (empty method = skip the table)
+
+Do not convert existing `string` columns to `*safe.String` just to rotate. Tag them instead. User passwords (`Password` / `Salt`) are hashes and are not rotated.
+
+`--rewrite-config` (default when a config file was loaded) re-encrypts YAML scalars that start with `{CRYPT}` (for example `database.password`, S3 `secret_access_key`). `--global.encrypt-key` is the key itself, not ciphertext. After rewriting YAML ciphertext you **must** start with the new key, or `database.password` will not decrypt.
+
+`cache.redis.password` is a plain string today and cannot hold `{CRYPT}`.
 
 ### JWT Configuration
 

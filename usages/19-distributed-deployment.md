@@ -120,6 +120,8 @@ The server fails fast when:
 - `cluster.enabled=true` but `global.encrypt-key` is missing (serf encryption requires it)
 - `encrypt-key` cannot decrypt an existing encrypted setting in the database
 
+To **replace** the encrypt-key (leak, retirement), stop every node and run `encrypt rotate` while config still has the old key, then start all nodes with the new key. See [Rotating the encryption key](./05-configuration.md#rotating-the-encryption-key). Cluster gossip encryption is derived from the same key, so mixed old/new keys across nodes will fail validation or break Serf.
+
 The server logs a warning (does not fail) when `cluster.enabled=true` and `file_upload_path` / `skills_path` still use the local-disk driver: every node must share that volume, or switch to `driver: db` / `driver: s3`.
 
 See [Configuration Guide](./05-configuration.md) for general config options and [Deployment Guide](./12-deployment.md) for build and deploy steps.
@@ -571,7 +573,7 @@ volumeMounts:
 | Symptom | Likely cause | Action |
 |---------|--------------|--------|
 | Startup: `cluster.enabled must be explicitly set` | MySQL/Postgres without `cluster.enabled` | Set `cluster.enabled: true` (multi-node) or `false` (single instance) |
-| Startup: `encrypt-key validation failed` | Mismatched key across nodes or after restore | Align `global.encrypt-key` with the key used when data was encrypted |
+| Startup: `encrypt-key validation failed` | Mismatched key across nodes, after restore, or after `encrypt rotate` without switching the process key | Align `global.encrypt-key` with the key last used to encrypt; if you already rewrote YAML `{CRYPT}` values, the next start must use the **new** key |
 | OAuth/MFA fails intermittently | Old single-node cache tokens or mixed cluster config | Ensure all nodes use same DB and `cluster.enabled=true`; tokens are in `t_ephemeral_token` |
 | File download signature invalid on some nodes | Missing or mismatched `file_signature_key` | Restart nodes; key is auto-generated once in `t_setting` |
 | Cron job runs twice | Missing `schedule_fire_key` on custom CreateTask path | Use `WithScheduleFireKey` for cron-triggered tasks |

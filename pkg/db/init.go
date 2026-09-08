@@ -64,6 +64,14 @@ func RegisterModels(models ...interface{}) {
 	migrateModels = append(migrateModels, models...)
 }
 
+// RegisteredModels returns a copy of the models passed to AutoMigrate,
+// including those added via RegisterModels.
+func RegisteredModels() []interface{} {
+	out := make([]interface{}, len(migrateModels))
+	copy(out, migrateModels)
+	return out
+}
+
 const (
 	migrationLeaseName    = "migration"
 	migrationLeaseTTL     = 5 * time.Minute

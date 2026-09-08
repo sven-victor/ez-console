@@ -88,7 +88,7 @@ func (s SettingKey) Value() (driver.Value, error) {
 type Setting struct {
 	Base
 	Key     SettingKey `gorm:"size:50;uniqueIndex;not null" json:"key"` // Setting key
-	Value   string     `gorm:"type:text" json:"value"`                  // Setting value
+	Value   string     `gorm:"type:text" json:"value" encrypt:"inline"` // Setting value (ciphertext rows start with {CRYPT})
 	Comment string     `gorm:"size:255" json:"comment"`                 // Setting description
 }
 

@@ -268,6 +268,7 @@ func NewCommandServer(serviceName string, version string, description string, op
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./config.yaml)")
 	initFlags(rootCmd)
 	rootCmd.AddCommand(newStorageCommand(serviceName, &cfgFile, false))
+	rootCmd.AddCommand(newEncryptCommand(serviceName, &cfgFile, false))
 	rootCmd.Flags().SortFlags = false
 	return &CommandServer{Command: rootCmd}
 }
@@ -294,16 +295,34 @@ func safeArgs() []string {
 	var args []string
 	for idx := 0; idx < len(os.Args); idx++ {
 		arg := os.Args[idx]
-		if arg == "--global.encrypt-key" && idx < len(os.Args)-1 {
-			args = append(args, "--global.encrypt-key", "*************")
+		if redactNextArg(arg, "--global.encrypt-key", "--new-key", "--old-key", "--value") && idx < len(os.Args)-1 {
+			args = append(args, arg, "*************")
 			idx++
-		} else if strings.HasPrefix(arg, "--global.encrypt-key=") {
-			args = append(args, "--global.encrypt-key=*************")
+		} else if redacted, ok := redactPrefixedArg(arg, "--global.encrypt-key=", "--new-key=", "--old-key=", "--value="); ok {
+			args = append(args, redacted)
 		} else {
 			args = append(args, arg)
 		}
 	}
 	return args
+}
+
+func redactNextArg(arg string, names ...string) bool {
+	for _, name := range names {
+		if arg == name {
+			return true
+		}
+	}
+	return false
+}
+
+func redactPrefixedArg(arg string, prefixes ...string) (string, bool) {
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(arg, prefix) {
+			return prefix + "*************", true
+		}
+	}
+	return "", false
 }
 
 func newServer(ctx context.Context, serviceName string, engineOptions []withEngineOption, serviceOptions []service.ServiceOption) {

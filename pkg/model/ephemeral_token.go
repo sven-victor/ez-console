@@ -20,10 +20,10 @@ import "time"
 type EphemeralTokenPurpose string
 
 const (
-	EphemeralTokenOAuthState   EphemeralTokenPurpose = "oauth_state"
-	EphemeralTokenMFALogin     EphemeralTokenPurpose = "mfa_login"
-	EphemeralTokenMFAActivation EphemeralTokenPurpose = "mfa_activation"
-	EphemeralTokenMFADisable    EphemeralTokenPurpose = "mfa_disable"
+	EphemeralTokenOAuthState     EphemeralTokenPurpose = "oauth_state"
+	EphemeralTokenMFALogin       EphemeralTokenPurpose = "mfa_login"
+	EphemeralTokenMFAActivation  EphemeralTokenPurpose = "mfa_activation"
+	EphemeralTokenMFADisable     EphemeralTokenPurpose = "mfa_disable"
 	EphemeralTokenUserActivation EphemeralTokenPurpose = "user_activation"
 )
 
@@ -36,7 +36,7 @@ type EphemeralToken struct {
 	Base
 	Purpose   EphemeralTokenPurpose `gorm:"column:purpose;index;size:32;not null"`
 	TokenHash string                `gorm:"column:token_hash;uniqueIndex;size:64;not null"`
-	Payload   string                `gorm:"column:payload;type:text"`
+	Payload   string                `gorm:"column:payload;type:text" encrypt:"inline"`
 	ExpiresAt time.Time             `gorm:"column:expires_at;index;not null"`
 }
 

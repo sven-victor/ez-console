@@ -415,6 +415,15 @@ DATE=$(date +%Y%m%d_%H%M%S)
 tar -czf uploads_backup_$DATE.tar.gz /opt/myapp/uploads
 ```
 
+### Rotate the encryption key
+
+Stop **all** nodes first. Keep the old `global.encrypt-key` in config/env until `encrypt rotate` finishes, then switch to the new key. Full flags and model tags: [Rotating the encryption key](./05-configuration.md#rotating-the-encryption-key).
+
+```bash
+./myapp encrypt rotate --config ./config.yaml --new-key "$NEW_KEY"
+# then update GLOBAL_ENCRYPT_KEY / --global.encrypt-key (and any {CRYPT} CLI/env values)
+```
+
 ## Security Checklist
 
 - [ ] Use HTTPS in production
