@@ -123,7 +123,7 @@ require (
 	github.com/spf13/viper v1.20.1 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/sven-victor/ez-agent v0.0.0-20260725092123-8357dc5eb848 // indirect
-	github.com/sven-victor/ez-utils v1.0.1 // indirect
+	github.com/sven-victor/ez-utils v1.1.1 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	github.com/swaggo/gin-swagger v1.6.0 // indirect
 	github.com/swaggo/swag v1.16.4 // indirect
