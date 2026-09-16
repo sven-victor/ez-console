@@ -2364,6 +2364,74 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/authorization/service-accounts/{id}/rate-limit": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/ServiceAccount"
+                ],
+                "summary": "Get service account rate limit override",
+                "operationId": "getServiceAccountRateLimit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitOverride"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/ServiceAccount"
+                ],
+                "summary": "Update service account rate limit override",
+                "operationId": "updateServiceAccountRateLimit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Override",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RateLimitOverride"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitOverride"
+                        }
+                    }
+                }
+            }
+        },
         "/api/authorization/service-accounts/{id}/roles": {
             "get": {
                 "description": "Get service account roles",
@@ -2900,6 +2968,74 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authorization/users/{id}/rate-limit": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Get user rate limit override",
+                "operationId": "getUserRateLimit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitOverride"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Update user rate limit override",
+                "operationId": "updateUserRateLimit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Override",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RateLimitOverride"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitOverride"
                         }
                     }
                 }
@@ -4631,6 +4767,320 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/rate-limit-rules": {
+            "get": {
+                "description": "List database-backed rate limit rules",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "List rate limit rules",
+                "operationId": "listRateLimitRules",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Current page number",
+                        "name": "current",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of rows per page",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Keyword for searching",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Subject type filter",
+                        "name": "subject_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Subject id filter",
+                        "name": "subject_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.PaginationResponse-model_RateLimitRule"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Create a rate limit rule",
+                "operationId": "createRateLimitRule",
+                "parameters": [
+                    {
+                        "description": "Rule",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RateLimitRule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitRule"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/rate-limit-rules/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Get a rate limit rule",
+                "operationId": "getRateLimitRule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Rule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitRule"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Update a rate limit rule",
+                "operationId": "updateRateLimitRule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Rule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Rule",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RateLimitRule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitRule"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Delete a rate limit rule",
+                "operationId": "deleteRateLimitRule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Rule ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/rate-limit-settings": {
+            "get": {
+                "description": "Get the runtime switch, store metadata, and default shared buckets",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Get rate limit settings",
+                "operationId": "getRateLimitSettings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitSettings"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update the runtime switch and default shared buckets (anonymous, user, service account)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Update rate limit settings",
+                "operationId": "updateRateLimitSettings",
+                "parameters": [
+                    {
+                        "description": "Rate limit settings",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RateLimitSettings"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitSettings"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/rate-limit/effective": {
+            "get": {
+                "description": "Resolve shared and route buckets for a subject and path",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Get effective rate limit",
+                "operationId": "getRateLimitEffective",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "anonymous, user, or service_account",
+                        "name": "subject_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Subject resource id or IP",
+                        "name": "subject_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "HTTP method",
+                        "name": "method",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Gin full path",
+                        "name": "path",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitEffective"
                         }
                     }
                 }
@@ -8492,7 +8942,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "config": {
-                    "description": "Additional configuration` + "`" + `          // Configuration (includes api_key, model_id, base_url, etc.)",
+                    "description": "Configuration (includes api_key, model_id, base_url, etc.)",
                     "type": "object"
                 },
                 "created_at": {
@@ -9180,6 +9630,243 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "model.RateLimitBucket": {
+            "type": "object",
+            "required": [
+                "burst",
+                "enabled",
+                "period",
+                "quota",
+                "quota_period",
+                "rate",
+                "source"
+            ],
+            "properties": {
+                "burst": {
+                    "type": "integer"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_period": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "integer"
+                },
+                "source": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.RateLimitEffective": {
+            "type": "object",
+            "required": [
+                "method",
+                "path",
+                "route",
+                "shared",
+                "subject_id",
+                "subject_type"
+            ],
+            "properties": {
+                "method": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "route": {
+                    "$ref": "#/definitions/model.RateLimitBucket"
+                },
+                "shared": {
+                    "$ref": "#/definitions/model.RateLimitBucket"
+                },
+                "subject_id": {
+                    "type": "string"
+                },
+                "subject_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.RateLimitOverride": {
+            "type": "object",
+            "required": [
+                "burst",
+                "clear",
+                "enabled",
+                "inherited",
+                "period",
+                "quota",
+                "quota_period",
+                "rate"
+            ],
+            "properties": {
+                "burst": {
+                    "type": "integer"
+                },
+                "clear": {
+                    "type": "boolean"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "inherited": {
+                    "type": "boolean"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_period": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.RateLimitRule": {
+            "type": "object",
+            "required": [
+                "burst",
+                "created_at",
+                "enabled",
+                "id",
+                "method",
+                "path",
+                "period",
+                "quota",
+                "quota_period",
+                "rate",
+                "source",
+                "subject_id",
+                "subject_type",
+                "updated_at"
+            ],
+            "properties": {
+                "burst": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "method": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "period": {
+                    "type": "string"
+                },
+                "quota": {
+                    "type": "integer"
+                },
+                "quota_period": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "integer"
+                },
+                "source": {
+                    "$ref": "#/definitions/model.RateLimitSource"
+                },
+                "subject_id": {
+                    "type": "string"
+                },
+                "subject_type": {
+                    "$ref": "#/definitions/model.RateLimitSubjectType"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.RateLimitSettings": {
+            "type": "object",
+            "required": [
+                "anonymous",
+                "cluster",
+                "enabled",
+                "fail_open",
+                "memory_warn",
+                "service_account",
+                "store",
+                "user"
+            ],
+            "properties": {
+                "anonymous": {
+                    "$ref": "#/definitions/model.RateLimitBucket"
+                },
+                "cluster": {
+                    "type": "boolean"
+                },
+                "enabled": {
+                    "type": "boolean"
+                },
+                "fail_open": {
+                    "type": "boolean"
+                },
+                "memory_warn": {
+                    "type": "boolean"
+                },
+                "service_account": {
+                    "$ref": "#/definitions/model.RateLimitBucket"
+                },
+                "store": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/model.RateLimitBucket"
+                }
+            }
+        },
+        "model.RateLimitSource": {
+            "type": "string",
+            "enum": [
+                "builtin",
+                "yaml",
+                "code",
+                "db"
+            ],
+            "x-enum-varnames": [
+                "RateLimitSourceBuiltin",
+                "RateLimitSourceYAML",
+                "RateLimitSourceCode",
+                "RateLimitSourceDB"
+            ]
+        },
+        "model.RateLimitSubjectType": {
+            "type": "string",
+            "enum": [
+                "anonymous",
+                "user",
+                "service_account",
+                "access_key"
+            ],
+            "x-enum-varnames": [
+                "RateLimitSubjectAnonymous",
+                "RateLimitSubjectUser",
+                "RateLimitSubjectServiceAccount",
+                "RateLimitSubjectAccessKey"
+            ]
         },
         "model.Role": {
             "type": "object",
@@ -11796,25 +12483,9 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -12073,6 +12744,40 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/model.Organization"
+                    }
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.PaginationResponse-model_RateLimitRule": {
+            "type": "object",
+            "required": [
+                "code",
+                "current",
+                "data",
+                "page_size",
+                "total",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "current": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.RateLimitRule"
                     }
                 },
                 "page_size": {
@@ -13168,6 +13873,98 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/model.PolicyDocument"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_RateLimitEffective": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.RateLimitEffective"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_RateLimitOverride": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.RateLimitOverride"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_RateLimitRule": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.RateLimitRule"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_RateLimitSettings": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.RateLimitSettings"
                 },
                 "err": {
                     "type": "string"

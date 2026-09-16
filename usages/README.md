@@ -34,7 +34,7 @@ EZ-Console is a modern, full-stack framework for building enterprise-grade manag
 - **Database ORM**: GORM with support for **SQLite** (default) and **MySQL** (multi-node / production)
 - **Authentication**: JWT-based with session management
 - **Authorization**: RBAC with policy-based permissions
-- **Middleware**: Built-in authentication, CORS, logging (rate limiting is custom / proxy-level)
+- **Middleware**: Built-in authentication, CORS, logging, and HTTP rate limiting / quotas
 - **File Management**: Upload/download with storage support
 - **Audit Logging**: Automatic tracking of user actions
 - **Multi-tenancy**: Organization-based resource isolation

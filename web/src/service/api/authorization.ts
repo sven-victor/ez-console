@@ -597,6 +597,43 @@ export async function setServiceAccountPolicy(
   );
 }
 
+/** Get service account rate limit override GET /api/authorization/service-accounts/${param0}/rate-limit */
+export async function getServiceAccountRateLimit(
+  params: API.getServiceAccountRateLimitParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitOverride>(
+    `/api/authorization/service-accounts/${param0}/rate-limit`,
+    {
+      method: "GET",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Update service account rate limit override PUT /api/authorization/service-accounts/${param0}/rate-limit */
+export async function updateServiceAccountRateLimit(
+  params: API.updateServiceAccountRateLimitParams,
+  body: API.RateLimitOverride,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitOverride>(
+    `/api/authorization/service-accounts/${param0}/rate-limit`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** Get service account roles Get service account roles GET /api/authorization/service-accounts/${param0}/roles */
 export async function getServiceAccountRoles(
   params: API.getServiceAccountRolesParams,
@@ -783,6 +820,43 @@ export async function resetUserPassword(
   const { id: param0, ...queryParams } = params;
   return request<API.ResponseAuthorizationapiResetUserPasswordResponse>(
     `/api/authorization/users/${param0}/password`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Get user rate limit override GET /api/authorization/users/${param0}/rate-limit */
+export async function getUserRateLimit(
+  params: API.getUserRateLimitParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitOverride>(
+    `/api/authorization/users/${param0}/rate-limit`,
+    {
+      method: "GET",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Update user rate limit override PUT /api/authorization/users/${param0}/rate-limit */
+export async function updateUserRateLimit(
+  params: API.updateUserRateLimitParams,
+  body: API.RateLimitOverride,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitOverride>(
+    `/api/authorization/users/${param0}/rate-limit`,
     {
       method: "PUT",
       headers: {

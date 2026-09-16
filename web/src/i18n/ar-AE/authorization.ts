@@ -332,6 +332,9 @@ export default {
       "system.security.view": 'عرض إعدادات الأمان',
       "system.settings.update": 'تحديث الإعدادات',
       "system.settings.view": 'عرض الإعدادات',
+      "Rate_Limit": "تحديد المعدل",
+      "system.rate_limit.view": "عرض إعدادات تحديد المعدل",
+      "system.rate_limit.update": "تحديث إعدادات تحديد المعدل",
       "system.view": 'عرض معلومات النظام',
       "system.audit_log.view": 'عرض سجلات التدقيق',
       "file.list": "عرض قائمة الملفات",
@@ -426,6 +429,11 @@ export default {
       },
       settings: {
         update: 'تحديث الإعدادات',
+      },
+      rate_limit: {
+        update: 'تحديث تحديد المعدل',
+        create: 'إنشاء قاعدة تحديد المعدل',
+        delete: 'حذف قاعدة تحديد المعدل',
       },
       organization: {
         update: 'تحديث المنظمة',
@@ -604,4 +612,20 @@ export default {
       policy: 'إدارة السياسات',
     }
   },
-} 
+  rateLimit: {
+    title: 'تحديد المعدل',
+    rate: 'المعدل',
+    period: 'الفترة',
+    periodHint: 'أمثلة: 1s، 1m، 1h',
+    burst: 'الاندفاع',
+    quota: 'الحصة اليومية (0 = بدون)',
+    quotaPeriod: 'فترة الحصة',
+    enabled: 'مفعّل',
+    inherited: 'يتم استخدام الافتراضي للنوع. احفظ لإنشاء تجاوز خاص بالموضوع.',
+    sourceHint: 'القيم المعروضة موروثة.',
+    saveSuccess: 'تم حفظ تجاوز تحديد المعدل',
+    saveFailed: 'فشل حفظ التجاوز',
+    resetSuccess: 'تم مسح التجاوز واستعادة الافتراضي',
+    resetToDefault: 'إعادة التعيين للافتراضي',
+  },
+}

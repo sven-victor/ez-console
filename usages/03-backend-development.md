@@ -803,6 +803,8 @@ Follow this pattern for error codes:
   - `E4011`: Unauthorized (401)
   - `E4031`: Forbidden (403)
   - `E4041`: Not Found (404)
+  - `E4291`: Rate limit exceeded (429)
+  - `E4292`: Quota exceeded (429)
   
 - `E5xxx`: Server errors (500-599)
   - `E5001`: Internal Server Error (500)

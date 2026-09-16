@@ -331,6 +331,9 @@ export default {
       "system.security.view": "View security settings",
       "system.settings.update": "Update settings",
       "system.settings.view": "View settings",
+      "Rate_Limit": "Rate Limit",
+      "system.rate_limit.view": "View rate limit settings",
+      "system.rate_limit.update": "Update rate limit settings",
       "system.view": "View system information",
       "system.audit_log.view": "View audit logs",
       "AI_Model_Management": "AI Model Management",
@@ -409,6 +412,11 @@ export default {
       },
       settings: {
         update: 'Update settings',
+      },
+      rate_limit: {
+        update: 'Update rate limit',
+        create: 'Create rate limit rule',
+        delete: 'Delete rate limit rule',
       },
       organization: {
         update: 'Update organization',
@@ -588,5 +596,21 @@ export default {
       accessKeys: 'Access Keys Management',
       policy: 'Policy Management',
     }
+  },
+  rateLimit: {
+    title: 'Rate Limit',
+    rate: 'Rate',
+    period: 'Period',
+    periodHint: 'Examples: 1s, 1m, 1h',
+    burst: 'Burst',
+    quota: 'Daily quota (0 = none)',
+    quotaPeriod: 'Quota period',
+    enabled: 'Enabled',
+    inherited: 'Using the type default. Save to create a subject-specific override.',
+    sourceHint: 'Values shown are inherited.',
+    saveSuccess: 'Rate limit override saved',
+    saveFailed: 'Failed to save override',
+    resetSuccess: 'Override cleared; type default restored',
+    resetToDefault: 'Reset to default',
   },
 }

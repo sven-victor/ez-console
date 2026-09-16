@@ -67,6 +67,7 @@ var controllers = []ControllerGenerator{
 func RegisterControllers(ctx context.Context, router *gin.Engine, svc *service.Service) {
 	api := router.Group("/api")
 	api.Use(middleware.AuthenticationMiddleware())
+	api.Use(middleware.RateLimitMiddleware())
 
 	for _, controller := range controllers {
 		controller(ctx, svc).RegisterRoutes(ctx, api)

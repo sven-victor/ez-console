@@ -334,6 +334,9 @@ export default {
       "system.security.view": "查看安全设置",
       "system.settings.update": "更新设置",
       "system.settings.view": "查看设置",
+      "Rate_Limit": "接口限流",
+      "system.rate_limit.view": "查看限流设置",
+      "system.rate_limit.update": "更新限流设置",
       "system.view": "查看系统信息",
       "system.audit_log.view": "查看审计日志",
       "file.list": "查看文件列表",
@@ -428,6 +431,11 @@ export default {
       },
       settings: {
         update: '更新系统设置',
+      },
+      rate_limit: {
+        update: '更新限流设置',
+        create: '创建限流规则',
+        delete: '删除限流规则',
       },
       organization: {
         update: '更新组织',
@@ -610,5 +618,21 @@ export default {
       accessKeys: '访问密钥',
       policy: '策略管理',
     }
+  },
+  rateLimit: {
+    title: '接口限流',
+    rate: '速率',
+    period: '周期',
+    periodHint: '例如：1s、1m、1h',
+    burst: '突发',
+    quota: '日配额（0 表示无）',
+    quotaPeriod: '配额周期',
+    enabled: '启用',
+    inherited: '当前使用类型默认值。保存后将创建该主体的覆盖规则。',
+    sourceHint: '显示的值为继承的默认值。',
+    saveSuccess: '限流覆盖已保存',
+    saveFailed: '保存覆盖失败',
+    resetSuccess: '已清除覆盖，恢复为类型默认值',
+    resetToDefault: '恢复默认',
   },
 }

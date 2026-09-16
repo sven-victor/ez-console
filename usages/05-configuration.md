@@ -46,6 +46,30 @@ server:
   skills_cache_path: "./skills-cache"  # Local cache for skill materialization (used only when skills_path is a remote driver)
   max_upload_size: 10485760  # 10MB in bytes
   geoip_db_path: "./dist/GeoLite2-City.mmdb"  # Optional
+  # When rate limiting is on, set the reverse-proxy CIDRs so gin.ClientIP()
+  # uses X-Forwarded-For. Empty means proxies are not trusted (warning logged).
+  # trusted_proxies:
+  #   - "10.0.0.0/8"
+  #   - "192.168.0.0/16"
+
+# HTTP rate limiting (infra). Runtime on/off is t_setting rate_limit_enabled.
+# Policies here are compiled at startup (YAML layer); they are never upserted to DB.
+rate_limit:
+  enabled: true          # YAML master switch; UI can still disable via settings
+  store: memory          # memory (default) or redis
+  fail_open: true        # allow requests if the store errors (Redis down)
+  # redis:               # optional; omitted uses cache.redis
+  #   addr: "127.0.0.1:6379"
+  #   password: ""
+  #   db: 0
+  #   prefix: "ez:"
+  # policies:            # GitOps overlay on builtin defaults
+  #   - subject_type: user
+  #     rate: 60
+  #     period: 1m
+  #     burst: 20
+  #     quota: 10000
+  #     quota_period: 1d
 
 # To move existing files onto another driver, use `storage migrate`
 # (see usages/19-distributed-deployment.md, "Migrating between storage backends").
@@ -433,6 +457,14 @@ Some settings can be configured through the UI after deployment:
 - Account lockout duration
 - Inactive account auto-disable
 
+### HTTP Rate Limiting
+
+- Runtime enable/disable (`rate_limit_enabled` in system settings; no restart)
+- Default shared buckets for anonymous (IP), users, and service accounts
+- Per-route extra buckets and per-user / per-service-account overrides
+
+YAML `rate_limit.*` (store, fail_open, GitOps `policies`) requires a restart. Set `server.trusted_proxies` when the app sits behind a reverse proxy so anonymous limits key off the real client IP. `cluster.enabled` with `rate_limit.store=memory` is per-node; use `store=redis` for cluster-wide counters.
+
 ## Production Configuration Example
 
 ### Configuration File
@@ -450,6 +482,13 @@ server:
   file_upload_path: "/var/lib/ez-console/uploads"
   max_upload_size: 52428800  # 50MB
   geoip_db_path: "/var/lib/ez-console/GeoLite2-City.mmdb"
+  trusted_proxies:
+    - "10.0.0.0/8"
+
+rate_limit:
+  enabled: true
+  store: redis
+  fail_open: true
 
 database:
   driver: "mysql"

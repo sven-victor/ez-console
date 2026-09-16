@@ -332,6 +332,9 @@ export default {
       "system.security.view": 'Ver ajustes de seguridad',
       "system.settings.update": 'Actualizar ajustes',
       "system.settings.view": 'Ver ajustes',
+      "Rate_Limit": "Límite de tasa",
+      "system.rate_limit.view": "Ver límites de tasa",
+      "system.rate_limit.update": "Actualizar límites de tasa",
       "system.view": 'Ver información del sistema',
       "system.audit_log.view": 'Ver registros de auditoría',
       "file.list": "Ver lista de archivos",
@@ -426,6 +429,11 @@ export default {
       },
       settings: {
         update: 'Actualizar configuración',
+      },
+      rate_limit: {
+        update: 'Actualizar límite de tasa',
+        create: 'Crear regla de límite',
+        delete: 'Eliminar regla de límite',
       },
       organization: {
         update: 'Actualizar organización',
@@ -604,4 +612,20 @@ export default {
       policy: 'Gestión de políticas',
     }
   },
-} 
+  rateLimit: {
+    title: 'Límite de tasa',
+    rate: 'Tasa',
+    period: 'Periodo',
+    periodHint: 'Ejemplos: 1s, 1m, 1h',
+    burst: 'Ráfaga',
+    quota: 'Cuota diaria (0 = ninguna)',
+    quotaPeriod: 'Periodo de cuota',
+    enabled: 'Activado',
+    inherited: 'Se usa el valor predeterminado del tipo. Guarde para crear una anulación específica.',
+    sourceHint: 'Los valores mostrados se heredan.',
+    saveSuccess: 'Anulación de límite guardada',
+    saveFailed: 'Error al guardar la anulación',
+    resetSuccess: 'Anulación eliminada; se restauró el valor predeterminado',
+    resetToDefault: 'Restablecer predeterminado',
+  },
+}

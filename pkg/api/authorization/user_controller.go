@@ -58,6 +58,8 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.GET("/:id/audit-logs", middleware.RequirePermission("authorization:user:view_audit_logs"), c.GetUserLogs)
 		users.POST("/:id/restore", middleware.RequirePermission("authorization:user:update"), c.RestoreUser)
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
+		users.GET("/:id/rate-limit", middleware.RequirePermission("authorization:user:view"), c.GetUserRateLimit)
+		users.PUT("/:id/rate-limit", middleware.RequirePermission("authorization:user:update"), c.UpdateUserRateLimit)
 		users.POST("/:id/resend-activation", middleware.RequirePermission("authorization:user:update"), c.ResendActivationEmail)
 		users.DELETE("/:id/mfa", middleware.RequirePermission("authorization:user:update"), c.AdminDisableUserMFA)
 		users.GET("/ldap-users", middleware.RequirePermission("authorization:user:list"), c.GetLdapUsers)
@@ -1127,6 +1129,73 @@ func (c *UserController) GetLdapUsers(ctx *gin.Context) {
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, users)
+}
+
+// GetUserRateLimit returns the shared-bucket override for a user
+//
+//	@Summary		Get user rate limit override
+//	@ID             getUserRateLimit
+//	@Tags			Authorization/Users
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response[model.RateLimitOverride]
+//	@Router			/api/authorization/users/{id}/rate-limit [get]
+func (c *UserController) GetUserRateLimit(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if _, err := c.service.GetUserByID(ctx, id); err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	ov, err := c.service.GetOverride(ctx, model.RateLimitSubjectUser, id)
+	if err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, ov)
+}
+
+// UpdateUserRateLimit sets or clears the shared-bucket override for a user
+//
+//	@Summary		Update user rate limit override
+//	@ID             updateUserRateLimit
+//	@Tags			Authorization/Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string					true	"User ID"
+//	@Param			request	body		model.RateLimitOverride	true	"Override"
+//	@Success		200		{object}	util.Response[model.RateLimitOverride]
+//	@Router			/api/authorization/users/{id}/rate-limit [put]
+func (c *UserController) UpdateUserRateLimit(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if _, err := c.service.GetUserByID(ctx, id); err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	var req model.RateLimitOverride
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid request", err))
+		return
+	}
+	err := c.service.AuditLogService.StartAudit(ctx, id, func(auditLog *model.AuditLog) error {
+		if err := c.service.SetOverride(ctx, model.RateLimitSubjectUser, id, req); err != nil {
+			return err
+		}
+		ov, err := c.service.GetOverride(ctx, model.RateLimitSubjectUser, id)
+		if err != nil {
+			return err
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, ov)
+		return nil
+	}, service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+		old, _ := c.service.GetOverride(ctx, model.RateLimitSubjectUser, id)
+		auditLog.Details.OldData = old
+		auditLog.Details.NewData = req
+		auditLog.Action = "authorization:user:rate_limit:update"
+		auditLog.ActionName = "Update user rate limit"
+	}))
+	if err != nil {
+		util.RespondWithError(ctx, err)
+	}
 }
 
 func init() {

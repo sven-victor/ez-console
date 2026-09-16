@@ -76,6 +76,10 @@ export default {
   pagination: {
     total: '{{start}}-{{end}} av {{total}} objekt',
   },
+  errors: {
+    rateLimit: 'Hastighetsgränsen överskreds',
+    quotaExceeded: 'Kvoten överskreds',
+  },
   language: {
     default: 'Standardspråk',
     'en-US': 'Engelska',

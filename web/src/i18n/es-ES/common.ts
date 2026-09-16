@@ -76,6 +76,10 @@ export default {
   pagination: {
     total: '{{start}}-{{end}} de {{total}} elementos',
   },
+  errors: {
+    rateLimit: 'Se superó el límite de tasa',
+    quotaExceeded: 'Se superó la cuota',
+  },
   language: {
     default: 'Idioma por defecto',
     'en-US': 'Inglés',

@@ -94,7 +94,7 @@ declare global {
     }
   
     interface AIModel {
-      /** Additional configuration`          // Configuration (includes api_key, model_id, base_url, etc.) */
+      /** Configuration (includes api_key, model_id, base_url, etc.) */
       config: Record<string, any>;
       created_at: string;
       /** Creator user ID */
@@ -433,6 +433,11 @@ declare global {
       id: string;
     }
   
+    interface deleteRateLimitRuleParams {
+      /** Rule ID */
+      id: string;
+    }
+  
     interface deleteRoleParams {
       /** Role ID */
       id: string;
@@ -607,6 +612,22 @@ declare global {
       id: string;
     }
   
+    interface getRateLimitEffectiveParams {
+      /** anonymous, user, or service_account */
+      subject_type?: string;
+      /** Subject resource id or IP */
+      subject_id?: string;
+      /** HTTP method */
+      method?: string;
+      /** Gin full path */
+      path?: string;
+    }
+  
+    interface getRateLimitRuleParams {
+      /** Rule ID */
+      id: string;
+    }
+  
     interface getRoleParams {
       /** Role ID */
       id: string;
@@ -628,6 +649,11 @@ declare global {
     }
   
     interface getServiceAccountPolicyParams {
+      /** Service account ID */
+      id: string;
+    }
+  
+    interface getServiceAccountRateLimitParams {
       /** Service account ID */
       id: string;
     }
@@ -704,6 +730,11 @@ declare global {
     }
   
     interface getUserParams {
+      /** User ID */
+      id: string;
+    }
+  
+    interface getUserRateLimitParams {
       /** User ID */
       id: string;
     }
@@ -859,6 +890,19 @@ declare global {
       page_size?: number;
       /** Search */
       search?: string;
+    }
+  
+    interface listRateLimitRulesParams {
+      /** Current page number */
+      current?: number;
+      /** Number of rows per page */
+      page_size?: number;
+      /** Keyword for searching */
+      search?: string;
+      /** Subject type filter */
+      subject_type?: string;
+      /** Subject id filter */
+      subject_id?: string;
     }
   
     interface listRolesParams {
@@ -1140,6 +1184,15 @@ declare global {
       trace_id: string;
     }
   
+    interface PaginationResponseModelRateLimitRule {
+      code: string;
+      current: number;
+      data: RateLimitRule[];
+      page_size: number;
+      total: number;
+      trace_id: string;
+    }
+  
     interface PaginationResponseModelRole {
       code: string;
       current: number;
@@ -1246,6 +1299,72 @@ declare global {
       /** File path */
       path: string;
     }
+  
+    interface RateLimitBucket {
+      burst: number;
+      enabled: boolean;
+      period: string;
+      quota: number;
+      quota_period: string;
+      rate: number;
+      source: string;
+    }
+  
+    interface RateLimitEffective {
+      method: string;
+      path: string;
+      route: RateLimitBucket;
+      shared: RateLimitBucket;
+      subject_id: string;
+      subject_type: string;
+    }
+  
+    interface RateLimitOverride {
+      burst: number;
+      clear: boolean;
+      enabled: boolean;
+      inherited: boolean;
+      period: string;
+      quota: number;
+      quota_period: string;
+      rate: number;
+    }
+  
+    interface RateLimitRule {
+      burst: number;
+      created_at: string;
+      enabled: boolean;
+      id: string;
+      method: string;
+      path: string;
+      period: string;
+      quota: number;
+      quota_period: string;
+      rate: number;
+      source: RateLimitSource;
+      subject_id: string;
+      subject_type: RateLimitSubjectType;
+      updated_at: string;
+    }
+  
+    interface RateLimitSettings {
+      anonymous: RateLimitBucket;
+      cluster: boolean;
+      enabled: boolean;
+      fail_open: boolean;
+      memory_warn: boolean;
+      service_account: RateLimitBucket;
+      store: string;
+      user: RateLimitBucket;
+    }
+  
+    type RateLimitSource = "builtin" | "yaml" | "code" | "db";
+  
+    type RateLimitSubjectType =
+      | "anonymous"
+      | "user"
+      | "service_account"
+      | "access_key";
   
     interface removeUserFromOrganizationParams {
       /** Organization ID */
@@ -1508,6 +1627,34 @@ declare global {
     interface ResponseModelPolicyDocument {
       code: string;
       data: PolicyDocument;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelRateLimitEffective {
+      code: string;
+      data: RateLimitEffective;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelRateLimitOverride {
+      code: string;
+      data: RateLimitOverride;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelRateLimitRule {
+      code: string;
+      data: RateLimitRule;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelRateLimitSettings {
+      code: string;
+      data: RateLimitSettings;
       err: string;
       trace_id: string;
     }
@@ -2385,6 +2532,11 @@ declare global {
       status: string;
     }
   
+    interface updateRateLimitRuleParams {
+      /** Rule ID */
+      id: string;
+    }
+  
     interface updateRoleParams {
       /** Role ID */
       id: string;
@@ -2414,6 +2566,11 @@ declare global {
     }
   
     interface updateServiceAccountParams {
+      /** Service account ID */
+      id: string;
+    }
+  
+    interface updateServiceAccountRateLimitParams {
       /** Service account ID */
       id: string;
     }
@@ -2487,6 +2644,11 @@ declare global {
     }
   
     interface updateUserParams {
+      /** User ID */
+      id: string;
+    }
+  
+    interface updateUserRateLimitParams {
       /** User ID */
       id: string;
     }

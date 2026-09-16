@@ -32,6 +32,7 @@ type Controller struct {
 	*ToolSetController
 	*SkillController
 	*OrganizationController
+	*RateLimitController
 }
 
 func NewController(svc *service.Service) *Controller {
@@ -46,6 +47,7 @@ func NewController(svc *service.Service) *Controller {
 		ToolSetController:         NewToolSetController(svc),
 		SkillController:           NewSkillController(svc),
 		OrganizationController:    NewOrganizationController(svc),
+		RateLimitController:       NewRateLimitController(svc),
 	}
 }
 
@@ -71,4 +73,5 @@ func (c *Controller) RegisterRoutes(ctx context.Context, router *gin.RouterGroup
 	c.SkillController.RegisterRoutes(system)
 	// Register organization controller
 	c.OrganizationController.RegisterRoutes(system)
+	c.RateLimitController.RegisterRoutes(system)
 }

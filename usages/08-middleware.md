@@ -57,7 +57,28 @@ engine.Use(middleware.DelayMiddleware())
 - `middleware.Recovery()` — used with `gin.CustomRecovery` in `server/server.go`
 - `middleware.PrometheusMetrics()` — Prometheus HTTP metrics middleware
 
-Built-in packages under `pkg/middleware/`: authentication, permission, cors, log, recovery, metrics, delay, settings. There is **no** built-in rate-limit middleware.
+Built-in packages under `pkg/middleware/`: authentication, permission, cors, log, recovery, metrics, delay, settings, **ratelimit**.
+
+### Rate Limit Middleware
+
+Applied automatically to `/api` after `AuthenticationMiddleware`. Counters use `pkg/ratelimit` (memory or Redis). Runtime enable/disable is the `rate_limit_enabled` system setting.
+
+- **Identity:** `service_account_id` → `user_id` → `ClientIP()` (anonymous only).
+- **Buckets:** one shared bucket per identity; an extra route bucket only when a compiled rule has a non-empty path (AND). Daily quota is on shared (`path=""`) rules only.
+- **Skip:** `GET /api/system/health`. Non-`/api` routes never hit this middleware. SSE counts the connection, not each event.
+- **Errors:** HTTP 429, `E4291` (rate) or `E4292` (quota), `Retry-After` / `RateLimit-Limit` / `RateLimit-Remaining` / `RateLimit-Reset`.
+- **Store:** `rate_limit.store=memory` (default) or `redis`. Redis errors fail open unless `fail_open=false`. Cluster + memory logs a warning (limits are per node).
+- **Code extra bucket:** `middleware.RateLimitRoute(method, path, limit, subjectTypes...)` registers a `source=code` rule at route registration time (the returned handler is a no-op; group middleware runs first).
+
+```go
+api.POST("/expensive",
+	middleware.RateLimitRoute("POST", "/api/products/expensive", ratelimit.Limit{Rate: 5, Period: time.Minute, Burst: 5}, model.RateLimitSubjectUser),
+	controller.Expensive)
+```
+
+YAML `rate_limit.policies` overlay builtin defaults at startup and are **not** written to `t_rate_limit_rule`. DB/UI rules (`source=db`) overlay YAML/code. Deleting a DB row restores the lower layer.
+
+This does not replace `LoginFailureLock` or AI token governance. For proxy-level limits in front of the process, keep using nginx/gateway as an additional layer.
 
 ## Creating Custom Middleware
 
@@ -84,10 +105,10 @@ router.Use(MyMiddleware())
 
 ### Middleware with Configuration
 
-Example of a **custom** rate limiter (not shipped in `pkg/middleware`):
+Prefer the built-in rate limiter (`middleware.RateLimitMiddleware` / System Settings) for `/api`. A custom limiter is only needed for non-API routes or a different algorithm:
 
 ```go
-func RateLimitMiddleware(limit int, window time.Duration) gin.HandlerFunc {
+func CustomRateLimitMiddleware(limit int, window time.Duration) gin.HandlerFunc {
 	limiter := rate.NewLimiter(rate.Every(window), limit)
 	
 	return func(c *gin.Context) {
@@ -99,9 +120,6 @@ func RateLimitMiddleware(limit int, window time.Duration) gin.HandlerFunc {
 		c.Next()
 	}
 }
-
-// Use it
-router.Use(RateLimitMiddleware(100, time.Minute))
 ```
 
 ### Middleware with Conditional Logic
@@ -191,7 +209,6 @@ Chain multiple middleware:
 router.POST("/products",
 	middleware.AuthenticationMiddleware(),
 	middleware.RequirePermission("product:create"),
-	// RateLimitMiddleware is a custom example above — not built into pkg/middleware
 	controller.CreateProduct)
 ```
 

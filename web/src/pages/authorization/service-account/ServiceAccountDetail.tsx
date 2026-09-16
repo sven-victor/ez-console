@@ -52,6 +52,7 @@ import NotFound from '@/pages/NotFound';
 import ServiceAccountForm from './ServiceAccountForm';
 import ServiceAccountAccessKeys from './ServiceAccountAccessKeys';
 import ServiceAccountAuthorization from './ServiceAccountAuthorization';
+import RateLimitOverrideForm from '@/components/RateLimitOverrideForm';
 import usePermission from '@/hooks/usePermission';
 import { useRequest } from 'ahooks';
 import { createStyles } from 'antd-style';
@@ -405,6 +406,18 @@ const ServiceAccountDetail: React.FC = () => {
           <ServiceAccountAuthorization
             serviceAccount={serviceAccount}
             onRefresh={refreshServiceAccountDetail}
+          />
+        </TabPane>
+
+        <TabPane
+          tab={t('rateLimit.title', { defaultValue: 'Rate Limit' })}
+          key="rate-limit"
+          disabled={!hasPermission('authorization:service_account:view')}
+        >
+          <RateLimitOverrideForm
+            kind="service_account"
+            subjectId={id || ''}
+            readOnly={!hasPermission('authorization:service_account:update')}
           />
         </TabPane>
 

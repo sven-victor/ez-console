@@ -92,7 +92,7 @@ export interface AIFunctionCall {
 }
 
 export interface AIModel {
-  /** Additional configuration`          // Configuration (includes api_key, model_id, base_url, etc.) */
+  /** Configuration (includes api_key, model_id, base_url, etc.) */
   config: Record<string, any>;
   created_at: string;
   /** Creator user ID */
@@ -431,6 +431,11 @@ export interface deleteOrganizationParams {
   id: string;
 }
 
+export interface deleteRateLimitRuleParams {
+  /** Rule ID */
+  id: string;
+}
+
 export interface deleteRoleParams {
   /** Role ID */
   id: string;
@@ -605,6 +610,22 @@ export interface getOrganizationParams {
   id: string;
 }
 
+export interface getRateLimitEffectiveParams {
+  /** anonymous, user, or service_account */
+  subject_type?: string;
+  /** Subject resource id or IP */
+  subject_id?: string;
+  /** HTTP method */
+  method?: string;
+  /** Gin full path */
+  path?: string;
+}
+
+export interface getRateLimitRuleParams {
+  /** Rule ID */
+  id: string;
+}
+
 export interface getRoleParams {
   /** Role ID */
   id: string;
@@ -626,6 +647,11 @@ export interface getServiceAccountByIdParams {
 }
 
 export interface getServiceAccountPolicyParams {
+  /** Service account ID */
+  id: string;
+}
+
+export interface getServiceAccountRateLimitParams {
   /** Service account ID */
   id: string;
 }
@@ -702,6 +728,11 @@ export interface getUserOrganizationsParams {
 }
 
 export interface getUserParams {
+  /** User ID */
+  id: string;
+}
+
+export interface getUserRateLimitParams {
   /** User ID */
   id: string;
 }
@@ -857,6 +888,19 @@ export interface listOrganizationUsersParams {
   page_size?: number;
   /** Search */
   search?: string;
+}
+
+export interface listRateLimitRulesParams {
+  /** Current page number */
+  current?: number;
+  /** Number of rows per page */
+  page_size?: number;
+  /** Keyword for searching */
+  search?: string;
+  /** Subject type filter */
+  subject_type?: string;
+  /** Subject id filter */
+  subject_id?: string;
 }
 
 export interface listRolesParams {
@@ -1138,6 +1182,15 @@ export interface PaginationResponseModelOrganization {
   trace_id: string;
 }
 
+export interface PaginationResponseModelRateLimitRule {
+  code: string;
+  current: number;
+  data: RateLimitRule[];
+  page_size: number;
+  total: number;
+  trace_id: string;
+}
+
 export interface PaginationResponseModelRole {
   code: string;
   current: number;
@@ -1244,6 +1297,72 @@ export interface putSkillFileParams {
   /** File path */
   path: string;
 }
+
+export interface RateLimitBucket {
+  burst: number;
+  enabled: boolean;
+  period: string;
+  quota: number;
+  quota_period: string;
+  rate: number;
+  source: string;
+}
+
+export interface RateLimitEffective {
+  method: string;
+  path: string;
+  route: RateLimitBucket;
+  shared: RateLimitBucket;
+  subject_id: string;
+  subject_type: string;
+}
+
+export interface RateLimitOverride {
+  burst: number;
+  clear: boolean;
+  enabled: boolean;
+  inherited: boolean;
+  period: string;
+  quota: number;
+  quota_period: string;
+  rate: number;
+}
+
+export interface RateLimitRule {
+  burst: number;
+  created_at: string;
+  enabled: boolean;
+  id: string;
+  method: string;
+  path: string;
+  period: string;
+  quota: number;
+  quota_period: string;
+  rate: number;
+  source: RateLimitSource;
+  subject_id: string;
+  subject_type: RateLimitSubjectType;
+  updated_at: string;
+}
+
+export interface RateLimitSettings {
+  anonymous: RateLimitBucket;
+  cluster: boolean;
+  enabled: boolean;
+  fail_open: boolean;
+  memory_warn: boolean;
+  service_account: RateLimitBucket;
+  store: string;
+  user: RateLimitBucket;
+}
+
+export type RateLimitSource = "builtin" | "yaml" | "code" | "db";
+
+export type RateLimitSubjectType =
+  | "anonymous"
+  | "user"
+  | "service_account"
+  | "access_key";
 
 export interface removeUserFromOrganizationParams {
   /** Organization ID */
@@ -1506,6 +1625,34 @@ export interface ResponseModelOrganization {
 export interface ResponseModelPolicyDocument {
   code: string;
   data: PolicyDocument;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelRateLimitEffective {
+  code: string;
+  data: RateLimitEffective;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelRateLimitOverride {
+  code: string;
+  data: RateLimitOverride;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelRateLimitRule {
+  code: string;
+  data: RateLimitRule;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelRateLimitSettings {
+  code: string;
+  data: RateLimitSettings;
   err: string;
   trace_id: string;
 }
@@ -2383,6 +2530,11 @@ export interface UpdateOrganizationRequest {
   status: string;
 }
 
+export interface updateRateLimitRuleParams {
+  /** Rule ID */
+  id: string;
+}
+
 export interface updateRoleParams {
   /** Role ID */
   id: string;
@@ -2412,6 +2564,11 @@ export interface UpdateServiceAccountAccessKeyRequest {
 }
 
 export interface updateServiceAccountParams {
+  /** Service account ID */
+  id: string;
+}
+
+export interface updateServiceAccountRateLimitParams {
   /** Service account ID */
   id: string;
 }
@@ -2485,6 +2642,11 @@ export interface UpdateUserOrganizationRolesRequest {
 }
 
 export interface updateUserParams {
+  /** User ID */
+  id: string;
+}
+
+export interface updateUserRateLimitParams {
   /** User ID */
   id: string;
 }

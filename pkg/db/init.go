@@ -58,6 +58,7 @@ var migrateModels = []interface{}{
 	&model.ClusterLease{},
 	&model.ScheduledJobState{},
 	&model.InboxMessage{},
+	&model.RateLimitRule{},
 }
 
 func RegisterModels(models ...interface{}) {

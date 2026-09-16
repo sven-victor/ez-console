@@ -76,6 +76,10 @@ export default {
   pagination: {
     total: '{{start}}-{{end}} von {{total}} Einträgen',
   },
+  errors: {
+    rateLimit: 'Ratenlimit überschritten',
+    quotaExceeded: 'Kontingent überschritten',
+  },
   language: {
     default: 'Standardsprache',
     'en-US': 'Englisch',

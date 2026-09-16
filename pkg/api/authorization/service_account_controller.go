@@ -50,6 +50,8 @@ func (c *ServiceAccountController) RegisterRoutes(router *gin.RouterGroup) {
 		serviceAccounts.PUT("/:id", middleware.RequirePermission("authorization:service_account:update"), c.UpdateServiceAccount)
 		serviceAccounts.DELETE("/:id", middleware.RequirePermission("authorization:service_account:delete"), c.DeleteServiceAccount)
 		serviceAccounts.PUT("/:id/status", middleware.RequirePermission("authorization:service_account:update"), c.UpdateServiceAccountStatus)
+		serviceAccounts.GET("/:id/rate-limit", middleware.RequirePermission("authorization:service_account:view"), c.GetServiceAccountRateLimit)
+		serviceAccounts.PUT("/:id/rate-limit", middleware.RequirePermission("authorization:service_account:update"), c.UpdateServiceAccountRateLimit)
 
 		// Access key related
 		serviceAccounts.GET("/:id/access-keys", middleware.RequirePermission("authorization:service_account:access_key:list"), c.GetServiceAccountAccessKeys)
@@ -757,3 +759,71 @@ func (c *ServiceAccountController) SetServiceAccountPolicy(ctx *gin.Context) {
 
 	util.RespondWithSuccess(ctx, http.StatusOK, updatedServiceAccount)
 }
+
+// GetServiceAccountRateLimit returns the shared-bucket override for a service account
+//
+//	@Summary		Get service account rate limit override
+//	@ID             getServiceAccountRateLimit
+//	@Tags			Authorization/ServiceAccount
+//	@Produce		json
+//	@Param			id	path		string	true	"Service account ID"
+//	@Success		200	{object}	util.Response[model.RateLimitOverride]
+//	@Router			/api/authorization/service-accounts/{id}/rate-limit [get]
+func (c *ServiceAccountController) GetServiceAccountRateLimit(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if _, err := c.service.GetServiceAccountByID(ctx, id); err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	ov, err := c.service.GetOverride(ctx, model.RateLimitSubjectServiceAccount, id)
+	if err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, ov)
+}
+
+// UpdateServiceAccountRateLimit sets or clears the shared-bucket override
+//
+//	@Summary		Update service account rate limit override
+//	@ID             updateServiceAccountRateLimit
+//	@Tags			Authorization/ServiceAccount
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string					true	"Service account ID"
+//	@Param			request	body		model.RateLimitOverride	true	"Override"
+//	@Success		200		{object}	util.Response[model.RateLimitOverride]
+//	@Router			/api/authorization/service-accounts/{id}/rate-limit [put]
+func (c *ServiceAccountController) UpdateServiceAccountRateLimit(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if _, err := c.service.GetServiceAccountByID(ctx, id); err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	var req model.RateLimitOverride
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid request", err))
+		return
+	}
+	err := c.service.StartAudit(ctx, id, func(auditLog *model.AuditLog) error {
+		if err := c.service.SetOverride(ctx, model.RateLimitSubjectServiceAccount, id, req); err != nil {
+			return err
+		}
+		ov, err := c.service.GetOverride(ctx, model.RateLimitSubjectServiceAccount, id)
+		if err != nil {
+			return err
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, ov)
+		return nil
+	}, service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+		old, _ := c.service.GetOverride(ctx, model.RateLimitSubjectServiceAccount, id)
+		auditLog.Details.OldData = old
+		auditLog.Details.NewData = req
+		auditLog.Action = "authorization:service_account:rate_limit:update"
+		auditLog.ActionName = "Update service account rate limit"
+	}))
+	if err != nil {
+		util.RespondWithError(ctx, err)
+	}
+}
+

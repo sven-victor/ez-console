@@ -46,7 +46,7 @@
   - Email and SMTP configuration
 - **Audit Logging** - Automatic tracking of all user actions
 - **File Management** - Upload/download with storage abstraction
-- **Middleware** - Built-in authentication, CORS, logging (add rate limiting via custom middleware or gateway)
+- **Middleware** - Built-in authentication, CORS, logging, and HTTP rate limiting / quotas
 - **Observability** - OpenTelemetry integration for tracing
 - **CLI Tools** - Cobra-based command-line interface
 - **AI Assistant** - ez-agent chat, toolsets, skills, MCP
@@ -397,6 +397,8 @@ For comprehensive configuration options, see the [Configuration Guide](./usages/
 - `E4011` - Unauthorized (401)
 - `E4031` - Forbidden (403)
 - `E4041` - Not Found (404)
+- `E4291` - Rate limit exceeded (429)
+- `E4292` - Quota exceeded (429)
 - `E5001` - Internal Server Error (500)
 
 ## 🎯 Examples

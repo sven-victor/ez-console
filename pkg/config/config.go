@@ -148,8 +148,9 @@ type Config struct {
 	Database *gorm.Client         `yaml:"database" mapstructure:"database"`
 	JWT      jwt.Config           `yaml:"jwt" mapstructure:"jwt"`
 	OAuth    OAuthConfig          `yaml:"oauth" mapstructure:"oauth"`
-	Cache    CacheConfig          `yaml:"cache" mapstructure:"cache"`
-	Cluster  ClusterConfig        `yaml:"cluster" mapstructure:"cluster"`
+	Cache     CacheConfig     `yaml:"cache" mapstructure:"cache"`
+	Cluster   ClusterConfig   `yaml:"cluster" mapstructure:"cluster"`
+	RateLimit RateLimitConfig `yaml:"rate_limit" mapstructure:"rate_limit"`
 }
 
 // ServerConfig server configuration
@@ -170,6 +171,62 @@ type ServerConfig struct {
 	skillCacheFs    afero.Fs
 
 	GeoIPDBPath string `yaml:"geoip_db_path" mapstructure:"geoip_db_path"`
+	// TrustedProxies is the CIDR/IP list passed to gin.Engine.SetTrustedProxies.
+	// When rate limiting is enabled and this is empty, proxies are not trusted
+	// (ClientIP uses the remote address) and a warning is logged.
+	TrustedProxies []string `yaml:"trusted_proxies" mapstructure:"trusted_proxies"`
+}
+
+// RateLimitPolicyConfig is a GitOps policy layer entry. It is compiled at
+// startup and never upserted into the database.
+type RateLimitPolicyConfig struct {
+	SubjectType string `yaml:"subject_type" mapstructure:"subject_type"`
+	SubjectID   string `yaml:"subject_id" mapstructure:"subject_id"`
+	Method      string `yaml:"method" mapstructure:"method"`
+	Path        string `yaml:"path" mapstructure:"path"`
+	Rate        int    `yaml:"rate" mapstructure:"rate"`
+	Period      string `yaml:"period" mapstructure:"period"`
+	Burst       int    `yaml:"burst" mapstructure:"burst"`
+	Quota       int    `yaml:"quota" mapstructure:"quota"`
+	QuotaPeriod string `yaml:"quota_period" mapstructure:"quota_period"`
+	Enabled     *bool  `yaml:"enabled" mapstructure:"enabled"`
+}
+
+// RateLimitConfig is infrastructure and GitOps policy for HTTP rate limiting.
+type RateLimitConfig struct {
+	Enabled  *bool                   `yaml:"enabled" mapstructure:"enabled"`
+	Store    string                  `yaml:"store" mapstructure:"store"`
+	FailOpen *bool                   `yaml:"fail_open" mapstructure:"fail_open"`
+	Redis    RedisConfig             `yaml:"redis" mapstructure:"redis"`
+	Policies []RateLimitPolicyConfig `yaml:"policies" mapstructure:"policies"`
+}
+
+func (c RateLimitConfig) GetEnabled() bool {
+	if c.Enabled == nil {
+		return true
+	}
+	return *c.Enabled
+}
+
+func (c RateLimitConfig) GetFailOpen() bool {
+	if c.FailOpen == nil {
+		return true
+	}
+	return *c.FailOpen
+}
+
+func (c RateLimitConfig) GetStore() string {
+	if c.Store == "" {
+		return "memory"
+	}
+	return c.Store
+}
+
+func (c RateLimitConfig) RedisConfig(fallback RedisConfig) RedisConfig {
+	if c.Redis.Addr != "" {
+		return c.Redis
+	}
+	return fallback
 }
 
 // GetSkillsCacheFs returns the local-disk afero.Fs used to materialize skill

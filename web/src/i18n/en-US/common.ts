@@ -77,6 +77,10 @@ export default {
   pagination: {
     total: '{{start}}-{{end}} of {{total}} items',
   },
+  errors: {
+    rateLimit: 'Rate limit exceeded',
+    quotaExceeded: 'Quota exceeded',
+  },
   language: {
     default: 'Default language',
     'en-US': 'English',

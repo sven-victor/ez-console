@@ -46,9 +46,11 @@ func main() {
 
 #### Example: global middleware
 
+`/api` already has `middleware.RateLimitMiddleware` after authentication. Use `WithEngineOptions` for extra engine-wide middleware (non-API routes, headers, etc.):
+
 ```go
-func rateLimitMiddleware(engine *gin.Engine) {
-	engine.Use(RateLimitMiddleware(100, time.Minute))
+func extraMiddleware(engine *gin.Engine) {
+	engine.Use(MyHeaderMiddleware())
 }
 
 const VERSION = "1.0.0"
@@ -57,7 +59,7 @@ var rootCmd = consoleserver.NewCommandServer(
 	"my-app",
 	VERSION,
 	"My Application",
-	consoleserver.WithEngineOptions(rateLimitMiddleware),
+	consoleserver.WithEngineOptions(extraMiddleware),
 )
 ```
 

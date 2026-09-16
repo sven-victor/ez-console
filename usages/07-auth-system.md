@@ -535,7 +535,13 @@ Configure through system settings:
 
 ### API Rate Limiting
 
-There is **no** built-in `middleware.RateLimitMiddleware` in `pkg/middleware`. If you need rate limiting, implement a Gin middleware (see the custom example in [Middleware](./08-middleware.md)) or terminate at the reverse proxy / API gateway.
+`middleware.RateLimitMiddleware` runs on `/api` **after** authentication. Identity is JWT `user:{id}`, Basic Auth service account `sa:{id}`, or anonymous `ip:{clientIP}` (logged-in requests are not also limited by IP).
+
+Each identity has one **shared** token-bucket (empty path). Extra **route** buckets apply only when a rule has a non-empty Gin `FullPath`; both buckets must allow the request. Daily quotas (UTC calendar day) attach only to shared rules.
+
+Exceeded limits return HTTP 429 with `E4291` (rate) or `E4292` (quota), plus `Retry-After` and `RateLimit-*` headers. `GET /api/system/health` is skipped. This does not replace login-failure lockout or AI token governance.
+
+Manage policy in **System Settings → Rate Limit**, or with YAML `rate_limit.policies` (compiled at startup, never upserted to DB). Per-user and per-service-account shared-bucket overrides live on those detail pages. See [Middleware](./08-middleware.md#rate-limit-middleware) and [Configuration](./05-configuration.md).
 
 ### Audit Logging
 

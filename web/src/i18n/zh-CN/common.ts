@@ -83,6 +83,10 @@ export default {
   pagination: {
     total: '第 {{start}}-{{end}} 条，共 {{total}} 条',
   },
+  errors: {
+    rateLimit: '请求过于频繁',
+    quotaExceeded: '已超出配额',
+  },
   language: {
     default: '默认语言',
     'en-US': '英语',

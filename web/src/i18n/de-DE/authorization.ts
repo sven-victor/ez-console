@@ -332,6 +332,9 @@ export default {
       "system.security.view": "Sicherheitseinstellungen anzeigen",
       "system.settings.update": "Einstellungen aktualisieren",
       "system.settings.view": "Einstellungen anzeigen",
+      "Rate_Limit": "Ratenbegrenzung",
+      "system.rate_limit.view": "Ratenbegrenzung anzeigen",
+      "system.rate_limit.update": "Ratenbegrenzung aktualisieren",
       "system.view": "Systeminformationen anzeigen",
       "system.audit_log.view": "Prüfprotokolle anzeigen",
       "file.list": "Dateilisten anzeigen",
@@ -426,6 +429,11 @@ export default {
       },
       settings: {
         update: 'Einstellungen aktualisieren',
+      },
+      rate_limit: {
+        update: 'Ratenbegrenzung aktualisieren',
+        create: 'Ratenregel erstellen',
+        delete: 'Ratenregel löschen',
       },
       organization: {
         update: 'Organisation aktualisieren',
@@ -604,4 +612,20 @@ export default {
       policy: 'Richtlinienverwaltung',
     }
   },
-} 
+  rateLimit: {
+    title: 'Ratenbegrenzung',
+    rate: 'Rate',
+    period: 'Zeitraum',
+    periodHint: 'Beispiele: 1s, 1m, 1h',
+    burst: 'Burst',
+    quota: 'Tageskontingent (0 = keines)',
+    quotaPeriod: 'Kontingentzeitraum',
+    enabled: 'Aktiviert',
+    inherited: 'Es gilt der Typstandard. Speichern, um eine subjektspezifische Überschreibung zu erstellen.',
+    sourceHint: 'Angezeigte Werte sind geerbt.',
+    saveSuccess: 'Ratenbegrenzungs-Überschreibung gespeichert',
+    saveFailed: 'Überschreibung konnte nicht gespeichert werden',
+    resetSuccess: 'Überschreibung gelöscht; Typstandard wiederhergestellt',
+    resetToDefault: 'Auf Standard zurücksetzen',
+  },
+}

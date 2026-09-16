@@ -76,6 +76,10 @@ export default {
   pagination: {
     total: '{{start}}-{{end}} من {{total}} عناصر',
   },
+  errors: {
+    rateLimit: 'تم تجاوز حد المعدل',
+    quotaExceeded: 'تم تجاوز الحصة',
+  },
   language: {
     default: 'اللغة الأساسية',
     'en-US': 'اللغة الإنجليزية',

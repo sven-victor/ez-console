@@ -76,6 +76,10 @@ export default {
   pagination: {
     total: '{{start}}-{{end}} sur {{total}} éléments',
   },
+  errors: {
+    rateLimit: 'Limite de débit dépassée',
+    quotaExceeded: 'Quota dépassé',
+  },
   language: {
     default: 'Langue par défaut',
     'en-US': 'Anglais',

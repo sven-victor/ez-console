@@ -381,6 +381,11 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 				"mounts", strings.Join(localMounts, ", "),
 			)
 		}
+		if cfg.RateLimit.GetEnabled() && cfg.RateLimit.GetStore() == "memory" {
+			level.Warn(logger).Log(
+				"msg", "cluster.enabled=true with rate_limit.store=memory; limits are per-node (effective cap is N times the configured limit). Use store=redis for cluster-wide limits",
+			)
+		}
 	}
 
 	// Initialise cluster EventBus (serf for multi-node, noop for single-node).
@@ -416,6 +421,15 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 	engine := gin.New()
 
 	engine.ContextWithFallback = true
+	if cfg.RateLimit.GetEnabled() {
+		if len(cfg.Server.TrustedProxies) == 0 {
+			_ = engine.SetTrustedProxies(nil)
+			level.Warn(logger).Log("msg", "rate limiting is enabled without server.trusted_proxies; ClientIP will use the remote address")
+		} else if err := engine.SetTrustedProxies(cfg.Server.TrustedProxies); err != nil {
+			level.Error(logger).Log("msg", "invalid server.trusted_proxies", "err", err)
+			os.Exit(1)
+		}
+	}
 	engine.GET("/metrics", gin.WrapH(promhttp.Handler())) // Prometheus metrics
 	engine.Use(gin.CustomRecovery(middleware.Recovery()), otelgin.Middleware(serviceName))
 	engine.Use(middleware.PrometheusMetrics(), middleware.Log(serviceName))
@@ -437,6 +451,11 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 
 	// Setup API routes
 	api.RegisterControllers(ctx, engine, svc)
+	var routePaths []string
+	for _, r := range engine.Routes() {
+		routePaths = append(routePaths, r.Path)
+	}
+	svc.SetRegisteredPaths(routePaths)
 	// Frontend resource directory
 	RegisterStaticRoutes(engine)
 

@@ -469,6 +469,8 @@ database:
 | E4012 | Invalid User | User not found or disabled |
 | E4031 | Forbidden | Check user permissions |
 | E4041 | Not Found | Resource doesn't exist |
+| E4291 | Rate limit exceeded | Slow down; see `Retry-After` / `RateLimit-*` headers |
+| E4292 | Quota exceeded | Wait until the UTC-day quota window resets |
 | E5001 | Server Error | Check server logs |
 | E5031 | Service Unavailable | Check service status |
 

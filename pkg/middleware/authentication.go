@@ -242,6 +242,7 @@ func serviceAuthenticationMiddleware(c *gin.Context, accessKey, secretKey string
 
 	c.Set("service_account", &serviceAccount)
 	c.Set("service_account_id", serviceAccount.ResourceID)
+	c.Set("access_key_id", key.AccessKeyID)
 	c.Set("roles", serviceAccount.Roles)
 
 	// Extract organization ID from header if multi-org is enabled

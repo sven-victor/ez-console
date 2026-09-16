@@ -20,6 +20,7 @@ const (
 	settingCacheTTL        = 10 * time.Minute
 	orgCacheTTL            = 10 * time.Minute
 	serviceAccountCacheTTL = 10 * time.Minute
+	rateLimitRulesCacheTTL = 10 * time.Minute
 )
 
 // Logical cache names used in cache.invalidate events.
@@ -30,6 +31,7 @@ const (
 	CacheNameAllSettings     = "all_settings"
 	CacheNameOrganizations   = "organizations"
 	CacheNameServiceAccounts = "service_accounts"
+	CacheNameRateLimitRules  = "rate_limit_rules"
 )
 
 // Global cache instances, initialised by Init.
@@ -59,6 +61,10 @@ var (
 	// role IDs) by resource_id. Full Role objects are loaded via Roles cache.
 	// Truth source: t_service_account / service_account_roles.
 	ServiceAccounts *TypedCache[CachedServiceAccount]
+
+	// RateLimitRules caches all DB rate-limit policy rows under a single key.
+	// Truth source: t_rate_limit_rule.
+	RateLimitRules *TypedCache[[]model.RateLimitRule]
 )
 
 // logicalNameToCache maps the logical cache name used in invalidation events
@@ -77,12 +83,23 @@ func SetInvalidatePublishHook(fn func(ctx context.Context, cacheName, key string
 	invalidatePublishHook = fn
 }
 
+var rateLimitInvalidateHook func()
+
+// SetRateLimitInvalidateHook is called when rate-limit policy cache is flushed
+// so the in-process compiled RuleSet is dropped.
+func SetRateLimitInvalidateHook(fn func()) {
+	rateLimitInvalidateHook = fn
+}
+
 // PublishInvalidate deletes a key from the named local cache AND calls the
 // registered publish hook so that all cluster nodes evict the same entry.
 // Use this everywhere instead of calling cache.X.Delete directly when the
 // change should propagate across nodes.
 func PublishInvalidate(ctx context.Context, cacheName, key string) {
 	InvalidateByKey(ctx, cacheName, key)
+	if cacheName == CacheNameRateLimitRules && rateLimitInvalidateHook != nil {
+		rateLimitInvalidateHook()
+	}
 	if invalidatePublishHook != nil {
 		invalidatePublishHook(ctx, cacheName, key)
 	}
@@ -102,6 +119,7 @@ func Init(_ *config.CacheConfig, _ DBSessionFunc) error {
 	AllSettings = NewTypedCache[[]model.Setting]("all_settings:", settingCacheTTL, nil, defaultGCInterval)
 	Organizations = NewTypedCache[model.Organization]("org:", orgCacheTTL, nil, defaultGCInterval)
 	ServiceAccounts = NewTypedCache[CachedServiceAccount]("sa:", serviceAccountCacheTTL, nil, defaultGCInterval)
+	RateLimitRules = NewTypedCache[[]model.RateLimitRule]("rl_rules:", rateLimitRulesCacheTTL, nil, defaultGCInterval)
 
 	logicalNameToCache = map[string]interface{ InvalidateByKey(ctx context.Context, key string) }{
 		CacheNameSessions:        Sessions,
@@ -110,6 +128,7 @@ func Init(_ *config.CacheConfig, _ DBSessionFunc) error {
 		CacheNameAllSettings:     AllSettings,
 		CacheNameOrganizations:   Organizations,
 		CacheNameServiceAccounts: ServiceAccounts,
+		CacheNameRateLimitRules:  RateLimitRules,
 	}
 	return nil
 }
@@ -119,23 +138,6 @@ func Init(_ *config.CacheConfig, _ DBSessionFunc) error {
 func InvalidateByKey(ctx context.Context, cacheName, key string) {
 	c, ok := logicalNameToCache[cacheName]
 	if !ok {
-		return
-	}
-	if key == "*" {
-		switch v := c.(type) {
-		case *TypedCache[CachedSession]:
-			v.Clear()
-		case *TypedCache[model.Role]:
-			v.Clear()
-		case *TypedCache[model.Setting]:
-			v.Clear()
-		case *TypedCache[[]model.Setting]:
-			v.Clear()
-		case *TypedCache[model.Organization]:
-			v.Clear()
-		case *TypedCache[CachedServiceAccount]:
-			v.Clear()
-		}
 		return
 	}
 	c.InvalidateByKey(ctx, key)
@@ -152,5 +154,7 @@ func HandleCacheInvalidateEvent(payload []byte) {
 		return
 	}
 	InvalidateByKey(context.Background(), p.CacheName, p.Key)
+	if p.CacheName == CacheNameRateLimitRules && rateLimitInvalidateHook != nil {
+		rateLimitInvalidateHook()
+	}
 }
-

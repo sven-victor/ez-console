@@ -37,6 +37,7 @@ import api from '@/service/api';
 import { formatDate } from '@/utils';
 import { useTranslation } from 'react-i18next';
 import UserAuditLogs from '@/components/authorization/UserAuditLogs';
+import RateLimitOverrideForm from '@/components/RateLimitOverrideForm';
 import { Avatar } from '@/components/Avatar';
 import { ApiError } from '@/service/client';
 import usePermission from '@/hooks/usePermission';
@@ -189,8 +190,11 @@ const UserDetail: React.FC = () => {
             </Descriptions.Item>
           </Descriptions>
         </TabPane>
-        <TabPane disabled={!hasPermission('authorization:user:view_audit_logs')} tab={t('user.auditLogs', { defaultValue: 'Audit Logs' })} key="logs">
+        <TabPane tab={t('user.auditLogs', { defaultValue: 'Audit Logs' })} key="logs" disabled={!hasPermission('authorization:user:view_audit_logs')}>
           <UserAuditLogs userId={id || ''} />
+        </TabPane>
+        <TabPane tab={t('rateLimit.title', { defaultValue: 'Rate Limit' })} key="rate-limit">
+          <RateLimitOverrideForm kind="user" subjectId={id || ''} readOnly={!hasPermission('authorization:user:update')} />
         </TabPane>
       </Tabs>
     </Card>

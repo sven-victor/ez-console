@@ -1057,8 +1057,7 @@ definitions:
   model.AIModel:
     properties:
       config:
-        description: Additional configuration`          // Configuration (includes
-          api_key, model_id, base_url, etc.)
+        description: Configuration (includes api_key, model_id, base_url, etc.)
         type: object
       created_at:
         type: string
@@ -1579,6 +1578,179 @@ definitions:
     required:
     - Statement
     type: object
+  model.RateLimitBucket:
+    properties:
+      burst:
+        type: integer
+      enabled:
+        type: boolean
+      period:
+        type: string
+      quota:
+        type: integer
+      quota_period:
+        type: string
+      rate:
+        type: integer
+      source:
+        type: string
+    required:
+    - burst
+    - enabled
+    - period
+    - quota
+    - quota_period
+    - rate
+    - source
+    type: object
+  model.RateLimitEffective:
+    properties:
+      method:
+        type: string
+      path:
+        type: string
+      route:
+        $ref: '#/definitions/model.RateLimitBucket'
+      shared:
+        $ref: '#/definitions/model.RateLimitBucket'
+      subject_id:
+        type: string
+      subject_type:
+        type: string
+    required:
+    - method
+    - path
+    - route
+    - shared
+    - subject_id
+    - subject_type
+    type: object
+  model.RateLimitOverride:
+    properties:
+      burst:
+        type: integer
+      clear:
+        type: boolean
+      enabled:
+        type: boolean
+      inherited:
+        type: boolean
+      period:
+        type: string
+      quota:
+        type: integer
+      quota_period:
+        type: string
+      rate:
+        type: integer
+    required:
+    - burst
+    - clear
+    - enabled
+    - inherited
+    - period
+    - quota
+    - quota_period
+    - rate
+    type: object
+  model.RateLimitRule:
+    properties:
+      burst:
+        type: integer
+      created_at:
+        type: string
+      enabled:
+        type: boolean
+      id:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      period:
+        type: string
+      quota:
+        type: integer
+      quota_period:
+        type: string
+      rate:
+        type: integer
+      source:
+        $ref: '#/definitions/model.RateLimitSource'
+      subject_id:
+        type: string
+      subject_type:
+        $ref: '#/definitions/model.RateLimitSubjectType'
+      updated_at:
+        type: string
+    required:
+    - burst
+    - created_at
+    - enabled
+    - id
+    - method
+    - path
+    - period
+    - quota
+    - quota_period
+    - rate
+    - source
+    - subject_id
+    - subject_type
+    - updated_at
+    type: object
+  model.RateLimitSettings:
+    properties:
+      anonymous:
+        $ref: '#/definitions/model.RateLimitBucket'
+      cluster:
+        type: boolean
+      enabled:
+        type: boolean
+      fail_open:
+        type: boolean
+      memory_warn:
+        type: boolean
+      service_account:
+        $ref: '#/definitions/model.RateLimitBucket'
+      store:
+        type: string
+      user:
+        $ref: '#/definitions/model.RateLimitBucket'
+    required:
+    - anonymous
+    - cluster
+    - enabled
+    - fail_open
+    - memory_warn
+    - service_account
+    - store
+    - user
+    type: object
+  model.RateLimitSource:
+    enum:
+    - builtin
+    - yaml
+    - code
+    - db
+    type: string
+    x-enum-varnames:
+    - RateLimitSourceBuiltin
+    - RateLimitSourceYAML
+    - RateLimitSourceCode
+    - RateLimitSourceDB
+  model.RateLimitSubjectType:
+    enum:
+    - anonymous
+    - user
+    - service_account
+    - access_key
+    type: string
+    x-enum-varnames:
+    - RateLimitSubjectAnonymous
+    - RateLimitSubjectUser
+    - RateLimitSubjectServiceAccount
+    - RateLimitSubjectAccessKey
   model.Role:
     properties:
       ai_tool_permissions:
@@ -3463,24 +3635,8 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
-    - 60000000000
-    - 3600000000000
     type: integer
     x-enum-varnames:
-    - minDuration
-    - maxDuration
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
-    - Minute
-    - Hour
     - minDuration
     - maxDuration
     - Nanosecond
@@ -3662,6 +3818,30 @@ definitions:
       data:
         items:
           $ref: '#/definitions/model.Organization'
+        type: array
+      page_size:
+        type: integer
+      total:
+        type: integer
+      trace_id:
+        type: string
+    required:
+    - code
+    - current
+    - data
+    - page_size
+    - total
+    - trace_id
+    type: object
+  util.PaginationResponse-model_RateLimitRule:
+    properties:
+      code:
+        type: string
+      current:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.RateLimitRule'
         type: array
       page_size:
         type: integer
@@ -4427,6 +4607,70 @@ definitions:
         type: string
       data:
         $ref: '#/definitions/model.PolicyDocument'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-model_RateLimitEffective:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.RateLimitEffective'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-model_RateLimitOverride:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.RateLimitOverride'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-model_RateLimitRule:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.RateLimitRule'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
+  util.Response-model_RateLimitSettings:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.RateLimitSettings'
       err:
         type: string
       trace_id:
@@ -6411,6 +6655,51 @@ paths:
       summary: Set service account policy
       tags:
       - Authorization/ServiceAccount
+  /api/authorization/service-accounts/{id}/rate-limit:
+    get:
+      operationId: getServiceAccountRateLimit
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitOverride'
+      summary: Get service account rate limit override
+      tags:
+      - Authorization/ServiceAccount
+    put:
+      consumes:
+      - application/json
+      operationId: updateServiceAccountRateLimit
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Override
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RateLimitOverride'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitOverride'
+      summary: Update service account rate limit override
+      tags:
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}/roles:
     get:
       consumes:
@@ -6746,6 +7035,51 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Reset a user's password
+      tags:
+      - Authorization/Users
+  /api/authorization/users/{id}/rate-limit:
+    get:
+      operationId: getUserRateLimit
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitOverride'
+      summary: Get user rate limit override
+      tags:
+      - Authorization/Users
+    put:
+      consumes:
+      - application/json
+      operationId: updateUserRateLimit
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Override
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RateLimitOverride'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitOverride'
+      summary: Update user rate limit override
       tags:
       - Authorization/Users
   /api/authorization/users/{id}/resend-activation:
@@ -7934,6 +8268,215 @@ paths:
       summary: Get user organizations
       tags:
       - System Settings/Organization
+  /api/system/rate-limit-rules:
+    get:
+      description: List database-backed rate limit rules
+      operationId: listRateLimitRules
+      parameters:
+      - description: Current page number
+        in: query
+        name: current
+        type: integer
+      - description: Number of rows per page
+        in: query
+        name: page_size
+        type: integer
+      - description: Keyword for searching
+        in: query
+        name: search
+        type: string
+      - description: Subject type filter
+        in: query
+        name: subject_type
+        type: string
+      - description: Subject id filter
+        in: query
+        name: subject_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.PaginationResponse-model_RateLimitRule'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: List rate limit rules
+      tags:
+      - System Settings/Rate Limit
+    post:
+      consumes:
+      - application/json
+      operationId: createRateLimitRule
+      parameters:
+      - description: Rule
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RateLimitRule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitRule'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Create a rate limit rule
+      tags:
+      - System Settings/Rate Limit
+  /api/system/rate-limit-rules/{id}:
+    delete:
+      operationId: deleteRateLimitRule
+      parameters:
+      - description: Rule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+      summary: Delete a rate limit rule
+      tags:
+      - System Settings/Rate Limit
+    get:
+      operationId: getRateLimitRule
+      parameters:
+      - description: Rule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitRule'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get a rate limit rule
+      tags:
+      - System Settings/Rate Limit
+    put:
+      consumes:
+      - application/json
+      operationId: updateRateLimitRule
+      parameters:
+      - description: Rule ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Rule
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RateLimitRule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitRule'
+      summary: Update a rate limit rule
+      tags:
+      - System Settings/Rate Limit
+  /api/system/rate-limit-settings:
+    get:
+      description: Get the runtime switch, store metadata, and default shared buckets
+      operationId: getRateLimitSettings
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitSettings'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Get rate limit settings
+      tags:
+      - System Settings/Rate Limit
+    put:
+      consumes:
+      - application/json
+      description: Update the runtime switch and default shared buckets (anonymous,
+        user, service account)
+      operationId: updateRateLimitSettings
+      parameters:
+      - description: Rate limit settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RateLimitSettings'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitSettings'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Update rate limit settings
+      tags:
+      - System Settings/Rate Limit
+  /api/system/rate-limit/effective:
+    get:
+      description: Resolve shared and route buckets for a subject and path
+      operationId: getRateLimitEffective
+      parameters:
+      - description: anonymous, user, or service_account
+        in: query
+        name: subject_type
+        type: string
+      - description: Subject resource id or IP
+        in: query
+        name: subject_id
+        type: string
+      - description: HTTP method
+        in: query
+        name: method
+        type: string
+      - description: Gin full path
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitEffective'
+      summary: Get effective rate limit
+      tags:
+      - System Settings/Rate Limit
   /api/system/security-settings:
     get:
       consumes:

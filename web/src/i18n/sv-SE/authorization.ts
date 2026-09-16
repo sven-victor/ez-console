@@ -332,6 +332,9 @@ export default {
       "system.security.view": "Visa säkerhetsinställningar",
       "system.settings.update": "Uppdatera inställningar",
       "system.settings.view": "Visa inställningar",
+      "Rate_Limit": "Hastighetsbegränsning",
+      "system.rate_limit.view": "Visa hastighetsbegränsning",
+      "system.rate_limit.update": "Uppdatera hastighetsbegränsning",
       "system.view": "Visa systeminformation",
       "system.audit_log.view": "Visa granskningsloggar",
       "file.list": "Visa filer",
@@ -426,6 +429,11 @@ export default {
       },
       settings: {
         update: 'Uppdatera inställningar',
+      },
+      rate_limit: {
+        update: 'Uppdatera hastighetsbegränsning',
+        create: 'Skapa hastighetsregel',
+        delete: 'Ta bort hastighetsregel',
       },
       organization: {
         update: 'Uppdatera organisation',
@@ -604,4 +612,20 @@ export default {
       policy: 'Policyhantering',
     }
   },
-} 
+  rateLimit: {
+    title: 'Hastighetsbegränsning',
+    rate: 'Hastighet',
+    period: 'Period',
+    periodHint: 'Exempel: 1s, 1m, 1h',
+    burst: 'Burst',
+    quota: 'Daglig kvot (0 = ingen)',
+    quotaPeriod: 'Kvotperiod',
+    enabled: 'Aktiverad',
+    inherited: 'Använder typens standard. Spara för att skapa en subjektspecifik överskrivning.',
+    sourceHint: 'Visade värden ärvs.',
+    saveSuccess: 'Överskrivning sparad',
+    saveFailed: 'Kunde inte spara överskrivning',
+    resetSuccess: 'Överskrivning rensad; typstandard återställd',
+    resetToDefault: 'Återställ till standard',
+  },
+}

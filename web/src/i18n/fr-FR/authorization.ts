@@ -332,6 +332,9 @@ export default {
       "system.security.view": 'Afficher les paramètres de sécurité',
       "system.settings.update": 'Mettre à jour les paramètres',
       "system.settings.view": 'Afficher les paramètres',
+      "Rate_Limit": "Limitation de débit",
+      "system.rate_limit.view": "Afficher la limitation de débit",
+      "system.rate_limit.update": "Mettre à jour la limitation de débit",
       "system.view": 'Afficher les informations système',
       "system.audit_log.view": 'Afficher les journaux d\'audit',
       "file.list": "Afficher la liste des fichiers",
@@ -426,6 +429,11 @@ export default {
       },
       settings: {
         update: 'Mettre à jour les paramètres',
+      },
+      rate_limit: {
+        update: 'Mettre à jour la limitation de débit',
+        create: 'Créer une règle de limitation',
+        delete: 'Supprimer une règle de limitation',
       },
       organization: {
         update: 'Mettre à jour l\'organisation',
@@ -604,4 +612,20 @@ export default {
       policy: 'Gestion des politiques',
     }
   },
-} 
+  rateLimit: {
+    title: 'Limitation de débit',
+    rate: 'Débit',
+    period: 'Période',
+    periodHint: 'Exemples : 1s, 1m, 1h',
+    burst: 'Rafale',
+    quota: 'Quota quotidien (0 = aucun)',
+    quotaPeriod: 'Période de quota',
+    enabled: 'Activé',
+    inherited: 'Utilise la valeur par défaut du type. Enregistrez pour créer une surcharge spécifique.',
+    sourceHint: 'Les valeurs affichées sont héritées.',
+    saveSuccess: 'Surcharge de limitation enregistrée',
+    saveFailed: 'Échec de l’enregistrement de la surcharge',
+    resetSuccess: 'Surcharge effacée ; valeur par défaut du type restaurée',
+    resetToDefault: 'Réinitialiser par défaut',
+  },
+}

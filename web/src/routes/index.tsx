@@ -279,14 +279,14 @@ export const getRoutes = ({ transformSettingTabs, transformLangConfig, extraPriv
         {
           name: 'system',
           icon: <SettingOutlined />,
-          permissions: ['system:settings:view', 'system:settings:update', 'system:security:view', 'system:security:update', 'system:audit_log:view', 'system:organization:view', 'ai:models:view', 'system:toolsets:view', 'system:skills:view'],
+          permissions: ['system:settings:view', 'system:settings:update', 'system:security:view', 'system:security:update', 'system:audit_log:view', 'system:organization:view', 'ai:models:view', 'system:toolsets:view', 'system:skills:view', 'system:rate_limit:view', 'system:rate_limit:update'],
           children: [
             // System settings
             {
               path: '/system/settings',
               icon: <SafetyOutlined />,
               name: 'settings',
-              permissions: ['system:settings:view', 'system:settings:update', 'system:security:view', 'system:security:update', 'system:organization:view', 'ai:models:view', 'system:toolsets:view', 'system:skills:view'],
+              permissions: ['system:settings:view', 'system:settings:update', 'system:security:view', 'system:security:update', 'system:organization:view', 'ai:models:view', 'system:toolsets:view', 'system:skills:view', 'system:rate_limit:view', 'system:rate_limit:update'],
               children: [
                 {
                   path: '/system/settings',

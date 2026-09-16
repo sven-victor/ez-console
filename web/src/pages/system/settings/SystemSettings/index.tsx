@@ -26,6 +26,7 @@ import AIModelSettings from './AIModelSettings';
 import ToolSetSettings from './ToolSetSettings';
 import SkillSettings from './SkillSettings';
 import TaskSettingsForm from './TaskSettingsForm';
+import RateLimitSettings from './RateLimitSettings';
 import OrganizationSettings from './OrganizationSettings';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSite } from '@/contexts/SiteContext';
@@ -106,6 +107,12 @@ const SystemSettings: React.FC<SystemSettingsProps> = ({
       label: t('settings.tabs.task', { defaultValue: 'Task Settings' }),
       children: <TaskSettingsForm />,
       hidden: !hasPermission('system:settings:update'),
+    },
+    {
+      key: 'rate-limit',
+      label: t('settings.tabs.rateLimit', { defaultValue: 'Rate Limit' }),
+      children: <RateLimitSettings />,
+      hidden: !hasPermission('system:rate_limit:view') && !hasPermission('system:rate_limit:update'),
     },
     // Only show organization tab if multi-org is enabled
     ...(enableMultiOrg ? [{

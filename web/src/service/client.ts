@@ -15,6 +15,7 @@
  */
 
 import { getURL } from '@/utils';
+import i18n from '@/i18n';
 import axios, {
   AxiosError,
   AxiosInstance,
@@ -125,7 +126,13 @@ function applyDefaultInterceptors(http: HttpClient) {
         const errorResponse = error.response?.data as { err?: string; error?: string; code?: string };
         if (errorResponse) {
           if (errorResponse.err) {
-            errorMessage = new ApiError(errorResponse.code || '500', errorResponse.err || 'Unknown error');
+            let msg = errorResponse.err || 'Unknown error';
+            if (errorResponse.code === 'E4291') {
+              msg = i18n.t('common:errors.rateLimit', { defaultValue: 'Rate limit exceeded' });
+            } else if (errorResponse.code === 'E4292') {
+              msg = i18n.t('common:errors.quotaExceeded', { defaultValue: 'Quota exceeded' });
+            }
+            errorMessage = new ApiError(errorResponse.code || '500', msg);
           } else if (errorResponse.error) {
             errorMessage = new ApiError(errorResponse.code || '500', errorResponse.error || 'Unknown error');
           }

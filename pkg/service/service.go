@@ -21,6 +21,7 @@ import (
 	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/config"
 	"github.com/sven-victor/ez-console/pkg/db"
+	"github.com/sven-victor/ez-console/pkg/middleware"
 	"github.com/sven-victor/ez-utils/log"
 	"go.opentelemetry.io/otel"
 )
@@ -38,6 +39,7 @@ type Service struct {
 	AIService
 	OrganizationService
 	TaskSchedulerService
+	RateLimitService
 	BaseService
 }
 
@@ -105,6 +107,13 @@ func NewService(ctx context.Context, opts ...ServiceOption) *Service {
 		TaskSchedulerService:  options.taskSchedulerServiceFactory(ctx, base),
 		UserService:           options.userServiceFactory(ctx, base),
 	}
+
+	limiter, err := initRateLimiter(cfg, settingService)
+	if err != nil {
+		panic("failed to initialize rate limiter: " + err.Error())
+	}
+	s.RateLimitService = NewRateLimitService(ctx, limiter, base)
+	middleware.RegisterRateLimiter(limiter)
 
 	if err := s.InitDefaultSMTPSettings(ctx); err != nil {
 		level.Error(logger).Log("msg", "Init default smtp settings failed", "error", err)

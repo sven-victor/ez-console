@@ -376,6 +376,140 @@ export async function getUserOrganizations(
   );
 }
 
+/** List rate limit rules List database-backed rate limit rules GET /api/system/rate-limit-rules */
+export async function listRateLimitRules(
+  params: API.listRateLimitRulesParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.PaginationResponseModelRateLimitRule>(
+    "/api/system/rate-limit-rules",
+    {
+      method: "GET",
+      params: {
+        ...params,
+      },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Create a rate limit rule POST /api/system/rate-limit-rules */
+export async function createRateLimitRule(
+  body: API.RateLimitRule,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelRateLimitRule>(
+    "/api/system/rate-limit-rules",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Get a rate limit rule GET /api/system/rate-limit-rules/${param0} */
+export async function getRateLimitRule(
+  params: API.getRateLimitRuleParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitRule>(
+    `/api/system/rate-limit-rules/${param0}`,
+    {
+      method: "GET",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Update a rate limit rule PUT /api/system/rate-limit-rules/${param0} */
+export async function updateRateLimitRule(
+  params: API.updateRateLimitRuleParams,
+  body: API.RateLimitRule,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitRule>(
+    `/api/system/rate-limit-rules/${param0}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Delete a rate limit rule DELETE /api/system/rate-limit-rules/${param0} */
+export async function deleteRateLimitRule(
+  params: API.deleteRateLimitRuleParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseUtilMessageData>(
+    `/api/system/rate-limit-rules/${param0}`,
+    {
+      method: "DELETE",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
+/** Get rate limit settings Get the runtime switch, store metadata, and default shared buckets GET /api/system/rate-limit-settings */
+export async function getRateLimitSettings(options?: { [key: string]: any }) {
+  return request<API.ResponseModelRateLimitSettings>(
+    "/api/system/rate-limit-settings",
+    {
+      method: "GET",
+      ...(options || {}),
+    }
+  );
+}
+
+/** Update rate limit settings Update the runtime switch and default shared buckets (anonymous, user, service account) PUT /api/system/rate-limit-settings */
+export async function updateRateLimitSettings(
+  body: API.RateLimitSettings,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelRateLimitSettings>(
+    "/api/system/rate-limit-settings",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Get effective rate limit Resolve shared and route buckets for a subject and path GET /api/system/rate-limit/effective */
+export async function getRateLimitEffective(
+  params: API.getRateLimitEffectiveParams,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelRateLimitEffective>(
+    "/api/system/rate-limit/effective",
+    {
+      method: "GET",
+      params: {
+        ...params,
+      },
+      ...(options || {}),
+    }
+  );
+}
+
 /** Get security settings Get security settings GET /api/system/security-settings */
 export async function getSecuritySettings(options?: { [key: string]: any }) {
   return request<API.ResponseModelSecuritySettings>(

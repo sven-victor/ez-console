@@ -302,6 +302,11 @@ var defaultSettings = []DefaultSetting{
 		Value:   "false",
 		Comment: "When enabled, AI chat restricts tools by skill bindings when skills are in scope",
 	},
+	{
+		Key:     model.SettingRateLimitEnabled,
+		Value:   "true",
+		Comment: "Runtime switch for HTTP rate limiting (false disables without restart)",
+	},
 }
 
 func RegisterDefaultSettings(ctx context.Context, key model.SettingKey, value, comment string) error {
