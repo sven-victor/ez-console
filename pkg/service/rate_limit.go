@@ -43,6 +43,7 @@ type RateLimitService interface {
 	Effective(ctx context.Context, st, sid, method, path string) model.RateLimitEffective
 	GetOverride(ctx context.Context, st model.RateLimitSubjectType, subjectID string) (*model.RateLimitOverride, error)
 	SetOverride(ctx context.Context, st model.RateLimitSubjectType, subjectID string, ov model.RateLimitOverride) error
+	ResetCounters(ctx context.Context, req model.RateLimitResetRequest) (*model.RateLimitResetResult, error)
 	SetRegisteredPaths(paths []string)
 }
 
@@ -349,6 +350,61 @@ func (s *rateLimitService) SetOverride(ctx context.Context, st model.RateLimitSu
 	}
 	invalidateRules(ctx)
 	return nil
+}
+
+func (s *rateLimitService) ResetCounters(ctx context.Context, req model.RateLimitResetRequest) (*model.RateLimitResetResult, error) {
+	spec, err := s.resetSpec(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	n, err := s.limiter.Reset(ctx, spec)
+	if err != nil {
+		return nil, util.NewErrorMessage("E5001", "Failed to reset rate limit counters", err)
+	}
+	return &model.RateLimitResetResult{Deleted: n}, nil
+}
+
+func (s *rateLimitService) resetSpec(ctx context.Context, req model.RateLimitResetRequest) (ratelimit.ResetSpec, error) {
+	switch req.Scope {
+	case model.RateLimitResetScopeGlobal:
+		return ratelimit.ResetSpec{All: true}, nil
+	case model.RateLimitResetScopeSubject:
+		if req.SubjectType == "" {
+			return ratelimit.ResetSpec{}, util.NewErrorMessage("E4001", "subject_type is required")
+		}
+		switch req.SubjectType {
+		case model.RateLimitSubjectAnonymous, model.RateLimitSubjectUser, model.RateLimitSubjectServiceAccount, model.RateLimitSubjectAccessKey:
+		default:
+			return ratelimit.ResetSpec{}, util.NewErrorMessage("E4001", "invalid subject_type")
+		}
+		return ratelimit.ResetSpec{
+			SubjectType: req.SubjectType,
+			SubjectID:   req.SubjectID,
+			SharedOnly:  req.SubjectID == "",
+		}, nil
+	case model.RateLimitResetScopeRule:
+		if req.RuleID == "" {
+			return ratelimit.ResetSpec{}, util.NewErrorMessage("E4001", "rule_id is required")
+		}
+		rule, err := s.GetRule(ctx, req.RuleID)
+		if err != nil {
+			return ratelimit.ResetSpec{}, err
+		}
+		spec := ratelimit.ResetSpec{
+			SubjectType: rule.SubjectType,
+			SubjectID:   rule.SubjectID,
+			Method:      rule.Method,
+			Path:        rule.Path,
+		}
+		if rule.Path == "" {
+			spec.SharedOnly = true
+		} else {
+			spec.RouteOnly = true
+		}
+		return spec, nil
+	default:
+		return ratelimit.ResetSpec{}, util.NewErrorMessage("E4001", "scope must be global, subject, or rule")
+	}
 }
 
 func (s *rateLimitService) validateRule(rule *model.RateLimitRule, creating bool) error {

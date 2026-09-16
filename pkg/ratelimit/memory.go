@@ -144,6 +144,25 @@ func (s *MemoryStore) takeQuota(key string, lim Limit, now time.Time) Result {
 	}
 }
 
+func (s *MemoryStore) Reset(_ context.Context, spec ResetSpec) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	n := 0
+	for k := range s.rates {
+		if spec.Match(k) {
+			delete(s.rates, k)
+			n++
+		}
+	}
+	for k := range s.quotas {
+		if spec.Match(k) {
+			delete(s.quotas, k)
+			n++
+		}
+	}
+	return n, nil
+}
+
 func utcDayEnd(now time.Time) time.Time {
 	t := now.UTC()
 	return time.Date(t.Year(), t.Month(), t.Day()+1, 0, 0, 0, 0, time.UTC)

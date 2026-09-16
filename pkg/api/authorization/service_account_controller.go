@@ -52,6 +52,7 @@ func (c *ServiceAccountController) RegisterRoutes(router *gin.RouterGroup) {
 		serviceAccounts.PUT("/:id/status", middleware.RequirePermission("authorization:service_account:update"), c.UpdateServiceAccountStatus)
 		serviceAccounts.GET("/:id/rate-limit", middleware.RequirePermission("authorization:service_account:view"), c.GetServiceAccountRateLimit)
 		serviceAccounts.PUT("/:id/rate-limit", middleware.RequirePermission("authorization:service_account:update"), c.UpdateServiceAccountRateLimit)
+		serviceAccounts.POST("/:id/rate-limit/reset", middleware.RequirePermission("authorization:service_account:update"), c.ResetServiceAccountRateLimit)
 
 		// Access key related
 		serviceAccounts.GET("/:id/access-keys", middleware.RequirePermission("authorization:service_account:access_key:list"), c.GetServiceAccountAccessKeys)
@@ -821,6 +822,43 @@ func (c *ServiceAccountController) UpdateServiceAccountRateLimit(ctx *gin.Contex
 		auditLog.Details.NewData = req
 		auditLog.Action = "authorization:service_account:rate_limit:update"
 		auditLog.ActionName = "Update service account rate limit"
+	}))
+	if err != nil {
+		util.RespondWithError(ctx, err)
+	}
+}
+
+// ResetServiceAccountRateLimit clears rate-limit and quota counters for a service account
+//
+//	@Summary		Reset service account rate limit counters
+//	@ID             resetServiceAccountRateLimit
+//	@Tags			Authorization/ServiceAccount
+//	@Produce		json
+//	@Param			id	path		string	true	"Service account ID"
+//	@Success		200	{object}	util.Response[model.RateLimitResetResult]
+//	@Router			/api/authorization/service-accounts/{id}/rate-limit/reset [post]
+func (c *ServiceAccountController) ResetServiceAccountRateLimit(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if _, err := c.service.GetServiceAccountByID(ctx, id); err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	req := model.RateLimitResetRequest{
+		Scope:       model.RateLimitResetScopeSubject,
+		SubjectType: model.RateLimitSubjectServiceAccount,
+		SubjectID:   id,
+	}
+	err := c.service.StartAudit(ctx, id, func(auditLog *model.AuditLog) error {
+		result, err := c.service.ResetCounters(ctx, req)
+		if err != nil {
+			return err
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, result)
+		return nil
+	}, service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+		auditLog.Details.NewData = req
+		auditLog.Action = "authorization:service_account:rate_limit:reset"
+		auditLog.ActionName = "Reset service account rate limit counters"
 	}))
 	if err != nil {
 		util.RespondWithError(ctx, err)

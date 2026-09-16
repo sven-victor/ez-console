@@ -19,4 +19,6 @@ import "context"
 // Store consumes one unit against a Limit for the given key.
 type Store interface {
 	Allow(ctx context.Context, key string, lim Limit) (Result, error)
+	// Reset deletes matching rate and quota counters and returns how many entries were removed.
+	Reset(ctx context.Context, spec ResetSpec) (int, error)
 }

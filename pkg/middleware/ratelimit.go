@@ -15,13 +15,14 @@
 package middleware
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-kit/log/level"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/ratelimit"
 	"github.com/sven-victor/ez-console/pkg/util"
+	"github.com/sven-victor/ez-utils/log"
 )
 
 var rateLimiter *ratelimit.Limiter
@@ -77,8 +78,8 @@ func RateLimitMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		setRateLimitHeaders(c, dec)
 		if !dec.Allowed {
+			logRateLimited(c, ident, method, path, dec)
 			msg := "Rate limit exceeded"
 			code := "E4291"
 			if dec.Result.Kind == ratelimit.KindQuota {
@@ -107,20 +108,45 @@ func identityFromContext(c *gin.Context) ratelimit.Identity {
 	return ratelimit.Identity{Type: model.RateLimitSubjectAnonymous, ID: c.ClientIP()}
 }
 
-func setRateLimitHeaders(c *gin.Context, dec ratelimit.Decision) {
-	res := dec.Result
-	if res.Limit > 0 {
-		c.Header("RateLimit-Limit", strconv.Itoa(res.Limit))
-		c.Header("RateLimit-Remaining", strconv.Itoa(res.Remaining))
+func logRateLimited(c *gin.Context, ident ratelimit.Identity, method, path string, dec ratelimit.Decision) {
+	retrySec := int(dec.Result.RetryAfter.Round(time.Second) / time.Second)
+	if retrySec < 1 {
+		retrySec = 1
 	}
-	if !res.ResetAt.IsZero() {
-		c.Header("RateLimit-Reset", strconv.FormatInt(res.ResetAt.Unix(), 10))
+	kv := []any{
+		"msg", "rate limit exceeded",
+		"kind", dec.Result.Kind,
+		"bucket", dec.Bucket,
+		"subject_type", ident.Type,
+		"subject_id", ident.ID,
+		"method", method,
+		"path", path,
 	}
-	if !res.Allowed && res.RetryAfter > 0 {
-		sec := int(res.RetryAfter.Round(time.Second) / time.Second)
-		if sec < 1 {
-			sec = 1
+	var rule *ratelimit.CompiledRule
+	switch dec.Bucket {
+	case ratelimit.BucketRoute:
+		rule = dec.Route
+	default:
+		rule = dec.Shared
+	}
+	if rule != nil {
+		kv = append(kv, "source", string(rule.Source))
+		if rule.Source == model.RateLimitSourceDB && rule.ResourceID != "" {
+			kv = append(kv, "rule_id", rule.ResourceID)
 		}
-		c.Header("Retry-After", strconv.Itoa(sec))
+		lim := rule.Limit.Normalized()
+		kv = append(kv,
+			"rate", lim.Rate,
+			"period", ratelimit.FormatPeriod(lim.Period),
+			"burst", lim.Burst,
+		)
+		if lim.Quota > 0 {
+			kv = append(kv,
+				"quota", lim.Quota,
+				"quota_period", ratelimit.FormatPeriod(lim.QuotaPeriod),
+			)
+		}
 	}
+	kv = append(kv, "retry_after", retrySec)
+	_ = level.Warn(log.GetContextLogger(c)).Log(kv...)
 }

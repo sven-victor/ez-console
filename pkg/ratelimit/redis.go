@@ -17,6 +17,7 @@ package ratelimit
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -156,6 +157,53 @@ func (s *RedisStore) Allow(ctx context.Context, key string, lim Limit) (Result, 
 		RetryAfter: retry,
 		Kind:       kind,
 	}, nil
+}
+
+func (s *RedisStore) Reset(ctx context.Context, spec ResetSpec) (int, error) {
+	deleted := 0
+	for _, pattern := range []string{s.prefix + "rl:rate:*", s.prefix + "rl:quota:*"} {
+		var cursor uint64
+		for {
+			keys, next, err := s.client.Scan(ctx, cursor, pattern, 200).Result()
+			if err != nil {
+				return deleted, err
+			}
+			var toDel []string
+			for _, redisKey := range keys {
+				if spec.Match(s.logicalKey(redisKey)) {
+					toDel = append(toDel, redisKey)
+				}
+			}
+			if len(toDel) > 0 {
+				n, err := s.client.Del(ctx, toDel...).Result()
+				if err != nil {
+					return deleted, err
+				}
+				deleted += int(n)
+			}
+			cursor = next
+			if cursor == 0 {
+				break
+			}
+		}
+	}
+	return deleted, nil
+}
+
+func (s *RedisStore) logicalKey(redisKey string) string {
+	if k, ok := strings.CutPrefix(redisKey, s.prefix+"rl:rate:"); ok {
+		return k
+	}
+	if k, ok := strings.CutPrefix(redisKey, s.prefix+"rl:quota:"); ok {
+		if len(k) >= 11 && k[len(k)-11] == ':' {
+			day := k[len(k)-10:]
+			if _, err := time.Parse("2006-01-02", day); err == nil {
+				return k[:len(k)-11]
+			}
+		}
+		return k
+	}
+	return redisKey
 }
 
 func toInt64(v any) int64 {

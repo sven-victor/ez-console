@@ -42,6 +42,7 @@ func (c *RateLimitController) RegisterRoutes(router *gin.RouterGroup) {
 	effective := router.Group("/rate-limit")
 	{
 		effective.GET("/effective", middleware.RequirePermission("system:rate_limit:view"), c.GetEffective)
+		effective.POST("/reset", middleware.RequirePermission("system:rate_limit:update"), c.ResetCounters)
 	}
 	rules := router.Group("/rate-limit-rules")
 	{
@@ -284,6 +285,41 @@ func (c *RateLimitController) GetEffective(ctx *gin.Context) {
 		return
 	}
 	util.RespondWithSuccess(ctx, http.StatusOK, c.service.Effective(ctx, q.SubjectType, q.SubjectID, q.Method, q.Path))
+}
+
+// ResetCounters clears matching rate-limit and quota counters
+//
+//	@Summary		Reset rate limit counters
+//	@Description	Reset global, subject, or rule-scoped rate-limit and quota counters
+//	@ID             resetRateLimitCounters
+//	@Tags			System Settings/Rate Limit
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		model.RateLimitResetRequest	true	"Reset scope"
+//	@Success		200		{object}	util.Response[model.RateLimitResetResult]
+//	@Failure		400		{object}	util.ErrorResponse
+//	@Router			/api/system/rate-limit/reset [post]
+func (c *RateLimitController) ResetCounters(ctx *gin.Context) {
+	var req model.RateLimitResetRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Invalid request", err))
+		return
+	}
+	err := c.service.AuditLogService.StartAudit(ctx, req.RuleID, func(auditLog *model.AuditLog) error {
+		result, err := c.service.ResetCounters(ctx, req)
+		if err != nil {
+			return err
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, result)
+		return nil
+	}, service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+		auditLog.Details.NewData = req
+		auditLog.Action = "system:rate_limit:reset"
+		auditLog.ActionName = "Reset rate limit counters"
+	}))
+	if err != nil {
+		util.RespondWithError(ctx, err)
+	}
 }
 
 func init() {

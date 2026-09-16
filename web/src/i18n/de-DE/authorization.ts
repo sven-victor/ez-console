@@ -434,6 +434,7 @@ export default {
         update: 'Ratenbegrenzung aktualisieren',
         create: 'Ratenregel erstellen',
         delete: 'Ratenregel löschen',
+        reset: 'Ratenbegrenzer zurücksetzen',
       },
       organization: {
         update: 'Organisation aktualisieren',
@@ -627,5 +628,8 @@ export default {
     saveFailed: 'Überschreibung konnte nicht gespeichert werden',
     resetSuccess: 'Überschreibung gelöscht; Typstandard wiederhergestellt',
     resetToDefault: 'Auf Standard zurücksetzen',
+    resetCounters: 'Zähler zurücksetzen',
+    resetCountersConfirm: 'Raten- und Kontingentzähler für dieses Subjekt zurücksetzen? Anfragen werden sofort wieder zugelassen.',
+    resetCountersSuccess: 'Zähler zurückgesetzt',
   },
 }

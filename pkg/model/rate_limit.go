@@ -129,3 +129,22 @@ type RateLimitEffective struct {
 	Shared      *RateLimitBucket `json:"shared,omitempty"`
 	Route       *RateLimitBucket `json:"route,omitempty"`
 }
+
+const (
+	RateLimitResetScopeGlobal  = "global"
+	RateLimitResetScopeSubject = "subject"
+	RateLimitResetScopeRule    = "rule"
+)
+
+// RateLimitResetRequest selects which counters to clear.
+type RateLimitResetRequest struct {
+	Scope       string               `json:"scope"`
+	SubjectType RateLimitSubjectType `json:"subject_type"`
+	SubjectID   string               `json:"subject_id"`
+	RuleID      string               `json:"rule_id"`
+}
+
+// RateLimitResetResult reports how many store entries were removed.
+type RateLimitResetResult struct {
+	Deleted int `json:"deleted"`
+}

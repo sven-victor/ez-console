@@ -434,6 +434,7 @@ export default {
         update: 'تحديث تحديد المعدل',
         create: 'إنشاء قاعدة تحديد المعدل',
         delete: 'حذف قاعدة تحديد المعدل',
+        reset: 'إعادة تعيين عدادات تحديد المعدل',
       },
       organization: {
         update: 'تحديث المنظمة',
@@ -627,5 +628,8 @@ export default {
     saveFailed: 'فشل حفظ التجاوز',
     resetSuccess: 'تم مسح التجاوز واستعادة الافتراضي',
     resetToDefault: 'إعادة التعيين للافتراضي',
+    resetCounters: 'إعادة تعيين العدادات',
+    resetCountersConfirm: 'إعادة تعيين عدادات المعدل والحصة لهذا الموضوع؟ سيُسمح بالطلبات فورًا.',
+    resetCountersSuccess: 'تم إعادة تعيين العدادات',
   },
 }

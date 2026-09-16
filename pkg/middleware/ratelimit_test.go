@@ -90,7 +90,10 @@ func TestRateLimitMiddlewareAnonymousIP(t *testing.T) {
 	}
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
 	require.Equal(t, "E4291", body.Code)
-	require.NotEmpty(t, w.Header().Get("Retry-After"))
+	require.Empty(t, w.Header().Get("Retry-After"))
+	require.Empty(t, w.Header().Get("RateLimit-Limit"))
+	require.Empty(t, w.Header().Get("RateLimit-Remaining"))
+	require.Empty(t, w.Header().Get("RateLimit-Reset"))
 }
 
 func TestRateLimitMiddlewareUserVsSA(t *testing.T) {

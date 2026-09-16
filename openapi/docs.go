@@ -2432,6 +2432,35 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/authorization/service-accounts/{id}/rate-limit/reset": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/ServiceAccount"
+                ],
+                "summary": "Reset service account rate limit counters",
+                "operationId": "resetServiceAccountRateLimit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Service account ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitResetResult"
+                        }
+                    }
+                }
+            }
+        },
         "/api/authorization/service-accounts/{id}/roles": {
             "get": {
                 "description": "Get service account roles",
@@ -3036,6 +3065,35 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/util.Response-model_RateLimitOverride"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/authorization/users/{id}/rate-limit/reset": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authorization/Users"
+                ],
+                "summary": "Reset user rate limit counters",
+                "operationId": "resetUserRateLimit",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitResetResult"
                         }
                     }
                 }
@@ -5081,6 +5139,47 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/util.Response-model_RateLimitEffective"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/system/rate-limit/reset": {
+            "post": {
+                "description": "Reset global, subject, or rule-scoped rate-limit and quota counters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "System Settings/Rate Limit"
+                ],
+                "summary": "Reset rate limit counters",
+                "operationId": "resetRateLimitCounters",
+                "parameters": [
+                    {
+                        "description": "Reset scope",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.RateLimitResetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-model_RateLimitResetResult"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
                         }
                     }
                 }
@@ -9736,6 +9835,40 @@ const docTemplate = `{
                 }
             }
         },
+        "model.RateLimitResetRequest": {
+            "type": "object",
+            "required": [
+                "rule_id",
+                "scope",
+                "subject_id",
+                "subject_type"
+            ],
+            "properties": {
+                "rule_id": {
+                    "type": "string"
+                },
+                "scope": {
+                    "type": "string"
+                },
+                "subject_id": {
+                    "type": "string"
+                },
+                "subject_type": {
+                    "$ref": "#/definitions/model.RateLimitSubjectType"
+                }
+            }
+        },
+        "model.RateLimitResetResult": {
+            "type": "object",
+            "required": [
+                "deleted"
+            ],
+            "properties": {
+                "deleted": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.RateLimitRule": {
             "type": "object",
             "required": [
@@ -13919,6 +14052,29 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/model.RateLimitOverride"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-model_RateLimitResetResult": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/model.RateLimitResetResult"
                 },
                 "err": {
                     "type": "string"

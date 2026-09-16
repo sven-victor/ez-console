@@ -1653,6 +1653,29 @@ definitions:
     - quota_period
     - rate
     type: object
+  model.RateLimitResetRequest:
+    properties:
+      rule_id:
+        type: string
+      scope:
+        type: string
+      subject_id:
+        type: string
+      subject_type:
+        $ref: '#/definitions/model.RateLimitSubjectType'
+    required:
+    - rule_id
+    - scope
+    - subject_id
+    - subject_type
+    type: object
+  model.RateLimitResetResult:
+    properties:
+      deleted:
+        type: integer
+    required:
+    - deleted
+    type: object
   model.RateLimitRule:
     properties:
       burst:
@@ -4649,6 +4672,22 @@ definitions:
     - err
     - trace_id
     type: object
+  util.Response-model_RateLimitResetResult:
+    properties:
+      code:
+        type: string
+      data:
+        $ref: '#/definitions/model.RateLimitResetResult'
+      err:
+        type: string
+      trace_id:
+        type: string
+    required:
+    - code
+    - data
+    - err
+    - trace_id
+    type: object
   util.Response-model_RateLimitRule:
     properties:
       code:
@@ -6700,6 +6739,25 @@ paths:
       summary: Update service account rate limit override
       tags:
       - Authorization/ServiceAccount
+  /api/authorization/service-accounts/{id}/rate-limit/reset:
+    post:
+      operationId: resetServiceAccountRateLimit
+      parameters:
+      - description: Service account ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitResetResult'
+      summary: Reset service account rate limit counters
+      tags:
+      - Authorization/ServiceAccount
   /api/authorization/service-accounts/{id}/roles:
     get:
       consumes:
@@ -7080,6 +7138,25 @@ paths:
           schema:
             $ref: '#/definitions/util.Response-model_RateLimitOverride'
       summary: Update user rate limit override
+      tags:
+      - Authorization/Users
+  /api/authorization/users/{id}/rate-limit/reset:
+    post:
+      operationId: resetUserRateLimit
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitResetResult'
+      summary: Reset user rate limit counters
       tags:
       - Authorization/Users
   /api/authorization/users/{id}/resend-activation:
@@ -8475,6 +8552,33 @@ paths:
           schema:
             $ref: '#/definitions/util.Response-model_RateLimitEffective'
       summary: Get effective rate limit
+      tags:
+      - System Settings/Rate Limit
+  /api/system/rate-limit/reset:
+    post:
+      consumes:
+      - application/json
+      description: Reset global, subject, or rule-scoped rate-limit and quota counters
+      operationId: resetRateLimitCounters
+      parameters:
+      - description: Reset scope
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.RateLimitResetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-model_RateLimitResetResult'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Reset rate limit counters
       tags:
       - System Settings/Rate Limit
   /api/system/security-settings:

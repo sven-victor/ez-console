@@ -1330,6 +1330,17 @@ declare global {
       rate: number;
     }
   
+    interface RateLimitResetRequest {
+      rule_id: string;
+      scope: string;
+      subject_id: string;
+      subject_type: RateLimitSubjectType;
+    }
+  
+    interface RateLimitResetResult {
+      deleted: number;
+    }
+  
     interface RateLimitRule {
       burst: number;
       created_at: string;
@@ -1387,6 +1398,11 @@ declare global {
       id: string;
     }
   
+    interface resetServiceAccountRateLimitParams {
+      /** Service account ID */
+      id: string;
+    }
+  
     interface resetUserPasswordParams {
       /** User ID */
       id: string;
@@ -1398,6 +1414,11 @@ declare global {
   
     interface ResetUserPasswordResponse {
       new_password: string;
+    }
+  
+    interface resetUserRateLimitParams {
+      /** User ID */
+      id: string;
     }
   
     interface ResponseAiapiTraceStatusResponse {
@@ -1641,6 +1662,13 @@ declare global {
     interface ResponseModelRateLimitOverride {
       code: string;
       data: RateLimitOverride;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseModelRateLimitResetResult {
+      code: string;
+      data: RateLimitResetResult;
       err: string;
       trace_id: string;
     }

@@ -24,6 +24,7 @@ import {
   Input,
   InputNumber,
   Modal,
+  Popconfirm,
   Select,
   Space,
   Spin,
@@ -31,7 +32,7 @@ import {
   Table,
   Typography,
 } from 'antd';
-import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SaveOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SaveOutlined, UndoOutlined } from '@ant-design/icons';
 import { useRequest } from 'ahooks';
 import { useTranslation } from 'react-i18next';
 import type { ColumnsType } from 'antd/es/table';
@@ -52,8 +53,9 @@ type SharedBucketKey = 'anonymous' | 'user' | 'service_account';
 
 const cellItemStyle = { marginBottom: 0 };
 
-const SharedBucketTable: React.FC = () => {
+const SharedBucketTable: React.FC<{ onResetSubject?: (key: SharedBucketKey) => Promise<void> }> = ({ onResetSubject }) => {
   const { t } = useTranslation('system');
+  const { t: tCommon } = useTranslation('common');
   const rows: { key: SharedBucketKey; label: string }[] = [
     { key: 'anonymous', label: t('settings.rateLimit.anonymous', { defaultValue: 'Anonymous (IP)' }) },
     { key: 'user', label: t('settings.rateLimit.user', { defaultValue: 'User' }) },
@@ -98,6 +100,23 @@ const SharedBucketTable: React.FC = () => {
             </Form.Item>
           </Space.Compact>
         </Form.Item>
+      ),
+    },
+    {
+      title: tCommon('actions', { defaultValue: 'Actions' }),
+      width: 64,
+      render: (_, row) => (
+        <Actions actions={[
+          {
+            key: 'reset',
+            permission: 'system:rate_limit:update',
+            icon: <UndoOutlined />,
+            htmlType: 'button',
+            tooltip: t('settings.rateLimit.resetSubject', { defaultValue: 'Reset counters' }),
+            confirm: { title: t('settings.rateLimit.resetSubjectConfirm', { defaultValue: 'Reset shared-bucket counters for this subject type?' }) },
+            onClick: async () => { await onResetSubject?.(row.key); },
+          },
+        ]} />
       ),
     },
   ];
@@ -175,6 +194,16 @@ const RateLimitSettings: React.FC = () => {
     },
   );
 
+  const resetCounters = async (body: API.RateLimitResetRequest) => {
+    try {
+      await api.system.resetRateLimitCounters(body);
+      message.success(t('settings.rateLimit.resetSuccess', { defaultValue: 'Counters reset' }));
+    } catch (error) {
+      message.error(error instanceof Error ? error.message : t('settings.rateLimit.resetFailed', { defaultValue: 'Failed to reset counters' }));
+      throw error;
+    }
+  };
+
   const columns: ColumnsType<API.RateLimitRule> = [
     { title: t('settings.rateLimit.subjectType', { defaultValue: 'Subject' }), dataIndex: 'subject_type', width: 140 },
     { title: t('settings.rateLimit.subjectId', { defaultValue: 'Subject ID' }), dataIndex: 'subject_id', ellipsis: true },
@@ -185,7 +214,7 @@ const RateLimitSettings: React.FC = () => {
     { title: t('settings.rateLimit.burst', { defaultValue: 'Burst' }), dataIndex: 'burst', width: 80 },
     {
       title: tCommon('actions', { defaultValue: 'Actions' }),
-      width: 120,
+      width: 150,
       render: (_, row) => (
         <Actions actions={[
           {
@@ -203,6 +232,21 @@ const RateLimitSettings: React.FC = () => {
             tooltip: tCommon('delete', { defaultValue: 'Delete' }),
             confirm: { title: t('settings.rateLimit.deleteConfirm', { defaultValue: 'Delete this rule?' }) },
             onClick: async () => { await api.system.deleteRateLimitRule({ id: row.id }); refreshRules(); },
+          },
+          {
+            key: 'reset',
+            permission: 'system:rate_limit:update',
+            icon: <UndoOutlined />,
+            tooltip: t('settings.rateLimit.resetRule', { defaultValue: 'Reset counters' }),
+            confirm: { title: t('settings.rateLimit.resetRuleConfirm', { defaultValue: 'Reset counters for this rule?' }) },
+            onClick: async () => {
+              await resetCounters({
+                scope: 'rule',
+                rule_id: row.id,
+                subject_type: row.subject_type,
+                subject_id: row.subject_id || '',
+              });
+            },
           },
         ]} />
       ),
@@ -231,11 +275,31 @@ const RateLimitSettings: React.FC = () => {
           </Text>
         </Space>
         <Divider>{t('settings.rateLimit.defaults', { defaultValue: 'Default shared buckets' })}</Divider>
-        <SharedBucketTable />
+        <SharedBucketTable
+          onResetSubject={(subjectType) => resetCounters({
+            scope: 'subject',
+            subject_type: subjectType,
+            subject_id: '',
+            rule_id: '',
+          })}
+        />
         <PermissionGuard permission="system:rate_limit:update">
           <Space style={{ marginTop: 12 }}>
             <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={submitting}>{tCommon('save', { defaultValue: 'Save' })}</Button>
             <Button icon={<ReloadOutlined />} onClick={() => refresh()}>{tCommon('refresh', { defaultValue: 'Refresh' })}</Button>
+            <Popconfirm
+              title={t('settings.rateLimit.resetAllConfirm', { defaultValue: 'Reset every rate-limit and quota counter? Currently blocked clients will be allowed immediately.' })}
+              onConfirm={() => resetCounters({
+                scope: 'global',
+                subject_type: 'anonymous',
+                subject_id: '',
+                rule_id: '',
+              })}
+            >
+              <Button danger htmlType="button" icon={<UndoOutlined />}>
+                {t('settings.rateLimit.resetAll', { defaultValue: 'Reset all counters' })}
+              </Button>
+            </Popconfirm>
           </Space>
         </PermissionGuard>
       </Form>

@@ -1328,6 +1328,17 @@ export interface RateLimitOverride {
   rate: number;
 }
 
+export interface RateLimitResetRequest {
+  rule_id: string;
+  scope: string;
+  subject_id: string;
+  subject_type: RateLimitSubjectType;
+}
+
+export interface RateLimitResetResult {
+  deleted: number;
+}
+
 export interface RateLimitRule {
   burst: number;
   created_at: string;
@@ -1385,6 +1396,11 @@ export interface resendActivationEmailParams {
   id: string;
 }
 
+export interface resetServiceAccountRateLimitParams {
+  /** Service account ID */
+  id: string;
+}
+
 export interface resetUserPasswordParams {
   /** User ID */
   id: string;
@@ -1396,6 +1412,11 @@ export interface ResetUserPasswordRequest {
 
 export interface ResetUserPasswordResponse {
   new_password: string;
+}
+
+export interface resetUserRateLimitParams {
+  /** User ID */
+  id: string;
 }
 
 export interface ResponseAiapiTraceStatusResponse {
@@ -1639,6 +1660,13 @@ export interface ResponseModelRateLimitEffective {
 export interface ResponseModelRateLimitOverride {
   code: string;
   data: RateLimitOverride;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseModelRateLimitResetResult {
+  code: string;
+  data: RateLimitResetResult;
   err: string;
   trace_id: string;
 }

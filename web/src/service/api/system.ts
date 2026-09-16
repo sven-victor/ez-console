@@ -510,6 +510,24 @@ export async function getRateLimitEffective(
   );
 }
 
+/** Reset rate limit counters Reset global, subject, or rule-scoped rate-limit and quota counters POST /api/system/rate-limit/reset */
+export async function resetRateLimitCounters(
+  body: API.RateLimitResetRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseModelRateLimitResetResult>(
+    "/api/system/rate-limit/reset",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** Get security settings Get security settings GET /api/system/security-settings */
 export async function getSecuritySettings(options?: { [key: string]: any }) {
   return request<API.ResponseModelSecuritySettings>(

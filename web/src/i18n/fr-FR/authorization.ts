@@ -434,6 +434,7 @@ export default {
         update: 'Mettre à jour la limitation de débit',
         create: 'Créer une règle de limitation',
         delete: 'Supprimer une règle de limitation',
+        reset: 'Réinitialiser les compteurs de limitation',
       },
       organization: {
         update: 'Mettre à jour l\'organisation',
@@ -627,5 +628,8 @@ export default {
     saveFailed: 'Échec de l’enregistrement de la surcharge',
     resetSuccess: 'Surcharge effacée ; valeur par défaut du type restaurée',
     resetToDefault: 'Réinitialiser par défaut',
+    resetCounters: 'Réinitialiser les compteurs',
+    resetCountersConfirm: 'Réinitialiser les compteurs de débit et de quota de ce sujet ? Les requêtes seront à nouveau autorisées immédiatement.',
+    resetCountersSuccess: 'Compteurs réinitialisés',
   },
 }

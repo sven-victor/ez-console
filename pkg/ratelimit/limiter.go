@@ -75,6 +75,8 @@ type Decision struct {
 	Result  Result
 	Shared  *CompiledRule
 	Route   *CompiledRule
+	// Bucket is "shared" or "route" when Allowed is false.
+	Bucket string
 }
 
 type RuleLoader func(ctx context.Context) ([]model.RateLimitRule, error)
@@ -170,6 +172,18 @@ func (l *Limiter) Effective(ctx context.Context, st model.RateLimitSubjectType, 
 	return out
 }
 
+func (l *Limiter) Reset(ctx context.Context, spec ResetSpec) (int, error) {
+	if l == nil || l.store == nil {
+		return 0, fmt.Errorf("rate limiter is not initialized")
+	}
+	n, err := l.store.Reset(ctx, spec)
+	if err != nil {
+		storeErrorsTotal.Inc()
+		return n, fmt.Errorf("rate limit store: %w", err)
+	}
+	return n, nil
+}
+
 func (l *Limiter) Allow(ctx context.Context, ident Identity, method, path string) (Decision, error) {
 	if SkipPath(method, path) {
 		return Decision{Allowed: true}, nil
@@ -197,6 +211,7 @@ func (l *Limiter) Allow(ctx context.Context, ident Identity, method, path string
 		if !res.Allowed {
 			exceededTotal.WithLabelValues(res.Kind, ident.Dimension()).Inc()
 			dec.Allowed = false
+			dec.Bucket = BucketShared
 			return dec, nil
 		}
 	}
@@ -209,6 +224,7 @@ func (l *Limiter) Allow(ctx context.Context, ident Identity, method, path string
 		if !res.Allowed {
 			exceededTotal.WithLabelValues(res.Kind, ident.Dimension()).Inc()
 			dec.Allowed = false
+			dec.Bucket = BucketRoute
 			return dec, nil
 		}
 	}

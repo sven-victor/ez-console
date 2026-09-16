@@ -634,6 +634,22 @@ export async function updateServiceAccountRateLimit(
   );
 }
 
+/** Reset service account rate limit counters POST /api/authorization/service-accounts/${param0}/rate-limit/reset */
+export async function resetServiceAccountRateLimit(
+  params: API.resetServiceAccountRateLimitParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitResetResult>(
+    `/api/authorization/service-accounts/${param0}/rate-limit/reset`,
+    {
+      method: "POST",
+      params: { ...queryParams },
+      ...(options || {}),
+    }
+  );
+}
+
 /** Get service account roles Get service account roles GET /api/authorization/service-accounts/${param0}/roles */
 export async function getServiceAccountRoles(
   params: API.getServiceAccountRolesParams,
@@ -864,6 +880,22 @@ export async function updateUserRateLimit(
       },
       params: { ...queryParams },
       data: body,
+      ...(options || {}),
+    }
+  );
+}
+
+/** Reset user rate limit counters POST /api/authorization/users/${param0}/rate-limit/reset */
+export async function resetUserRateLimit(
+  params: API.resetUserRateLimitParams,
+  options?: { [key: string]: any }
+) {
+  const { id: param0, ...queryParams } = params;
+  return request<API.ResponseModelRateLimitResetResult>(
+    `/api/authorization/users/${param0}/rate-limit/reset`,
+    {
+      method: "POST",
+      params: { ...queryParams },
       ...(options || {}),
     }
   );

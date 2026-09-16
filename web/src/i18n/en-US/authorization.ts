@@ -417,6 +417,7 @@ export default {
         update: 'Update rate limit',
         create: 'Create rate limit rule',
         delete: 'Delete rate limit rule',
+        reset: 'Reset rate limit counters',
       },
       organization: {
         update: 'Update organization',
@@ -612,5 +613,8 @@ export default {
     saveFailed: 'Failed to save override',
     resetSuccess: 'Override cleared; type default restored',
     resetToDefault: 'Reset to default',
+    resetCounters: 'Reset counters',
+    resetCountersConfirm: 'Reset rate-limit and quota counters for this subject? They will be able to send requests immediately.',
+    resetCountersSuccess: 'Counters reset',
   },
 }

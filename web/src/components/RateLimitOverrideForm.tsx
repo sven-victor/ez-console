@@ -15,10 +15,11 @@
  */
 
 import React from 'react';
-import { Alert, Button, Form, Input, InputNumber, Space, Switch, Typography } from 'antd';
+import { Alert, Button, Form, Input, InputNumber, Popconfirm, Space, Switch, Typography } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { App } from 'antd';
+import { UndoOutlined } from '@ant-design/icons';
 import api from '@/service/api';
 
 const { Text } = Typography;
@@ -92,6 +93,21 @@ const RateLimitOverrideForm: React.FC<RateLimitOverrideFormProps> = ({ kind, sub
     },
   );
 
+  const { run: resetCounters, loading: resetting } = useRequest(
+    async () => (kind === 'user'
+      ? api.authorization.resetUserRateLimit({ id: subjectId })
+      : api.authorization.resetServiceAccountRateLimit({ id: subjectId })),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('rateLimit.resetCountersSuccess', { defaultValue: 'Counters reset' }));
+      },
+      onError: (error) => {
+        message.error(error.message);
+      },
+    },
+  );
+
   return (
     <Form form={form} layout="vertical" onFinish={save} disabled={readOnly || loading} style={{ maxWidth: 480, marginTop: 16 }}>
       {data?.inherited && (
@@ -123,6 +139,14 @@ const RateLimitOverrideForm: React.FC<RateLimitOverrideFormProps> = ({ kind, sub
       {!readOnly && (
         <Space>
           <Button type="primary" htmlType="submit" loading={saving}>{tCommon('save', { defaultValue: 'Save' })}</Button>
+          <Popconfirm
+            title={t('rateLimit.resetCountersConfirm', { defaultValue: 'Reset rate-limit and quota counters for this subject? They will be able to send requests immediately.' })}
+            onConfirm={() => resetCounters()}
+          >
+            <Button htmlType="button" icon={<UndoOutlined />} loading={resetting}>
+              {t('rateLimit.resetCounters', { defaultValue: 'Reset counters' })}
+            </Button>
+          </Popconfirm>
           {!data?.inherited && (
             <Button onClick={() => clear()} loading={clearing}>{t('rateLimit.resetToDefault', { defaultValue: 'Reset to default' })}</Button>
           )}

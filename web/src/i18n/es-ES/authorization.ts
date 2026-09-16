@@ -434,6 +434,7 @@ export default {
         update: 'Actualizar límite de tasa',
         create: 'Crear regla de límite',
         delete: 'Eliminar regla de límite',
+        reset: 'Restablecer contadores de límite',
       },
       organization: {
         update: 'Actualizar organización',
@@ -627,5 +628,8 @@ export default {
     saveFailed: 'Error al guardar la anulación',
     resetSuccess: 'Anulación eliminada; se restauró el valor predeterminado',
     resetToDefault: 'Restablecer predeterminado',
+    resetCounters: 'Restablecer contadores',
+    resetCountersConfirm: '¿Restablecer los contadores de tasa y cuota de este sujeto? Podrá enviar solicitudes de inmediato.',
+    resetCountersSuccess: 'Contadores restablecidos',
   },
 }

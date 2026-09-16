@@ -66,8 +66,9 @@ Applied automatically to `/api` after `AuthenticationMiddleware`. Counters use `
 - **Identity:** `service_account_id` → `user_id` → `ClientIP()` (anonymous only).
 - **Buckets:** one shared bucket per identity; an extra route bucket only when a compiled rule has a non-empty path (AND). Daily quota is on shared (`path=""`) rules only.
 - **Skip:** `GET /api/system/health`. Non-`/api` routes never hit this middleware. SSE counts the connection, not each event.
-- **Errors:** HTTP 429, `E4291` (rate) or `E4292` (quota), `Retry-After` / `RateLimit-Limit` / `RateLimit-Remaining` / `RateLimit-Reset`.
+- **Errors:** HTTP 429, `E4291` (rate) or `E4292` (quota). Only rejected requests are logged (`msg=rate limit exceeded`), with `kind`, `bucket` (`shared`/`route`, from the limiter), identity, request `method`/`path`, the failing rule's `source`/`rate`/`period`/`burst` (and `quota`/`quota_period` when set), and `retry_after` seconds. `RateLimit-*` / `Retry-After` headers are not returned.
 - **Store:** `rate_limit.store=memory` (default) or `redis`. Redis errors fail open unless `fail_open=false`. Cluster + memory logs a warning (limits are per node).
+- **Reset counters:** `POST /api/system/rate-limit/reset` with `scope=global|subject|rule` (requires `system:rate_limit:update`). Subject convenience routes: `POST /api/authorization/users/:id/rate-limit/reset` and `POST /api/authorization/service-accounts/:id/rate-limit/reset`. Memory store resets the current node only.
 - **Code extra bucket:** `middleware.RateLimitRoute(method, path, limit, subjectTypes...)` registers a `source=code` rule at route registration time (the returned handler is a no-op; group middleware runs first).
 
 ```go

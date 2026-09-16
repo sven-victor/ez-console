@@ -436,6 +436,7 @@ export default {
         update: '更新限流设置',
         create: '创建限流规则',
         delete: '删除限流规则',
+        reset: '重置限流计数器',
       },
       organization: {
         update: '更新组织',
@@ -634,5 +635,8 @@ export default {
     saveFailed: '保存覆盖失败',
     resetSuccess: '已清除覆盖，恢复为类型默认值',
     resetToDefault: '恢复默认',
+    resetCounters: '重置计数器',
+    resetCountersConfirm: '重置该主体的限流与配额计数器？被拦截的请求将立即恢复。',
+    resetCountersSuccess: '计数器已重置',
   },
 }

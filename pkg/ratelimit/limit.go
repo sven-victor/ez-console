@@ -27,6 +27,9 @@ const (
 	KindRate  = "rate"
 	KindQuota = "quota"
 
+	BucketShared = "shared"
+	BucketRoute  = "route"
+
 	DefaultPeriod      = time.Minute
 	DefaultQuotaPeriod = 24 * time.Hour
 )

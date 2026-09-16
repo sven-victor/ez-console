@@ -60,6 +60,7 @@ func (c *UserController) RegisterRoutes(router *gin.RouterGroup) {
 		users.POST("/:id/unlock", middleware.RequirePermission("authorization:user:update"), c.UnlockUser)
 		users.GET("/:id/rate-limit", middleware.RequirePermission("authorization:user:view"), c.GetUserRateLimit)
 		users.PUT("/:id/rate-limit", middleware.RequirePermission("authorization:user:update"), c.UpdateUserRateLimit)
+		users.POST("/:id/rate-limit/reset", middleware.RequirePermission("authorization:user:update"), c.ResetUserRateLimit)
 		users.POST("/:id/resend-activation", middleware.RequirePermission("authorization:user:update"), c.ResendActivationEmail)
 		users.DELETE("/:id/mfa", middleware.RequirePermission("authorization:user:update"), c.AdminDisableUserMFA)
 		users.GET("/ldap-users", middleware.RequirePermission("authorization:user:list"), c.GetLdapUsers)
@@ -1192,6 +1193,43 @@ func (c *UserController) UpdateUserRateLimit(ctx *gin.Context) {
 		auditLog.Details.NewData = req
 		auditLog.Action = "authorization:user:rate_limit:update"
 		auditLog.ActionName = "Update user rate limit"
+	}))
+	if err != nil {
+		util.RespondWithError(ctx, err)
+	}
+}
+
+// ResetUserRateLimit clears rate-limit and quota counters for a user
+//
+//	@Summary		Reset user rate limit counters
+//	@ID             resetUserRateLimit
+//	@Tags			Authorization/Users
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	util.Response[model.RateLimitResetResult]
+//	@Router			/api/authorization/users/{id}/rate-limit/reset [post]
+func (c *UserController) ResetUserRateLimit(ctx *gin.Context) {
+	id := ctx.Param("id")
+	if _, err := c.service.GetUserByID(ctx, id); err != nil {
+		util.RespondWithError(ctx, err)
+		return
+	}
+	req := model.RateLimitResetRequest{
+		Scope:       model.RateLimitResetScopeSubject,
+		SubjectType: model.RateLimitSubjectUser,
+		SubjectID:   id,
+	}
+	err := c.service.AuditLogService.StartAudit(ctx, id, func(auditLog *model.AuditLog) error {
+		result, err := c.service.ResetCounters(ctx, req)
+		if err != nil {
+			return err
+		}
+		util.RespondWithSuccess(ctx, http.StatusOK, result)
+		return nil
+	}, service.WithBeforeFilters(func(auditLog *model.AuditLog) {
+		auditLog.Details.NewData = req
+		auditLog.Action = "authorization:user:rate_limit:reset"
+		auditLog.ActionName = "Reset user rate limit counters"
 	}))
 	if err != nil {
 		util.RespondWithError(ctx, err)

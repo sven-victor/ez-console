@@ -434,6 +434,7 @@ export default {
         update: 'Uppdatera hastighetsbegränsning',
         create: 'Skapa hastighetsregel',
         delete: 'Ta bort hastighetsregel',
+        reset: 'Återställ hastighetsräknare',
       },
       organization: {
         update: 'Uppdatera organisation',
@@ -627,5 +628,8 @@ export default {
     saveFailed: 'Kunde inte spara överskrivning',
     resetSuccess: 'Överskrivning rensad; typstandard återställd',
     resetToDefault: 'Återställ till standard',
+    resetCounters: 'Återställ räknare',
+    resetCountersConfirm: 'Återställ hastighets- och kvot-räknare för det här subjektet? Förfrågningar tillåts omedelbart.',
+    resetCountersSuccess: 'Räknare återställda',
   },
 }

@@ -155,10 +155,35 @@ func TestSharedAndRouteAND(t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, d2.Allowed)
 	require.NotNil(t, d2.Route)
+	require.Equal(t, BucketRoute, d2.Bucket)
 
 	other, err := lim.Allow(ctx, ident, "GET", "/api/authorization/users")
 	require.NoError(t, err)
 	require.True(t, other.Allowed)
+	require.Empty(t, other.Bucket)
+}
+
+func TestSharedBucketLabeledOnFail(t *testing.T) {
+	ResetCodeRulesForTest()
+	t.Cleanup(ResetCodeRulesForTest)
+	store := NewMemoryStore()
+	lim := NewLimiter(store, config.RateLimitConfig{}, func(context.Context) ([]model.RateLimitRule, error) {
+		return []model.RateLimitRule{
+			{SubjectType: model.RateLimitSubjectUser, Rate: 1, Period: "1m", Burst: 1, Enabled: true, Source: model.RateLimitSourceDB, ResourceID: "rule-shared"},
+		}, nil
+	}, func(context.Context) bool { return true })
+
+	ctx := context.Background()
+	ident := Identity{Type: model.RateLimitSubjectUser, ID: "u1"}
+	_, err := lim.Allow(ctx, ident, "GET", "/api/ping")
+	require.NoError(t, err)
+	d2, err := lim.Allow(ctx, ident, "GET", "/api/ping")
+	require.NoError(t, err)
+	require.False(t, d2.Allowed)
+	require.Equal(t, BucketShared, d2.Bucket)
+	require.Equal(t, KindRate, d2.Result.Kind)
+	require.NotNil(t, d2.Shared)
+	require.Equal(t, "rule-shared", d2.Shared.ResourceID)
 }
 
 func TestFailOpen(t *testing.T) {
@@ -188,4 +213,60 @@ type errStore struct{ err error }
 
 func (s *errStore) Allow(context.Context, string, Limit) (Result, error) {
 	return Result{}, s.err
+}
+
+func (s *errStore) Reset(context.Context, ResetSpec) (int, error) {
+	return 0, s.err
+}
+
+func TestResetSpecMatch(t *testing.T) {
+	user := Identity{Type: model.RateLimitSubjectUser, ID: "u1"}
+	require.True(t, ResetSpec{All: true}.Match("anything"))
+	require.True(t, ResetSpec{SubjectType: model.RateLimitSubjectUser, SubjectID: "u1"}.Match(user.SharedKey()))
+	require.True(t, ResetSpec{SubjectType: model.RateLimitSubjectUser, SubjectID: "u1"}.Match(user.RouteKey("POST", PathAIChat)))
+	require.False(t, ResetSpec{SubjectType: model.RateLimitSubjectUser, SubjectID: "u1"}.Match("user:u2"))
+	require.True(t, ResetSpec{SubjectType: model.RateLimitSubjectUser, SharedOnly: true}.Match("user:u1"))
+	require.False(t, ResetSpec{SubjectType: model.RateLimitSubjectUser, SharedOnly: true}.Match(user.RouteKey("POST", PathAIChat)))
+	require.True(t, ResetSpec{
+		SubjectType: model.RateLimitSubjectUser, RouteOnly: true, Method: "POST", Path: PathAIChat,
+	}.Match(user.RouteKey("POST", PathAIChat)))
+	require.False(t, ResetSpec{
+		SubjectType: model.RateLimitSubjectUser, RouteOnly: true, Method: "POST", Path: PathAIChat,
+	}.Match(user.SharedKey()))
+	anon := Identity{Type: model.RateLimitSubjectAnonymous, ID: "2001:db8::1"}
+	require.True(t, ResetSpec{SubjectType: model.RateLimitSubjectAnonymous, SubjectID: "2001:db8::1"}.Match(anon.SharedKey()))
+	require.True(t, ResetSpec{SubjectType: model.RateLimitSubjectAnonymous, SubjectID: "2001:db8::1"}.Match(anon.RouteKey("GET", "/api/x")))
+}
+
+func TestMemoryStoreReset(t *testing.T) {
+	store := NewMemoryStore()
+	lim := Limit{Rate: 1, Period: time.Minute, Burst: 1, Quota: 1, QuotaPeriod: 24 * time.Hour}.Normalized()
+	ctx := context.Background()
+	u1 := Identity{Type: model.RateLimitSubjectUser, ID: "u1"}
+	u2 := Identity{Type: model.RateLimitSubjectUser, ID: "u2"}
+	_, err := store.Allow(ctx, u1.SharedKey(), lim)
+	require.NoError(t, err)
+	_, err = store.Allow(ctx, u2.SharedKey(), lim)
+	require.NoError(t, err)
+	blocked, err := store.Allow(ctx, u1.SharedKey(), lim)
+	require.NoError(t, err)
+	require.False(t, blocked.Allowed)
+
+	n, err := store.Reset(ctx, ResetSpec{SubjectType: model.RateLimitSubjectUser, SubjectID: "u1"})
+	require.NoError(t, err)
+	require.Greater(t, n, 0)
+
+	again, err := store.Allow(ctx, u1.SharedKey(), lim)
+	require.NoError(t, err)
+	require.True(t, again.Allowed)
+	still, err := store.Allow(ctx, u2.SharedKey(), lim)
+	require.NoError(t, err)
+	require.False(t, still.Allowed)
+
+	n, err = store.Reset(ctx, ResetSpec{All: true})
+	require.NoError(t, err)
+	require.Greater(t, n, 0)
+	u2ok, err := store.Allow(ctx, u2.SharedKey(), lim)
+	require.NoError(t, err)
+	require.True(t, u2ok.Allowed)
 }

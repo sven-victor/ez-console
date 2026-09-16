@@ -539,7 +539,7 @@ Configure through system settings:
 
 Each identity has one **shared** token-bucket (empty path). Extra **route** buckets apply only when a rule has a non-empty Gin `FullPath`; both buckets must allow the request. Daily quotas (UTC calendar day) attach only to shared rules.
 
-Exceeded limits return HTTP 429 with `E4291` (rate) or `E4292` (quota), plus `Retry-After` and `RateLimit-*` headers. `GET /api/system/health` is skipped. This does not replace login-failure lockout or AI token governance.
+Exceeded limits return HTTP 429 with `E4291` (rate) or `E4292` (quota). The server log records the failing bucket and policy (`kind`, `bucket`, `source`, `rate`/`burst`/`quota`, `retry_after`); response headers are not set. `GET /api/system/health` is skipped. This does not replace login-failure lockout or AI token governance.
 
 Manage policy in **System Settings → Rate Limit**, or with YAML `rate_limit.policies` (compiled at startup, never upserted to DB). Per-user and per-service-account shared-bucket overrides live on those detail pages. See [Middleware](./08-middleware.md#rate-limit-middleware) and [Configuration](./05-configuration.md).
 
