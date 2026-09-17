@@ -178,10 +178,11 @@ const RateLimitSettings: React.FC = () => {
 
   const { run: submitRule, loading: ruleSaving } = useRequest(
     async (values: API.RateLimitRule) => {
+      const payload = { ...values, enabled: values.enabled !== false };
       if (editing?.id) {
-        return api.system.updateRateLimitRule({ id: editing.id }, values);
+        return api.system.updateRateLimitRule({ id: editing.id }, payload);
       }
-      return api.system.createRateLimitRule(values);
+      return api.system.createRateLimitRule(payload);
     },
     {
       manual: true,
@@ -367,7 +368,13 @@ const RateLimitSettings: React.FC = () => {
           <Form.Item name="quota_period" label={t('settings.rateLimit.quotaPeriod', { defaultValue: 'Quota period' })}>
             <Input placeholder="1d" />
           </Form.Item>
-          <Form.Item name="enabled" label={t('settings.rateLimit.enabled', { defaultValue: 'Enabled' })} valuePropName="checked">
+          <Form.Item
+            name="enabled"
+            label={t('settings.rateLimit.enabled', { defaultValue: 'Enabled' })}
+            valuePropName="checked"
+            initialValue={true}
+            extra={t('settings.rateLimit.enabledHint', { defaultValue: 'Off: this rule is ignored and the next layer applies.' })}
+          >
             <Switch />
           </Form.Item>
         </Form>

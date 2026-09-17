@@ -57,7 +57,12 @@ const RateLimitOverrideForm: React.FC<RateLimitOverrideFormProps> = ({ kind, sub
   });
 
   const { run: save, loading: saving } = useRequest(
-    async (values: API.RateLimitOverride) => setter({ id: subjectId }, { ...values, clear: false, inherited: false }),
+    async (values: API.RateLimitOverride) => setter({ id: subjectId }, {
+      ...values,
+      clear: false,
+      inherited: false,
+      enabled: values.enabled !== false,
+    }),
     {
       manual: true,
       onSuccess: () => {
@@ -133,7 +138,12 @@ const RateLimitOverrideForm: React.FC<RateLimitOverrideFormProps> = ({ kind, sub
       <Form.Item name="quota_period" label={t('rateLimit.quotaPeriod', { defaultValue: 'Quota period' })}>
         <Input placeholder="1d" />
       </Form.Item>
-      <Form.Item name="enabled" label={t('rateLimit.enabled', { defaultValue: 'Enabled' })} valuePropName="checked">
+      <Form.Item
+        name="enabled"
+        label={t('rateLimit.enabled', { defaultValue: 'Enabled' })}
+        valuePropName="checked"
+        extra={t('rateLimit.enabledHint', { defaultValue: 'Off: this override is ignored and the type default applies. Use Reset to default to delete the override.' })}
+      >
         <Switch />
       </Form.Item>
       {!readOnly && (

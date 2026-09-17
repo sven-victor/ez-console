@@ -1371,11 +1371,7 @@ declare global {
   
     type RateLimitSource = "builtin" | "yaml" | "code" | "db";
   
-    type RateLimitSubjectType =
-      | "anonymous"
-      | "user"
-      | "service_account"
-      | "access_key";
+    type RateLimitSubjectType = "anonymous" | "user" | "service_account";
   
     interface removeUserFromOrganizationParams {
       /** Organization ID */

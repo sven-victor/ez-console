@@ -90,6 +90,7 @@ func TestRateLimitMiddlewareAnonymousIP(t *testing.T) {
 	}
 	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &body))
 	require.Equal(t, "E4291", body.Code)
+	// Contract: 429 bodies are E4291/E4292 only. Retry/limit details go to logs, not headers.
 	require.Empty(t, w.Header().Get("Retry-After"))
 	require.Empty(t, w.Header().Get("RateLimit-Limit"))
 	require.Empty(t, w.Header().Get("RateLimit-Remaining"))

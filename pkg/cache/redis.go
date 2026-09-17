@@ -19,11 +19,12 @@ type RedisCache struct {
 
 // NewRedisCache creates a Redis-backed cache and verifies connectivity.
 func NewRedisCache(cfg config.RedisConfig) (*RedisCache, error) {
-	if cfg.Addr == "" {
+	addr := cfg.GetAddr()
+	if addr == "" {
 		return nil, fmt.Errorf("redis cache requires non-empty addr")
 	}
 	client := redis.NewClient(&redis.Options{
-		Addr:     cfg.Addr,
+		Addr:     addr,
 		Password: cfg.Password,
 		DB:       cfg.DB,
 	})

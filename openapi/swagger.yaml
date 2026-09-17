@@ -1767,13 +1767,11 @@ definitions:
     - anonymous
     - user
     - service_account
-    - access_key
     type: string
     x-enum-varnames:
     - RateLimitSubjectAnonymous
     - RateLimitSubjectUser
     - RateLimitSubjectServiceAccount
-    - RateLimitSubjectAccessKey
   model.Role:
     properties:
       ai_tool_permissions:
@@ -3650,8 +3648,6 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3676,8 +3672,6 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond

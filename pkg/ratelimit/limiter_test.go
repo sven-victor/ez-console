@@ -169,7 +169,7 @@ func TestSharedBucketLabeledOnFail(t *testing.T) {
 	store := NewMemoryStore()
 	lim := NewLimiter(store, config.RateLimitConfig{}, func(context.Context) ([]model.RateLimitRule, error) {
 		return []model.RateLimitRule{
-			{SubjectType: model.RateLimitSubjectUser, Rate: 1, Period: "1m", Burst: 1, Enabled: true, Source: model.RateLimitSourceDB, ResourceID: "rule-shared"},
+			{Base: model.Base{ResourceID: "rule-shared"}, SubjectType: model.RateLimitSubjectUser, Rate: 1, Period: "1m", Burst: 1, Enabled: true, Source: model.RateLimitSourceDB},
 		}, nil
 	}, func(context.Context) bool { return true })
 
@@ -184,6 +184,17 @@ func TestSharedBucketLabeledOnFail(t *testing.T) {
 	require.Equal(t, KindRate, d2.Result.Kind)
 	require.NotNil(t, d2.Shared)
 	require.Equal(t, "rule-shared", d2.Shared.ResourceID)
+}
+
+func TestDisabledSubjectOverrideFallsThrough(t *testing.T) {
+	rs := Compile(nil, []model.RateLimitRule{
+		{SubjectType: model.RateLimitSubjectUser, Rate: 120, Period: "1m", Burst: 40, Enabled: true, Source: model.RateLimitSourceDB},
+		{SubjectType: model.RateLimitSubjectUser, SubjectID: "u1", Rate: 1, Period: "1m", Burst: 1, Enabled: false, Source: model.RateLimitSourceDB},
+	})
+	shared, ok := rs.Shared(model.RateLimitSubjectUser, "u1")
+	require.True(t, ok)
+	require.Equal(t, 40, shared.Limit.Burst)
+	require.Empty(t, shared.SubjectID)
 }
 
 func TestFailOpen(t *testing.T) {

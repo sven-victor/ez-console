@@ -212,9 +212,9 @@ cache:
 
 | Key | Default | Effective today |
 |-----|---------|-----------------|
-| `cache.driver` | `memory` | Unused |
-| `cache.size` | `1000` | Unused |
-| `cache.redis.*` | empty | Unused |
+| `cache.driver` | `memory` | Unused by `cache.Init` |
+| `cache.size` | `1000` | Unused by `cache.Init` |
+| `cache.redis.*` | empty | Unused by `cache.Init`; fallback for `rate_limit.store=redis`. Also settable via `--cache.redis.*` |
 
 Cross-node invalidation delivery is controlled by **`cluster.*`** (see [Distributed Deployment](./19-distributed-deployment.md)), not by `cache.driver`.
 

@@ -1369,11 +1369,7 @@ export interface RateLimitSettings {
 
 export type RateLimitSource = "builtin" | "yaml" | "code" | "db";
 
-export type RateLimitSubjectType =
-  | "anonymous"
-  | "user"
-  | "service_account"
-  | "access_key";
+export type RateLimitSubjectType = "anonymous" | "user" | "service_account";
 
 export interface removeUserFromOrganizationParams {
   /** Organization ID */

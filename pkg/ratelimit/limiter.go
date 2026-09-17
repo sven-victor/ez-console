@@ -54,8 +54,6 @@ func (id Identity) Dimension() string {
 		return "user"
 	case model.RateLimitSubjectServiceAccount:
 		return "sa"
-	case model.RateLimitSubjectAccessKey:
-		return "access_key"
 	default:
 		return "ip"
 	}

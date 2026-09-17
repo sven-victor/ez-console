@@ -90,11 +90,12 @@ type RedisStore struct {
 }
 
 func NewRedisStore(cfg config.RedisConfig) (*RedisStore, error) {
-	if cfg.Addr == "" {
+	addr := cfg.GetAddr()
+	if addr == "" {
 		return nil, fmt.Errorf("rate limit redis store requires non-empty addr")
 	}
 	client := redis.NewClient(&redis.Options{
-		Addr:     cfg.Addr,
+		Addr:     addr,
 		Password: cfg.Password,
 		DB:       cfg.DB,
 	})

@@ -17,6 +17,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"reflect"
 	"strconv"
@@ -119,12 +120,29 @@ func (c *GossipConfig) GetDiscoverInterval() time.Duration {
 	return c.DiscoverInterval
 }
 
-// RedisConfig holds connection parameters for a Redis-backed cache.
+// RedisConfig holds connection parameters for a Redis-backed cache or rate-limit store.
 type RedisConfig struct {
 	Addr     string `yaml:"addr" mapstructure:"addr"`
+	Host     string `yaml:"host" mapstructure:"host"`
+	Port     int    `yaml:"port" mapstructure:"port"`
 	Password string `yaml:"password" mapstructure:"password"`
 	DB       int    `yaml:"db" mapstructure:"db"`
 	Prefix   string `yaml:"prefix" mapstructure:"prefix"`
+}
+
+// GetAddr returns addr, or host:port when addr is empty.
+func (c RedisConfig) GetAddr() string {
+	if c.Addr != "" {
+		return c.Addr
+	}
+	if c.Host == "" {
+		return ""
+	}
+	port := c.Port
+	if port <= 0 {
+		port = 6379
+	}
+	return net.JoinHostPort(c.Host, strconv.Itoa(port))
 }
 
 func (c *CacheConfig) GetDriver() string {
@@ -223,10 +241,14 @@ func (c RateLimitConfig) GetStore() string {
 }
 
 func (c RateLimitConfig) RedisConfig(fallback RedisConfig) RedisConfig {
-	if c.Redis.Addr != "" {
-		return c.Redis
+	out := c.Redis
+	if out.GetAddr() == "" {
+		out = fallback
 	}
-	return fallback
+	if out.Addr == "" {
+		out.Addr = out.GetAddr()
+	}
+	return out
 }
 
 // GetSkillsCacheFs returns the local-disk afero.Fs used to materialize skill

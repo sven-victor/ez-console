@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/sven-victor/ez-console/pkg/cache"
 	"github.com/sven-victor/ez-console/pkg/config"
@@ -30,6 +31,29 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+func persistRateLimitRule(tx *gorm.DB, row *model.RateLimitRule) error {
+	// Select + Assignments include Enabled so false survives create/upsert (GORM skips bool zeros).
+	row.Source = model.RateLimitSourceDB
+	return tx.Select(
+		"ResourceID", "CreatedAt", "UpdatedAt",
+		"SubjectType", "SubjectID", "Method", "Path",
+		"Rate", "Period", "Burst", "Quota", "QuotaPeriod",
+		"Enabled", "Source",
+	).Clauses(clause.OnConflict{
+		Columns: []clause.Column{{Name: "subject_type"}, {Name: "subject_id"}, {Name: "method"}, {Name: "path"}},
+		DoUpdates: clause.Assignments(map[string]any{
+			"rate":         row.Rate,
+			"period":       row.Period,
+			"burst":        row.Burst,
+			"quota":        row.Quota,
+			"quota_period": row.QuotaPeriod,
+			"enabled":      row.Enabled,
+			"source":       model.RateLimitSourceDB,
+			"updated_at":   time.Now(),
+		}),
+	}).Create(row).Error
+}
 
 type RateLimitService interface {
 	Limiter() *ratelimit.Limiter
@@ -169,12 +193,7 @@ func (s *rateLimitService) upsertShared(ctx context.Context, st model.RateLimitS
 		Enabled:     true,
 		Source:      model.RateLimitSourceDB,
 	}
-	return db.Session(ctx).Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "subject_type"}, {Name: "subject_id"}, {Name: "method"}, {Name: "path"}},
-		DoUpdates: clause.AssignmentColumns([]string{
-			"rate", "period", "burst", "quota", "quota_period", "enabled", "source",
-		}),
-	}).Create(&row).Error
+	return persistRateLimitRule(db.Session(ctx), &row)
 }
 
 func (s *rateLimitService) ListRules(ctx context.Context, page, pageSize int, search, subjectType, subjectID string) ([]model.RateLimitRule, int64, error) {
@@ -223,7 +242,12 @@ func (s *rateLimitService) CreateRule(ctx context.Context, rule *model.RateLimit
 	}
 	rule.Source = model.RateLimitSourceDB
 	rule.Method = strings.ToUpper(strings.TrimSpace(rule.Method))
-	if err := db.Session(ctx).Create(rule).Error; err != nil {
+	if err := db.Session(ctx).Select(
+		"ResourceID", "CreatedAt", "UpdatedAt",
+		"SubjectType", "SubjectID", "Method", "Path",
+		"Rate", "Period", "Burst", "Quota", "QuotaPeriod",
+		"Enabled", "Source",
+	).Create(rule).Error; err != nil {
 		return util.NewErrorMessage("E4001", "failed to create rate limit rule", err)
 	}
 	invalidateRules(ctx)
@@ -249,7 +273,12 @@ func (s *rateLimitService) UpdateRule(ctx context.Context, id string, rule *mode
 	existing.QuotaPeriod = rule.QuotaPeriod
 	existing.Enabled = rule.Enabled
 	existing.Source = model.RateLimitSourceDB
-	if err := db.Session(ctx).Save(existing).Error; err != nil {
+	if err := db.Session(ctx).Select(
+		"ResourceID", "CreatedAt", "UpdatedAt",
+		"SubjectType", "SubjectID", "Method", "Path",
+		"Rate", "Period", "Burst", "Quota", "QuotaPeriod",
+		"Enabled", "Source",
+	).Save(existing).Error; err != nil {
 		return err
 	}
 	*rule = *existing
@@ -258,7 +287,7 @@ func (s *rateLimitService) UpdateRule(ctx context.Context, id string, rule *mode
 }
 
 func (s *rateLimitService) DeleteRule(ctx context.Context, id string) error {
-	res := db.Session(ctx).Where("resource_id = ?", id).Delete(&model.RateLimitRule{})
+	res := db.Session(ctx).Unscoped().Where("resource_id = ?", id).Delete(&model.RateLimitRule{})
 	if res.Error != nil {
 		return res.Error
 	}
@@ -307,7 +336,7 @@ func (s *rateLimitService) GetOverride(ctx context.Context, st model.RateLimitSu
 
 func (s *rateLimitService) SetOverride(ctx context.Context, st model.RateLimitSubjectType, subjectID string, ov model.RateLimitOverride) error {
 	if ov.Clear {
-		res := db.Session(ctx).Where(
+		res := db.Session(ctx).Unscoped().Where(
 			"subject_type = ? AND subject_id = ? AND method = ? AND path = ?",
 			st, subjectID, "", "",
 		).Delete(&model.RateLimitRule{})
@@ -340,12 +369,7 @@ func (s *rateLimitService) SetOverride(ctx context.Context, st model.RateLimitSu
 		Enabled:     ov.Enabled,
 		Source:      model.RateLimitSourceDB,
 	}
-	if err := db.Session(ctx).Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "subject_type"}, {Name: "subject_id"}, {Name: "method"}, {Name: "path"}},
-		DoUpdates: clause.AssignmentColumns([]string{
-			"rate", "period", "burst", "quota", "quota_period", "enabled", "source",
-		}),
-	}).Create(&row).Error; err != nil {
+	if err := persistRateLimitRule(db.Session(ctx), &row); err != nil {
 		return err
 	}
 	invalidateRules(ctx)
@@ -373,7 +397,7 @@ func (s *rateLimitService) resetSpec(ctx context.Context, req model.RateLimitRes
 			return ratelimit.ResetSpec{}, util.NewErrorMessage("E4001", "subject_type is required")
 		}
 		switch req.SubjectType {
-		case model.RateLimitSubjectAnonymous, model.RateLimitSubjectUser, model.RateLimitSubjectServiceAccount, model.RateLimitSubjectAccessKey:
+		case model.RateLimitSubjectAnonymous, model.RateLimitSubjectUser, model.RateLimitSubjectServiceAccount:
 		default:
 			return ratelimit.ResetSpec{}, util.NewErrorMessage("E4001", "invalid subject_type")
 		}
@@ -412,7 +436,7 @@ func (s *rateLimitService) validateRule(rule *model.RateLimitRule, creating bool
 		return util.NewErrorMessage("E4001", "rule is required")
 	}
 	switch rule.SubjectType {
-	case model.RateLimitSubjectAnonymous, model.RateLimitSubjectUser, model.RateLimitSubjectServiceAccount, model.RateLimitSubjectAccessKey:
+	case model.RateLimitSubjectAnonymous, model.RateLimitSubjectUser, model.RateLimitSubjectServiceAccount:
 	default:
 		return util.NewErrorMessage("E4001", "invalid subject_type")
 	}

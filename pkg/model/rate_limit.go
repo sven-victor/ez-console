@@ -14,13 +14,6 @@
 
 package model
 
-import (
-	"time"
-
-	g "github.com/sven-victor/ez-utils/generator"
-	"gorm.io/gorm"
-)
-
 // RateLimitSubjectType identifies who a rate-limit rule applies to.
 type RateLimitSubjectType string
 
@@ -28,7 +21,6 @@ const (
 	RateLimitSubjectAnonymous      RateLimitSubjectType = "anonymous"
 	RateLimitSubjectUser           RateLimitSubjectType = "user"
 	RateLimitSubjectServiceAccount RateLimitSubjectType = "service_account"
-	RateLimitSubjectAccessKey      RateLimitSubjectType = "access_key"
 )
 
 // RateLimitSource identifies which layer produced a compiled rule.
@@ -57,12 +49,9 @@ func init() {
 // RateLimitRule is a persisted (or compiled) rate-limit policy row.
 // Unique key: (subject_type, subject_id, method, path).
 // An empty path is the shared bucket for that subject; a non-empty path is the extra route bucket.
-// Soft-delete is omitted so the composite unique key can be upserted cleanly.
+// Service-layer deletes use Unscoped() so the composite unique key can be reused after removal.
 type RateLimitRule struct {
-	ID          uint                 `gorm:"primarykey" json:"-"`
-	ResourceID  string               `gorm:"uniqueIndex;size:36;not null" json:"id"`
-	CreatedAt   time.Time            `json:"created_at,omitempty"`
-	UpdatedAt   time.Time            `json:"updated_at,omitempty"`
+	Base
 	SubjectType RateLimitSubjectType `json:"subject_type" gorm:"size:32;not null;uniqueIndex:uk_rate_limit_rule,priority:1"`
 	SubjectID   string               `json:"subject_id" gorm:"size:36;not null;default:'';uniqueIndex:uk_rate_limit_rule,priority:2"`
 	Method      string               `json:"method" gorm:"size:16;not null;default:'';uniqueIndex:uk_rate_limit_rule,priority:3"`
@@ -72,18 +61,11 @@ type RateLimitRule struct {
 	Burst       int                  `json:"burst"`
 	Quota       int                  `json:"quota"`
 	QuotaPeriod string               `json:"quota_period" gorm:"size:16"`
-	Enabled     bool                 `json:"enabled" gorm:"not null;default:true"`
+	Enabled     bool                 `json:"enabled" gorm:"not null"`
 	Source      RateLimitSource      `json:"source" gorm:"size:16;not null"`
 }
 
 func (RateLimitRule) TableName() string { return "t_rate_limit_rule" }
-
-func (r *RateLimitRule) BeforeCreate(tx *gorm.DB) error {
-	if r.ResourceID == "" {
-		r.ResourceID = g.NewId(tx.Statement.Table)
-	}
-	return nil
-}
 
 // RateLimitBucket is a JSON DTO for a shared or route bucket.
 type RateLimitBucket struct {
@@ -98,14 +80,14 @@ type RateLimitBucket struct {
 
 // RateLimitSettings is the admin settings payload.
 type RateLimitSettings struct {
-	Enabled          bool             `json:"enabled"`
-	Store            string           `json:"store"`
-	FailOpen         bool             `json:"fail_open"`
-	Cluster          bool             `json:"cluster"`
-	MemoryWarn       bool             `json:"memory_warn"`
-	Anonymous        RateLimitBucket  `json:"anonymous"`
-	User             RateLimitBucket  `json:"user"`
-	ServiceAccount   RateLimitBucket  `json:"service_account"`
+	Enabled        bool            `json:"enabled"`
+	Store          string          `json:"store"`
+	FailOpen       bool            `json:"fail_open"`
+	Cluster        bool            `json:"cluster"`
+	MemoryWarn     bool            `json:"memory_warn"`
+	Anonymous      RateLimitBucket `json:"anonymous"`
+	User           RateLimitBucket `json:"user"`
+	ServiceAccount RateLimitBucket `json:"service_account"`
 }
 
 // RateLimitOverride is a per-user / per-SA shared-bucket override.

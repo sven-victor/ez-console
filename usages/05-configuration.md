@@ -60,6 +60,9 @@ rate_limit:
   fail_open: true        # allow requests if the store errors (Redis down)
   # redis:               # optional; omitted uses cache.redis
   #   addr: "127.0.0.1:6379"
+  #   # or host + port (same as --rate_limit.redis.host / --rate_limit.redis.port)
+  #   # host: "127.0.0.1"
+  #   # port: 6379
   #   password: ""
   #   db: 0
   #   prefix: "ez:"
@@ -98,6 +101,9 @@ cache:
   size: 1000       # ignored by Init (no max-entry cap on TypedCache)
   # redis:
   #   addr: "127.0.0.1:6379"
+  #   # or host + port (same as --cache.redis.host / --cache.redis.port)
+  #   # host: "127.0.0.1"
+  #   # port: 6379
   #   password: ""
   #   db: 0
   #   prefix: "ez:"
@@ -282,6 +288,37 @@ tracing:
 --database.slow_threshold=DURATION # Slow query threshold (default: "3s")
 ```
 
+#### Rate Limit Options
+
+```bash
+--rate_limit.enabled=BOOL          # YAML master switch (default: true; UI can still disable via settings)
+--rate_limit.store=STRING          # Store: memory|redis (default: "memory")
+--rate_limit.fail_open=BOOL        # Allow requests if the store errors (default: true)
+--rate_limit.redis.addr=HOST:PORT  # Redis address (overrides host/port; falls back to cache.redis)
+--rate_limit.redis.host=STRING     # Redis host (only used when store=redis)
+--rate_limit.redis.port=INT        # Redis port (default: 6379)
+--rate_limit.redis.password=STRING # Redis password
+--rate_limit.redis.db=INT          # Redis DB index (default: 0)
+--rate_limit.redis.prefix=STRING   # Redis key prefix (default: "ez:")
+```
+
+GitOps `rate_limit.policies` stay in YAML only.
+
+#### Cache Options
+
+```bash
+--cache.driver=STRING          # Cache driver: memory|db|redis (default: "memory")
+--cache.size=INT               # Memory backend size (default: 1000)
+--cache.redis.addr=HOST:PORT   # Redis address (overrides host/port)
+--cache.redis.host=STRING      # Redis host
+--cache.redis.port=INT         # Redis port (default: 6379)
+--cache.redis.password=STRING  # Redis password
+--cache.redis.db=INT           # Redis DB index (default: 0)
+--cache.redis.prefix=STRING    # Redis key prefix (default: "ez:")
+```
+
+`cache.redis` is also the fallback when `rate_limit.store=redis` and `--rate_limit.redis.*` is unset. `cache.driver` / `cache.size` are unused by `cache.Init` today (see [Caching](./20-caching.md)).
+
 #### Log Options
 
 ```bash
@@ -463,7 +500,7 @@ Some settings can be configured through the UI after deployment:
 - Default shared buckets for anonymous (IP), users, and service accounts
 - Per-route extra buckets and per-user / per-service-account overrides
 
-YAML `rate_limit.*` (store, fail_open, GitOps `policies`) requires a restart. Set `server.trusted_proxies` when the app sits behind a reverse proxy so anonymous limits key off the real client IP. `cluster.enabled` with `rate_limit.store=memory` is per-node; use `store=redis` for cluster-wide counters.
+YAML `rate_limit.*` (store, fail_open, GitOps `policies`) requires a restart. The same infra keys can be set with `--rate_limit.*` flags (they override the file). Set `server.trusted_proxies` when the app sits behind a reverse proxy so anonymous limits key off the real client IP. `cluster.enabled` with `rate_limit.store=memory` is per-node; use `store=redis` for cluster-wide counters.
 
 ## Production Configuration Example
 

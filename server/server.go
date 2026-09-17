@@ -92,6 +92,35 @@ func initFlags(rootCmd *cobra.Command) {
 	rootCmd.Flags().AddFlagSet(clusterFlagSet)
 
 	rootCmd.Flags().AddFlagSet(newDatabaseFlagSet(rootCmd.Use))
+	rootCmd.Flags().AddFlagSet(newCacheFlagSet())
+	rootCmd.Flags().AddFlagSet(newRateLimitFlagSet())
+}
+
+func newCacheFlagSet() *pflag.FlagSet {
+	cacheFlagSet := pflag.NewFlagSet("cache", pflag.ExitOnError)
+	cacheFlagSet.String("cache.driver", "memory", "cache driver: memory, db, or redis")
+	cacheFlagSet.String("cache.size", "1000", "cache size (memory backend)")
+	cacheFlagSet.String("cache.redis.addr", "", "redis address host:port (overrides host/port)")
+	cacheFlagSet.String("cache.redis.host", "", "redis host")
+	cacheFlagSet.String("cache.redis.port", "6379", "redis port")
+	cacheFlagSet.String("cache.redis.password", "", "redis password")
+	cacheFlagSet.String("cache.redis.db", "0", "redis db")
+	cacheFlagSet.String("cache.redis.prefix", "ez:", "redis key prefix")
+	return cacheFlagSet
+}
+
+func newRateLimitFlagSet() *pflag.FlagSet {
+	rateLimitFlagSet := pflag.NewFlagSet("rate_limit", pflag.ExitOnError)
+	rateLimitFlagSet.Bool("rate_limit.enabled", true, "rate limit YAML master switch (UI can still disable via settings)")
+	rateLimitFlagSet.String("rate_limit.store", "memory", "rate limit store: memory or redis")
+	rateLimitFlagSet.Bool("rate_limit.fail_open", true, "allow requests if the rate limit store errors")
+	rateLimitFlagSet.String("rate_limit.redis.addr", "", "redis address host:port (only used when store=redis; overrides host/port)")
+	rateLimitFlagSet.String("rate_limit.redis.host", "", "redis host (only used when store=redis)")
+	rateLimitFlagSet.String("rate_limit.redis.port", "6379", "redis port (only used when store=redis)")
+	rateLimitFlagSet.String("rate_limit.redis.password", "", "redis password (only used when store=redis)")
+	rateLimitFlagSet.String("rate_limit.redis.db", "0", "redis db (only used when store=redis)")
+	rateLimitFlagSet.String("rate_limit.redis.prefix", "ez:", "redis key prefix (only used when store=redis)")
+	return rateLimitFlagSet
 }
 
 func newDatabaseFlagSet(serviceName string) *pflag.FlagSet {
