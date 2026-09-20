@@ -10,7 +10,7 @@ This guide covers advanced features and customization options in EZ-Console.
 
 ### `WithEngineOptions`
 
-`WithEngineOptions` registers one or more `func(*gin.Engine)` callbacks. They run after the framework creates the Gin engine and attaches its default middleware (recovery, OpenTelemetry, Prometheus, request logging, CORS, delay), and **before** the service layer is initialized and API controllers are registered. Use this for global middleware, extra top-level routes, or other engine-level setup.
+`WithEngineOptions` registers one or more `func(*gin.Engine)` callbacks. They run after the framework creates the Gin engine and attaches its default middleware (recovery, OpenTelemetry, Prometheus, request logging, CORS, delay, compression), and **before** the service layer is initialized and API controllers are registered. Use this for global middleware, extra top-level routes, or other engine-level setup.
 
 For middleware patterns, ordering, and examples beyond the snippets here, see the [Middleware Guide](./08-middleware.md).
 

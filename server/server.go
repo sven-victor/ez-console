@@ -81,6 +81,9 @@ func initFlags(rootCmd *cobra.Command) {
 	serverFlagSet.String("server.skills_path", "./skills", "server skills storage path")
 	serverFlagSet.String("server.skills_cache_path", "./skills-cache", "local cache directory for skill materialization (used when skills_path is remote storage)")
 	serverFlagSet.String("server.geoip_db_path", "", "GeoIP database path")
+	serverFlagSet.Bool("server.compression.enabled", true, "enable HTTP request decompression and response compression")
+	serverFlagSet.Int("server.compression.min_length", 1024, "minimum uncompressed response size in bytes before compression")
+	serverFlagSet.StringSlice("server.compression.algorithms", []string{"br", "gzip"}, "response compression algorithms in preference order (br, gzip)")
 	rootCmd.Flags().AddFlagSet(serverFlagSet)
 
 	clusterFlagSet := pflag.NewFlagSet("cluster", pflag.ExitOnError)
@@ -463,6 +466,9 @@ func newServer(ctx context.Context, serviceName string, engineOptions []withEngi
 	engine.Use(gin.CustomRecovery(middleware.Recovery()), otelgin.Middleware(serviceName))
 	engine.Use(middleware.PrometheusMetrics(), middleware.Log(serviceName))
 	engine.Use(middleware.CORSMiddleware(), middleware.DelayMiddleware())
+	if cfg.Server.Compression.GetEnabled() {
+		engine.Use(middleware.CompressionMiddleware(cfg.Server.Compression))
+	}
 
 	// Apply custom engine options, example Middleware, Routes, etc.
 	for _, option := range engineOptions {

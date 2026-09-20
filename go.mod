@@ -15,6 +15,7 @@ require (
 
 require (
 	github.com/MicahParks/keyfunc/v3 v3.4.0
+	github.com/andybalholm/brotli v1.2.1
 	github.com/gin-contrib/static v1.1.5
 	github.com/glebarez/sqlite v1.8.0
 	github.com/go-kit/log v0.2.1
@@ -63,7 +64,6 @@ require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.47.0 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/MicahParks/jwkset v0.8.0 // indirect
-	github.com/andybalholm/brotli v1.2.1 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

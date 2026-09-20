@@ -161,14 +161,14 @@ func (c *CacheConfig) GetSize() int {
 
 // Config application configuration structure
 type Config struct {
-	Tracing  tracing.TraceOptions `yaml:"tracing" mapstructure:"tracing"`
-	Server   ServerConfig         `yaml:"server" mapstructure:"server"`
-	Database *gorm.Client         `yaml:"database" mapstructure:"database"`
-	JWT      jwt.Config           `yaml:"jwt" mapstructure:"jwt"`
-	OAuth    OAuthConfig          `yaml:"oauth" mapstructure:"oauth"`
-	Cache     CacheConfig     `yaml:"cache" mapstructure:"cache"`
-	Cluster   ClusterConfig   `yaml:"cluster" mapstructure:"cluster"`
-	RateLimit RateLimitConfig `yaml:"rate_limit" mapstructure:"rate_limit"`
+	Tracing   tracing.TraceOptions `yaml:"tracing" mapstructure:"tracing"`
+	Server    ServerConfig         `yaml:"server" mapstructure:"server"`
+	Database  *gorm.Client         `yaml:"database" mapstructure:"database"`
+	JWT       jwt.Config           `yaml:"jwt" mapstructure:"jwt"`
+	OAuth     OAuthConfig          `yaml:"oauth" mapstructure:"oauth"`
+	Cache     CacheConfig          `yaml:"cache" mapstructure:"cache"`
+	Cluster   ClusterConfig        `yaml:"cluster" mapstructure:"cluster"`
+	RateLimit RateLimitConfig      `yaml:"rate_limit" mapstructure:"rate_limit"`
 }
 
 // ServerConfig server configuration
@@ -193,6 +193,42 @@ type ServerConfig struct {
 	// When rate limiting is enabled and this is empty, proxies are not trusted
 	// (ClientIP uses the remote address) and a warning is logged.
 	TrustedProxies []string `yaml:"trusted_proxies" mapstructure:"trusted_proxies"`
+	// Compression controls automatic HTTP request decompression and
+	// response compression (br / gzip).
+	Compression CompressionConfig `yaml:"compression" mapstructure:"compression"`
+}
+
+// CompressionConfig controls HTTP body compression and decompression.
+type CompressionConfig struct {
+	// Enabled defaults to true when nil (flag/YAML omitted).
+	Enabled *bool `yaml:"enabled" mapstructure:"enabled"`
+	// MinLength is the minimum uncompressed response size in bytes before
+	// compression is applied. Zero or negative falls back to 1024.
+	MinLength int `yaml:"min_length" mapstructure:"min_length"`
+	// Algorithms is preference order for response encoding (e.g. br, gzip).
+	// Empty falls back to br, gzip.
+	Algorithms []string `yaml:"algorithms" mapstructure:"algorithms"`
+}
+
+func (c CompressionConfig) GetEnabled() bool {
+	if c.Enabled == nil {
+		return true
+	}
+	return *c.Enabled
+}
+
+func (c CompressionConfig) GetMinLength() int {
+	if c.MinLength <= 0 {
+		return 1024
+	}
+	return c.MinLength
+}
+
+func (c CompressionConfig) GetAlgorithms() []string {
+	if len(c.Algorithms) == 0 {
+		return []string{"br", "gzip"}
+	}
+	return c.Algorithms
 }
 
 // RateLimitPolicyConfig is a GitOps policy layer entry. It is compiled at

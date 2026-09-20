@@ -450,7 +450,7 @@ Stop **all** nodes first. Keep the old `global.encrypt-key` in config/env until 
 
 ### Application
 
-- Enable gzip compression
+- HTTP br/gzip compression is on by default (`server.compression.enabled`); disable or raise `min_length` if a reverse proxy already compresses
 - Use CDN for static files
 - Enable HTTP/2
 - Optimize database queries

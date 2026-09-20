@@ -52,12 +52,25 @@ Adds artificial delay (useful for testing):
 engine.Use(middleware.DelayMiddleware())
 ```
 
+### Compression Middleware
+
+Applied automatically to all routes (after CORS/delay) when `server.compression.enabled` is true (the default). It:
+
+- **Decompresses** request bodies with `Content-Encoding: gzip` or `br` (stacked encodings are applied in reverse). Unknown encodings return HTTP 415 `E4151`; invalid payloads return HTTP 400 `E4002`. Decompressed size is capped at 32 MiB.
+- **Compresses** responses when the client sends `Accept-Encoding` and the body looks compressible (JSON, `text/*`, SVG, JS/CSS/HTML by type or path extension). Prefers **br** then **gzip**, honoring q-values. Skips HEAD/OPTIONS, WebSocket upgrades, `Range` requests, SSE (`text/event-stream`), already-encoded bodies, images/fonts/archives, and responses smaller than `server.compression.min_length` (default 1024 bytes). Sets `Vary: Accept-Encoding` and removes `Content-Length` when compressing.
+
+`/metrics` is registered before global middleware and is not compressed. Disable or tune via `--server.compression.*` (see [Configuration](./05-configuration.md)).
+
+```go
+engine.Use(middleware.CompressionMiddleware(cfg.Server.Compression))
+```
+
 ### Recovery & Metrics
 
 - `middleware.Recovery()` — used with `gin.CustomRecovery` in `server/server.go`
 - `middleware.PrometheusMetrics()` — Prometheus HTTP metrics middleware
 
-Built-in packages under `pkg/middleware/`: authentication, permission, cors, log, recovery, metrics, delay, settings, **ratelimit**.
+Built-in packages under `pkg/middleware/`: authentication, permission, cors, log, recovery, metrics, delay, settings, ratelimit, **compression**.
 
 ### Rate Limit Middleware
 
@@ -155,7 +168,7 @@ func APIKeyMiddleware(validKeys []string) gin.HandlerFunc {
 
 The Gin `*gin.Engine` is created inside the framework when the root command runs (`consoleserver.NewCommandServer` → internal server startup). You do not construct the engine in `main` for a normal EZ-Console binary.
 
-To attach middleware to **all** routes, pass one or more `func(*gin.Engine)` hooks via `consoleserver.WithEngineOptions` when calling `NewCommandServer`. Each hook receives the engine **after** built-in middleware (recovery, tracing, metrics, logging, CORS, delay) is registered and **before** services and API routes are wired. For the option type and related helpers, see [Advanced Topics](./13-advanced-topics.md#withserveroption).
+To attach middleware to **all** routes, pass one or more `func(*gin.Engine)` hooks via `consoleserver.WithEngineOptions` when calling `NewCommandServer`. Each hook receives the engine **after** built-in middleware (recovery, tracing, metrics, logging, CORS, delay, compression) is registered and **before** services and API routes are wired. For the option type and related helpers, see [Advanced Topics](./13-advanced-topics.md#withserveroption).
 
 ```go
 package main

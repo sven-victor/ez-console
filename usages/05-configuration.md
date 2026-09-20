@@ -51,6 +51,10 @@ server:
   # trusted_proxies:
   #   - "10.0.0.0/8"
   #   - "192.168.0.0/16"
+  compression:
+    enabled: true          # HTTP request decompression + response compression (br/gzip)
+    min_length: 1024       # skip compressing responses smaller than this (bytes)
+    algorithms: [br, gzip] # preference order; intersected with Accept-Encoding
 
 # HTTP rate limiting (infra). Runtime on/off is t_setting rate_limit_enabled.
 # Policies here are compiled at startup (YAML layer); they are never upserted to DB.
@@ -267,6 +271,9 @@ tracing:
 --server.skills_path=PATH      # Skills file path (default: "./skills"; same string-or-driver forms as file_upload_path)
 --server.skills_cache_path=PATH # Local skill materialization cache (default: "./skills-cache")
 --server.geoip_db_path=PATH    # GeoIP database path
+--server.compression.enabled=BOOL # HTTP body compress/decompress (default: true)
+--server.compression.min_length=INT # Min uncompressed response size to compress (default: 1024)
+--server.compression.algorithms=STRINGS # Preference order, e.g. br,gzip (default: br,gzip)
 ```
 
 #### Database Options
@@ -521,6 +528,10 @@ server:
   geoip_db_path: "/var/lib/ez-console/GeoLite2-City.mmdb"
   trusted_proxies:
     - "10.0.0.0/8"
+  compression:
+    enabled: true
+    min_length: 1024
+    algorithms: [br, gzip]
 
 rate_limit:
   enabled: true
