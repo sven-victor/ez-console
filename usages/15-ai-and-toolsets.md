@@ -1801,7 +1801,7 @@ The `AIChat` component (`web/src/components/AIChat.tsx`) provides the full chat 
 - **Conversation management**: Create, delete, rename, switch between conversations
 - **Streaming**: Real-time message rendering via `@ant-design/x-sdk`'s `useXChat` hook
 - **Rich content**: Markdown rendering with code highlighting and Mermaid diagram support
-- **Skill selection**: Users can pick skill domains or specific skills via a select dropdown
+- **Skill selection**: Users can pick skill domains or specific skills via a select dropdown. `defaultSkillDomains` pre-selects domains; when it is omitted the client sends `domains: []`
 - **Client tool handling**: Automatically dispatches pending tool calls to registered handlers
 
 **SSE stream handling** is managed by a custom `AIProvider` class (extending `AbstractChatProvider` from `@ant-design/x-sdk`) that:
@@ -1819,9 +1819,36 @@ interface AIChatProps {
     contentRender?: (content: string) => React.ReactNode;
     footerRender?: (message: MessageInfo<ChatStreamMessage>) => React.ReactNode;
     components?: XMarkdownProps['components'];
-  }
+  };
+  /** Custom AI float button icon. */
+  floatButtonIcon?: React.ReactNode;
+  /**
+   * Host-level system prompts sent on every request as ephemeral_system_prompts
+   * (not persisted). Merged with page-level prompts from registerPageAI.
+   */
+  ephemeralSystemPrompts?: string[];
+  /**
+   * Skill domains selected when the chat opens. Omit this (or pass []) to send
+   * domains as an empty list. The backend still appends core and chat.
+   */
+  defaultSkillDomains?: string[];
 }
 ```
+
+Pass these through `EZApp`'s `aiChatProps`:
+
+```tsx
+<EZApp
+  aiChatProps={{
+    ephemeralSystemPrompts: [
+      'You are assisting operators of this console.',
+    ],
+    defaultSkillDomains: ['analytics'],
+  }}
+/>
+```
+
+When `defaultSkillDomains` is omitted, chat requests include `"domains": []`. Users can still toggle domains and individual skills in the sender. Host prompts are sent ahead of any prompts registered by the current page.
 
 ### Page-Level AI Integration
 

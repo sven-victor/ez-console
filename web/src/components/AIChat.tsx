@@ -425,6 +425,23 @@ interface SelectedSkillOption {
   value: string;
 }
 
+function normalizeStringList(values: string[] | undefined): string[] {
+  if (!values || values.length === 0) {
+    return [];
+  }
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const raw of values) {
+    const value = raw.trim();
+    if (!value || seen.has(value)) {
+      continue;
+    }
+    seen.add(value);
+    result.push(value);
+  }
+  return result;
+}
+
 export interface AIChatProps {
   bubble?: {
     contentRender?: (content: string, info: Info, onSendMessage: (val: string) => void) => React.ReactNode;
@@ -435,6 +452,17 @@ export interface AIChatProps {
   };
   /** Custom AI float button icon; overrides the default blinking robot when provided. */
   floatButtonIcon?: React.ReactNode;
+  /**
+   * Host-level system prompts merged into every chat request as
+   * ephemeral_system_prompts (not persisted). Combined with page-level
+   * prompts from registerPageAI.
+   */
+  ephemeralSystemPrompts?: string[];
+  /**
+   * Skill domains selected when the chat opens. When omitted, the client
+   * sends domains as an empty list.
+   */
+  defaultSkillDomains?: string[];
 }
 
 interface ChatListProps {
@@ -549,6 +577,8 @@ const ChatList: React.FC<ChatListProps> = ({
 
 export const AIChat: React.FC<AIChatProps> = ({
   bubble = {},
+  ephemeralSystemPrompts: hostEphemeralSystemPrompts,
+  defaultSkillDomains,
 }) => {
   const {
     layout,
@@ -598,7 +628,29 @@ export const AIChat: React.FC<AIChatProps> = ({
 
   const [inputValue, setInputValue] = useState('');
   const [skillsVisible, setSkillsVisible] = useState(false);
-  const [selectedSkills, setSelectedSkills] = useState<SelectedSkillOption[]>([]);
+  const defaultSkillDomainsKey = defaultSkillDomains?.join('\0') ?? '';
+  const normalizedDefaultDomains = useMemo(
+    () => normalizeStringList(defaultSkillDomainsKey ? defaultSkillDomainsKey.split('\0') : []),
+    [defaultSkillDomainsKey],
+  );
+  const hostPromptsKey = hostEphemeralSystemPrompts?.join('\0') ?? '';
+  const normalizedHostPrompts = useMemo(
+    () => normalizeStringList(hostPromptsKey ? hostPromptsKey.split('\0') : []),
+    [hostPromptsKey],
+  );
+  const [selectedSkills, setSelectedSkills] = useState<SelectedSkillOption[]>(() =>
+    normalizedDefaultDomains.map((value) => ({ type: 'domain', value })),
+  );
+
+  useEffect(() => {
+    setSelectedSkills((current) => {
+      const skills = current.filter((item) => item.type === 'skill');
+      return [
+        ...normalizedDefaultDomains.map((value) => ({ type: 'domain' as const, value })),
+        ...skills,
+      ];
+    });
+  }, [normalizedDefaultDomains]);
 
   const { data: domainsData } = useRequest(() => api.system.listSkillDomains());
   const { data: skillsListData } = useRequest(() =>
@@ -658,10 +710,17 @@ export const AIChat: React.FC<AIChatProps> = ({
       }
     },
   });
-  const buildPageAIFields = useCallback((): Pick<ChatStreamInput, 'ephemeral_system_prompts' | 'client_tools'> => {
-    const fields: Pick<ChatStreamInput, 'ephemeral_system_prompts' | 'client_tools'> = {};
-    if (ephemeralSystemPrompts.length > 0) {
-      fields.ephemeral_system_prompts = ephemeralSystemPrompts;
+  const buildChatRequestFields = useCallback((): Pick<ChatStreamInput, 'domains' | 'skill_ids' | 'ephemeral_system_prompts' | 'client_tools'> => {
+    const fields: Pick<ChatStreamInput, 'domains' | 'skill_ids' | 'ephemeral_system_prompts' | 'client_tools'> = {
+      domains: selectedSkills.filter((s) => s.type === 'domain').map((s) => s.value),
+      skill_ids: selectedSkills.filter((s) => s.type === 'skill').map((s) => s.value),
+    };
+    const prompts = normalizeStringList([
+      ...normalizedHostPrompts,
+      ...ephemeralSystemPrompts,
+    ]);
+    if (prompts.length > 0) {
+      fields.ephemeral_system_prompts = prompts;
     }
     if (clientTools.length > 0) {
       fields.client_tools = clientTools.map(t => ({
@@ -671,7 +730,7 @@ export const AIChat: React.FC<AIChatProps> = ({
       }));
     }
     return fields;
-  }, [ephemeralSystemPrompts, clientTools]);
+  }, [selectedSkills, normalizedHostPrompts, ephemeralSystemPrompts, clientTools]);
 
   const pendingHandoffRef = useRef<ClientToolPendingCall[] | null>(null);
 
@@ -700,9 +759,9 @@ export const AIChat: React.FC<AIChatProps> = ({
     onRequest({
       content: '',
       client_tool_results: results,
-      ...buildPageAIFields(),
+      ...buildChatRequestFields(),
     });
-  }, [clientTools, onRequest, buildPageAIFields]);
+  }, [clientTools, onRequest, buildChatRequestFields]);
 
   // Watch for completed requests with pending client tool calls
   useEffect(() => {
@@ -729,9 +788,7 @@ export const AIChat: React.FC<AIChatProps> = ({
     }
     onRequest({
       content: val,
-      domains: selectedSkills.filter((s) => s.type === 'domain').map((s) => s.value),
-      skill_ids: selectedSkills.filter((s) => s.type === 'skill').map((s) => s.value),
-      ...buildPageAIFields(),
+      ...buildChatRequestFields(),
     });
   };
 
@@ -858,12 +915,12 @@ export const AIChat: React.FC<AIChatProps> = ({
       setTimeout(() => {
         onRequest({
           content: msg,
-          ...buildPageAIFields(),
+          ...buildChatRequestFields(),
         });
       }, 1000)
       setMessageBuffer(undefined);
     }
-  }, [activeConversationKey, messageBuffer, buildPageAIFields])
+  }, [activeConversationKey, messageBuffer, buildChatRequestFields])
 
   useEffect(() => {
     if (activeConversationKey) {

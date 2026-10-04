@@ -139,6 +139,17 @@ export declare interface AIChatProps {
     };
     /** Custom AI float button icon; overrides the default blinking robot when provided. */
     floatButtonIcon?: default_2.ReactNode;
+    /**
+     * Host-level system prompts merged into every chat request as
+     * ephemeral_system_prompts (not persisted). Combined with page-level
+     * prompts from registerPageAI.
+     */
+    ephemeralSystemPrompts?: string[];
+    /**
+     * Skill domains selected when the chat opens. When omitted, the client
+     * sends domains as an empty list.
+     */
+    defaultSkillDomains?: string[];
 }
 
 export declare interface AIChatSession {

@@ -26,7 +26,7 @@ import type { EZAppProps } from 'ez-console';
 | `menuStyle` | `'dark' \| 'light'` | Sidebar menu style (default: `'dark'`) |
 | `transformHeaderItems` | `(items) => items` | Transform header action items |
 | `renderLayout` | `(siteIconUrl, menuItems, headerItems, breadcrumbs, content) => ReactNode` | Custom layout renderer |
-| `aiChatProps` | `AIChatProps?` | Props forwarded to the built-in AI chat component |
+| `aiChatProps` | `AIChatProps?` | Props forwarded to the built-in AI chat component. Includes `ephemeralSystemPrompts` (host system prompts on every request) and `defaultSkillDomains` (domains selected by default; omitted means the client sends `domains: []`) |
 
 ```typescript
 <EZApp
