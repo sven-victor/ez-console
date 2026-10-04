@@ -42,7 +42,7 @@ import { createStyles, useThemeMode } from 'antd-style';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { useAI } from '@/contexts/AIContext';
+import { normalizeCallAIOptions, useAI, type CallAIArgument } from '@/contexts/AIContext';
 import classNames from 'classnames';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import '@ant-design/x-markdown/themes/light.css';
@@ -674,8 +674,8 @@ export const AIChat: React.FC<AIChatProps> = ({
     ]
   }, [skillsListData, domainsData])
 
-  // Message buffer to be sent
-  const [messageBuffer, setMessageBuffer] = useState<{ message: string, sessionId: string }>();
+  // Message buffer to be sent. domains is set when this turn overrides the selection.
+  const [messageBuffer, setMessageBuffer] = useState<{ message: string; sessionId: string; domains?: string[] }>();
 
 
   const { onRequest, messages, isRequesting, abort, onReload, setMessages, setMessage } = useXChat<ChatStreamMessage, ChatStreamMessage, ChatStreamInput, ChatStreamOutput>({
@@ -852,23 +852,24 @@ export const AIChat: React.FC<AIChatProps> = ({
       setMessages(chatMessages);
     }
   });
-  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (_message?: string, messages?: API.SimpleChatMessage[], anonymous: boolean = false) => {
-    return await api.ai.createChatSession({
+  const { run: createNewConversation, loading: createNewConversationLoading } = useRequest(async (message?: string, messages?: API.SimpleChatMessage[], anonymous: boolean = false, domains?: string[]) => {
+    const session = await api.ai.createChatSession({
       title: t('chat.defaultConversationTitle'),
       model_id: '',
       messages: messages || [],
       anonymous,
     });
+    return { session, message, domains };
   }, {
     manual: true,
     onError: () => {
       messageApi.error(t('chat.createConversationFailed', { defaultValue: 'Failed to create conversation' }));
     },
-    onSuccess: (data, [message]) => {
-      addConversation(convertConversation(data), 'prepend');
-      setActiveConversationKey(data.id);
+    onSuccess: ({ session, message, domains }) => {
+      addConversation(convertConversation(session), 'prepend');
+      setActiveConversationKey(session.id);
       if (message) {
-        setMessageBuffer({ message, sessionId: data.id });
+        setMessageBuffer({ message, sessionId: session.id, domains });
       }
     },
   });
@@ -911,11 +912,12 @@ export const AIChat: React.FC<AIChatProps> = ({
 
   useEffect(() => {
     if (activeConversationKey && messageBuffer?.sessionId === activeConversationKey) {
-      const msg = messageBuffer.message;
+      const { message: msg, domains } = messageBuffer;
       setTimeout(() => {
         onRequest({
           content: msg,
           ...buildChatRequestFields(),
+          ...(domains !== undefined ? { domains } : {}),
         });
       }, 1000)
       setMessageBuffer(undefined);
@@ -933,13 +935,35 @@ export const AIChat: React.FC<AIChatProps> = ({
   }, [activeConversationKey])
 
 
-  useEffect(() => {
-    if (onCallAI && createNewConversation) {
-      onCallAI((message, messages) => {
-        createNewConversation(message, messages, true);
-      });
+  const handleCallAIRef = useRef<(message: string, options?: CallAIArgument) => void>(() => { });
+  handleCallAIRef.current = (message: string, rawOptions?: CallAIArgument) => {
+    const options = normalizeCallAIOptions(rawOptions);
+    const domains = options.domains !== undefined ? normalizeStringList(options.domains) : undefined;
+    if (domains !== undefined) {
+      setSelectedSkills((current) => [
+        ...domains.map((value) => ({ type: 'domain' as const, value })),
+        ...current.filter((item) => item.type === 'skill'),
+      ]);
     }
-  }, [createNewConversation, onCallAI])
+    if (options.newSession === false && activeConversationKey) {
+      onRequest({
+        content: message,
+        ...buildChatRequestFields(),
+        ...(domains !== undefined ? { domains } : {}),
+      });
+      return;
+    }
+    createNewConversation(message, options.messages, true, domains);
+  };
+
+  useEffect(() => {
+    if (!onCallAI) {
+      return;
+    }
+    onCallAI((message, options) => {
+      handleCallAIRef.current(message, options);
+    });
+  }, [onCallAI])
 
   // ==================== Nodes ====================
   const chatSider = (

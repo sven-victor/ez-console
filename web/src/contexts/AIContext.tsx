@@ -53,6 +53,44 @@ export interface PageAIOptions {
   pageDataDescription?: string;
 }
 
+/** Options for a programmatic chat turn. */
+export interface CallAIOptions {
+  /**
+   * Context messages persisted when a session is created.
+   * Use role `'prompt'` for page/context instructions: they reach the model as
+   * leading user context but stay hidden from the chat history UI.
+   * Role `'system'` is downgraded to `'prompt'` by the backend — session
+   * messages never feed the model's system prompt. For prompts that must
+   * apply to every request, use `registerPageAI({ ephemeralSystemPrompts })`.
+   * Ignored when the message is appended to an existing session.
+   */
+  messages?: API.SimpleChatMessage[];
+  /**
+   * Skill domains sent with this message. Also replaces the selected domains
+   * in the chat UI so later turns in the session keep them.
+   */
+  domains?: string[];
+  /**
+   * Create a new anonymous session before sending. Defaults to true.
+   * When false, the message is sent to the active session. A session is still
+   * created when none is active.
+   */
+  newSession?: boolean;
+}
+
+export type CallAIArgument = API.SimpleChatMessage[] | CallAIOptions;
+
+/** Accept either a context-message array or a CallAIOptions object. */
+export function normalizeCallAIOptions(options?: CallAIArgument): CallAIOptions {
+  if (!options) {
+    return {};
+  }
+  if (Array.isArray(options)) {
+    return { messages: options };
+  }
+  return options;
+}
+
 // AI context type
 export interface AIContextType {
   layout: 'classic' | 'sidebar' | 'float-sidebar';
@@ -60,19 +98,16 @@ export interface AIContextType {
   visible: boolean;
   setVisible: (visible: boolean) => void;
   /**
-   * Open the AI chat and start a new anonymous conversation.
+   * Open the AI chat and send a user message.
    *
-   * @param message  The user message to send as the first turn.
-   * @param messages Optional context messages persisted with the session.
-   *   Use role `'prompt'` for page/context instructions: they are sent to the
-   *   model as leading user context but hidden from the chat history UI, and
-   *   naturally fade out via conversation summarization as the chat grows.
-   *   Role `'system'` is downgraded to `'prompt'` by the backend — session
-   *   messages never feed the model's system prompt. For prompts that must
-   *   apply to every request, use `registerPageAI({ ephemeralSystemPrompts })`.
+   * @param message The user message to send.
+   * @param options Context messages, or {@link CallAIOptions}.
+   *   A `SimpleChatMessage[]` starts a new anonymous session with that context.
+   *   `{ messages, domains, newSession }` can also set skill domains and reuse
+   *   the active session (`newSession` defaults to true).
    */
-  callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
-  onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
+  callAI: (message: string, options?: CallAIArgument) => void;
+  onCallAI: (callback: (message: string, options?: CallAIArgument) => void) => void;
   loaded: boolean;
   setLoaded: (loaded: boolean) => void;
   fetchConversations: () => Promise<API.AIChatSession[]>;
@@ -125,8 +160,8 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
   const [visible, setVisible] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [activeConversationKey, setActiveConversationKey] = useState<string | undefined>(undefined);
-  const [cacheMessages, setCacheMessages] = useState<[string, API.SimpleChatMessage[] | undefined]>();
-  const [onCallAI, setOnCallAI] = useState<((message: string, messages?: API.SimpleChatMessage[]) => void) | null>(null);
+  const [pendingCall, setPendingCall] = useState<{ message: string; options: CallAIOptions }>();
+  const [onCallAI, setOnCallAI] = useState<((message: string, options?: CallAIArgument) => void) | null>(null);
 
   // Page-level AI context
   const [ephemeralSystemPrompts, setEphemeralSystemPrompts] = useState<string[]>([]);
@@ -168,21 +203,22 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const callAI = useCallback((message: string, messages?: API.SimpleChatMessage[]) => {
+  const callAI = useCallback((message: string, options?: CallAIArgument) => {
+    const normalized = normalizeCallAIOptions(options);
     setVisible(true);
     if (onCallAI) {
-      onCallAI(message, messages);
+      onCallAI(message, normalized);
     } else {
-      setCacheMessages([message, messages]);
+      setPendingCall({ message, options: normalized });
     }
   }, [onCallAI, setVisible]);
 
   useEffect(() => {
-    if (onCallAI && cacheMessages) {
-      onCallAI(cacheMessages[0], cacheMessages[1]);
-      setCacheMessages(undefined);
+    if (onCallAI && pendingCall) {
+      onCallAI(pendingCall.message, pendingCall.options);
+      setPendingCall(undefined);
     }
-  }, [onCallAI, cacheMessages]);
+  }, [onCallAI, pendingCall]);
 
   const { loading: fetchConversationsLoading, runAsync: fetchConversations, data: conversations } = useRequest(async () => {
     const response = await api.ai.listChatSessions({ current: 1, page_size: 20, });
@@ -206,7 +242,7 @@ export const AIProvider: React.FC<AIProviderProps> = ({ children }) => {
           setVisible(visible);
         },
         callAI,
-        onCallAI: useCallback((callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => {
+        onCallAI: useCallback((callback: (message: string, options?: CallAIArgument) => void) => {
           setOnCallAI(() => callback);
         }, [setOnCallAI]),
         loaded,

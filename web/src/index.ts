@@ -55,7 +55,7 @@ export { useSite } from '@/contexts/SiteContext'
 export { useAuth } from '@/hooks/useAuth'
 export { usePermission } from '@/hooks/usePermission'
 export { useAI } from '@/contexts/AIContext'
-export type { PageAIOptions, RegisteredClientTool, ClientToolHandler, PageDataGetter } from '@/contexts/AIContext'
+export type { PageAIOptions, CallAIOptions, CallAIArgument, RegisteredClientTool, ClientToolHandler, PageDataGetter } from '@/contexts/AIContext'
 
 export {
   apiDelete,

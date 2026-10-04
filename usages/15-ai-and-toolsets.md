@@ -1761,7 +1761,7 @@ interface AIContextType {
   fetchConversations: () => Promise<API.AIChatSession[]>;
 
   // Programmatic AI invocation
-  callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
+  callAI: (message: string, options?: API.SimpleChatMessage[] | CallAIOptions) => void;
   onCallAI: (callback: ...) => void;
 
   // Page-level AI context
@@ -1772,6 +1772,16 @@ interface AIContextType {
 }
 ```
 
+```tsx
+interface CallAIOptions {
+  messages?: API.SimpleChatMessage[]; // persisted only when a session is created
+  domains?: string[];                 // sent with this turn and selected in the UI
+  newSession?: boolean;               // default true; false reuses the active session
+}
+```
+
+`messages` is stored only when `callAI` creates a session. With `newSession: false` and an active session, the message is appended to that session and `messages` is ignored. If no session is active, one is still created.
+
 **Usage in components:**
 
 ```tsx
@@ -1780,11 +1790,19 @@ import { useAI } from '@/contexts/AIContext';
 function MyComponent() {
   const { callAI, setVisible, registerPageAI } = useAI();
 
-  // Open AI chat with a prefilled message
+  // Open AI chat with a prefilled message and persisted context
   const askAI = () => {
     callAI('Analyze this data', [
-      { role: 'user', content: 'Here is my dataset...' },
+      { role: 'prompt', content: 'Here is my dataset...' },
     ]);
+  };
+
+  // Reuse the active session and select a skill domain for this turn
+  const askInDomain = () => {
+    callAI('Analyze this alert', {
+      domains: ['analytics'],
+      newSession: false,
+    });
   };
 
   return <Button onClick={askAI}>Ask AI</Button>;

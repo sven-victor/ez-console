@@ -188,19 +188,16 @@ declare interface AIContextType {
     visible: boolean;
     setVisible: (visible: boolean) => void;
     /**
-     * Open the AI chat and start a new anonymous conversation.
+     * Open the AI chat and send a user message.
      *
-     * @param message  The user message to send as the first turn.
-     * @param messages Optional context messages persisted with the session.
-     *   Use role `'prompt'` for page/context instructions: they are sent to the
-     *   model as leading user context but hidden from the chat history UI, and
-     *   naturally fade out via conversation summarization as the chat grows.
-     *   Role `'system'` is downgraded to `'prompt'` by the backend — session
-     *   messages never feed the model's system prompt. For prompts that must
-     *   apply to every request, use `registerPageAI({ ephemeralSystemPrompts })`.
+     * @param message The user message to send.
+     * @param options Context messages, or {@link CallAIOptions}.
+     *   A `SimpleChatMessage[]` starts a new anonymous session with that context.
+     *   `{ messages, domains, newSession }` can also set skill domains and reuse
+     *   the active session (`newSession` defaults to true).
      */
-    callAI: (message: string, messages?: API.SimpleChatMessage[]) => void;
-    onCallAI: (callback: (message: string, messages?: API.SimpleChatMessage[]) => void) => void;
+    callAI: (message: string, options?: CallAIArgument) => void;
+    onCallAI: (callback: (message: string, options?: CallAIArgument) => void) => void;
     loaded: boolean;
     setLoaded: (loaded: boolean) => void;
     fetchConversations: () => Promise<API.AIChatSession[]>;
@@ -2208,6 +2205,30 @@ export declare interface OrganizationUser {
     updated_at: string;
     username: string;
 }
+
+/** Options for a programmatic chat turn. */
+export declare interface CallAIOptions {
+    /**
+     * Context messages persisted when a session is created.
+     * Use role `'prompt'` for page/context instructions: they reach the model as
+     * leading user context but stay hidden from the chat history UI.
+     * Ignored when the message is appended to an existing session.
+     */
+    messages?: API.SimpleChatMessage[];
+    /**
+     * Skill domains sent with this message. Also replaces the selected domains
+     * in the chat UI so later turns in the session keep them.
+     */
+    domains?: string[];
+    /**
+     * Create a new anonymous session before sending. Defaults to true.
+     * When false, the message is sent to the active session. A session is still
+     * created when none is active.
+     */
+    newSession?: boolean;
+}
+
+export declare type CallAIArgument = API.SimpleChatMessage[] | CallAIOptions;
 
 export declare interface PageAIOptions {
     ephemeralSystemPrompts?: string[];
