@@ -175,7 +175,6 @@ type ChatCompletionOptions struct {
 	MaxIterations           int
 	MaxTokens               int
 	EnableAutoSummarization bool
-	FinalPrompt             string
 	ToolResultMaxSize       int    // Maximum size of tool result in bytes, default 32KB
 	ResponseJsonSchema      string // JSON Schema for expected response format
 
@@ -240,12 +239,6 @@ func WithChatMaxTokens(maxTokens int) WithChatOptions {
 func WithChatAutoSummarization(enabled bool) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.EnableAutoSummarization = enabled
-	}
-}
-
-func WithChatFinalPrompt(finalPrompt string) WithChatOptions {
-	return func(options *ChatCompletionOptions) {
-		options.FinalPrompt = finalPrompt
 	}
 }
 

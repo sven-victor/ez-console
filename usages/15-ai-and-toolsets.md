@@ -1416,7 +1416,6 @@ The `WithChatOptions` functional options control `Exchange` / `ExchangeStream` (
 | `WithChatMaxIterations(n)` | Max agent turns / tool-loop iterations | **10** |
 | `WithChatMaxTokens(n)` | Context / summarization token budget | 0 |
 | `WithChatAutoSummarization(bool)` | Enable ez-agent Summarize (+ Segmented) policy | false (chat API sets **true**) |
-| `WithChatFinalPrompt(prompt)` | Final user prompt after tool rounds | none |
 | `WithChatToolResultMaxSize(bytes)` | Offload / cap large messages; tool-result summarization | 32KB |
 | `WithChatResponseJsonSchema(schema)` | Structured output schema for the agent | none |
 | `WithChatClientTools(tools)` | Browser `ui_*` tool definitions | none |
