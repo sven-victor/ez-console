@@ -1,7 +1,7 @@
-import { r as u } from "./client.js";
 import f from "i18next";
 import { initReactI18next as v } from "react-i18next";
 import k from "i18next-browser-languagedetector";
+import { r as u } from "./client.js";
 import { load as b } from "js-yaml";
 const Re = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = e instanceof Date ? e : new Date(e), r = a.getFullYear(), n = String(a.getMonth() + 1).padStart(2, "0"), s = String(a.getDate()).padStart(2, "0"), o = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
@@ -41,7 +41,7 @@ const Re = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, Ee = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Ce = (e) => {
+}, Ce = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Ee = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((a, r) => r !== 0 && t.includes(a) ? a : a.charAt(0).toUpperCase() + a.slice(1)).join(" ");
 }, Fe = (e, t, a) => {
@@ -66,65 +66,7 @@ function _e(e) {
     return { parsed: null, isJSON: !1 };
   }
 }
-async function A(e, t) {
-  return u("/api/files", {
-    method: "GET",
-    params: {
-      ...e
-    },
-    ...t || {}
-  });
-}
-async function y(e, t, a) {
-  const r = new FormData();
-  return t && r.append("file", t), Object.keys(e).forEach((n) => {
-    const s = e[n];
-    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((o) => r.append(n, o || "")) : r.append(
-      n,
-      new Blob([JSON.stringify(s)], { type: "application/json" })
-    ) : r.append(n, s));
-  }), u("/api/files", {
-    method: "POST",
-    data: r,
-    requestType: "form",
-    ...a || {}
-  });
-}
-async function S(e, t) {
-  const { fileKey: a, ...r } = e;
-  return u(`/api/files/${a}`, {
-    method: "GET",
-    params: { ...r },
-    ...t || {}
-  });
-}
-async function T(e) {
-  return u("/api/statistics", {
-    method: "GET",
-    ...e || {}
-  });
-}
-const Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
-  __proto__: null,
-  downloadFile: S,
-  getStatistics: T,
-  listFiles: A,
-  uploadFile: y
-}, Symbol.toStringTag, { value: "Module" }));
-function g(e) {
-  const t = e.payload;
-  return t && typeof t == "object" && !Array.isArray(t) ? t : {};
-}
-function Le(e, t) {
-  return e(`types.${t.type}`, { defaultValue: t.type, ...g(t) });
-}
-function Me(e, t) {
-  return e(`typeDescriptions.${t.type}`, { defaultValue: "", ...g(t) });
-}
-function Ue(e) {
-  return !e.read_at;
-}
-const w = {
+const A = {
   login: {
     subtitle: "登录您的账户",
     username: "用户名",
@@ -271,7 +213,7 @@ const w = {
     confirm: "确认",
     cancel: "取消"
   }
-}, P = {
+}, y = {
   login: {
     subtitle: "Sign in to your account",
     username: "Username",
@@ -414,7 +356,7 @@ const w = {
     confirm: "Confirm",
     cancel: "Cancel"
   }
-}, R = {
+}, S = {
   loading: "Loading...",
   success: "Operation successful",
   error: "Operation failed",
@@ -477,6 +419,10 @@ const w = {
   pagination: {
     total: "{{start}}-{{end}} of {{total}} items"
   },
+  errors: {
+    rateLimit: "Rate limit exceeded",
+    quotaExceeded: "Quota exceeded"
+  },
   language: {
     default: "Default language",
     "en-US": "English",
@@ -487,7 +433,7 @@ const w = {
     "fr-FR": "French",
     "zh-CN": "Chinese"
   }
-}, D = {
+}, T = {
   user: {
     management: "User Management",
     create: "Create User",
@@ -802,6 +748,9 @@ const w = {
       "system.security.view": "View security settings",
       "system.settings.update": "Update settings",
       "system.settings.view": "View settings",
+      Rate_Limit: "Rate Limit",
+      "system.rate_limit.view": "View rate limit settings",
+      "system.rate_limit.update": "Update rate limit settings",
       "system.view": "View system information",
       "system.audit_log.view": "View audit logs",
       AI_Model_Management: "AI Model Management",
@@ -878,6 +827,12 @@ const w = {
       },
       settings: {
         update: "Update settings"
+      },
+      rate_limit: {
+        update: "Update rate limit",
+        create: "Create rate limit rule",
+        delete: "Delete rate limit rule",
+        reset: "Reset rate limit counters"
       },
       organization: {
         update: "Update organization",
@@ -1051,8 +1006,27 @@ const w = {
       accessKeys: "Access Keys Management",
       policy: "Policy Management"
     }
+  },
+  rateLimit: {
+    title: "Rate Limit",
+    rate: "Rate",
+    period: "Period",
+    periodHint: "Examples: 1s, 1m, 1h",
+    burst: "Burst",
+    quota: "Daily quota (0 = none)",
+    quotaPeriod: "Quota period",
+    enabled: "Enabled",
+    inherited: "Using the type default. Save to create a subject-specific override.",
+    sourceHint: "Values shown are inherited.",
+    saveSuccess: "Rate limit override saved",
+    saveFailed: "Failed to save override",
+    resetSuccess: "Override cleared; type default restored",
+    resetToDefault: "Reset to default",
+    resetCounters: "Reset counters",
+    resetCountersConfirm: "Reset rate-limit and quota counters for this subject? They will be able to send requests immediately.",
+    resetCountersSuccess: "Counters reset"
   }
-}, z = {
+}, w = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1066,7 +1040,41 @@ const w = {
       skills: "Skills",
       aiModels: "AI Models Settings",
       organizations: "Organization Management",
-      task: "Task Settings"
+      task: "Task Settings",
+      rateLimit: "Rate Limit"
+    },
+    rateLimit: {
+      enabled: "Enable rate limiting",
+      storeLabel: "Store",
+      failOpen: "Fail open",
+      defaults: "Default shared buckets",
+      anonymous: "Anonymous (IP)",
+      user: "User",
+      serviceAccount: "Service account",
+      routeRules: "Route rules",
+      createRule: "Create rule",
+      editRule: "Edit rule",
+      deleteConfirm: "Delete this rule?",
+      subjectType: "Subject",
+      subjectId: "Subject ID",
+      subjectIdHint: "Empty = all subjects of this type",
+      method: "Method",
+      path: "Path",
+      pathHint: "Gin full path, e.g. /api/ai/chat/sessions/:sessionId. Empty = shared bucket.",
+      rate: "Rate",
+      period: "Period",
+      burst: "Burst",
+      quota: "Quota",
+      quotaPeriod: "Quota period",
+      memoryWarn: "Cluster mode with in-memory store: limits are per node. Use rate_limit.store=redis for cluster-wide limits.",
+      resetAll: "Reset all counters",
+      resetAllConfirm: "Reset every rate-limit and quota counter? Currently blocked clients will be allowed immediately.",
+      resetSubject: "Reset counters",
+      resetSubjectConfirm: "Reset shared-bucket counters for this subject type?",
+      resetRule: "Reset counters",
+      resetRuleConfirm: "Reset counters for this rule?",
+      resetSuccess: "Counters reset",
+      resetFailed: "Failed to reset counters"
     },
     task: {
       maxConcurrent: "Max concurrent tasks",
@@ -1677,7 +1685,7 @@ const w = {
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, E = {
+}, P = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1803,7 +1811,7 @@ const w = {
     skillsSelected: "{{count}} selected",
     skillDomain: "Skill domain"
   }
-}, C = {
+}, R = {
   listTitle: "Task List",
   detailTitle: "Task Detail",
   typeLabel: "Type",
@@ -1877,7 +1885,7 @@ const w = {
     password_expiry_notification_task: "Scan users hourly and send password expiry reminders once per password cycle",
     inbox_cleanup_task: "Delete expired in-app messages and enforce the per-user cap"
   }
-}, F = {
+}, D = {
   title: "Inbox",
   bell: "Notifications",
   empty: "No messages",
@@ -1901,7 +1909,7 @@ const w = {
     login_failure_lock: "Your account was locked after too many failed sign-in attempts.",
     mfa_disabled: "Multi-factor authentication was disabled on your account."
   }
-}, _ = {
+}, z = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -2043,7 +2051,7 @@ const w = {
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, I = {
+}, C = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -2185,7 +2193,7 @@ const w = {
     confirm: "Confirmar",
     cancel: "Cancelar"
   }
-}, L = {
+}, E = {
   login: {
     subtitle: "Connectez-vous à votre compte",
     username: "Nom d'utilisateur",
@@ -2327,7 +2335,7 @@ const w = {
     confirm: "Confirmer",
     cancel: "Annuler"
   }
-}, M = {
+}, F = {
   login: {
     subtitle: "تسجيل الدخول إلى حسابك",
     username: "اسم المستخدم",
@@ -2469,7 +2477,7 @@ const w = {
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, U = {
+}, _ = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2611,7 +2619,7 @@ const w = {
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, q = {
+}, L = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2680,6 +2688,10 @@ const w = {
   pagination: {
     total: "第 {{start}}-{{end}} 条，共 {{total}} 条"
   },
+  errors: {
+    rateLimit: "请求过于频繁",
+    quotaExceeded: "已超出配额"
+  },
   language: {
     default: "默认语言",
     "en-US": "英语",
@@ -2690,7 +2702,7 @@ const w = {
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, N = {
+}, I = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -3008,6 +3020,9 @@ const w = {
       "system.security.view": "查看安全设置",
       "system.settings.update": "更新设置",
       "system.settings.view": "查看设置",
+      Rate_Limit: "接口限流",
+      "system.rate_limit.view": "查看限流设置",
+      "system.rate_limit.update": "更新限流设置",
       "system.view": "查看系统信息",
       "system.audit_log.view": "查看审计日志",
       "file.list": "查看文件列表",
@@ -3100,6 +3115,12 @@ const w = {
       },
       settings: {
         update: "更新系统设置"
+      },
+      rate_limit: {
+        update: "更新限流设置",
+        create: "创建限流规则",
+        delete: "删除限流规则",
+        reset: "重置限流计数器"
       },
       organization: {
         update: "更新组织",
@@ -3275,8 +3296,27 @@ const w = {
       accessKeys: "访问密钥",
       policy: "策略管理"
     }
+  },
+  rateLimit: {
+    title: "接口限流",
+    rate: "速率",
+    period: "周期",
+    periodHint: "例如：1s、1m、1h",
+    burst: "突发",
+    quota: "日配额（0 表示无）",
+    quotaPeriod: "配额周期",
+    enabled: "启用",
+    inherited: "当前使用类型默认值。保存后将创建该主体的覆盖规则。",
+    sourceHint: "显示的值为继承的默认值。",
+    saveSuccess: "限流覆盖已保存",
+    saveFailed: "保存覆盖失败",
+    resetSuccess: "已清除覆盖，恢复为类型默认值",
+    resetToDefault: "恢复默认",
+    resetCounters: "重置计数器",
+    resetCountersConfirm: "重置该主体的限流与配额计数器？被拦截的请求将立即恢复。",
+    resetCountersSuccess: "计数器已重置"
   }
-}, x = {
+}, M = {
   title: "系统管理",
   settings: {
     title: "系统设置",
@@ -3290,7 +3330,41 @@ const w = {
       skills: "技能",
       aiModels: "AI模型设置",
       organizations: "组织管理",
-      task: "任务设置"
+      task: "任务设置",
+      rateLimit: "接口限流"
+    },
+    rateLimit: {
+      enabled: "启用接口限流",
+      storeLabel: "存储",
+      failOpen: "故障放行",
+      defaults: "默认共享配额",
+      anonymous: "匿名（IP）",
+      user: "用户",
+      serviceAccount: "服务账户",
+      routeRules: "路由规则",
+      createRule: "创建规则",
+      editRule: "编辑规则",
+      deleteConfirm: "确定删除该规则？",
+      subjectType: "主体类型",
+      subjectId: "主体 ID",
+      subjectIdHint: "留空表示该类型下所有主体",
+      method: "方法",
+      path: "路径",
+      pathHint: "Gin 完整路径，例如 /api/ai/chat/sessions/:sessionId。留空表示共享桶。",
+      rate: "速率",
+      period: "周期",
+      burst: "突发",
+      quota: "配额",
+      quotaPeriod: "配额周期",
+      memoryWarn: "集群模式使用内存存储时，限额按节点独立计算。请将 rate_limit.store 设为 redis 以实现集群级限额。",
+      resetAll: "重置全部计数器",
+      resetAllConfirm: "将重置所有限流与配额计数器。当前被拦截的请求会立即恢复放行。",
+      resetSubject: "重置计数器",
+      resetSubjectConfirm: "重置该主体类型的共享桶计数器？",
+      resetRule: "重置计数器",
+      resetRuleConfirm: "重置该规则的计数器？",
+      resetSuccess: "计数器已重置",
+      resetFailed: "重置计数器失败"
     },
     task: {
       maxConcurrent: "最大并发任务数",
@@ -3903,7 +3977,7 @@ const w = {
     settings: "系统设置",
     audit: "审计日志"
   }
-}, O = {
+}, q = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -4029,7 +4103,7 @@ const w = {
     skillsSelected: "已选 {{count}} 个",
     skillDomain: "技能域"
   }
-}, B = {
+}, U = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -4103,7 +4177,7 @@ const w = {
     password_expiry_notification_task: "每小时扫描用户，并在每个密码周期内发送一次密码到期提醒",
     inbox_cleanup_task: "删除过期站内信并限制每位用户的消息数量"
   }
-}, V = {
+}, N = {
   title: "站内信",
   bell: "通知",
   empty: "暂无消息",
@@ -4127,7 +4201,7 @@ const w = {
     login_failure_lock: "由于登录失败次数过多，您的账号已被锁定。",
     mfa_disabled: "您账号的多因素认证已被关闭。"
   }
-}, K = {
+}, x = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -4189,6 +4263,10 @@ const w = {
   pagination: {
     total: "{{start}}-{{end}} von {{total}} Einträgen"
   },
+  errors: {
+    rateLimit: "Ratenlimit überschritten",
+    quotaExceeded: "Kontingent überschritten"
+  },
   language: {
     default: "Standardsprache",
     "en-US": "Englisch",
@@ -4199,7 +4277,7 @@ const w = {
     "fr-FR": "Französisch",
     "zh-CN": "Chinesisch"
   }
-}, j = {
+}, O = {
   user: {
     management: "Benutzerverwaltung",
     create: "Benutzer erstellen",
@@ -4515,6 +4593,9 @@ const w = {
       "system.security.view": "Sicherheitseinstellungen anzeigen",
       "system.settings.update": "Einstellungen aktualisieren",
       "system.settings.view": "Einstellungen anzeigen",
+      Rate_Limit: "Ratenbegrenzung",
+      "system.rate_limit.view": "Ratenbegrenzung anzeigen",
+      "system.rate_limit.update": "Ratenbegrenzung aktualisieren",
       "system.view": "Systeminformationen anzeigen",
       "system.audit_log.view": "Prüfprotokolle anzeigen",
       "file.list": "Dateilisten anzeigen",
@@ -4607,6 +4688,12 @@ const w = {
       },
       settings: {
         update: "Einstellungen aktualisieren"
+      },
+      rate_limit: {
+        update: "Ratenbegrenzung aktualisieren",
+        create: "Ratenregel erstellen",
+        delete: "Ratenregel löschen",
+        reset: "Ratenbegrenzer zurücksetzen"
       },
       organization: {
         update: "Organisation aktualisieren",
@@ -4778,8 +4865,27 @@ const w = {
       accessKeys: "Zugriffsschlüsselverwaltung",
       policy: "Richtlinienverwaltung"
     }
+  },
+  rateLimit: {
+    title: "Ratenbegrenzung",
+    rate: "Rate",
+    period: "Zeitraum",
+    periodHint: "Beispiele: 1s, 1m, 1h",
+    burst: "Burst",
+    quota: "Tageskontingent (0 = keines)",
+    quotaPeriod: "Kontingentzeitraum",
+    enabled: "Aktiviert",
+    inherited: "Es gilt der Typstandard. Speichern, um eine subjektspezifische Überschreibung zu erstellen.",
+    sourceHint: "Angezeigte Werte sind geerbt.",
+    saveSuccess: "Ratenbegrenzungs-Überschreibung gespeichert",
+    saveFailed: "Überschreibung konnte nicht gespeichert werden",
+    resetSuccess: "Überschreibung gelöscht; Typstandard wiederhergestellt",
+    resetToDefault: "Auf Standard zurücksetzen",
+    resetCounters: "Zähler zurücksetzen",
+    resetCountersConfirm: "Raten- und Kontingentzähler für dieses Subjekt zurücksetzen? Anfragen werden sofort wieder zugelassen.",
+    resetCountersSuccess: "Zähler zurückgesetzt"
   }
-}, G = {
+}, B = {
   title: "Systemverwaltung",
   settings: {
     title: "Systemeinstellungen",
@@ -4793,7 +4899,41 @@ const w = {
       skills: "Fähigkeiten",
       aiModels: "AI Models Einstellungen",
       organizations: "Organisationsverwaltung",
-      task: "Aufgabeneinstellungen"
+      task: "Aufgabeneinstellungen",
+      rateLimit: "Ratenbegrenzung"
+    },
+    rateLimit: {
+      enabled: "Ratenbegrenzung aktivieren",
+      storeLabel: "Speicher",
+      failOpen: "Bei Fehler durchlassen",
+      defaults: "Standard-Gemeinschaftskontingente",
+      anonymous: "Anonym (IP)",
+      user: "Benutzer",
+      serviceAccount: "Dienstkonto",
+      routeRules: "Routenregeln",
+      createRule: "Regel erstellen",
+      editRule: "Regel bearbeiten",
+      deleteConfirm: "Diese Regel löschen?",
+      subjectType: "Subjekt",
+      subjectId: "Subjekt-ID",
+      subjectIdHint: "Leer = alle Subjekte dieses Typs",
+      method: "Methode",
+      path: "Pfad",
+      pathHint: "Gin-Vollpfad, z. B. /api/ai/chat/sessions/:sessionId. Leer = gemeinsamer Bucket.",
+      rate: "Rate",
+      period: "Zeitraum",
+      burst: "Burst",
+      quota: "Kontingent",
+      quotaPeriod: "Kontingentzeitraum",
+      memoryWarn: "Cluster-Modus mit In-Memory-Store: Limits gelten pro Knoten. Verwenden Sie rate_limit.store=redis für clusterweite Limits.",
+      resetAll: "Alle Zähler zurücksetzen",
+      resetAllConfirm: "Alle Raten- und Kontingentzähler zurücksetzen? Derzeit blockierte Clients werden sofort zugelassen.",
+      resetSubject: "Zähler zurücksetzen",
+      resetSubjectConfirm: "Gemeinsame Bucket-Zähler für diesen Subjekttyp zurücksetzen?",
+      resetRule: "Zähler zurücksetzen",
+      resetRuleConfirm: "Zähler für diese Regel zurücksetzen?",
+      resetSuccess: "Zähler zurückgesetzt",
+      resetFailed: "Zähler konnten nicht zurückgesetzt werden"
     },
     task: {
       maxConcurrent: "Max. gleichzeitige Aufgaben",
@@ -5402,7 +5542,7 @@ const w = {
     settings: "Systemeinstellungen",
     audit: "Prüfprotokolle"
   }
-}, H = {
+}, V = {
   models: {
     name: "Name",
     provider: "Anbieter",
@@ -5528,7 +5668,7 @@ const w = {
     skillsSelected: "{{count}} ausgewählt",
     skillDomain: "Fähigkeitsbereich"
   }
-}, W = {
+}, j = {
   listTitle: "Aufgabenliste",
   detailTitle: "Aufgabendetails",
   typeLabel: "Typ",
@@ -5602,7 +5742,7 @@ const w = {
     password_expiry_notification_task: "Benutzer stündlich prüfen und Erinnerungen zum Passwortablauf einmal pro Passwortzyklus senden",
     inbox_cleanup_task: "Abgelaufene In-App-Nachrichten löschen und die Obergrenze pro Benutzer durchsetzen"
   }
-}, J = {
+}, K = {
   title: "Posteingang",
   bell: "Benachrichtigungen",
   empty: "Keine Nachrichten",
@@ -5626,7 +5766,7 @@ const w = {
     login_failure_lock: "Ihr Konto wurde nach zu vielen fehlgeschlagenen Anmeldeversuchen gesperrt.",
     mfa_disabled: "Die Multi-Faktor-Authentifizierung wurde für Ihr Konto deaktiviert."
   }
-}, Z = {
+}, G = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -5688,6 +5828,10 @@ const w = {
   pagination: {
     total: "{{start}}-{{end}} de {{total}} elementos"
   },
+  errors: {
+    rateLimit: "Se superó el límite de tasa",
+    quotaExceeded: "Se superó la cuota"
+  },
   language: {
     default: "Idioma por defecto",
     "en-US": "Inglés",
@@ -5698,7 +5842,7 @@ const w = {
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, Y = {
+}, H = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -6014,6 +6158,9 @@ const w = {
       "system.security.view": "Ver ajustes de seguridad",
       "system.settings.update": "Actualizar ajustes",
       "system.settings.view": "Ver ajustes",
+      Rate_Limit: "Límite de tasa",
+      "system.rate_limit.view": "Ver límites de tasa",
+      "system.rate_limit.update": "Actualizar límites de tasa",
       "system.view": "Ver información del sistema",
       "system.audit_log.view": "Ver registros de auditoría",
       "file.list": "Ver lista de archivos",
@@ -6106,6 +6253,12 @@ const w = {
       },
       settings: {
         update: "Actualizar configuración"
+      },
+      rate_limit: {
+        update: "Actualizar límite de tasa",
+        create: "Crear regla de límite",
+        delete: "Eliminar regla de límite",
+        reset: "Restablecer contadores de límite"
       },
       organization: {
         update: "Actualizar organización",
@@ -6277,8 +6430,27 @@ const w = {
       accessKeys: "Gestión de claves de acceso",
       policy: "Gestión de políticas"
     }
+  },
+  rateLimit: {
+    title: "Límite de tasa",
+    rate: "Tasa",
+    period: "Periodo",
+    periodHint: "Ejemplos: 1s, 1m, 1h",
+    burst: "Ráfaga",
+    quota: "Cuota diaria (0 = ninguna)",
+    quotaPeriod: "Periodo de cuota",
+    enabled: "Activado",
+    inherited: "Se usa el valor predeterminado del tipo. Guarde para crear una anulación específica.",
+    sourceHint: "Los valores mostrados se heredan.",
+    saveSuccess: "Anulación de límite guardada",
+    saveFailed: "Error al guardar la anulación",
+    resetSuccess: "Anulación eliminada; se restauró el valor predeterminado",
+    resetToDefault: "Restablecer predeterminado",
+    resetCounters: "Restablecer contadores",
+    resetCountersConfirm: "¿Restablecer los contadores de tasa y cuota de este sujeto? Podrá enviar solicitudes de inmediato.",
+    resetCountersSuccess: "Contadores restablecidos"
   }
-}, Q = {
+}, W = {
   title: "Gestión del sistema",
   settings: {
     title: "Ajustes del sistema",
@@ -6292,7 +6464,41 @@ const w = {
       skills: "Habilidades",
       aiModels: "Ajustes de modelos AI",
       organizations: "Gestión de organizaciones",
-      task: "Ajustes de tareas"
+      task: "Ajustes de tareas",
+      rateLimit: "Límite de tasa"
+    },
+    rateLimit: {
+      enabled: "Activar limitación de tasa",
+      storeLabel: "Almacén",
+      failOpen: "Permitir si falla",
+      defaults: "Cubos compartidos predeterminados",
+      anonymous: "Anónimo (IP)",
+      user: "Usuario",
+      serviceAccount: "Cuenta de servicio",
+      routeRules: "Reglas de ruta",
+      createRule: "Crear regla",
+      editRule: "Editar regla",
+      deleteConfirm: "¿Eliminar esta regla?",
+      subjectType: "Sujeto",
+      subjectId: "ID del sujeto",
+      subjectIdHint: "Vacío = todos los sujetos de este tipo",
+      method: "Método",
+      path: "Ruta",
+      pathHint: "Ruta completa de Gin, p. ej. /api/ai/chat/sessions/:sessionId. Vacío = cubo compartido.",
+      rate: "Tasa",
+      period: "Periodo",
+      burst: "Ráfaga",
+      quota: "Cuota",
+      quotaPeriod: "Periodo de cuota",
+      memoryWarn: "Modo clúster con almacén en memoria: los límites son por nodo. Use rate_limit.store=redis para límites de todo el clúster.",
+      resetAll: "Restablecer todos los contadores",
+      resetAllConfirm: "¿Restablecer todos los contadores de tasa y cuota? Los clientes bloqueados podrán enviar solicitudes de inmediato.",
+      resetSubject: "Restablecer contadores",
+      resetSubjectConfirm: "¿Restablecer los contadores del cubo compartido para este tipo de sujeto?",
+      resetRule: "Restablecer contadores",
+      resetRuleConfirm: "¿Restablecer los contadores de esta regla?",
+      resetSuccess: "Contadores restablecidos",
+      resetFailed: "Error al restablecer los contadores"
     },
     task: {
       maxConcurrent: "Tareas simultáneas máximas",
@@ -6901,7 +7107,7 @@ const w = {
     settings: "Ajustes del sistema",
     audit: "Registros de auditoría"
   }
-}, $ = {
+}, Z = {
   models: {
     name: "Nombre",
     provider: "Proveedor",
@@ -7027,7 +7233,7 @@ const w = {
     skillsSelected: "{{count}} seleccionado(s)",
     skillDomain: "Dominio de habilidad"
   }
-}, X = {
+}, J = {
   listTitle: "Lista de tareas",
   detailTitle: "Detalle de tarea",
   typeLabel: "Tipo",
@@ -7101,7 +7307,7 @@ const w = {
     password_expiry_notification_task: "Escanear usuarios cada hora y enviar recordatorios de vencimiento de contraseña una vez por ciclo de contraseña",
     inbox_cleanup_task: "Eliminar mensajes internos caducados y aplicar el límite por usuario"
   }
-}, ee = {
+}, Q = {
   title: "Bandeja de entrada",
   bell: "Notificaciones",
   empty: "No hay mensajes",
@@ -7125,7 +7331,7 @@ const w = {
     login_failure_lock: "Su cuenta se bloqueó tras demasiados intentos de inicio de sesión fallidos.",
     mfa_disabled: "La autenticación multifactor se desactivó en su cuenta."
   }
-}, te = {
+}, Y = {
   loading: "Chargement...",
   success: "Opération réussie",
   error: "Opération échouée",
@@ -7187,6 +7393,10 @@ const w = {
   pagination: {
     total: "{{start}}-{{end}} sur {{total}} éléments"
   },
+  errors: {
+    rateLimit: "Limite de débit dépassée",
+    quotaExceeded: "Quota dépassé"
+  },
   language: {
     default: "Langue par défaut",
     "en-US": "Anglais",
@@ -7197,7 +7407,7 @@ const w = {
     "fr-FR": "Français",
     "zh-CN": "Chinois"
   }
-}, ae = {
+}, $ = {
   user: {
     management: "Gestion des utilisateurs",
     create: "Créer un utilisateur",
@@ -7513,6 +7723,9 @@ const w = {
       "system.security.view": "Afficher les paramètres de sécurité",
       "system.settings.update": "Mettre à jour les paramètres",
       "system.settings.view": "Afficher les paramètres",
+      Rate_Limit: "Limitation de débit",
+      "system.rate_limit.view": "Afficher la limitation de débit",
+      "system.rate_limit.update": "Mettre à jour la limitation de débit",
       "system.view": "Afficher les informations système",
       "system.audit_log.view": "Afficher les journaux d'audit",
       "file.list": "Afficher la liste des fichiers",
@@ -7605,6 +7818,12 @@ const w = {
       },
       settings: {
         update: "Mettre à jour les paramètres"
+      },
+      rate_limit: {
+        update: "Mettre à jour la limitation de débit",
+        create: "Créer une règle de limitation",
+        delete: "Supprimer une règle de limitation",
+        reset: "Réinitialiser les compteurs de limitation"
       },
       organization: {
         update: "Mettre à jour l'organisation",
@@ -7776,8 +7995,27 @@ const w = {
       accessKeys: "Gestion des clés d'accès",
       policy: "Gestion des politiques"
     }
+  },
+  rateLimit: {
+    title: "Limitation de débit",
+    rate: "Débit",
+    period: "Période",
+    periodHint: "Exemples : 1s, 1m, 1h",
+    burst: "Rafale",
+    quota: "Quota quotidien (0 = aucun)",
+    quotaPeriod: "Période de quota",
+    enabled: "Activé",
+    inherited: "Utilise la valeur par défaut du type. Enregistrez pour créer une surcharge spécifique.",
+    sourceHint: "Les valeurs affichées sont héritées.",
+    saveSuccess: "Surcharge de limitation enregistrée",
+    saveFailed: "Échec de l’enregistrement de la surcharge",
+    resetSuccess: "Surcharge effacée ; valeur par défaut du type restaurée",
+    resetToDefault: "Réinitialiser par défaut",
+    resetCounters: "Réinitialiser les compteurs",
+    resetCountersConfirm: "Réinitialiser les compteurs de débit et de quota de ce sujet ? Les requêtes seront à nouveau autorisées immédiatement.",
+    resetCountersSuccess: "Compteurs réinitialisés"
   }
-}, ie = {
+}, X = {
   title: "Gestion du système",
   settings: {
     title: "Paramètres système",
@@ -7791,7 +8029,41 @@ const w = {
       skills: "Compétences",
       aiModels: "Paramètres de modèles AI",
       organizations: "Gestion des organisations",
-      task: "Paramètres des tâches"
+      task: "Paramètres des tâches",
+      rateLimit: "Limitation de débit"
+    },
+    rateLimit: {
+      enabled: "Activer la limitation de débit",
+      storeLabel: "Stockage",
+      failOpen: "Laisser passer en cas d’échec",
+      defaults: "Seaux partagés par défaut",
+      anonymous: "Anonyme (IP)",
+      user: "Utilisateur",
+      serviceAccount: "Compte de service",
+      routeRules: "Règles de route",
+      createRule: "Créer une règle",
+      editRule: "Modifier la règle",
+      deleteConfirm: "Supprimer cette règle ?",
+      subjectType: "Sujet",
+      subjectId: "ID du sujet",
+      subjectIdHint: "Vide = tous les sujets de ce type",
+      method: "Méthode",
+      path: "Chemin",
+      pathHint: "Chemin Gin complet, ex. /api/ai/chat/sessions/:sessionId. Vide = seau partagé.",
+      rate: "Débit",
+      period: "Période",
+      burst: "Rafale",
+      quota: "Quota",
+      quotaPeriod: "Période de quota",
+      memoryWarn: "Mode cluster avec stockage mémoire : les limites sont par nœud. Utilisez rate_limit.store=redis pour des limites à l’échelle du cluster.",
+      resetAll: "Réinitialiser tous les compteurs",
+      resetAllConfirm: "Réinitialiser tous les compteurs de débit et de quota ? Les clients actuellement bloqués seront autorisés immédiatement.",
+      resetSubject: "Réinitialiser les compteurs",
+      resetSubjectConfirm: "Réinitialiser les compteurs du seau partagé pour ce type de sujet ?",
+      resetRule: "Réinitialiser les compteurs",
+      resetRuleConfirm: "Réinitialiser les compteurs de cette règle ?",
+      resetSuccess: "Compteurs réinitialisés",
+      resetFailed: "Échec de la réinitialisation des compteurs"
     },
     task: {
       maxConcurrent: "Tâches simultanées max.",
@@ -8400,7 +8672,7 @@ const w = {
     settings: "Paramètres système",
     audit: "Journaux d'audit"
   }
-}, re = {
+}, ee = {
   models: {
     name: "Nom",
     provider: "Fournisseur",
@@ -8526,7 +8798,7 @@ const w = {
     skillsSelected: "{{count}} sélectionné(s)",
     skillDomain: "Domaine de compétence"
   }
-}, se = {
+}, te = {
   listTitle: "Liste des tâches",
   detailTitle: "Détail de la tâche",
   typeLabel: "Type",
@@ -8600,7 +8872,7 @@ const w = {
     password_expiry_notification_task: "Analyser les utilisateurs toutes les heures et envoyer des rappels d'expiration du mot de passe une fois par cycle de mot de passe",
     inbox_cleanup_task: "Supprimer les messages internes expirés et appliquer le plafond par utilisateur"
   }
-}, oe = {
+}, ae = {
   title: "Boîte de réception",
   bell: "Notifications",
   empty: "Aucun message",
@@ -8624,7 +8896,7 @@ const w = {
     login_failure_lock: "Votre compte a été verrouillé après trop de tentatives de connexion échouées.",
     mfa_disabled: "L'authentification multifacteur a été désactivée sur votre compte."
   }
-}, ne = {
+}, ie = {
   loading: "جار التحميل...",
   success: "نجحت العملية",
   error: "فشلت العملية",
@@ -8686,6 +8958,10 @@ const w = {
   pagination: {
     total: "{{start}}-{{end}} من {{total}} عناصر"
   },
+  errors: {
+    rateLimit: "تم تجاوز حد المعدل",
+    quotaExceeded: "تم تجاوز الحصة"
+  },
   language: {
     default: "اللغة الأساسية",
     "en-US": "اللغة الإنجليزية",
@@ -8696,7 +8972,7 @@ const w = {
     "fr-FR": "اللغة الفرنسية",
     "zh-CN": "اللغة الصينية"
   }
-}, le = {
+}, re = {
   user: {
     management: "إدارة المستخدمين",
     create: "إنشاء مستخدم",
@@ -9012,6 +9288,9 @@ const w = {
       "system.security.view": "عرض إعدادات الأمان",
       "system.settings.update": "تحديث الإعدادات",
       "system.settings.view": "عرض الإعدادات",
+      Rate_Limit: "تحديد المعدل",
+      "system.rate_limit.view": "عرض إعدادات تحديد المعدل",
+      "system.rate_limit.update": "تحديث إعدادات تحديد المعدل",
       "system.view": "عرض معلومات النظام",
       "system.audit_log.view": "عرض سجلات التدقيق",
       "file.list": "عرض قائمة الملفات",
@@ -9104,6 +9383,12 @@ const w = {
       },
       settings: {
         update: "تحديث الإعدادات"
+      },
+      rate_limit: {
+        update: "تحديث تحديد المعدل",
+        create: "إنشاء قاعدة تحديد المعدل",
+        delete: "حذف قاعدة تحديد المعدل",
+        reset: "إعادة تعيين عدادات تحديد المعدل"
       },
       organization: {
         update: "تحديث المنظمة",
@@ -9275,8 +9560,27 @@ const w = {
       accessKeys: "إدارة مفاتيح الوصول",
       policy: "إدارة السياسات"
     }
+  },
+  rateLimit: {
+    title: "تحديد المعدل",
+    rate: "المعدل",
+    period: "الفترة",
+    periodHint: "أمثلة: 1s، 1m، 1h",
+    burst: "الاندفاع",
+    quota: "الحصة اليومية (0 = بدون)",
+    quotaPeriod: "فترة الحصة",
+    enabled: "مفعّل",
+    inherited: "يتم استخدام الافتراضي للنوع. احفظ لإنشاء تجاوز خاص بالموضوع.",
+    sourceHint: "القيم المعروضة موروثة.",
+    saveSuccess: "تم حفظ تجاوز تحديد المعدل",
+    saveFailed: "فشل حفظ التجاوز",
+    resetSuccess: "تم مسح التجاوز واستعادة الافتراضي",
+    resetToDefault: "إعادة التعيين للافتراضي",
+    resetCounters: "إعادة تعيين العدادات",
+    resetCountersConfirm: "إعادة تعيين عدادات المعدل والحصة لهذا الموضوع؟ سيُسمح بالطلبات فورًا.",
+    resetCountersSuccess: "تم إعادة تعيين العدادات"
   }
-}, de = {
+}, se = {
   title: "إدارة النظام",
   settings: {
     title: "إعدادات النظام",
@@ -9290,7 +9594,41 @@ const w = {
       skills: "المهارات",
       aiModels: "إعدادات مودلات AI",
       organizations: "إدارة المنظمات",
-      task: "إعدادات المهام"
+      task: "إعدادات المهام",
+      rateLimit: "تحديد المعدل"
+    },
+    rateLimit: {
+      enabled: "تمكين تحديد المعدل",
+      storeLabel: "التخزين",
+      failOpen: "السماح عند الفشل",
+      defaults: "الحصص المشتركة الافتراضية",
+      anonymous: "مجهول (IP)",
+      user: "مستخدم",
+      serviceAccount: "حساب الخدمة",
+      routeRules: "قواعد المسار",
+      createRule: "إنشاء قاعدة",
+      editRule: "تعديل القاعدة",
+      deleteConfirm: "حذف هذه القاعدة؟",
+      subjectType: "النوع",
+      subjectId: "معرّف الموضوع",
+      subjectIdHint: "فارغ = جميع المواضيع من هذا النوع",
+      method: "الطريقة",
+      path: "المسار",
+      pathHint: "المسار الكامل في Gin، مثل /api/ai/chat/sessions/:sessionId. فارغ = الحصة المشتركة.",
+      rate: "المعدل",
+      period: "الفترة",
+      burst: "الاندفاع",
+      quota: "الحصة",
+      quotaPeriod: "فترة الحصة",
+      memoryWarn: "وضع الكتلة مع تخزين الذاكرة: الحدود لكل عقدة. استخدم rate_limit.store=redis لحدود على مستوى الكتلة.",
+      resetAll: "إعادة تعيين جميع العدادات",
+      resetAllConfirm: "إعادة تعيين جميع عدادات المعدل والحصة؟ سيُسمح للعملاء المحظورين فورًا.",
+      resetSubject: "إعادة تعيين العدادات",
+      resetSubjectConfirm: "إعادة تعيين عدادات الحصة المشتركة لهذا النوع؟",
+      resetRule: "إعادة تعيين العدادات",
+      resetRuleConfirm: "إعادة تعيين عدادات هذه القاعدة؟",
+      resetSuccess: "تم إعادة تعيين العدادات",
+      resetFailed: "فشل إعادة تعيين العدادات"
     },
     task: {
       maxConcurrent: "الحد الأقصى للمهام المتزامنة",
@@ -9899,7 +10237,7 @@ const w = {
     settings: "إعدادات النظام",
     audit: "سجلات التدقيق"
   }
-}, ce = {
+}, oe = {
   models: {
     name: "الاسم",
     provider: "المزود",
@@ -10025,7 +10363,7 @@ const w = {
     skillsSelected: "{{count}} محدد",
     skillDomain: "مجال المهارة"
   }
-}, ue = {
+}, ne = {
   listTitle: "قائمة المهام",
   detailTitle: "تفاصيل المهمة",
   typeLabel: "النوع",
@@ -10099,7 +10437,7 @@ const w = {
     password_expiry_notification_task: "فحص المستخدمين كل ساعة وإرسال تذكيرات انتهاء صلاحية كلمة المرور مرة واحدة لكل دورة كلمة مرور",
     inbox_cleanup_task: "حذف الرسائل الداخلية المنتهية وتطبيق الحد الأقصى لكل مستخدم"
   }
-}, pe = {
+}, le = {
   title: "صندوق الوارد",
   bell: "الإشعارات",
   empty: "لا توجد رسائل",
@@ -10123,7 +10461,7 @@ const w = {
     login_failure_lock: "تم قفل حسابك بعد محاولات تسجيل دخول فاشلة كثيرة.",
     mfa_disabled: "تم تعطيل المصادقة متعددة العوامل على حسابك."
   }
-}, me = {
+}, de = {
   loading: "Laddar...",
   success: "Operationen lyckades",
   error: "Operationen misslyckades",
@@ -10185,6 +10523,10 @@ const w = {
   pagination: {
     total: "{{start}}-{{end}} av {{total}} objekt"
   },
+  errors: {
+    rateLimit: "Hastighetsgränsen överskreds",
+    quotaExceeded: "Kvoten överskreds"
+  },
   language: {
     default: "Standardspråk",
     "en-US": "Engelska",
@@ -10195,7 +10537,7 @@ const w = {
     "fr-FR": "Franska",
     "zh-CN": "Kinesiska"
   }
-}, ge = {
+}, ce = {
   user: {
     management: "Användarhantering",
     create: "Skapa användare",
@@ -10511,6 +10853,9 @@ const w = {
       "system.security.view": "Visa säkerhetsinställningar",
       "system.settings.update": "Uppdatera inställningar",
       "system.settings.view": "Visa inställningar",
+      Rate_Limit: "Hastighetsbegränsning",
+      "system.rate_limit.view": "Visa hastighetsbegränsning",
+      "system.rate_limit.update": "Uppdatera hastighetsbegränsning",
       "system.view": "Visa systeminformation",
       "system.audit_log.view": "Visa granskningsloggar",
       "file.list": "Visa filer",
@@ -10603,6 +10948,12 @@ const w = {
       },
       settings: {
         update: "Uppdatera inställningar"
+      },
+      rate_limit: {
+        update: "Uppdatera hastighetsbegränsning",
+        create: "Skapa hastighetsregel",
+        delete: "Ta bort hastighetsregel",
+        reset: "Återställ hastighetsräknare"
       },
       organization: {
         update: "Uppdatera organisation",
@@ -10774,8 +11125,27 @@ const w = {
       accessKeys: "Hantering av åtkomstnycklar",
       policy: "Policyhantering"
     }
+  },
+  rateLimit: {
+    title: "Hastighetsbegränsning",
+    rate: "Hastighet",
+    period: "Period",
+    periodHint: "Exempel: 1s, 1m, 1h",
+    burst: "Burst",
+    quota: "Daglig kvot (0 = ingen)",
+    quotaPeriod: "Kvotperiod",
+    enabled: "Aktiverad",
+    inherited: "Använder typens standard. Spara för att skapa en subjektspecifik överskrivning.",
+    sourceHint: "Visade värden ärvs.",
+    saveSuccess: "Överskrivning sparad",
+    saveFailed: "Kunde inte spara överskrivning",
+    resetSuccess: "Överskrivning rensad; typstandard återställd",
+    resetToDefault: "Återställ till standard",
+    resetCounters: "Återställ räknare",
+    resetCountersConfirm: "Återställ hastighets- och kvot-räknare för det här subjektet? Förfrågningar tillåts omedelbart.",
+    resetCountersSuccess: "Räknare återställda"
   }
-}, he = {
+}, ue = {
   title: "Systemhantering",
   settings: {
     title: "Systeminställningar",
@@ -10789,7 +11159,41 @@ const w = {
       skills: "Färdigheter",
       aiModels: "AI-modellinställningar",
       organizations: "Organisationshantering",
-      task: "Uppgiftsinställningar"
+      task: "Uppgiftsinställningar",
+      rateLimit: "Hastighetsbegränsning"
+    },
+    rateLimit: {
+      enabled: "Aktivera hastighetsbegränsning",
+      storeLabel: "Lagring",
+      failOpen: "Öppna vid fel",
+      defaults: "Standarddelade hinkar",
+      anonymous: "Anonym (IP)",
+      user: "Användare",
+      serviceAccount: "Tjänstekonto",
+      routeRules: "Ruttregler",
+      createRule: "Skapa regel",
+      editRule: "Redigera regel",
+      deleteConfirm: "Ta bort den här regeln?",
+      subjectType: "Subjekt",
+      subjectId: "Subjekt-ID",
+      subjectIdHint: "Tomt = alla subjekt av den här typen",
+      method: "Metod",
+      path: "Sökväg",
+      pathHint: "Gin-fullständig sökväg, t.ex. /api/ai/chat/sessions/:sessionId. Tomt = delad hink.",
+      rate: "Hastighet",
+      period: "Period",
+      burst: "Burst",
+      quota: "Kvot",
+      quotaPeriod: "Kvotperiod",
+      memoryWarn: "Klusterläge med minneslagring: gränserna gäller per nod. Använd rate_limit.store=redis för klusteromfattande gränser.",
+      resetAll: "Återställ alla räknare",
+      resetAllConfirm: "Återställ alla hastighets- och kvot-räknare? Blockerade klienter tillåts omedelbart.",
+      resetSubject: "Återställ räknare",
+      resetSubjectConfirm: "Återställ den delade hinkens räknare för den här subjekttypen?",
+      resetRule: "Återställ räknare",
+      resetRuleConfirm: "Återställ räknare för den här regeln?",
+      resetSuccess: "Räknare återställda",
+      resetFailed: "Kunde inte återställa räknare"
     },
     task: {
       maxConcurrent: "Max antal samtidiga uppgifter",
@@ -11398,7 +11802,7 @@ const w = {
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, fe = {
+}, me = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -11524,7 +11928,7 @@ const w = {
     skillsSelected: "{{count}} valda",
     skillDomain: "Färdighetsdomän"
   }
-}, ve = {
+}, pe = {
   listTitle: "Uppgiftslista",
   detailTitle: "Uppgiftsdetaljer",
   typeLabel: "Typ",
@@ -11598,7 +12002,7 @@ const w = {
     password_expiry_notification_task: "Skanna användare varje timme och skicka påminnelser om lösenordsutgång en gång per lösenordscykel",
     inbox_cleanup_task: "Ta bort utgångna meddelanden i appen och tillämpa taket per användare"
   }
-}, ke = {
+}, ge = {
   title: "Inkorg",
   bell: "Aviseringar",
   empty: "Inga meddelanden",
@@ -11628,67 +12032,67 @@ f.use(k).use(v).init({
   defaultNS: "translation",
   resources: {
     "zh-CN": {
-      translation: w,
-      common: q,
-      authorization: N,
-      system: x,
-      ai: O,
-      task: B,
-      inbox: V
+      translation: A,
+      common: L,
+      authorization: I,
+      system: M,
+      ai: q,
+      task: U,
+      inbox: N
     },
     "en-US": {
-      translation: P,
-      common: R,
-      authorization: D,
-      system: z,
-      ai: E,
-      task: C,
-      inbox: F
+      translation: y,
+      common: S,
+      authorization: T,
+      system: w,
+      ai: P,
+      task: R,
+      inbox: D
     },
     "de-DE": {
-      translation: _,
-      common: K,
-      authorization: j,
-      system: G,
-      ai: H,
-      task: W,
-      inbox: J
+      translation: z,
+      common: x,
+      authorization: O,
+      system: B,
+      ai: V,
+      task: j,
+      inbox: K
     },
     "es-ES": {
-      translation: I,
-      common: Z,
-      authorization: Y,
-      system: Q,
-      ai: $,
-      task: X,
-      inbox: ee
+      translation: C,
+      common: G,
+      authorization: H,
+      system: W,
+      ai: Z,
+      task: J,
+      inbox: Q
     },
     "fr-FR": {
-      translation: L,
-      common: te,
-      authorization: ae,
-      system: ie,
-      ai: re,
-      task: se,
-      inbox: oe
+      translation: E,
+      common: Y,
+      authorization: $,
+      system: X,
+      ai: ee,
+      task: te,
+      inbox: ae
     },
     "ar-AE": {
-      translation: M,
-      common: ne,
-      authorization: le,
-      system: de,
-      ai: ce,
-      task: ue,
-      inbox: pe
+      translation: F,
+      common: ie,
+      authorization: re,
+      system: se,
+      ai: oe,
+      task: ne,
+      inbox: le
     },
     "sv-SE": {
-      translation: U,
-      common: me,
-      authorization: ge,
-      system: he,
-      ai: fe,
-      task: ve,
-      inbox: ke
+      translation: _,
+      common: de,
+      authorization: ce,
+      system: ue,
+      ai: me,
+      task: pe,
+      inbox: ge
     }
   },
   fallbackLng: "en-US",
@@ -11697,7 +12101,65 @@ f.use(k).use(v).init({
     escapeValue: !1
   }
 });
-const qe = {
+async function he(e, t) {
+  return u("/api/files", {
+    method: "GET",
+    params: {
+      ...e
+    },
+    ...t || {}
+  });
+}
+async function fe(e, t, a) {
+  const r = new FormData();
+  return t && r.append("file", t), Object.keys(e).forEach((n) => {
+    const s = e[n];
+    s != null && (typeof s == "object" && !(s instanceof File) ? s instanceof Array ? s.forEach((o) => r.append(n, o || "")) : r.append(
+      n,
+      new Blob([JSON.stringify(s)], { type: "application/json" })
+    ) : r.append(n, s));
+  }), u("/api/files", {
+    method: "POST",
+    data: r,
+    requestType: "form",
+    ...a || {}
+  });
+}
+async function ve(e, t) {
+  const { fileKey: a, ...r } = e;
+  return u(`/api/files/${a}`, {
+    method: "GET",
+    params: { ...r },
+    ...t || {}
+  });
+}
+async function ke(e) {
+  return u("/api/statistics", {
+    method: "GET",
+    ...e || {}
+  });
+}
+const Le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  __proto__: null,
+  downloadFile: ve,
+  getStatistics: ke,
+  listFiles: he,
+  uploadFile: fe
+}, Symbol.toStringTag, { value: "Module" }));
+function g(e) {
+  const t = e.payload;
+  return t && typeof t == "object" && !Array.isArray(t) ? t : {};
+}
+function Ie(e, t) {
+  return e(`types.${t.type}`, { defaultValue: t.type, ...g(t) });
+}
+function Me(e, t) {
+  return e(`typeDescriptions.${t.type}`, { defaultValue: "", ...g(t) });
+}
+function qe(e) {
+  return !e.read_at;
+}
+const Ue = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
@@ -11726,7 +12188,7 @@ function h(e) {
     }
   return String(e);
 }
-function m(e) {
+function p(e) {
   return h(e).replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 function Ne(e) {
@@ -11738,7 +12200,7 @@ function Ne(e) {
   if (r === -1) return e;
   const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = be(n), i = Object.keys(o);
   if (i.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((p) => "| " + m(p) + " | " + m(o[p]) + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(o[m]) + " |").join(`
 `);
   return l + `
 ` + d + `
@@ -11747,17 +12209,17 @@ function Ne(e) {
 ` + s;
 }
 export {
-  qe as P,
-  Ue as a,
+  Ue as P,
+  qe as a,
   Me as b,
-  Le as c,
-  Ie as d,
+  Ie as c,
+  Le as d,
   De as e,
   Re as f,
-  Ee as g,
+  Ce as g,
   Ne as h,
   Fe as i,
   _e as j,
   ze as m,
-  Ce as t
+  Ee as t
 };

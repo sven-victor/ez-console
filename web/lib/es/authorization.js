@@ -1,6 +1,6 @@
-import { r } from "./client.js";
-async function i(a, t) {
-  return r("/api/authorization/auth/activate", {
+import { r as n } from "./client.js";
+async function s(a, t) {
+  return n("/api/authorization/auth/activate", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -10,7 +10,7 @@ async function i(a, t) {
   });
 }
 async function c(a, t) {
-  return r(
+  return n(
     "/api/authorization/auth/login",
     {
       method: "POST",
@@ -23,13 +23,13 @@ async function c(a, t) {
   );
 }
 async function u(a) {
-  return r("/api/authorization/auth/logout", {
+  return n("/api/authorization/auth/logout", {
     method: "POST",
     ...a || {}
   });
 }
 async function p(a, t) {
-  return r("/api/authorization/ldap/users", {
+  return n("/api/authorization/ldap/users", {
     method: "GET",
     params: {
       ...a
@@ -38,7 +38,7 @@ async function p(a, t) {
   });
 }
 async function m(a) {
-  return r(
+  return n(
     "/api/authorization/permissions",
     {
       method: "GET",
@@ -47,13 +47,13 @@ async function m(a) {
   );
 }
 async function d(a) {
-  return r("/api/authorization/profile", {
+  return n("/api/authorization/profile", {
     method: "GET",
     ...a || {}
   });
 }
 async function h(a, t) {
-  return r("/api/authorization/profile", {
+  return n("/api/authorization/profile", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -63,7 +63,7 @@ async function h(a, t) {
   });
 }
 async function y(a, t) {
-  return r(
+  return n(
     "/api/authorization/profile/audit-logs",
     {
       method: "GET",
@@ -79,7 +79,7 @@ async function y(a, t) {
   );
 }
 async function l(a, t) {
-  return r(
+  return n(
     "/api/authorization/profile/mfa/disable",
     {
       method: "POST",
@@ -91,8 +91,8 @@ async function l(a, t) {
     }
   );
 }
-async function f(a) {
-  return r(
+async function T(a) {
+  return n(
     "/api/authorization/profile/mfa/disable/send-code",
     {
       method: "POST",
@@ -100,8 +100,8 @@ async function f(a) {
     }
   );
 }
-async function T(a, t) {
-  return r(
+async function f(a, t) {
+  return n(
     "/api/authorization/profile/mfa/enable",
     {
       method: "POST",
@@ -114,7 +114,7 @@ async function T(a, t) {
   );
 }
 async function P(a, t) {
-  return r(
+  return n(
     "/api/authorization/profile/mfa/verify",
     {
       method: "POST",
@@ -127,7 +127,7 @@ async function P(a, t) {
   );
 }
 async function z(a, t) {
-  return r(
+  return n(
     "/api/authorization/profile/password",
     {
       method: "PUT",
@@ -140,7 +140,7 @@ async function z(a, t) {
   );
 }
 async function S(a, t) {
-  return r(
+  return n(
     "/api/authorization/profile/sessions",
     {
       method: "GET",
@@ -156,18 +156,18 @@ async function S(a, t) {
   );
 }
 async function v(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/profile/sessions/${e}`,
     {
       method: "DELETE",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
 async function E(a) {
-  return r(
+  return n(
     "/api/authorization/profile/sessions/terminate-others",
     {
       method: "POST",
@@ -175,8 +175,8 @@ async function E(a) {
     }
   );
 }
-async function g(a) {
-  return r(
+async function $(a) {
+  return n(
     "/api/authorization/refresh",
     {
       method: "POST",
@@ -184,8 +184,8 @@ async function g(a) {
     }
   );
 }
-async function $(a, t) {
-  return r("/api/authorization/roles", {
+async function q(a, t) {
+  return n("/api/authorization/roles", {
     method: "GET",
     params: {
       // current has a default value: 1
@@ -197,8 +197,8 @@ async function $(a, t) {
     ...t || {}
   });
 }
-async function q(a, t) {
-  return r("/api/authorization/roles", {
+async function g(a, t) {
+  return n("/api/authorization/roles", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -208,16 +208,16 @@ async function q(a, t) {
   });
 }
 async function U(a, t) {
-  const { id: e, ...n } = a;
-  return r(`/api/authorization/roles/${e}`, {
+  const { id: e, ...r } = a;
+  return n(`/api/authorization/roles/${e}`, {
     method: "GET",
-    params: { ...n },
+    params: { ...r },
     ...t || {}
   });
 }
 async function C(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(`/api/authorization/roles/${n}`, {
+  const { id: r, ...o } = a;
+  return n(`/api/authorization/roles/${r}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -228,20 +228,20 @@ async function C(a, t, e) {
   });
 }
 async function j(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/roles/${e}`,
     {
       method: "DELETE",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
-async function O(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/roles/${n}/permissions`,
+async function A(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/roles/${r}/permissions`,
     {
       method: "PUT",
       headers: {
@@ -253,21 +253,21 @@ async function O(a, t, e) {
     }
   );
 }
-async function A(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+async function O(a, t) {
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/roles/${e}/policy`,
     {
       method: "GET",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
 async function G(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/roles/${n}/policy`,
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/roles/${r}/policy`,
     {
       method: "PUT",
       headers: {
@@ -279,8 +279,8 @@ async function G(a, t, e) {
     }
   );
 }
-async function b(a, t) {
-  return r(
+async function R(a, t) {
+  return n(
     "/api/authorization/service-accounts",
     {
       method: "GET",
@@ -295,8 +295,8 @@ async function b(a, t) {
     }
   );
 }
-async function k(a, t) {
-  return r(
+async function L(a, t) {
+  return n(
     "/api/authorization/service-accounts",
     {
       method: "POST",
@@ -308,21 +308,21 @@ async function k(a, t) {
     }
   );
 }
-async function R(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+async function b(a, t) {
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/service-accounts/${e}`,
     {
       method: "GET",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
-async function _(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/service-accounts/${n}`,
+async function k(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/service-accounts/${r}`,
     {
       method: "PUT",
       headers: {
@@ -334,32 +334,32 @@ async function _(a, t, e) {
     }
   );
 }
-async function L(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+async function _(a, t) {
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/service-accounts/${e}`,
     {
       method: "DELETE",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
 async function D(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/service-accounts/${e}/access-keys`,
     {
       method: "GET",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
 async function M(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/service-accounts/${n}/access-keys`,
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/service-accounts/${r}/access-keys`,
     {
       method: "POST",
       headers: {
@@ -372,24 +372,24 @@ async function M(a, t, e) {
   );
 }
 async function w(a, t, e) {
-  const { id: n, keyId: o, ...s } = a;
-  return r(
-    `/api/authorization/service-accounts/${n}/access-keys/${o}`,
+  const { id: r, keyId: o, ...i } = a;
+  return n(
+    `/api/authorization/service-accounts/${r}/access-keys/${o}`,
     {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
-      params: { ...s },
+      params: { ...i },
       data: t,
       ...e || {}
     }
   );
 }
 async function K(a, t) {
-  const { id: e, keyId: n, ...o } = a;
-  return r(
-    `/api/authorization/service-accounts/${e}/access-keys/${n}`,
+  const { id: e, keyId: r, ...o } = a;
+  return n(
+    `/api/authorization/service-accounts/${e}/access-keys/${r}`,
     {
       method: "DELETE",
       params: { ...o },
@@ -398,20 +398,20 @@ async function K(a, t) {
   );
 }
 async function x(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/service-accounts/${e}/policy`,
     {
       method: "GET",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
 async function I(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/service-accounts/${n}/policy`,
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/service-accounts/${r}/policy`,
     {
       method: "PUT",
       headers: {
@@ -424,35 +424,20 @@ async function I(a, t, e) {
   );
 }
 async function B(a, t) {
-  const { id: e, ...n } = a;
-  return r(
-    `/api/authorization/service-accounts/${e}/roles`,
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/service-accounts/${e}/rate-limit`,
     {
       method: "GET",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
 async function F(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/service-accounts/${n}/roles`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      params: { ...o },
-      data: t,
-      ...e || {}
-    }
-  );
-}
-async function H(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/service-accounts/${n}/status`,
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/service-accounts/${r}/rate-limit`,
     {
       method: "PUT",
       headers: {
@@ -464,8 +449,60 @@ async function H(a, t, e) {
     }
   );
 }
+async function H(a, t) {
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/service-accounts/${e}/rate-limit/reset`,
+    {
+      method: "POST",
+      params: { ...r },
+      ...t || {}
+    }
+  );
+}
 async function J(a, t) {
-  return r("/api/authorization/users", {
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/service-accounts/${e}/roles`,
+    {
+      method: "GET",
+      params: { ...r },
+      ...t || {}
+    }
+  );
+}
+async function N(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/service-accounts/${r}/roles`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...o },
+      data: t,
+      ...e || {}
+    }
+  );
+}
+async function Q(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/service-accounts/${r}/status`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...o },
+      data: t,
+      ...e || {}
+    }
+  );
+}
+async function V(a, t) {
+  return n("/api/authorization/users", {
     method: "GET",
     params: {
       // current has a default value: 1
@@ -477,8 +514,8 @@ async function J(a, t) {
     ...t || {}
   });
 }
-async function N(a, t) {
-  return r("/api/authorization/users", {
+async function W(a, t) {
+  return n("/api/authorization/users", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -487,17 +524,17 @@ async function N(a, t) {
     ...t || {}
   });
 }
-async function Q(a, t) {
-  const { id: e, ...n } = a;
-  return r(`/api/authorization/users/${e}`, {
+async function X(a, t) {
+  const { id: e, ...r } = a;
+  return n(`/api/authorization/users/${e}`, {
     method: "GET",
-    params: { ...n },
+    params: { ...r },
     ...t || {}
   });
 }
-async function V(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(`/api/authorization/users/${n}`, {
+async function Y(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(`/api/authorization/users/${r}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -507,20 +544,20 @@ async function V(a, t, e) {
     ...e || {}
   });
 }
-async function W(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+async function Z(a, t) {
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/users/${e}`,
     {
       method: "DELETE",
-      params: { ...n },
+      params: { ...r },
       ...t || {}
     }
   );
 }
-async function X(a, t) {
-  const { id: e, ...n } = a;
-  return r(
+async function aa(a, t) {
+  const { id: e, ...r } = a;
+  return n(
     `/api/authorization/users/${e}/audit-logs`,
     {
       method: "GET",
@@ -529,79 +566,27 @@ async function X(a, t) {
         current: "1",
         // page_size has a default value: 10
         page_size: "10",
-        ...n
+        ...r
       },
-      ...t || {}
-    }
-  );
-}
-async function Y(a, t) {
-  const { id: e, ...n } = a;
-  return r(
-    `/api/authorization/users/${e}/mfa`,
-    {
-      method: "DELETE",
-      params: { ...n },
-      ...t || {}
-    }
-  );
-}
-async function Z(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/users/${n}/password`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      params: { ...o },
-      data: t,
-      ...e || {}
-    }
-  );
-}
-async function aa(a, t) {
-  const { id: e, ...n } = a;
-  return r(
-    `/api/authorization/users/${e}/resend-activation`,
-    {
-      method: "POST",
-      params: { ...n },
       ...t || {}
     }
   );
 }
 async function ta(a, t) {
-  const { id: e, ...n } = a;
-  return r(
-    `/api/authorization/users/${e}/restore`,
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/users/${e}/mfa`,
     {
-      method: "POST",
-      params: { ...n },
+      method: "DELETE",
+      params: { ...r },
       ...t || {}
     }
   );
 }
 async function ea(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/users/${n}/roles`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      params: { ...o },
-      data: t,
-      ...e || {}
-    }
-  );
-}
-async function na(a, t, e) {
-  const { id: n, ...o } = a;
-  return r(
-    `/api/authorization/users/${n}/status`,
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/users/${r}/password`,
     {
       method: "PUT",
       headers: {
@@ -614,18 +599,107 @@ async function na(a, t, e) {
   );
 }
 async function ra(a, t) {
-  const { id: e, ...n } = a;
-  return r(
-    `/api/authorization/users/${e}/unlock`,
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/users/${e}/rate-limit`,
     {
-      method: "POST",
-      params: { ...n },
+      method: "GET",
+      params: { ...r },
       ...t || {}
     }
   );
 }
+async function na(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/users/${r}/rate-limit`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...o },
+      data: t,
+      ...e || {}
+    }
+  );
+}
 async function oa(a, t) {
-  return r("/api/authorization/users/export", {
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/users/${e}/rate-limit/reset`,
+    {
+      method: "POST",
+      params: { ...r },
+      ...t || {}
+    }
+  );
+}
+async function ia(a, t) {
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/users/${e}/resend-activation`,
+    {
+      method: "POST",
+      params: { ...r },
+      ...t || {}
+    }
+  );
+}
+async function sa(a, t) {
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/users/${e}/restore`,
+    {
+      method: "POST",
+      params: { ...r },
+      ...t || {}
+    }
+  );
+}
+async function ca(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/users/${r}/roles`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...o },
+      data: t,
+      ...e || {}
+    }
+  );
+}
+async function ua(a, t, e) {
+  const { id: r, ...o } = a;
+  return n(
+    `/api/authorization/users/${r}/status`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...o },
+      data: t,
+      ...e || {}
+    }
+  );
+}
+async function pa(a, t) {
+  const { id: e, ...r } = a;
+  return n(
+    `/api/authorization/users/${e}/unlock`,
+    {
+      method: "POST",
+      params: { ...r },
+      ...t || {}
+    }
+  );
+}
+async function ma(a, t) {
+  return n("/api/authorization/users/export", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -634,64 +708,70 @@ async function oa(a, t) {
     ...t || {}
   });
 }
-const ia = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const ha = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  activateUser: i,
-  adminDisableUserMfa: Y,
-  assignPermissions: O,
-  assignRoles: ea,
-  assignServiceAccountRoles: F,
+  activateUser: s,
+  adminDisableUserMfa: ta,
+  assignPermissions: A,
+  assignRoles: ca,
+  assignServiceAccountRoles: N,
   changePassword: z,
-  createRole: q,
-  createServiceAccount: k,
+  createRole: g,
+  createServiceAccount: L,
   createServiceAccountAccessKey: M,
-  createUser: N,
-  createUserExportTask: oa,
+  createUser: W,
+  createUserExportTask: ma,
   deleteRole: j,
-  deleteServiceAccount: L,
+  deleteServiceAccount: _,
   deleteServiceAccountAccessKey: K,
-  deleteUser: W,
+  deleteUser: Z,
   disableMfa: l,
-  enableMfa: T,
+  enableMfa: f,
   getCurrentUser: d,
   getCurrentUserLogs: y,
   getLdapUsers: p,
   getRole: U,
-  getRolePolicy: A,
+  getRolePolicy: O,
   getServiceAccountAccessKeys: D,
-  getServiceAccountById: R,
+  getServiceAccountById: b,
   getServiceAccountPolicy: x,
-  getServiceAccountRoles: B,
-  getServiceAccounts: b,
-  getUser: Q,
-  getUserLogs: X,
+  getServiceAccountRateLimit: B,
+  getServiceAccountRoles: J,
+  getServiceAccounts: R,
+  getUser: X,
+  getUserLogs: aa,
+  getUserRateLimit: ra,
   getUserSessions: S,
   listPermissions: m,
-  listRoles: $,
-  listUsers: J,
+  listRoles: q,
+  listUsers: V,
   login: c,
   logout: u,
-  refreshToken: g,
-  resendActivationEmail: aa,
-  resetUserPassword: Z,
-  restoreUser: ta,
-  sendDisableMfaCode: f,
+  refreshToken: $,
+  resendActivationEmail: ia,
+  resetServiceAccountRateLimit: H,
+  resetUserPassword: ea,
+  resetUserRateLimit: oa,
+  restoreUser: sa,
+  sendDisableMfaCode: T,
   setRolePolicy: G,
   setServiceAccountPolicy: I,
   terminateOtherSessions: E,
   terminateSession: v,
-  unlockUser: ra,
+  unlockUser: pa,
   updateCurrentUser: h,
   updateRole: C,
-  updateServiceAccount: _,
+  updateServiceAccount: k,
   updateServiceAccountAccessKey: w,
-  updateServiceAccountStatus: H,
-  updateUser: V,
-  updateUserStatus: na,
+  updateServiceAccountRateLimit: F,
+  updateServiceAccountStatus: Q,
+  updateUser: Y,
+  updateUserRateLimit: na,
+  updateUserStatus: ua,
   verifyAndActivateMfa: P
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  ia as a,
-  $ as b,
-  J as l
+  ha as a,
+  q as b,
+  V as l
 };

@@ -5105,7 +5105,7 @@ definitions:
 info:
   contact: {}
   title: EZ Console API
-  version: v1.19.1
+  version: v1.19.4
 paths:
   /api/ai/chat/sessions:
     get:

@@ -6,7 +6,7 @@ import { useParams as R, useNavigate as v } from "react-router-dom";
 import { useTranslation as m } from "react-i18next";
 import { useRequest as O } from "ahooks";
 import { a as c } from "./index.js";
-import { o as P, g as f, b as E } from "./components.js";
+import { p as P, g as f, b as E } from "./components.js";
 const $ = {
   pending: "default",
   running: "processing",

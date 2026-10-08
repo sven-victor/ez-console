@@ -1,13 +1,13 @@
-import { useContext as S, createContext as z, useState as g, useEffect as x, useCallback as k, useRef as M } from "react";
-import { f as F, r as J } from "./client.js";
-import { a as C } from "./index.js";
-import { j as E, i as N } from "./vendor.js";
-import { App as j } from "antd";
+import { useContext as S, createContext as U, useState as g, useEffect as x, useCallback as k, useRef as M } from "react";
+import { f as j, r as N } from "./client.js";
+import { a as w } from "./index.js";
+import { j as E, i as V } from "./vendor.js";
+import { App as K } from "antd";
 import { useRequest as R } from "ahooks";
-import { g as V } from "./base.js";
-import { useTranslation as G } from "react-i18next";
-import { isFunction as $ } from "lodash-es";
-const L = z({
+import { g as G } from "./base.js";
+import { useTranslation as $ } from "react-i18next";
+import { isFunction as W } from "lodash-es";
+const D = U({
   user: void 0,
   loading: !1,
   login: async () => null,
@@ -17,12 +17,12 @@ const L = z({
   updateUser: () => {
   },
   error: void 0
-}), W = () => S(L), D = (s, t = !0) => {
-  s ? (t && localStorage.setItem("token", s), F.defaults.headers.common.Authorization = `Bearer ${s}`) : (t && localStorage.removeItem("token"), delete F.defaults.headers.common.Authorization);
-}, le = ({ children: s }) => {
-  const { message: t } = j.useApp(), [e, l] = g(void 0), [c, a] = g(!0), { run: u, runAsync: d, error: p } = R(async () => {
+}), X = () => S(D), O = (n, t = !0) => {
+  n ? (t && localStorage.setItem("token", n), j.defaults.headers.common.Authorization = `Bearer ${n}`) : (t && localStorage.removeItem("token"), delete j.defaults.headers.common.Authorization);
+}, ue = ({ children: n }) => {
+  const { message: t } = K.useApp(), [e, l] = g(void 0), [c, a] = g(!0), { run: u, runAsync: d, error: p } = R(async () => {
     const f = localStorage.getItem("token");
-    return f ? (D(f, !1), C.authorization.getCurrentUser()) : null;
+    return f ? (O(f, !1), w.authorization.getCurrentUser()) : null;
   }, {
     manual: !0,
     onBefore: () => {
@@ -41,65 +41,65 @@ const L = z({
   x(() => {
     u();
   }, []);
-  const n = async (f) => {
+  const r = async (f) => {
     try {
-      const i = await C.authorization.login(f), { token: I, user: y, needs_mfa: m, password_expired: v, mfa_token: b, mfa_type: A } = i;
+      const i = await w.authorization.login(f), { token: I, user: y, needs_mfa: m, password_expired: v, mfa_token: b, mfa_type: A } = i;
       if (m)
         throw { needsMFA: !0, mfaToken: b, mfaType: A, user: y };
       if (v)
         throw { password_expired: !0, user: y, token: I };
-      return D(I), l(y), y;
+      return O(I), l(y), y;
     } catch (i) {
       throw i && i.needsMFA || i && i.password_expired || t.error("Login failed, please check your username and password"), i;
     }
   }, o = k(async (f) => {
     try {
-      const i = await C.oauth.handleCallback(f, { headers: { "X-Base-Path": V() } });
+      const i = await w.oauth.handleCallback(f, { headers: { "X-Base-Path": G() } });
       let I = "";
       if (i && typeof i == "object")
         if ("code" in i && i.code === "0" && "data" in i) {
-          const { token: m, user: v, needs_mfa: b, mfa_token: A, mfa_type: w } = i.data;
+          const { token: m, user: v, needs_mfa: b, mfa_token: A, mfa_type: C } = i.data;
           if (b)
-            throw { needsMFA: !0, mfaToken: A, mfaType: w, user: v };
+            throw { needsMFA: !0, mfaToken: A, mfaType: C, user: v };
           I = m;
         } else {
-          const { token: m, user: v, needs_mfa: b, mfa_token: A, mfa_type: w } = i;
+          const { token: m, user: v, needs_mfa: b, mfa_token: A, mfa_type: C } = i;
           if (b)
-            throw { needsMFA: !0, mfaToken: A, mfaType: w, user: v };
+            throw { needsMFA: !0, mfaToken: A, mfaType: C, user: v };
           I = m;
         }
-      D(I);
+      O(I);
       const y = await d();
       return l(y || null), y || null;
     } catch (i) {
       throw l(void 0), i && i.needsMFA || i && i.passwordExpired, i;
     }
   }, []), h = () => {
-    C.authorization.logout(), D(null), l(null);
+    w.authorization.logout(), O(null), l(null);
   }, _ = (f) => {
     l(f);
   };
   return /* @__PURE__ */ E.jsx(
-    L.Provider,
+    D.Provider,
     {
       value: {
         user: e,
         loading: c,
-        login: n,
+        login: r,
         oauthLogin: o,
         logout: h,
         updateUser: _,
         error: p
       },
-      children: s
+      children: n
     }
   );
-}, X = () => {
-  const s = S(L);
-  if (s === void 0)
+}, H = () => {
+  const n = S(D);
+  if (n === void 0)
     throw new Error("useAuth must be used within an AuthProvider");
-  return s;
-}, K = z({
+  return n;
+}, B = U({
   siteConfig: null,
   enableMultiOrg: !1,
   enableSkillToolBinding: !1,
@@ -125,8 +125,8 @@ const L = z({
   inboxRevision: 0,
   bumpInboxRevision: () => {
   }
-}), B = () => S(K), ce = ({ children: s }) => {
-  const { user: t } = W(), { data: e = null, loading: l, runAsync: c, error: a } = R(async () => C.system.getSiteConfig(), {
+}), q = () => S(B), de = ({ children: n }) => {
+  const { user: t } = X(), { data: e = null, loading: l, runAsync: c, error: a } = R(async () => w.system.getSiteConfig(), {
     manual: !0
   });
   x(() => {
@@ -136,7 +136,7 @@ const L = z({
   x(() => {
     u ? localStorage.setItem("orgID", u) : localStorage.removeItem("orgID");
   }, [u]), x(() => {
-    var A, w, T;
+    var A, C, T;
     if (!t)
       return;
     const m = (e == null ? void 0 : e.enable_multi_org) ?? !1, v = e == null ? void 0 : e.default_organization_id;
@@ -146,19 +146,19 @@ const L = z({
     }
     const b = localStorage.getItem("orgID");
     if (b) {
-      const P = (A = t == null ? void 0 : t.organizations) == null ? void 0 : A.find((U) => U.id === b);
+      const P = (A = t == null ? void 0 : t.organizations) == null ? void 0 : A.find((z) => z.id === b);
       if (P) {
         d(P.id);
         return;
       }
     }
-    d(((T = (w = t == null ? void 0 : t.organizations) == null ? void 0 : w[0]) == null ? void 0 : T.id) ?? null);
+    d(((T = (C = t == null ? void 0 : t.organizations) == null ? void 0 : C[0]) == null ? void 0 : T.id) ?? null);
   }, [e, t == null ? void 0 : t.organizations]);
-  const [p, n] = g(!1), [o, h] = g([]), [_, f] = g(0), [i, I] = g(0), y = k(() => {
+  const [p, r] = g(!1), [o, h] = g([]), [_, f] = g(0), [i, I] = g(0), y = k(() => {
     I((m) => m + 1);
   }, []);
   return /* @__PURE__ */ E.jsx(
-    K.Provider,
+    B.Provider,
     {
       value: {
         siteConfig: e,
@@ -176,39 +176,39 @@ const L = z({
         error: a,
         tasks: o,
         setTasksDropdownOpen: (m) => {
-          n(m);
+          r(m);
         },
         tasksDropdownOpen: p,
         setTasks: (m) => {
           h(m);
         },
         addTask: (m) => {
-          h((v) => [m, ...v]), n(!0);
+          h((v) => [m, ...v]), r(!0);
         },
         inboxUnreadCount: _,
         setInboxUnreadCount: f,
         inboxRevision: i,
         bumpInboxRevision: y
       },
-      children: s
+      children: n
     }
   );
-}, ue = () => {
+}, fe = () => {
   var p;
-  const { user: s } = S(L), { currentOrgId: t } = B(), e = (p = s == null ? void 0 : s.roles) == null ? void 0 : p.filter((n) => !n.organization_id || n.organization_id === t), l = () => e ? e.some((n) => n.name === "admin" && !n.organization_id) : !1, c = (n) => e ? l() ? !0 : e.some((o) => o.permissions ? o.permissions.some((h) => h.code === n) : !1) : !1;
+  const { user: n } = S(D), { currentOrgId: t } = q(), e = (p = n == null ? void 0 : n.roles) == null ? void 0 : p.filter((r) => !r.organization_id || r.organization_id === t), l = () => e ? e.some((r) => r.name === "admin" && !r.organization_id) : !1, c = (r) => e ? l() ? !0 : e.some((o) => o.permissions ? o.permissions.some((h) => h.code === r) : !1) : !1;
   return {
     hasPermission: c,
-    hasAllPermissions: (n) => n.every((o) => c(o)),
-    hasAnyPermission: (n) => n.some((o) => c(o)),
-    hasGlobalPermission: (n) => e ? l() ? !0 : e.some((o) => o.organization_id || !o.permissions ? !1 : o.permissions.some((h) => h.code === n)) : !1,
+    hasAllPermissions: (r) => r.every((o) => c(o)),
+    hasAnyPermission: (r) => r.some((o) => c(o)),
+    hasGlobalPermission: (r) => e ? l() ? !0 : e.some((o) => o.organization_id || !o.permissions ? !1 : o.permissions.some((h) => h.code === r)) : !1,
     isAdmin: l(),
-    loading: !s
+    loading: !n
   };
 };
-function H(s) {
+function Q(n) {
   let t, e;
   const l = [];
-  for (const c of s.split(`
+  for (const c of n.split(`
 `)) {
     if (!c || c.startsWith(":"))
       continue;
@@ -219,8 +219,8 @@ function H(s) {
   return !t && !e && l.length === 0 ? null : { id: t, event: e, data: l.join(`
 `) };
 }
-async function Q(s, t, e) {
-  const l = s.getReader(), c = new TextDecoder();
+async function Y(n, t, e) {
+  const l = n.getReader(), c = new TextDecoder();
   let a = "";
   try {
     for (; !t.aborted; ) {
@@ -234,9 +234,9 @@ async function Q(s, t, e) {
 
 `);
       for (; p >= 0; ) {
-        const n = a.slice(0, p);
+        const r = a.slice(0, p);
         a = a.slice(p + 2);
-        const o = H(n);
+        const o = Q(r);
         o && e(o), p = a.indexOf(`
 
 `);
@@ -249,13 +249,13 @@ async function Q(s, t, e) {
     }
   }
 }
-function Y(s, t) {
+function Z(n, t) {
   return new Promise((e) => {
     if (t.aborted) {
       e();
       return;
     }
-    const l = window.setTimeout(e, s);
+    const l = window.setTimeout(e, n);
     t.addEventListener(
       "abort",
       () => {
@@ -265,28 +265,28 @@ function Y(s, t) {
     );
   });
 }
-function de() {
-  const { user: s } = X(), { setInboxUnreadCount: t, bumpInboxRevision: e } = B(), l = M(""), c = M(0);
+function me() {
+  const { user: n } = H(), { setInboxUnreadCount: t, bumpInboxRevision: e } = q(), l = M(""), c = M(0);
   x(() => {
-    if (!(s != null && s.id)) {
+    if (!(n != null && n.id)) {
       l.current = "", c.current = 0, t(0);
       return;
     }
     const a = new AbortController();
     let u = 1e3;
-    C.inbox.getInboxUnreadCount().then((n) => {
+    w.inbox.getInboxUnreadCount().then((r) => {
       if (a.signal.aborted)
         return;
-      const o = (n == null ? void 0 : n.unread_count) ?? 0;
+      const o = (r == null ? void 0 : r.unread_count) ?? 0;
       c.current = o, t(o);
     }).catch(() => {
     });
-    const d = (n) => {
-      if (n.id && (l.current = n.id), !n.data)
+    const d = (r) => {
+      if (r.id && (l.current = r.id), !r.data)
         return;
       let o;
       try {
-        o = JSON.parse(n.data);
+        o = JSON.parse(r.data);
       } catch {
         return;
       }
@@ -295,29 +295,32 @@ function de() {
     return (async () => {
       for (; !a.signal.aborted; ) {
         try {
-          const n = {};
-          l.current && (n["Last-Event-ID"] = l.current);
-          const o = await J("/api/inbox/stream", {
+          const r = {};
+          l.current && (r["Last-Event-ID"] = l.current);
+          const o = await N("/api/inbox/stream", {
             method: "GET",
             requestType: "sse",
             signal: a.signal,
-            headers: n
+            headers: r
           });
-          u = 1e3, await Q(o, a.signal, d);
+          u = 1e3, await Y(o, a.signal, d);
         } catch {
           if (a.signal.aborted)
             return;
         }
         if (a.signal.aborted)
           return;
-        await Y(u, a.signal), u = Math.min(u * 2, 15e3);
+        await Z(u, a.signal), u = Math.min(u * 2, 15e3);
       }
     })(), () => {
       a.abort();
     };
-  }, [s == null ? void 0 : s.id, t, e]);
+  }, [n == null ? void 0 : n.id, t, e]);
 }
-const q = z({
+function ee(n) {
+  return n ? Array.isArray(n) ? { messages: n } : n : {};
+}
+const J = U({
   layout: "sidebar",
   setLayout: () => {
   },
@@ -343,81 +346,83 @@ const q = z({
   },
   resetPageAIContext: () => {
   }
-}), fe = () => S(q), me = ({ children: s }) => {
-  const { message: t } = j.useApp(), { t: e } = G("ai"), [l, c] = g("sidebar"), [a, u] = g(!1), [d, p] = g(!1), [n, o] = g(void 0), [h, _] = g(), [f, i] = g(null), [I, y] = g([]), [m, v] = g([]), b = k(() => {
+}), ge = () => S(J), pe = ({ children: n }) => {
+  const { message: t } = K.useApp(), { t: e } = $("ai"), [l, c] = g("sidebar"), [a, u] = g(!1), [d, p] = g(!1), [r, o] = g(void 0), [h, _] = g(), [f, i] = g(null), [I, y] = g([]), [m, v] = g([]), b = k(() => {
     y([]), v([]);
-  }, []), A = k((r) => {
-    r.ephemeralSystemPrompts && y(r.ephemeralSystemPrompts);
-    const O = r.pageData ? [{
+  }, []), A = k((s) => {
+    s.ephemeralSystemPrompts && y(s.ephemeralSystemPrompts);
+    const L = s.pageData ? [{
       name: "ui_get_page_data",
-      description: `This is a browser/client-side method. If the user explicitly instructs you to retrieve page data or if you believe it is necessary to retrieve page data, you can try invoking this method. ${r.pageDataDescription || "Returns a JSON snapshot of the current page data."}`,
+      description: `This is a browser/client-side method. If the user explicitly instructs you to retrieve page data or if you believe it is necessary to retrieve page data, you can try invoking this method. ${s.pageDataDescription || "Returns a JSON snapshot of the current page data."}`,
       parameters: { type: "object", properties: {}, required: [] },
-      handler: () => N(r.pageData) ? r.pageData : $(r.pageData) ? JSON.stringify(r.pageData()) : JSON.stringify(r.pageData)
+      handler: () => V(s.pageData) ? s.pageData : W(s.pageData) ? JSON.stringify(s.pageData()) : JSON.stringify(s.pageData)
     }] : [];
-    return v([...O, ...r.tools ?? []]), () => {
+    return v([...L, ...s.tools ?? []]), () => {
       b();
     };
   }, [b]);
   x(() => {
-    const r = localStorage.getItem("activeConversationKey");
-    r && o(r);
+    const s = localStorage.getItem("activeConversationKey");
+    s && o(s);
   }, []);
-  const w = k((r, O) => {
-    u(!0), f ? f(r, O) : _([r, O]);
+  const C = k((s, L) => {
+    const F = ee(L);
+    u(!0), f ? f(s, F) : _({ message: s, options: F });
   }, [f, u]);
   x(() => {
-    f && h && (f(h[0], h[1]), _(void 0));
+    f && h && (f(h.message, h.options), _(void 0));
   }, [f, h]);
-  const { loading: T, runAsync: P, data: U } = R(async () => (await C.ai.listChatSessions({ current: 1, page_size: 20 })).data, {
+  const { loading: T, runAsync: P, data: z } = R(async () => (await w.ai.listChatSessions({ current: 1, page_size: 20 })).data, {
     ready: a,
-    onError: (r) => {
-      t.error(e("chat.fetchConversationsFailed", { defaultValue: "Failed to fetch conversations: {{errmsg}}", errmsg: r.message ?? r }));
+    onError: (s) => {
+      t.error(e("chat.fetchConversationsFailed", { defaultValue: "Failed to fetch conversations: {{errmsg}}", errmsg: s.message ?? s }));
     }
   });
   return /* @__PURE__ */ E.jsx(
-    q.Provider,
+    J.Provider,
     {
       value: {
         layout: l,
-        setLayout: (r) => {
-          c(r);
+        setLayout: (s) => {
+          c(s);
         },
         visible: a,
-        setVisible: (r) => {
-          u(r);
+        setVisible: (s) => {
+          u(s);
         },
-        callAI: w,
-        onCallAI: k((r) => {
-          i(() => r);
+        callAI: C,
+        onCallAI: k((s) => {
+          i(() => s);
         }, [i]),
         loaded: d,
-        setLoaded: (r) => {
-          p(r);
+        setLoaded: (s) => {
+          p(s);
         },
         fetchConversations: P,
         fetchConversationsLoading: T,
-        conversations: U,
-        activeConversationKey: n,
-        setActiveConversationKey: (r) => {
-          o(r), localStorage.setItem("activeConversationKey", r);
+        conversations: z,
+        activeConversationKey: r,
+        setActiveConversationKey: (s) => {
+          o(s), localStorage.setItem("activeConversationKey", s);
         },
         ephemeralSystemPrompts: I,
         clientTools: m,
         registerPageAI: A,
         resetPageAIContext: b
       },
-      children: s
+      children: n
     }
   );
 };
 export {
-  le as A,
-  ce as S,
-  ue as a,
-  B as b,
-  W as c,
-  fe as d,
-  de as e,
-  me as f,
-  X as u
+  ue as A,
+  de as S,
+  fe as a,
+  q as b,
+  X as c,
+  ge as d,
+  me as e,
+  pe as f,
+  ee as n,
+  H as u
 };

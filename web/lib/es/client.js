@@ -1,10 +1,11 @@
-var g = Object.defineProperty;
-var y = (s, e, t) => e in s ? g(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
-var a = (s, e, t) => y(s, typeof e != "symbol" ? e + "" : e, t);
-import { g as d } from "./base.js";
-import S from "axios";
+var S = Object.defineProperty;
+var w = (s, e, t) => e in s ? S(s, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : s[e] = t;
+var a = (s, e, t) => w(s, typeof e != "symbol" ? e + "" : e, t);
+import { g as p } from "./base.js";
+import I from "axios";
 import { isString as f } from "lodash-es";
-const w = "/api";
+import g from "i18next";
+const _ = "/api";
 class h extends Error {
   constructor(t, n) {
     super(n);
@@ -12,9 +13,9 @@ class h extends Error {
     this.code = t;
   }
 }
-function I(s) {
-  return S.create({
-    baseURL: w,
+function b(s) {
+  return I.create({
+    baseURL: _,
     timeout: 3e4,
     headers: {
       "Content-Type": "application/json"
@@ -22,7 +23,7 @@ function I(s) {
     ...s
   });
 }
-function m(s) {
+function y(s) {
   s.instance.interceptors.request.use(
     (e) => {
       if (!e.withoutAuth) {
@@ -52,21 +53,25 @@ function m(s) {
       } : n.data : Promise.reject(n || "Unknown error") : e.data;
     },
     (e) => {
-      var r, i, o, u, l;
+      var r, i, o, d, m;
       if ((r = e.config) != null && r.skipErrorHandler)
         return Promise.reject(e);
-      ((i = e.response) == null ? void 0 : i.status) === 401 && window.location.pathname !== d("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = d("/login?redirect=" + encodeURIComponent(window.location.href)));
+      ((i = e.response) == null ? void 0 : i.status) === 401 && window.location.pathname !== p("/login") && (localStorage.removeItem("token"), delete s.defaults.headers.common.Authorization, window.location.href = p("/login?redirect=" + encodeURIComponent(window.location.href)));
       let t = new h(((o = e.response) == null ? void 0 : o.status.toString()) || "500", e.message);
-      const n = (u = e.response) == null ? void 0 : u.headers["content-type"];
+      const n = (d = e.response) == null ? void 0 : d.headers["content-type"];
       if (n && f(n) && n.includes("application/json")) {
-        const p = (l = e.response) == null ? void 0 : l.data;
-        p && (p.err ? t = new h(p.code || "500", p.err || "Unknown error") : p.error && (t = new h(p.code || "500", p.error || "Unknown error")));
+        const u = (m = e.response) == null ? void 0 : m.data;
+        if (u)
+          if (u.err) {
+            let l = u.err || "Unknown error";
+            u.code === "E4291" ? l = g.t("common:errors.rateLimit", { defaultValue: "Rate limit exceeded" }) : u.code === "E4292" && (l = g.t("common:errors.quotaExceeded", { defaultValue: "Quota exceeded" })), t = new h(u.code || "500", l);
+          } else u.error && (t = new h(u.code || "500", u.error || "Unknown error"));
       }
       return Promise.reject(t);
     }
   );
 }
-class _ {
+class E {
   constructor(e, t = {}) {
     a(this, "_instance");
     a(this, "request", (e) => this._instance.request(e));
@@ -80,7 +85,7 @@ class _ {
     a(this, "postForm", (e, t, n) => this._instance.postForm(e, t, n));
     a(this, "putForm", (e, t, n) => this._instance.putForm(e, t, n));
     a(this, "patchForm", (e, t, n) => this._instance.patchForm(e, t, n));
-    this._instance = e ?? I(), t.applyInterceptors !== !1 && m(this);
+    this._instance = e ?? b(), t.applyInterceptors !== !1 && y(this);
   }
   /** Current underlying Axios instance. */
   get instance() {
@@ -99,15 +104,15 @@ class _ {
    * Existing imports of `client` keep working because methods always delegate to `_instance`.
    */
   setInstance(e, t = {}) {
-    this._instance = e, t.applyInterceptors !== !1 && m(this);
+    this._instance = e, t.applyInterceptors !== !1 && y(this);
   }
 }
-const c = new _();
-function q(s, e) {
+const c = new E();
+function A(s, e) {
   c.setInstance(s, e);
 }
-const x = async (s, e) => c.get(s, e), T = async (s, e, t) => c.post(s, e, t), A = async (s, e, t) => c.put(s, e, t), k = async (s, e) => c.delete(s, e);
-async function b(s, e) {
+const k = async (s, e) => c.get(s, e), D = async (s, e, t) => c.post(s, e, t), P = async (s, e, t) => c.put(s, e, t), C = async (s, e) => c.delete(s, e);
+async function x(s, e) {
   const { signal: t, ...n } = e || {}, r = await fetch(s, {
     method: n.method || "GET",
     headers: n.headers,
@@ -131,23 +136,23 @@ async function b(s, e) {
   }
   return r.body;
 }
-function j(s) {
+function L(s) {
   if (s)
     return typeof s.toJSON == "function" ? s.toJSON() : Object.fromEntries(Object.entries(s).map(([e, t]) => [e, String(t)]));
 }
-async function D(s, e) {
+async function O(s, e) {
   const { requestType: t, signal: n, ...r } = e || {}, i = r.responseType;
   if (t === "sse") {
-    const u = localStorage.getItem("orgID");
-    return b(s, {
+    const d = localStorage.getItem("orgID");
+    return x(s, {
       headers: {
         Accept: "text/event-stream",
         "Content-Type": "application/json",
-        "X-Base-Path": d(),
+        "X-Base-Path": p(),
         "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
-        ...u ? { "X-Scope-OrgID": u } : {},
-        ...j(r.headers)
+        ...d ? { "X-Scope-OrgID": d } : {},
+        ...L(r.headers)
       },
       method: r.method,
       body: JSON.stringify(r.data),
@@ -157,10 +162,10 @@ async function D(s, e) {
   const o = t === "form" ? {
     ...e == null ? void 0 : e.headers,
     "Content-Type": "multipart/form-data",
-    "X-Base-Path": d()
+    "X-Base-Path": p()
   } : {
     ...e == null ? void 0 : e.headers,
-    "X-Base-Path": d()
+    "X-Base-Path": p()
   };
   switch (i) {
     case "arraybuffer":
@@ -201,14 +206,14 @@ async function D(s, e) {
 }
 export {
   h as A,
-  _ as H,
-  k as a,
-  w as b,
-  x as c,
-  T as d,
-  A as e,
+  E as H,
+  C as a,
+  _ as b,
+  k as c,
+  D as d,
+  P as e,
   c as f,
-  b as g,
-  D as r,
-  q as s
+  x as g,
+  O as r,
+  A as s
 };

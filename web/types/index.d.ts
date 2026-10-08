@@ -217,7 +217,7 @@ export declare interface AIFunctionCall {
 }
 
 export declare interface AIModel {
-    /** Additional configuration`          // Configuration (includes api_key, model_id, base_url, etc.) */
+    /** Configuration (includes api_key, model_id, base_url, etc.) */
     config: Record<string, any>;
     created_at: string;
     /** Creator user ID */
@@ -386,6 +386,33 @@ export declare const api: {
     getUserOrganizations(params: API.getUserOrganizationsParams, options?: {
         [key: string]: any;
     }): Promise<API.Organization[]>;
+    listRateLimitRules(params: API.listRateLimitRulesParams, options?: {
+        [key: string]: any;
+    }): Promise<API.PaginationResponseModelRateLimitRule>;
+    createRateLimitRule(body: API.RateLimitRule, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitRule>;
+    getRateLimitRule(params: API.getRateLimitRuleParams, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitRule>;
+    updateRateLimitRule(params: API.updateRateLimitRuleParams, body: API.RateLimitRule, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitRule>;
+    deleteRateLimitRule(params: API.deleteRateLimitRuleParams, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    getRateLimitSettings(options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitSettings>;
+    updateRateLimitSettings(body: API.RateLimitSettings, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitSettings>;
+    getRateLimitEffective(params: API.getRateLimitEffectiveParams, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitEffective>;
+    resetRateLimitCounters(body: API.RateLimitResetRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitResetResult>;
     getSecuritySettings(options?: {
         [key: string]: any;
     }): Promise<API.SecuritySettings>;
@@ -641,6 +668,15 @@ export declare const api: {
     setServiceAccountPolicy(params: API.setServiceAccountPolicyParams, body: API.SetServiceAccountPolicyRequest, options?: {
         [key: string]: any;
     }): Promise<API.ServiceAccount>;
+    getServiceAccountRateLimit(params: API.getServiceAccountRateLimitParams, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitOverride>;
+    updateServiceAccountRateLimit(params: API.updateServiceAccountRateLimitParams, body: API.RateLimitOverride, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitOverride>;
+    resetServiceAccountRateLimit(params: API.resetServiceAccountRateLimitParams, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitResetResult>;
     getServiceAccountRoles(params: API.getServiceAccountRolesParams, options?: {
         [key: string]: any;
     }): Promise<API.PaginationResponseModelRole>;
@@ -674,6 +710,15 @@ export declare const api: {
     resetUserPassword(params: API.resetUserPasswordParams, body: API.ResetUserPasswordRequest, options?: {
         [key: string]: any;
     }): Promise<API.ResetUserPasswordResponse>;
+    getUserRateLimit(params: API.getUserRateLimitParams, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitOverride>;
+    updateUserRateLimit(params: API.updateUserRateLimitParams, body: API.RateLimitOverride, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitOverride>;
+    resetUserRateLimit(params: API.resetUserRateLimitParams, options?: {
+        [key: string]: any;
+    }): Promise<API.RateLimitResetResult>;
     resendActivationEmail(params: API.resendActivationEmailParams, options?: {
         [key: string]: any;
     }): Promise<string>;
@@ -755,6 +800,7 @@ export declare namespace API {
         deleteAIModelParams,
         deleteChatSessionParams,
         deleteOrganizationParams,
+        deleteRateLimitRuleParams,
         deleteRoleParams,
         deleteServiceAccountAccessKeyParams,
         deleteServiceAccountParams,
@@ -785,11 +831,14 @@ export declare namespace API {
         getLdapUsersParams,
         getLoginUrlParams,
         getOrganizationParams,
+        getRateLimitEffectiveParams,
+        getRateLimitRuleParams,
         getRoleParams,
         getRolePolicyParams,
         getServiceAccountAccessKeysParams,
         getServiceAccountByIdParams,
         getServiceAccountPolicyParams,
+        getServiceAccountRateLimitParams,
         getServiceAccountRolesParams,
         getServiceAccountsParams,
         getSkillFileParams,
@@ -802,6 +851,7 @@ export declare namespace API {
         getUserLogsParams,
         getUserOrganizationsParams,
         getUserParams,
+        getUserRateLimitParams,
         getUserSessionsParams,
         HealthResult,
         ID,
@@ -820,6 +870,7 @@ export declare namespace API {
         listInboxMessagesParams,
         listOrganizationsParams,
         listOrganizationUsersParams,
+        listRateLimitRulesParams,
         listRolesParams,
         listSkillAIToolBindingsParams,
         listSkillFilesTreeParams,
@@ -850,6 +901,7 @@ export declare namespace API {
         PaginationResponseModelFile,
         PaginationResponseModelInboxMessage,
         PaginationResponseModelOrganization,
+        PaginationResponseModelRateLimitRule,
         PaginationResponseModelRole,
         PaginationResponseModelServiceAccount,
         PaginationResponseModelSkill,
@@ -864,13 +916,24 @@ export declare namespace API {
         PolicyDocument,
         previewSkillParams,
         putSkillFileParams,
+        RateLimitBucket,
+        RateLimitEffective,
+        RateLimitOverride,
+        RateLimitResetRequest,
+        RateLimitResetResult,
+        RateLimitRule,
+        RateLimitSettings,
+        RateLimitSource,
+        RateLimitSubjectType,
         removeUserFromOrganizationParams,
         replaceSkillAIToolBindingsParams,
         ReplaceSkillAIToolBindingsRequest,
         resendActivationEmailParams,
+        resetServiceAccountRateLimitParams,
         resetUserPasswordParams,
         ResetUserPasswordRequest,
         ResetUserPasswordResponse,
+        resetUserRateLimitParams,
         ResponseAiapiTraceStatusResponse,
         ResponseArrayAuthorizationapiOAuthProvider,
         ResponseArrayModelAITraceEvent,
@@ -904,6 +967,11 @@ export declare namespace API {
         ResponseModelOAuthSettings,
         ResponseModelOrganization,
         ResponseModelPolicyDocument,
+        ResponseModelRateLimitEffective,
+        ResponseModelRateLimitOverride,
+        ResponseModelRateLimitResetResult,
+        ResponseModelRateLimitRule,
+        ResponseModelRateLimitSettings,
         ResponseModelRole,
         ResponseModelSecuritySettings,
         ResponseModelServiceAccount,
@@ -997,11 +1065,13 @@ export declare namespace API {
         UpdateOAuthSettingsRequest,
         updateOrganizationParams,
         UpdateOrganizationRequest,
+        updateRateLimitRuleParams,
         updateRoleParams,
         UpdateRoleRequest,
         updateServiceAccountAccessKeyParams,
         UpdateServiceAccountAccessKeyRequest,
         updateServiceAccountParams,
+        updateServiceAccountRateLimitParams,
         UpdateServiceAccountRequest,
         updateServiceAccountStatusParams,
         UpdateServiceAccountStatusRequest,
@@ -1016,6 +1086,7 @@ export declare namespace API {
         updateUserOrganizationRolesParams,
         UpdateUserOrganizationRolesRequest,
         updateUserParams,
+        updateUserRateLimitParams,
         UpdateUserRequest,
         updateUserStatusParams,
         UpdateUserStatusRequest,
@@ -1140,6 +1211,33 @@ export declare interface AvatarUploadProps extends Omit<UploadProps, 'onChange'>
 
 declare interface BlobRequestConfig extends Omit<RequestConfig, 'responseType'> {
     responseType: 'blob';
+}
+
+export declare type CallAIArgument = API.SimpleChatMessage[] | CallAIOptions;
+
+/** Options for a programmatic chat turn. */
+export declare interface CallAIOptions {
+    /**
+     * Context messages persisted when a session is created.
+     * Use role `'prompt'` for page/context instructions: they reach the model as
+     * leading user context but stay hidden from the chat history UI.
+     * Role `'system'` is downgraded to `'prompt'` by the backend — session
+     * messages never feed the model's system prompt. For prompts that must
+     * apply to every request, use `registerPageAI({ ephemeralSystemPrompts })`.
+     * Ignored when the message is appended to an existing session.
+     */
+    messages?: API.SimpleChatMessage[];
+    /**
+     * Skill domains sent with this message. Also replaces the selected domains
+     * in the chat UI so later turns in the session keep them.
+     */
+    domains?: string[];
+    /**
+     * Create a new anonymous session before sending. Defaults to true.
+     * When false, the message is sent to the active session. A session is still
+     * created when none is active.
+     */
+    newSession?: boolean;
 }
 
 export declare interface callToolParams {
@@ -1372,6 +1470,11 @@ export declare interface deleteOrganizationParams {
     id: string;
 }
 
+export declare interface deleteRateLimitRuleParams {
+    /** Rule ID */
+    id: string;
+}
+
 export declare interface deleteRoleParams {
     /** Role ID */
     id: string;
@@ -1581,6 +1684,22 @@ export declare interface getOrganizationParams {
     id: string;
 }
 
+export declare interface getRateLimitEffectiveParams {
+    /** anonymous, user, or service_account */
+    subject_type?: string;
+    /** Subject resource id or IP */
+    subject_id?: string;
+    /** HTTP method */
+    method?: string;
+    /** Gin full path */
+    path?: string;
+}
+
+export declare interface getRateLimitRuleParams {
+    /** Rule ID */
+    id: string;
+}
+
 export declare interface getRoleParams {
     /** Role ID */
     id: string;
@@ -1602,6 +1721,11 @@ export declare interface getServiceAccountByIdParams {
 }
 
 export declare interface getServiceAccountPolicyParams {
+    /** Service account ID */
+    id: string;
+}
+
+export declare interface getServiceAccountRateLimitParams {
     /** Service account ID */
     id: string;
 }
@@ -1678,6 +1802,11 @@ export declare interface getUserOrganizationsParams {
 }
 
 export declare interface getUserParams {
+    /** User ID */
+    id: string;
+}
+
+export declare interface getUserRateLimitParams {
     /** User ID */
     id: string;
 }
@@ -1959,6 +2088,19 @@ export declare interface listOrganizationUsersParams {
     search?: string;
 }
 
+export declare interface listRateLimitRulesParams {
+    /** Current page number */
+    current?: number;
+    /** Number of rows per page */
+    page_size?: number;
+    /** Keyword for searching */
+    search?: string;
+    /** Subject type filter */
+    subject_type?: string;
+    /** Subject id filter */
+    subject_id?: string;
+}
+
 declare type ListResult = {
     data: unknown;
     current: number;
@@ -2206,30 +2348,6 @@ export declare interface OrganizationUser {
     username: string;
 }
 
-/** Options for a programmatic chat turn. */
-export declare interface CallAIOptions {
-    /**
-     * Context messages persisted when a session is created.
-     * Use role `'prompt'` for page/context instructions: they reach the model as
-     * leading user context but stay hidden from the chat history UI.
-     * Ignored when the message is appended to an existing session.
-     */
-    messages?: API.SimpleChatMessage[];
-    /**
-     * Skill domains sent with this message. Also replaces the selected domains
-     * in the chat UI so later turns in the session keep them.
-     */
-    domains?: string[];
-    /**
-     * Create a new anonymous session before sending. Defaults to true.
-     * When false, the message is sent to the active session. A session is still
-     * created when none is active.
-     */
-    newSession?: boolean;
-}
-
-export declare type CallAIArgument = API.SimpleChatMessage[] | CallAIOptions;
-
 export declare interface PageAIOptions {
     ephemeralSystemPrompts?: string[];
     tools?: RegisteredClientTool[];
@@ -2294,6 +2412,15 @@ export declare interface PaginationResponseModelOrganization {
     code: string;
     current: number;
     data: Organization[];
+    page_size: number;
+    total: number;
+    trace_id: string;
+}
+
+export declare interface PaginationResponseModelRateLimitRule {
+    code: string;
+    current: number;
+    data: RateLimitRule[];
     page_size: number;
     total: number;
     trace_id: string;
@@ -2442,6 +2569,79 @@ export declare interface putSkillFileParams {
     path: string;
 }
 
+export declare interface RateLimitBucket {
+    burst: number;
+    enabled: boolean;
+    period: string;
+    quota: number;
+    quota_period: string;
+    rate: number;
+    source: string;
+}
+
+export declare interface RateLimitEffective {
+    method: string;
+    path: string;
+    route: RateLimitBucket;
+    shared: RateLimitBucket;
+    subject_id: string;
+    subject_type: string;
+}
+
+export declare interface RateLimitOverride {
+    burst: number;
+    clear: boolean;
+    enabled: boolean;
+    inherited: boolean;
+    period: string;
+    quota: number;
+    quota_period: string;
+    rate: number;
+}
+
+export declare interface RateLimitResetRequest {
+    rule_id: string;
+    scope: string;
+    subject_id: string;
+    subject_type: RateLimitSubjectType;
+}
+
+export declare interface RateLimitResetResult {
+    deleted: number;
+}
+
+export declare interface RateLimitRule {
+    burst: number;
+    created_at: string;
+    enabled: boolean;
+    id: string;
+    method: string;
+    path: string;
+    period: string;
+    quota: number;
+    quota_period: string;
+    rate: number;
+    source: RateLimitSource;
+    subject_id: string;
+    subject_type: RateLimitSubjectType;
+    updated_at: string;
+}
+
+export declare interface RateLimitSettings {
+    anonymous: RateLimitBucket;
+    cluster: boolean;
+    enabled: boolean;
+    fail_open: boolean;
+    memory_warn: boolean;
+    service_account: RateLimitBucket;
+    store: string;
+    user: RateLimitBucket;
+}
+
+export declare type RateLimitSource = "builtin" | "yaml" | "code" | "db";
+
+export declare type RateLimitSubjectType = "anonymous" | "user" | "service_account";
+
 declare interface RawRequestConfig extends Omit<RequestConfig, 'rawResponse'> {
     rawResponse: true;
 }
@@ -2497,6 +2697,11 @@ export declare interface resendActivationEmailParams {
     id: string;
 }
 
+export declare interface resetServiceAccountRateLimitParams {
+    /** Service account ID */
+    id: string;
+}
+
 export declare interface resetUserPasswordParams {
     /** User ID */
     id: string;
@@ -2508,6 +2713,11 @@ export declare interface ResetUserPasswordRequest {
 
 export declare interface ResetUserPasswordResponse {
     new_password: string;
+}
+
+export declare interface resetUserRateLimitParams {
+    /** User ID */
+    id: string;
 }
 
 export declare interface ResponseAiapiTraceStatusResponse {
@@ -2737,6 +2947,41 @@ export declare interface ResponseModelOrganization {
 export declare interface ResponseModelPolicyDocument {
     code: string;
     data: PolicyDocument;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelRateLimitEffective {
+    code: string;
+    data: RateLimitEffective;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelRateLimitOverride {
+    code: string;
+    data: RateLimitOverride;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelRateLimitResetResult {
+    code: string;
+    data: RateLimitResetResult;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelRateLimitRule {
+    code: string;
+    data: RateLimitRule;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseModelRateLimitSettings {
+    code: string;
+    data: RateLimitSettings;
     err: string;
     trace_id: string;
 }
@@ -3679,6 +3924,11 @@ export declare interface UpdateOrganizationRequest {
     status: string;
 }
 
+export declare interface updateRateLimitRuleParams {
+    /** Rule ID */
+    id: string;
+}
+
 export declare interface updateRoleParams {
     /** Role ID */
     id: string;
@@ -3708,6 +3958,11 @@ export declare interface UpdateServiceAccountAccessKeyRequest {
 }
 
 export declare interface updateServiceAccountParams {
+    /** Service account ID */
+    id: string;
+}
+
+export declare interface updateServiceAccountRateLimitParams {
     /** Service account ID */
     id: string;
 }
@@ -3781,6 +4036,11 @@ export declare interface UpdateUserOrganizationRolesRequest {
 }
 
 export declare interface updateUserParams {
+    /** User ID */
+    id: string;
+}
+
+export declare interface updateUserRateLimitParams {
     /** User ID */
     id: string;
 }

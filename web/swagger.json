@@ -3,7 +3,7 @@
     "info": {
         "title": "EZ Console API",
         "contact": {},
-        "version": "v1.19.1"
+        "version": "v1.19.4"
     },
     "paths": {
         "/api/ai/chat/sessions": {

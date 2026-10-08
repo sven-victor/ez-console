@@ -1,6 +1,6 @@
-import { r as s } from "./client.js";
+import { r as e } from "./client.js";
 async function p(t, a) {
-  return s("/api/ldap-settings/test", {
+  return e("/api/ldap-settings/test", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -10,7 +10,7 @@ async function p(t, a) {
   });
 }
 async function m(t, a) {
-  return s(
+  return e(
     "/api/system/audit-logs",
     {
       method: "GET",
@@ -26,13 +26,13 @@ async function m(t, a) {
   );
 }
 async function c(t) {
-  return s("/api/system/base-settings", {
+  return e("/api/system/base-settings", {
     method: "GET",
     ...t || {}
   });
 }
 async function u(t, a) {
-  return s("/api/system/base-settings", {
+  return e("/api/system/base-settings", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -41,8 +41,8 @@ async function u(t, a) {
     ...a || {}
   });
 }
-async function d(t) {
-  return s(
+async function y(t) {
+  return e(
     "/api/system/base-settings/clear-cache",
     {
       method: "POST",
@@ -50,20 +50,20 @@ async function d(t) {
     }
   );
 }
-async function y(t) {
-  return s("/api/system/health", {
+async function d(t) {
+  return e("/api/system/health", {
     method: "GET",
     ...t || {}
   });
 }
 async function l(t) {
-  return s("/api/system/info", {
+  return e("/api/system/info", {
     method: "GET",
     ...t || {}
   });
 }
 async function h(t) {
-  return s(
+  return e(
     "/api/system/ldap-settings",
     {
       method: "GET",
@@ -72,7 +72,7 @@ async function h(t) {
   );
 }
 async function T(t, a) {
-  return s("/api/system/ldap-settings", {
+  return e("/api/system/ldap-settings", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -81,8 +81,8 @@ async function T(t, a) {
     ...a || {}
   });
 }
-async function g(t, a) {
-  return s(
+async function f(t, a) {
+  return e(
     "/api/system/ldap-settings/import",
     {
       method: "POST",
@@ -94,14 +94,14 @@ async function g(t, a) {
     }
   );
 }
-async function f(t) {
-  return s("/api/system/oauth-settings", {
+async function g(t) {
+  return e("/api/system/oauth-settings", {
     method: "GET",
     ...t || {}
   });
 }
 async function S(t, a) {
-  return s("/api/system/oauth-settings", {
+  return e("/api/system/oauth-settings", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -111,7 +111,7 @@ async function S(t, a) {
   });
 }
 async function P(t, a) {
-  return s(
+  return e(
     "/api/system/oauth-settings/test",
     {
       method: "POST",
@@ -123,8 +123,8 @@ async function P(t, a) {
     }
   );
 }
-async function k(t, a) {
-  return s(
+async function E(t, a) {
+  return e(
     "/api/system/oauth-settings/test-callback",
     {
       method: "POST",
@@ -136,8 +136,8 @@ async function k(t, a) {
     }
   );
 }
-async function E(t, a) {
-  return s(
+async function k(t, a) {
+  return e(
     "/api/system/organizations",
     {
       method: "GET",
@@ -153,7 +153,7 @@ async function E(t, a) {
   );
 }
 async function C(t, a) {
-  return s("/api/system/organizations", {
+  return e("/api/system/organizations", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -162,21 +162,21 @@ async function C(t, a) {
     ...a || {}
   });
 }
-async function O(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function j(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/organizations/${n}`,
     {
       method: "GET",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
-async function $(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/organizations/${e}`,
+async function O(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/organizations/${s}`,
     {
       method: "PUT",
       headers: {
@@ -188,20 +188,20 @@ async function $(t, a, n) {
     }
   );
 }
-async function j(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function $(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/organizations/${n}`,
     {
       method: "DELETE",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
 async function q(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/organizations/${n}/users`,
     {
       method: "GET",
@@ -210,16 +210,16 @@ async function q(t, a) {
         current: "1",
         // page_size has a default value: 10
         page_size: "10",
-        ...e
+        ...s
       },
       ...a || {}
     }
   );
 }
 async function G(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/organizations/${e}/users`,
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/organizations/${s}/users`,
     {
       method: "POST",
       headers: {
@@ -232,9 +232,9 @@ async function G(t, a, n) {
   );
 }
 async function z(t, a) {
-  const { id: n, user_id: e, ...i } = t;
-  return s(
-    `/api/system/organizations/${n}/users/${e}`,
+  const { id: n, user_id: s, ...i } = t;
+  return e(
+    `/api/system/organizations/${n}/users/${s}`,
     {
       method: "DELETE",
       params: { ...i },
@@ -243,33 +243,142 @@ async function z(t, a) {
   );
 }
 async function U(t, a, n) {
-  const { id: e, user_id: i, ...o } = t;
-  return s(
-    `/api/system/organizations/${e}/users/${i}/roles`,
+  const { id: s, user_id: i, ...r } = t;
+  return e(
+    `/api/system/organizations/${s}/users/${i}/roles`,
     {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
-      params: { ...o },
+      params: { ...r },
       data: a,
       ...n || {}
     }
   );
 }
-async function b(t, a) {
-  const { user_id: n, ...e } = t;
-  return s(
+async function L(t, a) {
+  const { user_id: n, ...s } = t;
+  return e(
     `/api/system/organizations/user/${n}`,
     {
       method: "GET",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
-async function _(t) {
-  return s(
+async function R(t, a) {
+  return e(
+    "/api/system/rate-limit-rules",
+    {
+      method: "GET",
+      params: {
+        ...t
+      },
+      ...a || {}
+    }
+  );
+}
+async function b(t, a) {
+  return e(
+    "/api/system/rate-limit-rules",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: t,
+      ...a || {}
+    }
+  );
+}
+async function _(t, a) {
+  const { id: n, ...s } = t;
+  return e(
+    `/api/system/rate-limit-rules/${n}`,
+    {
+      method: "GET",
+      params: { ...s },
+      ...a || {}
+    }
+  );
+}
+async function D(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/rate-limit-rules/${s}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...i },
+      data: a,
+      ...n || {}
+    }
+  );
+}
+async function v(t, a) {
+  const { id: n, ...s } = t;
+  return e(
+    `/api/system/rate-limit-rules/${n}`,
+    {
+      method: "DELETE",
+      params: { ...s },
+      ...a || {}
+    }
+  );
+}
+async function F(t) {
+  return e(
+    "/api/system/rate-limit-settings",
+    {
+      method: "GET",
+      ...t || {}
+    }
+  );
+}
+async function w(t, a) {
+  return e(
+    "/api/system/rate-limit-settings",
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: t,
+      ...a || {}
+    }
+  );
+}
+async function B(t, a) {
+  return e(
+    "/api/system/rate-limit/effective",
+    {
+      method: "GET",
+      params: {
+        ...t
+      },
+      ...a || {}
+    }
+  );
+}
+async function A(t, a) {
+  return e(
+    "/api/system/rate-limit/reset",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: t,
+      ...a || {}
+    }
+  );
+}
+async function x(t) {
+  return e(
     "/api/system/security-settings",
     {
       method: "GET",
@@ -277,8 +386,8 @@ async function _(t) {
     }
   );
 }
-async function L(t, a) {
-  return s(
+async function I(t, a) {
+  return e(
     "/api/system/security-settings",
     {
       method: "PUT",
@@ -290,8 +399,8 @@ async function L(t, a) {
     }
   );
 }
-async function D(t, a) {
-  return s(
+async function J(t, a) {
+  return e(
     "/api/system/security-settings/check-password",
     {
       method: "POST",
@@ -303,14 +412,14 @@ async function D(t, a) {
     }
   );
 }
-async function F(t) {
-  return s("/api/system/site", {
+async function M(t) {
+  return e("/api/system/site", {
     method: "GET",
     ...t || {}
   });
 }
-async function v(t, a) {
-  return s("/api/system/skills", {
+async function N(t, a) {
+  return e("/api/system/skills", {
     method: "GET",
     params: {
       // current has a default value: 1
@@ -322,8 +431,8 @@ async function v(t, a) {
     ...a || {}
   });
 }
-async function w(t, a) {
-  return s("/api/system/skills", {
+async function H(t, a) {
+  return e("/api/system/skills", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -332,17 +441,17 @@ async function w(t, a) {
     ...a || {}
   });
 }
-async function B(t, a) {
-  const { id: n, ...e } = t;
-  return s(`/api/system/skills/${n}`, {
+async function K(t, a) {
+  const { id: n, ...s } = t;
+  return e(`/api/system/skills/${n}`, {
     method: "GET",
-    params: { ...e },
+    params: { ...s },
     ...a || {}
   });
 }
-async function A(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(`/api/system/skills/${e}`, {
+async function Q(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(`/api/system/skills/${s}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -352,17 +461,17 @@ async function A(t, a, n) {
     ...n || {}
   });
 }
-async function x(t, a) {
-  const { id: n, ...e } = t;
-  return s(`/api/system/skills/${n}`, {
+async function V(t, a) {
+  const { id: n, ...s } = t;
+  return e(`/api/system/skills/${n}`, {
     method: "DELETE",
-    params: { ...e },
+    params: { ...s },
     ...a || {}
   });
 }
-async function I(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function W(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/skills/${n}/ai-tool-bindings`,
     {
       method: "GET",
@@ -371,16 +480,16 @@ async function I(t, a) {
         current: "1",
         // page_size has a default value: 10
         page_size: "10",
-        ...e
+        ...s
       },
       ...a || {}
     }
   );
 }
-async function J(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/skills/${e}/ai-tool-bindings`,
+async function X(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/skills/${s}/ai-tool-bindings`,
     {
       method: "PUT",
       headers: {
@@ -392,10 +501,10 @@ async function J(t, a, n) {
     }
   );
 }
-async function M(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/skills/${e}/dirs`,
+async function Y(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/skills/${s}/dirs`,
     {
       method: "POST",
       headers: {
@@ -407,45 +516,45 @@ async function M(t, a, n) {
     }
   );
 }
-async function N(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function Z(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/skills/${n}/files`,
     {
       method: "GET",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
-async function R(t, a) {
-  const { id: n, path: e, ...i } = t;
-  return s(`/api/system/skills/${n}/files/${e}`, {
+async function tt(t, a) {
+  const { id: n, path: s, ...i } = t;
+  return e(`/api/system/skills/${n}/files/${s}`, {
     method: "GET",
     params: { ...i },
     responseType: "text",
     ...a || {}
   });
 }
-async function H(t, a, n) {
-  const { id: e, path: i, ...o } = t;
-  return s(
-    `/api/system/skills/${e}/files/${i}`,
+async function at(t, a, n) {
+  const { id: s, path: i, ...r } = t;
+  return e(
+    `/api/system/skills/${s}/files/${i}`,
     {
       method: "PUT",
       headers: {
         "Content-Type": "application/octet-stream"
       },
-      params: { ...o },
+      params: { ...r },
       data: a,
       ...n || {}
     }
   );
 }
-async function K(t, a) {
-  const { id: n, path: e, ...i } = t;
-  return s(
-    `/api/system/skills/${n}/files/${e}`,
+async function et(t, a) {
+  const { id: n, path: s, ...i } = t;
+  return e(
+    `/api/system/skills/${n}/files/${s}`,
     {
       method: "DELETE",
       params: { ...i },
@@ -453,10 +562,10 @@ async function K(t, a) {
     }
   );
 }
-async function Q(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/skills/${e}/move-path`,
+async function st(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/skills/${s}/move-path`,
     {
       method: "PUT",
       headers: {
@@ -468,21 +577,21 @@ async function Q(t, a, n) {
     }
   );
 }
-async function V(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function nt(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/skills/${n}/preview`,
     {
       method: "GET",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
-async function W(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/skills/${e}/status`,
+async function it(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/skills/${s}/status`,
     {
       method: "PUT",
       headers: {
@@ -494,8 +603,8 @@ async function W(t, a, n) {
     }
   );
 }
-async function X(t, a) {
-  return s("/api/system/skills/clone", {
+async function rt(t, a) {
+  return e("/api/system/skills/clone", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -504,35 +613,35 @@ async function X(t, a) {
     ...a || {}
   });
 }
-async function Y(t) {
-  return s("/api/system/skills/domains", {
+async function ot(t) {
+  return e("/api/system/skills/domains", {
     method: "GET",
     ...t || {}
   });
 }
-async function Z(t, a, n) {
-  const e = new FormData();
-  return a && e.append("file", a), Object.keys(t).forEach((i) => {
-    const o = t[i];
-    o != null && (typeof o == "object" && !(o instanceof File) ? o instanceof Array ? o.forEach((r) => e.append(i, r || "")) : e.append(
+async function pt(t, a, n) {
+  const s = new FormData();
+  return a && s.append("file", a), Object.keys(t).forEach((i) => {
+    const r = t[i];
+    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((o) => s.append(i, o || "")) : s.append(
       i,
-      new Blob([JSON.stringify(o)], { type: "application/json" })
-    ) : e.append(i, o));
-  }), s("/api/system/skills/upload", {
+      new Blob([JSON.stringify(r)], { type: "application/json" })
+    ) : s.append(i, r));
+  }), e("/api/system/skills/upload", {
     method: "POST",
-    data: e,
+    data: s,
     requestType: "form",
     ...n || {}
   });
 }
-async function tt(t) {
-  return s("/api/system/smtp-settings", {
+async function mt(t) {
+  return e("/api/system/smtp-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function at(t, a) {
-  return s("/api/system/smtp-settings", {
+async function ct(t, a) {
+  return e("/api/system/smtp-settings", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -541,8 +650,8 @@ async function at(t, a) {
     ...a || {}
   });
 }
-async function st(t) {
-  return s(
+async function ut(t) {
+  return e(
     "/api/system/smtp-settings/fields",
     {
       method: "GET",
@@ -550,8 +659,8 @@ async function st(t) {
     }
   );
 }
-async function et(t, a) {
-  return s(
+async function yt(t, a) {
+  return e(
     "/api/system/smtp-settings/test",
     {
       method: "POST",
@@ -563,14 +672,14 @@ async function et(t, a) {
     }
   );
 }
-async function nt(t) {
-  return s("/api/system/task-settings", {
+async function dt(t) {
+  return e("/api/system/task-settings", {
     method: "GET",
     ...t || {}
   });
 }
-async function it(t, a) {
-  return s("/api/system/task-settings", {
+async function lt(t, a) {
+  return e("/api/system/task-settings", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -579,8 +688,8 @@ async function it(t, a) {
     ...a || {}
   });
 }
-async function ot(t) {
-  return s(
+async function ht(t) {
+  return e(
     "/api/system/task-settings/fields",
     {
       method: "GET",
@@ -588,8 +697,8 @@ async function ot(t) {
     }
   );
 }
-async function rt(t) {
-  return s(
+async function Tt(t) {
+  return e(
     "/api/system/task-settings/log-storage-backends",
     {
       method: "GET",
@@ -597,8 +706,8 @@ async function rt(t) {
     }
   );
 }
-async function pt(t, a) {
-  return s("/api/system/toolsets", {
+async function ft(t, a) {
+  return e("/api/system/toolsets", {
     method: "GET",
     params: {
       // current has a default value: 1
@@ -610,8 +719,8 @@ async function pt(t, a) {
     ...a || {}
   });
 }
-async function mt(t, a) {
-  return s("/api/system/toolsets", {
+async function gt(t, a) {
+  return e("/api/system/toolsets", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -620,17 +729,17 @@ async function mt(t, a) {
     ...a || {}
   });
 }
-async function ct(t, a) {
-  const { id: n, ...e } = t;
-  return s(`/api/system/toolsets/${n}`, {
+async function St(t, a) {
+  const { id: n, ...s } = t;
+  return e(`/api/system/toolsets/${n}`, {
     method: "GET",
-    params: { ...e },
+    params: { ...s },
     ...a || {}
   });
 }
-async function ut(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(`/api/system/toolsets/${e}`, {
+async function Pt(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(`/api/system/toolsets/${s}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -640,21 +749,21 @@ async function ut(t, a, n) {
     ...n || {}
   });
 }
-async function dt(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function Et(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/toolsets/${n}`,
     {
       method: "DELETE",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
-async function yt(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/toolsets/${e}/call`,
+async function kt(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/toolsets/${s}/call`,
     {
       method: "POST",
       headers: {
@@ -666,10 +775,10 @@ async function yt(t, a, n) {
     }
   );
 }
-async function lt(t, a, n) {
-  const { id: e, ...i } = t;
-  return s(
-    `/api/system/toolsets/${e}/status`,
+async function Ct(t, a, n) {
+  const { id: s, ...i } = t;
+  return e(
+    `/api/system/toolsets/${s}/status`,
     {
       method: "PUT",
       headers: {
@@ -681,30 +790,30 @@ async function lt(t, a, n) {
     }
   );
 }
-async function ht(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function jt(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/toolsets/${n}/test`,
     {
       method: "POST",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
-async function Tt(t, a) {
-  const { id: n, ...e } = t;
-  return s(
+async function Ot(t, a) {
+  const { id: n, ...s } = t;
+  return e(
     `/api/system/toolsets/${n}/tools`,
     {
       method: "GET",
-      params: { ...e },
+      params: { ...s },
       ...a || {}
     }
   );
 }
-async function gt(t) {
-  return s(
+async function $t(t) {
+  return e(
     "/api/system/toolsets/types",
     {
       method: "GET",
@@ -712,82 +821,91 @@ async function gt(t) {
     }
   );
 }
-const St = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   addUserToOrganization: G,
-  callTool: yt,
-  checkPasswordComplexity: D,
-  clearSiteCache: d,
-  cloneSkill: X,
+  callTool: kt,
+  checkPasswordComplexity: J,
+  clearSiteCache: y,
+  cloneSkill: rt,
   createOrganization: C,
-  createSkill: w,
-  createSkillDir: M,
-  createToolSet: mt,
-  deleteOrganization: j,
-  deleteSkill: x,
-  deleteSkillPath: K,
-  deleteToolSet: dt,
+  createRateLimitRule: b,
+  createSkill: H,
+  createSkillDir: Y,
+  createToolSet: gt,
+  deleteOrganization: $,
+  deleteRateLimitRule: v,
+  deleteSkill: V,
+  deleteSkillPath: et,
+  deleteToolSet: Et,
   getAuditLogs: m,
   getLdapSettings: h,
-  getOauthSettings: f,
-  getOrganization: O,
-  getSecuritySettings: _,
-  getSiteConfig: F,
-  getSkill: B,
-  getSkillFile: R,
-  getSmtpSettingFields: st,
-  getSmtpSettings: tt,
+  getOauthSettings: g,
+  getOrganization: j,
+  getRateLimitEffective: B,
+  getRateLimitRule: _,
+  getRateLimitSettings: F,
+  getSecuritySettings: x,
+  getSiteConfig: M,
+  getSkill: K,
+  getSkillFile: tt,
+  getSmtpSettingFields: ut,
+  getSmtpSettings: mt,
   getSystemBaseSettings: c,
   getSystemInfo: l,
-  getTaskSettingFields: ot,
-  getTaskSettings: nt,
-  getToolSet: ct,
-  getToolSetTools: Tt,
-  getToolSetTypeDefinitions: gt,
-  getUserOrganizations: b,
-  healthCheck: y,
-  importLdapUsers: g,
-  listLogStorageBackends: rt,
+  getTaskSettingFields: ht,
+  getTaskSettings: dt,
+  getToolSet: St,
+  getToolSetTools: Ot,
+  getToolSetTypeDefinitions: $t,
+  getUserOrganizations: L,
+  healthCheck: d,
+  importLdapUsers: f,
+  listLogStorageBackends: Tt,
   listOrganizationUsers: q,
-  listOrganizations: E,
-  listSkillAiToolBindings: I,
-  listSkillDomains: Y,
-  listSkillFilesTree: N,
-  listSkills: v,
-  listToolSets: pt,
-  moveSkillPath: Q,
-  previewSkill: V,
-  putSkillFile: H,
+  listOrganizations: k,
+  listRateLimitRules: R,
+  listSkillAiToolBindings: W,
+  listSkillDomains: ot,
+  listSkillFilesTree: Z,
+  listSkills: N,
+  listToolSets: ft,
+  moveSkillPath: st,
+  previewSkill: nt,
+  putSkillFile: at,
   removeUserFromOrganization: z,
-  replaceSkillAiToolBindings: J,
+  replaceSkillAiToolBindings: X,
+  resetRateLimitCounters: A,
   testLdapConnection: p,
-  testOauthCallback: k,
+  testOauthCallback: E,
   testOauthConnection: P,
-  testSmtpConnection: et,
-  testToolSet: ht,
+  testSmtpConnection: yt,
+  testToolSet: jt,
   updateLdapSettings: T,
   updateOauthSettings: S,
-  updateOrganization: $,
-  updateSecuritySettings: L,
-  updateSkill: A,
-  updateSkillStatus: W,
-  updateSmtpSettings: at,
+  updateOrganization: O,
+  updateRateLimitRule: D,
+  updateRateLimitSettings: w,
+  updateSecuritySettings: I,
+  updateSkill: Q,
+  updateSkillStatus: it,
+  updateSmtpSettings: ct,
   updateSystemBaseSettings: u,
-  updateTaskSettings: it,
-  updateToolSet: ut,
-  updateToolSetStatus: lt,
+  updateTaskSettings: lt,
+  updateToolSet: Pt,
+  updateToolSetStatus: Ct,
   updateUserOrganizationRoles: U,
-  uploadSkill: Z
+  uploadSkill: pt
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  St as a,
+  Gt as a,
   q as b,
   C as c,
-  j as d,
+  $ as d,
   G as e,
   U as f,
-  O as g,
-  E as l,
+  j as g,
+  k as l,
   z as r,
-  $ as u
+  O as u
 };
