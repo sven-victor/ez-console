@@ -70,5 +70,6 @@ __debug_bin*
 /demo/local
 
 /pkg/api/api_local.go
+/pkg/toolset/local_toolset.go
 
 /skills/

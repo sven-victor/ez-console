@@ -63,13 +63,19 @@ type DataSource struct {
 	Cache    bool `json:"cache,omitempty"`     // Whether to cache the results
 	CacheTTL int  `json:"cache_ttl,omitempty"` // Cache TTL in seconds (0 = no expiration)
 
-	// Filter conditions (flexible filtering for different source types)
-	// For toolsets: {"type": "webhook"} to filter by toolset type
-	// For internal: {"status": "active"} to filter by status, etc.
+	// Filter conditions are sent as query parameters.
+	// For toolsets: {"type": "utils"} filters GET /api/system/toolsets?type=utils.
+	// For users: {"status": "normal"} filters the user list by status.
 	Filter map[string]interface{} `json:"filter,omitempty"`
 
-	// Parameters for API requests (query params or request body)
+	// Parameters for API requests (query params or request body).
+	// Filter keys override params keys. The search box overrides both.
 	Params map[string]interface{} `json:"params,omitempty"`
+
+	// SearchKey is the query parameter that receives the select search text.
+	// Toolset list uses "search". User list uses "keywords".
+	// The client defaults to "search" when this is empty.
+	SearchKey string `json:"search_key,omitempty"`
 
 	// DependsOn specifies field dependencies (field names that this field depends on)
 	// When dependent fields change, this field's options should be reloaded

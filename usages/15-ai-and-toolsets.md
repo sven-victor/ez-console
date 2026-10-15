@@ -1541,7 +1541,7 @@ Additionally, `configFieldToPropertySchema()` (`pkg/util/config_schema.go`) maps
 | FieldType | Schema mapping |
 |-----------|---------------|
 | `password` | `type: "string"`, `format: "password"` |
-| `select` with `DataSource` | `x-ui-widget: "remoteSelect"` or `"toolsetsSelect"` + `x-data-source: {...}` |
+| `select` with `DataSource` | `type: "string"`, `x-ui-widget: "remoteSelect"` or `"toolsetsSelect"`, plus `x-data-source` |
 | `object` | `type: "object"`, `x-ui-widget: "objectEditor"` |
 
 ### UI Schema and Layout
@@ -1657,30 +1657,80 @@ The editor supports:
 
 #### RemoteSelect (`ui:widget = "remoteSelect"`)
 
-A `Select` dropdown that fetches options from a remote API at render time:
+A searchable `Select` that loads options from `x-data-source`. A string field is a single select. A `[]string` field with `uniqueItems=true` and the same widget is a multi-select: RJSF renders an array that carries `ui:widget` as one dropdown, stores a `string[]`, and collapses overflow tags with `maxTagCount="responsive"`.
+
+Legacy `FieldTypeSelect` plus `DataSource` still produces a single string. Multi-select is declared on the JSON Schema (V2) field:
 
 ```go
-// Legacy ConfigField approach:
+OwnerUser string `json:"owner_user,omitempty" jsonschema:"title=Owner user" jsonschema_extras:"x-ui-widget=remoteSelect"`
+
+LinkedToolset []string `json:"linked_toolset,omitempty" jsonschema:"uniqueItems=true,title=Linked toolsets" jsonschema_extras:"x-ui-widget=toolsetsSelect"`
+```
+
+`annotateDataSource` (or `ConfigField.DataSource` for a single select) attaches `x-data-source`. The widget merges query parameters in this order: defaults `current=1` and `page_size=20`, then `params`, then `filter`, then the search box. Later keys replace earlier ones.
+
+| `x-data-source` field | Role |
+|-----------|------|
+| `type` | `"api"` calls `url`. `"toolsets"` calls `GET /api/system/toolsets`. |
+| `url`, `method` | Used when `type` is `"api"`. A path starting with `/` goes through the app client; any other URL uses axios. The body may be an array or `{ "data": [] }`. |
+| `label_key`, `value_key` | Option label and stored value. Toolset lists fall back to `name` and `id`. |
+| `params` | Extra query parameters, such as `current` and `page_size`. |
+| `filter` | Fixed query parameters. Toolset type uses the list parameter `type`, for example `{"type": "utils"}` → `GET /api/system/toolsets?type=utils`. User status uses `{"status": "normal"}`. |
+| `search_key` | Query parameter that receives the search text. Defaults to `search`. The user list uses `keywords`. |
+| `cache_ttl` | Cache and freshness time in seconds. The cache key includes `type`, method, URL, and the full query, so a different filter or keyword does not reuse another result. |
+
+The dropdown does not filter the current page locally. Typing waits 300ms, then refetches. Closing the dropdown clears the keyword and loads the first page again. A selected value that is absent from the current page keeps the last label seen in this session; until a response includes it, the control shows the raw id.
+
+```go
+// Single user select with remote search.
+annotateDataSource(def, "owner_user", map[string]any{
+    "type":       "api",
+    "url":        "/api/authorization/users",
+    "method":     "GET",
+    "label_key":  "username",
+    "value_key":  "id",
+    "search_key": "keywords",
+    "cache":      true,
+    "cache_ttl":  60,
+    "params":     map[string]any{"current": 1, "page_size": 20},
+})
+
+// Multi-select limited to utils toolsets.
+annotateDataSource(def, "linked_toolset", map[string]any{
+    "type":       "toolsets",
+    "label_key":  "name",
+    "value_key":  "id",
+    "search_key": "search",
+    "cache":      true,
+    "cache_ttl":  60,
+    "filter":     map[string]any{"type": "utils"},
+    "params":     map[string]any{"current": 1, "page_size": 20},
+})
+```
+
+The same `DataSource` fields work on a legacy single select:
+
+```go
 {
     Name: "webhook_id",
     Type: util.FieldTypeSelect,
     DataSource: &util.DataSource{
-        Type:     util.DataSourceTypeAPI,
-        URL:      "/api/webhooks",
-        Method:   "GET",
-        LabelKey: "name",
-        ValueKey: "resource_id",
-        Cache:    true,
-        CacheTTL: 60,
+        Type:      util.DataSourceTypeAPI,
+        URL:       "/api/webhooks",
+        Method:    "GET",
+        LabelKey:  "name",
+        ValueKey:  "resource_id",
+        SearchKey: "search",
+        Filter:    map[string]interface{}{"status": "active"},
+        Cache:     true,
+        CacheTTL:  60,
     },
 }
 ```
 
-This generates a schema with `x-data-source` and `x-ui-widget: "remoteSelect"`. The frontend `RemoteSelectWidget` reads the `x-data-source` property and calls the specified API to populate options.
-
 #### ToolsetsSelect (`ui:widget = "toolsetsSelect"`)
 
-A specialized variant of `RemoteSelect` that fetches available toolsets via `listToolSets`. Triggered when `DataSource.Type` is `"toolsets"`.
+`ToolsetsSelect` is `RemoteSelect` with `x-data-source.type` forced to `"toolsets"`. Filtering, search, paging, and multi-select behave as above. `GET /api/system/toolsets` accepts `type` (toolset type) and `search` (keyword). Set `filter` to `{"type": "utils"}` to list only the utils toolset, and set `search_key` to `"search"`.
 
 ### Using JsonSchemaConfigForm in Pages
 
