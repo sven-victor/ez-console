@@ -659,6 +659,36 @@ export default {
         usernameTooltip: 'Username of the MCP server',
         passwordTooltip: 'Password of the MCP server',
         tokenTooltip: 'Token of the MCP server',
+        form: {
+          endpoint: {
+            label: 'Endpoint',
+            description: 'The endpoint of the MCP server',
+          },
+          protocol: {
+            label: 'Protocol',
+            description: 'The protocol of the MCP server',
+          },
+          auth_type: {
+            label: 'Authentication Type',
+            description: 'The authentication type',
+          },
+          username: {
+            label: 'Username',
+            description: 'The username for the MCP server',
+          },
+          password: {
+            label: 'Password',
+            description: 'The password for the MCP server',
+          },
+          args: {
+            label: 'Arguments',
+            description: 'Optional MCP client options. Supported keys: headers (or header) as an object of HTTP header name/value pairs; proxy as an http/https/socks5/socks5h URL.',
+          },
+          token: {
+            label: 'Bearer Token',
+            description: 'The bearer token for the MCP server',
+          },
+        },
       },
     },
   },

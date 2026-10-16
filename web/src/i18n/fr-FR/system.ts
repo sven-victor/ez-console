@@ -602,6 +602,36 @@ export default {
         usernameTooltip: 'Nom d\'utilisateur du serveur MCP',
         passwordTooltip: 'Mot de passe du serveur MCP',
         tokenTooltip: 'Jeton du serveur MCP',
+        form: {
+          endpoint: {
+            label: 'Point de terminaison',
+            description: 'Le point de terminaison du serveur MCP',
+          },
+          protocol: {
+            label: 'Protocole',
+            description: 'Le protocole du serveur MCP',
+          },
+          auth_type: {
+            label: 'Type d\'authentification',
+            description: 'Le type d\'authentification',
+          },
+          username: {
+            label: 'Nom d\'utilisateur',
+            description: 'Le nom d\'utilisateur du serveur MCP',
+          },
+          password: {
+            label: 'Mot de passe',
+            description: 'Le mot de passe du serveur MCP',
+          },
+          args: {
+            label: 'Arguments',
+            description: 'Options facultatives du client MCP. Clés prises en charge : headers (ou header) comme objet de paires nom/valeur d\'en-têtes HTTP ; proxy comme URL http/https/socks5/socks5h.',
+          },
+          token: {
+            label: 'Jeton Bearer',
+            description: 'Le jeton Bearer du serveur MCP',
+          },
+        },
       },
     },
     organizations: {

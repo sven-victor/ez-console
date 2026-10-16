@@ -655,6 +655,36 @@ export default {
         usernameTooltip: 'MCP服务器的用户名',
         passwordTooltip: 'MCP服务器的密码',
         tokenTooltip: 'MCP服务器的令牌',
+        form: {
+          endpoint: {
+            label: '端点',
+            description: 'MCP 服务器的端点',
+          },
+          protocol: {
+            label: '协议',
+            description: 'MCP 服务器的协议',
+          },
+          auth_type: {
+            label: '认证类型',
+            description: '认证方式',
+          },
+          username: {
+            label: '用户名',
+            description: 'MCP 服务器的用户名',
+          },
+          password: {
+            label: '密码',
+            description: 'MCP 服务器的密码',
+          },
+          args: {
+            label: '参数',
+            description: '可选的 MCP 客户端选项。支持的键：headers（或 header）为 HTTP 请求头名称与值的对象；proxy 为 http/https/socks5/socks5h URL。',
+          },
+          token: {
+            label: 'Bearer 令牌',
+            description: 'MCP 服务器的 Bearer 令牌',
+          },
+        },
       }
     },
   },

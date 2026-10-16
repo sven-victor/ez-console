@@ -15,9 +15,9 @@
  */
 
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import Form from '@rjsf/antd';
-import { FieldProps, RJSFSchema, Widget } from '@rjsf/utils/lib';
-import validator from '@rjsf/validator-ajv8';
+import Form, { Templates } from '@rjsf/antd';
+import { FieldProps, FieldTemplateProps, RJSFSchema, Widget } from '@rjsf/utils/lib';
+import { customizeValidator } from '@rjsf/validator-ajv8';
 import { createStyles } from 'antd-style';
 import { useRequest } from 'ahooks';
 import api from '@/service/api';
@@ -27,6 +27,14 @@ import axios from 'axios';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import classNames from 'classnames';
+import { TFunction } from 'i18next';
+import { isNumber } from 'lodash-es';
+import { getI18n } from 'react-i18next';
+import localizer from 'ajv-i18n';
+
+const i18n = getI18n();
+
+const { FieldTemplate: FieldTemplateAntd } = Templates
 
 /** Default indent for JSON stringify */
 const JSON_EDITOR_INDENT = 2;
@@ -75,6 +83,7 @@ export interface JsonSchemaConfigFormProps {
   uiSchema?: Record<string, unknown>;
   disabled?: boolean;
   formRef?: React.Ref<JsonSchemaConfigFormRef>;
+  t?: TFunction;
 }
 
 const ToolsetsSelectWidget: Widget = (props) => {
@@ -543,6 +552,41 @@ interface JsonSchemaConfigFormRef {
   validate: (value: Record<string, unknown>) => Promise<void>;
 }
 
+const serializeKey = (fieldPath: (string | number)[]) => {
+  return fieldPath.filter(item => !isNumber(item)).join('.');
+}
+
+const I18nFieldTemplate: (t?: TFunction) => React.FC<FieldTemplateProps<unknown, RJSFSchema, Record<string, unknown>>> = (t) => {
+  return ({ uiSchema, label, ...props }) => {
+    if (!FieldTemplateAntd) return null;
+    const keyPrefix = serializeKey(props.fieldPathId.path);
+    if (!t || !keyPrefix) return <FieldTemplateAntd {...props} label={label} uiSchema={uiSchema} />
+    const placeholder = uiSchema?.['ui:placeholder'];
+    const description = () => {
+      if (!props.description?.props) return;
+      return <props.registry.templates.DescriptionFieldTemplate
+        {...props.description?.props}
+        description={t?.(`${keyPrefix}.description`, { defaultValue: props.description?.props?.description })}
+      />
+    }
+    return <FieldTemplateAntd
+      {...props}
+      label={t?.(`${keyPrefix}.label`, { defaultValue: label })}
+      description={description()}
+      uiSchema={{
+        ...uiSchema,
+        ...(placeholder ? { 'ui:placeholder': t?.(`${keyPrefix}.placeholder`, { defaultValue: placeholder }) } : {}),
+      }} />
+  }
+}
+
+const getLocalizer = () => {
+  const simpleLanguage = i18n.language.split('-')[0];
+  return localizer[i18n.language as keyof typeof localizer] || localizer[simpleLanguage as keyof typeof localizer];
+}
+
+const validator = customizeValidator({}, getLocalizer());
+
 /**
  * Renders a form from a JSON Schema. Use inside Ant Design Form with
  * Form.Item name={['config']} so value/onChange are provided by the parent form.
@@ -554,6 +598,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
   uiSchema,
   disabled = false,
   formRef,
+  t,
 }) => {
   const { styles } = useStyle();
   const formData = value ?? {};
@@ -584,6 +629,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       ...uiSchema || {}
     }
   }, [schema, uiSchema]);
+
   return (
     <Form
       // Render as div so this can nest inside an outer antd <Form> without invalid nested <form>s.
@@ -601,12 +647,12 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       fields={{
         objectEditor: ObjectField,
       }}
-      transformErrors={(errors) => {
-        return errors.filter(error => error.message !== 'must NOT have additional properties')
-      }}
       widgets={{
         remoteSelect: RemoteSelectWidget,
         toolsetsSelect: ToolsetsSelectWidget,
+      }}
+      templates={{
+        FieldTemplate: I18nFieldTemplate(t),
       }}
     />
   );
@@ -615,9 +661,10 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
 export interface JsonSchemaConfigFormItemProps extends FormItemProps {
   schema: RJSFSchema;
   uiSchema?: Record<string, unknown>;
+  t?: TFunction;
 }
 
-export const JsonSchemaConfigFormItem = ({ schema, uiSchema, ...props }: JsonSchemaConfigFormItemProps) => {
+export const JsonSchemaConfigFormItem = ({ schema, uiSchema, t, ...props }: JsonSchemaConfigFormItemProps) => {
   const formRef = useRef<JsonSchemaConfigFormRef>(null);
   return <AntForm.Item
     noStyle
@@ -628,7 +675,7 @@ export const JsonSchemaConfigFormItem = ({ schema, uiSchema, ...props }: JsonSch
       },
       message: "",
     }]} >
-    <JsonSchemaConfigForm schema={schema} formRef={formRef} uiSchema={uiSchema} />
+    <JsonSchemaConfigForm schema={schema} formRef={formRef} uiSchema={uiSchema} t={t} />
   </AntForm.Item>;
 }
 

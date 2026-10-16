@@ -77,11 +77,22 @@ interface ToolSetFormData {
   config?: Record<string, unknown>;
 }
 
+const ToolSetJsonForm = ({ schema, uiSchema, name, type }: { schema: RJSFSchema, uiSchema: UiSchema, name: string, type: string }) => {
+  const { t } = useTranslation('system', { keyPrefix: `settings.toolsets.${type}.form` });
+  return <JsonSchemaConfigFormItem
+    name={name}
+    schema={schema}
+    uiSchema={uiSchema}
+    t={t}
+  />
+}
+
 const ToolSetSettings: React.FC = () => {
   const { message } = App.useApp();
 
   const { t } = useTranslation('system');
   const { t: tCommon } = useTranslation('common');
+
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -427,6 +438,7 @@ const ToolSetSettings: React.FC = () => {
                 }))}
                 style={{ minWidth: 110 }}
                 allowClear
+                showSearch
               >
                 <Select.Option value="">All</Select.Option>
                 {typeDefinitions?.map((typeDefinition) => (
@@ -536,14 +548,16 @@ const ToolSetSettings: React.FC = () => {
                   label: typeDefinition.name,
                   value: typeDefinition.tool_set_type,
                 }))}
+                showSearch
               />
             </Form.Item>
 
             <Suspense fallback={<Loading />}>
-              <JsonSchemaConfigFormItem
+              <ToolSetJsonForm
                 name="config"
                 schema={currentTypeDefinition?.config_schema as unknown as RJSFSchema}
                 uiSchema={currentTypeDefinition?.ui_schema as UiSchema}
+                type={selectedType}
               />
             </Suspense>
             <Form.Item hidden name="status" label={t('settings.toolsets.status', { defaultValue: 'Status' })}>

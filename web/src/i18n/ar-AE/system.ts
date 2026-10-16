@@ -601,6 +601,36 @@ export default {
         usernameTooltip: 'اسم المستخدم لخادم MCP',
         passwordTooltip: 'كلمة المرور لخادم MCP',
         tokenTooltip: 'الرمز لخادم MCP',
+        form: {
+          endpoint: {
+            label: 'النقطة النهائية',
+            description: 'النقطة النهائية لخادم MCP',
+          },
+          protocol: {
+            label: 'البروتوكول',
+            description: 'بروتوكول خادم MCP',
+          },
+          auth_type: {
+            label: 'نوع المصادقة',
+            description: 'نوع المصادقة',
+          },
+          username: {
+            label: 'اسم المستخدم',
+            description: 'اسم المستخدم لخادم MCP',
+          },
+          password: {
+            label: 'كلمة المرور',
+            description: 'كلمة المرور لخادم MCP',
+          },
+          args: {
+            label: 'الوسائط',
+            description: 'خيارات اختيارية لعميل MCP. المفاتيح المدعومة: headers (أو header) ككائن من أزواج اسم/قيمة لترويسات HTTP؛ و proxy كعنوان URL من نوع http/https/socks5/socks5h.',
+          },
+          token: {
+            label: 'رمز Bearer',
+            description: 'رمز Bearer لخادم MCP',
+          },
+        },
       },
     },
     organizations: {

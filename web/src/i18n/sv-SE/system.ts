@@ -602,6 +602,36 @@ export default {
         usernameTooltip: 'MCP-serverns användarnamn',
         passwordTooltip: 'MCP-serverns lösenord',
         tokenTooltip: 'MCP-serverns token',
+        form: {
+          endpoint: {
+            label: 'Slutpunkt',
+            description: 'MCP-serverns slutpunkt',
+          },
+          protocol: {
+            label: 'Protokoll',
+            description: 'MCP-serverns protokoll',
+          },
+          auth_type: {
+            label: 'Autentiseringstyp',
+            description: 'Autentiseringstypen',
+          },
+          username: {
+            label: 'Användarnamn',
+            description: 'Användarnamnet för MCP-servern',
+          },
+          password: {
+            label: 'Lösenord',
+            description: 'Lösenordet för MCP-servern',
+          },
+          args: {
+            label: 'Argument',
+            description: 'Valfria MCP-klientalternativ. Stödda nycklar: headers (eller header) som ett objekt med HTTP-huvudnamn och värden; proxy som en http/https/socks5/socks5h-URL.',
+          },
+          token: {
+            label: 'Bearer-token',
+            description: 'Bearer-token för MCP-servern',
+          },
+        },
       },
     },
     organizations: {
