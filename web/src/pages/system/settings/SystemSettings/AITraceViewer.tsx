@@ -1478,7 +1478,8 @@ const AITraceViewer: React.FC = () => {
         }
         open={viewMode === 'sequence' && !!selectedEvent}
         onClose={() => setSelectedEvent(null)}
-        width={560}
+        width={800}
+        styles={{ body: { paddingRight: 0 } }}
       >
         {selectedEvent && (
           <DeferredRender key={selectedEvent.event.id}>
