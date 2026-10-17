@@ -29,10 +29,8 @@ import { json } from '@codemirror/lang-json';
 import classNames from 'classnames';
 import { TFunction } from 'i18next';
 import { isNumber } from 'lodash-es';
-import { getI18n } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import localizer from 'ajv-i18n';
-
-const i18n = getI18n();
 
 const { FieldTemplate: FieldTemplateAntd } = Templates
 
@@ -57,7 +55,9 @@ const useStyle = createStyles(({ css }) => {
         display: none; 
       }
       .ant-form-item{
-        margin-bottom: 0px;
+        >.ant-form-item-with-help,.ant-form-item-has-feedback.ant-form-item-has-error{
+          margin-bottom: 0px;
+        }
       }
       .ant-form-item-additional{
         height: 24px;
@@ -588,12 +588,11 @@ const I18nFieldTemplate: (t?: TFunction) => React.FC<FieldTemplateProps<unknown,
   }
 }
 
-const getLocalizer = () => {
-  const simpleLanguage = i18n.language.split('-')[0];
-  return localizer[i18n.language as keyof typeof localizer] || localizer[simpleLanguage as keyof typeof localizer];
+const getLocalizer = (language: string) => {
+  const simpleLanguage = language.split('-')[0];
+  return localizer[language as keyof typeof localizer] || localizer[simpleLanguage as keyof typeof localizer];
 }
 
-const validator = customizeValidator({}, getLocalizer());
 
 /**
  * Renders a form from a JSON Schema. Use inside Ant Design Form with
@@ -611,10 +610,14 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
   const { styles } = useStyle();
   const formData = value ?? {};
 
+  const { i18n } = useTranslation()
+
+  const i18nValidator = useMemo(() => customizeValidator({}, getLocalizer(i18n.language)), [i18n.language]);
+
   useImperativeHandle(formRef, () => ({
     validate: (value: Record<string, unknown>): Promise<void> => {
-      const result = validator.validateFormData(value, schema, undefined, undefined, mergedUiSchema);
-      if (result.errors.filter(error => error.message !== 'must NOT have additional properties').length > 0) {
+      const result = i18nValidator.validateFormData(value, schema, undefined, undefined, mergedUiSchema);
+      if (result.errors.filter(error => error.name !== 'additionalProperties').length > 0) {
         return Promise.reject(result.errors[0].message);
       }
       return Promise.resolve();
@@ -646,7 +649,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       schema={schema || {}}
       formData={formData}
       onChange={handleChange}
-      validator={validator}
+      validator={i18nValidator}
       uiSchema={mergedUiSchema || {}}
       disabled={disabled}
       showErrorList={false}
@@ -661,6 +664,9 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       }}
       templates={{
         FieldTemplate: I18nFieldTemplate(t),
+      }}
+      formContext={{
+        descriptionLocation: 'tooltip'
       }}
     />
   );
