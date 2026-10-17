@@ -66,6 +66,58 @@ export default {
     setDefaultSuccess: 'Modelo de IA predeterminado establecido exitosamente',
     setDefaultFailed: 'Error al establecer modelo de IA predeterminado',
     deleteConfirm: '¿Está seguro de que desea eliminar este modelo de IA?',
+    openai: {
+      form: {
+        api_key: {
+          label: 'Clave API',
+          description: 'Clave API de OpenAI (cifrada)',
+        },
+        model_id: {
+          label: 'ID del modelo',
+          description: 'ID del modelo de OpenAI (p. ej., gpt-4, gpt-3.5-turbo)',
+        },
+        base_url: {
+          label: 'URL base',
+          description: 'URL de punto de conexión API personalizada (opcional)',
+        },
+        organization_id: {
+          label: 'ID de organización',
+          description: 'ID de organización de OpenAI (opcional)',
+        },
+      },
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: 'Clave API',
+          description: 'Clave API de Anthropic (cifrada)',
+        },
+        model_id: {
+          label: 'ID del modelo',
+          description: 'ID del modelo de Anthropic (p. ej., claude-sonnet-4-20250514)',
+        },
+        base_url: {
+          label: 'URL base',
+          description: 'URL de punto de conexión API personalizada (opcional)',
+        },
+      },
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: 'Clave API',
+          description: 'Clave API de Google Gemini (cifrada)',
+        },
+        model_id: {
+          label: 'ID del modelo',
+          description: 'ID del modelo de Gemini (p. ej., gemini-2.0-flash)',
+        },
+        base_url: {
+          label: 'URL base',
+          description: 'URL de punto de conexión API personalizada (opcional)',
+        },
+      },
+    },
   },
   trace: {
     title: 'Visor de Rastreo IA',

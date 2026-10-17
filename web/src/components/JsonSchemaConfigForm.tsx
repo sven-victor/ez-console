@@ -123,7 +123,7 @@ function parseJson(str: string): unknown {
 }
 
 /** Object field that renders a CodeMirror JSON editor; supports schema.examples dropdown in top-right. */
-function ObjectField(props: FieldProps) {
+function ObjectField({ t, ...props }: FieldProps & { t?: TFunction }) {
   const { formData, schema, onChange, disabled, id, required, name, fieldPathId } = props;
   const examples = Array.isArray((schema as { examples?: unknown[] }).examples)
     ? (schema as { examples: unknown[] }).examples
@@ -133,6 +133,7 @@ function ObjectField(props: FieldProps) {
 
   const [localValue, setLocalValue] = useState(() => formatJson(formData));
   const [parseError, setParseError] = useState<string | null>(null);
+  const keyPrefix = serializeKey(props.fieldPathId.path);
 
   // Keep editor in sync when formData changes from outside (e.g. form reset)
   useEffect(() => {
@@ -220,7 +221,9 @@ function ObjectField(props: FieldProps) {
         </div>
       )}
       <div className='ant-form-item-label'>
-        <label className={required ? "ant-form-item-required" : "ant-form-item-optional"}>{schema.title || name}</label>
+        <label className={required ? "ant-form-item-required" : "ant-form-item-optional"}>
+          {keyPrefix ? t?.(`${keyPrefix}.label`, { defaultValue: schema.title || name }) : schema.title || name}
+        </label>
       </div>
       <ReactCodeMirror
         value={localValue}
@@ -244,6 +247,11 @@ function ObjectField(props: FieldProps) {
   );
 }
 
+const I18nObjectField: (t?: TFunction) => React.FC<FieldProps> = (t) => {
+  return (props) => {
+    return <ObjectField {...props} t={t} />
+  }
+}
 
 export interface DataSource {
   /** Cache control */
@@ -645,7 +653,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       liveValidate="onChange"
       autoComplete='off'
       fields={{
-        objectEditor: ObjectField,
+        objectEditor: I18nObjectField(t),
       }}
       widgets={{
         remoteSelect: RemoteSelectWidget,

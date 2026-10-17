@@ -66,6 +66,58 @@ export default {
     setDefaultSuccess: 'Default AI model set successfully',
     setDefaultFailed: 'Failed to set default AI model',
     deleteConfirm: 'Are you sure you want to delete this AI model?',
+    openai: {
+      form: {
+        api_key: {
+          label: 'API Key',
+          description: 'OpenAI API key (encrypted)',
+        },
+        model_id: {
+          label: 'Model ID',
+          description: 'OpenAI model ID (e.g., gpt-4, gpt-3.5-turbo)',
+        },
+        base_url: {
+          label: 'Base URL',
+          description: 'Custom API endpoint URL (optional)',
+        },
+        organization_id: {
+          label: 'Organization ID',
+          description: 'OpenAI organization ID (optional)',
+        },
+      },
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: 'API Key',
+          description: 'Anthropic API key (encrypted)',
+        },
+        model_id: {
+          label: 'Model ID',
+          description: 'Anthropic model ID (e.g., claude-sonnet-4-20250514)',
+        },
+        base_url: {
+          label: 'Base URL',
+          description: 'Custom API endpoint URL (optional)',
+        },
+      },
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: 'API Key',
+          description: 'Google Gemini API key (encrypted)',
+        },
+        model_id: {
+          label: 'Model ID',
+          description: 'Gemini model ID (e.g., gemini-2.0-flash)',
+        },
+        base_url: {
+          label: 'Base URL',
+          description: 'Custom API endpoint URL (optional)',
+        },
+      },
+    },
   },
   trace: {
     title: 'AI Trace Viewer',

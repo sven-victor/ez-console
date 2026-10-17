@@ -66,6 +66,58 @@ export default {
     setDefaultSuccess: 'Modèle IA par défaut défini avec succès',
     setDefaultFailed: 'Échec de la définition du modèle IA par défaut',
     deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce modèle IA ?',
+    openai: {
+      form: {
+        api_key: {
+          label: 'Clé API',
+          description: 'Clé API OpenAI (chiffrée)',
+        },
+        model_id: {
+          label: 'ID du modèle',
+          description: 'ID du modèle OpenAI (p. ex. gpt-4, gpt-3.5-turbo)',
+        },
+        base_url: {
+          label: 'URL de base',
+          description: 'URL de point de terminaison API personnalisée (facultatif)',
+        },
+        organization_id: {
+          label: 'ID de l\'organisation',
+          description: 'ID de l\'organisation OpenAI (facultatif)',
+        },
+      },
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: 'Clé API',
+          description: 'Clé API Anthropic (chiffrée)',
+        },
+        model_id: {
+          label: 'ID du modèle',
+          description: 'ID du modèle Anthropic (p. ex. claude-sonnet-4-20250514)',
+        },
+        base_url: {
+          label: 'URL de base',
+          description: 'URL de point de terminaison API personnalisée (facultatif)',
+        },
+      },
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: 'Clé API',
+          description: 'Clé API Google Gemini (chiffrée)',
+        },
+        model_id: {
+          label: 'ID du modèle',
+          description: 'ID du modèle Gemini (p. ex. gemini-2.0-flash)',
+        },
+        base_url: {
+          label: 'URL de base',
+          description: 'URL de point de terminaison API personnalisée (facultatif)',
+        },
+      },
+    },
   },
   trace: {
     title: 'Visualiseur de Trace IA',

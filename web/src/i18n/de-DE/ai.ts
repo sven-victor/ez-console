@@ -66,6 +66,58 @@ export default {
     setDefaultSuccess: 'Standard-KI-Modell erfolgreich festgelegt',
     setDefaultFailed: 'Standard-KI-Modell konnte nicht festgelegt werden',
     deleteConfirm: 'Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?',
+    openai: {
+      form: {
+        api_key: {
+          label: 'API-Schlüssel',
+          description: 'OpenAI-API-Schlüssel (verschlüsselt)',
+        },
+        model_id: {
+          label: 'Modell-ID',
+          description: 'OpenAI-Modell-ID (z. B. gpt-4, gpt-3.5-turbo)',
+        },
+        base_url: {
+          label: 'Basis-URL',
+          description: 'Benutzerdefinierte API-Endpunkt-URL (optional)',
+        },
+        organization_id: {
+          label: 'Organisations-ID',
+          description: 'OpenAI-Organisations-ID (optional)',
+        },
+      },
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: 'API-Schlüssel',
+          description: 'Anthropic-API-Schlüssel (verschlüsselt)',
+        },
+        model_id: {
+          label: 'Modell-ID',
+          description: 'Anthropic-Modell-ID (z. B. claude-sonnet-4-20250514)',
+        },
+        base_url: {
+          label: 'Basis-URL',
+          description: 'Benutzerdefinierte API-Endpunkt-URL (optional)',
+        },
+      },
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: 'API-Schlüssel',
+          description: 'Google-Gemini-API-Schlüssel (verschlüsselt)',
+        },
+        model_id: {
+          label: 'Modell-ID',
+          description: 'Gemini-Modell-ID (z. B. gemini-2.0-flash)',
+        },
+        base_url: {
+          label: 'Basis-URL',
+          description: 'Benutzerdefinierte API-Endpunkt-URL (optional)',
+        },
+      },
+    },
   },
   trace: {
     title: 'KI-Trace-Viewer',

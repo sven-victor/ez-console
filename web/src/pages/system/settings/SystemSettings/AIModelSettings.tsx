@@ -51,12 +51,23 @@ import api from '@/service/api';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
 import Loading from '@/components/Loading';
+import type { RJSFSchema, UiSchema } from '@rjsf/utils';
 
 const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({
   default: module.JsonSchemaConfigFormItem
 })));
 
 const { TextArea } = Input;
+
+const AIModelJsonForm = ({ schema, uiSchema, name, provider }: { schema: RJSFSchema, uiSchema: UiSchema, name: string, provider: string }) => {
+  const { t } = useTranslation('ai', { keyPrefix: `models.${provider}.form` });
+  return <JsonSchemaConfigFormItem
+    name={name}
+    schema={schema}
+    uiSchema={uiSchema}
+    t={t}
+  />
+}
 
 interface AIModel {
   id: string;
@@ -494,15 +505,16 @@ const AIModelSettings: React.FC = () => {
               />
             </Form.Item>
 
-            {currentProviderDefinition && (<Form.Item name={['config']}>
+            {currentProviderDefinition && (
               <Suspense fallback={<Loading />}>
-                <JsonSchemaConfigFormItem
+                <AIModelJsonForm
                   name="config"
-                  schema={currentProviderDefinition.config_schema as unknown as Record<string, unknown>}
-                  uiSchema={currentProviderDefinition.ui_schema as unknown as Record<string, unknown>}
+                  schema={currentProviderDefinition.config_schema as unknown as RJSFSchema}
+                  uiSchema={currentProviderDefinition.ui_schema as UiSchema}
+                  provider={selectedProvider}
                 />
               </Suspense>
-            </Form.Item>)}
+            )}
             <Form.Item
               name="system_prompt"
               label={t('models.systemPrompt', { defaultValue: 'System Prompt' })}

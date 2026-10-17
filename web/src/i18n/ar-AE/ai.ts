@@ -66,6 +66,58 @@ export default {
     setDefaultSuccess: 'تم تعيين النموذج الذكي الافتراضي بنجاح',
     setDefaultFailed: 'فشل في تعيين النموذج الذكي الافتراضي',
     deleteConfirm: 'هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟',
+    openai: {
+      form: {
+        api_key: {
+          label: 'مفتاح API',
+          description: 'مفتاح API لـ OpenAI (مشفّر)',
+        },
+        model_id: {
+          label: 'معرف النموذج',
+          description: 'معرف نموذج OpenAI (مثل gpt-4 و gpt-3.5-turbo)',
+        },
+        base_url: {
+          label: 'الرابط الأساسي',
+          description: 'عنوان URL لنقطة نهاية API مخصصة (اختياري)',
+        },
+        organization_id: {
+          label: 'معرف المؤسسة',
+          description: 'معرف مؤسسة OpenAI (اختياري)',
+        },
+      },
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: 'مفتاح API',
+          description: 'مفتاح API لـ Anthropic (مشفّر)',
+        },
+        model_id: {
+          label: 'معرف النموذج',
+          description: 'معرف نموذج Anthropic (مثل claude-sonnet-4-20250514)',
+        },
+        base_url: {
+          label: 'الرابط الأساسي',
+          description: 'عنوان URL لنقطة نهاية API مخصصة (اختياري)',
+        },
+      },
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: 'مفتاح API',
+          description: 'مفتاح API لـ Google Gemini (مشفّر)',
+        },
+        model_id: {
+          label: 'معرف النموذج',
+          description: 'معرف نموذج Gemini (مثل gemini-2.0-flash)',
+        },
+        base_url: {
+          label: 'الرابط الأساسي',
+          description: 'عنوان URL لنقطة نهاية API مخصصة (اختياري)',
+        },
+      },
+    },
   },
   trace: {
     title: 'عارض تتبع الذكاء الاصطناعي',

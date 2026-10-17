@@ -66,6 +66,58 @@ export default {
     setDefaultSuccess: 'Standard AI-modell angiven framgångsrikt',
     setDefaultFailed: 'Misslyckades med att ange standard AI-modell',
     deleteConfirm: 'Är du säker på att du vill ta bort denna AI-modell?',
+    openai: {
+      form: {
+        api_key: {
+          label: 'API-nyckel',
+          description: 'OpenAI API-nyckel (krypterad)',
+        },
+        model_id: {
+          label: 'Modell-ID',
+          description: 'OpenAI-modell-ID (t.ex. gpt-4, gpt-3.5-turbo)',
+        },
+        base_url: {
+          label: 'Bas-URL',
+          description: 'Anpassad API-slutpunkts-URL (valfritt)',
+        },
+        organization_id: {
+          label: 'Organisations-ID',
+          description: 'OpenAI-organisations-ID (valfritt)',
+        },
+      },
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: 'API-nyckel',
+          description: 'Anthropic API-nyckel (krypterad)',
+        },
+        model_id: {
+          label: 'Modell-ID',
+          description: 'Anthropic-modell-ID (t.ex. claude-sonnet-4-20250514)',
+        },
+        base_url: {
+          label: 'Bas-URL',
+          description: 'Anpassad API-slutpunkts-URL (valfritt)',
+        },
+      },
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: 'API-nyckel',
+          description: 'Google Gemini API-nyckel (krypterad)',
+        },
+        model_id: {
+          label: 'Modell-ID',
+          description: 'Gemini-modell-ID (t.ex. gemini-2.0-flash)',
+        },
+        base_url: {
+          label: 'Bas-URL',
+          description: 'Anpassad API-slutpunkts-URL (valfritt)',
+        },
+      },
+    },
   },
   trace: {
     title: 'AI-spårningsvy',

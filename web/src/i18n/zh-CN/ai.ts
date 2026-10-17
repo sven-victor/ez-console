@@ -65,6 +65,58 @@ export default {
     setDefaultSuccess: '默认AI模型设置成功',
     setDefaultFailed: '设置默认AI模型失败',
     deleteConfirm: '确定要删除此AI模型吗？',
+    openai: {
+      form: {
+        api_key: {
+          label: 'API 密钥',
+          description: 'OpenAI API 密钥（加密存储）',
+        },
+        model_id: {
+          label: '模型 ID',
+          description: 'OpenAI 模型 ID（例如 gpt-4、gpt-3.5-turbo）',
+        },
+        base_url: {
+          label: '基础 URL',
+          description: '自定义 API 端点 URL（可选）',
+        },
+        organization_id: {
+          label: '组织 ID',
+          description: 'OpenAI 组织 ID（可选）',
+        },
+      },
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: 'API 密钥',
+          description: 'Anthropic API 密钥（加密存储）',
+        },
+        model_id: {
+          label: '模型 ID',
+          description: 'Anthropic 模型 ID（例如 claude-sonnet-4-20250514）',
+        },
+        base_url: {
+          label: '基础 URL',
+          description: '自定义 API 端点 URL（可选）',
+        },
+      },
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: 'API 密钥',
+          description: 'Google Gemini API 密钥（加密存储）',
+        },
+        model_id: {
+          label: '模型 ID',
+          description: 'Gemini 模型 ID（例如 gemini-2.0-flash）',
+        },
+        base_url: {
+          label: '基础 URL',
+          description: '自定义 API 端点 URL（可选）',
+        },
+      },
+    },
   },
   trace: {
     title: 'AI 跟踪调试',
