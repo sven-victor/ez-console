@@ -1455,7 +1455,7 @@ Legacy `summaryToolSet` (`get_messages` / `save_summary`) remains in the codebas
 - Production clears `activated_skill_ids` and skill-loader state on `OnSummary`.
 - Skill file bodies are redacted from summarizer input (`RedactGetSkillContentToolResultsForSummary`).
 
-**Oversized tool results:** Individual tool outputs exceeding `ToolResultMaxSize` can be summarized or truncated via `summarizeToolResultWithFallback` before being returned to the model.
+**Oversized tool results:** When `ToolResultMaxSize` is set, message bodies larger than that limit (including tool results) are offloaded by `memory.Offload` before the model sees them.
 
 ## Debug Tracing
 

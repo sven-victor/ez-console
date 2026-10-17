@@ -358,17 +358,16 @@ func isCJK(r rune) bool {
 	)
 }
 
-// ChatErrorType classifies the kind of failure from an AI API call.
+// ChatErrorType classifies a chat control signal.
 type ChatErrorType int
 
 const (
-	ChatErrorTypeMaxTokensExceeded ChatErrorType = iota + 1
-	ChatErrorTypeRateLimitExceeded
-	ChatErrorTypeEndOfChat
+	// ChatErrorTypeEndOfChat means this tool call ends the local conversation.
+	// The tool result must not be sent back to the model.
+	ChatErrorTypeEndOfChat ChatErrorType = iota + 1
 )
 
-// ChatError wraps an upstream AI API error with a typed classification so
-// callers can decide on a recovery strategy (retry, summarize, etc.).
+// ChatError wraps an error with a typed classification.
 type ChatError struct {
 	Err    error
 	Type   ChatErrorType
@@ -394,10 +393,8 @@ func (e *ChatError) Unwrap() error { return e.Err }
 
 func (e *ChatError) typeString() string {
 	switch e.Type {
-	case ChatErrorTypeMaxTokensExceeded:
-		return "max tokens exceeded"
-	case ChatErrorTypeRateLimitExceeded:
-		return "rate limit exceeded"
+	case ChatErrorTypeEndOfChat:
+		return "end of chat"
 	default:
 		return "unknown AI call error"
 	}
