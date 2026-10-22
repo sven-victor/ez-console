@@ -40,7 +40,7 @@ type ToolSetService interface {
 	UpdateToolSet(ctx context.Context, organizationID, id string, req *model.ToolSet) (*model.ToolSet, error)
 	UpdateToolSetStatus(ctx context.Context, organizationID, id string, status model.ToolSetStatus) (*model.ToolSet, error)
 	DeleteToolSet(ctx context.Context, organizationID, id string) error
-	ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool) ([]model.ToolSet, int64, error)
+	ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool, isPreset *bool) ([]model.ToolSet, int64, error)
 	GetEnabledToolSets(ctx context.Context, organizationID string) ([]model.ToolSet, error)
 	TestToolSet(ctx context.Context, organizationID, id string) error
 	GetToolSetInstance(ctx context.Context, organizationID, id string) (toolset.ToolSet, error)
@@ -185,8 +185,9 @@ func (s *toolSetService) DeleteToolSet(ctx context.Context, organizationID, id s
 	return nil
 }
 
-// ListToolSets lists toolsets with pagination
-func (s *toolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool) ([]model.ToolSet, int64, error) {
+// ListToolSets lists toolsets with pagination.
+// isPreset filters by the built-in flag when non-nil: true = preset only, false = user toolsets only.
+func (s *toolSetService) ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool, isPreset *bool) ([]model.ToolSet, int64, error) {
 	var toolsets []model.ToolSet
 	var total int64
 
@@ -199,6 +200,9 @@ func (s *toolSetService) ListToolSets(ctx context.Context, organizationID string
 
 	if toolSetType != "" {
 		query = query.Where("type = ?", toolSetType)
+	}
+	if isPreset != nil {
+		query = query.Where("is_preset = ?", *isPreset)
 	}
 
 	// Get total count
@@ -320,11 +324,12 @@ func (s *toolSetService) GetAllEnabledToolSetInstances(ctx context.Context, orga
 }
 
 type ToolSetTypeDefinition struct {
-	ToolSetType  toolset.ToolSetType `json:"tool_set_type"`
-	ConfigSchema *jsonschema.Schema  `json:"config_schema,omitempty"`
-	UISchema     map[string]any      `json:"ui_schema,omitempty"`
-	Description  string              `json:"description"`
-	Name         string              `json:"name"`
+	ToolSetType       toolset.ToolSetType `json:"tool_set_type"`
+	ConfigSchema      *jsonschema.Schema  `json:"config_schema,omitempty"`
+	UISchema          map[string]any      `json:"ui_schema,omitempty"`
+	Description       string              `json:"description"`
+	Name              string              `json:"name"`
+	AllowManualCreate bool                `json:"allow_manual_create"`
 }
 
 func (s *toolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSetTypeDefinition {
@@ -332,9 +337,10 @@ func (s *toolSetService) GetToolSetTypeDefinitions(ctx context.Context) []ToolSe
 	definitions := []ToolSetTypeDefinition{}
 	for name, factory := range toolSets {
 		def := ToolSetTypeDefinition{
-			ToolSetType: name,
-			Description: factory.GetDescription(),
-			Name:        factory.GetName(),
+			ToolSetType:       name,
+			Description:       factory.GetDescription(),
+			Name:              factory.GetName(),
+			AllowManualCreate: toolset.AllowsManualCreate(name),
 		}
 		if v2, ok := factory.(toolset.ToolSetFactoryV2); ok {
 			schema, uiSchema, err := v2.GetConfigSchema()
@@ -436,7 +442,7 @@ func (s *toolSetService) buildAuthorizedToolSetItems(ctx context.Context, organi
 		if toolSetID == "*" {
 			if !orgToolSetsLoaded {
 				var err error
-				if orgToolSets, _, err = s.ListToolSets(ctx, organizationID, 1, 1000, "", "", false); err != nil {
+				if orgToolSets, _, err = s.ListToolSets(ctx, organizationID, 1, 1000, "", "", false, nil); err != nil {
 					return nil, fmt.Errorf("failed to list toolsets: %w", err)
 				}
 				orgToolSetsLoaded = true

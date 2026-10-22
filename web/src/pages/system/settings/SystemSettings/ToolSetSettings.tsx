@@ -30,6 +30,7 @@ import {
   Row,
   Col,
   Switch,
+  Radio,
   Tooltip,
 } from 'antd';
 import {
@@ -104,13 +105,21 @@ const ToolSetSettings: React.FC = () => {
   const [toolsModalVisible, setToolsModalVisible] = useState(false);
   const [selectedTools, setSelectedTools] = useState<API.Tool[]>([]);
   const [toolSetType, setToolSetType] = useState<string>();
+  // 'user' hides built-in (preset) toolsets; 'all' shows everything. Defaults to user toolsets.
+  const [toolSetScope, setToolSetScope] = useState<'user' | 'all'>('user');
   const [statusUpdatingId, setStatusUpdatingId] = useState<string | null>(null);
 
   // Fetch toolsets
   const { loading, data, refresh } = useRequest(
-    () => api.system.listToolSets({ current: 1, page_size: 100, search: searchText, type: toolSetType }),
+    () => api.system.listToolSets({
+      current: 1,
+      page_size: 100,
+      search: searchText,
+      type: toolSetType,
+      is_preset: toolSetScope === 'user' ? false : undefined,
+    }),
     {
-      refreshDeps: [searchText, toolSetType],
+      refreshDeps: [searchText, toolSetType, toolSetScope],
       onError: (error) => {
         message.error(t('settings.toolsets.fetchFailed', { defaultValue: 'Failed to fetch toolsets' }));
         console.error('Failed to fetch toolsets:', error);
@@ -133,6 +142,12 @@ const ToolSetSettings: React.FC = () => {
   const currentTypeDefinition = useMemo(() => {
     return typeDefinitions?.find((td) => td.tool_set_type === selectedType);
   }, [typeDefinitions, selectedType]);
+
+  const creatableTypeDefinitions = useMemo(() => {
+    return (typeDefinitions ?? []).filter(
+      (td) => td.allow_manual_create || td.tool_set_type === editingToolSet?.type,
+    );
+  }, [typeDefinitions, editingToolSet]);
 
   // Create toolset
   const { loading: creating, run: createToolSet } = useRequest(
@@ -436,7 +451,7 @@ const ToolSetSettings: React.FC = () => {
                   label: typeDefinition.name,
                   value: typeDefinition.tool_set_type,
                 }))}
-                style={{ minWidth: 110 }}
+                style={{ minWidth: 200 }}
                 allowClear
                 showSearch
               >
@@ -447,6 +462,15 @@ const ToolSetSettings: React.FC = () => {
                   </Select.Option>
                 ))}
               </Select>
+              <Radio.Group
+                optionType="button"
+                value={toolSetScope}
+                onChange={(e) => setToolSetScope(e.target.value as 'user' | 'all')}
+                options={[
+                  { value: 'user', label: t('settings.toolsets.scopeUser', { defaultValue: 'User toolsets' }) },
+                  { value: 'all', label: t('settings.toolsets.scopeAll', { defaultValue: 'All toolsets' }) },
+                ]}
+              />
             </Space>
           </Col>
           <Col>
@@ -544,7 +568,7 @@ const ToolSetSettings: React.FC = () => {
                 placeholder={t('settings.toolsets.typePlaceholder', { defaultValue: 'Select type' })}
                 onChange={handleTypeChange}
                 value={selectedType}
-                options={typeDefinitions?.map((typeDefinition) => ({
+                options={creatableTypeDefinitions.map((typeDefinition) => ({
                   label: typeDefinition.name,
                   value: typeDefinition.tool_set_type,
                 }))}

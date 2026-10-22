@@ -559,6 +559,8 @@ export default {
       deleteSuccess: 'تم حذف مجموعة الأدوات بنجاح',
       deleteFailed: 'فشل في حذف مجموعة الأدوات',
       presetTag: 'مدمجة',
+      scopeUser: 'مجموعات المستخدم',
+      scopeAll: 'جميع المجموعات',
       presetDisabledEdit: 'لا يمكن تحرير مجموعات الأدوات المدمجة.',
       presetDisabledDelete: 'لا يمكن حذف مجموعات الأدوات المدمجة.',
       testSuccess: 'نجح اختبار اتصال مجموعة الأدوات',

@@ -560,6 +560,8 @@ export default {
       deleteSuccess: 'Toolset erfolgreich gelöscht',
       deleteFailed: 'Toolset konnte nicht gelöscht werden',
       presetTag: 'Voreinstellung',
+      scopeUser: 'Benutzer-Toolsets',
+      scopeAll: 'Alle Toolsets',
       presetDisabledEdit: 'Integrierte Toolsets können nicht bearbeitet werden.',
       presetDisabledDelete: 'Integrierte Toolsets können nicht gelöscht werden.',
       testSuccess: 'Toolset-Verbindungstest erfolgreich',

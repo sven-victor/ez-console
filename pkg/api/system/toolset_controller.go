@@ -86,6 +86,7 @@ type UpdateToolSetRequest struct {
 //	@Param			type		query		string	false	"Toolset type"
 //	@Param			search		query		string	false	"Search keyword"
 //	@Param			include_tools	query		bool	false	"Include tool definitions in response"
+//	@Param			is_preset	query		boolean	false	"Filter by built-in flag (true = preset only, false = user toolsets only; omit for all)"
 //	@Success		200	{object}	util.PaginationResponse[model.ToolSet]
 //	@Failure		500	{object}	util.ErrorResponse
 //	@Router			/api/system/toolsets [get]
@@ -101,13 +102,22 @@ func (c *ToolSetController) ListToolSets(ctx *gin.Context) {
 			includeTools = true
 		}
 	}
+	var isPreset *bool
+	if raw := ctx.Query("is_preset"); raw != "" {
+		v, err := strconv.ParseBool(raw)
+		if err != nil {
+			util.RespondWithError(ctx, util.NewErrorMessage("E4001", "is_preset must be a boolean"))
+			return
+		}
+		isPreset = &v
+	}
 	// Get organization ID from context
 	organizationID := ctx.GetString("organization_id")
 	if organizationID == "" {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
 		return
 	}
-	toolsets, total, err := c.service.ListToolSets(ctx, organizationID, current, pageSize, search, toolSetType, includeTools)
+	toolsets, total, err := c.service.ListToolSets(ctx, organizationID, current, pageSize, search, toolSetType, includeTools, isPreset)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", err))
 		return
@@ -150,6 +160,10 @@ func (c *ToolSetController) CreateToolSet(ctx *gin.Context) {
 	factory, exists := toolset.GetToolSetFactory(req.Type)
 	if !exists {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported toolset type: %s", req.Type)))
+		return
+	}
+	if !toolset.AllowsManualCreate(req.Type) {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("toolset type %s cannot be created manually", req.Type)))
 		return
 	}
 	configFields := factory.GetConfigFields()
@@ -272,6 +286,10 @@ func (c *ToolSetController) UpdateToolSet(ctx *gin.Context) {
 	}
 	if existing.IsPreset && req.Type != existing.Type {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Cannot change toolset type for a preset toolset"))
+		return
+	}
+	if !toolset.AllowsManualCreate(req.Type) && req.Type != existing.Type {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("toolset type %s cannot be created manually", req.Type)))
 		return
 	}
 

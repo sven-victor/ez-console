@@ -967,6 +967,8 @@ export interface listToolSetsParams {
   search?: string;
   /** Include tool definitions in response */
   include_tools?: boolean;
+  /** Filter by built-in flag (true = preset only, false = user toolsets only; omit for all) */
+  is_preset?: boolean;
 }
 
 export interface listUsersParams {
@@ -2447,6 +2449,7 @@ export type ToolSetStatus = "enabled" | "disabled";
 export type ToolSetType = "utils";
 
 export interface ToolSetTypeDefinition {
+  allow_manual_create: boolean;
   config_schema: Schema;
   description: string;
   name: string;

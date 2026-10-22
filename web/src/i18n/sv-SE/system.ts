@@ -560,6 +560,8 @@ export default {
       deleteSuccess: 'Verktygsset borttaget framgångsrikt',
       deleteFailed: 'Misslyckades med att ta bort verktygsset',
       presetTag: 'Förinställd',
+      scopeUser: 'Användarverktygsset',
+      scopeAll: 'Alla verktygsset',
       presetDisabledEdit: 'Inbyggda verktygsset kan inte redigeras.',
       presetDisabledDelete: 'Inbyggda verktygsset kan inte tas bort.',
       testSuccess: 'Verktygsset-anslutningstest lyckades',

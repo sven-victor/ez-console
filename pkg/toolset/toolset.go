@@ -54,27 +54,59 @@ type ToolSetFactoryV2 interface {
 	GetConfigSchema() (schema *jsonschema.Schema, uiSchema map[string]any, err error)
 }
 
-var registeredToolSets = make(map[ToolSetType]ToolSetFactory)
+type toolSetRegistration struct {
+	factory           ToolSetFactory
+	allowManualCreate bool
+}
 
-func RegisterToolSet(toolSetType ToolSetType, toolSetFactory ToolSetFactory) error {
+// RegisterOption configures a toolset type at registration time.
+type RegisterOption func(*toolSetRegistration)
+
+// DisallowManualCreate hides the type from the create form and rejects manual creation.
+// Preset sync can still insert rows for the type. Omit this option to allow manual creation.
+func DisallowManualCreate() RegisterOption {
+	return func(r *toolSetRegistration) {
+		r.allowManualCreate = false
+	}
+}
+
+var registeredToolSets = make(map[ToolSetType]toolSetRegistration)
+
+func RegisterToolSet(toolSetType ToolSetType, toolSetFactory ToolSetFactory, opts ...RegisterOption) error {
 	if _, ok := registeredToolSets[toolSetType]; ok {
 		panic(fmt.Errorf("tool set %s already registered", toolSetType))
 	}
 	toolSetFactory.GetName()
 	toolSetFactory.GetDescription()
-	registeredToolSets[toolSetType] = toolSetFactory
+	reg := toolSetRegistration{factory: toolSetFactory, allowManualCreate: true}
+	for _, opt := range opts {
+		if opt != nil {
+			opt(&reg)
+		}
+	}
+	registeredToolSets[toolSetType] = reg
 	return nil
 }
 
-func RegisterToolSetV2(toolSetType ToolSetType, toolSetFactory ToolSetFactoryV2) error {
-	return RegisterToolSet(toolSetType, toolSetFactory)
+func RegisterToolSetV2(toolSetType ToolSetType, toolSetFactory ToolSetFactoryV2, opts ...RegisterOption) error {
+	return RegisterToolSet(toolSetType, toolSetFactory, opts...)
 }
 
 func GetToolSetFactory(toolSetType ToolSetType) (ToolSetFactory, bool) {
-	if toolSetFactory, ok := registeredToolSets[toolSetType]; ok {
-		return toolSetFactory, true
+	if reg, ok := registeredToolSets[toolSetType]; ok {
+		return reg.factory, true
 	}
 	return nil, false
+}
+
+// AllowsManualCreate reports whether admins may create rows of this type from the console or API.
+// Unregistered types return false.
+func AllowsManualCreate(toolSetType ToolSetType) bool {
+	reg, ok := registeredToolSets[toolSetType]
+	if !ok {
+		return false
+	}
+	return reg.allowManualCreate
 }
 
 type ToolSets map[string]ToolSet
@@ -127,8 +159,8 @@ func (t ToolSets) CallTool(ctx context.Context, name string, parameters string) 
 
 func GetRegisteredToolSets() map[ToolSetType]ToolSetFactory {
 	toolSets := make(map[ToolSetType]ToolSetFactory)
-	for toolSetType, toolSetFactory := range registeredToolSets {
-		toolSets[toolSetType] = toolSetFactory
+	for toolSetType, reg := range registeredToolSets {
+		toolSets[toolSetType] = reg.factory
 	}
 	return toolSets
 }

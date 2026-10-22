@@ -6598,6 +6598,12 @@ const docTemplate = `{
                         "description": "Include tool definitions in response",
                         "name": "include_tools",
                         "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by built-in flag (true = preset only, false = user toolsets only; omit for all)",
+                        "name": "is_preset",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -11785,6 +11791,7 @@ const docTemplate = `{
         "service.ToolSetTypeDefinition": {
             "type": "object",
             "required": [
+                "allow_manual_create",
                 "config_schema",
                 "description",
                 "name",
@@ -11792,6 +11799,9 @@ const docTemplate = `{
                 "ui_schema"
             ],
             "properties": {
+                "allow_manual_create": {
+                    "type": "boolean"
+                },
                 "config_schema": {
                     "$ref": "#/definitions/github_com_invopop_jsonschema.Schema"
                 },
@@ -12607,6 +12617,16 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -12631,6 +12651,16 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

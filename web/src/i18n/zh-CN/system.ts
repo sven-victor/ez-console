@@ -613,6 +613,8 @@ export default {
       deleteSuccess: '工具集删除成功',
       deleteFailed: '删除工具集失败',
       presetTag: '内置',
+      scopeUser: '用户工具集',
+      scopeAll: '全部工具集',
       presetDisabledEdit: '内置工具集不能编辑。',
       presetDisabledDelete: '内置工具集不能删除。',
       testSuccess: '工具集连接测试成功',

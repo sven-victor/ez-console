@@ -617,6 +617,8 @@ export default {
       deleteSuccess: 'Toolset deleted successfully',
       deleteFailed: 'Failed to delete toolset',
       presetTag: 'Preset',
+      scopeUser: 'User toolsets',
+      scopeAll: 'All toolsets',
       presetDisabledEdit: 'Built-in toolsets cannot be edited.',
       presetDisabledDelete: 'Built-in toolsets cannot be deleted.',
       testSuccess: 'Toolset connection test successful',

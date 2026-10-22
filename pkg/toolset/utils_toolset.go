@@ -169,7 +169,7 @@ const (
 
 func init() {
 	// Register the MCP toolset factory
-	RegisterToolSet(ToolSetTypeUtils, &UtilsToolSetFactory{})
+	RegisterToolSet(ToolSetTypeUtils, &UtilsToolSetFactory{}, DisallowManualCreate())
 	preset.RegisterPresetTools(preset.PresetToolSetSpec{
 		PresetKey:     "utils",
 		Type:          string(ToolSetTypeUtils),

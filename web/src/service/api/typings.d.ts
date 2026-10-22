@@ -969,6 +969,8 @@ declare global {
       search?: string;
       /** Include tool definitions in response */
       include_tools?: boolean;
+      /** Filter by built-in flag (true = preset only, false = user toolsets only; omit for all) */
+      is_preset?: boolean;
     }
   
     interface listUsersParams {
@@ -2449,6 +2451,7 @@ declare global {
     type ToolSetType = "utils";
   
     interface ToolSetTypeDefinition {
+      allow_manual_create: boolean;
       config_schema: Schema;
       description: string;
       name: string;

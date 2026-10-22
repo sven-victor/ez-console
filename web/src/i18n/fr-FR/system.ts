@@ -560,6 +560,8 @@ export default {
       deleteSuccess: 'Ensemble d\'outils supprimé avec succès',
       deleteFailed: 'Échec de la suppression de l\'ensemble d\'outils',
       presetTag: 'Préréglage',
+      scopeUser: 'Ensembles utilisateur',
+      scopeAll: 'Tous les ensembles',
       presetDisabledEdit: 'Les ensembles d\'outils intégrés ne peuvent pas être modifiés.',
       presetDisabledDelete: 'Les ensembles d\'outils intégrés ne peuvent pas être supprimés.',
       testSuccess: 'Test de connexion de l\'ensemble d\'outils réussi',

@@ -560,6 +560,8 @@ export default {
       deleteSuccess: 'Conjunto de herramientas eliminado exitosamente',
       deleteFailed: 'Error al eliminar conjunto de herramientas',
       presetTag: 'Predefinida',
+      scopeUser: 'Conjuntos de usuario',
+      scopeAll: 'Todos los conjuntos',
       presetDisabledEdit: 'Los conjuntos integrados no se pueden editar.',
       presetDisabledDelete: 'Los conjuntos integrados no se pueden eliminar.',
       testSuccess: 'Prueba de conexión del conjunto de herramientas exitosa',

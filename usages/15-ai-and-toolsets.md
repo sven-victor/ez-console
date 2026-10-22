@@ -695,6 +695,7 @@ Besides registering a **factory** with `RegisterToolSet`, the product can declar
 
 | API | Purpose |
 |-----|---------|
+| `toolset.RegisterToolSet` / `RegisterToolSetV2` | Register the type factory. Pass `toolset.DisallowManualCreate()` when extra rows of that type are meaningless (the create form hides the type and `POST /api/system/toolsets` returns `E4001`). Default is manual creation allowed. |
 | `preset.RegisterPresetToolSet` / `preset.RegisterPresetTools` | Declare a built-in toolset row (`PresetKey`, `Type`, `Name`, `Description`, optional `DefaultConfig`). Call from `init()` next to `RegisterToolSet` for the same type. |
 | `preset.RegisterPresetSkill` | Declare a global preset skill (`PresetKey`, metadata, optional `DefaultBindings` by **toolset type** + tool name or `*`). Call from `init()` (e.g. `pkg/preset/skills_builtin.go`). |
 
@@ -706,7 +707,7 @@ Specs are defined in `pkg/preset/spec.go`; the registry is in `pkg/preset/regist
    - `PresetKey`: `utils`
    - `Type`: `utils`
    - Display name/description: built-in utilities (time, sleep, random string).
-   - Rows have **`is_preset = true`**; name, description, type, and missing **DefaultConfig** keys are reconciled on each sync while keeping existing org-specific config values. In the console you can still **enable or disable** the toolset (status); edit and delete are disabled for preset rows (with explanatory tooltips).
+   - Rows have **`is_preset = true`**; name, description, type, and missing **DefaultConfig** keys are reconciled on each sync while keeping existing org-specific config values. The type is registered with **`DisallowManualCreate()`**, so the console create form does not offer it and the create API rejects it. In the console you can still **enable or disable** the toolset (status); edit and delete are disabled for preset rows (with explanatory tooltips). The toolset list defaults to user rows; **All toolsets** includes preset rows (`GET /api/system/toolsets?is_preset=false` hides them; omit the query for both).
 
 2. **“Built-in utilities” skill (global)** — registered in `pkg/preset/skills_builtin.go`:
    - `PresetKey`: `builtin-utils`

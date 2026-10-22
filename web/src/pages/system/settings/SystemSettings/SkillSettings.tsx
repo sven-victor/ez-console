@@ -589,7 +589,7 @@ const SkillSettings: React.FC = () => {
               <Select
                 placeholder={t('settings.skills.domain', { defaultValue: 'Domain' })}
                 allowClear
-                style={{ width: 120 }}
+                style={{ width: 200 }}
                 value={domainFilter}
                 onChange={setDomainFilter}
                 options={domainOptions.map((d) => ({ value: d, label: d }))}
