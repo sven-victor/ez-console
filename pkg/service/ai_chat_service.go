@@ -541,6 +541,10 @@ func (s *aiChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	}
 
 	allOptions := s.mergeAIChatClientOptions(ctx, organizationID, skillLoader, aiModel, options)
+	allOptions, err = s.withSummaryProviderOption(ctx, organizationID, aiModel, allOptions)
+	if err != nil {
+		return nil, err
+	}
 
 	// Call ExchangeStream
 	stream, err := client.ExchangeStream(ctx, messages, allOptions...)
@@ -549,6 +553,44 @@ func (s *aiChatService) CreateChatCompletionStream(ctx context.Context, organiza
 	}
 
 	return stream, nil
+}
+
+// withSummaryProviderOption points conversation summarization at the summary-purpose model.
+// No binding leaves summarization on the conversation model. The summary model system prompt is not applied.
+func (s *aiChatService) withSummaryProviderOption(ctx context.Context, organizationID string, conversation *model.AIModel, options []ai.WithChatOptions) ([]ai.WithChatOptions, error) {
+	if !chatOptionsEnableAutoSummarization(options) {
+		return options, nil
+	}
+	summaryModel, err := s.aiModelService.ResolveSummaryAIModel(ctx, organizationID, conversation.ResourceID)
+	if err != nil {
+		return nil, err
+	}
+	if summaryModel == nil {
+		return options, nil
+	}
+	factory, ok := ai.GetFactory(summaryModel.Provider)
+	if !ok {
+		return nil, fmt.Errorf("unsupported AI provider: %s", summaryModel.Provider)
+	}
+	config := summaryModel.Config
+	if config == nil {
+		config = model.AIModelConfig{}
+	}
+	client, err := factory.CreateClient(ctx, organizationID, config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create summary model client: %w", err)
+	}
+	return append(options, ai.WithChatSummarizerProvider(client)), nil
+}
+
+func chatOptionsEnableAutoSummarization(options []ai.WithChatOptions) bool {
+	opts := &ai.ChatCompletionOptions{}
+	for _, option := range options {
+		if option != nil {
+			option(opts)
+		}
+	}
+	return opts.EnableAutoSummarization
 }
 
 // appendTraceChatOptionsIfEnabled attaches TraceWriter/TraceCounter when AI debug tracing is enabled.

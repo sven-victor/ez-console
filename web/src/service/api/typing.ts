@@ -112,6 +112,8 @@ export interface AIModel {
   organization_id: string;
   /** Provider (openai, anthropic, gemini, etc.) */
   provider: AIModelProvider;
+  /** Purpose keys assigned to this model */
+  purposes: string[];
   /** Status */
   status: AIModelStatus;
   /** System prompt prepended to every conversation (optional) */
@@ -122,6 +124,18 @@ export interface AIModel {
 }
 
 export type AIModelProvider = "openai" | "anthropic" | "gemini";
+
+export interface AIModelPurposeView {
+  description: string;
+  effective_model_id: string;
+  fallback: boolean;
+  key: string;
+  model_id: string;
+  model_name: string;
+  model_status: string;
+  name: string;
+  using_fallback: boolean;
+}
 
 export type AIModelStatus = "enabled" | "disabled";
 
@@ -502,15 +516,7 @@ export interface downloadFileParams {
   fileKey: string;
 }
 
-export type Duration =
-  | -9223372036854776000
-  | 9223372036854776000
-  | 1
-  | 1000
-  | 1000000
-  | 1000000000
-  | 60000000000
-  | 3600000000000;
+export type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
 
 export interface EnableMFARequest {
   mfa_type: string;
@@ -1508,6 +1514,13 @@ export interface ResponseArrayModelUser {
   trace_id: string;
 }
 
+export interface ResponseArrayServiceAIModelPurposeView {
+  code: string;
+  data: AIModelPurposeView[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseArrayServiceAITypeDefinition {
   code: string;
   data: AITypeDefinition[];
@@ -1749,6 +1762,13 @@ export interface ResponseModelToolSet {
 export interface ResponseModelUser {
   code: string;
   data: User;
+  err: string;
+  trace_id: string;
+}
+
+export interface ResponseServiceAIModelPurposeView {
+  code: string;
+  data: AIModelPurposeView;
   err: string;
   trace_id: string;
 }
@@ -2095,6 +2115,15 @@ export interface SessionInfo {
   last_active_at: string;
   location: string;
   user_agent: string;
+}
+
+export interface setAIModelPurposeParams {
+  /** Purpose key */
+  purpose: string;
+}
+
+export interface SetAIModelPurposeRequest {
+  model_id: string;
 }
 
 export interface setDefaultAIModelParams {
@@ -2446,7 +2475,7 @@ export interface ToolSet {
 
 export type ToolSetStatus = "enabled" | "disabled";
 
-export type ToolSetType = "utils";
+export type ToolSetType = "utils" | "local_complex";
 
 export interface ToolSetTypeDefinition {
   allow_manual_create: boolean;

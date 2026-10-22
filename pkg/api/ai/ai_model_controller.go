@@ -15,6 +15,7 @@
 package aiapi
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -41,6 +42,11 @@ func NewAIModelController(service *service.Service) *AIModelController {
 
 // RegisterRoutes registers AI model routes
 func (c *AIModelController) RegisterRoutes(router *gin.RouterGroup) {
+	purposes := router.Group("/model-purposes")
+	{
+		purposes.GET("", middleware.RequirePermission("ai:models:view"), c.ListAIModelPurposes)
+		purposes.PUT("/:purpose", middleware.RequirePermission("ai:models:update"), c.SetAIModelPurpose)
+	}
 	models := router.Group("/models")
 	{
 		models.GET("", middleware.RequirePermission("ai:models:view"), c.ListAIModels)
@@ -474,6 +480,79 @@ func (c *AIModelController) SetDefaultAIModel(ctx *gin.Context) {
 	}
 
 	util.RespondWithMessage(ctx, "AI model set as default successfully")
+}
+
+// SetAIModelPurposeRequest assigns or clears the model for one purpose.
+type SetAIModelPurposeRequest struct {
+	ModelID string `json:"model_id"`
+}
+
+// ListAIModelPurposes lists registered AI model purposes and the organization binding for each.
+//
+//	@Summary		List AI model purposes
+//	@Description	List registered purposes and the model assigned to each. An empty model_id means the purpose uses its fallback.
+//	@ID             listAIModelPurposes
+//	@Tags			AI/Models
+//	@Produce		json
+//	@Success		200	{object}	util.Response[[]service.AIModelPurposeView]
+//	@Failure		401	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/ai/model-purposes [get]
+func (c *AIModelController) ListAIModelPurposes(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	views, err := c.service.ListAIModelPurposes(ctx, organizationID)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, views)
+}
+
+// SetAIModelPurpose binds a purpose to an enabled model. An empty model_id clears the binding.
+//
+//	@Summary		Set AI model purpose
+//	@Description	Bind a registered purpose to an enabled model. An empty model_id clears the binding so the purpose uses its fallback.
+//	@ID             setAIModelPurpose
+//	@Tags			AI/Models
+//	@Accept			json
+//	@Produce		json
+//	@Param			purpose	path		string						true	"Purpose key"
+//	@Param			request	body		SetAIModelPurposeRequest	true	"Purpose binding"
+//	@Success		200	{object}	util.Response[service.AIModelPurposeView]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		401	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/ai/model-purposes/{purpose} [put]
+func (c *AIModelController) SetAIModelPurpose(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+	purpose := ctx.Param("purpose")
+	if purpose == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Purpose is required"))
+		return
+	}
+	var req SetAIModelPurposeRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+	view, err := c.service.SetAIModelPurpose(ctx, organizationID, purpose, req.ModelID)
+	if err != nil {
+		if errors.Is(err, service.ErrUnknownAIPurpose) || errors.Is(err, service.ErrAIPurposeModelNotFound) || errors.Is(err, service.ErrAIPurposeModelDisabled) {
+			util.RespondWithError(ctx, util.NewError("E4001", err))
+			return
+		}
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, view)
 }
 
 // GetAITypeDefinitions gets the type definitions for AI providers

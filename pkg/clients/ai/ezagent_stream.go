@@ -277,9 +277,13 @@ func buildAgent(ctx context.Context, provider aimodel.Provider, opts *ChatComple
 	agentOpts = append(agentOpts, agent.WithHooks(hooks))
 
 	if opts.EnableAutoSummarization {
+		summarizerProvider := provider
+		if opts.SummarizerProvider != nil {
+			summarizerProvider = opts.SummarizerProvider
+		}
 		policy := &memory.Summarize{
-			Summarizer:           &memory.RobustSummarizer{Provider: provider},
-			Segmented:            &memory.SegmentedSummarizer{Provider: provider},
+			Summarizer:           &memory.RobustSummarizer{Provider: summarizerProvider},
+			Segmented:            &memory.SegmentedSummarizer{Provider: summarizerProvider},
 			KeepRecent:           10,
 			Ratio:                0.3,
 			ProactiveMaxMessages: 80,

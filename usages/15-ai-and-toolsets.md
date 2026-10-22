@@ -9,6 +9,7 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
 - [AI Models](#ai-models)
   - [Built-in AI Providers](#built-in-ai-providers)
   - [Model-Level Chat Settings](#model-level-chat-settings)
+  - [Model Purposes](#model-purposes)
   - [Using AI Models](#using-ai-models)
   - [Registering Custom AI Models](#registering-custom-ai-models)
   - [AIClientFactoryV2 (JSON Schema)](#aiclientfactoryv2-json-schema)
@@ -60,7 +61,8 @@ EZ-Console provides a flexible AI integration system that allows you to:
 - **Client-side tool calling**: Browser-executed `ui_*` tools via HITL handoff (`client_tool_pending`)
 - **Streaming responses**: Real-time SSE chat with content deltas and client-tool control events
 - **Skills system**: Markdown instruction packs (`SKILL.md`) with on-demand `get_skill_content` loading
-- **Auto-summarization**: ez-agent memory policies (robust one-shot + segmented fallback, optional offload)
+- **Auto-summarization**: ez-agent memory policies (robust one-shot + segmented fallback, optional offload); an optional summary-purpose model
+- **Model purposes**: One enabled model per registered use (page chat, summarization, or a custom key). The organization default model stays the fallback
 - **Dual MCP roles**: Consume remote MCP servers as toolsets, and expose authorized tools at `/api/mcp`
 - **Multi-tenancy**: Organization-scoped models/toolsets, RBAC tool permissions, companion skills for non-preset toolsets
 - **Session management**: DB-backed ez-agent `SessionStore`, auto titles, configurable retention
@@ -115,6 +117,7 @@ POST /api/ai/chat/sessions/:id  (content | client_tool_results)
        ez-agent Agent.RunStream
          toolSetsRegistry (live Specs/Lookup)
          UI HITL interrupter · SessionStore · summarize · hooks
+         (summarize uses the summary-purpose provider when one is bound)
   → SSE: content | client_tool_pending | error
      (raw tool_call events are produced internally but not forwarded by the controller)
 ```
@@ -178,6 +181,107 @@ These fields live on the **`AIModel` row** (`t_ai_models`), not inside provider 
 
 `AIChatService` merges these into chat options before caller overrides (`withAIModelChatTokenAndIterationOptions`).
 
+The conversation model’s `system_prompt` is **not** applied to a separate summary-purpose provider. ez-agent’s summarizer uses its own prompt.
+
+### Model Purposes
+
+A purpose names a **use** of a model (page chat, summarization, a future log-analysis job). It is not a column on `t_ai_models`. One model can serve several purposes. Each organization binds at most one model to each purpose.
+
+| Piece | Where |
+|-------|--------|
+| Purpose registry | `model.RegisterAIPurpose` in `pkg/model/ai_purpose.go` (init-time, duplicate keys panic) |
+| Binding row | `t_ai_model_purpose_bindings` — unique `(organization_id, purpose)`, `model_id` is the model `resource_id` |
+| List field | `AIModel.purposes` (`gorm:"-"`) — purpose keys currently bound to that model |
+
+`is_default` is unchanged. It is the organization fallback, not a purpose. `ai_enabled` is still true only when an enabled default model exists. A purpose binding does not replace that check.
+
+#### Builtin purposes
+
+| Key | Constant | When it is used |
+|-----|----------|-----------------|
+| `chat` | `model.AIPurposeChat` | `POST /api/ai/chat/sessions` with an empty `model_id` |
+| `summary` | `model.AIPurposeSummary` | Streaming chat auto-summarization, when a binding should replace the conversation provider |
+
+Both have `Fallback: true`.
+
+#### Resolution
+
+`ResolveAIModel(ctx, organizationID, purpose)`:
+
+1. Registered purpose whose binding points at an **enabled** model → that model.
+2. Otherwise, if the purpose sets `Fallback` → the enabled organization default (`GetDefaultAIModel`).
+3. Otherwise → error (`unknown AI model purpose`, or no model configured).
+
+Callers that already have a model id do not go through this. In particular:
+
+- A chat session stores `model_id` at creation. Later turns and title generation keep using that id.
+- `CreateChatCompletion`, `CreateChatCompletionWithoutToolSets`, and `CreateChatCompletionStream` with an empty `modelID` still call `GetDefaultAIModel`. They do **not** resolve `chat`. The HTTP session-create handler is what resolves `chat` before it writes `session.model_id`.
+
+`ResolveSummaryAIModel` is only for the summarizer, and only when auto-summarization is enabled on a stream:
+
+1. No `summary` binding → keep the conversation model (`nil` result).
+2. Binding points at the same enabled model as the conversation → keep the conversation model.
+3. Binding points at a different enabled model → that model’s provider (`WithChatSummarizerProvider`). Its `system_prompt`, `max_chat_tokens`, and `max_chat_iterations` are not copied onto the chat.
+4. Binding is missing or the model is disabled, and `Fallback` is set → the organization default, unless that is already the conversation model.
+5. If the default cannot be loaded, summarization stays on the conversation model so the chat still runs.
+
+A disabled model cannot be newly assigned (`AI model must be enabled`). An existing binding whose model is later disabled falls through as above. Deleting a model that still has a binding is rejected (`AI model is assigned to a purpose and cannot be deleted`). Clear the binding first. The default model still cannot be deleted.
+
+#### HTTP API
+
+| Method | Path | Permission | Body |
+|--------|------|------------|------|
+| GET | `/api/ai/model-purposes` | `ai:models:view` | — |
+| PUT | `/api/ai/model-purposes/:purpose` | `ai:models:update` | `{ "model_id": "<uuid>" }` |
+
+An empty `model_id` deletes the binding. Unknown purpose keys, a missing model, and a disabled model return `E4001`.
+
+Each list item (`service.AIModelPurposeView`):
+
+| Field | Meaning |
+|-------|---------|
+| `key`, `name`, `description` | Registry entry. `name` / `description` are English; the settings UI prefers `models.purposes.<key>.*` |
+| `fallback` | Whether an unbound or unusable assignment uses the default model |
+| `model_id`, `model_name`, `model_status` | Current binding. Empty `model_id` means unbound |
+| `effective_model_id` | Model that would actually run: the binding when it is enabled, otherwise the default when `fallback` is set |
+| `using_fallback` | True when `effective_model_id` is not the enabled binding |
+
+`GET /api/ai/models` includes `purposes: string[]` on each row (registry order, then any unknown leftover keys).
+
+#### Settings UI
+
+**System Settings → AI Models** (`AIModelSettings`):
+
+- **Assign purposes**, next to Debug, opens a modal. One row per registered purpose, with a clearable model select. Only enabled models are selectable. An empty value shows the current default model’s name as the placeholder (`Default: …`). OK saves changed rows only (`PUT` per purpose). Viewers (`ai:models:view`) can open the modal; the selects and OK require `ai:models:update`.
+- The model table has a **Purposes** column of read-only tags.
+- The default switch label is “Use when no purpose is assigned”.
+- Delete of a model that still has purposes is blocked in the UI, and the dialog lists those purposes. Clone does not copy purposes.
+
+Add `models.purposes.<key>.label` and `.description` in `web/src/i18n/en-US/ai.ts` and `web/src/i18n/zh-CN/ai.ts`. Other locales fall back to `en-US`, then to the API `name` / `description`.
+
+#### Registering a purpose
+
+Register from the feature package `init`, the same way toolset types are registered. Do not invent keys in the database; a key with no caller never runs.
+
+```go
+func init() {
+    model.RegisterAIPurpose(model.AIPurposeDefinition{
+        Key:         "log_analysis",
+        Name:        "Log analysis",
+        Description: "Model used to analyze logs.",
+        Fallback:    true,
+    })
+}
+```
+
+Resolve it where the feature runs:
+
+```go
+aiModel, err := svc.ResolveAIModel(ctx, organizationID, "log_analysis")
+```
+
+The settings modal lists the new row after restart. Ship the i18n keys with the feature. `Fallback: false` means an unbound purpose is an error instead of the organization default — use that only when a silent fallback would be wrong.
+
 ### Using AI Models
 
 #### 1. Create an AI Model via API
@@ -202,6 +306,8 @@ Authorization: Bearer <token>
   "is_default": true
 }
 ```
+
+`is_default` marks the organization fallback used when a purpose is unbound or its model is disabled, and when service helpers are called with an empty `modelID`. It is not itself a purpose. See [Model Purposes](#model-purposes).
 
 #### 2. Using AI Models in Your Code
 
@@ -1348,7 +1454,9 @@ Chat sessions (`model.AIChatSession`) persist the conversation history:
 | `/api/ai/chat/sessions/:sessionId/title` | PUT    | Generate/update session title |
 
 
-**Auto-generated titles:** When the first assistant response is produced for a new session, the backend automatically generates a title using the AI model in a background goroutine.
+**Auto-generated titles:** When the first assistant response is produced for a new session, the backend automatically generates a title using that session’s model in a background goroutine.
+
+**Model selection:** `POST /api/ai/chat/sessions` with an empty `model_id` stores the model from `ResolveAIModel(..., model.AIPurposeChat)` (the `chat` binding, or the organization default). The page chat UI always sends an empty `model_id`. An explicit `model_id` is stored as given. Later messages and the auto title use `session.model_id`; changing the `chat` binding does not retarget sessions that already exist.
 
 **DB-backed session window:** Production chat passes `WithChatSession(sessionID, sessionStore)` so ez-agent persists the effective conversation window via `AISessionService` (`memory.SessionStore`). Summarization updates the window through `ReplaceAll`.
 
@@ -1423,6 +1531,7 @@ The `WithChatOptions` functional options control `Exchange` / `ExchangeStream` (
 | `WithChatMaxIterations(n)` | Max agent turns / tool-loop iterations | **10** |
 | `WithChatMaxTokens(n)` | Context / summarization token budget | 0 |
 | `WithChatAutoSummarization(bool)` | Enable ez-agent Summarize (+ Segmented) policy | false (chat API sets **true**) |
+| `WithChatSummarizerProvider(provider)` | Run that policy on another `aimodel.Provider`. The conversation provider is unchanged. The chat stream sets this from the `summary` purpose when the resolved model differs from the conversation model | conversation provider |
 | `WithChatToolResultMaxSize(bytes)` | Offload message bodies larger than this limit via `memory.Offload` | 32KB |
 | `WithChatResponseJsonSchema(schema)` | Structured output schema for the agent | none |
 | `WithChatClientTools(tools)` | Browser `ui_*` tool definitions | none |
@@ -1441,12 +1550,14 @@ The `WithChatOptions` functional options control `Exchange` / `ExchangeStream` (
 
 When a conversation exceeds the context budget, ez-agent memory policies condense the window. Production chat enables this via `WithChatAutoSummarization(true)` plus model `max_chat_tokens` when set.
 
+`CreateChatCompletionStream` then calls `ResolveSummaryAIModel`. If that returns a model, the stream adds `WithChatSummarizerProvider` for that provider only. The conversation model’s `system_prompt` and token/iteration limits still govern the agent; the summarizer keeps ez-agent’s own summary prompt. With no summary binding, both summarizers keep using the conversation provider, which is the previous behavior. See [Model Purposes](#model-purposes).
+
 ### How it works (ez-agent)
 
 With auto-summarization on, `buildAgent` installs a `memory.Summarize` policy:
 
-- **Robust summarizer** — primary one-shot condensation via the same provider
-- **Segmented summarizer** — fallback when one-shot cannot fit the history
+- **Robust summarizer** — primary one-shot condensation. Uses `SummarizerProvider` when set, otherwise the conversation provider
+- **Segmented summarizer** — fallback when one-shot cannot fit the history (same provider choice)
 - **KeepRecent / Ratio / ProactiveMaxMessages** — control how aggressively history is trimmed (defaults: keep 10 recent, ratio 0.3, proactive at 80 messages)
 - **ProactiveMaxTokens** — when `MaxTokens` (`max_chat_tokens`) is set, proactive threshold is **50%** of that budget
 - **Fallback** — hard window of last 10 messages if summarizers fail
@@ -1997,9 +2108,19 @@ func HandleChat(svc *service.Service) gin.HandlerFunc {
         organizationID := ctx.GetString("organization_id")
         userID, _ := ctx.Get("user_id")
 
-        // Create or get a session
-        session, _ := svc.CreateChatSession(ctx, organizationID, userID.(string),
-            "Chat", "", nil, false)
+        // Empty model_id on the HTTP create API resolves the chat purpose.
+        // CreateChatSession itself stores the id you pass.
+        chatModel, err := svc.ResolveAIModel(ctx, organizationID, model.AIPurposeChat)
+        if err != nil {
+            ctx.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
+        session, err := svc.CreateChatSession(ctx, organizationID, userID.(string),
+            "Chat", chatModel.ResourceID, nil, false)
+        if err != nil {
+            ctx.JSON(500, gin.H{"error": err.Error()})
+            return
+        }
 
         messages := []ai.ChatMessage{
             {Role: model.AIChatMessageRoleUser, Content: req.Message},
@@ -2024,8 +2145,9 @@ func HandleChat(svc *service.Service) gin.HandlerFunc {
             }),
         }
 
-        // Stream response; skillLoader handles metadata injection and get_skill_content toolset internally
-        stream, err := svc.CreateChatCompletionStream(ctx, organizationID, "", messages, skillLoader, options...)
+        // Stream on the session model. Auto-summarization inside this call
+        // switches to the summary-purpose provider when one is bound.
+        stream, err := svc.CreateChatCompletionStream(ctx, organizationID, session.ModelID, messages, skillLoader, options...)
         if err != nil {
             ctx.JSON(500, gin.H{"error": err.Error()})
             return
@@ -2073,6 +2195,8 @@ func ProcessAITask(ctx context.Context, svc *service.Service, orgID string) erro
         }),
     }
 
+    // Non-streaming completion does not apply the summary-purpose provider.
+    // An empty modelID is the organization default, not the chat purpose.
     responses, err := svc.CreateChatCompletion(ctx, orgID, "", messages, nil, options...)
     if err != nil {
         return err
@@ -2146,7 +2270,7 @@ function UserManagementPage() {
 ### AI Models
 
 1. **Secure API Keys**: API keys are automatically encrypted when stored using `safe.EncryptedString`. Always use `util.FieldTypePassword` / `format=password` for sensitive config fields.
-2. **Set Default Models**: Each organization should have a default model so callers can pass an empty `modelID`.
+2. **Keep a default model**: Each organization needs an enabled `is_default` model. It is the fallback for unbound purposes and for service calls that pass an empty `modelID`, and it is what turns `ai_enabled` on. Use **System Settings → AI Models → Assign purposes** when page chat (`chat`) or summarization (`summary`) should use a different model. See [Model Purposes](#model-purposes).
 3. **Test Before Enabling**: Use the test endpoint to verify connectivity:
   ```http
    POST /api/ai/models/:id/test

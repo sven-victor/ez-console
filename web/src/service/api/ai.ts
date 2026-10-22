@@ -91,6 +91,38 @@ export async function generateChatSessionTitle(
   );
 }
 
+/** List AI model purposes List registered purposes and the model assigned to each. An empty model_id means the purpose uses its fallback. GET /api/ai/model-purposes */
+export async function listAiModelPurposes(options?: { [key: string]: any }) {
+  return request<API.ResponseArrayServiceAIModelPurposeView>(
+    "/api/ai/model-purposes",
+    {
+      method: "GET",
+      ...(options || {}),
+    }
+  );
+}
+
+/** Set AI model purpose Bind a registered purpose to an enabled model. An empty model_id clears the binding so the purpose uses its fallback. PUT /api/ai/model-purposes/${param0} */
+export async function setAiModelPurpose(
+  params: API.setAIModelPurposeParams,
+  body: API.SetAIModelPurposeRequest,
+  options?: { [key: string]: any }
+) {
+  const { purpose: param0, ...queryParams } = params;
+  return request<API.ResponseServiceAIModelPurposeView>(
+    `/api/ai/model-purposes/${param0}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: { ...queryParams },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** List AI models List AI models with pagination and search GET /api/ai/models */
 export async function listAiModels(
   params: API.listAIModelsParams,

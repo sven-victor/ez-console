@@ -203,15 +203,16 @@ func (c *AIChatController) CreateChatSession(ctx *gin.Context) {
 		return
 	}
 
-	// Use default model if not specified
+	// Use the chat-purpose model when the request does not name one.
+	// The purpose falls back to the organization default model.
 	modelID := req.ModelID
 	if modelID == "" {
-		defaultModel, err := c.service.GetDefaultAIModel(ctx, organizationID)
+		chatModel, err := c.service.ResolveAIModel(ctx, organizationID, model.AIPurposeChat)
 		if err != nil {
 			util.RespondWithError(ctx, util.NewError("E5001", err))
 			return
 		}
-		modelID = defaultModel.ResourceID
+		modelID = chatModel.ResourceID
 	}
 
 	session, err := c.service.CreateChatSession(ctx, organizationID, userID.(string), req.Title, modelID, req.Messages, req.Anonymous)

@@ -29,6 +29,7 @@ import {
   Switch,
   Tag,
   Tooltip,
+  Typography,
   Row,
   Col,
 } from 'antd';
@@ -42,12 +43,14 @@ import {
   StarFilled,
   BugOutlined,
   CopyOutlined,
+  TagsOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { useNavigate } from 'react-router-dom';
 import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
+import usePermission from '@/hooks/usePermission';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
 import Loading from '@/components/Loading';
@@ -80,8 +83,21 @@ interface AIModel {
   system_prompt?: string;
   max_chat_tokens?: number;
   max_chat_iterations?: number;
+  purposes?: string[];
   created_at: string;
   updated_at: string;
+}
+
+interface AIModelPurposeView {
+  key: string;
+  name: string;
+  description: string;
+  fallback: boolean;
+  model_id: string;
+  model_name: string;
+  model_status: string;
+  effective_model_id: string;
+  using_fallback: boolean;
 }
 
 interface AIModelFormData {
@@ -97,16 +113,25 @@ interface AIModelFormData {
 }
 
 const AIModelSettings: React.FC = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
+  const { hasPermission } = usePermission();
+  const canUpdatePurpose = hasPermission('ai:models:update');
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModel | null>(null);
   const [searchText, setSearchText] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
+  const [purposeOpen, setPurposeOpen] = useState(false);
+  const [purposeLoading, setPurposeLoading] = useState(false);
+  const [purposeSaving, setPurposeSaving] = useState(false);
+  const [purposeRows, setPurposeRows] = useState<AIModelPurposeView[]>([]);
+  const [purposeDraft, setPurposeDraft] = useState<Record<string, string>>({});
+  const [purposeInitial, setPurposeInitial] = useState<Record<string, string>>({});
+  const [assignModels, setAssignModels] = useState<AIModel[]>([]);
   // Fetch AI type definitions
   const { loading: typeDefinitionsLoading, data: typeDefinitions } = useRequest(
     () => api.ai.getAiTypeDefinitions(),
@@ -220,6 +245,85 @@ const AIModelSettings: React.FC = () => {
     }
   );
 
+  const purposeDirty = purposeRows.some(
+    (row) => (purposeDraft[row.key] ?? '') !== (purposeInitial[row.key] ?? ''),
+  );
+
+  const purposeLabel = (key: string, fallback?: string) =>
+    t(`models.purposes.${key}.label`, { defaultValue: fallback || key });
+
+  const openPurposeModal = async () => {
+    setPurposeOpen(true);
+    setPurposeLoading(true);
+    try {
+      const [rows, models] = await Promise.all([
+        api.ai.listAiModelPurposes() as Promise<AIModelPurposeView[]>,
+        api.ai.listAiModels({ current: 1, page_size: 100, search: '' }),
+      ]);
+      const initial: Record<string, string> = {};
+      for (const row of rows) {
+        initial[row.key] = row.model_id ?? '';
+      }
+      setPurposeRows(rows);
+      setPurposeInitial(initial);
+      setPurposeDraft(initial);
+      setAssignModels((models.data ?? []) as AIModel[]);
+    } catch (error) {
+      message.error(t('models.purposeFetchFailed', { defaultValue: 'Failed to load purpose assignments' }));
+      console.error('Failed to load purpose assignments:', error);
+      setPurposeOpen(false);
+    } finally {
+      setPurposeLoading(false);
+    }
+  };
+
+  const closePurposeModal = () => {
+    if (purposeSaving) {
+      return;
+    }
+    setPurposeOpen(false);
+  };
+
+  const savePurposes = async () => {
+    const changed = purposeRows.filter(
+      (row) => (purposeDraft[row.key] ?? '') !== (purposeInitial[row.key] ?? ''),
+    );
+    if (changed.length === 0) {
+      setPurposeOpen(false);
+      return;
+    }
+    setPurposeSaving(true);
+    try {
+      for (const row of changed) {
+        await api.ai.setAiModelPurpose({ purpose: row.key }, { model_id: purposeDraft[row.key] ?? '' });
+      }
+      message.success(t('models.purposeSaveSuccess', { defaultValue: 'Purpose assignments saved' }));
+      setPurposeOpen(false);
+      refresh();
+    } catch (error) {
+      message.error(t('models.purposeSaveFailed', { defaultValue: 'Failed to save purpose assignments' }));
+      console.error('Failed to save purpose assignments:', error);
+      refresh();
+    } finally {
+      setPurposeSaving(false);
+    }
+  };
+
+  const handleDelete = (record: AIModel) => {
+    const purposes = record.purposes ?? [];
+    if (purposes.length > 0) {
+      modal.warning({
+        title: t('models.deleteBlockedTitle', { defaultValue: 'This model cannot be deleted' }),
+        content: t('models.deletePurposeConfirm', {
+          defaultValue: 'This model is used for: {{purposes}}. Unassign those purposes before deleting it.',
+          purposes: purposes.map((key) => purposeLabel(key)).join(', '),
+        }),
+      });
+      return;
+    }
+    deleteModel(record.id);
+  };
+
   const handleCreate = () => {
     setEditingModel(null);
     setSelectedProvider('');
@@ -327,6 +431,18 @@ const AIModelSettings: React.FC = () => {
       render: (text) => <Tag color="blue">{text.toUpperCase()}</Tag>,
     },
     {
+      title: t('models.purposesColumn', { defaultValue: 'Purposes' }),
+      dataIndex: 'purposes',
+      key: 'purposes',
+      render: (purposes?: string[]) => (
+        <Space size={[4, 4]} wrap>
+          {(purposes ?? []).map((key) => (
+            <Tag key={key}>{purposeLabel(key)}</Tag>
+          ))}
+        </Space>
+      ),
+    },
+    {
       title: t('models.status', { defaultValue: 'Status' }),
       dataIndex: 'status',
       key: 'status',
@@ -353,6 +469,7 @@ const AIModelSettings: React.FC = () => {
             key: 'setDefault',
             permission: 'ai:models:update',
             icon: <StarOutlined />,
+            disabled: record.is_default,
             tooltip: t('models.setDefault', { defaultValue: 'Set as Default' }),
             onClick: async () => setDefaultModel(record.id),
           },
@@ -375,10 +492,76 @@ const AIModelSettings: React.FC = () => {
             permission: 'ai:models:delete',
             icon: <DeleteOutlined />,
             tooltip: t('models.deleteTooltip', { defaultValue: 'Delete model' }),
-            onClick: async () => deleteModel(record.id),
+            onClick: async () => handleDelete(record),
             danger: true,
           },
         ]} key="actions" />
+      },
+    },
+  ];
+
+  const defaultAssignModel = assignModels.find((item) => item.is_default && item.status === 'enabled');
+  const purposeColumns: ColumnsType<AIModelPurposeView> = [
+    {
+      title: t('models.purpose', { defaultValue: 'Purpose' }),
+      dataIndex: 'key',
+      width: 140,
+      render: (key: string, row) => purposeLabel(key, row.name),
+    },
+    {
+      title: t('models.purposeDescription', { defaultValue: 'Description' }),
+      dataIndex: 'description',
+      render: (description: string, row) => t(`models.purposes.${row.key}.description`, { defaultValue: description }),
+    },
+    {
+      title: t('models.purposeModel', { defaultValue: 'Model' }),
+      key: 'model',
+      width: 280,
+      render: (_, row) => {
+        const selectedId = purposeDraft[row.key] ?? '';
+        const known = assignModels.some((item) => item.id === selectedId);
+        const options = assignModels
+          .filter((item) => item.status === 'enabled' || item.id === selectedId)
+          .map((item) => ({
+            label: item.name,
+            value: item.id,
+            disabled: item.status !== 'enabled',
+          }));
+        if (selectedId && !known) {
+          options.push({
+            label: row.model_name || selectedId,
+            value: selectedId,
+            disabled: true,
+          });
+        }
+        const selected = assignModels.find((item) => item.id === selectedId);
+        const disabledBound = !!selectedId && (
+          selected?.status === 'disabled' || (!selected && row.model_status === 'disabled' && selectedId === row.model_id)
+        );
+        return (
+          <div>
+            <Select
+              allowClear
+              style={{ width: '100%' }}
+              disabled={!canUpdatePurpose}
+              placeholder={defaultAssignModel
+                ? t('models.purposePlaceholder', { defaultValue: 'Default: {{name}}', name: defaultAssignModel.name })
+                : t('models.purposeNoDefault', { defaultValue: 'Use the default model' })}
+              value={selectedId || undefined}
+              options={options}
+              onChange={(value) => {
+                setPurposeDraft((prev) => ({ ...prev, [row.key]: value ?? '' }));
+              }}
+            />
+            {disabledBound && (
+              <Typography.Text type="warning">
+                {t('models.purposeDisabledFallback', {
+                  defaultValue: 'This model is disabled. The purpose is using the default model.',
+                })}
+              </Typography.Text>
+            )}
+          </div>
+        );
       },
     },
   ];
@@ -406,6 +589,12 @@ const AIModelSettings: React.FC = () => {
                   {t('trace.debug', { defaultValue: 'Debug' })}
                 </Button>
               </PermissionGuard>
+              <Button
+                icon={<TagsOutlined />}
+                onClick={openPurposeModal}
+              >
+                {t('models.assignPurposes', { defaultValue: 'Assign purposes' })}
+              </Button>
               <Button
                 icon={<ReloadOutlined />}
                 onClick={refresh}
@@ -586,6 +775,43 @@ const AIModelSettings: React.FC = () => {
             </Space>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title={t('models.assignPurposesTitle', { defaultValue: 'Assign purposes' })}
+        open={purposeOpen}
+        onCancel={closePurposeModal}
+        width={760}
+        destroyOnHidden
+        footer={[
+          <Button key="cancel" onClick={closePurposeModal} disabled={purposeSaving}>
+            {tCommon('cancel', { defaultValue: 'Cancel' })}
+          </Button>,
+          canUpdatePurpose ? (
+            <Button
+              key="ok"
+              type="primary"
+              loading={purposeSaving}
+              disabled={!purposeDirty || purposeLoading}
+              onClick={savePurposes}
+            >
+              {tCommon('ok', { defaultValue: 'OK' })}
+            </Button>
+          ) : null,
+        ]}
+      >
+        <Typography.Paragraph type="secondary">
+          {t('models.assignPurposesHelp', {
+            defaultValue: 'Leave a purpose empty to use the default model. Only changed rows are saved.',
+          })}
+        </Typography.Paragraph>
+        <Table<AIModelPurposeView>
+          columns={purposeColumns}
+          dataSource={purposeRows}
+          loading={purposeLoading}
+          rowKey="key"
+          pagination={false}
+        />
       </Modal>
     </div>
   );

@@ -299,6 +299,99 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/ai/model-purposes": {
+            "get": {
+                "description": "List registered purposes and the model assigned to each. An empty model_id means the purpose uses its fallback.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "List AI model purposes",
+                "operationId": "listAIModelPurposes",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-array_service_AIModelPurposeView"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/ai/model-purposes/{purpose}": {
+            "put": {
+                "description": "Bind a registered purpose to an enabled model. An empty model_id clears the binding so the purpose uses its fallback.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Set AI model purpose",
+                "operationId": "setAIModelPurpose",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Purpose key",
+                        "name": "purpose",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Purpose binding",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.SetAIModelPurposeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-service_AIModelPurposeView"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/ai/models": {
             "get": {
                 "description": "List AI models with pagination and search",
@@ -7857,6 +7950,17 @@ const docTemplate = `{
                 }
             }
         },
+        "aiapi.SetAIModelPurposeRequest": {
+            "type": "object",
+            "required": [
+                "model_id"
+            ],
+            "properties": {
+                "model_id": {
+                    "type": "string"
+                }
+            }
+        },
         "aiapi.ToggleTraceRequest": {
             "type": "object",
             "required": [
@@ -9040,6 +9144,7 @@ const docTemplate = `{
                 "name",
                 "organization_id",
                 "provider",
+                "purposes",
                 "status",
                 "system_prompt",
                 "updated_at",
@@ -9091,6 +9196,13 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.AIModelProvider"
                         }
                     ]
+                },
+                "purposes": {
+                    "description": "Purpose keys assigned to this model",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "status": {
                     "description": "Status",
@@ -11159,6 +11271,49 @@ const docTemplate = `{
         "orderedmap.OrderedMap-string-github_com_invopop_jsonschema_Schema": {
             "type": "object"
         },
+        "service.AIModelPurposeView": {
+            "type": "object",
+            "required": [
+                "description",
+                "effective_model_id",
+                "fallback",
+                "key",
+                "model_id",
+                "model_name",
+                "model_status",
+                "name",
+                "using_fallback"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "effective_model_id": {
+                    "type": "string"
+                },
+                "fallback": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "model_id": {
+                    "type": "string"
+                },
+                "model_name": {
+                    "type": "string"
+                },
+                "model_status": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "using_fallback": {
+                    "type": "boolean"
+                }
+            }
+        },
         "service.AITypeDefinition": {
             "type": "object",
             "required": [
@@ -12601,81 +12756,59 @@ const docTemplate = `{
         "time.Duration": {
             "type": "integer",
             "enum": [
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
                 1,
                 1000,
                 1000000,
-                1000000000,
-                60000000000,
-                3600000000000,
-                -9223372036854775808,
-                9223372036854775807,
-                1,
-                1000,
-                1000000,
-                1000000000,
-                60000000000,
-                3600000000000
+                1000000000
             ],
             "x-enum-varnames": [
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
-                "minDuration",
-                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second",
-                "Minute",
-                "Hour",
-                "minDuration",
-                "maxDuration",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
-                "Minute",
-                "Hour"
+                "Second"
             ]
         },
         "toolset.ToolSetType": {
             "type": "string",
             "enum": [
-                "utils"
+                "utils",
+                "local_complex"
             ],
             "x-enum-varnames": [
-                "ToolSetTypeUtils"
+                "ToolSetTypeUtils",
+                "ToolSetTypeLocalComplex"
             ]
         },
         "util.ErrorResponse": {
@@ -13555,6 +13688,32 @@ const docTemplate = `{
                 }
             }
         },
+        "util.Response-array_service_AIModelPurposeView": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/service.AIModelPurposeView"
+                    }
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
         "util.Response-array_service_AITypeDefinition": {
             "type": "object",
             "required": [
@@ -14375,6 +14534,29 @@ const docTemplate = `{
                 },
                 "data": {
                     "$ref": "#/definitions/model.User"
+                },
+                "err": {
+                    "type": "string"
+                },
+                "trace_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "util.Response-service_AIModelPurposeView": {
+            "type": "object",
+            "required": [
+                "code",
+                "data",
+                "err",
+                "trace_id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "data": {
+                    "$ref": "#/definitions/service.AIModelPurposeView"
                 },
                 "err": {
                     "type": "string"

@@ -78,6 +78,7 @@ type AIModel struct {
 	IsDefault         bool            `gorm:"not null;default:false" json:"is_default"`                                       // Whether this is the default model
 	CreatedBy         string          `gorm:"size:36;not null" json:"created_by"`                                             // Creator user ID
 	UpdatedBy         string          `gorm:"size:36" json:"updated_by"`                                                      // Last updater user ID
+	Purposes          []string        `gorm:"-" json:"purposes"`                                                              // Purpose keys assigned to this model
 }
 
 // TableName returns the table name for AIModel

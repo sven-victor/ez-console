@@ -22,6 +22,7 @@ import (
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-agent/memory"
+	aimodel "github.com/sven-victor/ez-agent/model"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 )
@@ -188,6 +189,11 @@ type ChatCompletionOptions struct {
 	// ModelSystemPrompt is the AIModel-level system prompt (base instruction).
 	ModelSystemPrompt string
 
+	// SummarizerProvider runs conversation summarization when set.
+	// The conversation provider is unchanged. Nil keeps summarization on the conversation provider.
+	// The summarizer uses its own prompt and does not inherit ModelSystemPrompt.
+	SummarizerProvider aimodel.Provider
+
 	// EphemeralSystemPrompts are page-level prompts merged into the agent system
 	// prompt for this run only (not persisted via SessionStore).
 	EphemeralSystemPrompts []string
@@ -237,6 +243,13 @@ func WithChatMaxTokens(maxTokens int) WithChatOptions {
 func WithChatAutoSummarization(enabled bool) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.EnableAutoSummarization = enabled
+	}
+}
+
+// WithChatSummarizerProvider selects a separate model for conversation summarization.
+func WithChatSummarizerProvider(provider aimodel.Provider) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.SummarizerProvider = provider
 	}
 }
 

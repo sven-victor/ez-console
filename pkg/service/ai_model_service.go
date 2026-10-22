@@ -44,6 +44,12 @@ type AIModelService interface {
 	SetDefaultAIModel(ctx context.Context, organizationID, id string) error
 	TestAIModel(ctx context.Context, organizationID, id string) error
 	GetAITypeDefinitions(ctx context.Context) []AITypeDefinition
+	ListAIModelPurposes(ctx context.Context, organizationID string) ([]AIModelPurposeView, error)
+	SetAIModelPurpose(ctx context.Context, organizationID, purpose, modelID string) (*AIModelPurposeView, error)
+	ResolveAIModel(ctx context.Context, organizationID string, purpose model.AIPurpose) (*model.AIModel, error)
+	// ResolveSummaryAIModel returns the model that should summarize this conversation.
+	// A nil model means summarization keeps using the conversation model.
+	ResolveSummaryAIModel(ctx context.Context, organizationID, conversationModelID string) (*model.AIModel, error)
 }
 
 var (
@@ -117,6 +123,11 @@ func (s *aiModelService) GetAIModelForAPI(ctx context.Context, organizationID, i
 	}
 
 	promoteLegacySystemPrompt(&aiModel)
+	models := []model.AIModel{aiModel}
+	if err := s.attachPurposes(ctx, organizationID, models); err != nil {
+		return nil, err
+	}
+	aiModel = models[0]
 	// Don't return the API key
 	if aiModel.Config != nil {
 		aiModel.Config["api_key"] = ""
@@ -186,6 +197,13 @@ func (s *aiModelService) DeleteAIModel(ctx context.Context, organizationID, id s
 	if aiModel.IsDefault {
 		return fmt.Errorf("default AI model cannot be deleted")
 	}
+	assigned, err := s.modelHasPurposeBinding(ctx, organizationID, id)
+	if err != nil {
+		return err
+	}
+	if assigned {
+		return fmt.Errorf("AI model is assigned to a purpose and cannot be deleted")
+	}
 
 	if err := db.Session(ctx).Where("organization_id = ? AND resource_id = ?", organizationID, id).Delete(&aiModel).Error; err != nil {
 		return fmt.Errorf("failed to delete AI model: %w", err)
@@ -222,6 +240,9 @@ func (s *aiModelService) ListAIModels(ctx context.Context, organizationID string
 
 	for i := range models {
 		promoteLegacySystemPrompt(&models[i])
+	}
+	if err := s.attachPurposes(ctx, organizationID, models); err != nil {
+		return nil, 0, err
 	}
 
 	return models, total, nil

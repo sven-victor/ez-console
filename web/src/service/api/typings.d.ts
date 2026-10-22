@@ -114,6 +114,8 @@ declare global {
       organization_id: string;
       /** Provider (openai, anthropic, gemini, etc.) */
       provider: AIModelProvider;
+      /** Purpose keys assigned to this model */
+      purposes: string[];
       /** Status */
       status: AIModelStatus;
       /** System prompt prepended to every conversation (optional) */
@@ -124,6 +126,18 @@ declare global {
     }
   
     type AIModelProvider = "openai" | "anthropic" | "gemini";
+  
+    interface AIModelPurposeView {
+      description: string;
+      effective_model_id: string;
+      fallback: boolean;
+      key: string;
+      model_id: string;
+      model_name: string;
+      model_status: string;
+      name: string;
+      using_fallback: boolean;
+    }
   
     type AIModelStatus = "enabled" | "disabled";
   
@@ -504,15 +518,7 @@ declare global {
       fileKey: string;
     }
   
-    type Duration =
-      | -9223372036854776000
-      | 9223372036854776000
-      | 1
-      | 1000
-      | 1000000
-      | 1000000000
-      | 60000000000
-      | 3600000000000;
+    type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
   
     interface EnableMFARequest {
       mfa_type: string;
@@ -1510,6 +1516,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArrayServiceAIModelPurposeView {
+      code: string;
+      data: AIModelPurposeView[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseArrayServiceAITypeDefinition {
       code: string;
       data: AITypeDefinition[];
@@ -1751,6 +1764,13 @@ declare global {
     interface ResponseModelUser {
       code: string;
       data: User;
+      err: string;
+      trace_id: string;
+    }
+  
+    interface ResponseServiceAIModelPurposeView {
+      code: string;
+      data: AIModelPurposeView;
       err: string;
       trace_id: string;
     }
@@ -2097,6 +2117,15 @@ declare global {
       last_active_at: string;
       location: string;
       user_agent: string;
+    }
+  
+    interface setAIModelPurposeParams {
+      /** Purpose key */
+      purpose: string;
+    }
+  
+    interface SetAIModelPurposeRequest {
+      model_id: string;
     }
   
     interface setDefaultAIModelParams {
@@ -2448,7 +2477,7 @@ declare global {
   
     type ToolSetStatus = "enabled" | "disabled";
   
-    type ToolSetType = "utils";
+    type ToolSetType = "utils" | "local_complex";
   
     interface ToolSetTypeDefinition {
       allow_manual_create: boolean;

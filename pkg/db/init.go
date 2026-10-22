@@ -43,6 +43,7 @@ var migrateModels = []interface{}{
 	&model.File{},
 	&model.TempData{},
 	&model.AIModel{},
+	&model.AIModelPurposeBinding{},
 	&model.ToolSet{},
 	&model.RoleAIToolPermission{},
 	&model.AIChatSession{},
