@@ -375,7 +375,7 @@ const be = ({
               {
                 placeholder: a("serviceAccount.filterByOrg", { defaultValue: "All organizations" }),
                 allowClear: !0,
-                style: { minWidth: 160 },
+                style: { minWidth: 200 },
                 options: [
                   { value: "", label: a("serviceAccount.global", { defaultValue: "Global" }) },
                   ...h.map((s) => ({ value: s.id, label: s.name }))

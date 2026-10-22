@@ -1,8 +1,8 @@
 import f from "i18next";
 import { initReactI18next as v } from "react-i18next";
-import k from "i18next-browser-languagedetector";
+import b from "i18next-browser-languagedetector";
 import { r as u } from "./client.js";
-import { load as b } from "js-yaml";
+import { load as k } from "js-yaml";
 const Re = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   const a = e instanceof Date ? e : new Date(e), r = a.getFullYear(), n = String(a.getMonth() + 1).padStart(2, "0"), s = String(a.getDate()).padStart(2, "0"), o = String(a.getHours()).padStart(2, "0"), i = String(a.getMinutes()).padStart(2, "0"), l = String(a.getSeconds()).padStart(2, "0");
   return t.replace("YYYY", String(r)).replace("MM", n).replace("DD", s).replace("HH", o).replace("mm", i).replace("ss", l);
@@ -1026,7 +1026,7 @@ const A = {
     resetCountersConfirm: "Reset rate-limit and quota counters for this subject? They will be able to send requests immediately.",
     resetCountersSuccess: "Counters reset"
   }
-}, w = {
+}, P = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1621,6 +1621,8 @@ const A = {
       deleteSuccess: "Toolset deleted successfully",
       deleteFailed: "Failed to delete toolset",
       presetTag: "Preset",
+      scopeUser: "User toolsets",
+      scopeAll: "All toolsets",
       presetDisabledEdit: "Built-in toolsets cannot be edited.",
       presetDisabledDelete: "Built-in toolsets cannot be deleted.",
       testSuccess: "Toolset connection test successful",
@@ -1645,24 +1647,36 @@ const A = {
       result: "Result",
       selectToolFirst: "Please select a tool first",
       mcp: {
-        protocol: "Protocol",
-        endpoint: "Endpoint",
-        username: "Username",
-        password: "Password",
-        token: "Token",
-        args: "Arguments",
-        protocolPlaceholder: "Select protocol",
-        endpointPlaceholder: "Enter endpoint",
-        usernamePlaceholder: "Enter username",
-        passwordPlaceholder: "Enter password",
-        tokenPlaceholder: "Enter token",
-        argsPlaceholder: 'Enter arguments, format: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: 'Arguments, format: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "Protocol, supports HTTP and WebSocket",
-        endpointTooltip: "Endpoint of the MCP server",
-        usernameTooltip: "Username of the MCP server",
-        passwordTooltip: "Password of the MCP server",
-        tokenTooltip: "Token of the MCP server"
+        form: {
+          endpoint: {
+            label: "Endpoint",
+            description: "The endpoint of the MCP server"
+          },
+          protocol: {
+            label: "Protocol",
+            description: "The protocol of the MCP server"
+          },
+          auth_type: {
+            label: "Authentication Type",
+            description: "The authentication type"
+          },
+          username: {
+            label: "Username",
+            description: "The username for the MCP server"
+          },
+          password: {
+            label: "Password",
+            description: "The password for the MCP server"
+          },
+          args: {
+            label: "Arguments",
+            description: "Optional MCP client options. Supported keys: headers (or header) as an object of HTTP header name/value pairs; proxy as an http/https/socks5/socks5h URL."
+          },
+          token: {
+            label: "Bearer Token",
+            description: "The bearer token for the MCP server"
+          }
+        }
       }
     }
   },
@@ -1685,7 +1699,7 @@ const A = {
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, P = {
+}, w = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1698,7 +1712,7 @@ const A = {
     edit: "Edit AI Model",
     test: "Test Connection",
     setDefault: "Set as Default",
-    defaultModel: "Default Model",
+    defaultModel: "Used when no purpose is assigned",
     searchPlaceholder: "Search AI models...",
     fetchTypeDefinitionsFailed: "Failed to fetch AI type definitions",
     clone: "Clone",
@@ -1719,7 +1733,32 @@ const A = {
     apiKeyPlaceholder: "Enter API key",
     apiKeyPlaceholderEdit: "Leave empty to keep current API key",
     baseUrlPlaceholder: "Optional: Custom API endpoint",
-    setAsDefault: "Set as default model",
+    setAsDefault: "Use when no purpose is assigned",
+    purposesColumn: "Purposes",
+    assignPurposes: "Assign purposes",
+    assignPurposesTitle: "Assign purposes",
+    assignPurposesHelp: "Leave a purpose empty to use the default model. Only changed rows are saved.",
+    purpose: "Purpose",
+    purposeDescription: "Description",
+    purposeModel: "Model",
+    purposePlaceholder: "Default: {{name}}",
+    purposeNoDefault: "Use the default model",
+    purposeDisabledFallback: "This model is disabled. The purpose is using the default model.",
+    purposeSaveSuccess: "Purpose assignments saved",
+    purposeSaveFailed: "Failed to save purpose assignments",
+    purposeFetchFailed: "Failed to load purpose assignments",
+    deleteBlockedTitle: "This model cannot be deleted",
+    deletePurposeConfirm: "This model is used for: {{purposes}}. Unassign those purposes before deleting it.",
+    purposes: {
+      chat: {
+        label: "Page chat",
+        description: "Model used when starting a page conversation."
+      },
+      summary: {
+        label: "Message summary",
+        description: "Model used when a conversation exceeds its context window."
+      }
+    },
     nameRequired: "Please enter model name",
     providerRequired: "Please select provider",
     modelIdRequired: "Please enter model ID",
@@ -1735,7 +1774,59 @@ const A = {
     testFailed: "AI model connection test failed",
     setDefaultSuccess: "Default AI model set successfully",
     setDefaultFailed: "Failed to set default AI model",
-    deleteConfirm: "Are you sure you want to delete this AI model?"
+    deleteConfirm: "Are you sure you want to delete this AI model?",
+    openai: {
+      form: {
+        api_key: {
+          label: "API Key",
+          description: "OpenAI API key (encrypted)"
+        },
+        model_id: {
+          label: "Model ID",
+          description: "OpenAI model ID (e.g., gpt-4, gpt-3.5-turbo)"
+        },
+        base_url: {
+          label: "Base URL",
+          description: "Custom API endpoint URL (optional)"
+        },
+        organization_id: {
+          label: "Organization ID",
+          description: "OpenAI organization ID (optional)"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "API Key",
+          description: "Anthropic API key (encrypted)"
+        },
+        model_id: {
+          label: "Model ID",
+          description: "Anthropic model ID (e.g., claude-sonnet-4-20250514)"
+        },
+        base_url: {
+          label: "Base URL",
+          description: "Custom API endpoint URL (optional)"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "API Key",
+          description: "Google Gemini API key (encrypted)"
+        },
+        model_id: {
+          label: "Model ID",
+          description: "Gemini model ID (e.g., gemini-2.0-flash)"
+        },
+        base_url: {
+          label: "Base URL",
+          description: "Custom API endpoint URL (optional)"
+        }
+      }
+    }
   },
   trace: {
     title: "AI Trace Viewer",
@@ -2619,7 +2710,7 @@ const A = {
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, L = {
+}, I = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -2702,7 +2793,7 @@ const A = {
     "fr-FR": "法语",
     "zh-CN": "中文"
   }
-}, I = {
+}, L = {
   user: {
     management: "用户管理",
     create: "新建用户",
@@ -3913,6 +4004,8 @@ const A = {
       deleteSuccess: "工具集删除成功",
       deleteFailed: "删除工具集失败",
       presetTag: "内置",
+      scopeUser: "用户工具集",
+      scopeAll: "全部工具集",
       presetDisabledEdit: "内置工具集不能编辑。",
       presetDisabledDelete: "内置工具集不能删除。",
       testSuccess: "工具集连接测试成功",
@@ -3937,24 +4030,36 @@ const A = {
       result: "执行结果",
       selectToolFirst: "请先选择一个工具",
       mcp: {
-        protocol: "协议",
-        endpoint: "端点",
-        username: "用户名",
-        password: "密码",
-        token: "令牌",
-        args: "参数",
-        protocolPlaceholder: "请选择协议",
-        endpointPlaceholder: "请输入端点",
-        usernamePlaceholder: "请输入用户名",
-        passwordPlaceholder: "请输入密码",
-        tokenPlaceholder: "请输入令牌",
-        argsPlaceholder: '请输入参数, 格式为Json,例如: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: '参数，格式为Json,例如: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "协议，支持HTTP和WebSocket",
-        endpointTooltip: "MCP服务器的端点",
-        usernameTooltip: "MCP服务器的用户名",
-        passwordTooltip: "MCP服务器的密码",
-        tokenTooltip: "MCP服务器的令牌"
+        form: {
+          endpoint: {
+            label: "端点",
+            description: "MCP 服务器的端点"
+          },
+          protocol: {
+            label: "协议",
+            description: "MCP 服务器的协议"
+          },
+          auth_type: {
+            label: "认证类型",
+            description: "认证方式"
+          },
+          username: {
+            label: "用户名",
+            description: "MCP 服务器的用户名"
+          },
+          password: {
+            label: "密码",
+            description: "MCP 服务器的密码"
+          },
+          args: {
+            label: "参数",
+            description: "可选的 MCP 客户端选项。支持的键：headers（或 header）为 HTTP 请求头名称与值的对象；proxy 为 http/https/socks5/socks5h URL。"
+          },
+          token: {
+            label: "Bearer 令牌",
+            description: "MCP 服务器的 Bearer 令牌"
+          }
+        }
       }
     }
   },
@@ -3977,7 +4082,7 @@ const A = {
     settings: "系统设置",
     audit: "审计日志"
   }
-}, q = {
+}, U = {
   models: {
     name: "名称",
     provider: "提供商",
@@ -3990,7 +4095,7 @@ const A = {
     edit: "编辑AI模型",
     test: "测试连接",
     setDefault: "设为默认",
-    defaultModel: "默认模型",
+    defaultModel: "未指定用途时使用",
     searchPlaceholder: "搜索AI模型...",
     fetchTypeDefinitionsFailed: "获取 AI 类型定义失败",
     clone: "克隆",
@@ -4011,7 +4116,32 @@ const A = {
     apiKeyPlaceholder: "请输入API密钥",
     apiKeyPlaceholderEdit: "留空以保持当前API密钥",
     baseUrlPlaceholder: "可选：自定义API端点",
-    setAsDefault: "设为默认模型",
+    setAsDefault: "未指定用途时使用",
+    purposesColumn: "用途",
+    assignPurposes: "用途分配",
+    assignPurposesTitle: "用途分配",
+    assignPurposesHelp: "留空则使用默认模型。确定后只保存有改动的行。",
+    purpose: "用途",
+    purposeDescription: "说明",
+    purposeModel: "模型",
+    purposePlaceholder: "默认：{{name}}",
+    purposeNoDefault: "使用默认模型",
+    purposeDisabledFallback: "该模型已禁用，正在使用默认模型",
+    purposeSaveSuccess: "用途分配已保存",
+    purposeSaveFailed: "保存用途分配失败",
+    purposeFetchFailed: "获取用途分配失败",
+    deleteBlockedTitle: "无法删除此模型",
+    deletePurposeConfirm: "此模型已用于：{{purposes}}。请先在用途分配中解除绑定后再删除。",
+    purposes: {
+      chat: {
+        label: "页面对话",
+        description: "新建对话时使用的模型"
+      },
+      summary: {
+        label: "消息汇总",
+        description: "上下文超限时使用的汇总模型"
+      }
+    },
     nameRequired: "请输入模型名称",
     providerRequired: "请选择提供商",
     modelIdRequired: "请输入模型ID",
@@ -4027,7 +4157,59 @@ const A = {
     testFailed: "AI模型连接测试失败",
     setDefaultSuccess: "默认AI模型设置成功",
     setDefaultFailed: "设置默认AI模型失败",
-    deleteConfirm: "确定要删除此AI模型吗？"
+    deleteConfirm: "确定要删除此AI模型吗？",
+    openai: {
+      form: {
+        api_key: {
+          label: "API 密钥",
+          description: "OpenAI API 密钥（加密存储）"
+        },
+        model_id: {
+          label: "模型 ID",
+          description: "OpenAI 模型 ID（例如 gpt-4、gpt-3.5-turbo）"
+        },
+        base_url: {
+          label: "基础 URL",
+          description: "自定义 API 端点 URL（可选）"
+        },
+        organization_id: {
+          label: "组织 ID",
+          description: "OpenAI 组织 ID（可选）"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "API 密钥",
+          description: "Anthropic API 密钥（加密存储）"
+        },
+        model_id: {
+          label: "模型 ID",
+          description: "Anthropic 模型 ID（例如 claude-sonnet-4-20250514）"
+        },
+        base_url: {
+          label: "基础 URL",
+          description: "自定义 API 端点 URL（可选）"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "API 密钥",
+          description: "Google Gemini API 密钥（加密存储）"
+        },
+        model_id: {
+          label: "模型 ID",
+          description: "Gemini 模型 ID（例如 gemini-2.0-flash）"
+        },
+        base_url: {
+          label: "基础 URL",
+          description: "自定义 API 端点 URL（可选）"
+        }
+      }
+    }
   },
   trace: {
     title: "AI 跟踪调试",
@@ -4103,7 +4285,7 @@ const A = {
     skillsSelected: "已选 {{count}} 个",
     skillDomain: "技能域"
   }
-}, U = {
+}, q = {
   listTitle: "任务列表",
   detailTitle: "任务详情",
   typeLabel: "类型",
@@ -5427,6 +5609,8 @@ const A = {
       deleteSuccess: "Toolset erfolgreich gelöscht",
       deleteFailed: "Toolset konnte nicht gelöscht werden",
       presetTag: "Voreinstellung",
+      scopeUser: "Benutzer-Toolsets",
+      scopeAll: "Alle Toolsets",
       presetDisabledEdit: "Integrierte Toolsets können nicht bearbeitet werden.",
       presetDisabledDelete: "Integrierte Toolsets können nicht gelöscht werden.",
       testSuccess: "Toolset-Verbindungstest erfolgreich",
@@ -5451,24 +5635,36 @@ const A = {
       result: "Ergebnis",
       selectToolFirst: "Bitte wählen Sie zuerst ein Werkzeug aus",
       mcp: {
-        protocol: "Protokoll",
-        endpoint: "Endpunkt",
-        username: "Benutzername",
-        password: "Passwort",
-        token: "Token",
-        args: "Argumente",
-        protocolPlaceholder: "Protokoll auswählen",
-        endpointPlaceholder: "Endpunkt eingeben",
-        usernamePlaceholder: "Benutzername eingeben",
-        passwordPlaceholder: "Passwort eingeben",
-        tokenPlaceholder: "Token eingeben",
-        argsPlaceholder: 'Argumente eingeben, format: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: 'Argumente, format: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "Protokoll, unterstützt HTTP und WebSocket",
-        endpointTooltip: "Endpunkt des MCP-Servers",
-        usernameTooltip: "Benutzername des MCP-Servers",
-        passwordTooltip: "Passwort des MCP-Servers",
-        tokenTooltip: "Token des MCP-Servers"
+        form: {
+          endpoint: {
+            label: "Endpunkt",
+            description: "Der Endpunkt des MCP-Servers"
+          },
+          protocol: {
+            label: "Protokoll",
+            description: "Das Protokoll des MCP-Servers"
+          },
+          auth_type: {
+            label: "Authentifizierungstyp",
+            description: "Der Authentifizierungstyp"
+          },
+          username: {
+            label: "Benutzername",
+            description: "Der Benutzername für den MCP-Server"
+          },
+          password: {
+            label: "Passwort",
+            description: "Das Passwort für den MCP-Server"
+          },
+          args: {
+            label: "Argumente",
+            description: "Optionale MCP-Client-Optionen. Unterstützte Schlüssel: headers (oder header) als Objekt aus HTTP-Header-Namen und -Werten; proxy als http/https/socks5/socks5h-URL."
+          },
+          token: {
+            label: "Bearer-Token",
+            description: "Das Bearer-Token für den MCP-Server"
+          }
+        }
       }
     },
     organizations: {
@@ -5592,7 +5788,59 @@ const A = {
     testFailed: "KI-Modell-Verbindungstest fehlgeschlagen",
     setDefaultSuccess: "Standard-KI-Modell erfolgreich festgelegt",
     setDefaultFailed: "Standard-KI-Modell konnte nicht festgelegt werden",
-    deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?"
+    deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?",
+    openai: {
+      form: {
+        api_key: {
+          label: "API-Schlüssel",
+          description: "OpenAI-API-Schlüssel (verschlüsselt)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "OpenAI-Modell-ID (z. B. gpt-4, gpt-3.5-turbo)"
+        },
+        base_url: {
+          label: "Basis-URL",
+          description: "Benutzerdefinierte API-Endpunkt-URL (optional)"
+        },
+        organization_id: {
+          label: "Organisations-ID",
+          description: "OpenAI-Organisations-ID (optional)"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "API-Schlüssel",
+          description: "Anthropic-API-Schlüssel (verschlüsselt)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "Anthropic-Modell-ID (z. B. claude-sonnet-4-20250514)"
+        },
+        base_url: {
+          label: "Basis-URL",
+          description: "Benutzerdefinierte API-Endpunkt-URL (optional)"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "API-Schlüssel",
+          description: "Google-Gemini-API-Schlüssel (verschlüsselt)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "Gemini-Modell-ID (z. B. gemini-2.0-flash)"
+        },
+        base_url: {
+          label: "Basis-URL",
+          description: "Benutzerdefinierte API-Endpunkt-URL (optional)"
+        }
+      }
+    }
   },
   trace: {
     title: "KI-Trace-Viewer",
@@ -6992,6 +7240,8 @@ const A = {
       deleteSuccess: "Conjunto de herramientas eliminado exitosamente",
       deleteFailed: "Error al eliminar conjunto de herramientas",
       presetTag: "Predefinida",
+      scopeUser: "Conjuntos de usuario",
+      scopeAll: "Todos los conjuntos",
       presetDisabledEdit: "Los conjuntos integrados no se pueden editar.",
       presetDisabledDelete: "Los conjuntos integrados no se pueden eliminar.",
       testSuccess: "Prueba de conexión del conjunto de herramientas exitosa",
@@ -7016,24 +7266,36 @@ const A = {
       result: "Resultado",
       selectToolFirst: "Por favor seleccione primero una herramienta",
       mcp: {
-        protocol: "Protocolo",
-        endpoint: "Punto final",
-        username: "Nombre de usuario",
-        password: "Contraseña",
-        token: "Token",
-        args: "Argumentos",
-        protocolPlaceholder: "Seleccione el protocolo",
-        endpointPlaceholder: "Ingrese el punto final",
-        usernamePlaceholder: "Ingrese el nombre de usuario",
-        passwordPlaceholder: "Ingrese la contraseña",
-        tokenPlaceholder: "Ingrese el token",
-        argsPlaceholder: 'Ingrese los argumentos, format: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: 'Argumentos, format: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "Protocolo, soporta HTTP y WebSocket",
-        endpointTooltip: "Punto final del servidor MCP",
-        usernameTooltip: "Nombre de usuario del servidor MCP",
-        passwordTooltip: "Contraseña del servidor MCP",
-        tokenTooltip: "Token del servidor MCP"
+        form: {
+          endpoint: {
+            label: "Punto final",
+            description: "El punto final del servidor MCP"
+          },
+          protocol: {
+            label: "Protocolo",
+            description: "El protocolo del servidor MCP"
+          },
+          auth_type: {
+            label: "Tipo de autenticación",
+            description: "El tipo de autenticación"
+          },
+          username: {
+            label: "Nombre de usuario",
+            description: "El nombre de usuario del servidor MCP"
+          },
+          password: {
+            label: "Contraseña",
+            description: "La contraseña del servidor MCP"
+          },
+          args: {
+            label: "Argumentos",
+            description: "Opciones opcionales del cliente MCP. Claves admitidas: headers (o header) como un objeto de pares nombre/valor de cabeceras HTTP; proxy como una URL http/https/socks5/socks5h."
+          },
+          token: {
+            label: "Token Bearer",
+            description: "El token Bearer del servidor MCP"
+          }
+        }
       }
     },
     organizations: {
@@ -7157,7 +7419,59 @@ const A = {
     testFailed: "Prueba de conexión del modelo de IA fallida",
     setDefaultSuccess: "Modelo de IA predeterminado establecido exitosamente",
     setDefaultFailed: "Error al establecer modelo de IA predeterminado",
-    deleteConfirm: "¿Está seguro de que desea eliminar este modelo de IA?"
+    deleteConfirm: "¿Está seguro de que desea eliminar este modelo de IA?",
+    openai: {
+      form: {
+        api_key: {
+          label: "Clave API",
+          description: "Clave API de OpenAI (cifrada)"
+        },
+        model_id: {
+          label: "ID del modelo",
+          description: "ID del modelo de OpenAI (p. ej., gpt-4, gpt-3.5-turbo)"
+        },
+        base_url: {
+          label: "URL base",
+          description: "URL de punto de conexión API personalizada (opcional)"
+        },
+        organization_id: {
+          label: "ID de organización",
+          description: "ID de organización de OpenAI (opcional)"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "Clave API",
+          description: "Clave API de Anthropic (cifrada)"
+        },
+        model_id: {
+          label: "ID del modelo",
+          description: "ID del modelo de Anthropic (p. ej., claude-sonnet-4-20250514)"
+        },
+        base_url: {
+          label: "URL base",
+          description: "URL de punto de conexión API personalizada (opcional)"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "Clave API",
+          description: "Clave API de Google Gemini (cifrada)"
+        },
+        model_id: {
+          label: "ID del modelo",
+          description: "ID del modelo de Gemini (p. ej., gemini-2.0-flash)"
+        },
+        base_url: {
+          label: "URL base",
+          description: "URL de punto de conexión API personalizada (opcional)"
+        }
+      }
+    }
   },
   trace: {
     title: "Visor de Rastreo IA",
@@ -8557,6 +8871,8 @@ const A = {
       deleteSuccess: "Ensemble d'outils supprimé avec succès",
       deleteFailed: "Échec de la suppression de l'ensemble d'outils",
       presetTag: "Préréglage",
+      scopeUser: "Ensembles utilisateur",
+      scopeAll: "Tous les ensembles",
       presetDisabledEdit: "Les ensembles d'outils intégrés ne peuvent pas être modifiés.",
       presetDisabledDelete: "Les ensembles d'outils intégrés ne peuvent pas être supprimés.",
       testSuccess: "Test de connexion de l'ensemble d'outils réussi",
@@ -8581,24 +8897,36 @@ const A = {
       result: "Résultat",
       selectToolFirst: "Veuillez d'abord sélectionner un outil",
       mcp: {
-        protocol: "Protocole",
-        endpoint: "Point de terminaison",
-        username: "Nom d'utilisateur",
-        password: "Mot de passe",
-        token: "Jeton",
-        args: "Arguments",
-        protocolPlaceholder: "Sélectionnez le protocole",
-        endpointPlaceholder: "Entrez le point de terminaison",
-        usernamePlaceholder: "Entrez le nom d'utilisateur",
-        passwordPlaceholder: "Entrez le mot de passe",
-        tokenPlaceholder: "Entrez le jeton",
-        argsPlaceholder: 'Entrez les arguments, format: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: 'Arguments, format: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "Protocole, supporte HTTP et WebSocket",
-        endpointTooltip: "Point de terminaison du serveur MCP",
-        usernameTooltip: "Nom d'utilisateur du serveur MCP",
-        passwordTooltip: "Mot de passe du serveur MCP",
-        tokenTooltip: "Jeton du serveur MCP"
+        form: {
+          endpoint: {
+            label: "Point de terminaison",
+            description: "Le point de terminaison du serveur MCP"
+          },
+          protocol: {
+            label: "Protocole",
+            description: "Le protocole du serveur MCP"
+          },
+          auth_type: {
+            label: "Type d'authentification",
+            description: "Le type d'authentification"
+          },
+          username: {
+            label: "Nom d'utilisateur",
+            description: "Le nom d'utilisateur du serveur MCP"
+          },
+          password: {
+            label: "Mot de passe",
+            description: "Le mot de passe du serveur MCP"
+          },
+          args: {
+            label: "Arguments",
+            description: "Options facultatives du client MCP. Clés prises en charge : headers (ou header) comme objet de paires nom/valeur d'en-têtes HTTP ; proxy comme URL http/https/socks5/socks5h."
+          },
+          token: {
+            label: "Jeton Bearer",
+            description: "Le jeton Bearer du serveur MCP"
+          }
+        }
       }
     },
     organizations: {
@@ -8722,7 +9050,59 @@ const A = {
     testFailed: "Test de connexion du modèle IA échoué",
     setDefaultSuccess: "Modèle IA par défaut défini avec succès",
     setDefaultFailed: "Échec de la définition du modèle IA par défaut",
-    deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce modèle IA ?"
+    deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce modèle IA ?",
+    openai: {
+      form: {
+        api_key: {
+          label: "Clé API",
+          description: "Clé API OpenAI (chiffrée)"
+        },
+        model_id: {
+          label: "ID du modèle",
+          description: "ID du modèle OpenAI (p. ex. gpt-4, gpt-3.5-turbo)"
+        },
+        base_url: {
+          label: "URL de base",
+          description: "URL de point de terminaison API personnalisée (facultatif)"
+        },
+        organization_id: {
+          label: "ID de l'organisation",
+          description: "ID de l'organisation OpenAI (facultatif)"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "Clé API",
+          description: "Clé API Anthropic (chiffrée)"
+        },
+        model_id: {
+          label: "ID du modèle",
+          description: "ID du modèle Anthropic (p. ex. claude-sonnet-4-20250514)"
+        },
+        base_url: {
+          label: "URL de base",
+          description: "URL de point de terminaison API personnalisée (facultatif)"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "Clé API",
+          description: "Clé API Google Gemini (chiffrée)"
+        },
+        model_id: {
+          label: "ID du modèle",
+          description: "ID du modèle Gemini (p. ex. gemini-2.0-flash)"
+        },
+        base_url: {
+          label: "URL de base",
+          description: "URL de point de terminaison API personnalisée (facultatif)"
+        }
+      }
+    }
   },
   trace: {
     title: "Visualiseur de Trace IA",
@@ -10122,6 +10502,8 @@ const A = {
       deleteSuccess: "تم حذف مجموعة الأدوات بنجاح",
       deleteFailed: "فشل في حذف مجموعة الأدوات",
       presetTag: "مدمجة",
+      scopeUser: "مجموعات المستخدم",
+      scopeAll: "جميع المجموعات",
       presetDisabledEdit: "لا يمكن تحرير مجموعات الأدوات المدمجة.",
       presetDisabledDelete: "لا يمكن حذف مجموعات الأدوات المدمجة.",
       testSuccess: "نجح اختبار اتصال مجموعة الأدوات",
@@ -10146,24 +10528,36 @@ const A = {
       result: "النتيجة",
       selectToolFirst: "يرجى اختيار أداة أولاً",
       mcp: {
-        protocol: "البروتوكول",
-        endpoint: "النقطة النهائية",
-        username: "اسم المستخدم",
-        password: "كلمة المرور",
-        token: "الرمز",
-        args: "الوسائط",
-        protocolPlaceholder: "اختر البروتوكول",
-        endpointPlaceholder: "أدخل النقطة النهائية",
-        usernamePlaceholder: "أدخل اسم المستخدم",
-        passwordPlaceholder: "أدخل كلمة المرور",
-        tokenPlaceholder: "أدخل الرمز",
-        argsPlaceholder: 'أدخل الوسائط, format: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: 'الوسائط, format: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "البروتوكول, يدعم HTTP و WebSocket",
-        endpointTooltip: "النقطة النهائية لخادم MCP",
-        usernameTooltip: "اسم المستخدم لخادم MCP",
-        passwordTooltip: "كلمة المرور لخادم MCP",
-        tokenTooltip: "الرمز لخادم MCP"
+        form: {
+          endpoint: {
+            label: "النقطة النهائية",
+            description: "النقطة النهائية لخادم MCP"
+          },
+          protocol: {
+            label: "البروتوكول",
+            description: "بروتوكول خادم MCP"
+          },
+          auth_type: {
+            label: "نوع المصادقة",
+            description: "نوع المصادقة"
+          },
+          username: {
+            label: "اسم المستخدم",
+            description: "اسم المستخدم لخادم MCP"
+          },
+          password: {
+            label: "كلمة المرور",
+            description: "كلمة المرور لخادم MCP"
+          },
+          args: {
+            label: "الوسائط",
+            description: "خيارات اختيارية لعميل MCP. المفاتيح المدعومة: headers (أو header) ككائن من أزواج اسم/قيمة لترويسات HTTP؛ و proxy كعنوان URL من نوع http/https/socks5/socks5h."
+          },
+          token: {
+            label: "رمز Bearer",
+            description: "رمز Bearer لخادم MCP"
+          }
+        }
       }
     },
     organizations: {
@@ -10287,7 +10681,59 @@ const A = {
     testFailed: "فشل اختبار اتصال النموذج الذكي",
     setDefaultSuccess: "تم تعيين النموذج الذكي الافتراضي بنجاح",
     setDefaultFailed: "فشل في تعيين النموذج الذكي الافتراضي",
-    deleteConfirm: "هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟"
+    deleteConfirm: "هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟",
+    openai: {
+      form: {
+        api_key: {
+          label: "مفتاح API",
+          description: "مفتاح API لـ OpenAI (مشفّر)"
+        },
+        model_id: {
+          label: "معرف النموذج",
+          description: "معرف نموذج OpenAI (مثل gpt-4 و gpt-3.5-turbo)"
+        },
+        base_url: {
+          label: "الرابط الأساسي",
+          description: "عنوان URL لنقطة نهاية API مخصصة (اختياري)"
+        },
+        organization_id: {
+          label: "معرف المؤسسة",
+          description: "معرف مؤسسة OpenAI (اختياري)"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "مفتاح API",
+          description: "مفتاح API لـ Anthropic (مشفّر)"
+        },
+        model_id: {
+          label: "معرف النموذج",
+          description: "معرف نموذج Anthropic (مثل claude-sonnet-4-20250514)"
+        },
+        base_url: {
+          label: "الرابط الأساسي",
+          description: "عنوان URL لنقطة نهاية API مخصصة (اختياري)"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "مفتاح API",
+          description: "مفتاح API لـ Google Gemini (مشفّر)"
+        },
+        model_id: {
+          label: "معرف النموذج",
+          description: "معرف نموذج Gemini (مثل gemini-2.0-flash)"
+        },
+        base_url: {
+          label: "الرابط الأساسي",
+          description: "عنوان URL لنقطة نهاية API مخصصة (اختياري)"
+        }
+      }
+    }
   },
   trace: {
     title: "عارض تتبع الذكاء الاصطناعي",
@@ -11687,6 +12133,8 @@ const A = {
       deleteSuccess: "Verktygsset borttaget framgångsrikt",
       deleteFailed: "Misslyckades med att ta bort verktygsset",
       presetTag: "Förinställd",
+      scopeUser: "Användarverktygsset",
+      scopeAll: "Alla verktygsset",
       presetDisabledEdit: "Inbyggda verktygsset kan inte redigeras.",
       presetDisabledDelete: "Inbyggda verktygsset kan inte tas bort.",
       testSuccess: "Verktygsset-anslutningstest lyckades",
@@ -11711,24 +12159,36 @@ const A = {
       result: "Resultat",
       selectToolFirst: "Vänligen välj ett verktyg först",
       mcp: {
-        protocol: "Protokoll",
-        endpoint: "Slutpunkt",
-        username: "Användarnamn",
-        password: "Lösenord",
-        token: "Token",
-        args: "Argument",
-        protocolPlaceholder: "Välj protokoll",
-        endpointPlaceholder: "Ange slutpunkten",
-        usernamePlaceholder: "Ange användarnamnet",
-        passwordPlaceholder: "Ange lösenordet",
-        tokenPlaceholder: "Ange token",
-        argsPlaceholder: 'Ange argument, format: {"headers": {"Content-Type": "application/json"}}',
-        argsTooltip: 'Argument, format: {"headers": {"Content-Type": "application/json"}}',
-        protocolTooltip: "Protokoll, stödjer HTTP och WebSocket",
-        endpointTooltip: "MCP-serverns slutpunkt",
-        usernameTooltip: "MCP-serverns användarnamn",
-        passwordTooltip: "MCP-serverns lösenord",
-        tokenTooltip: "MCP-serverns token"
+        form: {
+          endpoint: {
+            label: "Slutpunkt",
+            description: "MCP-serverns slutpunkt"
+          },
+          protocol: {
+            label: "Protokoll",
+            description: "MCP-serverns protokoll"
+          },
+          auth_type: {
+            label: "Autentiseringstyp",
+            description: "Autentiseringstypen"
+          },
+          username: {
+            label: "Användarnamn",
+            description: "Användarnamnet för MCP-servern"
+          },
+          password: {
+            label: "Lösenord",
+            description: "Lösenordet för MCP-servern"
+          },
+          args: {
+            label: "Argument",
+            description: "Valfria MCP-klientalternativ. Stödda nycklar: headers (eller header) som ett objekt med HTTP-huvudnamn och värden; proxy som en http/https/socks5/socks5h-URL."
+          },
+          token: {
+            label: "Bearer-token",
+            description: "Bearer-token för MCP-servern"
+          }
+        }
       }
     },
     organizations: {
@@ -11802,7 +12262,7 @@ const A = {
     settings: "Systeminställningar",
     audit: "Granskningsloggar"
   }
-}, me = {
+}, pe = {
   models: {
     name: "Namn",
     provider: "Leverantör",
@@ -11852,7 +12312,59 @@ const A = {
     testFailed: "AI-modell-anslutningstest misslyckades",
     setDefaultSuccess: "Standard AI-modell angiven framgångsrikt",
     setDefaultFailed: "Misslyckades med att ange standard AI-modell",
-    deleteConfirm: "Är du säker på att du vill ta bort denna AI-modell?"
+    deleteConfirm: "Är du säker på att du vill ta bort denna AI-modell?",
+    openai: {
+      form: {
+        api_key: {
+          label: "API-nyckel",
+          description: "OpenAI API-nyckel (krypterad)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "OpenAI-modell-ID (t.ex. gpt-4, gpt-3.5-turbo)"
+        },
+        base_url: {
+          label: "Bas-URL",
+          description: "Anpassad API-slutpunkts-URL (valfritt)"
+        },
+        organization_id: {
+          label: "Organisations-ID",
+          description: "OpenAI-organisations-ID (valfritt)"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "API-nyckel",
+          description: "Anthropic API-nyckel (krypterad)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "Anthropic-modell-ID (t.ex. claude-sonnet-4-20250514)"
+        },
+        base_url: {
+          label: "Bas-URL",
+          description: "Anpassad API-slutpunkts-URL (valfritt)"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "API-nyckel",
+          description: "Google Gemini API-nyckel (krypterad)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "Gemini-modell-ID (t.ex. gemini-2.0-flash)"
+        },
+        base_url: {
+          label: "Bas-URL",
+          description: "Anpassad API-slutpunkts-URL (valfritt)"
+        }
+      }
+    }
   },
   trace: {
     title: "AI-spårningsvy",
@@ -11928,7 +12440,7 @@ const A = {
     skillsSelected: "{{count}} valda",
     skillDomain: "Färdighetsdomän"
   }
-}, pe = {
+}, me = {
   listTitle: "Uppgiftslista",
   detailTitle: "Uppgiftsdetaljer",
   typeLabel: "Typ",
@@ -12027,25 +12539,25 @@ const A = {
     mfa_disabled: "Multifaktorautentisering inaktiverades på ditt konto."
   }
 };
-f.use(k).use(v).init({
+f.use(b).use(v).init({
   ns: ["common", "authorization", "system", "ai", "task", "inbox"],
   defaultNS: "translation",
   resources: {
     "zh-CN": {
       translation: A,
-      common: L,
-      authorization: I,
+      common: I,
+      authorization: L,
       system: M,
-      ai: q,
-      task: U,
+      ai: U,
+      task: q,
       inbox: N
     },
     "en-US": {
       translation: y,
       common: S,
       authorization: T,
-      system: w,
-      ai: P,
+      system: P,
+      ai: w,
       task: R,
       inbox: D
     },
@@ -12090,8 +12602,8 @@ f.use(k).use(v).init({
       common: de,
       authorization: ce,
       system: ue,
-      ai: me,
-      task: pe,
+      ai: pe,
+      task: me,
       inbox: ge
     }
   },
@@ -12133,16 +12645,16 @@ async function ve(e, t) {
     ...t || {}
   });
 }
-async function ke(e) {
+async function be(e) {
   return u("/api/statistics", {
     method: "GET",
     ...e || {}
   });
 }
-const Le = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: ve,
-  getStatistics: ke,
+  getStatistics: be,
   listFiles: he,
   uploadFile: fe
 }, Symbol.toStringTag, { value: "Module" }));
@@ -12150,22 +12662,22 @@ function g(e) {
   const t = e.payload;
   return t && typeof t == "object" && !Array.isArray(t) ? t : {};
 }
-function Ie(e, t) {
+function Le(e, t) {
   return e(`types.${t.type}`, { defaultValue: t.type, ...g(t) });
 }
 function Me(e, t) {
   return e(`typeDescriptions.${t.type}`, { defaultValue: "", ...g(t) });
 }
-function qe(e) {
+function Ue(e) {
   return !e.read_at;
 }
-const Ue = {
+const qe = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
-function be(e) {
+function ke(e) {
   try {
-    const t = b(e);
+    const t = k(e);
     return t && typeof t == "object" && !Array.isArray(t) ? t : {};
   } catch (t) {
     return console.error(t), {};
@@ -12188,7 +12700,7 @@ function h(e) {
     }
   return String(e);
 }
-function p(e) {
+function m(e) {
   return h(e).replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 function Ne(e) {
@@ -12198,9 +12710,9 @@ function Ne(e) {
   const a = t.slice(3), r = a.indexOf(`
 ---`);
   if (r === -1) return e;
-  const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = be(n), i = Object.keys(o);
+  const n = a.slice(0, r).trim(), s = a.slice(r + 4).trimStart(), o = ke(n), i = Object.keys(o);
   if (i.length === 0) return e;
-  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((m) => "| " + p(m) + " | " + p(o[m]) + " |").join(`
+  const l = "| Field | Value |", d = "| --- | --- |", c = i.map((p) => "| " + m(p) + " | " + m(o[p]) + " |").join(`
 `);
   return l + `
 ` + d + `
@@ -12209,11 +12721,11 @@ function Ne(e) {
 ` + s;
 }
 export {
-  Ue as P,
-  qe as a,
+  qe as P,
+  Ue as a,
   Me as b,
-  Ie as c,
-  Le as d,
+  Le as c,
+  Ie as d,
   De as e,
   Re as f,
   Ce as g,

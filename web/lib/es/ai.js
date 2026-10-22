@@ -1,5 +1,5 @@
 import { r as t } from "./client.js";
-async function o(a, e) {
+async function i(a, e) {
   return t(
     "/api/ai/chat/sessions",
     {
@@ -25,7 +25,7 @@ async function r(a, e) {
     ...e || {}
   });
 }
-async function c(a, e) {
+async function p(a, e) {
   const { sessionId: s, ...n } = a;
   return t(
     `/api/ai/chat/sessions/${s}`,
@@ -36,7 +36,7 @@ async function c(a, e) {
     }
   );
 }
-async function p(a, e) {
+async function c(a, e) {
   const { sessionId: s, ...n } = a;
   return t(
     `/api/ai/chat/sessions/${s}`,
@@ -48,7 +48,7 @@ async function p(a, e) {
   );
 }
 async function d(a, e, s) {
-  const { sessionId: n, ...i } = a;
+  const { sessionId: n, ...o } = a;
   return t(
     `/api/ai/chat/sessions/${n}/title`,
     {
@@ -56,13 +56,37 @@ async function d(a, e, s) {
       headers: {
         "Content-Type": "application/json"
       },
-      params: { ...i },
+      params: { ...o },
       data: e,
       ...s || {}
     }
   );
 }
-async function m(a, e) {
+async function m(a) {
+  return t(
+    "/api/ai/model-purposes",
+    {
+      method: "GET",
+      ...a || {}
+    }
+  );
+}
+async function u(a, e, s) {
+  const { purpose: n, ...o } = a;
+  return t(
+    `/api/ai/model-purposes/${n}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      params: { ...o },
+      data: e,
+      ...s || {}
+    }
+  );
+}
+async function l(a, e) {
   return t("/api/ai/models", {
     method: "GET",
     params: {
@@ -75,7 +99,7 @@ async function m(a, e) {
     ...e || {}
   });
 }
-async function u(a, e) {
+async function y(a, e) {
   return t("/api/ai/models", {
     method: "POST",
     headers: {
@@ -85,7 +109,7 @@ async function u(a, e) {
     ...e || {}
   });
 }
-async function l(a, e) {
+async function h(a, e) {
   const { id: s, ...n } = a;
   return t(`/api/ai/models/${s}`, {
     method: "GET",
@@ -93,19 +117,19 @@ async function l(a, e) {
     ...e || {}
   });
 }
-async function y(a, e, s) {
-  const { id: n, ...i } = a;
+async function T(a, e, s) {
+  const { id: n, ...o } = a;
   return t(`/api/ai/models/${n}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
     },
-    params: { ...i },
+    params: { ...o },
     data: e,
     ...s || {}
   });
 }
-async function h(a, e) {
+async function f(a, e) {
   const { id: s, ...n } = a;
   return t(`/api/ai/models/${s}`, {
     method: "DELETE",
@@ -113,7 +137,7 @@ async function h(a, e) {
     ...e || {}
   });
 }
-async function T(a, e) {
+async function P(a, e) {
   const { id: s, ...n } = a;
   return t(
     `/api/ai/models/${s}/set-default`,
@@ -124,7 +148,7 @@ async function T(a, e) {
     }
   );
 }
-async function f(a, e) {
+async function E(a, e) {
   const { id: s, ...n } = a;
   return t(`/api/ai/models/${s}/test`, {
     method: "POST",
@@ -132,7 +156,7 @@ async function f(a, e) {
     ...e || {}
   });
 }
-async function P(a) {
+async function g(a) {
   return t(
     "/api/ai/models/types",
     {
@@ -141,7 +165,7 @@ async function P(a) {
     }
   );
 }
-async function E(a, e) {
+async function A(a, e) {
   return t("/api/ai/trace/events", {
     method: "GET",
     params: {
@@ -150,7 +174,7 @@ async function E(a, e) {
     ...e || {}
   });
 }
-async function g(a, e) {
+async function S(a, e) {
   return t("/api/ai/trace/events/download", {
     method: "GET",
     params: {
@@ -159,13 +183,13 @@ async function g(a, e) {
     ...e || {}
   });
 }
-async function S(a) {
+async function C(a) {
   return t("/api/ai/trace/status", {
     method: "GET",
     ...a || {}
   });
 }
-async function A(a, e) {
+async function q(a, e) {
   return t("/api/ai/trace/toggle", {
     method: "POST",
     headers: {
@@ -175,39 +199,41 @@ async function A(a, e) {
     ...e || {}
   });
 }
-async function C(a, e, s) {
-  const { sessionId: n, ...i } = a;
+async function M(a, e, s) {
+  const { sessionId: n, ...o } = a;
   return t(`/api/ai/chat/sessions/${n}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    params: { ...i },
+    params: { ...o },
     data: e,
     ...s || {}
   });
 }
-const $ = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const j = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  createAiModel: u,
+  createAiModel: y,
   createChatSession: r,
-  deleteAiModel: h,
-  deleteChatSession: p,
-  downloadAiTraceEvents: g,
+  deleteAiModel: f,
+  deleteChatSession: c,
+  downloadAiTraceEvents: S,
   generateChatSessionTitle: d,
-  getAiModel: l,
-  getAiTraceEvents: E,
-  getAiTraceStatus: S,
-  getAiTypeDefinitions: P,
-  getChatSession: c,
-  listAiModels: m,
-  listChatSessions: o,
-  setDefaultAiModel: T,
-  streamChat: C,
-  testAiModel: f,
-  toggleAiTrace: A,
-  updateAiModel: y
+  getAiModel: h,
+  getAiTraceEvents: A,
+  getAiTraceStatus: C,
+  getAiTypeDefinitions: g,
+  getChatSession: p,
+  listAiModelPurposes: m,
+  listAiModels: l,
+  listChatSessions: i,
+  setAiModelPurpose: u,
+  setDefaultAiModel: P,
+  streamChat: M,
+  testAiModel: E,
+  toggleAiTrace: q,
+  updateAiModel: T
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  $ as a
+  j as a
 };

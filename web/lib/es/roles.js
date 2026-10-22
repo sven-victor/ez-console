@@ -345,7 +345,7 @@ const ut = ({ roleId: x, open: s, onClose: D }) => {
                 onChange: () => {
                   b(j.getFieldsValue());
                 },
-                style: { minWidth: 180 },
+                style: { minWidth: 200 },
                 options: [
                   { value: "", label: s("role.global", { defaultValue: "Global" }) },
                   ...U.map((n) => ({ value: n.id, label: n.name }))

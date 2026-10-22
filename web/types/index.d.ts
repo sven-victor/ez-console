@@ -23,6 +23,7 @@ import { RJSFSchema } from '@rjsf/utils/lib';
 import { StrictRJSFSchema } from '@rjsf/utils';
 import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
+import { TFunction } from 'i18next';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { XMarkdown } from '@ant-design/x-markdown';
@@ -237,6 +238,8 @@ export declare interface AIModel {
     organization_id: string;
     /** Provider (openai, anthropic, gemini, etc.) */
     provider: AIModelProvider;
+    /** Purpose keys assigned to this model */
+    purposes: string[];
     /** Status */
     status: AIModelStatus;
     /** System prompt prepended to every conversation (optional) */
@@ -247,6 +250,18 @@ export declare interface AIModel {
 }
 
 export declare type AIModelProvider = "openai" | "anthropic" | "gemini";
+
+export declare interface AIModelPurposeView {
+    description: string;
+    effective_model_id: string;
+    fallback: boolean;
+    key: string;
+    model_id: string;
+    model_name: string;
+    model_status: string;
+    name: string;
+    using_fallback: boolean;
+}
 
 export declare type AIModelStatus = "enabled" | "disabled";
 
@@ -754,6 +769,7 @@ export declare namespace API {
         AIFunctionCall,
         AIModel,
         AIModelProvider,
+        AIModelPurposeView,
         AIModelStatus,
         AIToolCall,
         AITraceEvent,
@@ -947,6 +963,7 @@ export declare namespace API {
         ResponseArrayModelTaskLog,
         ResponseArrayModelTaskSettingField,
         ResponseArrayModelUser,
+        ResponseArrayServiceAIModelPurposeView,
         ResponseArrayServiceAITypeDefinition,
         ResponseArrayServiceScheduledJobState,
         ResponseArrayServiceSessionInfo,
@@ -982,6 +999,7 @@ export declare namespace API {
         ResponseModelTask,
         ResponseModelToolSet,
         ResponseModelUser,
+        ResponseServiceAIModelPurposeView,
         ResponseServiceCharts,
         ResponseServiceEnableMFAResponse,
         ResponseServiceHealthResult,
@@ -1010,6 +1028,8 @@ export declare namespace API {
         ServiceAccount,
         ServiceAccountAccessKey,
         SessionInfo,
+        setAIModelPurposeParams,
+        SetAIModelPurposeRequest,
         setDefaultAIModelParams,
         setRolePolicyParams,
         setServiceAccountPolicyParams,
@@ -1541,7 +1561,7 @@ export declare interface downloadFileParams {
     fileKey: string;
 }
 
-export declare type Duration = -9223372036854776000 | 9223372036854776000 | 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+export declare type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
 
 export declare const DynamicIcon: ({ iconName }: DynamicIconProps) => JSX_2.Element | null;
 
@@ -1921,11 +1941,12 @@ export declare interface IRouteItem {
 
 export declare const JsonSchemaConfigForm: LazyExoticComponent<FC<JsonSchemaConfigFormProps>>;
 
-export declare const JsonSchemaConfigFormItem: LazyExoticComponent<({ schema, uiSchema, ...props }: JsonSchemaConfigFormItemProps) => JSX_2.Element>;
+export declare const JsonSchemaConfigFormItem: LazyExoticComponent<({ schema, uiSchema, t, ...props }: JsonSchemaConfigFormItemProps) => JSX_2.Element>;
 
 export declare interface JsonSchemaConfigFormItemProps extends FormItemProps {
     schema: RJSFSchema;
     uiSchema?: Record<string, unknown>;
+    t?: TFunction;
 }
 
 export declare interface JsonSchemaConfigFormProps {
@@ -1939,6 +1960,7 @@ export declare interface JsonSchemaConfigFormProps {
     uiSchema?: Record<string, unknown>;
     disabled?: boolean;
     formRef?: default_2.Ref<JsonSchemaConfigFormRef>;
+    t?: TFunction;
 }
 
 declare interface JsonSchemaConfigFormRef {
@@ -2813,6 +2835,13 @@ export declare interface ResponseArrayModelUser {
     trace_id: string;
 }
 
+export declare interface ResponseArrayServiceAIModelPurposeView {
+    code: string;
+    data: AIModelPurposeView[];
+    err: string;
+    trace_id: string;
+}
+
 export declare interface ResponseArrayServiceAITypeDefinition {
     code: string;
     data: AITypeDefinition[];
@@ -3054,6 +3083,13 @@ export declare interface ResponseModelToolSet {
 export declare interface ResponseModelUser {
     code: string;
     data: User;
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseServiceAIModelPurposeView {
+    code: string;
+    data: AIModelPurposeView;
     err: string;
     trace_id: string;
 }
@@ -3399,6 +3435,15 @@ export declare interface SessionInfo {
     last_active_at: string;
     location: string;
     user_agent: string;
+}
+
+export declare interface setAIModelPurposeParams {
+    /** Purpose key */
+    purpose: string;
+}
+
+export declare interface SetAIModelPurposeRequest {
+    model_id: string;
 }
 
 /** Replace the shared client's underlying AxiosInstance. */
@@ -3816,7 +3861,7 @@ export declare interface ToolSet {
 
 export declare type ToolSetStatus = "enabled" | "disabled";
 
-export declare type ToolSetType = "utils";
+export declare type ToolSetType = "utils" | "local_complex";
 
 export declare interface ToolSetTypeDefinition {
     allow_manual_create: boolean;
