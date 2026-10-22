@@ -292,7 +292,7 @@ const RoleList: React.FC = () => {
                       onChange={() => {
                         handleSearch(searchForm.getFieldsValue());
                       }}
-                      style={{ minWidth: 180 }}
+                      style={{ minWidth: 200 }}
                       options={[
                         { value: '', label: t('role.global', { defaultValue: 'Global' }) },
                         ...organizations.map((org) => ({ value: org.id, label: org.name })),

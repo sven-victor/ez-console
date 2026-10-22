@@ -376,7 +376,7 @@ const ServiceAccountList: React.FC = () => {
                     <Select
                       placeholder={t('serviceAccount.filterByOrg', { defaultValue: 'All organizations' })}
                       allowClear
-                      style={{ minWidth: 160 }}
+                      style={{ minWidth: 200 }}
                       options={[
                         { value: '', label: t('serviceAccount.global', { defaultValue: 'Global' }) },
                         ...organizations.map((org) => ({ value: org.id, label: org.name })),
