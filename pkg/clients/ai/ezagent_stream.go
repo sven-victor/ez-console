@@ -17,6 +17,7 @@ package ai
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -29,6 +30,7 @@ import (
 	"github.com/sven-victor/ez-agent/message"
 	aimodel "github.com/sven-victor/ez-agent/model"
 	"github.com/sven-victor/ez-agent/run"
+	"github.com/sven-victor/ez-agent/tool"
 	"github.com/sven-victor/ez-console/pkg/model"
 )
 
@@ -210,6 +212,11 @@ func (s *ezAgentChatStream) handleEvent(ev event.Event) error {
 			ClientToolCalls: pending,
 		})
 	case event.RunError:
+		// The loop reports a terminal tool as RunError when an interrupter
+		// returns it. The chat itself ended successfully.
+		if errors.Is(e.Err, tool.ErrEndOfChat) {
+			return nil
+		}
 		errMsg := "run failed"
 		if e.Err != nil {
 			errMsg = e.Err.Error()

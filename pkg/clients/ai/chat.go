@@ -17,8 +17,6 @@ package ai
 import (
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"time"
 	"unicode"
 
@@ -357,55 +355,3 @@ func isCJK(r rune) bool {
 		unicode.Hangul,
 	)
 }
-
-// ChatErrorType classifies a chat control signal.
-type ChatErrorType int
-
-const (
-	// ChatErrorTypeEndOfChat means this tool call ends the local conversation.
-	// The tool result must not be sent back to the model.
-	ChatErrorTypeEndOfChat ChatErrorType = iota + 1
-)
-
-// ChatError wraps an error with a typed classification.
-type ChatError struct {
-	Err    error
-	Type   ChatErrorType
-	Detail string
-}
-
-func NewChatError(err error, t ChatErrorType, detail string) *ChatError {
-	return &ChatError{
-		Err:    err,
-		Type:   t,
-		Detail: detail,
-	}
-}
-
-func (e *ChatError) Error() string {
-	if e.Detail != "" {
-		return fmt.Sprintf("%s: %s", e.typeString(), e.Detail)
-	}
-	return e.typeString()
-}
-
-func (e *ChatError) Unwrap() error { return e.Err }
-
-func (e *ChatError) typeString() string {
-	switch e.Type {
-	case ChatErrorTypeEndOfChat:
-		return "end of chat"
-	default:
-		return "unknown AI call error"
-	}
-}
-
-func IsChatError(err error, t ChatErrorType) (*ChatError, bool) {
-	var aiErr *ChatError
-	if errors.As(err, &aiErr) && aiErr.Type == t {
-		return aiErr, true
-	}
-	return nil, false
-}
-
-var ErrEndOfChat = NewChatError(io.EOF, ChatErrorTypeEndOfChat, "")

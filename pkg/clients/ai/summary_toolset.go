@@ -18,11 +18,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/gofrs/uuid"
 	"github.com/sashabaranov/go-openai"
+	"github.com/sven-victor/ez-agent/tool"
 	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 )
@@ -285,7 +285,7 @@ func (s *summaryToolSet) saveSummary(parameters string) (string, error) {
 	s.summarizedMessages = summarizedMessages
 
 	s.finished = true
-	return "Summary saved successfully. The conversation history has been condensed.", NewChatError(io.EOF, ChatErrorTypeEndOfChat, "")
+	return "Summary saved successfully. The conversation history has been condensed.", tool.ErrEndOfChat
 }
 
 // ---------------------------------------------------------------------------

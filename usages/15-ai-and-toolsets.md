@@ -351,7 +351,7 @@ func streamAIChat(ctx context.Context, svc *service.Service) error {
 
 To register a custom provider, implement `AIClientFactory` so `CreateClient` returns an ez-agent `aimodel.Provider`. `ClassicChatClient` then wraps that provider and runs the agent loop for you.
 
-Legacy `AIClient` (`Chat` / `ChatStream`) still exists for specialized helpers (e.g. tool-result summarization), but **new providers should implement `aimodel.Provider`** (`Complete`, `Stream`, `Caps`, `Name`).
+`AIClient` (`Chat` / `ChatStream`) remains the console chat interface. **New providers implement `aimodel.Provider`** (`Complete`, `Stream`, `Caps`, `Name`).
 
 #### Step 1: Implement an ez-agent Provider (or adapter)
 
@@ -1319,10 +1319,16 @@ On the backend, `AIChatController.StreamChat`:
 4. ez-agent **HITL interrupter** (`newUIToolInterrupter`):
    - No `ui_*` in the batch → do not interrupt (server tools run normally).
    - Only `ui_*` → interrupt immediately.
-   - Mixed batch → execute non-`ui_*` tools first, append results to the session, then interrupt for `ui_*`.
+   - Mixed batch → execute non-`ui_*` tools first. If any of them returns `tool.ErrEndOfChat`, the run ends as described in [Ending the chat from a tool](#ending-the-chat-from-a-tool): no client handoff and no tool-result messages. Otherwise append the server results to the session, then interrupt for `ui_*`.
 5. Stream emits `client_tool_pending` and ends with `ErrClientToolHandoff`.
 6. Frontend executes tools, then POSTs `client_tool_results` on the next turn.
 7. Results are persisted as `role=tool` messages and a new completion stream starts.
+
+### Ending the chat from a tool
+
+A server tool ends the current agent run by returning [`tool.ErrEndOfChat`](https://github.com/sven-victor/ez-agent) from `Call`. The tool's side effects have already run. Its return text is delivered on `ToolFinished` (status completed) and is not stored as a tool-result message or sent back to the model. The run stops with stop reason `end_of_chat`. The SSE stream ends normally; the client does not receive that sentinel as an assistant error.
+
+If that same model turn also requested `ui_*` tools, those client tools are not handed to the browser. Tool calls from that turn that have no stored result are removed from the session.
 
 ## Chat Sessions & Streaming
 
@@ -1416,7 +1422,7 @@ The `WithChatOptions` functional options control `Exchange` / `ExchangeStream` (
 | `WithChatMaxIterations(n)` | Max agent turns / tool-loop iterations | **10** |
 | `WithChatMaxTokens(n)` | Context / summarization token budget | 0 |
 | `WithChatAutoSummarization(bool)` | Enable ez-agent Summarize (+ Segmented) policy | false (chat API sets **true**) |
-| `WithChatToolResultMaxSize(bytes)` | Offload / cap large messages; tool-result summarization | 32KB |
+| `WithChatToolResultMaxSize(bytes)` | Offload message bodies larger than this limit via `memory.Offload` | 32KB |
 | `WithChatResponseJsonSchema(schema)` | Structured output schema for the agent | none |
 | `WithChatClientTools(tools)` | Browser `ui_*` tool definitions | none |
 | `WithChatSession(id, store)` | DB-backed ez-agent session window | none |

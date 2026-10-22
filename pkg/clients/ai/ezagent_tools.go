@@ -17,6 +17,7 @@ package ai
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -142,6 +143,16 @@ func (r *toolSetsRegistry) Lookup(name string) (tool.Handler, bool) {
 	}
 	return func(ctx context.Context, call tool.Call) (tool.Result, error) {
 		result, err := ts.CallTool(ctx, call.Name, string(call.Input))
+		if errors.Is(err, tool.ErrEndOfChat) {
+			// Sentinel for ez-agent: keep the local text for ToolFinished and
+			// return the error so the loop ends without sending it to the model.
+			return tool.Result{
+				ToolUseID: call.ID,
+				OK:        true,
+				Content:   []message.Part{message.Text{Text: result}},
+				Err:       tool.ErrEndOfChat,
+			}, err
+		}
 		if err != nil {
 			return tool.Result{
 				ToolUseID: call.ID,
