@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   App,
   Table,
@@ -58,9 +58,21 @@ import Actions, { ActionProps } from '@/components/Actions';
 import { Avatar } from '@/components/Avatar';
 import { useRequest } from 'ahooks';
 import { useSite } from '@/contexts/SiteContext';
-import { useAI } from '@/contexts/AIContext';
+import { useAI, type RegisteredClientTool } from '@/contexts/AIContext';
 
 const { Option } = Select;
+
+const USER_STATUS_VALUES = ['active', 'disabled', 'deleted', 'locked', 'password_expired', 'pending_activation'] as const;
+
+/** Compact user shape returned to the AI model by page tools. */
+const summarizeUsers = (list: API.User[]) =>
+  list.map((u) => ({
+    id: u.id,
+    username: u.username,
+    full_name: u.full_name,
+    email: u.email,
+    status: u.status,
+  }));
 
 const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onClose: () => void, onSuccess: () => void }) => {
   const { message } = App.useApp();
@@ -175,14 +187,35 @@ const UserList: React.FC = () => {
     status: undefined,
   });
 
-  useEffect(() => {
-    if (users) {
-      registerPageAI?.({
-        pageData: () => users,
-        pageDataDescription: 'Returns the current user list as a JSON object.',
-      });
-    }
-  }, [registerPageAI, users]);
+  // Latest page state for AI tool handlers (they run outside the render cycle).
+  const usersRef = useRef(users);
+  usersRef.current = users;
+  const totalRef = useRef(total);
+  totalRef.current = total;
+  const queryParamsRef = useRef(queryParams);
+  queryParamsRef.current = queryParams;
+
+  // Resolvers waiting for the next list load, so AI tools can return fresh data.
+  const loadWaitersRef = useRef<Array<(ok: boolean) => void>>([]);
+  const settleLoadWaiters = (ok: boolean) => {
+    const waiters = loadWaitersRef.current;
+    loadWaitersRef.current = [];
+    waiters.forEach((resolve) => resolve(ok));
+  };
+  const waitForNextLoad = useCallback((timeoutMs = 10000) => new Promise<boolean>((resolve) => {
+    let settled = false;
+    const done = (ok: boolean) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(ok);
+    };
+    const timer = setTimeout(() => {
+      loadWaitersRef.current = loadWaitersRef.current.filter((w) => w !== done);
+      done(false);
+    }, timeoutMs);
+    loadWaitersRef.current.push(done);
+  }), []);
 
   const { data: organizations, loading: organizationsLoading } = useRequest(async () => {
     return (await api.system.listOrganizations({ current: 1, page_size: 1000 })).data || [];
@@ -220,11 +253,19 @@ const UserList: React.FC = () => {
     });
   }, {
     onSuccess: (result) => {
-      setUsers(result.data || []);
-      setTotal(result.total || 0);
+      const nextUsers = result.data || [];
+      const nextTotal = result.total || 0;
+      // Update refs before waking AI waiters: they snapshot immediately,
+      // before React re-renders and the render-time ref assignments run.
+      usersRef.current = nextUsers;
+      totalRef.current = nextTotal;
+      setUsers(nextUsers);
+      setTotal(nextTotal);
+      settleLoadWaiters(true);
     },
     onError: (error) => {
       message.error(t('user.loadError', { defaultValue: 'Failed to load users', error: error.message }));
+      settleLoadWaiters(false);
     },
     refreshDeps: [queryParams],
   });
@@ -248,6 +289,152 @@ const UserList: React.FC = () => {
       page_size: pageSize,
     }));
   };
+
+  // AI chat integration: expose the page state and the actions a user can
+  // perform on this page as client tools. Handlers call the same state
+  // setters as the UI, so the model never bypasses what the user can do here.
+  useEffect(() => {
+    const snapshot = () => {
+      const query = queryParamsRef.current;
+      const pageSize = query.page_size || PAGINATION.DEFAULT_PAGE_SIZE;
+      const current = query.current || PAGINATION.DEFAULT_CURRENT;
+      const total = totalRef.current;
+      const pageCount = Math.max(1, Math.ceil(total / pageSize) || 1);
+      return {
+        query: {
+          current,
+          page_size: pageSize,
+          keywords: query.keywords ?? null,
+          status: query.status ?? null,
+        },
+        total,
+        page_count: pageCount,
+        has_more: current * pageSize < total,
+        users: summarizeUsers(usersRef.current),
+      };
+    };
+    const sameQuery = (a: API.listUsersParams, b: API.listUsersParams) =>
+      a.current === b.current
+      && a.page_size === b.page_size
+      && (a.keywords || undefined) === (b.keywords || undefined)
+      && (a.status || undefined) === (b.status || undefined);
+    const applyQueryAndWait = async (patch: Partial<API.listUsersParams>) => {
+      const next = { ...queryParamsRef.current, ...patch };
+      // Same query object values would still retrigger useRequest via a new
+      // object identity; skip the state update so the table does not reload.
+      if (sameQuery(queryParamsRef.current, next)) {
+        return JSON.stringify({ ok: true, already_current: true, ...snapshot() });
+      }
+      queryParamsRef.current = next;
+      const load = waitForNextLoad();
+      setQueryParams(next);
+      const loaded = await load;
+      return JSON.stringify({ ok: loaded, ...(loaded ? {} : { warning: 'List did not finish loading; data may be stale' }), ...snapshot() });
+    };
+
+    const tools: RegisteredClientTool[] = [
+      {
+        name: 'ui_search_users',
+        description:
+          'Filter the user list by keyword (matches username, full name, or email) and/or status, then return the first page of results. The result includes total, page_count, and has_more. If has_more is false, do not call ui_set_users_page. Omit a field to clear that filter.',
+        parameters: {
+          type: 'object',
+          properties: {
+            keywords: { type: 'string', description: 'Search keyword; empty or omitted clears the keyword filter.' },
+            status: {
+              type: 'string',
+              enum: [...USER_STATUS_VALUES],
+              description: 'Status filter; omitted clears the status filter.',
+            },
+          },
+          required: [],
+        },
+        handler: async (argsJson: string) => {
+          const args = JSON.parse(argsJson || '{}') as { keywords?: string; status?: string };
+          const keywords = args.keywords?.trim() || undefined;
+          const status = args.status && (USER_STATUS_VALUES as readonly string[]).includes(args.status) ? args.status : undefined;
+          if (args.status && !status) {
+            return JSON.stringify({ error: `Invalid status "${args.status}"`, allowed: USER_STATUS_VALUES });
+          }
+          searchForm.setFieldsValue({ keywords, status });
+          return applyQueryAndWait({ current: PAGINATION.DEFAULT_CURRENT, keywords, status });
+        },
+      },
+      {
+        name: 'ui_set_users_page',
+        description:
+          'Go to another page of the current filtered list, or change the page size. Only call this when the last result has has_more=true, or when you are changing page_size. Do not call it to look for more rows when has_more is false — that reloads the same page.',
+        parameters: {
+          type: 'object',
+          properties: {
+            page: { type: 'integer', minimum: 1, description: '1-based page number. Must be <= page_count from the last result.' },
+            page_size: { type: 'integer', minimum: 1, maximum: 200, description: 'Rows per page; omitted keeps the current size.' },
+          },
+          required: [],
+        },
+        handler: async (argsJson: string) => {
+          const args = JSON.parse(argsJson || '{}') as { page?: number; page_size?: number };
+          const current = queryParamsRef.current;
+          const pageSize = args.page_size && args.page_size > 0 ? Math.min(args.page_size, 200) : (current.page_size || PAGINATION.DEFAULT_PAGE_SIZE);
+          const maxPage = Math.max(1, Math.ceil(totalRef.current / pageSize) || 1);
+          if (args.page != null && args.page > maxPage) {
+            return JSON.stringify({
+              ok: false,
+              error: `Page ${args.page} is out of range. There ${maxPage === 1 ? 'is only 1 page' : `are only ${maxPage} pages`}.`,
+              requested_page: args.page,
+              ...snapshot(),
+            });
+          }
+          const page = Math.max(args.page ?? current.current ?? 1, 1);
+          return applyQueryAndWait({ current: page, page_size: pageSize });
+        },
+      },
+      {
+        name: 'ui_open_user',
+        description:
+          'Open the detail page of a user from the current list, by user id or username. Navigates away from the list; the detail page has its own tools, if any.',
+        parameters: {
+          type: 'object',
+          properties: {
+            user_id: { type: 'string', description: 'User id (UUID). Preferred when known.' },
+            username: { type: 'string', description: 'Username, resolved against the currently loaded page of users.' },
+          },
+          required: [],
+        },
+        handler: (argsJson: string) => {
+          const args = JSON.parse(argsJson || '{}') as { user_id?: string; username?: string };
+          const list = usersRef.current;
+          const user = args.user_id
+            ? list.find((u) => u.id === args.user_id)
+            : args.username
+              ? list.find((u) => u.username === args.username)
+              : undefined;
+          if (!user) {
+            if (args.user_id) {
+              // Not on the current page but the id may still be valid; let the detail page decide.
+              navigate(`/authorization/users/${args.user_id}`);
+              return JSON.stringify({ ok: true, path: `/authorization/users/${args.user_id}`, note: 'User id not found in the loaded page; opened by id.' });
+            }
+            return JSON.stringify({
+              error: 'User not found in the currently loaded page. Provide user_id or search first with ui_search_users.',
+              loaded_users: summarizeUsers(list).map((u) => ({ id: u.id, username: u.username })),
+            });
+          }
+          navigate(`/authorization/users/${user.id}`);
+          return JSON.stringify({ ok: true, path: `/authorization/users/${user.id}`, user: summarizeUsers([user])[0] });
+        },
+      },
+    ];
+
+    return registerPageAI({
+      ephemeralSystemPrompts: [
+        'The user is on the User Management list page. Use ui_get_page_data to read the loaded users and current filters, ui_search_users to filter, ui_set_users_page only when has_more is true or you need a different page_size, and ui_open_user to open a user. Tool results include total, page_count, and has_more; do not paginate when has_more is false. Prefer these tools over describing manual steps.',
+      ],
+      pageData: snapshot,
+      pageDataDescription: 'Returns the current query (page, page size, keywords, status), total, page_count, has_more, and the loaded users (id, username, full_name, email, status).',
+      tools,
+    });
+  }, [registerPageAI, navigate, searchForm, waitForNextLoad]);
 
   // Restore user
   const { run: handleRestore } = useRequest(api.authorization.restoreUser, {

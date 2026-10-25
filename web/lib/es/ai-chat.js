@@ -1,38 +1,38 @@
-var Ve = Object.defineProperty;
-var Be = (r, o, s) => o in r ? Ve(r, o, { enumerable: !0, configurable: !0, writable: !0, value: s }) : r[o] = s;
-var de = (r, o, s) => Be(r, typeof o != "symbol" ? o + "" : o, s);
-import { j as a, k as Oe, l as De, m as qe, n as Ee } from "./vendor.js";
-import { a as j } from "./index.js";
-import { PlusOutlined as ue, ReloadOutlined as He, DeleteOutlined as Ke, HistoryOutlined as Xe, CloseOutlined as Me } from "@ant-design/icons";
-import { Conversations as Je, Sender as me, XProvider as Ye, Bubble as Ge, Mermaid as We, CodeHighlighter as Ue } from "@ant-design/x";
-import { useXConversations as Qe, useXChat as Ze, XRequest as et, AbstractChatProvider as tt } from "@ant-design/x-sdk";
-import { XMarkdown as pe } from "@ant-design/x-markdown";
-import { useRequest as w } from "ahooks";
-import { App as nt, Tag as ge, Button as V, Spin as A, Space as fe, Flex as U, Dropdown as he, Radio as st } from "antd";
-import { createStyles as at, useThemeMode as ot } from "antd-style";
-import rt, { useEffect as k, useState as B, useMemo as I, useCallback as xe, useRef as ye } from "react";
-import { useTranslation as be } from "react-i18next";
-import Q from "dayjs";
-import { d as it, n as lt } from "./contexts.js";
-import ct from "classnames";
+var De = Object.defineProperty;
+var Ee = (i, o, n) => o in i ? De(i, o, { enumerable: !0, configurable: !0, writable: !0, value: n }) : i[o] = n;
+var me = (i, o, n) => Ee(i, typeof o != "symbol" ? o + "" : o, n);
+import { j as a, k as He, l as qe, m as Ke, n as Xe } from "./vendor.js";
+import { a as _ } from "./index.js";
+import { PlusOutlined as pe, ReloadOutlined as Me, DeleteOutlined as Je, HistoryOutlined as Ge, CloseOutlined as Ye } from "@ant-design/icons";
+import { Conversations as We, Sender as ge, XProvider as Ue, Bubble as Qe, Mermaid as Ze, CodeHighlighter as et } from "@ant-design/x";
+import { useXConversations as tt, useXChat as nt, XRequest as st, AbstractChatProvider as at } from "@ant-design/x-sdk";
+import { XMarkdown as fe } from "@ant-design/x-markdown";
+import { useRequest as A } from "ahooks";
+import { App as ot, Tag as he, Button as B, Spin as F, Space as xe, Flex as Z, Dropdown as ye, Radio as rt } from "antd";
+import { createStyles as it, useThemeMode as lt } from "antd-style";
+import ct, { useEffect as v, useState as O, useMemo as N, useCallback as be, useRef as ke } from "react";
+import { useTranslation as ve } from "react-i18next";
+import ee from "dayjs";
+import { d as dt, n as ut } from "./contexts.js";
+import mt from "classnames";
 /* empty css             */
-const ke = at(({ token: r, css: o }) => ({
+const Ce = it(({ token: i, css: o }) => ({
   siderLayout: o`
       width: 100%;
       height: calc(100vh - 60px);
       display: flex;
-      background: ${r.colorBgContainer};
-      font-family: AlibabaPuHuiTi, ${r.fontFamily}, sans-serif;
+      background: ${i.colorBgContainer};
+      font-family: AlibabaPuHuiTi, ${i.fontFamily}, sans-serif;
     `,
   classicLayout: o`
       width: 100%;
       height: 70vh;
       display: flex;
-      background: ${r.colorBgContainer};
-      font-family: AlibabaPuHuiTi, ${r.fontFamily}, sans-serif;
+      background: ${i.colorBgContainer};
+      font-family: AlibabaPuHuiTi, ${i.fontFamily}, sans-serif;
     `,
   sider: o`
-      background: ${r.colorBgLayout}80;
+      background: ${i.colorBgLayout}80;
       width: 280px;
       height: 100%;
       display: flex;
@@ -51,7 +51,7 @@ const ke = at(({ token: r, css: o }) => ({
 
       span {
         font-weight: bold;
-        color: ${r.colorText};
+        color: ${i.colorText};
         font-size: 16px;
       }
     `,
@@ -75,7 +75,7 @@ const ke = at(({ token: r, css: o }) => ({
       }
     `,
   siderFooter: o`
-      border-top: 1px solid ${r.colorBorderSecondary};
+      border-top: 1px solid ${i.colorBorderSecondary};
       height: 40px;
       display: flex;
       align-items: center;
@@ -87,7 +87,7 @@ const ke = at(({ token: r, css: o }) => ({
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      padding-block: ${r.paddingLG}px;
+      padding-block: ${i.paddingLG}px;
       gap: 16px;
     `,
   chatPrompt: o`
@@ -175,37 +175,37 @@ const ke = at(({ token: r, css: o }) => ({
     `,
   speechButton: o`
       font-size: 18px;
-      color: ${r.colorText} !important;
+      color: ${i.colorText} !important;
     `,
   senderPrompt: o`
       width: 100%;
       max-width: 700px;
       margin: 0 auto;
-      color: ${r.colorText};
+      color: ${i.colorText};
     `
 }));
-class dt extends Error {
-  constructor(s, c) {
-    super(s);
-    de(this, "buffer");
+class pt extends Error {
+  constructor(n, c) {
+    super(n);
+    me(this, "buffer");
     this.buffer = c;
   }
 }
-function ut(r) {
-  if (r == null || typeof r != "object")
+function gt(i) {
+  if (i == null || typeof i != "object")
     return !1;
-  const o = r;
+  const o = i;
   if (o.name === "AbortError")
     return !0;
-  const s = typeof o.message == "string" ? o.message : "";
-  return /aborted/i.test(s) || /BodyStreamBuffer/i.test(s);
+  const n = typeof o.message == "string" ? o.message : "";
+  return /aborted/i.test(n) || /BodyStreamBuffer/i.test(n);
 }
-class mt extends tt {
-  transformParams(o, s) {
+class ft extends at {
+  transformParams(o, n) {
     if (typeof o != "object")
       throw new Error("requestParams must be an object");
     return {
-      ...(s == null ? void 0 : s.params) || {},
+      ...(n == null ? void 0 : n.params) || {},
       ...o || {}
     };
   }
@@ -216,150 +216,150 @@ class mt extends tt {
     };
   }
   transformMessage(o) {
-    const { originMessage: s, chunk: c, status: l } = o || {};
+    const { originMessage: n, chunk: c, status: l } = o || {};
     if (!c)
       return {
-        ...s,
-        content: (s == null ? void 0 : s.content) || "",
+        ...n,
+        content: (n == null ? void 0 : n.content) || "",
         role: "assistant",
         status: l
       };
-    let u;
+    let d;
     try {
-      u = JSON.parse(c.data);
+      d = JSON.parse(c.data);
     } catch {
       return {
-        ...s,
-        content: (s == null ? void 0 : s.content) || "",
+        ...n,
+        content: (n == null ? void 0 : n.content) || "",
         role: "assistant",
         status: l
       };
     }
-    const x = u.message_id === (s == null ? void 0 : s.messageId) ? `${(s == null ? void 0 : s.content) || ""}${u.content || ""}` : u.content || "";
-    switch (u.event_type) {
+    const b = d.message_id === (n == null ? void 0 : n.messageId) ? `${(n == null ? void 0 : n.content) || ""}${d.content || ""}` : d.content || "";
+    switch (d.event_type) {
       case "tool_call":
       case "content":
         return {
-          ...s,
-          content: x,
+          ...n,
+          content: b,
           role: "assistant",
-          messageId: u.message_id,
+          messageId: d.message_id,
           status: l
         };
       case "error":
         return {
-          ...s,
-          content: x,
+          ...n,
+          content: b,
           role: "assistant",
-          error: u.content,
-          messageId: u.message_id,
+          error: d.content,
+          messageId: d.message_id,
           status: l
         };
       case "client_tool_pending":
         return {
-          ...s,
-          content: x || "",
+          ...n,
+          content: b || "",
           role: "assistant",
-          pendingClientToolCalls: u.client_tool_calls,
-          messageId: u.message_id,
+          pendingClientToolCalls: d.client_tool_calls,
+          messageId: d.message_id,
           status: l
         };
       default:
         return {
-          ...s,
-          content: x || (s == null ? void 0 : s.content) || "",
+          ...n,
+          content: b || (n == null ? void 0 : n.content) || "",
           role: "assistant",
-          messageId: u.message_id || (s == null ? void 0 : s.messageId),
+          messageId: d.message_id || (n == null ? void 0 : n.messageId),
           status: l
         };
     }
   }
 }
-const Z = /* @__PURE__ */ new Map(), pt = (r) => (Z.get(r) || Z.set(
-  r,
-  new mt({
-    request: et(
-      `/api/ai/chat/sessions/${r}`,
+const te = /* @__PURE__ */ new Map(), ht = (i) => (te.get(i) || te.set(
+  i,
+  new ft({
+    request: st(
+      `/api/ai/chat/sessions/${i}`,
       {
         manual: !0,
         middlewares: {
-          onRequest: async (o, s) => {
-            const c = localStorage.getItem("orgID"), { sessionId: l } = s.params ?? {}, u = {
-              ...s.headers,
+          onRequest: async (o, n) => {
+            const c = localStorage.getItem("orgID"), { sessionId: l } = n.params ?? {}, d = {
+              ...n.headers,
               "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               ...c ? { "X-Scope-OrgID": c } : {}
             };
-            return [l ? `/api/ai/chat/sessions/${l}` : o, { ...s, headers: u }];
+            return [l ? `/api/ai/chat/sessions/${l}` : o, { ...n, headers: d }];
           }
         }
       }
     )
   })
-), Z.get(r)), gt = (r) => {
+), te.get(i)), xt = (i) => {
   var l;
-  const { className: o, children: s } = r, c = ((l = o == null ? void 0 : o.match(/language-(\w+)/)) == null ? void 0 : l[1]) || "";
-  return typeof s != "string" ? null : c === "mermaid" ? /* @__PURE__ */ a.jsx(We, { children: s }) : /* @__PURE__ */ a.jsx("code", { className: "ant-highlightCode-code", children: /* @__PURE__ */ a.jsx(Ue, { lang: c, children: s }) });
-}, ft = rt.createContext({});
-function O(r) {
-  if (!r || r.length === 0)
+  const { className: o, children: n } = i, c = ((l = o == null ? void 0 : o.match(/language-(\w+)/)) == null ? void 0 : l[1]) || "";
+  return typeof n != "string" ? null : c === "mermaid" ? /* @__PURE__ */ a.jsx(Ze, { children: n }) : /* @__PURE__ */ a.jsx("code", { className: "ant-highlightCode-code", children: /* @__PURE__ */ a.jsx(et, { lang: c, children: n }) });
+}, yt = ct.createContext({});
+function D(i) {
+  if (!i || i.length === 0)
     return [];
-  const o = /* @__PURE__ */ new Set(), s = [];
-  for (const c of r) {
+  const o = /* @__PURE__ */ new Set(), n = [];
+  for (const c of i) {
     const l = c.trim();
-    !l || o.has(l) || (o.add(l), s.push(l));
+    !l || o.has(l) || (o.add(l), n.push(l));
   }
-  return s;
+  return n;
 }
-const ht = ({
-  bubble: r = {},
+const bt = ({
+  bubble: i = {},
   messages: o,
-  loading: s,
+  loading: n,
   layout: c = "classic",
   onSendMessage: l
 }) => {
-  const { styles: u } = ke(), { isDarkMode: x } = ot(), R = I(() => {
-    if (!r.components) return { code: gt };
-    const m = {};
-    for (const y in r.components) {
-      const d = r.components[y];
-      if (typeof d == "string") {
-        m[y] = d;
+  const { styles: d } = Ce(), { isDarkMode: b } = lt(), j = N(() => {
+    if (!i.components) return { code: xt };
+    const u = {};
+    for (const C in i.components) {
+      const h = i.components[C];
+      if (typeof h == "string") {
+        u[C] = h;
         continue;
       }
-      m[y] = ($) => /* @__PURE__ */ a.jsx(
-        d,
+      u[C] = ($) => /* @__PURE__ */ a.jsx(
+        h,
         {
           ...$,
           onSendMessage: l
         }
       );
     }
-    return m;
-  }, [l, r.components]), {
-    contentRender: D = (m) => /* @__PURE__ */ a.jsx(
-      pe,
+    return u;
+  }, [l, i.components]), {
+    contentRender: E = (u) => /* @__PURE__ */ a.jsx(
+      fe,
       {
         paragraphTag: "div",
-        content: m,
-        className: x ? "x-markdown-dark" : "x-markdown-light",
-        components: R
+        content: u,
+        className: b ? "x-markdown-dark" : "x-markdown-light",
+        components: j
       }
     ),
-    footerRender: f = ({ message: m }) => {
-      if (m.error)
-        return /* @__PURE__ */ a.jsx("div", { children: /* @__PURE__ */ a.jsx(pe, { content: m.error, components: R }) });
+    footerRender: L = ({ message: u }) => {
+      if (u.error)
+        return /* @__PURE__ */ a.jsx("div", { children: /* @__PURE__ */ a.jsx(fe, { content: u.error, components: j }) });
     }
-  } = r, F = I(() => (o || []).map((m) => ({
-    ...m.message,
-    key: m.id,
-    contentRender: D,
-    footer: (y, d) => f == null ? void 0 : f(m, d, l)
-  })).filter((m) => m.content), [o]);
-  return /* @__PURE__ */ a.jsx("div", { className: u.chatList, children: /* @__PURE__ */ a.jsx(A, { spinning: s, children: /* @__PURE__ */ a.jsx(
-    Ge.List,
+  } = i, x = N(() => (o || []).map((u) => ({
+    ...u.message,
+    key: u.id,
+    contentRender: E,
+    footer: (C, h) => L == null ? void 0 : L(u, h, l)
+  })).filter((u) => u.content), [o]);
+  return /* @__PURE__ */ a.jsx("div", { className: d.chatList, children: /* @__PURE__ */ a.jsx(F, { spinning: n, children: /* @__PURE__ */ a.jsx(
+    Qe.List,
     {
-      items: F,
+      items: x,
       style: {
         height: "100%",
         paddingInline: c === "classic" ? "calc(calc(100% - 700px) /2)" : "20px"
@@ -367,7 +367,7 @@ const ht = ({
       roles: {
         assistant: {
           placement: "start",
-          loadingRender: () => /* @__PURE__ */ a.jsx(A, { size: "small" })
+          loadingRender: () => /* @__PURE__ */ a.jsx(F, { size: "small" })
         },
         user: {
           placement: "end"
@@ -376,7 +376,7 @@ const ht = ({
       role: {
         assistant: {
           placement: "start",
-          loadingRender: () => /* @__PURE__ */ a.jsx(A, { size: "small" })
+          loadingRender: () => /* @__PURE__ */ a.jsx(F, { size: "small" })
         },
         user: {
           placement: "end"
@@ -384,384 +384,396 @@ const ht = ({
       }
     }
   ) }) });
-}, $t = ({
-  bubble: r = {},
+}, Pt = ({
+  bubble: i = {},
   ephemeralSystemPrompts: o,
-  defaultSkillDomains: s
+  clientTools: n,
+  defaultSkillDomains: c
 }) => {
   const {
-    layout: c,
-    setVisible: l,
-    setLayout: u,
-    onCallAI: x,
-    activeConversationKey: R,
-    setActiveConversationKey: D,
-    conversations: f,
-    fetchConversationsLoading: F,
-    ephemeralSystemPrompts: m,
-    clientTools: y
-  } = it(), { t: d } = be("ai"), { t: $ } = be("common"), { styles: b } = ke(), q = (e) => ({
+    layout: l,
+    setVisible: d,
+    setLayout: b,
+    onCallAI: j,
+    activeConversationKey: E,
+    setActiveConversationKey: L,
+    conversations: x,
+    fetchConversationsLoading: u,
+    getEphemeralSystemPrompts: C,
+    getClientTools: h,
+    registerGlobalAI: $
+  } = dt(), { t: p } = ve("ai"), { t: ne } = ve("common"), { styles: k } = Ce(), H = (e) => ({
     key: e.id,
     label: e.title,
-    group: Q(e.start_time).isSame(Q(), "day") ? d("chat.today") : Q(e.start_time).format("YYYY-MM-DD")
+    group: ee(e.start_time).isSame(ee(), "day") ? p("chat.today") : ee(e.start_time).format("YYYY-MM-DD")
   }), {
-    conversations: ee,
-    activeConversationKey: p,
-    setActiveConversationKey: E,
-    addConversation: ve,
-    setConversations: Ce,
-    getConversation: H,
-    setConversation: S,
-    removeConversation: je,
-    getMessages: we
-  } = Qe({
-    defaultActiveConversationKey: R,
-    defaultConversations: (f == null ? void 0 : f.map((e) => q(e))) || []
+    conversations: se,
+    activeConversationKey: g,
+    setActiveConversationKey: q,
+    addConversation: je,
+    setConversations: Se,
+    getConversation: K,
+    setConversation: T,
+    removeConversation: we,
+    getMessages: _e
+  } = tt({
+    defaultActiveConversationKey: E,
+    defaultConversations: (x == null ? void 0 : x.map((e) => H(e))) || []
   });
-  k(() => {
-    D(p);
-  }, [p]);
-  const { message: z } = nt.useApp(), [te, ne] = B(""), [Se, _e] = B(!1), K = (s == null ? void 0 : s.join("\0")) ?? "", X = I(
-    () => O(K ? K.split("\0") : []),
-    [K]
-  ), M = (o == null ? void 0 : o.join("\0")) ?? "", se = I(
-    () => O(M ? M.split("\0") : []),
-    [M]
-  ), [v, J] = B(
-    () => X.map((e) => ({ type: "domain", value: e }))
+  v(() => {
+    L(g);
+  }, [g]);
+  const { message: z } = ot.useApp(), [ae, oe] = O(""), [Ae, Le] = O(!1), X = (c == null ? void 0 : c.join("\0")) ?? "", M = N(
+    () => D(X ? X.split("\0") : []),
+    [X]
+  ), J = (o == null ? void 0 : o.join("\0")) ?? "", G = N(
+    () => D(J ? J.split("\0") : []),
+    [J]
   );
-  k(() => {
-    J((e) => {
-      const n = e.filter((t) => t.type === "skill");
+  v(() => {
+    if (!(G.length === 0 && !(n != null && n.length)))
+      return $({
+        ephemeralSystemPrompts: G,
+        tools: n
+      });
+  }, [G, n, $]);
+  const [S, Y] = O(
+    () => M.map((e) => ({ type: "domain", value: e }))
+  );
+  v(() => {
+    Y((e) => {
+      const t = e.filter((s) => s.type === "skill");
       return [
-        ...X.map((t) => ({ type: "domain", value: t })),
-        ...n
+        ...M.map((s) => ({ type: "domain", value: s })),
+        ...t
       ];
     });
-  }, [X]);
-  const { data: ae } = w(() => j.system.listSkillDomains()), { data: N } = w(
-    () => j.system.listSkills({ current: 1, page_size: 500 })
-  ), oe = I(() => [
-    ...(ae ?? []).map((e) => ({
+  }, [M]);
+  const { data: re } = A(() => _.system.listSkillDomains()), { data: P } = A(
+    () => _.system.listSkills({ current: 1, page_size: 500 })
+  ), ie = N(() => [
+    ...(re ?? []).map((e) => ({
       skillType: "domain",
       key: e,
       label: /* @__PURE__ */ a.jsxs(a.Fragment, { children: [
-        /* @__PURE__ */ a.jsx(ge, { children: d("chat.skillDomain", { defaultValue: "Skill domain" }) }),
+        /* @__PURE__ */ a.jsx(he, { children: p("chat.skillDomain", { defaultValue: "Skill domain" }) }),
         e
       ] })
     })),
-    ...((N == null ? void 0 : N.data) ?? []).map((e) => ({
+    ...((P == null ? void 0 : P.data) ?? []).map((e) => ({
       skillType: "skill",
       key: e.id,
       label: /* @__PURE__ */ a.jsxs(a.Fragment, { children: [
-        /* @__PURE__ */ a.jsx(ge, { children: d("chat.skill", { defaultValue: "Skill" }) }),
+        /* @__PURE__ */ a.jsx(he, { children: p("chat.skill", { defaultValue: "Skill" }) }),
         e.name
       ] })
     }))
-  ], [N, ae]), [_, re] = B(), { onRequest: T, messages: h, isRequesting: Y, abort: Te, onReload: Le, setMessages: Ae, setMessage: Ie } = Ze({
-    provider: pt(p),
+  ], [P, re]), [I, le] = O(), { onRequest: R, messages: f, isRequesting: W, abort: Te, onReload: Ie, setMessages: Re, setMessage: Fe } = nt({
+    provider: ht(g),
     // every conversation has its own provider
-    conversationKey: p,
+    conversationKey: g,
     defaultMessages: [],
     requestPlaceholder: () => ({
-      content: $("loading"),
+      content: ne("loading"),
       role: "assistant"
     }),
-    requestFallback: (e, { error: n }) => ut(n) ? {
+    requestFallback: (e, { error: t }) => gt(t) ? {
       content: "",
       role: "assistant"
-    } : n instanceof dt ? {
-      content: n.buffer.join(""),
+    } : t instanceof pt ? {
+      content: t.buffer.join(""),
       role: "assistant",
       // TODO: show error in message list
-      error: n.message
+      error: t.message
     } : {
-      content: `${n}`,
+      content: `${t}`,
       role: "assistant"
     }
-  }), C = xe(() => {
+  }), w = be(() => {
     const e = {
-      domains: v.filter((t) => t.type === "domain").map((t) => t.value),
-      skill_ids: v.filter((t) => t.type === "skill").map((t) => t.value)
-    }, n = O([
-      ...se,
-      ...m
-    ]);
-    return n.length > 0 && (e.ephemeral_system_prompts = n), y.length > 0 && (e.client_tools = y.map((t) => ({
-      name: t.name,
-      description: t.description,
-      parameters: t.parameters
+      domains: S.filter((r) => r.type === "domain").map((r) => r.value),
+      skill_ids: S.filter((r) => r.type === "skill").map((r) => r.value)
+    }, t = D(C());
+    t.length > 0 && (e.ephemeral_system_prompts = t);
+    const s = h();
+    return s.length > 0 && (e.client_tools = s.map((r) => ({
+      name: r.name,
+      description: r.description,
+      parameters: r.parameters
     }))), e;
-  }, [v, se, m, y]), G = ye(null), ie = xe(async (e) => {
-    const n = [];
-    for (const t of e) {
-      const i = y.find((g) => g.name === t.name);
-      if (!i) {
-        n.push({
-          tool_call_id: t.id,
-          content: JSON.stringify({ error: `Client tool handler not found for ${t.name}` })
+  }, [S, C, h]), U = ke(null), ce = be(async (e) => {
+    const t = [], s = h();
+    for (const r of e) {
+      const y = s.find((m) => m.name === r.name);
+      if (!y) {
+        t.push({
+          tool_call_id: r.id,
+          content: JSON.stringify({
+            error: `Client tool "${r.name}" is not available on the current page`,
+            available_tools: s.map((m) => m.name)
+          })
         });
         continue;
       }
       try {
-        const g = await Promise.resolve(i.handler(t.arguments));
-        n.push({ tool_call_id: t.id, content: g });
-      } catch (g) {
-        const L = g instanceof Error ? g.message : String(g);
-        n.push({
-          tool_call_id: t.id,
-          content: JSON.stringify({ error: L })
+        const m = await Promise.resolve(y.handler(r.arguments));
+        t.push({ tool_call_id: r.id, content: m != null && m.trim() ? m : JSON.stringify({ ok: !0 }) });
+      } catch (m) {
+        const Oe = m instanceof Error ? m.message : String(m);
+        t.push({
+          tool_call_id: r.id,
+          content: JSON.stringify({ error: Oe })
         });
       }
     }
-    T({
+    R({
       content: "",
-      client_tool_results: n,
-      ...C()
+      client_tool_results: t,
+      ...w()
     });
-  }, [y, T, C]);
-  k(() => {
-    var e, n;
-    if (!Y && h && h.length > 0) {
-      const t = h[h.length - 1];
-      if ((n = (e = t == null ? void 0 : t.message) == null ? void 0 : e.pendingClientToolCalls) != null && n.length) {
-        const i = t.message.pendingClientToolCalls;
-        G.current !== i && (G.current = i, ie(i));
+  }, [h, R, w]);
+  v(() => {
+    var e, t;
+    if (!W && f && f.length > 0) {
+      const s = f[f.length - 1];
+      if ((t = (e = s == null ? void 0 : s.message) == null ? void 0 : e.pendingClientToolCalls) != null && t.length) {
+        const r = s.message.pendingClientToolCalls;
+        U.current !== r && (U.current = r, ce(r));
       } else
-        G.current = null;
+        U.current = null;
     }
-  }, [Y, h, ie]);
-  const le = (e) => {
+  }, [W, f, ce]);
+  const de = (e) => {
     if (e) {
-      if (!p) {
-        P(e);
+      if (!g) {
+        V(e);
         return;
       }
-      T({
+      R({
         content: e,
-        ...C()
+        ...w()
       });
     }
-  }, { run: Re, loading: Fe } = w(async (e) => await j.ai.getChatSession({ sessionId: e }), {
+  }, { run: Ne, loading: $e } = A(async (e) => await _.ai.getChatSession({ sessionId: e }), {
     manual: !0,
     onError: () => {
-      z.error(d("chat.fetchConversationFailed", { defaultValue: "Failed to fetch conversation" }));
+      z.error(p("chat.fetchConversationFailed", { defaultValue: "Failed to fetch conversation" }));
     },
     onSuccess: (e) => {
-      if (h && h.length > 0 && (h[h.length - 1].status === "loading" || h.length > e.messages.length))
+      if (f && f.length > 0 && (f[f.length - 1].status === "loading" || f.length > e.messages.length))
         return;
-      const n = [];
-      let t = { id: "", message: { content: "", role: "assistant" }, status: "success" };
-      for (const i of e.messages)
-        switch (i.role) {
+      const t = [];
+      let s = { id: "", message: { content: "", role: "assistant" }, status: "success" };
+      for (const r of e.messages)
+        switch (r.role) {
           case "assistant":
-            t.status = i.status === "completed" && t.status === "success" ? "success" : "error", t.message.role = "assistant", t.id !== i.id && i.content && (t.message.content = i.content), t.id = i.id;
+            s.status = r.status === "completed" && s.status === "success" ? "success" : "error", s.message.role = "assistant", s.id !== r.id && r.content && (s.message.content = r.content), s.id = r.id;
             break;
           case "user":
-            t.message.content.length > 0 && (n.push({
-              id: t.id,
+            s.message.content.length > 0 && (t.push({
+              id: s.id,
               message: {
-                content: t.message.content,
-                role: t.message.role
+                content: s.message.content,
+                role: s.message.role
               },
-              status: t.status
-            }), t = { id: "", message: { content: "", role: "assistant" }, status: "success" }), n.push({
-              id: i.id,
+              status: s.status
+            }), s = { id: "", message: { content: "", role: "assistant" }, status: "success" }), t.push({
+              id: r.id,
               message: {
-                content: i.content,
-                role: i.role
+                content: r.content,
+                role: r.role
               },
-              status: i.status === "completed" ? "success" : "error"
+              status: r.status === "completed" ? "success" : "error"
             });
             break;
         }
-      t.message.content.length > 0 && n.push({
-        id: t.id,
+      s.message.content.length > 0 && t.push({
+        id: s.id,
         message: {
-          content: t.message.content,
-          role: t.message.role
+          content: s.message.content,
+          role: s.message.role
         },
-        status: t.status
-      }), Ae(n);
+        status: s.status
+      }), Re(t);
     }
-  }), { run: P, loading: W } = w(async (e, n, t = !1, i) => ({ session: await j.ai.createChatSession({
-    title: d("chat.defaultConversationTitle"),
+  }), { run: V, loading: Q } = A(async (e, t, s = !1, r) => ({ session: await _.ai.createChatSession({
+    title: p("chat.defaultConversationTitle"),
     model_id: "",
-    messages: n || [],
-    anonymous: t
-  }), message: e, domains: i }), {
+    messages: t || [],
+    anonymous: s
+  }), message: e, domains: r }), {
     manual: !0,
     onError: () => {
-      z.error(d("chat.createConversationFailed", { defaultValue: "Failed to create conversation" }));
+      z.error(p("chat.createConversationFailed", { defaultValue: "Failed to create conversation" }));
     },
-    onSuccess: ({ session: e, message: n, domains: t }) => {
-      ve(q(e), "prepend"), E(e.id), n && re({ message: n, sessionId: e.id, domains: t });
+    onSuccess: ({ session: e, message: t, domains: s }) => {
+      je(H(e), "prepend"), q(e.id), t && le({ message: t, sessionId: e.id, domains: s });
     }
   });
-  k(() => {
-    Ce((f == null ? void 0 : f.map((e) => q(e))) || []);
-  }, [f]);
-  const { run: $e } = w(async (e) => await j.ai.deleteChatSession({ sessionId: e }), {
+  v(() => {
+    Se((x == null ? void 0 : x.map((e) => H(e))) || []);
+  }, [x]);
+  const { run: ze } = A(async (e) => await _.ai.deleteChatSession({ sessionId: e }), {
     manual: !0,
-    onError(e, [n]) {
-      z.error(d("chat.deleteConversationFailed", { defaultValue: "Failed to delete conversation" }));
-      const t = H(n);
-      t && S(n, { ...t, loading: !1 });
+    onError(e, [t]) {
+      z.error(p("chat.deleteConversationFailed", { defaultValue: "Failed to delete conversation" }));
+      const s = K(t);
+      s && T(t, { ...s, loading: !1 });
     },
-    onSuccess(e, [n]) {
-      je(n);
+    onSuccess(e, [t]) {
+      we(t);
     }
-  }), { run: ze } = w(async (e) => j.ai.generateChatSessionTitle({ sessionId: e }, { title: "" }), {
+  }), { run: Pe } = A(async (e) => _.ai.generateChatSessionTitle({ sessionId: e }, { title: "" }), {
     manual: !0,
-    onSuccess: ({ title: e }, [n]) => {
-      const t = H(n);
-      t && S(n, { ...t, title: e, loading: !1 });
+    onSuccess: ({ title: e }, [t]) => {
+      const s = K(t);
+      s && T(t, { ...s, title: e, loading: !1 });
     },
-    onError: (e, [n]) => {
-      z.error(d("chat.titleGenerationFailed", { defaultValue: "Failed to generate title: {{error}}", error: e.message || e }));
-      const t = H(n);
-      t && S(n, { ...t, loading: !1 });
+    onError: (e, [t]) => {
+      z.error(p("chat.titleGenerationFailed", { defaultValue: "Failed to generate title: {{error}}", error: e.message || e }));
+      const s = K(t);
+      s && T(t, { ...s, loading: !1 });
     }
   });
-  k(() => {
-    if (p && (_ == null ? void 0 : _.sessionId) === p) {
-      const { message: e, domains: n } = _;
+  v(() => {
+    if (g && (I == null ? void 0 : I.sessionId) === g) {
+      const { message: e, domains: t } = I;
       setTimeout(() => {
-        T({
+        R({
           content: e,
-          ...C(),
-          ...n !== void 0 ? { domains: n } : {}
+          ...w(),
+          ...t !== void 0 ? { domains: t } : {}
         });
-      }, 1e3), re(void 0);
+      }, 1e3), le(void 0);
     }
-  }, [p, _, C]), k(() => {
-    if (p) {
-      const e = we(p);
+  }, [g, I, w]), v(() => {
+    if (g) {
+      const e = _e(g);
       if (e && e.length > 0)
         return;
-      Re(p);
+      Ne(g);
     }
-  }, [p]);
-  const ce = ye(() => {
+  }, [g]);
+  const ue = ke(() => {
   });
-  ce.current = (e, n) => {
-    const t = lt(n), i = t.domains !== void 0 ? O(t.domains) : void 0;
-    if (i !== void 0 && J((g) => [
-      ...i.map((L) => ({ type: "domain", value: L })),
-      ...g.filter((L) => L.type === "skill")
-    ]), t.newSession === !1 && p) {
-      T({
+  ue.current = (e, t) => {
+    const s = ut(t), r = s.domains !== void 0 ? D(s.domains) : void 0;
+    if (r !== void 0 && Y((y) => [
+      ...r.map((m) => ({ type: "domain", value: m })),
+      ...y.filter((m) => m.type === "skill")
+    ]), s.newSession === !1 && g) {
+      R({
         content: e,
-        ...C(),
-        ...i !== void 0 ? { domains: i } : {}
+        ...w(),
+        ...r !== void 0 ? { domains: r } : {}
       });
       return;
     }
-    P(e, t.messages, !0, i);
-  }, k(() => {
-    x && x((e, n) => {
-      ce.current(e, n);
+    V(e, s.messages, !0, r);
+  }, v(() => {
+    j && j((e, t) => {
+      ue.current(e, t);
     });
-  }, [x]);
-  const Ne = /* @__PURE__ */ a.jsxs("div", { className: b.sider, children: [
+  }, [j]);
+  const Ve = /* @__PURE__ */ a.jsxs("div", { className: k.sider, children: [
     /* @__PURE__ */ a.jsx(
-      V,
+      B,
       {
         onClick: () => {
-          P();
+          V();
         },
         type: "link",
-        className: b.addBtn,
-        icon: /* @__PURE__ */ a.jsx(ue, {}),
-        loading: W,
-        children: d("chat.newConversation", { defaultValue: "New Conversation" })
+        className: k.addBtn,
+        icon: /* @__PURE__ */ a.jsx(pe, {}),
+        loading: Q,
+        children: p("chat.newConversation", { defaultValue: "New Conversation" })
       }
     ),
-    /* @__PURE__ */ a.jsx(A, { spinning: F, wrapperClassName: b.conversationsSpin, children: /* @__PURE__ */ a.jsx(
-      Je,
+    /* @__PURE__ */ a.jsx(F, { spinning: u, wrapperClassName: k.conversationsSpin, children: /* @__PURE__ */ a.jsx(
+      We,
       {
-        items: ee,
-        activeKey: p,
+        items: se,
+        activeKey: g,
         onActiveChange: async (e) => {
-          e && E(e);
+          e && q(e);
         },
-        className: b.conversations,
+        className: k.conversations,
         groupable: !0,
         styles: { item: { padding: "0 8px" } },
         menu: (e) => ({
           items: [
             {
-              label: d("chat.regenerateTitle"),
+              label: p("chat.regenerateTitle"),
               key: "regenerateTitle",
-              icon: /* @__PURE__ */ a.jsx(He, {}),
+              icon: /* @__PURE__ */ a.jsx(Me, {}),
               onClick: () => {
-                S(e.key, { ...e, loading: !0 }), ze(e.key);
+                T(e.key, { ...e, loading: !0 }), Pe(e.key);
               }
             },
             {
-              label: $("delete"),
+              label: ne("delete"),
               key: "delete",
-              icon: /* @__PURE__ */ a.jsx(Ke, {}),
+              icon: /* @__PURE__ */ a.jsx(Je, {}),
               danger: !0,
               onClick: () => {
-                S(e.key, { ...e, loading: !0 }), $e(e.key);
+                T(e.key, { ...e, loading: !0 }), ze(e.key);
               }
             }
           ]
         })
       }
     ) })
-  ] }), Pe = /* @__PURE__ */ a.jsx(a.Fragment, { children: /* @__PURE__ */ a.jsx(fe, { direction: "vertical", style: { width: "100%", maxWidth: 700, margin: "0 auto" }, children: /* @__PURE__ */ a.jsx(
-    me,
+  ] }), Be = /* @__PURE__ */ a.jsx(a.Fragment, { children: /* @__PURE__ */ a.jsx(xe, { direction: "vertical", style: { width: "100%", maxWidth: 700, margin: "0 auto" }, children: /* @__PURE__ */ a.jsx(
+    ge,
     {
-      footer: (e) => /* @__PURE__ */ a.jsxs(U, { justify: "space-between", align: "center", children: [
-        /* @__PURE__ */ a.jsx(U, { gap: "small", align: "center", children: /* @__PURE__ */ a.jsx(
-          he,
+      footer: (e) => /* @__PURE__ */ a.jsxs(Z, { justify: "space-between", align: "center", children: [
+        /* @__PURE__ */ a.jsx(Z, { gap: "small", align: "center", children: /* @__PURE__ */ a.jsx(
+          ye,
           {
-            open: Se,
-            onOpenChange: (n, t) => {
-              (t.source === "trigger" || n) && _e(n);
+            open: Ae,
+            onOpenChange: (t, s) => {
+              (s.source === "trigger" || t) && Le(t);
             },
             menu: {
-              selectedKeys: v.map((n) => n.value),
-              onClick: (n) => {
-                const t = oe.find((i) => i.key === n.key);
-                J((i) => i.some((g) => g.value === n.key) ? i.filter((g) => g.value !== n.key) : [...i, { type: (t == null ? void 0 : t.skillType) || "skill", value: n.key }]);
+              selectedKeys: S.map((t) => t.value),
+              onClick: (t) => {
+                const s = ie.find((r) => r.key === t.key);
+                Y((r) => r.some((y) => y.value === t.key) ? r.filter((y) => y.value !== t.key) : [...r, { type: (s == null ? void 0 : s.skillType) || "skill", value: t.key }]);
               },
-              items: oe.map((n) => ({
-                label: n.label,
-                key: n.key
+              items: ie.map((t) => ({
+                label: t.label,
+                key: t.key
               }))
             },
-            children: /* @__PURE__ */ a.jsxs(me.Switch, { value: !1, icon: /* @__PURE__ */ a.jsx(Oe, {}), children: [
-              d("chat.skill", { defaultValue: "Skills" }),
+            children: /* @__PURE__ */ a.jsxs(ge.Switch, { value: !1, icon: /* @__PURE__ */ a.jsx(He, {}), children: [
+              p("chat.skill", { defaultValue: "Skills" }),
               " ",
               "(",
-              v.length > 0 ? d("chat.skillsSelected", { defaultValue: "{{count}} selected", count: v.length }) : d("chat.skillsOptional", { defaultValue: "optional" }),
+              S.length > 0 ? p("chat.skillsSelected", { defaultValue: "{{count}} selected", count: S.length }) : p("chat.skillsOptional", { defaultValue: "optional" }),
               ")"
             ] })
           }
         ) }),
-        /* @__PURE__ */ a.jsx(U, { align: "center", children: e })
+        /* @__PURE__ */ a.jsx(Z, { align: "center", children: e })
       ] }),
       suffix: !1,
-      value: te,
+      value: ae,
       onSubmit: async () => {
-        le(te.trim()), ne("");
+        de(ae.trim()), oe("");
       },
-      onChange: ne,
+      onChange: oe,
       onCancel: () => {
         Te();
       },
-      loading: Y,
-      className: ct(b.sender, "chat-sender"),
-      placeholder: d("chat.inputPlaceholder")
+      loading: W,
+      className: mt(k.sender, "chat-sender"),
+      placeholder: p("chat.inputPlaceholder")
     }
   ) }) });
-  return /* @__PURE__ */ a.jsx(Ye, { children: /* @__PURE__ */ a.jsxs(ft.Provider, { value: { onReload: Le, setMessage: Ie }, children: [
+  return /* @__PURE__ */ a.jsx(Ue, { children: /* @__PURE__ */ a.jsxs(yt.Provider, { value: { onReload: Ie, setMessage: Fe }, children: [
     /* @__PURE__ */ a.jsxs("div", { style: { height: "50px", width: "100%", position: "relative" }, children: [
       /* @__PURE__ */ a.jsx(
-        st.Group,
+        rt.Group,
         {
           style: {
             position: "absolute",
@@ -771,76 +783,76 @@ const ht = ({
           },
           options: [
             {
-              label: /* @__PURE__ */ a.jsx(De, { style: { transform: "scaleX(-1)" } }),
+              label: /* @__PURE__ */ a.jsx(qe, { style: { transform: "scaleX(-1)" } }),
               value: "classic"
             },
             {
-              label: /* @__PURE__ */ a.jsx(qe, {}),
+              label: /* @__PURE__ */ a.jsx(Ke, {}),
               value: "sidebar"
             },
             {
-              label: /* @__PURE__ */ a.jsx(Ee, {}),
+              label: /* @__PURE__ */ a.jsx(Xe, {}),
               value: "float-sidebar"
             }
           ],
           optionType: "button",
-          onChange: (e) => u(e.target.value),
-          value: c
+          onChange: (e) => b(e.target.value),
+          value: l
         }
       ),
-      /* @__PURE__ */ a.jsxs(fe, { style: { float: "right", marginTop: 10 }, children: [
+      /* @__PURE__ */ a.jsxs(xe, { style: { float: "right", marginTop: 10 }, children: [
         /* @__PURE__ */ a.jsx(
-          V,
+          B,
           {
             type: "primary",
             onClick: () => {
-              P();
+              V();
             },
-            loading: W,
-            icon: /* @__PURE__ */ a.jsx(ue, {}),
-            style: { display: c === "classic" ? "none" : "block" }
+            loading: Q,
+            icon: /* @__PURE__ */ a.jsx(pe, {}),
+            style: { display: l === "classic" ? "none" : "block" }
           }
         ),
         /* @__PURE__ */ a.jsx(
-          he,
+          ye,
           {
             menu: {
-              items: ee.map((e) => ({
+              items: se.map((e) => ({
                 label: e.label,
                 key: e.key
               })),
               onClick: ({ key: e }) => {
-                E(e);
+                q(e);
               }
             },
             placement: "bottomRight",
-            children: /* @__PURE__ */ a.jsx(V, { icon: F ? /* @__PURE__ */ a.jsx(A, { size: "small" }) : /* @__PURE__ */ a.jsx(Xe, {}), style: { display: c === "classic" ? "none" : "block" } })
+            children: /* @__PURE__ */ a.jsx(B, { icon: u ? /* @__PURE__ */ a.jsx(F, { size: "small" }) : /* @__PURE__ */ a.jsx(Ge, {}), style: { display: l === "classic" ? "none" : "block" } })
           }
         ),
-        /* @__PURE__ */ a.jsx(V, { type: "text", onClick: () => l(!1), children: /* @__PURE__ */ a.jsx(Me, {}) })
+        /* @__PURE__ */ a.jsx(B, { type: "text", onClick: () => d(!1), children: /* @__PURE__ */ a.jsx(Ye, {}) })
       ] })
     ] }),
-    /* @__PURE__ */ a.jsxs("div", { className: c === "classic" ? b.classicLayout : b.siderLayout, style: {
-      minWidth: c === "classic" ? "500px" : "400px"
+    /* @__PURE__ */ a.jsxs("div", { className: l === "classic" ? k.classicLayout : k.siderLayout, style: {
+      minWidth: l === "classic" ? "500px" : "400px"
     }, children: [
-      c === "classic" ? Ne : null,
-      /* @__PURE__ */ a.jsxs("div", { className: b.chat, children: [
+      l === "classic" ? Ve : null,
+      /* @__PURE__ */ a.jsxs("div", { className: k.chat, children: [
         /* @__PURE__ */ a.jsx(
-          ht,
+          bt,
           {
-            bubble: r,
-            messages: h,
-            loading: Fe || W,
-            layout: c,
-            onSendMessage: le
+            bubble: i,
+            messages: f,
+            loading: $e || Q,
+            layout: l,
+            onSendMessage: de
           }
         ),
-        Pe
+        Be
       ] })
     ] })
   ] }) });
 };
 export {
-  $t as AIChat,
-  $t as default
+  Pt as AIChat,
+  Pt as default
 };

@@ -48,6 +48,7 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
   - [AIContext](#aicontext)
   - [AIChat Component](#aichat-component)
   - [Page-Level AI Integration](#page-level-ai-integration)
+  - [Letting the Chat Control Pages](#letting-the-chat-control-pages)
 - [Integration Examples](#integration-examples)
 - [Best Practices](#best-practices)
 
@@ -1427,8 +1428,8 @@ On the backend, `AIChatController.StreamChat`:
    - No `ui_*` in the batch → do not interrupt (server tools run normally).
    - Only `ui_*` → interrupt immediately.
    - Mixed batch → execute non-`ui_*` tools first. If any of them returns `tool.ErrEndOfChat`, the run ends as described in [Ending the chat from a tool](#ending-the-chat-from-a-tool): no client handoff and no tool-result messages. Otherwise append the server results to the session, then interrupt for `ui_*`.
-5. Stream emits `client_tool_pending` and ends with `ErrClientToolHandoff`.
-6. Frontend executes tools, then POSTs `client_tool_results` on the next turn.
+5. Stream emits `client_tool_pending` (all pending `ui_*` calls, declared in this request or not) and ends with `ErrClientToolHandoff`.
+6. Frontend executes tools, then POSTs `client_tool_results` on the next turn. Unknown tool names get an error result; empty handler results are normalized to `{"ok":true}` because the server rejects empty `content`.
 7. Results are persisted as `role=tool` messages and a new completion stream starts.
 
 ### Ending the chat from a tool
@@ -1934,9 +1935,15 @@ interface AIContextType {
 
   // Page-level AI context
   ephemeralSystemPrompts: string[];
-  clientTools: RegisteredClientTool[];
+  clientTools: RegisteredClientTool[];            // global + page tools, merged
   registerPageAI: (opts: PageAIOptions) => () => void;
-  resetPageAIContext: () => void;
+  resetPageAIContext: () => void;                 // clears only registrations from other routes
+
+  // Global tools and synchronous accessors (used by the chat and ui_navigate)
+  registerGlobalAI: (opts: GlobalAIOptions | ((ori: GlobalAIOptions) => GlobalAIOptions)) => () => void;
+  getClientTools: () => RegisteredClientTool[];
+  getEphemeralSystemPrompts: () => string[];
+  waitForPageAI: (timeoutMs?: number) => Promise<boolean>;
 }
 ```
 
@@ -2014,6 +2021,11 @@ interface AIChatProps {
    */
   ephemeralSystemPrompts?: string[];
   /**
+   * Host-level client tools available on every page (names must start with
+   * "ui_"). A page tool with the same name overrides a host tool.
+   */
+  clientTools?: RegisteredClientTool[];
+  /**
    * Skill domains selected when the chat opens. Omit this (or pass []) to send
    * domains as an empty list. The backend still appends core and chat.
    */
@@ -2029,12 +2041,20 @@ Pass these through `EZApp`'s `aiChatProps`:
     ephemeralSystemPrompts: [
       'You are assisting operators of this console.',
     ],
+    clientTools: [{
+      name: 'ui_open_help_center',
+      description: 'Open the help center in a new browser tab.',
+      parameters: { type: 'object', properties: {}, required: [] },
+      handler: () => { window.open('https://help.example.com', '_blank'); return JSON.stringify({ ok: true }); },
+    }],
     defaultSkillDomains: ['analytics'],
   }}
 />
 ```
 
-When `defaultSkillDomains` is omitted, chat requests include `"domains": []`. Users can still toggle domains and individual skills in the sender. Host prompts are sent ahead of any prompts registered by the current page.
+`ephemeralSystemPrompts` and `clientTools` from `aiChatProps` are registered app-wide through `registerGlobalAI` (see below), so they behave exactly like tools registered by the layout. Keep `clientTools` referentially stable (define it outside the component or memoize it) to avoid re-registering on every render.
+
+When `defaultSkillDomains` is omitted, chat requests include `"domains": []`. Users can still toggle domains and individual skills in the sender. Prompt order on each request: the layout's route prompt, host prompts, then prompts registered by the current page.
 
 ### Page-Level AI Integration
 
@@ -2085,6 +2105,78 @@ registerPageAI({
   }],
 });
 ```
+
+### Letting the Chat Control Pages
+
+Client tools are the mechanism for "the AI operates the UI". Two layers are combined on every request:
+
+| Layer | Registered by | Lifetime | Examples |
+| ----- | ------------- | -------- | -------- |
+| Global | `Layout` via `useGlobalAITools`, and the host via `aiChatProps` — both call `registerGlobalAI` | Whole app session | route prompt, `ui_get_current_route`, `ui_navigate`, host tools |
+| Page | The current page via `registerPageAI` | While the page is mounted | `ui_get_page_data`, `ui_search_users`, `ui_open_user` |
+
+`AIContext.clientTools` is the merge of both (a page tool overrides a global tool of the same name); `ephemeralSystemPrompts` is global prompts in registration order followed by page prompts. The chat reads both through `getClientTools()` / `getEphemeralSystemPrompts()` at send time, not from a render snapshot, so context published by a page that was just opened reaches the model on the very next request.
+
+**How the model knows which pages exist:** `useGlobalAITools` builds a system prompt from the route table at runtime and registers it globally, so it is in context from the first message with no extra tool round-trip. It lists every private route that has a `name` and that the current user is permitted to open (route `permissions` are checked; `hideInMenu` is ignored because hidden pages such as `/profile` are still valid targets), labelled with the same i18n text as breadcrumbs/menu, and marks parameterised routes (`/authorization/users/:id`) so the model knows the shape. It is rebuilt when the route table, the user's roles, the organization, or the UI language changes, and it includes routes added by the host via `extraPrivateRoutes`.
+
+```
+You are embedded in a web console and can move between its pages with the ui_navigate tool. Pages available to this user:
+- / — Dashboard
+- /tasks — Tasks
+- /authorization/users — Users
+- /authorization/users/:id — User Detail (replace the :param with a real value)
+...
+Only these paths exist; do not invent others. ...
+```
+
+**Built-in global tools:**
+
+- `ui_get_current_route` — returns `path`, `route_name`, `params` and `available_tools` (current merged tool names).
+- `ui_navigate({ path })` — validates the path against the route table and route `permissions`, calls `navigate(path)`, then waits (up to 3 s) for the target page to call `registerPageAI`. The result includes `page_registered_ai_tools` and the new `available_tools`, so the model knows what it can do next. On an invalid path the error result includes `navigable_paths`.
+
+**Registering your own global context** (from any component under `AIProvider`):
+
+```tsx
+const { registerGlobalAI } = useAI();
+
+// Append prompts and tools to whatever was already registered.
+useEffect(() => registerGlobalAI({
+  ephemeralSystemPrompts: ['Tenant: ACME. Currency: EUR.'],
+  tools: [/* ui_* tools */],
+}), [registerGlobalAI]);
+
+// Or rewrite the accumulated options. `ori` is the merge of earlier
+// registerGlobalAI calls (layout route prompt, host aiChatProps, …).
+useEffect(() => registerGlobalAI((ori) => ({
+  ...ori,
+  ephemeralSystemPrompts: [
+    ...(ori.ephemeralSystemPrompts ?? []),
+    'Prefer the tenant help-desk skill.',
+  ],
+})), [registerGlobalAI]);
+```
+
+**Cross-page flow** ("go to users, search for alice, open her"):
+
+```
+turn 1  model → ui_navigate("/authorization/users")
+        browser: navigate, wait for UserList.registerPageAI, reply with available_tools
+        follow-up request carries UserList's client_tools + ephemeral prompt
+turn 2  model → ui_search_users({ keywords: "alice" })
+        browser: setQueryParams, await list load, reply with the page of users
+turn 3  model → ui_open_user({ username: "alice" })
+```
+
+**Writing page action tools** (see `web/src/pages/authorization/user/UserList.tsx`):
+
+- Call the same state setters the UI uses (`setQueryParams`, form `setFieldsValue`, `navigate`) instead of touching the DOM.
+- Read state through refs inside handlers; a handler may run after several re-renders.
+- When an action triggers an async load, await it (a small "next load" promise resolved in `onSuccess`) and return the fresh data so the model gets the outcome in one step.
+- Return a compact JSON summary (ids, names, status), not full records.
+- Keep destructive actions behind the existing confirm dialogs or do not expose them.
+- Return the cleanup from `registerPageAI`. Registrations are stamped with the route they were made on; the layout's route-change reset only removes stale registrations from other routes, so a page registering in an effect is not wiped by the parent layout's effect.
+
+**Server behavior for undeclared tools:** the controller forwards every pending `ui_*` call, even one not declared in the current request (e.g. a tool from a page the user has left). The browser answers unknown names with `{ error, available_tools }` so the tool call is always paired and the model can recover.
 
 ## Integration Examples
 
@@ -2308,6 +2400,7 @@ function UserManagementPage() {
 2. **Return JSON**: Tool handlers should return JSON strings for structured data.
 3. **Handle Errors Gracefully**: Return error information in the result rather than throwing.
 4. **Cleanup on Unmount**: Always return the cleanup function from `registerPageAI`.
+5. **Page actions over DOM automation**: Expose business actions (`ui_search_users`) that reuse the page's own state setters; see [Letting the Chat Control Pages](#letting-the-chat-control-pages).
 
 ### Security
 

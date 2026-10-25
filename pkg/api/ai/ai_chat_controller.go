@@ -528,15 +528,18 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		if event.EventType == ai.EventTypeToolCall {
 			return true
 		}
-		var toolCalls []ai.ClientToolPendingCall
 		if event.EventType == ai.EventTypeClientToolPending {
+			// Forward every pending ui_* call, including names not declared in this
+			// request (e.g. a tool from a page the user has since left). The browser
+			// answers unknown tools with an error result so the tool call is always
+			// paired and the model can recover. Dropping them here would end the
+			// stream with no event and leave the conversation stuck.
 			for _, toolCall := range event.ClientToolCalls {
-				if req.ClientTools.HasTool(toolCall.Name) {
-					toolCalls = append(toolCalls, toolCall)
+				if !req.ClientTools.HasTool(toolCall.Name) {
+					level.Warn(logger).Log("msg", "Model called a client tool not declared in this request", "tool", toolCall.Name, "sessionId", sessionID)
 				}
 			}
-			if len(toolCalls) != 0 {
-				event.ClientToolCalls = toolCalls
+			if len(event.ClientToolCalls) != 0 {
 				ctx.SSEvent("message", event)
 			}
 			return false

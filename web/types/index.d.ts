@@ -142,10 +142,17 @@ export declare interface AIChatProps {
     floatButtonIcon?: default_2.ReactNode;
     /**
      * Host-level system prompts merged into every chat request as
-     * ephemeral_system_prompts (not persisted). Combined with page-level
-     * prompts from registerPageAI.
+     * ephemeral_system_prompts (not persisted). Registered app-wide via
+     * `registerGlobalAI`; sent after the layout's route prompt and before
+     * page-level prompts from registerPageAI.
      */
     ephemeralSystemPrompts?: string[];
+    /**
+     * Host-level client tools available on every page (names must start with
+     * "ui_"). Registered app-wide via `registerGlobalAI`; a page tool with the
+     * same name overrides a host tool.
+     */
+    clientTools?: RegisteredClientTool[];
     /**
      * Skill domains selected when the chat opens. When omitted, the client
      * sends domains as an empty list.
@@ -206,10 +213,39 @@ declare interface AIContextType {
     conversations: API.AIChatSession[] | undefined;
     activeConversationKey: string | undefined;
     setActiveConversationKey: (key: string) => void;
+    /** Global prompts (in registration order) followed by the current page's prompts. */
     ephemeralSystemPrompts: string[];
+    /**
+     * Client tools sent with every chat request: global tools (registered by the
+     * layout, e.g. `ui_navigate`, or by the host via `aiChatProps.clientTools`)
+     * merged with the current page's tools. A page tool with the same name as a
+     * global tool wins.
+     */
     clientTools: RegisteredClientTool[];
     registerPageAI: (opts: PageAIOptions) => () => void;
+    /**
+     * Clear the page-level registration if it belongs to a different route than
+     * the current one. Called by the layout on route change as a safety net for
+     * pages that do not return the cleanup from `registerPageAI`.
+     */
     resetPageAIContext: () => void;
+    /**
+     * Register prompts and client tools that stay available across pages (not
+     * cleared on route change). Pass a `GlobalAIOptions` object to append, or
+     * a function of the previously accumulated options to rewrite them.
+     * Returns an unregister function.
+     */
+    registerGlobalAI: (opts: GlobalAIOptionsInput) => () => void;
+    /** Latest merged client tools, read synchronously (not subject to render timing). */
+    getClientTools: () => RegisteredClientTool[];
+    /** Latest global + page ephemeral prompts, read synchronously. */
+    getEphemeralSystemPrompts: () => string[];
+    /**
+     * Resolve `true` the next time a page calls `registerPageAI`, or `false`
+     * after `timeoutMs`. Used by navigation tools to wait for the target page
+     * to publish its tools before the chat continues.
+     */
+    waitForPageAI: (timeoutMs?: number) => Promise<boolean>;
 }
 
 export declare interface AIFunctionCall {
@@ -1837,6 +1873,27 @@ export declare interface getUserSessionsParams {
     /** Number of items per page */
     page_size?: number;
 }
+
+/** Options for an app-wide AI registration (see `registerGlobalAI`). */
+export declare interface GlobalAIOptions {
+    /** Prompts merged into every chat request, ahead of page-level prompts. */
+    ephemeralSystemPrompts?: string[];
+    /** Client tools available on every page. Names must start with "ui_". */
+    tools?: RegisteredClientTool[];
+}
+
+/**
+ * Argument accepted by `registerGlobalAI`.
+ *
+ * - An object appends its prompts and tools to what earlier global
+ *   registrations provided.
+ * - A function receives the options accumulated by all earlier global
+ *   registrations and returns the next accumulated options. Use it to
+ *   append, rewrite, or drop earlier prompts/tools (spread `ori` to keep
+ *   them). The function must be pure: it is re-run whenever the set of
+ *   global registrations changes.
+ */
+export declare type GlobalAIOptionsInput = GlobalAIOptions | ((ori: GlobalAIOptions) => GlobalAIOptions);
 
 export declare const HeaderDropdown: default_2.FC<HeaderDropdownProps>;
 

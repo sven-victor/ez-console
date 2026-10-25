@@ -43,6 +43,7 @@ import { getURL, toSmartTitle } from '@/utils';
 import { AIChatModal, AIChatButton, AIChatSider } from './AIChatLayout';
 import { useSite } from '@/contexts/SiteContext';
 import { useAI } from '@/contexts/AIContext';
+import { useGlobalAITools } from '@/hooks/useGlobalAITools';
 import { useThemeMode, createStyles } from 'antd-style';
 import classNames from 'classnames';
 import { type AIChatProps } from './AIChat';
@@ -165,10 +166,15 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const [siteName, setSiteName] = useState<string>("Loading...");
   const [collapsed, setCollapsed] = useState(false);
 
-  // Reset page-level AI context on route change (before new page mounts)
+  // Safety net: drop a stale page-level AI registration left by a page that
+  // did not return the cleanup from registerPageAI. Registrations made by the
+  // page now being shown are kept (they are stamped with the current route).
   useEffect(() => {
     resetPageAIContext();
   }, [location.pathname, resetPageAIContext]);
+
+  // Global client tools (ui_navigate, ui_get_current_route) for the AI chat.
+  useGlobalAITools(routes, canUseAIChat);
 
   if (location.pathname !== '/profile') {
     if (user && user.mfa_enforced && !user.mfa_enabled) {

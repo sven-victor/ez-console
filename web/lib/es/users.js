@@ -1,68 +1,74 @@
 import { j as e } from "./vendor.js";
-import { useState as F, useEffect as te, useCallback as Z, useMemo as be } from "react";
-import { App as G, Form as g, Spin as B, Typography as X, Tag as z, Tooltip as ke, Badge as y, Card as D, Row as ae, Col as $, Space as M, Input as R, Select as O, Button as U, Table as ve, Modal as Ee, Tabs as re, Descriptions as A, Switch as _e } from "antd";
-import { UserOutlined as le, EyeOutlined as Ae, EditOutlined as ne, UnlockOutlined as Ue, SafetyOutlined as ze, MailOutlined as Se, KeyOutlined as Pe, ToolOutlined as Fe, UndoOutlined as Ce, DeleteOutlined as Le, ReloadOutlined as Te, ExportOutlined as Re, UserAddOutlined as Oe, ArrowLeftOutlined as Ie } from "@ant-design/icons";
-import { useNavigate as ee, Link as De, useParams as ue } from "react-router-dom";
-import { A as ie, b as Me, g as se, U as Ne, o as oe, e as $e } from "./components.js";
-import { a as h } from "./index.js";
-import { P as H, f as q } from "./base.js";
-import { useTranslation as C } from "react-i18next";
-import { useRequest as x } from "ahooks";
-import { d as qe, b as K, a as Be } from "./contexts.js";
-import { A as Ke } from "./client.js";
-const { Option: T } = O, Ge = ({ user: n, onClose: c, onSuccess: j }) => {
-  const { message: t } = G.useApp(), { t: f } = C("authorization"), [a, o] = F(null), [V, w] = F(null), { run: k, loading: i } = x(h.authorization.updateUser, {
+import { useState as M, useRef as Y, useCallback as se, useEffect as pe, useMemo as Oe } from "react";
+import { App as re, Form as V, Spin as te, Typography as de, Tag as T, Tooltip as Ie, Badge as v, Card as Q, Row as me, Col as X, Space as Z, Input as G, Select as K, Button as C, Table as De, Modal as Me, Tabs as he, Descriptions as F, Switch as Ne } from "antd";
+import { UserOutlined as ge, EyeOutlined as $e, EditOutlined as xe, UnlockOutlined as qe, SafetyOutlined as Je, MailOutlined as Be, KeyOutlined as Ge, ToolOutlined as Ke, UndoOutlined as We, DeleteOutlined as Qe, ReloadOutlined as Ze, ExportOutlined as He, UserAddOutlined as Ye, ArrowLeftOutlined as Xe } from "@ant-design/icons";
+import { useNavigate as ce, Link as es, useParams as ye } from "react-router-dom";
+import { A as _e, b as ss, g as fe, U as ts, o as we, e as as } from "./components.js";
+import { a as _ } from "./index.js";
+import { P as D, f as ee } from "./base.js";
+import { useTranslation as N } from "react-i18next";
+import { useRequest as w } from "ahooks";
+import { d as rs, b as ae, a as ns } from "./contexts.js";
+import { A as ls } from "./client.js";
+const { Option: B } = K, ie = ["active", "disabled", "deleted", "locked", "password_expired", "pending_activation"], ue = (n) => n.map((d) => ({
+  id: d.id,
+  username: d.username,
+  full_name: d.full_name,
+  email: d.email,
+  status: d.status
+})), is = ({ user: n, onClose: d, onSuccess: E }) => {
+  const { message: a } = re.useApp(), { t: p } = N("authorization"), [t, m] = M(null), [j, U] = M(null), { run: S, loading: o } = w(_.authorization.updateUser, {
     onSuccess: () => {
-      t.success(f("user.updateUserSuccess", { defaultValue: "User updated successfully" })), j();
+      a.success(p("user.updateUserSuccess", { defaultValue: "User updated successfully" })), E();
     },
     onError: (u) => {
-      t.error(f("user.updateUserError", { defaultValue: "Failed to update user", error: u.message }));
+      a.error(p("user.updateUserError", { defaultValue: "Failed to update user", error: u.message }));
     },
     manual: !0
-  }), { data: v, loading: S } = x(async () => a === "bind" ? h.authorization.getLdapUsers({ skip_existing: !0 }).then((u) => {
-    const b = [], p = [];
-    for (const m of u)
-      m.username === (n == null ? void 0 : n.username) || m.email === (n == null ? void 0 : n.email) || m.full_name === (n == null ? void 0 : n.full_name) ? b.push({ recommend: !0, ...m }) : p.push({ recommend: !1, ...m });
-    return [...b, ...p];
+  }), { data: P, loading: L } = w(async () => t === "bind" ? _.authorization.getLdapUsers({ skip_existing: !0 }).then((u) => {
+    const z = [], g = [];
+    for (const f of u)
+      f.username === (n == null ? void 0 : n.username) || f.email === (n == null ? void 0 : n.email) || f.full_name === (n == null ? void 0 : n.full_name) ? z.push({ recommend: !0, ...f }) : g.push({ recommend: !1, ...f });
+    return [...z, ...g];
   }) : Promise.resolve([]), {
-    refreshDeps: [n == null ? void 0 : n.id, a]
+    refreshDeps: [n == null ? void 0 : n.id, t]
   });
-  return te(() => {
-    n && (o(null), w(null));
+  return pe(() => {
+    n && (m(null), U(null));
   }, [n]), /* @__PURE__ */ e.jsx(
-    Ee,
+    Me,
     {
       open: n !== null,
-      onCancel: c,
+      onCancel: d,
       onOk: () => {
         if (n) {
-          if (a === "local")
-            return k({ id: n.id }, { source: "local" });
-          if (a === "bind") {
-            if (!V) {
-              t.error(f("user.ldapUserDNRequired", { defaultValue: "LDAP User DN is required" }));
+          if (t === "local")
+            return S({ id: n.id }, { source: "local" });
+          if (t === "bind") {
+            if (!j) {
+              a.error(p("user.ldapUserDNRequired", { defaultValue: "LDAP User DN is required" }));
               return;
             }
-            return k({ id: n.id }, { source: "ldap", ldap_dn: V });
+            return S({ id: n.id }, { source: "ldap", ldap_dn: j });
           } else {
-            t.error(f("user.unknownFixMethod", { defaultValue: "Unknown fix method" }));
+            a.error(p("user.unknownFixMethod", { defaultValue: "Unknown fix method" }));
             return;
           }
         }
-        t.error(f("user.unknownUserId", { defaultValue: "Unknown user id" }));
+        a.error(p("user.unknownUserId", { defaultValue: "Unknown user id" }));
       },
-      title: f("user.fixUserTitle", { defaultValue: "Fix User" }),
-      children: /* @__PURE__ */ e.jsxs(M, { direction: "vertical", style: { width: "100%" }, children: [
-        /* @__PURE__ */ e.jsx(U, { loading: i, style: { width: "100%", height: 40 }, type: "default", variant: "outlined", color: a === "local" ? "primary" : "default", onClick: () => o("local"), children: f("user.fixUserConvertToLocal", { defaultValue: "Convert to Local" }) }),
-        /* @__PURE__ */ e.jsx(U, { loading: i, style: { width: "100%", height: 40 }, type: "default", variant: "outlined", color: a === "bind" ? "primary" : "default", onClick: () => o("bind"), children: f("user.fixUserBindLDAPUser", { defaultValue: "Bind LDAP User" }) }),
+      title: p("user.fixUserTitle", { defaultValue: "Fix User" }),
+      children: /* @__PURE__ */ e.jsxs(Z, { direction: "vertical", style: { width: "100%" }, children: [
+        /* @__PURE__ */ e.jsx(C, { loading: o, style: { width: "100%", height: 40 }, type: "default", variant: "outlined", color: t === "local" ? "primary" : "default", onClick: () => m("local"), children: p("user.fixUserConvertToLocal", { defaultValue: "Convert to Local" }) }),
+        /* @__PURE__ */ e.jsx(C, { loading: o, style: { width: "100%", height: 40 }, type: "default", variant: "outlined", color: t === "bind" ? "primary" : "default", onClick: () => m("bind"), children: p("user.fixUserBindLDAPUser", { defaultValue: "Bind LDAP User" }) }),
         /* @__PURE__ */ e.jsx(
-          O,
+          K,
           {
-            loading: S,
-            style: { display: a === "bind" ? "block" : "none" },
-            onSelect: (u) => w(u),
-            options: v == null ? void 0 : v.map((u) => ({ label: /* @__PURE__ */ e.jsxs("div", { children: [
-              /* @__PURE__ */ e.jsx(z, { color: u.recommend ? "blue" : "default", children: u.full_name }),
+            loading: L,
+            style: { display: t === "bind" ? "block" : "none" },
+            onSelect: (u) => U(u),
+            options: P == null ? void 0 : P.map((u) => ({ label: /* @__PURE__ */ e.jsxs("div", { children: [
+              /* @__PURE__ */ e.jsx(T, { color: u.recommend ? "blue" : "default", children: u.full_name }),
               " ",
               u.username,
               " - ",
@@ -76,134 +82,245 @@ const { Option: T } = O, Ge = ({ user: n, onClose: c, onSuccess: j }) => {
       ] })
     }
   );
-}, Je = () => {
-  const { message: n, modal: c } = G.useApp(), { registerPageAI: j } = qe(), { addTask: t } = K(), f = ee(), { t: a } = C("authorization"), { t: o } = C("common"), [V] = g.useForm(), [w, k] = F([]), [i, v] = F(0), { enableMultiOrg: S } = K(), [u, b] = F(null), [p, m] = F({
-    current: H.DEFAULT_CURRENT,
-    page_size: H.DEFAULT_PAGE_SIZE,
+}, us = () => {
+  const { message: n, modal: d } = re.useApp(), { registerPageAI: E } = rs(), { addTask: a } = ae(), p = ce(), { t } = N("authorization"), { t: m } = N("common"), [j] = V.useForm(), [U, S] = M([]), [o, P] = M(0), { enableMultiOrg: L } = ae(), [u, z] = M(null), [g, f] = M({
+    current: D.DEFAULT_CURRENT,
+    page_size: D.DEFAULT_PAGE_SIZE,
     keywords: void 0,
     status: void 0
-  });
-  te(() => {
-    w && (j == null || j({
-      pageData: () => w,
-      pageDataDescription: "Returns the current user list as a JSON object."
-    }));
-  }, [j, w]);
-  const { data: L, loading: N } = x(async () => (await h.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
-    refreshDeps: [S],
+  }), $ = Y(U);
+  $.current = U;
+  const q = Y(o);
+  q.current = o;
+  const R = Y(g);
+  R.current = g;
+  const O = Y([]), H = (s) => {
+    const r = O.current;
+    O.current = [], r.forEach((h) => h(s));
+  }, l = se((s = 1e4) => new Promise((r) => {
+    let h = !1;
+    const I = (i) => {
+      h || (h = !0, clearTimeout(x), r(i));
+    }, x = setTimeout(() => {
+      O.current = O.current.filter((i) => i !== I), I(!1);
+    }, s);
+    O.current.push(I);
+  }), []), { data: c, loading: A } = w(async () => (await _.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
+    refreshDeps: [L],
     onError: (s) => {
-      n.error(a("organizations.loadError", { defaultValue: "Failed to load organizations", error: s.message }));
+      n.error(t("organizations.loadError", { defaultValue: "Failed to load organizations", error: s.message }));
     },
     cacheKey: "fetchAllOrganizations",
     cacheTime: 1e3 * 60 * 10
-  }), J = Z((s, r) => {
-    if (N)
+  }), ne = se((s, r) => {
+    if (A)
       return /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-        /* @__PURE__ */ e.jsx(B, { size: "small" }),
+        /* @__PURE__ */ e.jsx(te, { size: "small" }),
         ":",
         r.name
       ] });
-    const _ = L == null ? void 0 : L.find((we) => we.id === s);
-    return _ ? `${_.name}:${r.name}` : r.name;
-  }, [L, N]), { run: P, loading: Q } = x(() => {
+    const h = c == null ? void 0 : c.find((I) => I.id === s);
+    return h ? `${h.name}:${r.name}` : r.name;
+  }, [c, A]), { run: J, loading: je } = w(() => {
     const s = {
-      status: p.status,
-      keywords: p.keywords
+      status: g.status,
+      keywords: g.keywords
     };
-    return h.authorization.listUsers({
-      current: p.current,
-      page_size: p.page_size,
+    return _.authorization.listUsers({
+      current: g.current,
+      page_size: g.page_size,
       ...s
     });
   }, {
     onSuccess: (s) => {
-      k(s.data || []), v(s.total || 0);
+      const r = s.data || [], h = s.total || 0;
+      $.current = r, q.current = h, S(r), P(h), H(!0);
     },
     onError: (s) => {
-      n.error(a("user.loadError", { defaultValue: "Failed to load users", error: s.message }));
+      n.error(t("user.loadError", { defaultValue: "Failed to load users", error: s.message })), H(!1);
     },
-    refreshDeps: [p]
-  }), l = (s) => {
-    m({
-      ...p,
-      current: H.DEFAULT_CURRENT,
+    refreshDeps: [g]
+  }), le = (s) => {
+    f({
+      ...g,
+      current: D.DEFAULT_CURRENT,
       // Reset to the first page
       keywords: s.keywords,
       status: s.status
     });
-  }, d = (s, r) => {
-    m((_) => ({
-      ..._,
+  }, Ve = (s, r) => {
+    f((h) => ({
+      ...h,
       current: s,
       page_size: r
     }));
-  }, { run: E } = x(h.authorization.restoreUser, {
+  };
+  pe(() => {
+    const s = () => {
+      const x = R.current, i = x.page_size || D.DEFAULT_PAGE_SIZE, k = x.current || D.DEFAULT_CURRENT, y = q.current, b = Math.max(1, Math.ceil(y / i) || 1);
+      return {
+        query: {
+          current: k,
+          page_size: i,
+          keywords: x.keywords ?? null,
+          status: x.status ?? null
+        },
+        total: y,
+        page_count: b,
+        has_more: k * i < y,
+        users: ue($.current)
+      };
+    }, r = (x, i) => x.current === i.current && x.page_size === i.page_size && (x.keywords || void 0) === (i.keywords || void 0) && (x.status || void 0) === (i.status || void 0), h = async (x) => {
+      const i = { ...R.current, ...x };
+      if (r(R.current, i))
+        return JSON.stringify({ ok: !0, already_current: !0, ...s() });
+      R.current = i;
+      const k = l();
+      f(i);
+      const y = await k;
+      return JSON.stringify({ ok: y, ...y ? {} : { warning: "List did not finish loading; data may be stale" }, ...s() });
+    }, I = [
+      {
+        name: "ui_search_users",
+        description: "Filter the user list by keyword (matches username, full name, or email) and/or status, then return the first page of results. The result includes total, page_count, and has_more. If has_more is false, do not call ui_set_users_page. Omit a field to clear that filter.",
+        parameters: {
+          type: "object",
+          properties: {
+            keywords: { type: "string", description: "Search keyword; empty or omitted clears the keyword filter." },
+            status: {
+              type: "string",
+              enum: [...ie],
+              description: "Status filter; omitted clears the status filter."
+            }
+          },
+          required: []
+        },
+        handler: async (x) => {
+          var b;
+          const i = JSON.parse(x || "{}"), k = ((b = i.keywords) == null ? void 0 : b.trim()) || void 0, y = i.status && ie.includes(i.status) ? i.status : void 0;
+          return i.status && !y ? JSON.stringify({ error: `Invalid status "${i.status}"`, allowed: ie }) : (j.setFieldsValue({ keywords: k, status: y }), h({ current: D.DEFAULT_CURRENT, keywords: k, status: y }));
+        }
+      },
+      {
+        name: "ui_set_users_page",
+        description: "Go to another page of the current filtered list, or change the page size. Only call this when the last result has has_more=true, or when you are changing page_size. Do not call it to look for more rows when has_more is false — that reloads the same page.",
+        parameters: {
+          type: "object",
+          properties: {
+            page: { type: "integer", minimum: 1, description: "1-based page number. Must be <= page_count from the last result." },
+            page_size: { type: "integer", minimum: 1, maximum: 200, description: "Rows per page; omitted keeps the current size." }
+          },
+          required: []
+        },
+        handler: async (x) => {
+          const i = JSON.parse(x || "{}"), k = R.current, y = i.page_size && i.page_size > 0 ? Math.min(i.page_size, 200) : k.page_size || D.DEFAULT_PAGE_SIZE, b = Math.max(1, Math.ceil(q.current / y) || 1);
+          if (i.page != null && i.page > b)
+            return JSON.stringify({
+              ok: !1,
+              error: `Page ${i.page} is out of range. There ${b === 1 ? "is only 1 page" : `are only ${b} pages`}.`,
+              requested_page: i.page,
+              ...s()
+            });
+          const Re = Math.max(i.page ?? k.current ?? 1, 1);
+          return h({ current: Re, page_size: y });
+        }
+      },
+      {
+        name: "ui_open_user",
+        description: "Open the detail page of a user from the current list, by user id or username. Navigates away from the list; the detail page has its own tools, if any.",
+        parameters: {
+          type: "object",
+          properties: {
+            user_id: { type: "string", description: "User id (UUID). Preferred when known." },
+            username: { type: "string", description: "Username, resolved against the currently loaded page of users." }
+          },
+          required: []
+        },
+        handler: (x) => {
+          const i = JSON.parse(x || "{}"), k = $.current, y = i.user_id ? k.find((b) => b.id === i.user_id) : i.username ? k.find((b) => b.username === i.username) : void 0;
+          return y ? (p(`/authorization/users/${y.id}`), JSON.stringify({ ok: !0, path: `/authorization/users/${y.id}`, user: ue([y])[0] })) : i.user_id ? (p(`/authorization/users/${i.user_id}`), JSON.stringify({ ok: !0, path: `/authorization/users/${i.user_id}`, note: "User id not found in the loaded page; opened by id." })) : JSON.stringify({
+            error: "User not found in the currently loaded page. Provide user_id or search first with ui_search_users.",
+            loaded_users: ue(k).map((b) => ({ id: b.id, username: b.username }))
+          });
+        }
+      }
+    ];
+    return E({
+      ephemeralSystemPrompts: [
+        "The user is on the User Management list page. Use ui_get_page_data to read the loaded users and current filters, ui_search_users to filter, ui_set_users_page only when has_more is true or you need a different page_size, and ui_open_user to open a user. Tool results include total, page_count, and has_more; do not paginate when has_more is false. Prefer these tools over describing manual steps."
+      ],
+      pageData: s,
+      pageDataDescription: "Returns the current query (page, page size, keywords, status), total, page_count, has_more, and the loaded users (id, username, full_name, email, status).",
+      tools: I
+    });
+  }, [E, p, j, l]);
+  const { run: be } = w(_.authorization.restoreUser, {
     onSuccess: () => {
-      n.success(a("user.restoreSuccess", { defaultValue: "User restored successfully" })), P();
+      n.success(t("user.restoreSuccess", { defaultValue: "User restored successfully" })), J();
     },
     onError: (s) => {
-      n.error(a("user.restoreError", { defaultValue: "Failed to restore user", error: s.message }));
+      n.error(t("user.restoreError", { defaultValue: "Failed to restore user", error: s.message }));
     },
     manual: !0
-  }), { run: W } = x(h.authorization.deleteUser, {
+  }), { run: ke } = w(_.authorization.deleteUser, {
     onSuccess: () => {
-      n.success(a("user.deleteSuccess", { defaultValue: "User deleted successfully" })), P();
+      n.success(t("user.deleteSuccess", { defaultValue: "User deleted successfully" })), J();
     },
     onError: (s) => {
-      n.error(a("user.deleteError", { defaultValue: "Failed to delete user", error: s.message }));
+      n.error(t("user.deleteError", { defaultValue: "Failed to delete user", error: s.message }));
     },
     manual: !0
-  }), { runAsync: de } = x(
-    (s) => h.authorization.resetUserPassword({ id: s.id }, { password: "" }),
+  }), { runAsync: ve } = w(
+    (s) => _.authorization.resetUserPassword({ id: s.id }, { password: "" }),
     {
       manual: !0,
       onSuccess: (s, r) => {
-        const _ = r[0];
-        n.success(a("user.resetPasswordSuccess", { defaultValue: "Password reset successfully" })), s.new_password ? c.info({
-          title: a("user.resetPasswordSuccess", { defaultValue: "Password Reset Successfully" }),
-          content: /* @__PURE__ */ e.jsx(X.Text, { copyable: { text: s.new_password }, children: a("user.resetPasswordSuccessContent", {
+        const h = r[0];
+        n.success(t("user.resetPasswordSuccess", { defaultValue: "Password reset successfully" })), s.new_password ? d.info({
+          title: t("user.resetPasswordSuccess", { defaultValue: "Password Reset Successfully" }),
+          content: /* @__PURE__ */ e.jsx(de.Text, { copyable: { text: s.new_password }, children: t("user.resetPasswordSuccessContent", {
             defaultValue: `New password: ${s.new_password}`,
             password: s.new_password
           }) })
-        }) : c.info({
-          title: a("user.resetPasswordSuccess", { defaultValue: "Password Reset Successfully" }),
-          content: a("user.resetPasswordSuccessSendByEmail", {
+        }) : d.info({
+          title: t("user.resetPasswordSuccess", { defaultValue: "Password Reset Successfully" }),
+          content: t("user.resetPasswordSuccessSendByEmail", {
             defaultValue: "The new password has been sent to the user email: {{email}}",
-            email: _.email
+            email: h.email
           })
         });
       },
       onError: () => {
-        n.error(a("user.resetPasswordError", { defaultValue: "Failed to reset password" }));
+        n.error(t("user.resetPasswordError", { defaultValue: "Failed to reset password" }));
       }
     }
-  ), ce = (s, r, _) => {
-    c.confirm({
-      title: a("user.resetPasswordTitle", { defaultValue: "Reset Password" }),
-      content: a("user.resetPasswordConfirm", {
+  ), Ee = (s, r, h) => {
+    d.confirm({
+      title: t("user.resetPasswordTitle", { defaultValue: "Reset Password" }),
+      content: t("user.resetPasswordConfirm", {
         defaultValue: `Are you sure you want to reset the password for ${r}?`,
         username: r
       }),
-      okText: o("confirm", { defaultValue: "Confirm" }),
-      cancelText: o("cancel", { defaultValue: "Cancel" }),
-      onOk: () => de({ id: s, email: _ })
+      okText: m("confirm", { defaultValue: "Confirm" }),
+      cancelText: m("cancel", { defaultValue: "Cancel" }),
+      onOk: () => ve({ id: s, email: h })
     });
-  }, { run: me, loading: fe } = x(
-    () => h.authorization.createUserExportTask({
-      keywords: p.keywords,
-      status: p.status
+  }, { run: ze, loading: Ue } = w(
+    () => _.authorization.createUserExportTask({
+      keywords: g.keywords,
+      status: g.status
     }),
     {
       onSuccess: (s) => {
         s.id ? n.success(
-          a("user.exportTaskCreated", {
+          t("user.exportTaskCreated", {
             defaultValue: "Export task created. You can view progress and download the file from the task list."
           })
-        ) : n.success(a("user.exportTaskCreatedShort", { defaultValue: "Export task created." })), t(s);
+        ) : n.success(t("user.exportTaskCreatedShort", { defaultValue: "Export task created." })), a(s);
       },
       onError: (s) => {
         n.error(
-          a("user.exportError", {
+          t("user.exportError", {
             defaultValue: "Failed to create export task",
             error: s instanceof Error ? s.message : String(s)
           })
@@ -211,484 +328,484 @@ const { Option: T } = O, Ge = ({ user: n, onClose: c, onSuccess: j }) => {
       },
       manual: !0
     }
-  ), { runAsync: pe } = x(
-    (s) => h.authorization.unlockUser({ id: s }),
+  ), { runAsync: Ae } = w(
+    (s) => _.authorization.unlockUser({ id: s }),
     {
       manual: !0,
       onSuccess: () => {
-        n.success(a("user.unlockSuccess", { defaultValue: "User unlocked successfully" })), P();
+        n.success(t("user.unlockSuccess", { defaultValue: "User unlocked successfully" })), J();
       },
       onError: (s) => {
         n.error(
-          a("user.unlockError", {
+          t("user.unlockError", {
             defaultValue: "Failed to unlock user: {{error}}",
             error: s instanceof Error ? s.message : String(s)
           })
         );
       }
     }
-  ), he = (s) => {
-    c.confirm({
-      title: a("user.unlockTitle", { defaultValue: "Unlock User" }),
-      content: a("user.unlockConfirm", {
+  ), Se = (s) => {
+    d.confirm({
+      title: t("user.unlockTitle", { defaultValue: "Unlock User" }),
+      content: t("user.unlockConfirm", {
         defaultValue: "Are you sure you want to unlock this user?",
         username: s.username
       }),
-      onOk: () => pe(s.id)
+      onOk: () => Ae(s.id)
     });
-  }, { runAsync: xe } = x(
-    (s) => h.authorization.adminDisableUserMfa({ id: s }),
+  }, { runAsync: Pe } = w(
+    (s) => _.authorization.adminDisableUserMfa({ id: s }),
     {
       manual: !0,
       onSuccess: () => {
-        n.success(a("user.adminDisableMFASuccess", { defaultValue: "MFA disabled successfully" })), P();
+        n.success(t("user.adminDisableMFASuccess", { defaultValue: "MFA disabled successfully" })), J();
       },
       onError: (s) => {
         n.error(
-          a("user.adminDisableMFAError", {
+          t("user.adminDisableMFAError", {
             defaultValue: "Failed to disable MFA: {{error}}",
             error: s instanceof Error ? s.message : String(s)
           })
         );
       }
     }
-  ), ge = (s) => {
-    c.confirm({
-      title: a("user.adminDisableMFATitle", { defaultValue: "Disable MFA" }),
-      content: a("user.adminDisableMFAConfirm", {
+  ), Fe = (s) => {
+    d.confirm({
+      title: t("user.adminDisableMFATitle", { defaultValue: "Disable MFA" }),
+      content: t("user.adminDisableMFAConfirm", {
         defaultValue: "Are you sure you want to disable MFA for this user? They will be logged out of all sessions.",
         username: s.username
       }),
       okType: "danger",
-      onOk: () => xe(s.id)
+      onOk: () => Pe(s.id)
     });
-  }, { runAsync: je } = x(
-    (s) => h.authorization.resendActivationEmail({ id: s }),
+  }, { runAsync: Ce } = w(
+    (s) => _.authorization.resendActivationEmail({ id: s }),
     {
       manual: !0,
       onSuccess: () => {
-        n.success(a("user.resendActivationSuccess", { defaultValue: "Activation email resent successfully" }));
+        n.success(t("user.resendActivationSuccess", { defaultValue: "Activation email resent successfully" }));
       },
       onError: (s) => {
         n.error(
-          a("user.resendActivationError", {
+          t("user.resendActivationError", {
             defaultValue: "Failed to resend activation email: {{error}}",
             error: s instanceof Error ? s.message : String(s)
           })
         );
       }
     }
-  ), Ve = (s) => {
-    c.confirm({
-      title: a("user.resendActivationTitle", { defaultValue: "Resend Activation Email" }),
-      content: a("user.resendActivationConfirm", {
+  ), Te = (s) => {
+    d.confirm({
+      title: t("user.resendActivationTitle", { defaultValue: "Resend Activation Email" }),
+      content: t("user.resendActivationConfirm", {
         defaultValue: "Resend activation email to {{email}}?",
         email: s.email
       }),
-      onOk: () => je(s.id)
+      onOk: () => Ce(s.id)
     });
-  }, ye = [
+  }, Le = [
     {
-      title: a("user.username", { defaultValue: "Username" }),
+      title: t("user.username", { defaultValue: "Username" }),
       key: "user",
       render: (s, r) => /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", alignItems: "center" }, children: [
         /* @__PURE__ */ e.jsx(
-          ie,
+          _e,
           {
             size: "small",
-            icon: /* @__PURE__ */ e.jsx(le, {}),
+            icon: /* @__PURE__ */ e.jsx(ge, {}),
             src: r.avatar,
             style: { marginRight: 8 }
           }
         ),
-        /* @__PURE__ */ e.jsx(De, { to: `/authorization/users/${r.id}`, children: r.username })
+        /* @__PURE__ */ e.jsx(es, { to: `/authorization/users/${r.id}`, children: r.username })
       ] })
     },
     {
-      title: a("user.fullName", { defaultValue: "Full Name" }),
+      title: t("user.fullName", { defaultValue: "Full Name" }),
       dataIndex: "full_name",
       key: "full_name"
     },
     {
-      title: a("user.email", { defaultValue: "Email" }),
+      title: t("user.email", { defaultValue: "Email" }),
       dataIndex: "email",
       key: "email"
     },
     {
-      title: a("user.source", { defaultValue: "Source" }),
+      title: t("user.source", { defaultValue: "Source" }),
       dataIndex: "source",
       key: "source",
       render: (s, r) => {
         switch (s) {
           case "ldap":
-            return r.ldap_dn ? /* @__PURE__ */ e.jsx(z, { color: "blue", children: a("user.sourceLdap", { defaultValue: "LDAP" }) }) : /* @__PURE__ */ e.jsx(ke, { title: a("user.ldapUserNotBound", { defaultValue: "LDAP User is not bound to any local user, please bind it." }), children: /* @__PURE__ */ e.jsx(z, { color: "red", children: a("user.sourceLdap", { defaultValue: "LDAP" }) }) });
+            return r.ldap_dn ? /* @__PURE__ */ e.jsx(T, { color: "blue", children: t("user.sourceLdap", { defaultValue: "LDAP" }) }) : /* @__PURE__ */ e.jsx(Ie, { title: t("user.ldapUserNotBound", { defaultValue: "LDAP User is not bound to any local user, please bind it." }), children: /* @__PURE__ */ e.jsx(T, { color: "red", children: t("user.sourceLdap", { defaultValue: "LDAP" }) }) });
           case "oauth2":
-            return /* @__PURE__ */ e.jsx(z, { color: "green", children: a("user.sourceOauth2", { defaultValue: "OAuth2" }) });
+            return /* @__PURE__ */ e.jsx(T, { color: "green", children: t("user.sourceOauth2", { defaultValue: "OAuth2" }) });
           default:
-            return /* @__PURE__ */ e.jsx(z, { color: "default", children: a("user.sourceLocal", { defaultValue: "Local" }) });
+            return /* @__PURE__ */ e.jsx(T, { color: "default", children: t("user.sourceLocal", { defaultValue: "Local" }) });
         }
       }
     },
     {
-      title: a("user.status", { defaultValue: "Status" }),
+      title: t("user.status", { defaultValue: "Status" }),
       dataIndex: "status",
       key: "status",
       render: (s) => {
         switch (s) {
           case "disabled":
-            return /* @__PURE__ */ e.jsx(y, { status: "default", text: a("user.statusEnum.disabled", { defaultValue: "Disabled" }) });
+            return /* @__PURE__ */ e.jsx(v, { status: "default", text: t("user.statusEnum.disabled", { defaultValue: "Disabled" }) });
           case "password_expired":
-            return /* @__PURE__ */ e.jsx(y, { status: "warning", text: a("user.statusEnum.password_expired", { defaultValue: "Password Expired" }) });
+            return /* @__PURE__ */ e.jsx(v, { status: "warning", text: t("user.statusEnum.password_expired", { defaultValue: "Password Expired" }) });
           case "active":
-            return /* @__PURE__ */ e.jsx(y, { status: "success", text: a("user.statusEnum.active", { defaultValue: "Active" }) });
+            return /* @__PURE__ */ e.jsx(v, { status: "success", text: t("user.statusEnum.active", { defaultValue: "Active" }) });
           case "locked":
-            return /* @__PURE__ */ e.jsx(y, { status: "warning", text: a("user.statusEnum.locked", { defaultValue: "Locked" }) });
+            return /* @__PURE__ */ e.jsx(v, { status: "warning", text: t("user.statusEnum.locked", { defaultValue: "Locked" }) });
           case "deleted":
-            return /* @__PURE__ */ e.jsx(y, { status: "error", text: a("user.statusEnum.deleted", { defaultValue: "Deleted" }) });
+            return /* @__PURE__ */ e.jsx(v, { status: "error", text: t("user.statusEnum.deleted", { defaultValue: "Deleted" }) });
           case "pending_activation":
-            return /* @__PURE__ */ e.jsx(y, { status: "processing", text: a("user.statusEnum.pending_activation", { defaultValue: "Pending Activation" }) });
+            return /* @__PURE__ */ e.jsx(v, { status: "processing", text: t("user.statusEnum.pending_activation", { defaultValue: "Pending Activation" }) });
           default:
-            return /* @__PURE__ */ e.jsx(y, { status: "default", text: a(`user.statusEnum.${s}`, { defaultValue: s.charAt(0).toUpperCase() + s.slice(1) }) });
+            return /* @__PURE__ */ e.jsx(v, { status: "default", text: t(`user.statusEnum.${s}`, { defaultValue: s.charAt(0).toUpperCase() + s.slice(1) }) });
         }
       }
     },
     {
-      title: a("user.roles", { defaultValue: "Roles" }),
+      title: t("user.roles", { defaultValue: "Roles" }),
       dataIndex: "roles",
       key: "roles",
-      render: (s) => /* @__PURE__ */ e.jsx("span", { children: s && s.length > 0 ? s.map((r) => /* @__PURE__ */ e.jsx(z, { color: "blue", children: r.organization_id ? J(r.organization_id, r) : r.name }, r.id)) : /* @__PURE__ */ e.jsx(z, { children: a("user.noRole", { defaultValue: "No Role" }) }) })
+      render: (s) => /* @__PURE__ */ e.jsx("span", { children: s && s.length > 0 ? s.map((r) => /* @__PURE__ */ e.jsx(T, { color: "blue", children: r.organization_id ? ne(r.organization_id, r) : r.name }, r.id)) : /* @__PURE__ */ e.jsx(T, { children: t("user.noRole", { defaultValue: "No Role" }) }) })
     },
     {
-      title: a("user.mfa", { defaultValue: "MFA" }),
+      title: t("user.mfa", { defaultValue: "MFA" }),
       dataIndex: "mfa_enabled",
       key: "mfa_enabled",
-      render: (s) => s ? /* @__PURE__ */ e.jsx(y, { status: "success", text: a("user.mfaEnabled", { defaultValue: "Enabled" }) }) : /* @__PURE__ */ e.jsx(y, { status: "default", text: a("user.mfaDisabled", { defaultValue: "Disabled" }) })
+      render: (s) => s ? /* @__PURE__ */ e.jsx(v, { status: "success", text: t("user.mfaEnabled", { defaultValue: "Enabled" }) }) : /* @__PURE__ */ e.jsx(v, { status: "default", text: t("user.mfaDisabled", { defaultValue: "Disabled" }) })
     },
     {
-      title: a("user.lastLogin", { defaultValue: "Last Login" }),
+      title: t("user.lastLogin", { defaultValue: "Last Login" }),
       dataIndex: "last_login",
       key: "last_login",
-      render: (s) => s ? q(s) : a("user.neverLogin", { defaultValue: "Never" })
+      render: (s) => s ? ee(s) : t("user.neverLogin", { defaultValue: "Never" })
     },
     {
-      title: o("actions", { defaultValue: "Actions" }),
+      title: m("actions", { defaultValue: "Actions" }),
       key: "action",
       width: 160,
       render: (s, r) => {
-        const _ = [{
+        const h = [{
           key: "view",
           permission: "authorization:user:view",
-          icon: /* @__PURE__ */ e.jsx(Ae, {}),
-          tooltip: a("user.viewDetail", { defaultValue: "View Detail" }),
-          onClick: async () => f(`/authorization/users/${r.id}`)
+          icon: /* @__PURE__ */ e.jsx($e, {}),
+          tooltip: t("user.viewDetail", { defaultValue: "View Detail" }),
+          onClick: async () => p(`/authorization/users/${r.id}`)
         }, {
           key: "edit",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(ne, {}),
-          tooltip: a("user.edit", { defaultValue: "Edit" }),
+          icon: /* @__PURE__ */ e.jsx(xe, {}),
+          tooltip: t("user.edit", { defaultValue: "Edit" }),
           hidden: r.status === "locked" || r.status === "deleted",
-          onClick: async () => f(`/authorization/users/${r.id}/edit`)
+          onClick: async () => p(`/authorization/users/${r.id}/edit`)
         }, {
           key: "unlock",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(Ue, {}),
-          tooltip: a("user.unlock", { defaultValue: "Unlock" }),
+          icon: /* @__PURE__ */ e.jsx(qe, {}),
+          tooltip: t("user.unlock", { defaultValue: "Unlock" }),
           hidden: r.status !== "locked",
-          onClick: async () => he(r)
+          onClick: async () => Se(r)
         }, {
           key: "disableMFA",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(ze, {}),
-          tooltip: a("user.adminDisableMFA", { defaultValue: "Disable MFA" }),
+          icon: /* @__PURE__ */ e.jsx(Je, {}),
+          tooltip: t("user.adminDisableMFA", { defaultValue: "Disable MFA" }),
           hidden: !r.mfa_enabled || r.status === "deleted",
           danger: !0,
-          onClick: async () => ge(r)
+          onClick: async () => Fe(r)
         }, {
           key: "resendActivation",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(Se, {}),
-          tooltip: a("user.resendActivation", { defaultValue: "Resend Activation Email" }),
+          icon: /* @__PURE__ */ e.jsx(Be, {}),
+          tooltip: t("user.resendActivation", { defaultValue: "Resend Activation Email" }),
           hidden: r.status !== "pending_activation" || !r.email,
-          onClick: async () => Ve(r)
+          onClick: async () => Te(r)
         }, {
           key: "resetPassword",
           permission: "authorization:user:reset_password",
-          icon: /* @__PURE__ */ e.jsx(Pe, {}),
+          icon: /* @__PURE__ */ e.jsx(Ge, {}),
           disabled: r.disable_change_password,
-          tooltip: r.disable_change_password ? a("user.resetPasswordDisabled", { defaultValue: "The current system prohibits modifying the password of this user." }) : a("user.resetPassword", { defaultValue: "Reset Password" }),
+          tooltip: r.disable_change_password ? t("user.resetPasswordDisabled", { defaultValue: "The current system prohibits modifying the password of this user." }) : t("user.resetPassword", { defaultValue: "Reset Password" }),
           hidden: !((r.source === "local" || r.source === "ldap" && r.ldap_dn) && r.status !== "deleted" && r.status !== "pending_activation"),
-          onClick: async () => ce(r.id, r.username, r.email)
+          onClick: async () => Ee(r.id, r.username, r.email)
         }, {
           key: "fixUser",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(Fe, {}),
-          tooltip: a("user.fixUser", { defaultValue: "Fix User" }),
+          icon: /* @__PURE__ */ e.jsx(Ke, {}),
+          tooltip: t("user.fixUser", { defaultValue: "Fix User" }),
           hidden: !(r.source === "ldap" && !r.ldap_dn && r.status !== "deleted"),
-          onClick: async () => b(r)
+          onClick: async () => z(r)
         }, {
           key: "restore",
           permission: "authorization:user:update",
-          icon: /* @__PURE__ */ e.jsx(Ce, {}),
-          tooltip: a("user.restore", { defaultValue: "Restore" }),
+          icon: /* @__PURE__ */ e.jsx(We, {}),
+          tooltip: t("user.restore", { defaultValue: "Restore" }),
           hidden: r.status !== "deleted",
           confirm: {
-            title: a("user.restoreConfirm", { defaultValue: "Are you sure you want to restore this user?" }),
-            onConfirm: async () => E({ id: r.id })
+            title: t("user.restoreConfirm", { defaultValue: "Are you sure you want to restore this user?" }),
+            onConfirm: async () => be({ id: r.id })
           }
         }, {
           key: "delete",
           permission: "authorization:user:delete",
-          icon: /* @__PURE__ */ e.jsx(Le, {}),
-          tooltip: a("user.delete", { defaultValue: "Delete" }),
+          icon: /* @__PURE__ */ e.jsx(Qe, {}),
+          tooltip: t("user.delete", { defaultValue: "Delete" }),
           danger: !0,
           confirm: {
-            title: a("user.deleteConfirm", { defaultValue: "Are you sure you want to delete this user?" }),
-            onConfirm: () => W({ id: r.id }),
-            okText: o("confirm", { defaultValue: "Confirm" }),
-            cancelText: o("cancel", { defaultValue: "Cancel" })
+            title: t("user.deleteConfirm", { defaultValue: "Are you sure you want to delete this user?" }),
+            onConfirm: () => ke({ id: r.id }),
+            okText: m("confirm", { defaultValue: "Confirm" }),
+            cancelText: m("cancel", { defaultValue: "Cancel" })
           }
         }];
-        return /* @__PURE__ */ e.jsx(Me, { actions: _ }, "actions");
+        return /* @__PURE__ */ e.jsx(ss, { actions: h }, "actions");
       }
     }
   ];
   return /* @__PURE__ */ e.jsxs("div", { children: [
-    /* @__PURE__ */ e.jsx(D, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsx(
-      g,
+    /* @__PURE__ */ e.jsx(Q, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsx(
+      V,
       {
-        form: V,
+        form: j,
         layout: "vertical",
-        onFinish: l,
+        onFinish: le,
         name: "userSearchForm",
-        children: /* @__PURE__ */ e.jsxs(ae, { justify: "space-between", align: "middle", gutter: [16, 16], children: [
-          /* @__PURE__ */ e.jsx($, { children: /* @__PURE__ */ e.jsxs(M, { children: [
-            /* @__PURE__ */ e.jsx(g.Item, { name: "keywords", noStyle: !0, children: /* @__PURE__ */ e.jsx(
-              R.Search,
+        children: /* @__PURE__ */ e.jsxs(me, { justify: "space-between", align: "middle", gutter: [16, 16], children: [
+          /* @__PURE__ */ e.jsx(X, { children: /* @__PURE__ */ e.jsxs(Z, { children: [
+            /* @__PURE__ */ e.jsx(V.Item, { name: "keywords", noStyle: !0, children: /* @__PURE__ */ e.jsx(
+              G.Search,
               {
-                placeholder: a("user.keywords", { defaultValue: "Search by username, full name, or email" }),
+                placeholder: t("user.keywords", { defaultValue: "Search by username, full name, or email" }),
                 allowClear: !0,
                 onSearch: () => {
-                  l(V.getFieldsValue());
+                  le(j.getFieldsValue());
                 },
                 style: { width: 300 }
               }
             ) }),
-            /* @__PURE__ */ e.jsx(g.Item, { name: "status", noStyle: !0, children: /* @__PURE__ */ e.jsxs(
-              O,
+            /* @__PURE__ */ e.jsx(V.Item, { name: "status", noStyle: !0, children: /* @__PURE__ */ e.jsxs(
+              K,
               {
-                placeholder: a("user.status", { defaultValue: "Status" }),
+                placeholder: t("user.status", { defaultValue: "Status" }),
                 allowClear: !0,
                 onChange: () => {
-                  l(V.getFieldsValue());
+                  le(j.getFieldsValue());
                 },
                 style: { width: 220 },
                 children: [
-                  /* @__PURE__ */ e.jsx(T, { value: "active", children: a("user.statusEnum.active", { defaultValue: "Active" }) }),
-                  /* @__PURE__ */ e.jsx(T, { value: "disabled", children: a("user.statusEnum.disabled", { defaultValue: "Disabled" }) }),
-                  /* @__PURE__ */ e.jsx(T, { value: "deleted", children: a("user.statusEnum.deleted", { defaultValue: "Deleted" }) }),
-                  /* @__PURE__ */ e.jsx(T, { value: "locked", children: a("user.statusEnum.locked", { defaultValue: "Locked" }) }),
-                  /* @__PURE__ */ e.jsx(T, { value: "password_expired", children: a("user.statusEnum.password_expired", { defaultValue: "Password Expired" }) }),
-                  /* @__PURE__ */ e.jsx(T, { value: "pending_activation", children: a("user.statusEnum.pending_activation", { defaultValue: "Pending Activation" }) })
+                  /* @__PURE__ */ e.jsx(B, { value: "active", children: t("user.statusEnum.active", { defaultValue: "Active" }) }),
+                  /* @__PURE__ */ e.jsx(B, { value: "disabled", children: t("user.statusEnum.disabled", { defaultValue: "Disabled" }) }),
+                  /* @__PURE__ */ e.jsx(B, { value: "deleted", children: t("user.statusEnum.deleted", { defaultValue: "Deleted" }) }),
+                  /* @__PURE__ */ e.jsx(B, { value: "locked", children: t("user.statusEnum.locked", { defaultValue: "Locked" }) }),
+                  /* @__PURE__ */ e.jsx(B, { value: "password_expired", children: t("user.statusEnum.password_expired", { defaultValue: "Password Expired" }) }),
+                  /* @__PURE__ */ e.jsx(B, { value: "pending_activation", children: t("user.statusEnum.pending_activation", { defaultValue: "Pending Activation" }) })
                 ]
               }
             ) })
           ] }) }),
-          /* @__PURE__ */ e.jsx($, { children: /* @__PURE__ */ e.jsxs(M, { children: [
-            /* @__PURE__ */ e.jsx(U, { icon: /* @__PURE__ */ e.jsx(Te, {}), onClick: P, children: o("refresh", { defaultValue: "Refresh" }) }),
-            /* @__PURE__ */ e.jsx(se, { permission: "authorization:user:export", children: /* @__PURE__ */ e.jsx(
-              U,
+          /* @__PURE__ */ e.jsx(X, { children: /* @__PURE__ */ e.jsxs(Z, { children: [
+            /* @__PURE__ */ e.jsx(C, { icon: /* @__PURE__ */ e.jsx(Ze, {}), onClick: J, children: m("refresh", { defaultValue: "Refresh" }) }),
+            /* @__PURE__ */ e.jsx(fe, { permission: "authorization:user:export", children: /* @__PURE__ */ e.jsx(
+              C,
               {
-                icon: /* @__PURE__ */ e.jsx(Re, {}),
-                loading: fe,
-                onClick: () => me(),
-                children: a("user.export", { defaultValue: "Export" })
+                icon: /* @__PURE__ */ e.jsx(He, {}),
+                loading: Ue,
+                onClick: () => ze(),
+                children: t("user.export", { defaultValue: "Export" })
               }
             ) }),
-            /* @__PURE__ */ e.jsx(se, { permission: "authorization:user:create", children: /* @__PURE__ */ e.jsx(
-              U,
+            /* @__PURE__ */ e.jsx(fe, { permission: "authorization:user:create", children: /* @__PURE__ */ e.jsx(
+              C,
               {
                 type: "primary",
-                icon: /* @__PURE__ */ e.jsx(Oe, {}),
-                onClick: () => f("/authorization/users/create"),
-                children: a("user.create", { defaultValue: "Create User" })
+                icon: /* @__PURE__ */ e.jsx(Ye, {}),
+                onClick: () => p("/authorization/users/create"),
+                children: t("user.create", { defaultValue: "Create User" })
               }
             ) })
           ] }) })
         ] })
       }
     ) }),
-    /* @__PURE__ */ e.jsxs(D, { children: [
-      /* @__PURE__ */ e.jsxs(ae, { justify: "space-between", align: "middle", gutter: [0, 16], children: [
-        /* @__PURE__ */ e.jsx($, {}),
-        /* @__PURE__ */ e.jsx($, {})
+    /* @__PURE__ */ e.jsxs(Q, { children: [
+      /* @__PURE__ */ e.jsxs(me, { justify: "space-between", align: "middle", gutter: [0, 16], children: [
+        /* @__PURE__ */ e.jsx(X, {}),
+        /* @__PURE__ */ e.jsx(X, {})
       ] }),
       /* @__PURE__ */ e.jsx(
-        ve,
+        De,
         {
-          columns: ye,
-          dataSource: w,
+          columns: Le,
+          dataSource: U,
           rowKey: "id",
-          loading: Q,
+          loading: je,
           pagination: {
-            current: p.current,
-            pageSize: p.page_size,
-            total: i,
+            current: g.current,
+            pageSize: g.page_size,
+            total: o,
             showSizeChanger: !0,
             showQuickJumper: !0,
-            showTotal: (s) => o("totalItems", { defaultValue: `Total ${s} items`, total: s }),
-            onChange: d
+            showTotal: (s) => m("totalItems", { defaultValue: `Total ${s} items`, total: s }),
+            onChange: Ve
           }
         }
       )
     ] }),
-    /* @__PURE__ */ e.jsx(Ge, { user: u, onClose: () => b(null), onSuccess: () => {
-      b(null), P();
+    /* @__PURE__ */ e.jsx(is, { user: u, onClose: () => z(null), onSuccess: () => {
+      z(null), J();
     } })
   ] });
-}, oa = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, ks = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Je
-}, Symbol.toStringTag, { value: "Module" })), { Title: Qe } = X, { TabPane: Y } = re, We = () => {
-  const { message: n } = G.useApp(), { id: c } = ue(), j = ee(), { t } = C("authorization"), { t: f } = C("common"), { hasPermission: a } = Be(), { enableMultiOrg: o } = K(), { data: V, loading: w } = x(async () => (await h.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
-    refreshDeps: [o],
+  default: us
+}, Symbol.toStringTag, { value: "Module" })), { Title: os } = de, { TabPane: oe } = he, ds = () => {
+  const { message: n } = re.useApp(), { id: d } = ye(), E = ce(), { t: a } = N("authorization"), { t: p } = N("common"), { hasPermission: t } = ns(), { enableMultiOrg: m } = ae(), { data: j, loading: U } = w(async () => (await _.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
+    refreshDeps: [m],
     onError: (u) => {
-      n.error(t("organizations.loadError", { defaultValue: "Failed to load organizations", error: u.message }));
+      n.error(a("organizations.loadError", { defaultValue: "Failed to load organizations", error: u.message }));
     },
     cacheKey: "fetchAllOrganizations",
     cacheTime: 1e3 * 60 * 10
-  }), k = Z((u, b) => {
-    if (w)
+  }), S = se((u, z) => {
+    if (U)
       return /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-        /* @__PURE__ */ e.jsx(B, { size: "small" }),
+        /* @__PURE__ */ e.jsx(te, { size: "small" }),
         ":",
-        b.name
+        z.name
       ] });
-    const p = V == null ? void 0 : V.find((m) => m.id === u);
-    return p ? `${p.name}:${b.name}` : b.name;
-  }, [V, w]), { data: i, loading: v } = x(() => h.authorization.getUser({ id: c }), {
-    ready: !!c,
-    refreshDeps: [c],
+    const g = j == null ? void 0 : j.find((f) => f.id === u);
+    return g ? `${g.name}:${z.name}` : z.name;
+  }, [j, U]), { data: o, loading: P } = w(() => _.authorization.getUser({ id: d }), {
+    ready: !!d,
+    refreshDeps: [d],
     onError: (u) => {
-      u instanceof Ke && u.code === "E4041" || (console.error("Failed to get user details:", u), n.error(t("user.detailLoadError", { defaultValue: "Failed to load user details" })));
+      u instanceof ls && u.code === "E4041" || (console.error("Failed to get user details:", u), n.error(a("user.detailLoadError", { defaultValue: "Failed to load user details" })));
     }
   });
-  if (v)
-    return /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: "50px" }, children: /* @__PURE__ */ e.jsx(B, { size: "large" }) });
-  if (!i)
+  if (P)
+    return /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: "50px" }, children: /* @__PURE__ */ e.jsx(te, { size: "large" }) });
+  if (!o)
     return /* @__PURE__ */ e.jsxs("div", { style: { textAlign: "center", padding: "50px" }, children: [
-      /* @__PURE__ */ e.jsx(Qe, { level: 4, children: t("user.notFound", { defaultValue: "User not found" }) }),
-      /* @__PURE__ */ e.jsx(U, { type: "primary", onClick: () => j("/authorization/users"), children: t("user.backToList", { defaultValue: "Back to User List" }) })
+      /* @__PURE__ */ e.jsx(os, { level: 4, children: a("user.notFound", { defaultValue: "User not found" }) }),
+      /* @__PURE__ */ e.jsx(C, { type: "primary", onClick: () => E("/authorization/users"), children: a("user.backToList", { defaultValue: "Back to User List" }) })
     ] });
-  const S = () => i.mfa_enabled ? /* @__PURE__ */ e.jsx(y, { status: "success", text: t("user.mfaEnabled", { defaultValue: "Enabled" }) }) : i.mfa_enforced ? /* @__PURE__ */ e.jsx(y, { status: "warning", text: t("user.mfaEnforced", { defaultValue: "Enforced" }) }) : /* @__PURE__ */ e.jsx(y, { status: "default", text: t("user.mfaDisabled", { defaultValue: "Disabled" }) });
+  const L = () => o.mfa_enabled ? /* @__PURE__ */ e.jsx(v, { status: "success", text: a("user.mfaEnabled", { defaultValue: "Enabled" }) }) : o.mfa_enforced ? /* @__PURE__ */ e.jsx(v, { status: "warning", text: a("user.mfaEnforced", { defaultValue: "Enforced" }) }) : /* @__PURE__ */ e.jsx(v, { status: "default", text: a("user.mfaDisabled", { defaultValue: "Disabled" }) });
   return /* @__PURE__ */ e.jsx(
-    D,
+    Q,
     {
       title: /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", alignItems: "center" }, children: [
         /* @__PURE__ */ e.jsx(
-          ie,
+          _e,
           {
             size: 48,
-            icon: /* @__PURE__ */ e.jsx(le, {}),
-            src: i.avatar,
+            icon: /* @__PURE__ */ e.jsx(ge, {}),
+            src: o.avatar,
             style: { marginRight: 16 }
           }
         ),
         /* @__PURE__ */ e.jsxs("div", { children: [
-          /* @__PURE__ */ e.jsx("div", { style: { fontSize: 20, fontWeight: "bold" }, children: i.username }),
-          /* @__PURE__ */ e.jsx("div", { style: { color: "#888" }, children: i.email })
+          /* @__PURE__ */ e.jsx("div", { style: { fontSize: 20, fontWeight: "bold" }, children: o.username }),
+          /* @__PURE__ */ e.jsx("div", { style: { color: "#888" }, children: o.email })
         ] })
       ] }),
-      extra: /* @__PURE__ */ e.jsxs(M, { children: [
+      extra: /* @__PURE__ */ e.jsxs(Z, { children: [
         /* @__PURE__ */ e.jsx(
-          U,
+          C,
           {
-            icon: /* @__PURE__ */ e.jsx(Ie, {}),
-            onClick: () => j("/authorization/users"),
-            children: f("back", { defaultValue: "Back" })
+            icon: /* @__PURE__ */ e.jsx(Xe, {}),
+            onClick: () => E("/authorization/users"),
+            children: p("back", { defaultValue: "Back" })
           }
         ),
         /* @__PURE__ */ e.jsx(
-          U,
+          C,
           {
             type: "primary",
-            icon: /* @__PURE__ */ e.jsx(ne, {}),
-            onClick: () => j(`/authorization/users/${c}/edit`),
-            children: f("edit", { defaultValue: "Edit" })
+            icon: /* @__PURE__ */ e.jsx(xe, {}),
+            onClick: () => E(`/authorization/users/${d}/edit`),
+            children: p("edit", { defaultValue: "Edit" })
           }
         )
       ] }),
-      children: /* @__PURE__ */ e.jsxs(re, { defaultActiveKey: "basic", children: [
-        /* @__PURE__ */ e.jsx(Y, { tab: t("user.basicInfo", { defaultValue: "Basic Information" }), children: /* @__PURE__ */ e.jsxs(A, { bordered: !0, column: 2, style: { marginTop: 16 }, children: [
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.username", { defaultValue: "Username" }), children: i.username }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.fullName", { defaultValue: "Full Name" }), children: i.full_name }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.email", { defaultValue: "Email" }), children: i.email }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.status", { defaultValue: "Status" }), children: i.status === "active" ? /* @__PURE__ */ e.jsx(y, { status: "success", text: t("user.statusActive", { defaultValue: "Active" }) }) : /* @__PURE__ */ e.jsx(y, { status: "error", text: t(`user.statusEnum.${i.status}`, { defaultValue: i.status.charAt(0).toUpperCase() + i.status.slice(1) }) }) }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.roles", { defaultValue: "Roles" }), span: 2, children: i.roles && i.roles.length > 0 ? i.roles.map((u) => /* @__PURE__ */ e.jsx(z, { color: "blue", children: o ? k(u.organization_id, u) : u.name }, u.id)) : /* @__PURE__ */ e.jsx(z, { children: t("user.noRole", { defaultValue: "No Role" }) }) }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.mfa", { defaultValue: "MFA" }), children: S() }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.lastLogin", { defaultValue: "Last Login" }), children: i.last_login ? q(i.last_login) : t("user.neverLogin", { defaultValue: "Never" }) }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.createdAt", { defaultValue: "Created At" }), children: q(i.created_at) }),
-          /* @__PURE__ */ e.jsx(A.Item, { label: t("user.updatedAt", { defaultValue: "Updated At" }), children: q(i.updated_at) })
+      children: /* @__PURE__ */ e.jsxs(he, { defaultActiveKey: "basic", children: [
+        /* @__PURE__ */ e.jsx(oe, { tab: a("user.basicInfo", { defaultValue: "Basic Information" }), children: /* @__PURE__ */ e.jsxs(F, { bordered: !0, column: 2, style: { marginTop: 16 }, children: [
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.username", { defaultValue: "Username" }), children: o.username }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.fullName", { defaultValue: "Full Name" }), children: o.full_name }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.email", { defaultValue: "Email" }), children: o.email }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.status", { defaultValue: "Status" }), children: o.status === "active" ? /* @__PURE__ */ e.jsx(v, { status: "success", text: a("user.statusActive", { defaultValue: "Active" }) }) : /* @__PURE__ */ e.jsx(v, { status: "error", text: a(`user.statusEnum.${o.status}`, { defaultValue: o.status.charAt(0).toUpperCase() + o.status.slice(1) }) }) }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.roles", { defaultValue: "Roles" }), span: 2, children: o.roles && o.roles.length > 0 ? o.roles.map((u) => /* @__PURE__ */ e.jsx(T, { color: "blue", children: m ? S(u.organization_id, u) : u.name }, u.id)) : /* @__PURE__ */ e.jsx(T, { children: a("user.noRole", { defaultValue: "No Role" }) }) }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.mfa", { defaultValue: "MFA" }), children: L() }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.lastLogin", { defaultValue: "Last Login" }), children: o.last_login ? ee(o.last_login) : a("user.neverLogin", { defaultValue: "Never" }) }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.createdAt", { defaultValue: "Created At" }), children: ee(o.created_at) }),
+          /* @__PURE__ */ e.jsx(F.Item, { label: a("user.updatedAt", { defaultValue: "Updated At" }), children: ee(o.updated_at) })
         ] }) }, "basic"),
-        /* @__PURE__ */ e.jsx(Y, { tab: t("user.auditLogs", { defaultValue: "Audit Logs" }), disabled: !a("authorization:user:view_audit_logs"), children: /* @__PURE__ */ e.jsx(Ne, { userId: c || "" }) }, "logs"),
-        /* @__PURE__ */ e.jsx(Y, { tab: t("rateLimit.title", { defaultValue: "Rate Limit" }), children: /* @__PURE__ */ e.jsx(oe, { kind: "user", subjectId: c || "", readOnly: !a("authorization:user:update") }) }, "rate-limit")
+        /* @__PURE__ */ e.jsx(oe, { tab: a("user.auditLogs", { defaultValue: "Audit Logs" }), disabled: !t("authorization:user:view_audit_logs"), children: /* @__PURE__ */ e.jsx(ts, { userId: d || "" }) }, "logs"),
+        /* @__PURE__ */ e.jsx(oe, { tab: a("rateLimit.title", { defaultValue: "Rate Limit" }), children: /* @__PURE__ */ e.jsx(we, { kind: "user", subjectId: d || "", readOnly: !t("authorization:user:update") }) }, "rate-limit")
       ] })
     }
   );
-}, da = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, vs = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: We
-}, Symbol.toStringTag, { value: "Module" })), { Option: I } = O, He = () => {
-  const { message: n } = G.useApp(), { id: c = "" } = ue(), j = ee(), { t } = C("authorization"), { t: f } = C("common"), [a] = g.useForm(), o = !!c, [V, w] = F(""), { enableMultiOrg: k } = K(), { data: i, loading: v } = x(async () => (await h.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
-    refreshDeps: [k],
+  default: ds
+}, Symbol.toStringTag, { value: "Module" })), { Option: W } = K, cs = () => {
+  const { message: n } = re.useApp(), { id: d = "" } = ye(), E = ce(), { t: a } = N("authorization"), { t: p } = N("common"), [t] = V.useForm(), m = !!d, [j, U] = M(""), { enableMultiOrg: S } = ae(), { data: o, loading: P } = w(async () => (await _.system.listOrganizations({ current: 1, page_size: 1e3 })).data || [], {
+    refreshDeps: [S],
     onError: (l) => {
-      n.error(t("organizations.loadError", { defaultValue: "Failed to load organizations", error: l.message }));
+      n.error(a("organizations.loadError", { defaultValue: "Failed to load organizations", error: l.message }));
     },
     cacheKey: "fetchAllOrganizations",
     cacheTime: 1e3 * 60 * 10
-  }), S = Z((l, d) => {
-    if (v)
+  }), L = se((l, c) => {
+    if (P)
       return /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-        /* @__PURE__ */ e.jsx(B, { size: "small" }),
+        /* @__PURE__ */ e.jsx(te, { size: "small" }),
         ":",
-        d.name
+        c.name
       ] });
-    const E = i == null ? void 0 : i.find((W) => W.id === l);
-    return E ? `${E.name}:${d.name}` : d.name;
-  }, [i, v]), { data: u, loading: b } = x(async () => (await h.authorization.listRoles({ search: V || void 0 })).data.map((d) => ({
-    ...d,
-    label: d.name,
-    value: d.id
+    const A = o == null ? void 0 : o.find((ne) => ne.id === l);
+    return A ? `${A.name}:${c.name}` : c.name;
+  }, [o, P]), { data: u, loading: z } = w(async () => (await _.authorization.listRoles({ search: j || void 0 })).data.map((c) => ({
+    ...c,
+    label: c.name,
+    value: c.id
   })), {
-    refreshDeps: [V]
-  }), { loading: p, data: m } = x(
-    async () => h.authorization.getUser({ id: c }),
+    refreshDeps: [j]
+  }), { loading: g, data: f } = w(
+    async () => _.authorization.getUser({ id: d }),
     {
-      ready: o && !!c,
-      refreshDeps: [c, o],
+      ready: m && !!d,
+      refreshDeps: [d, m],
       onSuccess: (l) => {
-        a.setFieldsValue({
+        t.setFieldsValue({
           username: l.username,
           email: l.email,
           avatar: l.avatar,
           full_name: l.full_name,
           status: l.status,
-          role_ids: l.roles ? l.roles.map((d) => d.id) : [],
+          role_ids: l.roles ? l.roles.map((c) => c.id) : [],
           mfa_enforced: l.mfa_enforced
         });
       },
       onError: () => {
-        n.error(t("user.loadError", { defaultValue: "Failed to load user data" }));
+        n.error(a("user.loadError", { defaultValue: "Failed to load user data" }));
       }
     }
-  ), L = be(() => [...(m == null ? void 0 : m.roles.filter((d) => !(u != null && u.some((E) => E.id === d.id)))) || [], ...u || []].map((d) => ({
-    ...d,
-    label: k ? S(d.organization_id, d) : d.name || "",
-    value: d.id
-  })), [u, k, S, m == null ? void 0 : m.roles]), { run: N, loading: J } = x(
+  ), $ = Oe(() => [...(f == null ? void 0 : f.roles.filter((c) => !(u != null && u.some((A) => A.id === c.id)))) || [], ...u || []].map((c) => ({
+    ...c,
+    label: S ? L(c.organization_id, c) : c.name || "",
+    value: c.id
+  })), [u, S, L, f == null ? void 0 : f.roles]), { run: q, loading: R } = w(
     async (l) => {
-      if (o)
-        return await h.authorization.updateUser(
-          { id: c },
+      if (m)
+        return await _.authorization.updateUser(
+          { id: d },
           {
             email: l.email,
             avatar: l.avatar,
@@ -698,7 +815,7 @@ const { Option: T } = O, Ge = ({ user: n, onClose: c, onSuccess: j }) => {
             role_ids: l.role_ids
           }
         ), { mode: "update" };
-      const d = {
+      const c = {
         username: l.username,
         avatar: l.avatar,
         password: l.password,
@@ -707,42 +824,42 @@ const { Option: T } = O, Ge = ({ user: n, onClose: c, onSuccess: j }) => {
         mfa_enforced: l.mfa_enforced,
         role_ids: l.role_ids
       };
-      return { mode: "create", newUser: await h.authorization.createUser(d) };
+      return { mode: "create", newUser: await _.authorization.createUser(c) };
     },
     {
       manual: !0,
       onSuccess: (l) => {
-        l && (l.mode === "update" ? (n.success(t("user.updateSuccess", { defaultValue: "User updated successfully" })), j(`/authorization/users/${c}`)) : (n.success(t("user.createSuccess", { defaultValue: "User created successfully" })), j(`/authorization/users/${l.newUser.id}`)));
+        l && (l.mode === "update" ? (n.success(a("user.updateSuccess", { defaultValue: "User updated successfully" })), E(`/authorization/users/${d}`)) : (n.success(a("user.createSuccess", { defaultValue: "User created successfully" })), E(`/authorization/users/${l.newUser.id}`)));
       },
       onError: (l) => {
         n.error(
-          o ? t("user.updateError", {
+          m ? a("user.updateError", {
             defaultValue: "Failed to update user",
             error: l instanceof Error ? l.message : String(l)
-          }) : t("user.createError", {
+          }) : a("user.createError", {
             defaultValue: "Failed to create user",
             error: l instanceof Error ? l.message : String(l)
           })
         );
       }
     }
-  ), P = (l, d) => o || !d ? Promise.resolve() : d.length < 8 ? Promise.reject(new Error(t("user.passwordTooShort", { defaultValue: "Password must be at least 8 characters long" }))) : Promise.resolve(), Q = (l, d) => {
-    if (o) return Promise.resolve();
-    const E = a.getFieldValue("password");
-    return E ? d ? d !== E ? Promise.reject(new Error(t("user.passwordMismatch", { defaultValue: "Passwords do not match" }))) : Promise.resolve() : Promise.reject(new Error(t("user.confirmPasswordRequired", { defaultValue: "Please confirm your password" }))) : Promise.resolve();
+  ), O = (l, c) => m || !c ? Promise.resolve() : c.length < 8 ? Promise.reject(new Error(a("user.passwordTooShort", { defaultValue: "Password must be at least 8 characters long" }))) : Promise.resolve(), H = (l, c) => {
+    if (m) return Promise.resolve();
+    const A = t.getFieldValue("password");
+    return A ? c ? c !== A ? Promise.reject(new Error(a("user.passwordMismatch", { defaultValue: "Passwords do not match" }))) : Promise.resolve() : Promise.reject(new Error(a("user.confirmPasswordRequired", { defaultValue: "Please confirm your password" }))) : Promise.resolve();
   };
   return /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
     /* @__PURE__ */ e.jsx(
-      D,
+      Q,
       {
-        title: o ? t("user.editTitle", { defaultValue: "Edit User" }) : t("user.createTitle", { defaultValue: "Create User" }),
-        loading: p,
+        title: m ? a("user.editTitle", { defaultValue: "Edit User" }) : a("user.createTitle", { defaultValue: "Create User" }),
+        loading: g,
         children: /* @__PURE__ */ e.jsxs(
-          g,
+          V,
           {
-            form: a,
+            form: t,
             layout: "horizontal",
-            onFinish: N,
+            onFinish: q,
             labelCol: {
               sm: { span: 24 },
               md: { span: 6 }
@@ -759,123 +876,123 @@ const { Option: T } = O, Ge = ({ user: n, onClose: c, onSuccess: j }) => {
             },
             children: [
               /* @__PURE__ */ e.jsx(
-                g.Item,
+                V.Item,
                 {
                   name: "avatar",
-                  label: t("user.avatar", { defaultValue: "Avatar" }),
-                  children: /* @__PURE__ */ e.jsx($e, {})
+                  label: a("user.avatar", { defaultValue: "Avatar" }),
+                  children: /* @__PURE__ */ e.jsx(as, {})
                 }
               ),
               /* @__PURE__ */ e.jsx(
-                g.Item,
+                V.Item,
                 {
                   name: "username",
-                  label: t("user.username", { defaultValue: "Username" }),
+                  label: a("user.username", { defaultValue: "Username" }),
                   rules: [
-                    { required: !o, message: t("user.usernameRequired", { defaultValue: "Username is required" }) }
+                    { required: !m, message: a("user.usernameRequired", { defaultValue: "Username is required" }) }
                   ],
-                  children: /* @__PURE__ */ e.jsx(R, { disabled: o, placeholder: t("user.usernamePlaceholder", { defaultValue: "Enter username" }) })
+                  children: /* @__PURE__ */ e.jsx(G, { disabled: m, placeholder: a("user.usernamePlaceholder", { defaultValue: "Enter username" }) })
                 }
               ),
               /* @__PURE__ */ e.jsx(
-                g.Item,
+                V.Item,
                 {
                   name: "email",
-                  label: t("user.email", { defaultValue: "Email" }),
+                  label: a("user.email", { defaultValue: "Email" }),
                   rules: [
-                    { required: !0, message: t("user.emailRequired", { defaultValue: "Email is required" }) },
-                    { type: "email", message: t("user.emailInvalid", { defaultValue: "Invalid email format" }) }
+                    { required: !0, message: a("user.emailRequired", { defaultValue: "Email is required" }) },
+                    { type: "email", message: a("user.emailInvalid", { defaultValue: "Invalid email format" }) }
                   ],
-                  children: /* @__PURE__ */ e.jsx(R, { placeholder: t("user.emailPlaceholder", { defaultValue: "Enter email address" }) })
+                  children: /* @__PURE__ */ e.jsx(G, { placeholder: a("user.emailPlaceholder", { defaultValue: "Enter email address" }) })
                 }
               ),
               /* @__PURE__ */ e.jsx(
-                g.Item,
+                V.Item,
                 {
                   name: "full_name",
-                  label: t("user.fullName", { defaultValue: "Full Name" }),
-                  rules: [{ required: !0, message: t("user.fullNameRequired", { defaultValue: "Full name is required" }) }],
-                  children: /* @__PURE__ */ e.jsx(R, { placeholder: t("user.fullNamePlaceholder", { defaultValue: "Enter full name" }) })
+                  label: a("user.fullName", { defaultValue: "Full Name" }),
+                  rules: [{ required: !0, message: a("user.fullNameRequired", { defaultValue: "Full name is required" }) }],
+                  children: /* @__PURE__ */ e.jsx(G, { placeholder: a("user.fullNamePlaceholder", { defaultValue: "Enter full name" }) })
                 }
               ),
-              o && /* @__PURE__ */ e.jsx(
-                g.Item,
+              m && /* @__PURE__ */ e.jsx(
+                V.Item,
                 {
                   name: "status",
-                  label: t("user.status", { defaultValue: "Status" }),
-                  rules: [{ required: !0, message: t("user.statusRequired", { defaultValue: "Status is required" }) }],
-                  children: /* @__PURE__ */ e.jsxs(O, { placeholder: t("user.statusPlaceholder", { defaultValue: "Select status" }), children: [
-                    /* @__PURE__ */ e.jsx(I, { value: "active", children: t("user.statusActive", { defaultValue: "Active" }) }),
-                    /* @__PURE__ */ e.jsx(I, { value: "disabled", children: t("user.statusDisabled", { defaultValue: "Disabled" }) }),
-                    /* @__PURE__ */ e.jsx(I, { value: "password_expired", children: t("user.statusEnum.password_expired", { defaultValue: "Password Expired" }) }),
-                    (m == null ? void 0 : m.status) === "pending_activation" && /* @__PURE__ */ e.jsx(I, { value: "pending_activation", children: t("user.statusEnum.pending_activation", { defaultValue: "Pending Activation" }) }),
-                    (m == null ? void 0 : m.status) === "locked" && /* @__PURE__ */ e.jsx(I, { value: "locked", children: t("user.statusEnum.locked", { defaultValue: "Locked" }) })
+                  label: a("user.status", { defaultValue: "Status" }),
+                  rules: [{ required: !0, message: a("user.statusRequired", { defaultValue: "Status is required" }) }],
+                  children: /* @__PURE__ */ e.jsxs(K, { placeholder: a("user.statusPlaceholder", { defaultValue: "Select status" }), children: [
+                    /* @__PURE__ */ e.jsx(W, { value: "active", children: a("user.statusActive", { defaultValue: "Active" }) }),
+                    /* @__PURE__ */ e.jsx(W, { value: "disabled", children: a("user.statusDisabled", { defaultValue: "Disabled" }) }),
+                    /* @__PURE__ */ e.jsx(W, { value: "password_expired", children: a("user.statusEnum.password_expired", { defaultValue: "Password Expired" }) }),
+                    (f == null ? void 0 : f.status) === "pending_activation" && /* @__PURE__ */ e.jsx(W, { value: "pending_activation", children: a("user.statusEnum.pending_activation", { defaultValue: "Pending Activation" }) }),
+                    (f == null ? void 0 : f.status) === "locked" && /* @__PURE__ */ e.jsx(W, { value: "locked", children: a("user.statusEnum.locked", { defaultValue: "Locked" }) })
                   ] })
                 }
               ),
               /* @__PURE__ */ e.jsx(
-                g.Item,
+                V.Item,
                 {
                   name: "mfa_enforced",
-                  label: t("user.mfaEnforced", { defaultValue: "MFA Enforced" }),
-                  children: /* @__PURE__ */ e.jsx(_e, {})
+                  label: a("user.mfaEnforced", { defaultValue: "MFA Enforced" }),
+                  children: /* @__PURE__ */ e.jsx(Ne, {})
                 }
               ),
-              !o && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
+              !m && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
                 /* @__PURE__ */ e.jsx(
-                  g.Item,
+                  V.Item,
                   {
                     name: "password",
-                    label: t("user.password", { defaultValue: "Password" }),
-                    rules: [{ validator: P }],
-                    extra: /* @__PURE__ */ e.jsx(X.Text, { type: "secondary", style: { fontSize: 12 }, children: t("user.passwordHint", { defaultValue: "Leave blank to send an activation email to the user." }) }),
-                    children: /* @__PURE__ */ e.jsx(R.Password, { autoComplete: "new-password", placeholder: t("user.passwordPlaceholder", { defaultValue: "Enter password (optional)" }) })
+                    label: a("user.password", { defaultValue: "Password" }),
+                    rules: [{ validator: O }],
+                    extra: /* @__PURE__ */ e.jsx(de.Text, { type: "secondary", style: { fontSize: 12 }, children: a("user.passwordHint", { defaultValue: "Leave blank to send an activation email to the user." }) }),
+                    children: /* @__PURE__ */ e.jsx(G.Password, { autoComplete: "new-password", placeholder: a("user.passwordPlaceholder", { defaultValue: "Enter password (optional)" }) })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
-                  g.Item,
+                  V.Item,
                   {
                     name: "confirm_password",
-                    label: t("user.confirmPassword", { defaultValue: "Confirm Password" }),
-                    rules: [{ validator: Q }],
+                    label: a("user.confirmPassword", { defaultValue: "Confirm Password" }),
+                    rules: [{ validator: H }],
                     dependencies: ["password"],
-                    children: /* @__PURE__ */ e.jsx(R.Password, { autoComplete: "new-password", placeholder: t("user.confirmPasswordPlaceholder", { defaultValue: "Confirm password" }) })
+                    children: /* @__PURE__ */ e.jsx(G.Password, { autoComplete: "new-password", placeholder: a("user.confirmPasswordPlaceholder", { defaultValue: "Confirm password" }) })
                   }
                 )
               ] }),
               /* @__PURE__ */ e.jsx(
-                g.Item,
+                V.Item,
                 {
                   name: "role_ids",
-                  label: t("user.roles", { defaultValue: "Roles" }),
+                  label: a("user.roles", { defaultValue: "Roles" }),
                   children: /* @__PURE__ */ e.jsx(
-                    O,
+                    K,
                     {
                       mode: "multiple",
-                      onSearch: (l) => w(l),
-                      placeholder: t("user.selectRoles", { defaultValue: "Select roles" }),
-                      options: L,
+                      onSearch: (l) => U(l),
+                      placeholder: a("user.selectRoles", { defaultValue: "Select roles" }),
+                      options: $,
                       optionFilterProp: "label",
-                      loading: b
+                      loading: z
                     }
                   )
                 }
               ),
-              /* @__PURE__ */ e.jsx(g.Item, { wrapperCol: { offset: 9 }, children: /* @__PURE__ */ e.jsxs(M, { children: [
+              /* @__PURE__ */ e.jsx(V.Item, { wrapperCol: { offset: 9 }, children: /* @__PURE__ */ e.jsxs(Z, { children: [
                 /* @__PURE__ */ e.jsx(
-                  U,
+                  C,
                   {
                     type: "primary",
                     htmlType: "submit",
-                    loading: J,
-                    children: o ? f("update", { defaultValue: "Update" }) : f("create", { defaultValue: "Create" })
+                    loading: R,
+                    children: m ? p("update", { defaultValue: "Update" }) : p("create", { defaultValue: "Create" })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
-                  U,
+                  C,
                   {
-                    onClick: () => j(o ? `/authorization/users/${c}` : "/authorization/users"),
-                    children: f("cancel", { defaultValue: "Cancel" })
+                    onClick: () => E(m ? `/authorization/users/${d}` : "/authorization/users"),
+                    children: p("cancel", { defaultValue: "Cancel" })
                   }
                 )
               ] }) })
@@ -884,14 +1001,14 @@ const { Option: T } = O, Ge = ({ user: n, onClose: c, onSuccess: j }) => {
         )
       }
     ),
-    o && c && /* @__PURE__ */ e.jsx(D, { title: t("rateLimit.title", { defaultValue: "Rate limit override" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(oe, { kind: "user", subjectId: c }) })
+    m && d && /* @__PURE__ */ e.jsx(Q, { title: a("rateLimit.title", { defaultValue: "Rate limit override" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(we, { kind: "user", subjectId: d }) })
   ] });
-}, ca = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Es = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: He
+  default: cs
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  oa as U,
-  da as a,
-  ca as b
+  ks as U,
+  vs as a,
+  Es as b
 };

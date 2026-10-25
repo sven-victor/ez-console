@@ -42,7 +42,7 @@ import { createStyles, useThemeMode } from 'antd-style';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
-import { normalizeCallAIOptions, useAI, type CallAIArgument } from '@/contexts/AIContext';
+import { normalizeCallAIOptions, useAI, type CallAIArgument, type RegisteredClientTool } from '@/contexts/AIContext';
 import classNames from 'classnames';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import '@ant-design/x-markdown/themes/light.css';
@@ -454,10 +454,17 @@ export interface AIChatProps {
   floatButtonIcon?: React.ReactNode;
   /**
    * Host-level system prompts merged into every chat request as
-   * ephemeral_system_prompts (not persisted). Combined with page-level
-   * prompts from registerPageAI.
+   * ephemeral_system_prompts (not persisted). Registered app-wide via
+   * `registerGlobalAI`; sent after the layout's route prompt and before
+   * page-level prompts from registerPageAI.
    */
   ephemeralSystemPrompts?: string[];
+  /**
+   * Host-level client tools available on every page (names must start with
+   * "ui_"). Registered app-wide via `registerGlobalAI`; a page tool with the
+   * same name overrides a host tool.
+   */
+  clientTools?: RegisteredClientTool[];
   /**
    * Skill domains selected when the chat opens. When omitted, the client
    * sends domains as an empty list.
@@ -578,6 +585,7 @@ const ChatList: React.FC<ChatListProps> = ({
 export const AIChat: React.FC<AIChatProps> = ({
   bubble = {},
   ephemeralSystemPrompts: hostEphemeralSystemPrompts,
+  clientTools: hostClientTools,
   defaultSkillDomains,
 }) => {
   const {
@@ -589,8 +597,9 @@ export const AIChat: React.FC<AIChatProps> = ({
     setActiveConversationKey: setDefaultActiveConversationKey,
     conversations: rawConversations,
     fetchConversationsLoading,
-    ephemeralSystemPrompts,
-    clientTools,
+    getEphemeralSystemPrompts,
+    getClientTools,
+    registerGlobalAI,
   } = useAI();
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
@@ -633,11 +642,22 @@ export const AIChat: React.FC<AIChatProps> = ({
     () => normalizeStringList(defaultSkillDomainsKey ? defaultSkillDomainsKey.split('\0') : []),
     [defaultSkillDomainsKey],
   );
+  // Host-level prompts and tools (from App `aiChatProps`) join the global AI
+  // registration so they reach every request together with page context.
   const hostPromptsKey = hostEphemeralSystemPrompts?.join('\0') ?? '';
   const normalizedHostPrompts = useMemo(
     () => normalizeStringList(hostPromptsKey ? hostPromptsKey.split('\0') : []),
     [hostPromptsKey],
   );
+  useEffect(() => {
+    if (normalizedHostPrompts.length === 0 && !hostClientTools?.length) {
+      return;
+    }
+    return registerGlobalAI({
+      ephemeralSystemPrompts: normalizedHostPrompts,
+      tools: hostClientTools,
+    });
+  }, [normalizedHostPrompts, hostClientTools, registerGlobalAI]);
   const [selectedSkills, setSelectedSkills] = useState<SelectedSkillOption[]>(() =>
     normalizedDefaultDomains.map((value) => ({ type: 'domain', value })),
   );
@@ -715,39 +735,48 @@ export const AIChat: React.FC<AIChatProps> = ({
       domains: selectedSkills.filter((s) => s.type === 'domain').map((s) => s.value),
       skill_ids: selectedSkills.filter((s) => s.type === 'skill').map((s) => s.value),
     };
-    const prompts = normalizeStringList([
-      ...normalizedHostPrompts,
-      ...ephemeralSystemPrompts,
-    ]);
+    // Read page context synchronously from the AI context: a handler in this
+    // turn (e.g. ui_navigate) may have changed the page, and the new page's
+    // prompts and tools must reach the model on the follow-up request rather
+    // than the pre-navigation snapshot captured in this closure.
+    const prompts = normalizeStringList(getEphemeralSystemPrompts());
     if (prompts.length > 0) {
       fields.ephemeral_system_prompts = prompts;
     }
-    if (clientTools.length > 0) {
-      fields.client_tools = clientTools.map(t => ({
+    const currentTools = getClientTools();
+    if (currentTools.length > 0) {
+      fields.client_tools = currentTools.map(t => ({
         name: t.name,
         description: t.description,
         parameters: t.parameters,
       }));
     }
     return fields;
-  }, [selectedSkills, normalizedHostPrompts, ephemeralSystemPrompts, clientTools]);
+  }, [selectedSkills, getEphemeralSystemPrompts, getClientTools]);
 
   const pendingHandoffRef = useRef<ClientToolPendingCall[] | null>(null);
 
   const handleClientToolHandoff = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
     const results: ClientToolResultPayload[] = [];
+    // Resolve handlers from the tool set that was active when the model made
+    // the calls; later calls in the same batch still see this snapshot.
+    const toolsAtHandoff = getClientTools();
     for (const call of pendingCalls) {
-      const tool = clientTools.find(t => t.name === call.name);
+      const tool = toolsAtHandoff.find(t => t.name === call.name);
       if (!tool) {
         results.push({
           tool_call_id: call.id,
-          content: JSON.stringify({ error: `Client tool handler not found for ${call.name}` }),
+          content: JSON.stringify({
+            error: `Client tool "${call.name}" is not available on the current page`,
+            available_tools: toolsAtHandoff.map(t => t.name),
+          }),
         });
         continue;
       }
       try {
         const result = await Promise.resolve(tool.handler(call.arguments));
-        results.push({ tool_call_id: call.id, content: result });
+        // The backend rejects empty tool results; normalize to a minimal JSON object.
+        results.push({ tool_call_id: call.id, content: result?.trim() ? result : JSON.stringify({ ok: true }) });
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : String(err);
         results.push({
@@ -761,7 +790,7 @@ export const AIChat: React.FC<AIChatProps> = ({
       client_tool_results: results,
       ...buildChatRequestFields(),
     });
-  }, [clientTools, onRequest, buildChatRequestFields]);
+  }, [getClientTools, onRequest, buildChatRequestFields]);
 
   // Watch for completed requests with pending client tool calls
   useEffect(() => {
