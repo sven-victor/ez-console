@@ -64,7 +64,7 @@ type pendingHITLCard struct {
 func PrepareTurn(ctx context.Context, existing []model.AIChatMessage, in ChatTurnInput, exec ToolExecutor) ([]ai.ChatMessage, []model.AIChatMessage, error) {
 	updated := cloneTurnMessages(existing)
 	pending := pendingCards(updated)
-	if len(in.HITLDecisions) == 0 && len(pending) > 0 && len(in.ClientToolResults) > 0 && in.Content == "" {
+	if len(in.HITLDecisions) == 0 && len(pending) > 0 && len(in.ClientToolResults) > 0 {
 		return nil, nil, errors.New(errPendingHITLCardsRequireDecisions)
 	}
 	if len(in.HITLDecisions) > 0 {
