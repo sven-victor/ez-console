@@ -174,13 +174,18 @@ func (s *dbSessionService) GetChatMessages(ctx context.Context, organizationID, 
 	return messages, nil
 }
 
-// GetSimpleChatMessages returns display history: user and assistant rows without
-// tool calls, plus any row that stores metadata.hitl_cards (those assistant rows
-// still have tool_calls). Summarized rows are excluded via GetChatMessages.
+// GetSimpleChatMessages returns display history ordered by message_time.
+// Summarized rows are included so a later summary cannot hide a pending card.
+// A row is kept when it is user or assistant with no tool calls, or when it
+// stores metadata.hitl_cards. Empty assistant text with no cards is dropped.
+// There is no row cap: a new pending card past the old limit of 100 must still load.
 func (s *dbSessionService) GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
-	messages, err := s.GetChatMessages(ctx, organizationID, userID, sessionID)
-	if err != nil {
-		return nil, err
+	var messages []model.AIChatMessage
+	if err := db.Session(ctx).
+		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
+		Order("message_time ASC").
+		Find(&messages).Error; err != nil {
+		return nil, fmt.Errorf("failed to get chat messages: %w", err)
 	}
 	filtered := make([]model.AIChatMessage, 0, len(messages))
 	for _, msg := range messages {
@@ -192,11 +197,17 @@ func (s *dbSessionService) GetSimpleChatMessages(ctx context.Context, organizati
 }
 
 func includeInSimpleChatHistory(msg model.AIChatMessage) bool {
-	simpleRole := msg.Role == model.AIChatMessageRoleUser || msg.Role == model.AIChatMessageRoleAssistant
-	if simpleRole && len(msg.ToolCalls) == 0 {
+	if len(HITLCardsFromMetadata(msg.Metadata)) > 0 {
 		return true
 	}
-	return len(HITLCardsFromMetadata(msg.Metadata)) > 0
+	simpleRole := msg.Role == model.AIChatMessageRoleUser || msg.Role == model.AIChatMessageRoleAssistant
+	if !simpleRole || len(msg.ToolCalls) != 0 {
+		return false
+	}
+	if msg.Role == model.AIChatMessageRoleAssistant && msg.Content == "" {
+		return false
+	}
+	return true
 }
 
 const hitlCardsMetadataKey = "hitl_cards"

@@ -15,6 +15,7 @@
 package service
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
@@ -194,6 +195,78 @@ func TestAssignIncreasingMessageTimes(t *testing.T) {
 	}
 	if rows[1].MessageTime.Sub(rows[0].MessageTime) != time.Microsecond {
 		t.Fatalf("expected 1µs gap, got %s then %s", rows[0].MessageTime, rows[1].MessageTime)
+	}
+}
+
+func TestHITLCardsFromMetadataJSONScanShape(t *testing.T) {
+	raw := []byte(`{"hitl_cards":[{"tool_call_id":"call_1","kind":"choice","title":"How?","tool_name":"ui_choose","arguments":"{}","options":[{"id":"A","label":"Disable"},{"id":"reject","label":"Don't execute"}],"status":"pending"}]}`)
+	var meta model.AIChatMessageMetadata
+	if err := json.Unmarshal(raw, &meta); err != nil {
+		t.Fatal(err)
+	}
+	cardsRaw, ok := meta["hitl_cards"].([]interface{})
+	if !ok || len(cardsRaw) != 1 {
+		t.Fatalf("expected []interface{} scan shape, got %T", meta["hitl_cards"])
+	}
+	if _, ok := cardsRaw[0].(map[string]interface{}); !ok {
+		t.Fatalf("expected map elements, got %T", cardsRaw[0])
+	}
+	got := HITLCardsFromMetadata(meta)
+	if len(got) != 1 || got[0].ToolCallID != "call_1" || got[0].Kind != ai.HITLCardChoice || got[0].Status != ai.HITLStatusPending || got[0].ToolName != ai.UIChooseToolName {
+		t.Fatalf("%#v", got)
+	}
+	if len(got[0].Options) != 2 || got[0].Options[0].ID != "A" || got[0].Options[1].ID != ai.HITLOptionReject {
+		t.Fatalf("options %#v", got[0].Options)
+	}
+}
+
+func TestIncludeInSimpleChatHistory(t *testing.T) {
+	pending := MetadataWithHITLCards(nil, []ai.HITLCard{{
+		ToolCallID: "call_1", Kind: ai.HITLCardChoice, Status: ai.HITLStatusPending,
+	}})
+	tests := []struct {
+		name string
+		msg  model.AIChatMessage
+		want bool
+	}{
+		{
+			name: "summarized user without tool calls",
+			msg:  model.AIChatMessage{Role: model.AIChatMessageRoleUser, Content: "hello", Summarized: true},
+			want: true,
+		},
+		{
+			name: "assistant pending hitl cards with tool calls",
+			msg: model.AIChatMessage{
+				Role: model.AIChatMessageRoleAssistant,
+				ToolCalls: model.AIToolCalls{{
+					ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_choose"},
+				}},
+				Metadata: pending,
+			},
+			want: true,
+		},
+		{
+			name: "assistant unpaired tool calls without cards",
+			msg: model.AIChatMessage{
+				Role: model.AIChatMessageRoleAssistant,
+				ToolCalls: model.AIToolCalls{{
+					ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users"},
+				}},
+			},
+			want: false,
+		},
+		{
+			name: "empty assistant content without cards",
+			msg:  model.AIChatMessage{Role: model.AIChatMessageRoleAssistant, Content: ""},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := includeInSimpleChatHistory(tt.msg); got != tt.want {
+				t.Fatalf("includeInSimpleChatHistory() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
 
