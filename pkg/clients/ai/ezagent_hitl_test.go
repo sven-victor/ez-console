@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/sashabaranov/go-openai"
+	"github.com/sven-victor/ez-agent/message"
 	"github.com/sven-victor/ez-agent/run"
 	"github.com/sven-victor/ez-agent/tool"
 	"github.com/sven-victor/ez-console/pkg/toolset"
@@ -85,7 +86,42 @@ func TestInterrupterAutoRejectContinuesWithoutCall(t *testing.T) {
 	if called {
 		t.Fatal("gated tool was executed")
 	}
-	if len(st.Messages) < 1 {
-		t.Fatal("expected tool result messages")
+	if len(st.Messages) != 0 {
+		t.Fatalf("auto-reject BeforeTools appended %d messages", len(st.Messages))
+	}
+}
+
+func TestAutoRejectRegistryLookupDoesNotCallGatedTool(t *testing.T) {
+	called := false
+	inner := newToolSetsRegistry(func() context.Context { return context.Background() }, func(ctx context.Context) (toolset.ToolSets, error) {
+		return toolset.ToolSets{
+			"mcp3": toolset.NewAdHocToolSet(toolset.NewAdHocTool(openai.Tool{
+				Type:     openai.ToolTypeFunction,
+				Function: &openai.FunctionDefinition{Name: "delete_user", Parameters: map[string]any{"type": "object"}},
+			}, func(ctx context.Context, name, parameters string) (string, error) {
+				called = true
+				return "deleted", nil
+			})),
+		}, nil
+	}, nil)
+	reg := newAutoRejectRegistry(inner, HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval}})
+	h, ok := reg.Lookup("mcp3_delete_user")
+	if !ok || h == nil {
+		t.Fatal("expected reject handler")
+	}
+	res, err := h(context.Background(), tool.Call{
+		ID:    "c1",
+		Name:  "mcp3_delete_user",
+		Input: []byte(`{"id":"u1"}`),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if called {
+		t.Fatal("inner Call was invoked")
+	}
+	text, ok := res.Content[0].(message.Text)
+	if !ok || text.Text != AutoRejectToolResultContent {
+		t.Fatalf("content=%#v", res.Content)
 	}
 }

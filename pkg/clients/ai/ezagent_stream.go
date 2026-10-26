@@ -266,12 +266,17 @@ func buildAgent(ctx context.Context, provider aimodel.Provider, opts *ChatComple
 	agentOpts = append(agentOpts, agent.WithLimits(limits))
 
 	reg := newToolSetsRegistry(func() context.Context { return ctx }, opts.ToolSetsProvider, opts.ClientTools)
-	agentOpts = append(agentOpts, agent.WithToolRegistry(reg))
+	mode := ResolveHITLMode(opts.HITLMode)
+	loopReg := tool.Registry(reg)
+	if mode == HITLModeAutoReject {
+		loopReg = newAutoRejectRegistry(reg, opts.HITLCatalog)
+	}
+	agentOpts = append(agentOpts, agent.WithToolRegistry(loopReg))
 	agentOpts = append(agentOpts, agent.WithInterrupter(newUIToolInterrupter(hitlInterrupterConfig{
 		Registry:  reg,
 		SessionID: opts.SessionID,
 		Store:     opts.SessionStore,
-		Mode:      ResolveHITLMode(opts.HITLMode),
+		Mode:      mode,
 		Catalog:   opts.HITLCatalog,
 	})))
 

@@ -39,11 +39,48 @@ type hitlInterrupterConfig struct {
 	Catalog   HITLCatalog
 }
 
-// newUIToolInterrupter runs free tools, then either interrupts (interactive)
-// or appends a rejection per gated call and lets the loop continue (auto_reject).
+// autoRejectRegistry is the tool registry the agent loop uses in auto_reject mode.
+// Gated tools return a reject result and do not call the inner handler.
+// Free tools delegate to inner. The interrupter keeps the unwrapped registry so
+// interactive mode can still execute free tools.
+type autoRejectRegistry struct {
+	inner   tool.Registry
+	catalog HITLCatalog
+}
+
+func newAutoRejectRegistry(inner tool.Registry, catalog HITLCatalog) *autoRejectRegistry {
+	return &autoRejectRegistry{inner: inner, catalog: catalog}
+}
+
+func (r *autoRejectRegistry) Specs() []tool.Spec {
+	return r.inner.Specs()
+}
+
+func (r *autoRejectRegistry) Lookup(name string) (tool.Handler, bool) {
+	if ClassifyHITL(name, r.catalog) == HITLClassNone {
+		return r.inner.Lookup(name)
+	}
+	return func(ctx context.Context, call tool.Call) (tool.Result, error) {
+		return tool.Result{
+			ToolUseID: call.ID,
+			OK:        false,
+			Content:   []message.Part{message.Text{Text: AutoRejectToolResultContent}},
+		}, nil
+	}, true
+}
+
+var _ tool.Registry = (*autoRejectRegistry)(nil)
+
+// newUIToolInterrupter runs free tools and then interrupts in interactive mode.
+// Any other mode returns immediately so the loop executes the batch through
+// autoRejectRegistry, which rejects gated tools without calling them.
 // A batch with no gated calls returns immediately so the loop executes those tools once.
 func newUIToolInterrupter(cfg hitlInterrupterConfig) loop.Interrupter {
 	return loop.FuncInterrupter(func(ctx context.Context, st *run.State, calls []tool.Call) (bool, error) {
+		if ResolveHITLMode(cfg.Mode) != HITLModeInteractive {
+			return false, nil
+		}
+
 		var free, gated []tool.Call
 		for _, c := range calls {
 			if ClassifyHITL(c.Name, cfg.Catalog) == HITLClassNone {
@@ -76,31 +113,11 @@ func newUIToolInterrupter(cfg hitlInterrupterConfig) loop.Interrupter {
 			freeParts = toolResultsToParts(results)
 		}
 
-		if ResolveHITLMode(cfg.Mode) == HITLModeInteractive {
-			if err := appendToolResultMessage(ctx, st, cfg.SessionID, cfg.Store, freeParts); err != nil {
-				return false, err
-			}
-			return true, nil
-		}
-
-		parts := append(freeParts, autoRejectParts(gated)...)
-		if err := appendToolResultMessage(ctx, st, cfg.SessionID, cfg.Store, parts); err != nil {
+		if err := appendToolResultMessage(ctx, st, cfg.SessionID, cfg.Store, freeParts); err != nil {
 			return false, err
 		}
-		return false, nil
+		return true, nil
 	})
-}
-
-func autoRejectParts(calls []tool.Call) []message.ToolResult {
-	results := make([]tool.Result, len(calls))
-	for i, c := range calls {
-		results[i] = tool.Result{
-			ToolUseID: c.ID,
-			OK:        false,
-			Content:   []message.Part{message.Text{Text: AutoRejectToolResultContent}},
-		}
-	}
-	return toolResultsToParts(results)
 }
 
 func appendToolResultMessage(ctx context.Context, st *run.State, sessionID string, store memory.SessionStore, parts []message.ToolResult) error {
