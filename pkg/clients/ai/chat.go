@@ -60,6 +60,7 @@ const (
 	EventTypeToolCall          EventType = "tool_call"
 	EventTypeError             EventType = "error"
 	EventTypeClientToolPending EventType = "client_tool_pending"
+	EventTypeHITLPending       EventType = "hitl_pending"
 )
 
 const ClientToolPrefix = "ui_"
@@ -99,6 +100,7 @@ type ChatStreamEvent struct {
 	ToolCalls       []ToolCall              `json:"tool_calls,omitempty"`
 	EventType       EventType               `json:"event_type,omitempty"`
 	ClientToolCalls []ClientToolPendingCall `json:"client_tool_calls,omitempty"`
+	HITLCards       []HITLCard              `json:"hitl_cards,omitempty"`
 	Usage           *TokenUsage             `json:"usage,omitempty"`
 }
 
@@ -181,6 +183,9 @@ type ChatCompletionOptions struct {
 	// RefreshToolSetsEachIteration, when true, re-invokes ToolSetsFactory before each LLM stream iteration (after tool rounds).
 	RefreshToolSetsEachIteration bool
 	ClientTools                  []openai.Tool // Tools to be executed on the client side (browser)
+
+	HITLMode    HITLMode
+	HITLCatalog HITLCatalog
 
 	// SessionID + SessionStore enable ez-agent WithSession (DB-backed effective window).
 	SessionID    string
