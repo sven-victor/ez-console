@@ -33,6 +33,34 @@ func DisabledToolNamesFromConfig(c ToolSetConfig) map[string]struct{} {
 	return out
 }
 
+// ApprovalToolNamesFromConfig returns logical tool names that require an approval card.
+func ApprovalToolNamesFromConfig(c ToolSetConfig) map[string]struct{} {
+	out := make(map[string]struct{})
+	if c == nil {
+		return out
+	}
+	raw, ok := c[ToolSetConfigKeyApprovalTools]
+	if !ok || raw == nil {
+		return out
+	}
+	switch v := raw.(type) {
+	case []string:
+		for _, s := range v {
+			if s != "" {
+				out[s] = struct{}{}
+			}
+		}
+	case []interface{}:
+		for _, it := range v {
+			s, _ := it.(string)
+			if s != "" {
+				out[s] = struct{}{}
+			}
+		}
+	}
+	return out
+}
+
 // SkillIsEnabled reports whether the skill should be exposed to AI chat flows.
 func SkillIsEnabled(s *Skill) bool {
 	if s == nil {

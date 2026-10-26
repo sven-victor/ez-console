@@ -34,6 +34,10 @@ const (
 // to hide from the model and block execution. Used for preset/built-in toolsets.
 const ToolSetConfigKeyDisabledTools = "disabled_tools"
 
+// ToolSetConfigKeyApprovalTools lists logical tool names that require an approval card
+// before execution. MCP toolsets use this because they cannot be trusted to declare x-hitl.
+const ToolSetConfigKeyApprovalTools = "approval_tools"
+
 // PresetSystemActorID is stored as created_by/updated_by for rows synced from code.
 const PresetSystemActorID = "00000000-0000-0000-0000-000000000001"
 

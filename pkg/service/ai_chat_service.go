@@ -419,16 +419,27 @@ func (s *aiChatService) CreateChatCompletionWithoutToolSets(ctx context.Context,
 }
 
 // mergeAIChatClientOptions builds shared chat options for Exchange and ExchangeStream: cached authorized toolsets,
-// optional get_skill_content toolset, progressive refresh when skill–tool binding is enabled, model limits, trace hooks, and SkillLoader.
-func (s *aiChatService) mergeAIChatClientOptions(ctx context.Context, organizationID string, skillLoader *ai.SkillLoader, aiModel *model.AIModel, options []ai.WithChatOptions) []ai.WithChatOptions {
+// optional get_skill_content toolset, progressive refresh when skill–tool binding is enabled, model limits, trace hooks, SkillLoader,
+// and the HITL catalog built from those toolsets. Toolset load and catalog errors are returned to the caller.
+func (s *aiChatService) mergeAIChatClientOptions(ctx context.Context, organizationID string, skillLoader *ai.SkillLoader, aiModel *model.AIModel, options []ai.WithChatOptions) ([]ai.WithChatOptions, error) {
 	enableSkillToolBinding, _ := s.baseService.GetBoolSetting(ctx, model.SettingSystemEnableSkillToolBinding, false)
 
+	provider := toolset.NewCachedToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
+		return s.baseService.GetAuthorizedToolSets(ctx, organizationID)
+	})
 	var skillLoaderOptions ai.WithChatOptions
 	allOptions := []ai.WithChatOptions{
-		ai.WithChatToolSetsProvider(toolset.NewCachedToolSetsProvider(func(ctx context.Context) (toolset.ToolSets, error) {
-			return s.baseService.GetAuthorizedToolSets(ctx, organizationID)
-		})),
+		ai.WithChatToolSetsProvider(provider),
 	}
+	loaded, err := provider(ctx)
+	if err != nil {
+		return nil, err
+	}
+	cat, err := ai.BuildHITLCatalog(ctx, loaded)
+	if err != nil {
+		return nil, err
+	}
+	allOptions = append(allOptions, ai.WithChatHITLCatalog(cat))
 	if skillLoader != nil && skillLoader.HasSkills() {
 		skillLoaderOptions = ai.WithChatToolSetsProviderChan(func(ctx context.Context, oriProvider toolset.ToolSetsProvider) (toolset.ToolSets, error) {
 			ts, err := oriProvider(ctx)
@@ -454,7 +465,7 @@ func (s *aiChatService) mergeAIChatClientOptions(ctx context.Context, organizati
 	if skillLoaderOptions != nil {
 		allOptions = append(allOptions, skillLoaderOptions)
 	}
-	return allOptions
+	return allOptions, nil
 }
 
 // CreateChatCompletion creates a chat completion using the specified model with toolSets.
@@ -474,7 +485,10 @@ func (s *aiChatService) CreateChatCompletion(ctx context.Context, organizationID
 			return nil, fmt.Errorf("failed to get AI model: %w", err)
 		}
 	}
-	mergedOptions := s.mergeAIChatClientOptions(ctx, organizationID, skillLoader, aiModel, options)
+	mergedOptions, err := s.mergeAIChatClientOptions(ctx, organizationID, skillLoader, aiModel, options)
+	if err != nil {
+		return nil, err
+	}
 
 	// Prepend global prompts for non-stream calls
 	messages = prependGlobalPrompts(messages, ai.GlobalPromptCategoryNonStream)
@@ -540,7 +554,10 @@ func (s *aiChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, fmt.Errorf("failed to create AI client: %w", err)
 	}
 
-	allOptions := s.mergeAIChatClientOptions(ctx, organizationID, skillLoader, aiModel, options)
+	allOptions, err := s.mergeAIChatClientOptions(ctx, organizationID, skillLoader, aiModel, options)
+	if err != nil {
+		return nil, err
+	}
 	allOptions, err = s.withSummaryProviderOption(ctx, organizationID, aiModel, allOptions)
 	if err != nil {
 		return nil, err
@@ -644,6 +661,10 @@ func (f *filteredToolSet) Call(ctx context.Context, name string, parameters stri
 		}
 	}
 	return f.base.Call(ctx, name, parameters)
+}
+
+func (f *filteredToolSet) ApprovalToolNames() []string {
+	return approvalToolNames(f.base)
 }
 
 func (f *filteredToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {

@@ -28,6 +28,7 @@ import (
 	"github.com/sven-victor/ez-agent/message"
 	"github.com/sven-victor/ez-agent/tool"
 	mcp "github.com/sven-victor/ez-agent/tool/mcp"
+	"github.com/sven-victor/ez-console/pkg/model"
 	"github.com/sven-victor/ez-console/pkg/toolset"
 	"github.com/sven-victor/ez-console/pkg/util"
 	"github.com/sven-victor/ez-utils/safe"
@@ -216,6 +217,22 @@ func NewMCPToolSet(name, description, endpoint, protocol string, username, passw
 		token:       token,
 		config:      config,
 	}
+}
+
+// ApprovalToolNames returns logical tool names from config approval_tools.
+func (m *MCPToolSet) ApprovalToolNames() []string {
+	if m == nil {
+		return nil
+	}
+	set := model.ApprovalToolNamesFromConfig(m.config)
+	if len(set) == 0 {
+		return nil
+	}
+	names := make([]string, 0, len(set))
+	for name := range set {
+		names = append(names, name)
+	}
+	return names
 }
 
 // GetName returns the toolset name
@@ -541,21 +558,29 @@ func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]an
 // MCPToolSetFactory creates a new MCP toolset from configuration
 func (f *MCPToolSetFactory) CreateToolSet(configJSON string) (toolset.ToolSet, error) {
 	var config struct {
-		Name        string                 `json:"name"`
-		Description string                 `json:"description"`
-		Endpoint    string                 `json:"endpoint"`
-		Protocol    string                 `json:"protocol"`
-		Username    string                 `json:"username"`
-		Password    string                 `json:"password"`
-		Token       string                 `json:"token"`
-		Args        map[string]interface{} `json:"args"`
+		Name          string                 `json:"name"`
+		Description   string                 `json:"description"`
+		Endpoint      string                 `json:"endpoint"`
+		Protocol      string                 `json:"protocol"`
+		Username      string                 `json:"username"`
+		Password      string                 `json:"password"`
+		Token         string                 `json:"token"`
+		Args          map[string]interface{} `json:"args"`
+		ApprovalTools interface{}            `json:"approval_tools"`
 	}
 
 	if err := json.Unmarshal([]byte(configJSON), &config); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal MCP config: %w", err)
 	}
 
-	return NewMCPToolSet(config.Name, config.Description, config.Endpoint, config.Protocol, config.Username, config.Password, config.Token, config.Args), nil
+	args := config.Args
+	if config.ApprovalTools != nil {
+		if args == nil {
+			args = map[string]interface{}{}
+		}
+		args[model.ToolSetConfigKeyApprovalTools] = config.ApprovalTools
+	}
+	return NewMCPToolSet(config.Name, config.Description, config.Endpoint, config.Protocol, config.Username, config.Password, config.Token, args), nil
 }
 
 const (

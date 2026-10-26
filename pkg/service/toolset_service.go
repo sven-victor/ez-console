@@ -631,6 +631,19 @@ type toolSetDisabledToolsFilter struct {
 	disabled map[string]struct{}
 }
 
+func approvalToolNames(ts toolset.ToolSet) []string {
+	type lister interface {
+		ApprovalToolNames() []string
+	}
+	if ts == nil {
+		return nil
+	}
+	if l, ok := ts.(lister); ok {
+		return l.ApprovalToolNames()
+	}
+	return nil
+}
+
 func newToolSetDisabledToolsFilter(inner toolset.ToolSet, disabled map[string]struct{}) toolset.ToolSet {
 	if len(disabled) == 0 {
 		return inner
@@ -650,6 +663,10 @@ func (t *toolSetDisabledToolsFilter) Call(ctx context.Context, name string, para
 		return "", fmt.Errorf("tool %s is disabled", name)
 	}
 	return t.inner.Call(ctx, name, parameters)
+}
+
+func (t *toolSetDisabledToolsFilter) ApprovalToolNames() []string {
+	return approvalToolNames(t.inner)
 }
 
 func (t *toolSetDisabledToolsFilter) ListTools(ctx context.Context) ([]openai.Tool, error) {
