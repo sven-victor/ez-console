@@ -372,10 +372,33 @@ function pendingAutoClientToolCalls(
 
 interface HitlResumeFlight {
   generation: number;
-  /** True once onRequest has been called. Stop after this aborts SSE and keeps the saved choice. */
+  /** True only after isRequesting becomes true, not merely because onRequest was called. */
   streamRequested: boolean;
   revert: () => void;
 }
+
+interface HitlResumeTarget {
+  conversationId: string;
+  messageId: string | number;
+  decisionIDs: string[];
+  /** True once the follow-up assistant reaches updating (SSE has started). */
+  streamStarted: boolean;
+  submit: HITLSubmitState;
+}
+
+/** Plain-text send that abandoned pending cards. Restored if that send never streams. */
+interface PlainTextAbandon {
+  conversationId: string;
+  afterMessageId: string | number | undefined;
+  /** True once an SSE chunk has been seen for this conversation's follow-up. */
+  streamStarted: boolean;
+  restore: () => void;
+}
+
+/** Set from AIProvider when an SSE chunk arrives, including while another chat is open. */
+const hitlFollowUpChunkHandlers = {
+  onChunk: (_conversationKey: string) => {},
+};
 
 /** Put an unsaved resume back on pending buttons. Does not touch abandoned cards. */
 function revertUnsavedHITLCards(
@@ -428,6 +451,8 @@ class AIProvider<
   Input extends ChatStreamInput = ChatStreamInput,
   Output extends ChatStreamOutput = ChatStreamOutput,
 > extends AbstractChatProvider<ChatMessage, Input, Output> {
+  conversationKey = '';
+
   transformParams(requestParams: Partial<Input>, options: XRequestOptions<Input, Output>): Input {
     if (typeof requestParams !== 'object') {
       throw new Error('requestParams must be an object');
@@ -452,6 +477,9 @@ class AIProvider<
         role: 'assistant',
         status,
       } as ChatMessage;
+    }
+    if (status === 'updating') {
+      hitlFollowUpChunkHandlers.onChunk(this.conversationKey);
     }
     let chunkJson: API.ChatStreamEvent;
     try {
@@ -522,10 +550,9 @@ class AIProvider<
 const providerCaches = new Map<string, AIProvider>();
 
 const providerFactory = (conversationKey: string) => {
-  if (!providerCaches.get(conversationKey)) {
-    providerCaches.set(
-      conversationKey,
-      new AIProvider({
+  let provider = providerCaches.get(conversationKey);
+  if (!provider) {
+    provider = new AIProvider({
         request: XRequest<ChatStreamInput, ChatStreamOutput>(
           `/api/ai/chat/sessions/${conversationKey}`,
           {
@@ -548,10 +575,11 @@ const providerFactory = (conversationKey: string) => {
             ,
           },
         ),
-      }),
-    );
+      });
+    providerCaches.set(conversationKey, provider);
   }
-  return providerCaches.get(conversationKey);
+  provider.conversationKey = conversationKey;
+  return provider;
 };
 
 const Code: React.FC<ComponentProps> = (props) => {
@@ -950,17 +978,28 @@ export const AIChat: React.FC<AIChatProps> = ({
     return fields;
   }, [selectedSkills, getEphemeralSystemPrompts, getClientTools]);
 
-  const pendingHandoffRef = useRef<ClientToolPendingCall[] | null>(null);
-  const autoToolStashRef = useRef<{ calls: ClientToolPendingCall[]; promise: Promise<ClientToolResultPayload[]> } | null>(null);
+  // Keyed by conversation so opening another chat cannot drop or replay this session's ui_* calls.
+  const pendingHandoffByConversationRef = useRef(new Map<string, ClientToolPendingCall[]>());
+  const autoToolStashByConversationRef = useRef(new Map<string, { calls: ClientToolPendingCall[]; promise: Promise<ClientToolResultPayload[]> }>());
   const conversationKeyRef = useRef(activeConversationKey);
   conversationKeyRef.current = activeConversationKey;
   const hitlResumeLockRef = useRef(false);
   const hitlResumeSawRequestRef = useRef(false);
-  const hitlResumeStreamStartedRef = useRef(false);
   const hitlResumeGenerationRef = useRef(0);
   const hitlResumeFlightRef = useRef<HitlResumeFlight | null>(null);
-  const hitlResumeTargetRef = useRef<{ messageId: string | number; decisionIDs: string[] } | null>(null);
+  const hitlResumeTargetRef = useRef<HitlResumeTarget | null>(null);
+  const plainTextAbandonRef = useRef<PlainTextAbandon | null>(null);
   const [hitlSubmitting, setHitlSubmitting] = useState<HITLSubmitState | null>(null);
+  hitlFollowUpChunkHandlers.onChunk = (conversationKey: string) => {
+    const target = hitlResumeTargetRef.current;
+    if (target && target.conversationId === conversationKey) {
+      target.streamStarted = true;
+    }
+    const abandoned = plainTextAbandonRef.current;
+    if (abandoned && abandoned.conversationId === conversationKey) {
+      abandoned.streamStarted = true;
+    }
+  };
 
   const executeAutoClientTools = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
     const results: ClientToolResultPayload[] = [];
@@ -998,15 +1037,23 @@ export const AIChat: React.FC<AIChatProps> = ({
     return results;
   }, [getClientTools]);
 
-  const ensureAutoToolStash = useCallback((calls: ClientToolPendingCall[]) => {
-    const existing = autoToolStashRef.current;
+  const ensureAutoToolStash = useCallback((conversationId: string, calls: ClientToolPendingCall[]) => {
+    const existing = autoToolStashByConversationRef.current.get(conversationId);
     if (existing && existing.calls === calls) {
       return existing.promise;
     }
     const promise = executeAutoClientTools(calls);
-    autoToolStashRef.current = { calls, promise };
+    autoToolStashByConversationRef.current.set(conversationId, { calls, promise });
     return promise;
   }, [executeAutoClientTools]);
+
+  const releaseAutoToolStash = useCallback((conversationId: string | undefined) => {
+    if (!conversationId) {
+      return;
+    }
+    // Keep the handoff identity so the same calls object is not executed again.
+    autoToolStashByConversationRef.current.delete(conversationId);
+  }, []);
 
   const handleClientToolHandoff = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
     const runnable = pendingCalls.filter((call) => call.name !== 'ui_choose');
@@ -1039,55 +1086,49 @@ export const AIChat: React.FC<AIChatProps> = ({
     messageId: string | number,
     calls: ClientToolPendingCall[] | undefined,
     decisions: API.HITLDecision[],
+    submit: HITLSubmitState,
   ) => {
     if (hitlResumeLockRef.current) {
       return;
     }
     const generation = ++hitlResumeGenerationRef.current;
     const conversationId = conversationKeyRef.current;
+    if (!conversationId) {
+      setHitlSubmitting(null);
+      return;
+    }
     const decisionIDs = decisions.map((decision) => decision.tool_call_id);
     const revert = () => revertUnsavedHITLCards(setMessage, messageId, decisionIDs);
     const flight: HitlResumeFlight = { generation, streamRequested: false, revert };
     hitlResumeFlightRef.current = flight;
     hitlResumeLockRef.current = true;
-    let markedDecided = false;
     try {
       let results: ClientToolResultPayload[] = [];
       if (calls?.length) {
-        results = await ensureAutoToolStash(calls);
+        results = await ensureAutoToolStash(conversationId, calls);
       }
       const dropped = hitlResumeGenerationRef.current !== generation
         || conversationKeyRef.current !== conversationId;
       if (dropped) {
-        // Stop or a conversation switch happened during the stash. Do not post, and do not
-        // leave a decided bubble unless this session already received the resume POST.
+        // Stop or a conversation switch happened before the request. Do not post.
         if (hitlResumeFlightRef.current === flight) {
           hitlResumeFlightRef.current = null;
           hitlResumeLockRef.current = false;
           hitlResumeSawRequestRef.current = false;
+          hitlResumeTargetRef.current = null;
           setHitlSubmitting(null);
           revert();
         }
         return;
       }
-      // This store is the one captured for conversationId. Mark decided only now, then post there.
-      setMessage(messageId, (origin) => ({
-        message: {
-          ...origin.message,
-          hitlCards: origin.message.hitlCards?.map((card) => {
-            const decision = decisions.find((item) => item.tool_call_id === card.tool_call_id);
-            if (!decision || card.status !== 'pending') {
-              return card;
-            }
-            return { ...card, status: 'decided' as const, selected_option_id: decision.option_id };
-          }),
-        },
-      }));
-      markedDecided = true;
-      flight.streamRequested = true;
-      hitlResumeSawRequestRef.current = true;
-      hitlResumeStreamStartedRef.current = false;
-      hitlResumeTargetRef.current = { messageId, decisionIDs };
+      // Stay pending with selected_option_id until the follow-up assistant reaches updating.
+      hitlResumeTargetRef.current = {
+        conversationId,
+        messageId,
+        decisionIDs,
+        streamStarted: false,
+        submit,
+      };
       onRequest({
         content: '',
         ...(results.length > 0 ? { client_tool_results: results } : {}),
@@ -1099,18 +1140,21 @@ export const AIChat: React.FC<AIChatProps> = ({
       if (hitlResumeFlightRef.current === flight) {
         hitlResumeFlightRef.current = null;
       }
-      if (markedDecided) {
-        revert();
-      }
       hitlResumeLockRef.current = false;
       hitlResumeSawRequestRef.current = false;
       setHitlSubmitting(null);
+      revert();
     }
   }, [ensureAutoToolStash, onRequest, buildChatRequestFields, setMessage]);
 
   const abandonPendingHITLCards = useCallback(() => {
-    setHitlSubmitting(null);
-    setMessages((current) => {
+    const conversationId = conversationKeyRef.current;
+    const apply = setMessages;
+    let snapshots: { id: string | number; cards: API.HITLCard[] }[] = [];
+    let afterMessageId: string | number | undefined;
+    apply((current) => {
+      snapshots = [];
+      afterMessageId = current[current.length - 1]?.id;
       let changed = false;
       const next = current.map((item) => {
         const cards = item.message.hitlCards;
@@ -1118,6 +1162,7 @@ export const AIChat: React.FC<AIChatProps> = ({
           return item;
         }
         changed = true;
+        snapshots.push({ id: item.id, cards });
         return {
           ...item,
           message: {
@@ -1130,6 +1175,27 @@ export const AIChat: React.FC<AIChatProps> = ({
       });
       return changed ? next : current;
     });
+    if (conversationId && snapshots.length > 0) {
+      const captured = snapshots;
+      plainTextAbandonRef.current = {
+        conversationId,
+        afterMessageId,
+        streamStarted: false,
+        restore: () => {
+          apply((current) => current.map((item) => {
+            const snap = captured.find((entry) => entry.id === item.id);
+            if (!snap) {
+              return item;
+            }
+            return {
+              ...item,
+              message: { ...item.message, hitlCards: snap.cards },
+            };
+          }));
+        },
+      };
+    }
+    setHitlSubmitting(null);
   }, [setMessages]);
 
   const handleHITLSelect = useCallback((messageId: string | number, toolCallId: string, optionId: string) => {
@@ -1164,30 +1230,38 @@ export const AIChat: React.FC<AIChatProps> = ({
     if (!applied || !resume) {
       return;
     }
-    setHitlSubmitting({ messageId, toolCallId, optionId });
-    void resumeHITL(messageId, resume.calls, resume.decisions);
+    const submit = { messageId, toolCallId, optionId };
+    setHitlSubmitting(submit);
+    void resumeHITL(messageId, resume.calls, resume.decisions, submit);
   }, [hitlSubmitting, setMessage, resumeHITL]);
 
   useEffect(() => {
-    cancelUnsentHitlResume();
-    pendingHandoffRef.current = null;
-    autoToolStashRef.current = null;
-    hitlResumeLockRef.current = false;
-    hitlResumeSawRequestRef.current = false;
-    hitlResumeStreamStartedRef.current = false;
-    hitlResumeTargetRef.current = null;
+    const flight = hitlResumeFlightRef.current;
+    if (flight && !flight.streamRequested) {
+      cancelUnsentHitlResume();
+    }
+    const target = hitlResumeTargetRef.current;
+    if (target && activeConversationKey === target.conversationId && !target.streamStarted) {
+      hitlResumeLockRef.current = true;
+      setHitlSubmitting(target.submit);
+      return;
+    }
+    if (!target || target.conversationId !== activeConversationKey) {
+      hitlResumeLockRef.current = false;
+    }
     setHitlSubmitting(null);
   }, [activeConversationKey, cancelUnsentHitlResume]);
 
-  // The lock is taken before stashed auto-tool results resolve, while isRequesting is still false.
-  // Drop the button spinner once that resume request is actually in flight, and release the lock when it ends.
+  // streamRequested tracks the hook's in-flight flag. The spinner stays until SSE updating.
   useEffect(() => {
-    if (!hitlResumeLockRef.current) {
-      return;
-    }
+    const flight = hitlResumeFlightRef.current;
     if (isRequesting) {
-      hitlResumeSawRequestRef.current = true;
-      setHitlSubmitting(null);
+      if (flight) {
+        flight.streamRequested = true;
+      }
+      if (flight || hitlResumeLockRef.current) {
+        hitlResumeSawRequestRef.current = true;
+      }
       return;
     }
     if (!hitlResumeSawRequestRef.current) {
@@ -1197,12 +1271,32 @@ export const AIChat: React.FC<AIChatProps> = ({
     hitlResumeLockRef.current = false;
   }, [isRequesting]);
 
-  // Decisions are saved before SSE bytes arrive. Reopen cards only when the POST fails
-  // with no stream chunk (validation, network, or !response.ok). Stop or a later
-  // completion error, after the request or the stream has started, keeps “You chose …”.
+  const markResumeDecided = useCallback((target: HitlResumeTarget) => {
+    target.streamStarted = true;
+    setMessage(target.messageId, (origin) => ({
+      message: {
+        ...origin.message,
+        hitlCards: origin.message.hitlCards?.map((card) => (
+          target.decisionIDs.includes(card.tool_call_id) && card.status === 'pending'
+            ? { ...card, status: 'decided' as const }
+            : card
+        )),
+      },
+    }));
+    releaseAutoToolStash(target.conversationId);
+    hitlResumeTargetRef.current = null;
+    hitlResumeFlightRef.current = null;
+    hitlResumeLockRef.current = false;
+    hitlResumeSawRequestRef.current = false;
+    setHitlSubmitting(null);
+  }, [releaseAutoToolStash, setMessage]);
+
+  // Cards stay pending until the follow-up assistant reaches updating. A POST that
+  // fails with no stream chunk never shows “You chose …”. After SSE starts, Stop or
+  // a later completion error keeps the decided cards.
   useEffect(() => {
     const target = hitlResumeTargetRef.current;
-    if (!target || !messages?.length) {
+    if (!target || !messages?.length || activeConversationKey !== target.conversationId) {
       return;
     }
     const cardIndex = messages.findIndex((item) => item.id === target.messageId);
@@ -1213,46 +1307,72 @@ export const AIChat: React.FC<AIChatProps> = ({
     if (!assistant) {
       return;
     }
-    if (assistant.status === 'updating') {
-      hitlResumeStreamStartedRef.current = true;
-    }
-    if (assistant.status === 'loading' || assistant.status === 'updating' || assistant.status === 'local') {
+    if (assistant.status === 'updating' || target.streamStarted || assistant.status === 'success') {
+      markResumeDecided(target);
       return;
     }
-    const streamStarted = hitlResumeStreamStartedRef.current;
+    if (assistant.status === 'loading' || assistant.status === 'local') {
+      return;
+    }
     hitlResumeTargetRef.current = null;
-    hitlResumeStreamStartedRef.current = false;
-    if (streamStarted || assistant.status !== 'error') {
-      return;
-    }
+    hitlResumeFlightRef.current = null;
     hitlResumeLockRef.current = false;
     hitlResumeSawRequestRef.current = false;
     setHitlSubmitting(null);
     revertUnsavedHITLCards(setMessage, target.messageId, target.decisionIDs);
-  }, [messages, setMessage]);
+  }, [messages, activeConversationKey, setMessage, markResumeDecided]);
+
+  // A plain-text send abandons pending cards. If that send fails before SSE, put the buttons back.
+  useEffect(() => {
+    const pending = plainTextAbandonRef.current;
+    if (!pending || !messages?.length || activeConversationKey !== pending.conversationId) {
+      return;
+    }
+    if (pending.afterMessageId !== undefined && !messages.some((item) => item.id === pending.afterMessageId)) {
+      return;
+    }
+    const start = pending.afterMessageId === undefined
+      ? -1
+      : messages.findIndex((item) => item.id === pending.afterMessageId);
+    const assistant = [...messages.slice(start + 1)].reverse().find((item) => item.message.role === 'assistant');
+    if (!assistant) {
+      return;
+    }
+    if ((assistant.status === 'loading' || assistant.status === 'local') && !pending.streamStarted) {
+      return;
+    }
+    if (assistant.status === 'updating' || assistant.status === 'success' || pending.streamStarted) {
+      plainTextAbandonRef.current = null;
+      releaseAutoToolStash(pending.conversationId);
+      return;
+    }
+    plainTextAbandonRef.current = null;
+    pending.restore();
+  }, [messages, activeConversationKey, releaseAutoToolStash]);
 
   // Auto-run browser tools immediately when nothing is waiting on a card.
   // When cards are still pending, stash those results and wait for every selection.
+  // Only the active conversation's entries are read or written.
   useEffect(() => {
-    if (isRequesting || !messages?.length) {
+    if (isRequesting || !messages?.length || !activeConversationKey) {
       return;
     }
     const lastMsg = messages[messages.length - 1];
     const calls = lastMsg?.message?.pendingClientToolCalls;
-    if (calls?.length) {
-      if (pendingHandoffRef.current === calls) {
-        return;
-      }
-      pendingHandoffRef.current = calls;
-      if (hasPendingHITLCards(lastMsg.message.hitlCards)) {
-        void ensureAutoToolStash(calls);
-        return;
-      }
-      void handleClientToolHandoff(calls);
+    if (!calls?.length) {
       return;
     }
-    pendingHandoffRef.current = null;
-  }, [isRequesting, messages, ensureAutoToolStash, handleClientToolHandoff]);
+    const handoff = pendingHandoffByConversationRef.current;
+    if (handoff.get(activeConversationKey) === calls) {
+      return;
+    }
+    handoff.set(activeConversationKey, calls);
+    if (hasPendingHITLCards(lastMsg.message.hitlCards)) {
+      void ensureAutoToolStash(activeConversationKey, calls);
+      return;
+    }
+    void handleClientToolHandoff(calls);
+  }, [isRequesting, messages, activeConversationKey, ensureAutoToolStash, handleClientToolHandoff]);
 
   const onSubmit = (val: string) => {
     if (!val || hitlSubmitting) return;
