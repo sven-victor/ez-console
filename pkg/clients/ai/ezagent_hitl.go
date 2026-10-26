@@ -52,6 +52,15 @@ func newAutoRejectRegistry(inner tool.Registry, catalog HITLCatalog) *autoReject
 	return &autoRejectRegistry{inner: inner, catalog: catalog}
 }
 
+// loopToolRegistry is the registry the agent loop uses. In auto_reject mode gated
+// tools are rejected at Lookup/invoke without calling the inner handler.
+func loopToolRegistry(reg tool.Registry, mode HITLMode, catalog HITLCatalog) tool.Registry {
+	if ResolveHITLMode(mode) == HITLModeAutoReject {
+		return newAutoRejectRegistry(reg, catalog)
+	}
+	return reg
+}
+
 func (r *autoRejectRegistry) Specs() []tool.Spec {
 	return r.inner.Specs()
 }

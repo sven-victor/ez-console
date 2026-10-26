@@ -120,8 +120,94 @@ func TestAutoRejectRegistryLookupDoesNotCallGatedTool(t *testing.T) {
 	if called {
 		t.Fatal("inner Call was invoked")
 	}
+	if res.OK {
+		t.Fatal("expected OK false")
+	}
+	if res.ToolUseID != "c1" {
+		t.Fatalf("ToolUseID=%q", res.ToolUseID)
+	}
 	text, ok := res.Content[0].(message.Text)
 	if !ok || text.Text != AutoRejectToolResultContent {
 		t.Fatalf("content=%#v", res.Content)
+	}
+}
+
+func hitlMixedToolRegistry(t *testing.T, gatedCalled *bool) tool.Registry {
+	t.Helper()
+	return newToolSetsRegistry(func() context.Context { return context.Background() }, func(ctx context.Context) (toolset.ToolSets, error) {
+		return toolset.ToolSets{
+			"mcp3": toolset.NewAdHocToolSet(toolset.NewAdHocTool(openai.Tool{
+				Type:     openai.ToolTypeFunction,
+				Function: &openai.FunctionDefinition{Name: "delete_user", Parameters: map[string]any{"type": "object"}},
+			}, func(ctx context.Context, name, parameters string) (string, error) {
+				*gatedCalled = true
+				return "deleted", nil
+			})),
+			"utils1": toolset.NewAdHocToolSet(toolset.NewAdHocTool(openai.Tool{
+				Type:     openai.ToolTypeFunction,
+				Function: &openai.FunctionDefinition{Name: "now", Parameters: map[string]any{"type": "object"}},
+			}, func(ctx context.Context, name, parameters string) (string, error) {
+				return "2026-10-26", nil
+			})),
+		}, nil
+	}, nil)
+}
+
+func TestLoopToolRegistryAutoRejectMixedBatch(t *testing.T) {
+	catalog := HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval}}
+	var gatedCalled bool
+	reg := hitlMixedToolRegistry(t, &gatedCalled)
+	loopReg := loopToolRegistry(reg, HITLModeAutoReject, catalog)
+
+	nowH, ok := loopReg.Lookup("utils1_now")
+	if !ok || nowH == nil {
+		t.Fatal("expected utils1_now handler")
+	}
+	nowRes, err := nowH(context.Background(), tool.Call{ID: "n1", Name: "utils1_now", Input: []byte(`{}`)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !nowRes.OK {
+		t.Fatalf("utils1_now OK=%v", nowRes.OK)
+	}
+
+	gatedH, ok := loopReg.Lookup("mcp3_delete_user")
+	if !ok || gatedH == nil {
+		t.Fatal("expected mcp3_delete_user handler")
+	}
+	gatedRes, err := gatedH(context.Background(), tool.Call{
+		ID: "c1", Name: "mcp3_delete_user", Input: []byte(`{"id":"u1"}`),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gatedCalled {
+		t.Fatal("gated inner Call was invoked in auto_reject")
+	}
+	if gatedRes.OK {
+		t.Fatal("expected OK false for gated auto-reject")
+	}
+	if gatedRes.ToolUseID != "c1" {
+		t.Fatalf("ToolUseID=%q", gatedRes.ToolUseID)
+	}
+	text, ok := gatedRes.Content[0].(message.Text)
+	if !ok || text.Text != AutoRejectToolResultContent {
+		t.Fatalf("content=%#v", gatedRes.Content)
+	}
+
+	gatedCalled = false
+	interactiveReg := loopToolRegistry(reg, HITLModeInteractive, catalog)
+	innerH, ok := interactiveReg.Lookup("mcp3_delete_user")
+	if !ok || innerH == nil {
+		t.Fatal("expected inner gated handler")
+	}
+	_, err = innerH(context.Background(), tool.Call{
+		ID: "c2", Name: "mcp3_delete_user", Input: []byte(`{"id":"u2"}`),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !gatedCalled {
+		t.Fatal("interactive loop registry must delegate gated tools to inner")
 	}
 }
