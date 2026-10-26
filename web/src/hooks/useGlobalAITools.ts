@@ -99,8 +99,8 @@ export function buildRoutesPrompt(entries: AIRouteEntry[]): string {
 /**
  * Registers the app-wide AI context that lets the chat move between pages:
  * a system prompt listing the routes this user can open, plus the
- * `ui_get_current_route` and `ui_navigate` client tools. Page-specific
- * actions are published by each page via `registerPageAI`.
+ * `ui_get_current_route`, `ui_navigate`, and `ui_choose` client tools.
+ * Page-specific actions are published by each page via `registerPageAI`.
  */
 export function useGlobalAITools(routes: IRoute[], enabled: boolean): void {
   const { registerGlobalAI, getClientTools, waitForPageAI } = useAI();
@@ -216,6 +216,34 @@ export function useGlobalAITools(routes: IRoute[], enabled: boolean): void {
             ...describeCurrent(),
           });
         },
+      },
+      {
+        name: 'ui_choose',
+        description:
+          'Ask the user to pick one option when several valid next actions exist. Do not use this to confirm a tool you can call yourself; call that tool and let approval cards handle confirmation.',
+        parameters: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            options: {
+              type: 'array',
+              minItems: 2,
+              maxItems: 6,
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  label: { type: 'string' },
+                  description: { type: 'string' },
+                },
+                required: ['id', 'label'],
+              },
+            },
+          },
+          required: ['title', 'options'],
+        },
+        // Safety net: the card protocol owns this tool. Never treat a handler result as the user's choice.
+        handler: () => JSON.stringify({ error: 'ui_choose is presented as a chat card and must not be auto-executed' }),
       },
     ];
   }, [getClientTools, waitForPageAI]);

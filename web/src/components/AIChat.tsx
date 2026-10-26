@@ -48,6 +48,7 @@ import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import '@ant-design/x-markdown/themes/light.css';
 import '@ant-design/x-markdown/themes/dark.css';
 import type { BubbleItemType, Info } from '@ant-design/x/es/bubble/interface';
+import { HITLCard } from '@/components/HITLCard';
 
 const useStyle = createStyles(({ token, css }) => {
   return {
@@ -230,6 +231,7 @@ interface ClientToolPendingCall {
 interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'> {
   error?: string;
   pendingClientToolCalls?: ClientToolPendingCall[];
+  hitlCards?: API.HITLCard[];
   messageId?: string;
   status?: MessageStatus;
 }
@@ -253,6 +255,92 @@ interface ChatStreamInput {
   ephemeral_system_prompts?: string[];
   client_tools?: ClientToolSchema[];
   client_tool_results?: ClientToolResultPayload[];
+  hitl_decisions?: API.HITLDecision[];
+}
+
+interface HITLSubmitState {
+  messageId: string | number;
+  toolCallId: string;
+  optionId: string;
+}
+
+function normalizeHITLCard(value: unknown): API.HITLCard | undefined {
+  if (value == null || typeof value !== 'object') {
+    return undefined;
+  }
+  const raw = value as Record<string, unknown>;
+  if (typeof raw.tool_call_id !== 'string' || raw.tool_call_id === '') {
+    return undefined;
+  }
+  if (raw.kind !== 'approval' && raw.kind !== 'choice') {
+    return undefined;
+  }
+  if (raw.status !== 'pending' && raw.status !== 'decided' && raw.status !== 'abandoned') {
+    return undefined;
+  }
+  if (typeof raw.title !== 'string' || typeof raw.tool_name !== 'string' || !Array.isArray(raw.options)) {
+    return undefined;
+  }
+  const options: API.HITLOption[] = [];
+  for (const item of raw.options) {
+    if (item == null || typeof item !== 'object') {
+      continue;
+    }
+    const option = item as Record<string, unknown>;
+    if (typeof option.id !== 'string' || typeof option.label !== 'string') {
+      continue;
+    }
+    options.push({
+      id: option.id,
+      label: option.label,
+      description: typeof option.description === 'string' ? option.description : '',
+      primary: option.primary === true,
+    });
+  }
+  let args = '';
+  if (typeof raw.arguments === 'string') {
+    args = raw.arguments;
+  } else if (raw.arguments != null) {
+    try {
+      args = JSON.stringify(raw.arguments);
+    } catch {
+      args = '';
+    }
+  }
+  return {
+    tool_call_id: raw.tool_call_id,
+    kind: raw.kind,
+    title: raw.title,
+    tool_name: raw.tool_name,
+    arguments: args,
+    options,
+    status: raw.status,
+    selected_option_id: typeof raw.selected_option_id === 'string' ? raw.selected_option_id : '',
+  };
+}
+
+/** Session metadata is typed as `true` because swag emits a map; read hitl_cards from the runtime object. */
+function hitlCardsFromMetadata(metadata: API.AIChatMessage['metadata']): API.HITLCard[] | undefined {
+  const value = metadata as unknown;
+  if (value == null || typeof value !== 'object') {
+    return undefined;
+  }
+  const raw = (value as { hitl_cards?: unknown }).hitl_cards;
+  if (!Array.isArray(raw)) {
+    return undefined;
+  }
+  const cards: API.HITLCard[] = [];
+  for (const item of raw) {
+    const card = normalizeHITLCard(item);
+    if (card) {
+      cards.push(card);
+    }
+  }
+  return cards.length > 0 ? cards : undefined;
+}
+
+function hasPendingHITLCards(cards: API.HITLCard[] | undefined): boolean {
+  return !!cards?.some((card) => card.status === 'pending');
 }
 
 interface ChatStreamOutput {
@@ -350,6 +438,16 @@ class AIProvider<
           content: content || '',
           role: 'assistant',
           pendingClientToolCalls: chunkJson.client_tool_calls,
+          messageId: chunkJson.message_id,
+          status,
+        } as ChatMessage;
+      case 'hitl_pending':
+        return {
+          ...originMessage,
+          content: content || '',
+          role: 'assistant',
+          pendingClientToolCalls: chunkJson.client_tool_calls,
+          hitlCards: chunkJson.hitl_cards,
           messageId: chunkJson.message_id,
           status,
         } as ChatMessage;
@@ -478,6 +576,8 @@ interface ChatListProps {
   loading?: boolean;
   layout?: 'classic' | 'sidebar' | 'float-sidebar';
   onSendMessage: (val: string) => void;
+  hitlSubmitting?: HITLSubmitState | null;
+  onHITLSelect?: (messageId: string | number, toolCallId: string, optionId: string) => void;
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -486,6 +586,8 @@ const ChatList: React.FC<ChatListProps> = ({
   loading,
   layout = 'classic',
   onSendMessage,
+  hitlSubmitting,
+  onHITLSelect,
 }) => {
   const { styles } = useStyle();
   const { isDarkMode } = useThemeMode();
@@ -518,6 +620,9 @@ const ChatList: React.FC<ChatListProps> = ({
 
   const {
     contentRender = (content: string) => {
+      if (!content) {
+        return null;
+      }
       return (
         <XMarkdown
           paragraphTag="div"
@@ -543,10 +648,46 @@ const ChatList: React.FC<ChatListProps> = ({
     return (messages || []).map((i) => ({
       ...i.message,
       key: i.id,
+      // An approval turn can have cards and no assistant text. Hide the empty content shell.
+      ...(!i.message.content && i.message.hitlCards?.length ? {
+        variant: 'borderless' as const,
+        styles: { content: { display: 'none' } },
+      } : {}),
       contentRender: contentRender,
-      footer: (_: string, info: Info) => footerRender?.(i, info, onSendMessage),
-    } as BubbleItemType)).filter((i) => i.content);
-  }, [messages]);
+      footer: (_: string, info: Info) => {
+        const extra = footerRender?.(i, info, onSendMessage);
+        const cards = i.message.hitlCards;
+        if (!cards?.length) {
+          return extra;
+        }
+        return (
+          <Flex vertical gap={8}>
+            {extra || null}
+            {cards.map((card) => (
+              <HITLCard
+                key={card.tool_call_id}
+                card={card}
+                submittingOptionId={
+                  hitlSubmitting?.messageId === i.id && hitlSubmitting.toolCallId === card.tool_call_id
+                    ? hitlSubmitting.optionId
+                    : undefined
+                }
+                disabled={
+                  hitlSubmitting?.messageId === i.id
+                  && hitlSubmitting.toolCallId !== card.tool_call_id
+                }
+                onSelect={
+                  card.status === 'pending'
+                    ? (optionId) => onHITLSelect?.(i.id, card.tool_call_id, optionId)
+                    : undefined
+                }
+              />
+            ))}
+          </Flex>
+        );
+      },
+    } as BubbleItemType & Pick<ChatStreamMessage, 'hitlCards'>)).filter((i) => i.content || i.hitlCards?.length);
+  }, [messages, contentRender, footerRender, onSendMessage, hitlSubmitting, onHITLSelect]);
 
   return (
     <div className={styles.chatList}>
@@ -755,13 +896,21 @@ export const AIChat: React.FC<AIChatProps> = ({
   }, [selectedSkills, getEphemeralSystemPrompts, getClientTools]);
 
   const pendingHandoffRef = useRef<ClientToolPendingCall[] | null>(null);
+  const autoToolStashRef = useRef<{ calls: ClientToolPendingCall[]; promise: Promise<ClientToolResultPayload[]> } | null>(null);
+  const hitlResumeLockRef = useRef(false);
+  const hitlResumeSawRequestRef = useRef(false);
+  const [hitlSubmitting, setHitlSubmitting] = useState<HITLSubmitState | null>(null);
 
-  const handleClientToolHandoff = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
+  const executeAutoClientTools = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
     const results: ClientToolResultPayload[] = [];
     // Resolve handlers from the tool set that was active when the model made
     // the calls; later calls in the same batch still see this snapshot.
     const toolsAtHandoff = getClientTools();
     for (const call of pendingCalls) {
+      // Choice cards are resumed with hitl_decisions. Never invoke ui_choose here.
+      if (call.name === 'ui_choose') {
+        continue;
+      }
       const tool = toolsAtHandoff.find(t => t.name === call.name);
       if (!tool) {
         results.push({
@@ -785,36 +934,201 @@ export const AIChat: React.FC<AIChatProps> = ({
         });
       }
     }
+    return results;
+  }, [getClientTools]);
+
+  const ensureAutoToolStash = useCallback((calls: ClientToolPendingCall[]) => {
+    const existing = autoToolStashRef.current;
+    if (existing && existing.calls === calls) {
+      return existing.promise;
+    }
+    const promise = executeAutoClientTools(calls);
+    autoToolStashRef.current = { calls, promise };
+    return promise;
+  }, [executeAutoClientTools]);
+
+  const handleClientToolHandoff = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
+    const runnable = pendingCalls.filter((call) => call.name !== 'ui_choose');
+    if (runnable.length === 0) {
+      return;
+    }
+    const results = await executeAutoClientTools(pendingCalls);
     onRequest({
       content: '',
       client_tool_results: results,
       ...buildChatRequestFields(),
     });
-  }, [getClientTools, onRequest, buildChatRequestFields]);
+  }, [executeAutoClientTools, onRequest, buildChatRequestFields]);
 
-  // Watch for completed requests with pending client tool calls
-  useEffect(() => {
-    if (!isRequesting && messages && messages.length > 0) {
-      const lastMsg = messages[messages.length - 1];
-      if (lastMsg?.message?.pendingClientToolCalls?.length) {
-        const calls = lastMsg.message.pendingClientToolCalls;
-        if (pendingHandoffRef.current !== calls) {
-          pendingHandoffRef.current = calls;
-          handleClientToolHandoff(calls);
-        }
-      } else {
-        pendingHandoffRef.current = null;
-      }
+  const resumeHITL = useCallback(async (
+    messageId: string | number,
+    calls: ClientToolPendingCall[] | undefined,
+    decisions: API.HITLDecision[],
+  ) => {
+    if (hitlResumeLockRef.current) {
+      return;
     }
-  }, [isRequesting, messages, handleClientToolHandoff]);
+    hitlResumeLockRef.current = true;
+    let committed = false;
+    try {
+      let results: ClientToolResultPayload[] = [];
+      if (calls?.length) {
+        results = await ensureAutoToolStash(calls);
+      }
+      // Mark the choice on this conversation's store before the follow-up stream starts.
+      setMessage(messageId, (origin) => ({
+        message: {
+          ...origin.message,
+          hitlCards: origin.message.hitlCards?.map((card) => {
+            const decision = decisions.find((item) => item.tool_call_id === card.tool_call_id);
+            if (!decision || card.status !== 'pending') {
+              return card;
+            }
+            return { ...card, status: 'decided' as const, selected_option_id: decision.option_id };
+          }),
+        },
+      }));
+      committed = true;
+      onRequest({
+        content: '',
+        ...(results.length > 0 ? { client_tool_results: results } : {}),
+        hitl_decisions: decisions,
+        ...buildChatRequestFields(),
+      });
+    } catch {
+      if (committed) {
+        setMessage(messageId, (origin) => ({
+          message: {
+            ...origin.message,
+            hitlCards: origin.message.hitlCards?.map((card) => (
+              decisions.some((item) => item.tool_call_id === card.tool_call_id) && card.status === 'decided'
+                ? { ...card, status: 'pending' as const }
+                : card
+            )),
+          },
+        }));
+      }
+      hitlResumeLockRef.current = false;
+      setHitlSubmitting(null);
+    }
+  }, [ensureAutoToolStash, onRequest, buildChatRequestFields, setMessage]);
+
+  const abandonPendingHITLCards = useCallback(() => {
+    setHitlSubmitting(null);
+    setMessages((current) => {
+      let changed = false;
+      const next = current.map((item) => {
+        const cards = item.message.hitlCards;
+        if (!cards?.some((card) => card.status === 'pending')) {
+          return item;
+        }
+        changed = true;
+        return {
+          ...item,
+          message: {
+            ...item.message,
+            hitlCards: cards.map((card) => (
+              card.status === 'pending' ? { ...card, status: 'abandoned' as const } : card
+            )),
+          },
+        };
+      });
+      return changed ? next : current;
+    });
+  }, [setMessages]);
+
+  const handleHITLSelect = useCallback((messageId: string | number, toolCallId: string, optionId: string) => {
+    if (hitlSubmitting || hitlResumeLockRef.current) {
+      return;
+    }
+    const current = messages?.find((item) => item.id === messageId);
+    const cards = current?.message.hitlCards;
+    if (!current || !cards) {
+      return;
+    }
+    const target = cards.find((card) => card.tool_call_id === toolCallId);
+    if (!target || target.status !== 'pending') {
+      return;
+    }
+    const nextCards = cards.map((card) => (
+      card.tool_call_id === toolCallId ? { ...card, selected_option_id: optionId } : card
+    ));
+    const pending = nextCards.filter((card) => card.status === 'pending');
+    const ready = pending.length > 0 && pending.every((card) => card.selected_option_id);
+    if (!ready) {
+      setMessage(messageId, {
+        message: { ...current.message, hitlCards: nextCards },
+      });
+      return;
+    }
+    const decisions: API.HITLDecision[] = pending.map((card) => ({
+      tool_call_id: card.tool_call_id,
+      option_id: card.selected_option_id,
+    }));
+    setMessage(messageId, {
+      message: { ...current.message, hitlCards: nextCards },
+    });
+    setHitlSubmitting({ messageId, toolCallId, optionId });
+    void resumeHITL(messageId, current.message.pendingClientToolCalls, decisions);
+  }, [hitlSubmitting, messages, setMessage, resumeHITL]);
+
+  useEffect(() => {
+    pendingHandoffRef.current = null;
+    autoToolStashRef.current = null;
+    hitlResumeLockRef.current = false;
+    hitlResumeSawRequestRef.current = false;
+    setHitlSubmitting(null);
+  }, [activeConversationKey]);
+
+  // The lock is taken before stashed auto-tool results resolve, while isRequesting is still false.
+  // Drop the button spinner once that resume request is actually in flight, and release the lock when it ends.
+  useEffect(() => {
+    if (!hitlResumeLockRef.current) {
+      return;
+    }
+    if (isRequesting) {
+      hitlResumeSawRequestRef.current = true;
+      setHitlSubmitting(null);
+      return;
+    }
+    if (!hitlResumeSawRequestRef.current) {
+      return;
+    }
+    hitlResumeSawRequestRef.current = false;
+    hitlResumeLockRef.current = false;
+  }, [isRequesting]);
+
+  // Auto-run browser tools immediately when nothing is waiting on a card.
+  // When cards are still pending, stash those results and wait for every selection.
+  useEffect(() => {
+    if (isRequesting || !messages?.length) {
+      return;
+    }
+    const lastMsg = messages[messages.length - 1];
+    const calls = lastMsg?.message?.pendingClientToolCalls;
+    if (calls?.length) {
+      if (pendingHandoffRef.current === calls) {
+        return;
+      }
+      pendingHandoffRef.current = calls;
+      if (hasPendingHITLCards(lastMsg.message.hitlCards)) {
+        void ensureAutoToolStash(calls);
+        return;
+      }
+      void handleClientToolHandoff(calls);
+      return;
+    }
+    pendingHandoffRef.current = null;
+  }, [isRequesting, messages, ensureAutoToolStash, handleClientToolHandoff]);
 
   const onSubmit = (val: string) => {
-    if (!val) return;
+    if (!val || hitlSubmitting) return;
 
     if (!activeConversationKey) {
       createNewConversation(val);
       return;
     }
+    abandonPendingHITLCards();
     onRequest({
       content: val,
       ...buildChatRequestFields(),
@@ -835,6 +1149,20 @@ export const AIChat: React.FC<AIChatProps> = ({
 
       const chatMessages: MessageInfo<ChatStreamMessage>[] = [];
       let buffer: MessageInfo<ChatStreamMessage> = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
+      const flushAssistant = () => {
+        if (buffer.message.content.length === 0 && !buffer.message.hitlCards?.length) {
+          return;
+        }
+        chatMessages.push({
+          id: buffer.id,
+          message: {
+            content: buffer.message.content,
+            role: buffer.message.role,
+            ...(buffer.message.hitlCards?.length ? { hitlCards: buffer.message.hitlCards } : {}),
+          },
+          status: buffer.status,
+        });
+      };
       for (const item of data.messages) {
         switch (item.role) {
           case 'assistant':
@@ -844,17 +1172,16 @@ export const AIChat: React.FC<AIChatProps> = ({
               buffer.message.content = item.content;
             }
             buffer.id = item.id;
+            {
+              const cards = hitlCardsFromMetadata(item.metadata);
+              if (cards?.length) {
+                buffer.message.hitlCards = [...(buffer.message.hitlCards ?? []), ...cards];
+              }
+            }
             break;
           case 'user':
-            if (buffer.message.content.length > 0) {
-              chatMessages.push({
-                id: buffer.id,
-                message: {
-                  content: buffer.message.content,
-                  role: buffer.message.role,
-                },
-                status: buffer.status,
-              });
+            if (buffer.message.content.length > 0 || buffer.message.hitlCards?.length) {
+              flushAssistant();
               buffer = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
             }
             chatMessages.push({
@@ -868,16 +1195,7 @@ export const AIChat: React.FC<AIChatProps> = ({
             break;
         }
       }
-      if (buffer.message.content.length > 0) {
-        chatMessages.push({
-          id: buffer.id,
-          message: {
-            content: buffer.message.content,
-            role: buffer.message.role,
-          },
-          status: buffer.status,
-        });
-      }
+      flushAssistant();
       setMessages(chatMessages);
     }
   });
@@ -943,6 +1261,7 @@ export const AIChat: React.FC<AIChatProps> = ({
     if (activeConversationKey && messageBuffer?.sessionId === activeConversationKey) {
       const { message: msg, domains } = messageBuffer;
       setTimeout(() => {
+        abandonPendingHITLCards();
         onRequest({
           content: msg,
           ...buildChatRequestFields(),
@@ -951,7 +1270,7 @@ export const AIChat: React.FC<AIChatProps> = ({
       }, 1000)
       setMessageBuffer(undefined);
     }
-  }, [activeConversationKey, messageBuffer, buildChatRequestFields])
+  }, [activeConversationKey, messageBuffer, buildChatRequestFields, abandonPendingHITLCards])
 
   useEffect(() => {
     if (activeConversationKey) {
@@ -975,6 +1294,10 @@ export const AIChat: React.FC<AIChatProps> = ({
       ]);
     }
     if (options.newSession === false && activeConversationKey) {
+      if (hitlSubmitting) {
+        return;
+      }
+      abandonPendingHITLCards();
       onRequest({
         content: message,
         ...buildChatRequestFields(),
@@ -1097,7 +1420,7 @@ export const AIChat: React.FC<AIChatProps> = ({
           }}
           onChange={setInputValue}
           onCancel={() => { abort() }}
-          loading={isRequesting}
+          loading={isRequesting || hitlSubmitting !== null}
           className={classNames(styles.sender, 'chat-sender')}
           placeholder={t('chat.inputPlaceholder')}
         />
@@ -1171,6 +1494,8 @@ export const AIChat: React.FC<AIChatProps> = ({
               loading={fetchConversationLoading || createNewConversationLoading}
               layout={layout}
               onSendMessage={onSubmit}
+              hitlSubmitting={hitlSubmitting}
+              onHITLSelect={handleHITLSelect}
             />
             {chatSender}
           </div>
