@@ -31,6 +31,7 @@ This guide covers the AI model integration and toolsets functionality in EZ-Cons
   - [How Client Tools Work](#how-client-tools-work)
   - [Registering Client Tools in the Frontend](#registering-client-tools-in-the-frontend)
   - [Server-Side Client Tool Handling](#server-side-client-tool-handling)
+  - [HITL approval and choice cards](#hitl-approval-and-choice-cards)
 - [Chat Sessions & Streaming](#chat-sessions--streaming)
   - [Session Management](#session-management)
   - [SSE Streaming Protocol](#sse-streaming-protocol)
@@ -59,8 +60,9 @@ EZ-Console provides a flexible AI integration system that allows you to:
 - **Connect multiple AI providers**: Built-in OpenAI-compatible, Anthropic, and Gemini providers (via [ez-agent](https://github.com/sven-victor/ez-agent)); extensible to custom providers
 - **ez-agent runtime**: Chat completions run on ez-agent (`Agent.Run` / `RunStream`) for the tool loop, session memory, summarization, hooks, and HITL interrupters
 - **Server-side tool calling**: Role-authorized toolsets (MCP, utils, custom) plus optional progressive skill–tool binding
-- **Client-side tool calling**: Browser-executed `ui_*` tools via HITL handoff (`client_tool_pending`)
-- **Streaming responses**: Real-time SSE chat with content deltas and client-tool control events
+- **Client-side tool calling**: Browser-executed `ui_*` tools. Auto tools hand off with `client_tool_pending`; `ui_choose` is a choice card and is not auto-run
+- **HITL approval and choice cards**: Web chat pauses for approval-gated tools and `ui_choose`. Callers that do not opt in stay on `auto_reject` and continue without executing those tools
+- **Streaming responses**: Real-time SSE chat with content deltas, client-tool handoff, and `hitl_pending` card events
 - **Skills system**: Markdown instruction packs (`SKILL.md`) with on-demand `get_skill_content` loading
 - **Auto-summarization**: ez-agent memory policies (robust one-shot + segmented fallback, optional offload); an optional summary-purpose model
 - **Model purposes**: One enabled model per registered use (page chat, summarization, or a custom key). The organization default model stays the fallback
@@ -107,7 +109,8 @@ The AI system follows a layered architecture. Chat orchestration is **ez-agent�
 **Chat stream path (production):**
 
 ```
-POST /api/ai/chat/sessions/:id  (content | client_tool_results)
+POST /api/ai/chat/sessions/:id  (content | client_tool_results | hitl_decisions)
+  → PrepareTurn (session decisions, approved execution, orphan repair)
   → CreateSkillLoader(domains+skill_ids+activated)  // always appends core, chat
   → mergeAIChatClientOptions
        GetAuthorizedToolSets (RBAC)
@@ -119,7 +122,7 @@ POST /api/ai/chat/sessions/:id  (content | client_tool_results)
          toolSetsRegistry (live Specs/Lookup)
          UI HITL interrupter · SessionStore · summarize · hooks
          (summarize uses the summary-purpose provider when one is bound)
-  → SSE: content | client_tool_pending | error
+  → SSE: content | hitl_pending | client_tool_pending | error
      (raw tool_call events are produced internally but not forwarded by the controller)
 ```
 
@@ -135,7 +138,7 @@ POST /api/ai/chat/sessions/:id  (content | client_tool_results)
 - Provider factories return `aimodel.Provider` (ez-agent). `ClassicChatClient` wraps the provider and runs `Exchange` / `ExchangeStream` via ez-agent.
 - `ToolSets` is `map[string]ToolSet`. Production map keys are **`{type}{gorm numeric id}`** (e.g. `utils1`, `mcp3`), not the type name alone. Exposed tool names are `{key}_{logicalName}` (e.g. `utils1_now`). See [Tool Name Prefixing](#tool-name-prefixing).
 - Skill progressive binding uses `SkillDrivenToolset` when binding is enabled; otherwise skills only inject metadata + `get_skill_content`.
-- SSE event types: `content`, `tool_call` (internal), `error`, `client_tool_pending`.
+- SSE event types: `content`, `tool_call` (internal), `error`, `client_tool_pending`, `hitl_pending`. Web `StreamChat` runs HITL in `interactive` mode. See [HITL approval and choice cards](#hitl-approval-and-choice-cards).
 
 ## AI Models
 
@@ -745,6 +748,7 @@ Model Context Protocol (MCP) toolset for connecting to MCP-compatible servers.
   - `headers` (or alias `header`): object of HTTP header name → value pairs sent with HTTP/SSE requests
   - `proxy`: proxy URL for HTTP/SSE (`http`, `https`, `socks5`, `socks5h`)
 - `disabled_tools` (optional): array of logical tool names to hide from the model
+- `approval_tools` (optional): array of logical tool names that require an approval card before they run. Same name shape as `disabled_tools` (before the `{key}_` prefix). See [HITL approval and choice cards](#hitl-approval-and-choice-cards).
 
 Form-level auth (`username`/`password` or `token`) is applied after `args.headers`, so it overrides an `Authorization` header from `args` when both are set.
 
@@ -1364,6 +1368,7 @@ Frontend                    Backend                      AI Model
 - Maximum of 20 client tools per request.
 - Tool descriptions are limited to 1000 characters.
 - Handoff is driven by the ez-agent **HITL interrupter** (see below), not only by the proxy returning an error.
+- `ui_choose` and approval-gated server tools wait for a card. Other `ui_*` tools still use the browser handoff below. See [HITL approval and choice cards](#hitl-approval-and-choice-cards).
 
 ### Registering Client Tools in the Frontend
 
@@ -1424,20 +1429,232 @@ On the backend, `AIChatController.StreamChat`:
 1. Validates client tool names match `^ui_[a-zA-Z0-9_]+$` (max 20 tools; description length capped).
 2. Converts definitions to `openai.Tool` and injects via `WithChatClientTools`.
 3. Tools are registered under map key **`ui`** via `clientToolsProxy` / `toolSetsRegistry`.
-4. ez-agent **HITL interrupter** (`newUIToolInterrupter`):
-   - No `ui_*` in the batch → do not interrupt (server tools run normally).
-   - Only `ui_*` → interrupt immediately.
-   - Mixed batch → execute non-`ui_*` tools first. If any of them returns `tool.ErrEndOfChat`, the run ends as described in [Ending the chat from a tool](#ending-the-chat-from-a-tool): no client handoff and no tool-result messages. Otherwise append the server results to the session, then interrupt for `ui_*`.
-5. Stream emits `client_tool_pending` (all pending `ui_*` calls, declared in this request or not) and ends with `ErrClientToolHandoff`.
-6. Frontend executes tools, then POSTs `client_tool_results` on the next turn. Unknown tool names get an error result; empty handler results are normalized to `{"ok":true}` because the server rejects empty `content`.
-7. Results are persisted as `role=tool` messages and a new completion stream starts.
-8. If the second request never happens (refresh, closed chat, session switch, or page unload), the session keeps an unpaired `tool_use`. The next ordinary user turn prepends a synthetic `role=tool` error result for every unpaired call **before** the new user message, then persists that pair. A request that already includes `client_tool_results` is left alone so a normal HITL handoff is not double-answered. `SessionStore.Load` still returns mid-HITL history as-is.
+4. Sets HITL mode to `interactive`. `CreateChatCompletion` leaves the default `auto_reject`. See [HITL approval and choice cards](#hitl-approval-and-choice-cards).
+5. The ez-agent interrupter (`newUIToolInterrupter`) classifies the batch:
+   - **interactive**, and every call is a free server tool (not approval-gated, not `ui_*`): the loop runs those tools.
+   - **interactive**, with any approval, `ui_choose`, or other `ui_*` call: free server tools run first. If one returns `tool.ErrEndOfChat`, the run ends as described in [Ending the chat from a tool](#ending-the-chat-from-a-tool): the remaining calls are dropped and nothing is handed to the browser. Otherwise those free-tool results are stored and the run interrupts.
+   - **auto_reject** (the default): the interrupter lets the loop continue. Gated tools stay uncalled. Each one is answered with a synthetic reject result in the same turn.
+6. An interactive interrupt ends the SSE stream with one event. `hitl_pending` when any remaining call is an approval or `ui_choose` card (`hitl_cards`, plus auto `ui_*` calls in `client_tool_calls`). `client_tool_pending` when the remainder is only auto `ui_*` calls. Both end with `ErrClientToolHandoff`. Calls whose names were not declared on this request are still forwarded; the browser answers unknown names with an error result.
+7. The browser runs auto `ui_*` tools. `ui_choose` stays on its card. Empty handler results are normalized to `{"ok":true}` because the server rejects empty `content`.
+8. The resume POST sends `client_tool_results` and, when cards are pending, `hitl_decisions` for every pending card. `PrepareTurn` writes the tool results. An approved server tool runs there, using the name and arguments stored on the assistant `tool_calls` row.
+9. A later turn that has `content` and neither `hitl_decisions` nor `client_tool_results` repairs every unpaired tool call in `PrepareTurn` and marks pending cards `abandoned`. A resume that already carries decisions or client results is left as sent. `SessionStore.Load` still returns mid-HITL history as-is.
+
+### HITL approval and choice cards
+
+One card protocol covers **tool approval** and **A/B/C choice**. Cards render inside the assistant bubble. The web chat is the interactive adapter. Any caller that does not set a mode stays on `auto_reject`.
+
+**Layering:**
+
+| Layer | Owns | Does |
+| --- | --- | --- |
+| ez-agent interrupter (`buildAgent`) | Stop the loop | In `interactive` mode, runs free server tools, then interrupts on approval, `ui_choose`, and other `ui_*` calls. It never calls a gated tool. |
+| Service `PrepareTurn` | Session state | Applies `hitl_decisions`, executes an approved server tool, writes the user reject or choice result, updates `hitl_cards` status, and repairs orphans. The pending snapshot is saved when the stream emits `hitl_pending`. |
+| Adapter | Presentation | Web: SSE `hitl_pending`, bubble cards, and a resume POST. The adapter chooses `interactive` or `auto_reject`. |
+
+`PrepareTurn` is the only place that executes `approve`. The chat service builds the HITL catalog (`BuildHITLCatalog` / `WithChatHITLCatalog`) from the authorized toolsets before the agent runs.
+
+| Caller | Mode |
+| --- | --- |
+| `POST /api/ai/chat/sessions/:id` (`StreamChat`) | `interactive` (`WithChatHITLMode`) |
+| `CreateChatCompletion` (non-stream) | `auto_reject` (the option is omitted) |
+| Any other `Exchange` / `ExchangeStream` that leaves `HITLMode` empty | `auto_reject` |
+
+`ResolveHITLMode` treats only `interactive` as interactive. Every other value, including empty, is `auto_reject`.
+
+#### `interactive`
+
+1. Free server tools in the batch run (no approval gate, and the name does not start with `ui_`).
+2. If anything else remains, the run stops. Approval and `ui_choose` calls become `hitl_cards`. Other `ui_*` calls go in `client_tool_calls`. The assistant row keeps its `tool_calls`. The pending card snapshot is saved on that row when `hitl_pending` is emitted.
+3. The stream emits `hitl_pending` and ends. Resume with `hitl_decisions` and, when auto `ui_*` tools also ran, `client_tool_results`.
+
+A batch of only auto `ui_*` tools still emits `client_tool_pending` and ends the same way. The browser runs those tools and POSTs `client_tool_results` immediately.
+
+#### `auto_reject`
+
+The HTTP call continues. Gated tools are not executed. For every approval call, `ui_choose` call, and other `ui_*` call in the batch, the loop appends a synthetic `role=tool` result and keeps going. Free server tools still run. The model can recover in the same turn with those tools.
+
+Reject payload (stable for the model):
+
+```json
+{"error":"tool call was rejected: this channel cannot prompt the user for confirmation"}
+```
+
+`ui_choose` uses that same error object. The payload has no `selected` id.
+
+#### Tool metadata (`x-hitl`)
+
+Approval is tool-level metadata. Keep it off the JSON Schema `parameters` that `ListTools` sends to the model. The provider sees an `openai.Tool` (name, description, parameters). The catalog is built beside that schema.
+
+An in-process toolset opts tools in by implementing `ApprovalToolLister` and returning **logical** names (before the `{key}_` prefix):
+
+```go
+func (t *MyToolSet) ApprovalToolNames() []string {
+    return []string{"delete_user"}
+}
+```
+
+`BuildHITLCatalog` records the exposed name, for example `mcp3_delete_user`, as an approval card. Wrappers that hide the inner toolset should forward `ApprovalToolNames`. `BindingAwareToolSet` is unwrapped, so a wrapped MCP toolset still contributes its names.
+
+MCP servers are not trusted to declare `x-hitl` on their schemas. Gate those tools with `toolset.config.approval_tools`, the same list shape as `disabled_tools`:
+
+```json
+{ "approval_tools": ["delete_user"] }
+```
+
+Names are logical. Empty strings are ignored. An MCP tool omitted from the list runs without an approval card.
+
+When the catalog entry has no options, the card uses `approve` / "Execute" (`primary: true`) and `reject` / "Don't execute". Entries built from `approval_tools` use those defaults, and the card title is empty. The tool name is still shown on the card.
+
+#### `ui_choose`
+
+`ui_choose` is a global client tool, registered in `useGlobalAITools` next to `ui_navigate` and `ui_get_current_route`. It is not subject to role toolset RBAC. The catalog always marks it as a choice card.
+
+```json
+{
+  "name": "ui_choose",
+  "description": "Ask the user to pick one option when several valid next actions exist. Do not use this to confirm a tool you can call yourself; call that tool and let approval cards handle confirmation.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "title": { "type": "string" },
+      "options": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 6,
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "label": { "type": "string" },
+            "description": { "type": "string" }
+          },
+          "required": ["id", "label"]
+        }
+      }
+    },
+    "required": ["title", "options"]
+  }
+}
+```
+
+The card reads `title` and `options` from the tool arguments and appends `reject` / "Don't execute" when the model left it out. The tool has no browser side effect. The card protocol handles it. The registered handler, if something calls it directly, returns `{"error":"ui_choose is presented as a chat card and must not be auto-executed"}`.
+
+#### Card snapshot
+
+Cards are stored on the assistant row that owns the `tool_calls`, under `metadata.hitl_cards`. They are not sent to the model. `arguments` is the raw JSON string from the tool call.
+
+```json
+{
+  "hitl_cards": [
+    {
+      "tool_call_id": "call_1",
+      "kind": "choice",
+      "title": "How should I proceed?",
+      "tool_name": "ui_choose",
+      "arguments": "{\"title\":\"How should I proceed?\",\"options\":[]}",
+      "options": [
+        { "id": "A", "label": "Disable the user" },
+        { "id": "reject", "label": "Don't execute" }
+      ],
+      "status": "pending"
+    }
+  ]
+}
+```
+
+`kind` is `approval` or `choice`. `status` is `pending`, `decided`, or `abandoned`. A decided card sets `selected_option_id` and keeps the snapshot, so a reload shows "You chose …".
+
+`GET /api/ai/chat/sessions/:sessionId` returns assistant rows that carry `hitl_cards`, including a row whose text is empty, so the same card comes back until the user decides or sends a new message. Loading the session leaves `pending` cards pending.
+
+#### Resume
+
+`POST /api/ai/chat/sessions/:id` accepts decisions on the same body as a normal turn:
+
+```json
+{
+  "content": "",
+  "hitl_decisions": [
+    { "tool_call_id": "call_1", "option_id": "B" },
+    { "tool_call_id": "call_2", "option_id": "approve" }
+  ],
+  "client_tool_results": [
+    { "tool_call_id": "call_auto", "content": "{\"ok\":true}" }
+  ]
+}
+```
+
+The body must include `content`, `client_tool_results`, or `hitl_decisions` (any non-empty combination). Validation failures from `PrepareTurn` are `E4001`:
+
+- Every `tool_call_id` is a card that is still `pending` on the session. A duplicate id is rejected.
+- Every `option_id` is one of that card's `options`.
+- The request includes every pending card from the interrupted turn. One POST resumes the whole set.
+- `client_tool_results` alone, while cards are still `pending`, is rejected (`pending HITL cards require hitl_decisions`).
+- A `client_tool_results` entry whose `tool_call_id` belongs to an approval card is rejected (`client_tool_results cannot satisfy an approval-gated tool`). Approval results come from `hitl_decisions`.
+- `approve` runs the persisted tool name and arguments. Arguments in the request body are ignored.
+
+| Decision | Tool result |
+| --- | --- |
+| `approval` + `approve` | The server tool's real output (`PrepareTurn` calls it once) |
+| `approval` + `reject` | `{"error":"user rejected the tool call"}` |
+| `choice` + an option id | `{"selected":"B","label":"Delete the user"}` |
+| `choice` + `reject` | `{"error":"user rejected the choice"}` |
+
+The card is then `decided` with `selected_option_id` set, and a new completion stream starts. The interrupter can pause again if the model asks for another gated tool.
+
+HITL is an extra confirmation. The user must already be allowed to call the tool; `approve` goes through `GetAuthorizedToolSets`. `ui_choose` does not call other tools.
+
+#### Orphan repair
+
+`PrepareTurn` repairs history when the turn has neither `hitl_decisions` nor `client_tool_results`:
+
+- Pending cards on that session become `abandoned`.
+- Each unpaired tool call gets a synthetic `role=tool` result **before** the new user message.
+- A call that belonged to a pending card uses `{"error":"user continued the conversation without answering the confirmation"}`.
+- Any other unpaired call (for example an auto `ui_*` tool that never returned) uses `{"error":"client tool was not executed: the user left the page or the handoff was interrupted"}`.
+
+A resume that includes `hitl_decisions` or `client_tool_results` skips this repair.
+
+#### Web adapter
+
+`hitl_pending` ends the SSE stream. `client_tool_calls` may be empty. `hitl_cards` lists the pending cards:
+
+```json
+{
+  "event_type": "hitl_pending",
+  "message_id": "...",
+  "client_tool_calls": [
+    { "id": "call_auto", "name": "ui_search_users", "arguments": "{}" }
+  ],
+  "hitl_cards": [
+    {
+      "tool_call_id": "call_1",
+      "kind": "approval",
+      "title": "",
+      "tool_name": "mcp3_delete_user",
+      "arguments": "{\"id\":\"…\"}",
+      "options": [
+        { "id": "approve", "label": "Execute", "primary": true },
+        { "id": "reject", "label": "Don't execute" }
+      ],
+      "status": "pending"
+    }
+  ]
+}
+```
+
+The chat UI:
+
+- No `hitl_cards`: run `client_tool_calls` and POST `client_tool_results` immediately (`client_tool_pending` behaves this way).
+- `hitl_cards` present: run auto `ui_*` calls locally, stash the results, and render the cards in the assistant bubble footer (`HITLCard`). Wait until every pending card has a selection, then send one body with the stashed `client_tool_results` (when any) and `hitl_decisions` for every pending card.
+- `ui_choose` is only a card. The handoff skips it.
+- A bubble with cards and empty assistant text stays in the list. The blank content shell is hidden; the card is the visible message.
+- Pending cards show option buttons (the `primary` option uses the primary button). While the resume is in flight the clicked button loads and the others are disabled. `decided` shows "You chose …". `abandoned` shows "You continued without choosing."
 
 ### Ending the chat from a tool
 
 A server tool ends the current agent run by returning [`tool.ErrEndOfChat`](https://github.com/sven-victor/ez-agent) from `Call`. The tool's side effects have already run. Its return text is delivered on `ToolFinished` (status completed) and is not stored as a tool-result message or sent back to the model. The run stops with stop reason `end_of_chat`. The SSE stream ends normally; the client does not receive that sentinel as an assistant error.
 
-If that same model turn also requested `ui_*` tools, those client tools are not handed to the browser. Tool calls from that turn that have no stored result are removed from the session.
+If that same model turn also requested approval-gated tools or `ui_*` tools, those calls are not handed onward. Tool calls from that turn that have no stored result are removed from the session.
 
 ## Chat Sessions & Streaming
 
@@ -1484,10 +1701,11 @@ data: {"event_type":"content","message_id":"...","content":"Hello","role":"assis
 | --------------------- | ------------------------------------------- | ---------------------------------------- |
 | `content`             | Text content delta                          | `message_id`, `content`, `role`          |
 | `tool_call`           | Server-side tool execution status (internal)| `message_id`, `tool_calls` (with status) |
-| `client_tool_pending` | Control handoff to browser for client tools | `message_id`, `client_tool_calls`        |
+| `client_tool_pending` | Handoff of auto `ui_*` tools when the turn has no cards | `message_id`, `client_tool_calls` |
+| `hitl_pending`        | Approval and choice cards, plus any auto `ui_*` calls from the same turn. Ends the stream | `message_id`, `client_tool_calls`, `hitl_cards` |
 | `error`               | Error message                               | `content` (error text)                   |
 
-The HTTP controller **skips forwarding** raw `tool_call` events to the browser; clients typically observe tool activity via persisted messages / UI state. After `client_tool_pending`, the stream ends (`ErrClientToolHandoff`).
+The HTTP controller **skips forwarding** raw `tool_call` events to the browser; clients typically observe tool activity via persisted messages / UI state. `hitl_pending` and `client_tool_pending` both end the stream (`ErrClientToolHandoff`). Card fields are described in [HITL approval and choice cards](#hitl-approval-and-choice-cards).
 
 Domains: the controller always appends **`core`** and **`chat`** to `req.Domains` before creating the skill loader.
 
@@ -1511,11 +1729,14 @@ Domains: the controller always appends **`core`** and **`chat`** to `req.Domains
       "tool_call_id": "call_abc123",
       "content": "{\"data\": [...]}"
     }
+  ],
+  "hitl_decisions": [
+    { "tool_call_id": "call_1", "option_id": "approve" }
   ]
 }
 ```
 
-Either `content` or `client_tool_results` must be provided (or both).
+`content`, `client_tool_results`, or `hitl_decisions` must be provided (any non-empty combination). See [HITL approval and choice cards](#hitl-approval-and-choice-cards) for card resume rules.
 
 ### Chat Completion Options
 
@@ -1537,6 +1758,8 @@ The `WithChatOptions` functional options control `Exchange` / `ExchangeStream` (
 | `WithChatToolResultMaxSize(bytes)` | Offload message bodies larger than this limit via `memory.Offload` | 32KB |
 | `WithChatResponseJsonSchema(schema)` | Structured output schema for the agent | none |
 | `WithChatClientTools(tools)` | Browser `ui_*` tool definitions | none |
+| `WithChatHITLMode(mode)` | `interactive` pauses for approval and choice cards. Any other value is `auto_reject` | `auto_reject`. Web `StreamChat` sets `interactive`. `CreateChatCompletion` leaves the default |
+| `WithChatHITLCatalog(catalog)` | Exposed-name catalog from `BuildHITLCatalog` (`{key}_{logical}` approvals plus `ui_choose`) | Chat service builds this from `approval_tools` / `ApprovalToolNames` |
 | `WithChatSession(id, store)` | DB-backed ez-agent session window | none |
 | `WithChatModelSystemPrompt(prompt)` | Model-level system prompt | none |
 | `WithChatEphemeralSystemPrompts([]string)` | Page-only system text (not persisted) | none |
@@ -1996,14 +2219,14 @@ The `AIChat` component (`web/src/components/AIChat.tsx`) provides the full chat 
 - **Streaming**: Real-time message rendering via `@ant-design/x-sdk`'s `useXChat` hook
 - **Rich content**: Markdown rendering with code highlighting and Mermaid diagram support
 - **Skill selection**: Users can pick skill domains or specific skills via a select dropdown. `defaultSkillDomains` pre-selects domains; when it is omitted the client sends `domains: []`
-- **Client tool handling**: Automatically dispatches pending tool calls to registered handlers
+- **Client tool handling**: Dispatches auto `ui_*` calls to registered handlers. Approval and `ui_choose` cards render in the assistant bubble; see [HITL approval and choice cards](#hitl-approval-and-choice-cards)
 
 **SSE stream handling** is managed by a custom `AIProvider` class (extending `AbstractChatProvider` from `@ant-design/x-sdk`) that:
 
 1. Parses SSE events from the `ChatStreamEvent` JSON format.
 2. Accumulates content deltas per `message_id`.
-3. Detects `client_tool_pending` events and surfaces `pendingClientToolCalls` on the message object.
-4. A `useEffect` hook watches for completed requests with pending calls and automatically dispatches them via `handleClientToolHandoff`.
+3. Detects `client_tool_pending` and `hitl_pending`. Auto calls land on `pendingClientToolCalls`. Cards land on `hitlCards`.
+4. A `useEffect` hook watches for completed requests. With no pending cards it dispatches auto tools through `handleClientToolHandoff`. With pending cards it stashes those auto-tool results and waits until every card is selected, then sends one resume body.
 
 **Customization via props:**
 
