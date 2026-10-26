@@ -16,6 +16,7 @@ package ai
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 
@@ -191,6 +192,94 @@ func toolResultsToParts(results []tool.Result) []message.ToolResult {
 		}
 	}
 	return out
+}
+
+// SplitPendingCalls separates browser-auto ui_* calls from HITL cards.
+// Choice and approval calls become cards. Other ui_* calls stay auto.
+// Calls the catalog does not gate are omitted.
+func SplitPendingCalls(pending *run.PendingTools, catalog HITLCatalog) (auto []ClientToolPendingCall, cards []HITLCard) {
+	if pending == nil {
+		return nil, nil
+	}
+	var cardCalls []run.PendingCall
+	for _, c := range pending.Calls {
+		switch ClassifyHITL(c.Name, catalog) {
+		case HITLClassClientAuto:
+			auto = append(auto, ClientToolPendingCall{
+				ID:        c.ID,
+				Name:      c.Name,
+				Arguments: string(c.Input),
+			})
+		case HITLClassChoice, HITLClassApproval:
+			cardCalls = append(cardCalls, c)
+		}
+	}
+	return auto, BuildHITLCards(cardCalls, catalog)
+}
+
+// BuildHITLCards turns gated pending calls into pending cards.
+// ui_choose reads title and options from arguments and appends reject when absent.
+// Approval uses the catalog title and options, or DefaultHITLOptions when the catalog has none.
+func BuildHITLCards(calls []run.PendingCall, catalog HITLCatalog) []HITLCard {
+	if len(calls) == 0 {
+		return nil
+	}
+	cards := make([]HITLCard, 0, len(calls))
+	for _, c := range calls {
+		switch ClassifyHITL(c.Name, catalog) {
+		case HITLClassChoice:
+			cards = append(cards, choiceHITLCard(c))
+		case HITLClassApproval:
+			cards = append(cards, approvalHITLCard(c, catalog[c.Name]))
+		}
+	}
+	return cards
+}
+
+func choiceHITLCard(c run.PendingCall) HITLCard {
+	var args struct {
+		Title   string       `json:"title"`
+		Options []HITLOption `json:"options"`
+	}
+	_ = json.Unmarshal(c.Input, &args)
+	opts := args.Options
+	if !hitlOptionsContain(opts, HITLOptionReject) {
+		opts = append(opts, DefaultHITLOptions(HITLCardChoice)...)
+	}
+	return HITLCard{
+		ToolCallID: c.ID,
+		Kind:       HITLCardChoice,
+		Title:      args.Title,
+		ToolName:   c.Name,
+		Arguments:  string(c.Input),
+		Options:    opts,
+		Status:     HITLStatusPending,
+	}
+}
+
+func approvalHITLCard(c run.PendingCall, spec HITLSpec) HITLCard {
+	opts := spec.Options
+	if len(opts) == 0 {
+		opts = DefaultHITLOptions(HITLCardApproval)
+	}
+	return HITLCard{
+		ToolCallID: c.ID,
+		Kind:       HITLCardApproval,
+		Title:      spec.Title,
+		ToolName:   c.Name,
+		Arguments:  string(c.Input),
+		Options:    opts,
+		Status:     HITLStatusPending,
+	}
+}
+
+func hitlOptionsContain(opts []HITLOption, id string) bool {
+	for _, o := range opts {
+		if o.ID == id {
+			return true
+		}
+	}
+	return false
 }
 
 // filterUIPending extracts ui_* pending calls for SSE client_tool_pending events.

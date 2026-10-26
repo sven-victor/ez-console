@@ -47,6 +47,7 @@ type ezAgentChatStream struct {
 	closeCh   chan struct{}
 	handoff   bool
 	trace     *agentTraceSink // shared with hooks; records terminal RunError
+	catalog   HITLCatalog
 }
 
 func (s *ezAgentChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
@@ -202,14 +203,19 @@ func (s *ezAgentChatStream) handleEvent(ev event.Event) error {
 			ToolCalls: []ToolCall{tc},
 		})
 	case event.Interrupted:
-		pending := filterUIPending(e.Pending)
-		if len(pending) == 0 {
+		auto, cards := SplitPendingCalls(e.Pending, s.catalog)
+		if len(auto) == 0 && len(cards) == 0 {
 			return nil
+		}
+		evType := EventTypeClientToolPending
+		if len(cards) > 0 {
+			evType = EventTypeHITLPending
 		}
 		return s.emit(&ChatStreamEvent{
 			MessageID:       s.messageID,
-			EventType:       EventTypeClientToolPending,
-			ClientToolCalls: pending,
+			EventType:       evType,
+			ClientToolCalls: auto,
+			HITLCards:       cards,
 		})
 	case event.RunError:
 		// The loop reports a terminal tool as RunError when an interrupter
@@ -417,6 +423,7 @@ func newEZAgentStream(ctx context.Context, provider aimodel.Provider, messages [
 		errCh:     make(chan error, 1),
 		closeCh:   make(chan struct{}),
 		trace:     sink,
+		catalog:   opts.HITLCatalog,
 	}
 	go stream.pump()
 	return stream, nil

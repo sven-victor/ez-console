@@ -211,3 +211,33 @@ func TestLoopToolRegistryAutoRejectMixedBatch(t *testing.T) {
 		t.Fatal("interactive loop registry must delegate gated tools to inner")
 	}
 }
+
+func TestSplitPendingCallsSeparatesAutoAndCards(t *testing.T) {
+	pending := &run.PendingTools{Calls: []run.PendingCall{
+		{ID: "a", Name: "ui_search_users", Input: []byte(`{}`)},
+		{ID: "b", Name: "ui_choose", Input: []byte(`{"title":"How?","options":[{"id":"A","label":"Disable"},{"id":"B","label":"Delete"}]}`)},
+		{ID: "c", Name: "mcp3_delete_user", Input: []byte(`{"id":"u1"}`)},
+	}}
+	auto, cards := SplitPendingCalls(pending, HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval, Title: "Delete this user?"}})
+	if len(auto) != 1 || auto[0].Name != "ui_search_users" {
+		t.Fatalf("auto=%#v", auto)
+	}
+	if len(cards) != 2 {
+		t.Fatalf("cards=%#v", cards)
+	}
+	if cards[0].Kind != HITLCardChoice || cards[0].ToolCallID != "b" {
+		t.Fatalf("choice=%#v", cards[0])
+	}
+	hasReject := false
+	for _, o := range cards[0].Options {
+		if o.ID == HITLOptionReject {
+			hasReject = true
+		}
+	}
+	if !hasReject {
+		t.Fatal("choice card must append reject")
+	}
+	if cards[1].Kind != HITLCardApproval || cards[1].Title != "Delete this user?" {
+		t.Fatalf("approval=%#v", cards[1])
+	}
+}
