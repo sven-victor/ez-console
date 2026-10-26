@@ -271,6 +271,7 @@ export interface ChatStreamEvent {
   client_tool_calls: ClientToolPendingCall[];
   content: string;
   event_type: EventType;
+  hitl_cards: HITLCard[];
   message_id: string;
   role: AIChatMessageRole;
   tool_calls: ToolCall[];
@@ -516,7 +517,15 @@ export interface downloadFileParams {
   fileKey: string;
 }
 
-export type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+export type Duration =
+  | -9223372036854776000
+  | 9223372036854776000
+  | 1
+  | 1000
+  | 1000000
+  | 1000000000
+  | 60000000000
+  | 3600000000000;
 
 export interface EnableMFARequest {
   mfa_type: string;
@@ -535,7 +544,12 @@ export interface ErrorResponse {
   trace_id: string;
 }
 
-export type EventType = "content" | "tool_call" | "error" | "client_tool_pending";
+export type EventType =
+  | "content"
+  | "tool_call"
+  | "error"
+  | "client_tool_pending"
+  | "hitl_pending";
 
 export interface File {
   access: AccessType;
@@ -754,6 +768,33 @@ export interface HealthResult {
   message: string;
   reason: string;
   status: string;
+}
+
+export interface HITLCard {
+  arguments: string;
+  kind: HITLCardKind;
+  options: HITLOption[];
+  selected_option_id: string;
+  status: HITLCardStatus;
+  title: string;
+  tool_call_id: string;
+  tool_name: string;
+}
+
+export type HITLCardKind = "approval" | "choice";
+
+export type HITLCardStatus = "pending" | "decided" | "abandoned";
+
+export interface HITLDecision {
+  option_id: string;
+  tool_call_id: string;
+}
+
+export interface HITLOption {
+  description: string;
+  id: string;
+  label: string;
+  primary: boolean;
 }
 
 export type ID = "";
@@ -2073,6 +2114,8 @@ export interface SendMessageRequest {
   domains: string[];
   /** page-level system prompts, memory-only (not persisted) */
   ephemeral_system_prompts: string[];
+  /** decisions for pending approval and choice cards */
+  hitl_decisions: HITLDecision[];
   /** optional: load these specific skills by id */
   skill_ids: string[];
 }

@@ -9,6 +9,10 @@ definitions:
         type: string
       event_type:
         $ref: '#/definitions/ai.EventType'
+      hitl_cards:
+        items:
+          $ref: '#/definitions/ai.HITLCard'
+        type: array
       message_id:
         type: string
       role:
@@ -23,6 +27,7 @@ definitions:
     - client_tool_calls
     - content
     - event_type
+    - hitl_cards
     - message_id
     - role
     - tool_calls
@@ -47,12 +52,14 @@ definitions:
     - tool_call
     - error
     - client_tool_pending
+    - hitl_pending
     type: string
     x-enum-varnames:
     - EventTypeContent
     - EventTypeToolCall
     - EventTypeError
     - EventTypeClientToolPending
+    - EventTypeHITLPending
   ai.FunctionCall:
     properties:
       arguments:
@@ -63,6 +70,80 @@ definitions:
     required:
     - arguments
     - name
+    type: object
+  ai.HITLCard:
+    properties:
+      arguments:
+        type: string
+      kind:
+        $ref: '#/definitions/ai.HITLCardKind'
+      options:
+        items:
+          $ref: '#/definitions/ai.HITLOption'
+        type: array
+      selected_option_id:
+        type: string
+      status:
+        $ref: '#/definitions/ai.HITLCardStatus'
+      title:
+        type: string
+      tool_call_id:
+        type: string
+      tool_name:
+        type: string
+    required:
+    - arguments
+    - kind
+    - options
+    - selected_option_id
+    - status
+    - title
+    - tool_call_id
+    - tool_name
+    type: object
+  ai.HITLCardKind:
+    enum:
+    - approval
+    - choice
+    type: string
+    x-enum-varnames:
+    - HITLCardApproval
+    - HITLCardChoice
+  ai.HITLCardStatus:
+    enum:
+    - pending
+    - decided
+    - abandoned
+    type: string
+    x-enum-varnames:
+    - HITLStatusPending
+    - HITLStatusDecided
+    - HITLStatusAbandoned
+  ai.HITLDecision:
+    properties:
+      option_id:
+        type: string
+      tool_call_id:
+        type: string
+    required:
+    - option_id
+    - tool_call_id
+    type: object
+  ai.HITLOption:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      label:
+        type: string
+      primary:
+        type: boolean
+    required:
+    - description
+    - id
+    - label
+    - primary
     type: object
   ai.SimpleChatMessage:
     properties:
@@ -220,6 +301,11 @@ definitions:
         items:
           type: string
         type: array
+      hitl_decisions:
+        description: decisions for pending approval and choice cards
+        items:
+          $ref: '#/definitions/ai.HITLDecision'
+        type: array
       skill_ids:
         description: 'optional: load these specific skills by id'
         items:
@@ -231,6 +317,7 @@ definitions:
     - content
     - domains
     - ephemeral_system_prompts
+    - hitl_decisions
     - skill_ids
     type: object
   aiapi.SetAIModelPurposeRequest:
@@ -3679,48 +3766,56 @@ definitions:
     type: object
   time.Duration:
     enum:
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
-    - 1
-    - 1000
-    - 1000000
-    - 1000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
+    - 60000000000
+    - 3600000000000
     type: integer
     x-enum-varnames:
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
-    - Nanosecond
-    - Microsecond
-    - Millisecond
-    - Second
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
+    - Minute
+    - Hour
   toolset.ToolSetType:
     enum:
     - utils
@@ -5311,7 +5406,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Stream chat responses using Server-Sent Events
+      description: Stream chat responses using Server-Sent Events. Accepts content,
+        client_tool_results, or hitl_decisions. Interactive mode emits hitl_pending
+        and ends the stream.
       operationId: streamChat
       parameters:
       - description: Chat session ID

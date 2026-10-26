@@ -103,6 +103,7 @@ type SendMessageRequest struct {
 	EphemeralSystemPrompts []string                 `json:"ephemeral_system_prompts"` // page-level system prompts, memory-only (not persisted)
 	ClientTools            ClientToolDefinitionList `json:"client_tools"`             // client-side tool definitions (JSON Schema)
 	ClientToolResults      []ClientToolResult       `json:"client_tool_results"`      // results from client-side tool execution
+	HITLDecisions          []ai.HITLDecision        `json:"hitl_decisions"`           // decisions for pending approval and choice cards
 }
 
 var clientToolNameRegex = regexp.MustCompile(`^ui_[a-zA-Z0-9_]+$`)
@@ -317,7 +318,7 @@ func (c *AIChatController) DeleteChatSession(ctx *gin.Context) {
 // StreamChat handles streaming chat responses with SSE
 //
 //	@Summary		Stream chat
-//	@Description	Stream chat responses using Server-Sent Events
+//	@Description	Stream chat responses using Server-Sent Events. Accepts content, client_tool_results, or hitl_decisions. Interactive mode emits hitl_pending and ends the stream.
 //	@ID             streamChat
 //	@Tags			AI/Chat
 //	@Accept			json
@@ -348,10 +349,10 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		return
 	}
 
-	// Validate: content or client_tool_results must be provided
+	// Validate: content, client_tool_results, or hitl_decisions must be provided
 	contentTrimmed := strings.TrimSpace(req.Content)
-	if contentTrimmed == "" && len(req.ClientToolResults) == 0 {
-		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Either content or client_tool_results must be provided"))
+	if contentTrimmed == "" && len(req.ClientToolResults) == 0 && len(req.HITLDecisions) == 0 {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", "Either content, client_tool_results, or hitl_decisions must be provided"))
 		return
 	}
 
@@ -391,52 +392,53 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "User not authenticated"))
 		return
 	}
+	userIDStr := userID.(string)
 
 	// Get chat session
-	session, err := c.service.GetChatSession(ctx, organizationID, userID.(string), sessionID)
+	session, err := c.service.GetChatSession(ctx, organizationID, userIDStr, sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat session", err)))
 		return
 	}
 
-	// Build only NEW messages for this turn; history is loaded by SessionStore.
-	var chatMessages []ai.ChatMessage
-	if len(req.ClientToolResults) > 0 {
-		for _, ctr := range req.ClientToolResults {
-			chatMessages = append(chatMessages, ai.ChatMessage{
-				Role:       model.AIChatMessageRoleTool,
-				Content:    ctr.Content,
-				ToolCallID: ctr.ToolCallID,
-			})
-		}
-	}
-	if contentTrimmed != "" {
-		chatMessages = append(chatMessages, ai.ChatMessage{
-			Role:    model.AIChatMessageRoleUser,
-			Content: req.Content,
-		})
-	}
-
-	// Track whether this is the first user turn (for auto title).
-	existingMessages, err := c.service.GetChatMessages(ctx, organizationID, userID.(string), sessionID)
+	// History is loaded by SessionStore. PrepareTurn builds this turn and
+	// updates hitl_cards status in memory, including orphan repair.
+	existingMessages, err := c.service.GetChatMessages(ctx, organizationID, userIDStr, sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat messages", err)))
 		return
 	}
-	// If the previous HITL handoff never came back, pair leftover tool_calls
-	// with synthetic error results so the provider does not reject the session.
-	chatMessages = service.RepairOrphanToolCalls(existingMessages, chatMessages, len(req.ClientToolResults) > 0)
-	initialMessageCount := 0
-	for _, msg := range existingMessages {
-		if msg.Role != model.AIChatMessageRoleTool {
-			initialMessageCount++
+	content := ""
+	if contentTrimmed != "" {
+		content = req.Content
+	}
+	chatMessages, updated, err := service.PrepareTurn(ctx, existingMessages, service.ChatTurnInput{
+		Content:           content,
+		ClientToolResults: chatTurnClientToolResults(req.ClientToolResults),
+		HITLDecisions:     req.HITLDecisions,
+	}, func(ctx context.Context, name, arguments string) (string, error) {
+		ts, err := c.service.GetAuthorizedToolSets(ctx, organizationID)
+		if err != nil {
+			return "", err
 		}
+		return ts.CallTool(ctx, name, arguments)
+	})
+	if err != nil {
+		if prepareTurnClientError(err) {
+			util.RespondWithError(ctx, util.NewError("E4001", err))
+			return
+		}
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+	if err := c.service.SaveHITLCardsFromMessages(ctx, organizationID, userIDStr, sessionID, updated); err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
 	}
 
 	// Capture context values for background goroutine
 	roles, _ := ctx.Get("roles")
 
-	userIDStr := userID.(string)
 	req.Domains = append(req.Domains, "core", "chat")
 
 	skillLoader, err := c.service.CreateSkillLoader(ctx, organizationID, req.Domains, req.SkillIDs, session.ActivatedSkillIDs)
@@ -471,6 +473,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 			}
 		}),
 		ai.WithChatAutoSummarization(true),
+		ai.WithChatHITLMode(ai.HITLModeInteractive),
 	}
 
 	// Inject client tools
@@ -531,20 +534,17 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		if event.EventType == ai.EventTypeToolCall {
 			return true
 		}
-		if event.EventType == ai.EventTypeClientToolPending {
+		if event.EventType == ai.EventTypeHITLPending || event.EventType == ai.EventTypeClientToolPending {
 			// Forward every pending ui_* call, including names not declared in this
 			// request (e.g. a tool from a page the user has since left). The browser
 			// answers unknown tools with an error result so the tool call is always
-			// paired and the model can recover. Dropping them here would end the
-			// stream with no event and leave the conversation stuck.
+			// paired and the model can recover.
 			for _, toolCall := range event.ClientToolCalls {
 				if !req.ClientTools.HasTool(toolCall.Name) {
 					level.Warn(logger).Log("msg", "Model called a client tool not declared in this request", "tool", toolCall.Name, "sessionId", sessionID)
 				}
 			}
-			if len(event.ClientToolCalls) != 0 {
-				ctx.SSEvent("message", event)
-			}
+			ctx.SSEvent("message", event)
 			return false
 		}
 		ctx.SSEvent("message", event)
@@ -649,6 +649,30 @@ func (c *AIChatController) GenerateChatSessionTitle(ctx *gin.Context) {
 	}
 
 	util.RespondWithSuccess(ctx, http.StatusOK, updatedSession)
+}
+
+func chatTurnClientToolResults(in []ClientToolResult) []service.ClientToolResult {
+	if len(in) == 0 {
+		return nil
+	}
+	out := make([]service.ClientToolResult, len(in))
+	for i, result := range in {
+		out[i] = service.ClientToolResult{
+			ToolCallID: result.ToolCallID,
+			Content:    result.Content,
+		}
+	}
+	return out
+}
+
+func prepareTurnClientError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "pending HITL cards") ||
+		strings.Contains(msg, "client_tool_results cannot satisfy") ||
+		strings.Contains(msg, "hitl_decisions")
 }
 
 func init() {

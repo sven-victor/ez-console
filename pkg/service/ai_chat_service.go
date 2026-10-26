@@ -82,6 +82,26 @@ func (s *aiChatService) SaveHITLCards(ctx context.Context, organizationID string
 	return s.sessionService.SaveHITLCards(ctx, organizationID, userID, sessionID, cards)
 }
 
+// SaveHITLCardsFromMessages writes each message's hitl_cards metadata back onto that row.
+func (s *aiChatService) SaveHITLCardsFromMessages(ctx context.Context, organizationID, userID, sessionID string, messages []model.AIChatMessage) error {
+	for _, msg := range messages {
+		cards := HITLCardsFromMetadata(msg.Metadata)
+		if len(cards) == 0 {
+			continue
+		}
+		if msg.ID == 0 {
+			return fmt.Errorf("failed to save hitl cards: message id is empty")
+		}
+		meta := MetadataWithHITLCards(msg.Metadata, cards)
+		if err := db.Session(ctx).Model(&model.AIChatMessage{}).
+			Where("id = ? AND organization_id = ? AND user_id = ? AND session_id = ?", msg.ID, organizationID, userID, sessionID).
+			Update("metadata", meta).Error; err != nil {
+			return fmt.Errorf("failed to save hitl cards: %w", err)
+		}
+	}
+	return nil
+}
+
 // GetUserChatSessions implements AIChatService.
 func (s *aiChatService) GetUserChatSessions(ctx context.Context, organizationID string, userID string, current int, pageSize int) ([]model.AIChatSession, int64, error) {
 	return s.sessionService.GetUserChatSessions(ctx, organizationID, userID, current, pageSize)
@@ -119,6 +139,7 @@ type AIChatService interface {
 	GetChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
 	GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
 	SaveHITLCards(ctx context.Context, organizationID, userID, sessionID string, cards []ai.HITLCard) error
+	SaveHITLCardsFromMessages(ctx context.Context, organizationID, userID, sessionID string, messages []model.AIChatMessage) error
 	UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error
 	DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error
 	DeleteChatSession(ctx context.Context, organizationID, userID, sessionID string) error
@@ -476,6 +497,7 @@ func (s *aiChatService) mergeAIChatClientOptions(ctx context.Context, organizati
 
 // CreateChatCompletion creates a chat completion using the specified model with toolSets.
 // Pass skillLoader when the chat includes skills; when system skill–tool binding is enabled, organization tools are exposed progressively like streaming completions.
+// HITL mode stays the default auto_reject. Do not pass HITLModeInteractive: this path has no card UI.
 func (s *aiChatService) CreateChatCompletion(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) ([]ai.ChatMessage, error) {
 	var err error
 	var aiModel *model.AIModel
@@ -525,6 +547,7 @@ func (s *aiChatService) CreateChatCompletion(ctx context.Context, organizationID
 
 // CreateChatCompletionStream creates a streaming chat completion.
 // skillParams is nil for chats without skill metadata; when set, organization tools may load only after get_skill_content (see system_enable_skill_tool_binding).
+// The returned stream saves hitl_cards when Recv yields EventTypeHITLPending.
 func (s *aiChatService) CreateChatCompletionStream(ctx context.Context, organizationID, modelID string, messages []ai.ChatMessage, skillLoader *ai.SkillLoader, options ...ai.WithChatOptions) (ai.ChatStream, error) {
 	var err error
 	var aiModel *model.AIModel
@@ -575,7 +598,70 @@ func (s *aiChatService) CreateChatCompletionStream(ctx context.Context, organiza
 		return nil, fmt.Errorf("failed to create chat completion stream: %w", err)
 	}
 
-	return stream, nil
+	return s.wrapStreamHITLPersist(ctx, organizationID, allOptions, stream), nil
+}
+
+// wrapStreamHITLPersist saves cards when the stream pauses for approval or choice.
+// Session and user come from the chat options and request context used by StreamChat.
+func (s *aiChatService) wrapStreamHITLPersist(ctx context.Context, organizationID string, options []ai.WithChatOptions, stream ai.ChatStream) ai.ChatStream {
+	if stream == nil {
+		return nil
+	}
+	userID := contextUserID(ctx)
+	sessionID := appliedChatOptions(options).SessionID
+	if userID == "" || sessionID == "" {
+		return stream
+	}
+	saveCtx := context.WithoutCancel(ctx)
+	return wrapHITLPersistStream(stream, func(cards []ai.HITLCard) error {
+		return s.SaveHITLCards(saveCtx, organizationID, userID, sessionID, cards)
+	})
+}
+
+func contextUserID(ctx context.Context) string {
+	if ctx == nil {
+		return ""
+	}
+	id, _ := ctx.Value("user_id").(string)
+	return id
+}
+
+func appliedChatOptions(options []ai.WithChatOptions) *ai.ChatCompletionOptions {
+	opts := &ai.ChatCompletionOptions{}
+	for _, option := range options {
+		if option != nil {
+			option(opts)
+		}
+	}
+	return opts
+}
+
+// hitlPersistStream saves cards when Recv yields a hitl_pending event.
+type hitlPersistStream struct {
+	inner   ai.ChatStream
+	persist func([]ai.HITLCard) error
+}
+
+func wrapHITLPersistStream(inner ai.ChatStream, persist func([]ai.HITLCard) error) ai.ChatStream {
+	if inner == nil || persist == nil {
+		return inner
+	}
+	return &hitlPersistStream{inner: inner, persist: persist}
+}
+
+func (s *hitlPersistStream) Recv(ctx context.Context) (*ai.ChatStreamEvent, error) {
+	ev, err := s.inner.Recv(ctx)
+	if err != nil || ev == nil || ev.EventType != ai.EventTypeHITLPending || len(ev.HITLCards) == 0 {
+		return ev, err
+	}
+	if perr := s.persist(ev.HITLCards); perr != nil {
+		return nil, perr
+	}
+	return ev, nil
+}
+
+func (s *hitlPersistStream) Close() error {
+	return s.inner.Close()
 }
 
 // withSummaryProviderOption points conversation summarization at the summary-purpose model.

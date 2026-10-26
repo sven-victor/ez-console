@@ -142,7 +142,7 @@
                 }
             },
             "post": {
-                "description": "Stream chat responses using Server-Sent Events",
+                "description": "Stream chat responses using Server-Sent Events. Accepts content, client_tool_results, or hitl_decisions. Interactive mode emits hitl_pending and ends the stream.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7623,6 +7623,7 @@
                 "client_tool_calls",
                 "content",
                 "event_type",
+                "hitl_cards",
                 "message_id",
                 "role",
                 "tool_calls",
@@ -7640,6 +7641,12 @@
                 },
                 "event_type": {
                     "$ref": "#/definitions/ai.EventType"
+                },
+                "hitl_cards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ai.HITLCard"
+                    }
                 },
                 "message_id": {
                     "type": "string"
@@ -7683,13 +7690,15 @@
                 "content",
                 "tool_call",
                 "error",
-                "client_tool_pending"
+                "client_tool_pending",
+                "hitl_pending"
             ],
             "x-enum-varnames": [
                 "EventTypeContent",
                 "EventTypeToolCall",
                 "EventTypeError",
-                "EventTypeClientToolPending"
+                "EventTypeClientToolPending",
+                "EventTypeHITLPending"
             ]
         },
         "ai.FunctionCall": {
@@ -7705,6 +7714,110 @@
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "ai.HITLCard": {
+            "type": "object",
+            "required": [
+                "arguments",
+                "kind",
+                "options",
+                "selected_option_id",
+                "status",
+                "title",
+                "tool_call_id",
+                "tool_name"
+            ],
+            "properties": {
+                "arguments": {
+                    "type": "string"
+                },
+                "kind": {
+                    "$ref": "#/definitions/ai.HITLCardKind"
+                },
+                "options": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ai.HITLOption"
+                    }
+                },
+                "selected_option_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/ai.HITLCardStatus"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "tool_call_id": {
+                    "type": "string"
+                },
+                "tool_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "ai.HITLCardKind": {
+            "type": "string",
+            "enum": [
+                "approval",
+                "choice"
+            ],
+            "x-enum-varnames": [
+                "HITLCardApproval",
+                "HITLCardChoice"
+            ]
+        },
+        "ai.HITLCardStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "decided",
+                "abandoned"
+            ],
+            "x-enum-varnames": [
+                "HITLStatusPending",
+                "HITLStatusDecided",
+                "HITLStatusAbandoned"
+            ]
+        },
+        "ai.HITLDecision": {
+            "type": "object",
+            "required": [
+                "option_id",
+                "tool_call_id"
+            ],
+            "properties": {
+                "option_id": {
+                    "type": "string"
+                },
+                "tool_call_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ai.HITLOption": {
+            "type": "object",
+            "required": [
+                "description",
+                "id",
+                "label",
+                "primary"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "primary": {
+                    "type": "boolean"
                 }
             }
         },
@@ -7898,6 +8011,7 @@
                 "content",
                 "domains",
                 "ephemeral_system_prompts",
+                "hitl_decisions",
                 "skill_ids"
             ],
             "properties": {
@@ -7930,6 +8044,13 @@
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                },
+                "hitl_decisions": {
+                    "description": "decisions for pending approval and choice cards",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ai.HITLDecision"
                     }
                 },
                 "skill_ids": {
@@ -12747,48 +12868,56 @@
         "time.Duration": {
             "type": "integer",
             "enum": [
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
-                1,
-                1000,
-                1000000,
-                1000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
-                1000000000
+                1000000000,
+                60000000000,
+                3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
-                "Nanosecond",
-                "Microsecond",
-                "Millisecond",
-                "Second",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",
-                "Second"
+                "Second",
+                "Minute",
+                "Hour"
             ]
         },
         "toolset.ToolSetType": {
