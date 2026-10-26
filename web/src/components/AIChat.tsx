@@ -1074,36 +1074,37 @@ export const AIChat: React.FC<AIChatProps> = ({
     if (hitlSubmitting || hitlResumeLockRef.current) {
       return;
     }
-    const current = messages?.find((item) => item.id === messageId);
-    const cards = current?.message.hitlCards;
-    if (!current || !cards) {
-      return;
-    }
-    const target = cards.find((card) => card.tool_call_id === toolCallId);
-    if (!target || target.status !== 'pending') {
-      return;
-    }
-    const nextCards = cards.map((card) => (
-      card.tool_call_id === toolCallId ? { ...card, selected_option_id: optionId } : card
-    ));
-    const pending = nextCards.filter((card) => card.status === 'pending');
-    const ready = pending.length > 0 && pending.every((card) => card.selected_option_id);
-    if (!ready) {
-      setMessage(messageId, {
-        message: { ...current.message, hitlCards: nextCards },
-      });
-      return;
-    }
-    const decisions: API.HITLDecision[] = pending.map((card) => ({
-      tool_call_id: card.tool_call_id,
-      option_id: card.selected_option_id,
-    }));
-    setMessage(messageId, {
-      message: { ...current.message, hitlCards: nextCards },
+    // Merge onto the store's latest cards. A second click can arrive before React re-renders the first.
+    let resume: { calls: ClientToolPendingCall[] | undefined; decisions: API.HITLDecision[] } | undefined;
+    const applied = setMessage(messageId, (origin) => {
+      const cards = origin.message.hitlCards;
+      const target = cards?.find((card) => card.tool_call_id === toolCallId);
+      if (!cards || !target || target.status !== 'pending') {
+        return {};
+      }
+      const nextCards = cards.map((card) => (
+        card.tool_call_id === toolCallId ? { ...card, selected_option_id: optionId } : card
+      ));
+      const pending = nextCards.filter((card) => card.status === 'pending');
+      if (pending.length > 0 && pending.every((card) => card.selected_option_id)) {
+        resume = {
+          calls: origin.message.pendingClientToolCalls,
+          decisions: pending.map((card) => ({
+            tool_call_id: card.tool_call_id,
+            option_id: card.selected_option_id,
+          })),
+        };
+      }
+      return {
+        message: { ...origin.message, hitlCards: nextCards },
+      };
     });
+    if (!applied || !resume) {
+      return;
+    }
     setHitlSubmitting({ messageId, toolCallId, optionId });
-    void resumeHITL(messageId, current.message.pendingClientToolCalls, decisions);
-  }, [hitlSubmitting, messages, setMessage, resumeHITL]);
+    void resumeHITL(messageId, resume.calls, resume.decisions);
+  }, [hitlSubmitting, setMessage, resumeHITL]);
 
   useEffect(() => {
     pendingHandoffRef.current = null;
@@ -1132,8 +1133,8 @@ export const AIChat: React.FC<AIChatProps> = ({
     hitlResumeLockRef.current = false;
   }, [isRequesting]);
 
-  // onRequest returns before the follow-up stream finishes. Roll the choice back if that stream fails
-  // so the buttons stay available. A successful terminal message drops the watch.
+  // onRequest returns before the follow-up stream finishes. Roll the choice back unless that
+  // follow-up assistant message ends in success, so Stop/abort does not leave “You chose …”.
   useEffect(() => {
     const target = hitlResumeTargetRef.current;
     if (!target || !messages?.length) {
@@ -1148,7 +1149,7 @@ export const AIChat: React.FC<AIChatProps> = ({
       return;
     }
     hitlResumeTargetRef.current = null;
-    const failed = assistant.status === 'error' || Boolean(assistant.message.error);
+    const failed = assistant.status !== 'success' || Boolean(assistant.message.error);
     if (!failed) {
       return;
     }
