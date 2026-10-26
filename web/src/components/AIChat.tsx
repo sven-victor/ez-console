@@ -370,6 +370,34 @@ function pendingAutoClientToolCalls(
   return calls.length > 0 ? calls : undefined;
 }
 
+interface HitlResumeFlight {
+  generation: number;
+  /** True once onRequest has been called. Stop after this aborts SSE and keeps the saved choice. */
+  streamRequested: boolean;
+  revert: () => void;
+}
+
+/** Put an unsaved resume back on pending buttons. Does not touch abandoned cards. */
+function revertUnsavedHITLCards(
+  apply: (
+    id: string | number,
+    update: (origin: MessageInfo<ChatStreamMessage>) => Partial<MessageInfo<ChatStreamMessage>>,
+  ) => void,
+  messageId: string | number,
+  decisionIDs: string[],
+) {
+  apply(messageId, (origin) => ({
+    message: {
+      ...origin.message,
+      hitlCards: origin.message.hitlCards?.map((card) => (
+        decisionIDs.includes(card.tool_call_id) && card.status !== 'abandoned'
+          ? { ...card, status: 'pending' as const, selected_option_id: '' }
+          : card
+      )),
+    },
+  }));
+}
+
 interface ChatStreamOutput {
   data: string;
 }
@@ -924,8 +952,13 @@ export const AIChat: React.FC<AIChatProps> = ({
 
   const pendingHandoffRef = useRef<ClientToolPendingCall[] | null>(null);
   const autoToolStashRef = useRef<{ calls: ClientToolPendingCall[]; promise: Promise<ClientToolResultPayload[]> } | null>(null);
+  const conversationKeyRef = useRef(activeConversationKey);
+  conversationKeyRef.current = activeConversationKey;
   const hitlResumeLockRef = useRef(false);
   const hitlResumeSawRequestRef = useRef(false);
+  const hitlResumeStreamStartedRef = useRef(false);
+  const hitlResumeGenerationRef = useRef(0);
+  const hitlResumeFlightRef = useRef<HitlResumeFlight | null>(null);
   const hitlResumeTargetRef = useRef<{ messageId: string | number; decisionIDs: string[] } | null>(null);
   const [hitlSubmitting, setHitlSubmitting] = useState<HITLSubmitState | null>(null);
 
@@ -988,6 +1021,20 @@ export const AIChat: React.FC<AIChatProps> = ({
     });
   }, [executeAutoClientTools, onRequest, buildChatRequestFields]);
 
+  const cancelUnsentHitlResume = useCallback(() => {
+    const flight = hitlResumeFlightRef.current;
+    if (!flight || flight.streamRequested) {
+      return;
+    }
+    hitlResumeGenerationRef.current += 1;
+    hitlResumeFlightRef.current = null;
+    hitlResumeLockRef.current = false;
+    hitlResumeSawRequestRef.current = false;
+    hitlResumeTargetRef.current = null;
+    setHitlSubmitting(null);
+    flight.revert();
+  }, []);
+
   const resumeHITL = useCallback(async (
     messageId: string | number,
     calls: ClientToolPendingCall[] | undefined,
@@ -996,14 +1043,34 @@ export const AIChat: React.FC<AIChatProps> = ({
     if (hitlResumeLockRef.current) {
       return;
     }
+    const generation = ++hitlResumeGenerationRef.current;
+    const conversationId = conversationKeyRef.current;
+    const decisionIDs = decisions.map((decision) => decision.tool_call_id);
+    const revert = () => revertUnsavedHITLCards(setMessage, messageId, decisionIDs);
+    const flight: HitlResumeFlight = { generation, streamRequested: false, revert };
+    hitlResumeFlightRef.current = flight;
     hitlResumeLockRef.current = true;
-    let committed = false;
+    let markedDecided = false;
     try {
       let results: ClientToolResultPayload[] = [];
       if (calls?.length) {
         results = await ensureAutoToolStash(calls);
       }
-      // Mark the choice on this conversation's store before the follow-up stream starts.
+      const dropped = hitlResumeGenerationRef.current !== generation
+        || conversationKeyRef.current !== conversationId;
+      if (dropped) {
+        // Stop or a conversation switch happened during the stash. Do not post, and do not
+        // leave a decided bubble unless this session already received the resume POST.
+        if (hitlResumeFlightRef.current === flight) {
+          hitlResumeFlightRef.current = null;
+          hitlResumeLockRef.current = false;
+          hitlResumeSawRequestRef.current = false;
+          setHitlSubmitting(null);
+          revert();
+        }
+        return;
+      }
+      // This store is the one captured for conversationId. Mark decided only now, then post there.
       setMessage(messageId, (origin) => ({
         message: {
           ...origin.message,
@@ -1016,11 +1083,11 @@ export const AIChat: React.FC<AIChatProps> = ({
           }),
         },
       }));
-      committed = true;
-      hitlResumeTargetRef.current = {
-        messageId,
-        decisionIDs: decisions.map((decision) => decision.tool_call_id),
-      };
+      markedDecided = true;
+      flight.streamRequested = true;
+      hitlResumeSawRequestRef.current = true;
+      hitlResumeStreamStartedRef.current = false;
+      hitlResumeTargetRef.current = { messageId, decisionIDs };
       onRequest({
         content: '',
         ...(results.length > 0 ? { client_tool_results: results } : {}),
@@ -1029,19 +1096,14 @@ export const AIChat: React.FC<AIChatProps> = ({
       });
     } catch {
       hitlResumeTargetRef.current = null;
-      if (committed) {
-        setMessage(messageId, (origin) => ({
-          message: {
-            ...origin.message,
-            hitlCards: origin.message.hitlCards?.map((card) => (
-              decisions.some((item) => item.tool_call_id === card.tool_call_id) && card.status === 'decided'
-                ? { ...card, status: 'pending' as const }
-                : card
-            )),
-          },
-        }));
+      if (hitlResumeFlightRef.current === flight) {
+        hitlResumeFlightRef.current = null;
+      }
+      if (markedDecided) {
+        revert();
       }
       hitlResumeLockRef.current = false;
+      hitlResumeSawRequestRef.current = false;
       setHitlSubmitting(null);
     }
   }, [ensureAutoToolStash, onRequest, buildChatRequestFields, setMessage]);
@@ -1107,13 +1169,15 @@ export const AIChat: React.FC<AIChatProps> = ({
   }, [hitlSubmitting, setMessage, resumeHITL]);
 
   useEffect(() => {
+    cancelUnsentHitlResume();
     pendingHandoffRef.current = null;
     autoToolStashRef.current = null;
     hitlResumeLockRef.current = false;
     hitlResumeSawRequestRef.current = false;
+    hitlResumeStreamStartedRef.current = false;
     hitlResumeTargetRef.current = null;
     setHitlSubmitting(null);
-  }, [activeConversationKey]);
+  }, [activeConversationKey, cancelUnsentHitlResume]);
 
   // The lock is taken before stashed auto-tool results resolve, while isRequesting is still false.
   // Drop the button spinner once that resume request is actually in flight, and release the lock when it ends.
@@ -1133,8 +1197,9 @@ export const AIChat: React.FC<AIChatProps> = ({
     hitlResumeLockRef.current = false;
   }, [isRequesting]);
 
-  // onRequest returns before the follow-up stream finishes. Roll the choice back unless that
-  // follow-up assistant message ends in success, so Stop/abort does not leave “You chose …”.
+  // Decisions are saved before SSE bytes arrive. Reopen cards only when the POST fails
+  // with no stream chunk (validation, network, or !response.ok). Stop or a later
+  // completion error, after the request or the stream has started, keeps “You chose …”.
   useEffect(() => {
     const target = hitlResumeTargetRef.current;
     if (!target || !messages?.length) {
@@ -1145,27 +1210,25 @@ export const AIChat: React.FC<AIChatProps> = ({
       return;
     }
     const assistant = [...messages.slice(cardIndex + 1)].reverse().find((item) => item.message.role === 'assistant');
-    if (!assistant || assistant.status === 'loading' || assistant.status === 'updating' || assistant.status === 'local') {
+    if (!assistant) {
       return;
     }
+    if (assistant.status === 'updating') {
+      hitlResumeStreamStartedRef.current = true;
+    }
+    if (assistant.status === 'loading' || assistant.status === 'updating' || assistant.status === 'local') {
+      return;
+    }
+    const streamStarted = hitlResumeStreamStartedRef.current;
     hitlResumeTargetRef.current = null;
-    const failed = assistant.status !== 'success' || Boolean(assistant.message.error);
-    if (!failed) {
+    hitlResumeStreamStartedRef.current = false;
+    if (streamStarted || assistant.status !== 'error') {
       return;
     }
     hitlResumeLockRef.current = false;
     hitlResumeSawRequestRef.current = false;
     setHitlSubmitting(null);
-    setMessage(target.messageId, (origin) => ({
-      message: {
-        ...origin.message,
-        hitlCards: origin.message.hitlCards?.map((card) => (
-          target.decisionIDs.includes(card.tool_call_id) && card.status === 'decided'
-            ? { ...card, status: 'pending' as const, selected_option_id: '' }
-            : card
-        )),
-      },
-    }));
+    revertUnsavedHITLCards(setMessage, target.messageId, target.decisionIDs);
   }, [messages, setMessage]);
 
   // Auto-run browser tools immediately when nothing is waiting on a card.
@@ -1499,7 +1562,14 @@ export const AIChat: React.FC<AIChatProps> = ({
             setInputValue('');
           }}
           onChange={setInputValue}
-          onCancel={() => { abort() }}
+          onCancel={() => {
+            const flight = hitlResumeFlightRef.current;
+            if (flight && !flight.streamRequested) {
+              cancelUnsentHitlResume();
+              return;
+            }
+            abort();
+          }}
           loading={isRequesting || hitlSubmitting !== null}
           className={classNames(styles.sender, 'chat-sender')}
           placeholder={t('chat.inputPlaceholder')}
