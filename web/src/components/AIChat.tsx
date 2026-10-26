@@ -343,6 +343,33 @@ function hasPendingHITLCards(cards: API.HITLCard[] | undefined): boolean {
   return !!cards?.some((card) => card.status === 'pending');
 }
 
+/**
+ * Auto browser tools that were interrupted beside pending cards.
+ * Approval and ui_choose calls stay on the cards; decided cards do not replay tools.
+ */
+function pendingAutoClientToolCalls(
+  toolCalls: API.AIToolCall[] | null | undefined,
+  cards: API.HITLCard[],
+): ClientToolPendingCall[] | undefined {
+  if (!hasPendingHITLCards(cards)) {
+    return undefined;
+  }
+  const cardIDs = new Set(cards.map((card) => card.tool_call_id));
+  const calls: ClientToolPendingCall[] = [];
+  for (const call of toolCalls ?? []) {
+    const name = call?.function?.name;
+    if (!call?.id || !name || !name.startsWith('ui_') || name === 'ui_choose' || cardIDs.has(call.id)) {
+      continue;
+    }
+    calls.push({
+      id: call.id,
+      name,
+      arguments: typeof call.function.arguments === 'string' ? call.function.arguments : '',
+    });
+  }
+  return calls.length > 0 ? calls : undefined;
+}
+
 interface ChatStreamOutput {
   data: string;
 }
@@ -899,6 +926,7 @@ export const AIChat: React.FC<AIChatProps> = ({
   const autoToolStashRef = useRef<{ calls: ClientToolPendingCall[]; promise: Promise<ClientToolResultPayload[]> } | null>(null);
   const hitlResumeLockRef = useRef(false);
   const hitlResumeSawRequestRef = useRef(false);
+  const hitlResumeTargetRef = useRef<{ messageId: string | number; decisionIDs: string[] } | null>(null);
   const [hitlSubmitting, setHitlSubmitting] = useState<HITLSubmitState | null>(null);
 
   const executeAutoClientTools = useCallback(async (pendingCalls: ClientToolPendingCall[]) => {
@@ -989,6 +1017,10 @@ export const AIChat: React.FC<AIChatProps> = ({
         },
       }));
       committed = true;
+      hitlResumeTargetRef.current = {
+        messageId,
+        decisionIDs: decisions.map((decision) => decision.tool_call_id),
+      };
       onRequest({
         content: '',
         ...(results.length > 0 ? { client_tool_results: results } : {}),
@@ -996,6 +1028,7 @@ export const AIChat: React.FC<AIChatProps> = ({
         ...buildChatRequestFields(),
       });
     } catch {
+      hitlResumeTargetRef.current = null;
       if (committed) {
         setMessage(messageId, (origin) => ({
           message: {
@@ -1077,6 +1110,7 @@ export const AIChat: React.FC<AIChatProps> = ({
     autoToolStashRef.current = null;
     hitlResumeLockRef.current = false;
     hitlResumeSawRequestRef.current = false;
+    hitlResumeTargetRef.current = null;
     setHitlSubmitting(null);
   }, [activeConversationKey]);
 
@@ -1097,6 +1131,41 @@ export const AIChat: React.FC<AIChatProps> = ({
     hitlResumeSawRequestRef.current = false;
     hitlResumeLockRef.current = false;
   }, [isRequesting]);
+
+  // onRequest returns before the follow-up stream finishes. Roll the choice back if that stream fails
+  // so the buttons stay available. A successful terminal message drops the watch.
+  useEffect(() => {
+    const target = hitlResumeTargetRef.current;
+    if (!target || !messages?.length) {
+      return;
+    }
+    const cardIndex = messages.findIndex((item) => item.id === target.messageId);
+    if (cardIndex < 0) {
+      return;
+    }
+    const assistant = [...messages.slice(cardIndex + 1)].reverse().find((item) => item.message.role === 'assistant');
+    if (!assistant || assistant.status === 'loading' || assistant.status === 'updating' || assistant.status === 'local') {
+      return;
+    }
+    hitlResumeTargetRef.current = null;
+    const failed = assistant.status === 'error' || Boolean(assistant.message.error);
+    if (!failed) {
+      return;
+    }
+    hitlResumeLockRef.current = false;
+    hitlResumeSawRequestRef.current = false;
+    setHitlSubmitting(null);
+    setMessage(target.messageId, (origin) => ({
+      message: {
+        ...origin.message,
+        hitlCards: origin.message.hitlCards?.map((card) => (
+          target.decisionIDs.includes(card.tool_call_id) && card.status === 'decided'
+            ? { ...card, status: 'pending' as const, selected_option_id: '' }
+            : card
+        )),
+      },
+    }));
+  }, [messages, setMessage]);
 
   // Auto-run browser tools immediately when nothing is waiting on a card.
   // When cards are still pending, stash those results and wait for every selection.
@@ -1159,6 +1228,9 @@ export const AIChat: React.FC<AIChatProps> = ({
             content: buffer.message.content,
             role: buffer.message.role,
             ...(buffer.message.hitlCards?.length ? { hitlCards: buffer.message.hitlCards } : {}),
+            ...(hasPendingHITLCards(buffer.message.hitlCards) && buffer.message.pendingClientToolCalls?.length
+              ? { pendingClientToolCalls: buffer.message.pendingClientToolCalls }
+              : {}),
           },
           status: buffer.status,
         });
@@ -1176,6 +1248,13 @@ export const AIChat: React.FC<AIChatProps> = ({
               const cards = hitlCardsFromMetadata(item.metadata);
               if (cards?.length) {
                 buffer.message.hitlCards = [...(buffer.message.hitlCards ?? []), ...cards];
+                const autoCalls = pendingAutoClientToolCalls(item.tool_calls, cards);
+                if (autoCalls?.length) {
+                  buffer.message.pendingClientToolCalls = [
+                    ...(buffer.message.pendingClientToolCalls ?? []),
+                    ...autoCalls,
+                  ];
+                }
               }
             }
             break;
