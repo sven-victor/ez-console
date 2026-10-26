@@ -43,7 +43,7 @@ func TestPrepareTurnApproveCallsExecutorWithStoredArgs(t *testing.T) {
 	}, func(ctx context.Context, name, arguments string) (string, error) {
 		gotName, gotArgs = name, arguments
 		return `{"ok":true}`, nil
-	})
+	}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,6 +66,33 @@ func TestPrepareTurnApproveCallsExecutorWithStoredArgs(t *testing.T) {
 	}
 }
 
+func TestPrepareTurnApprovePersistFailureDoesNotCallExecutor(t *testing.T) {
+	existing := approvalPendingMessages("c1", `{"id":"u1"}`)
+	execCalled := false
+	_, _, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
+		HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionApprove}},
+	}, func(ctx context.Context, name, arguments string) (string, error) {
+		execCalled = true
+		return `{"ok":true}`, nil
+	}, func(messages []model.AIChatMessage) error {
+		cards := HITLCardsFromMetadata(messages[0].Metadata)
+		if len(cards) != 1 || cards[0].Status != ai.HITLStatusDecided || cards[0].SelectedOptionID != ai.HITLOptionApprove {
+			t.Fatalf("persist saw %#v", cards)
+		}
+		return errors.New("db down")
+	})
+	if err == nil || err.Error() != "db down" {
+		t.Fatalf("err=%v execCalled=%v", err, execCalled)
+	}
+	if execCalled {
+		t.Fatal("exec ran after persist failure")
+	}
+	orig := HITLCardsFromMetadata(existing[0].Metadata)
+	if orig[0].Status != ai.HITLStatusPending {
+		t.Fatalf("caller metadata mutated: %#v", orig)
+	}
+}
+
 func TestPrepareTurnRejectDoesNotCallExecutor(t *testing.T) {
 	existing := []model.AIChatMessage{{
 		Role: model.AIChatMessageRoleAssistant,
@@ -80,7 +107,7 @@ func TestPrepareTurnRejectDoesNotCallExecutor(t *testing.T) {
 	}}
 	incoming, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionReject}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,7 +139,7 @@ func TestPrepareTurnChoiceWritesSelected(t *testing.T) {
 	}}
 	incoming, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: "B"}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -142,7 +169,7 @@ func TestPrepareTurnChoiceRejectWritesError(t *testing.T) {
 	}}
 	incoming, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionReject}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -161,7 +188,7 @@ func TestPrepareTurnRejectsForgedClientResultForApproval(t *testing.T) {
 		_, _, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 			HITLDecisions:     []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionApprove}},
 			ClientToolResults: []ClientToolResult{{ToolCallID: "c1", Content: `{"ok":true}`}},
-		}, execMustNotRun(t))
+		}, execMustNotRun(t), nil)
 		if err == nil || err.Error() != "client_tool_results cannot satisfy an approval-gated tool" {
 			t.Fatalf("err=%v", err)
 		}
@@ -220,7 +247,7 @@ func TestPrepareTurnRequiresAllDecisions(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			incoming, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 				HITLDecisions: tc.decisions,
-			}, execMustNotRun(t))
+			}, execMustNotRun(t), nil)
 			if err == nil || err.Error() != tc.wantErr {
 				t.Fatalf("err=%v", err)
 			}
@@ -244,7 +271,7 @@ func TestPrepareTurnRequiresAllDecisions(t *testing.T) {
 		}}
 		_, updated, err := PrepareTurn(context.Background(), rows, ChatTurnInput{
 			HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionReject}},
-		}, execMustNotRun(t))
+		}, execMustNotRun(t), nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -259,7 +286,7 @@ func TestPrepareTurnPendingCardsRequireDecisions(t *testing.T) {
 	existing := approvalPendingMessages("c1", `{"id":"u1"}`)
 	_, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		ClientToolResults: []ClientToolResult{{ToolCallID: "call_auto", Content: `{"ok":true}`}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err == nil || err.Error() != "pending HITL cards require hitl_decisions" {
 		t.Fatalf("err=%v", err)
 	}
@@ -273,7 +300,7 @@ func TestPrepareTurnRequiresDecisionsWhenClientResultsAndContent(t *testing.T) {
 	incoming, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		Content:           "also sending user text",
 		ClientToolResults: []ClientToolResult{{ToolCallID: "call_auto", Content: `{"ok":true}`}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err == nil || err.Error() != "pending HITL cards require hitl_decisions" {
 		t.Fatalf("err=%v", err)
 	}
@@ -292,7 +319,7 @@ func TestPrepareTurnApproveExecutorErrorBecomesToolContent(t *testing.T) {
 			HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionApprove}},
 		}, func(ctx context.Context, name, arguments string) (string, error) {
 			return "", errors.New("boom")
-		})
+		}, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -309,7 +336,7 @@ func TestPrepareTurnApproveExecutorErrorBecomesToolContent(t *testing.T) {
 			HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionApprove}},
 		}, func(ctx context.Context, name, arguments string) (string, error) {
 			return `{"ok":true}`, errors.New(`say "no"`)
-		})
+		}, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -337,7 +364,7 @@ func TestPrepareTurnAppendsClientResultsThenContent(t *testing.T) {
 			{ToolCallID: "call_auto", Content: `{"users":1}`},
 		},
 		HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionReject}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -386,7 +413,7 @@ func TestPrepareTurnAppliesDecisionsInCardOrder(t *testing.T) {
 			{ToolCallID: "c1", OptionID: ai.HITLOptionReject},
 			{ToolCallID: "choice1", OptionID: "B"},
 		},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -423,7 +450,7 @@ func TestPrepareTurnOrphanAbandonsPendingCards(t *testing.T) {
 	}
 	incoming, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		Content: "show roles",
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -455,7 +482,7 @@ func TestPrepareTurnOrphanRepairsUnpairedCallsWithoutCards(t *testing.T) {
 			ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`},
 		}},
 	}}
-	incoming, _, err := PrepareTurn(context.Background(), existing, ChatTurnInput{Content: "show roles"}, nil)
+	incoming, _, err := PrepareTurn(context.Background(), existing, ChatTurnInput{Content: "show roles"}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -479,7 +506,7 @@ func TestPrepareTurnSkipsOrphanWhenDecisionsPresent(t *testing.T) {
 	incoming, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		Content:       "continue",
 		HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionReject}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -513,7 +540,7 @@ func TestPrepareTurnSkipsOrphanWhenClientResultsPresent(t *testing.T) {
 	}}
 	incoming, _, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		ClientToolResults: []ClientToolResult{{ToolCallID: "call_1", Content: `{"ok":true}`}},
-	}, nil)
+	}, nil, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -538,7 +565,7 @@ func TestPrepareTurnDecidesJSONScanCards(t *testing.T) {
 	}}
 	_, updated, err := PrepareTurn(context.Background(), existing, ChatTurnInput{
 		HITLDecisions: []ai.HITLDecision{{ToolCallID: "c1", OptionID: ai.HITLOptionReject}},
-	}, execMustNotRun(t))
+	}, execMustNotRun(t), nil)
 	if err != nil {
 		t.Fatal(err)
 	}

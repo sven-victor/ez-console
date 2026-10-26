@@ -60,8 +60,10 @@ type pendingHITLCard struct {
 
 // PrepareTurn builds incoming messages for one chat turn and returns a copy of
 // existing with hitl_cards status and selected_option_id updated in memory.
-// It does not persist metadata.
-func PrepareTurn(ctx context.Context, existing []model.AIChatMessage, in ChatTurnInput, exec ToolExecutor) ([]ai.ChatMessage, []model.AIChatMessage, error) {
+// persist may be nil. When an approval will run exec, persist is invoked after
+// those cards are marked decided and before exec. A persist error is returned
+// without calling exec.
+func PrepareTurn(ctx context.Context, existing []model.AIChatMessage, in ChatTurnInput, exec ToolExecutor, persist func([]model.AIChatMessage) error) ([]ai.ChatMessage, []model.AIChatMessage, error) {
 	updated := cloneTurnMessages(existing)
 	pending := pendingCards(updated)
 	if len(in.HITLDecisions) == 0 && len(pending) > 0 && len(in.ClientToolResults) > 0 {
@@ -84,6 +86,21 @@ func PrepareTurn(ctx context.Context, existing []model.AIChatMessage, in ChatTur
 	for _, d := range in.HITLDecisions {
 		byID[d.ToolCallID] = d
 	}
+	// Mark every card decided before any tool runs. A failed save must leave
+	// the database pending and must not execute an approval.
+	needsExec := false
+	for _, p := range pending {
+		d := byID[p.card.ToolCallID]
+		setCardStatus(updated, p, ai.HITLStatusDecided, d.OptionID)
+		if approvalWillExecute(p.card, d, exec) {
+			needsExec = true
+		}
+	}
+	if needsExec && persist != nil {
+		if err := persist(updated); err != nil {
+			return nil, nil, err
+		}
+	}
 	for _, p := range pending {
 		d := byID[p.card.ToolCallID]
 		incoming = append(incoming, ai.ChatMessage{
@@ -91,7 +108,6 @@ func PrepareTurn(ctx context.Context, existing []model.AIChatMessage, in ChatTur
 			Content:    decisionContent(ctx, existing, p.card, d, exec),
 			ToolCallID: p.card.ToolCallID,
 		})
-		setCardStatus(updated, p, ai.HITLStatusDecided, d.OptionID)
 	}
 	for _, result := range in.ClientToolResults {
 		incoming = append(incoming, ai.ChatMessage{
@@ -190,6 +206,10 @@ func rejectForgedApprovalResults(pending []pendingHITLCard, results []ClientTool
 		}
 	}
 	return nil
+}
+
+func approvalWillExecute(card ai.HITLCard, d ai.HITLDecision, exec ToolExecutor) bool {
+	return exec != nil && card.Kind == ai.HITLCardApproval && d.OptionID == ai.HITLOptionApprove
 }
 
 func decisionContent(ctx context.Context, existing []model.AIChatMessage, card ai.HITLCard, d ai.HITLDecision, exec ToolExecutor) string {

@@ -403,6 +403,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 
 	// History is loaded by SessionStore. PrepareTurn builds this turn and
 	// updates hitl_cards status in memory, including orphan repair.
+	// Approvals persist decided cards before the tool runs. If that save
+	// fails, PrepareTurn returns without calling the tool and the row stays pending.
 	existingMessages, err := c.service.GetChatMessages(ctx, organizationID, userIDStr, sessionID)
 	if err != nil {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat messages", err)))
@@ -422,6 +424,8 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 			return "", err
 		}
 		return ts.CallTool(ctx, name, arguments)
+	}, func(messages []model.AIChatMessage) error {
+		return c.service.SaveHITLCardsFromMessages(ctx, organizationID, userIDStr, sessionID, messages)
 	})
 	if err != nil {
 		if prepareTurnClientError(err) {

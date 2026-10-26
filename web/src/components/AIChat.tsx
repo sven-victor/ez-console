@@ -226,6 +226,8 @@ interface ClientToolPendingCall {
   id: string;
   name: string;
   arguments: string;
+  /** Set on calls rebuilt from GET. Resume may run them; opening the session must not. */
+  hitlFromHistory?: boolean;
 }
 
 interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'> {
@@ -346,6 +348,7 @@ function hasPendingHITLCards(cards: API.HITLCard[] | undefined): boolean {
 /**
  * Auto browser tools that were interrupted beside pending cards.
  * Approval and ui_choose calls stay on the cards; decided cards do not replay tools.
+ * Rebuilt from session history, so callers must not invoke handlers until the user resumes.
  */
 function pendingAutoClientToolCalls(
   toolCalls: API.AIToolCall[] | null | undefined,
@@ -365,6 +368,7 @@ function pendingAutoClientToolCalls(
       id: call.id,
       name,
       arguments: typeof call.function.arguments === 'string' ? call.function.arguments : '',
+      hitlFromHistory: true,
     });
   }
   return calls.length > 0 ? calls : undefined;
@@ -374,6 +378,8 @@ interface HitlResumeFlight {
   generation: number;
   /** True only after isRequesting becomes true, not merely because onRequest was called. */
   streamRequested: boolean;
+  /** True once the resume POST has been handed to the chat request. */
+  posted: boolean;
   revert: () => void;
 }
 
@@ -383,6 +389,8 @@ interface HitlResumeTarget {
   decisionIDs: string[];
   /** True once the follow-up assistant reaches updating (SSE has started). */
   streamStarted: boolean;
+  /** True while a failed resume is refetching server card status. */
+  reconciling: boolean;
   submit: HITLSubmitState;
 }
 
@@ -988,6 +996,7 @@ export const AIChat: React.FC<AIChatProps> = ({
   const hitlResumeGenerationRef = useRef(0);
   const hitlResumeFlightRef = useRef<HitlResumeFlight | null>(null);
   const hitlResumeTargetRef = useRef<HitlResumeTarget | null>(null);
+  const reconcileHITLResumeRef = useRef<(target: HitlResumeTarget) => void>(() => {});
   const plainTextAbandonRef = useRef<PlainTextAbandon | null>(null);
   const [hitlSubmitting, setHitlSubmitting] = useState<HITLSubmitState | null>(null);
   hitlFollowUpChunkHandlers.onChunk = (conversationKey: string) => {
@@ -1070,7 +1079,9 @@ export const AIChat: React.FC<AIChatProps> = ({
 
   const cancelUnsentHitlResume = useCallback(() => {
     const flight = hitlResumeFlightRef.current;
-    if (!flight || flight.streamRequested) {
+    // Once the POST has left the client, the server may already have saved
+    // decided cards. Do not put the buttons back from a conversation switch.
+    if (!flight || flight.streamRequested || flight.posted) {
       return;
     }
     hitlResumeGenerationRef.current += 1;
@@ -1099,7 +1110,7 @@ export const AIChat: React.FC<AIChatProps> = ({
     }
     const decisionIDs = decisions.map((decision) => decision.tool_call_id);
     const revert = () => revertUnsavedHITLCards(setMessage, messageId, decisionIDs);
-    const flight: HitlResumeFlight = { generation, streamRequested: false, revert };
+    const flight: HitlResumeFlight = { generation, streamRequested: false, posted: false, revert };
     hitlResumeFlightRef.current = flight;
     hitlResumeLockRef.current = true;
     try {
@@ -1127,8 +1138,10 @@ export const AIChat: React.FC<AIChatProps> = ({
         messageId,
         decisionIDs,
         streamStarted: false,
+        reconciling: false,
         submit,
       };
+      flight.posted = true;
       onRequest({
         content: '',
         ...(results.length > 0 ? { client_tool_results: results } : {}),
@@ -1136,6 +1149,14 @@ export const AIChat: React.FC<AIChatProps> = ({
         ...buildChatRequestFields(),
       });
     } catch {
+      const target = hitlResumeTargetRef.current;
+      if (flight.posted && target && hitlResumeFlightRef.current === flight) {
+        if (!target.reconciling) {
+          target.reconciling = true;
+          reconcileHITLResumeRef.current(target);
+        }
+        return;
+      }
       hitlResumeTargetRef.current = null;
       if (hitlResumeFlightRef.current === flight) {
         hitlResumeFlightRef.current = null;
@@ -1291,9 +1312,61 @@ export const AIChat: React.FC<AIChatProps> = ({
     setHitlSubmitting(null);
   }, [releaseAutoToolStash, setMessage]);
 
-  // Cards stay pending until the follow-up assistant reaches updating. A POST that
-  // fails with no stream chunk never shows “You chose …”. After SSE starts, Stop or
-  // a later completion error keeps the decided cards.
+  const finishHITLResume = useCallback(() => {
+    hitlResumeTargetRef.current = null;
+    hitlResumeFlightRef.current = null;
+    hitlResumeLockRef.current = false;
+    hitlResumeSawRequestRef.current = false;
+    setHitlSubmitting(null);
+  }, []);
+
+  // A failed resume POST may have saved decided cards before streaming.
+  // Refetch the session and only restore buttons when the server is still pending.
+  const reconcileHITLResume = useCallback(async (target: HitlResumeTarget) => {
+    let serverCards: Map<string, API.HITLCard> | null = null;
+    try {
+      const data = await api.ai.getChatSession({ sessionId: target.conversationId });
+      serverCards = new Map();
+      for (const item of data.messages ?? []) {
+        for (const card of hitlCardsFromMetadata(item.metadata) ?? []) {
+          serverCards.set(card.tool_call_id, card);
+        }
+      }
+    } catch {
+      serverCards = null;
+    }
+    if (conversationKeyRef.current !== target.conversationId || hitlResumeTargetRef.current !== target) {
+      target.reconciling = false;
+      return;
+    }
+    setMessage(target.messageId, (origin) => ({
+      message: {
+        ...origin.message,
+        hitlCards: origin.message.hitlCards?.map((card) => {
+          if (!target.decisionIDs.includes(card.tool_call_id) || card.status === 'abandoned') {
+            return card;
+          }
+          const server = serverCards?.get(card.tool_call_id);
+          if (server?.status === 'pending') {
+            return { ...server, status: 'pending' as const, selected_option_id: '' };
+          }
+          if (server) {
+            return server;
+          }
+          // Missing card or a failed refetch: do not offer approve again.
+          return { ...card, status: 'decided' as const };
+        }),
+      },
+    }));
+    finishHITLResume();
+  }, [finishHITLResume, setMessage]);
+  reconcileHITLResumeRef.current = (target) => {
+    void reconcileHITLResume(target);
+  };
+
+  // Cards stay pending until the follow-up assistant reaches updating.
+  // After SSE starts, Stop or a later completion error keeps the decided cards.
+  // A POST that ends with no stream refetches server cards instead of reopening buttons.
   useEffect(() => {
     const target = hitlResumeTargetRef.current;
     if (!target || !messages?.length || activeConversationKey !== target.conversationId) {
@@ -1314,13 +1387,12 @@ export const AIChat: React.FC<AIChatProps> = ({
     if (assistant.status === 'loading' || assistant.status === 'local') {
       return;
     }
-    hitlResumeTargetRef.current = null;
-    hitlResumeFlightRef.current = null;
-    hitlResumeLockRef.current = false;
-    hitlResumeSawRequestRef.current = false;
-    setHitlSubmitting(null);
-    revertUnsavedHITLCards(setMessage, target.messageId, target.decisionIDs);
-  }, [messages, activeConversationKey, setMessage, markResumeDecided]);
+    if (target.reconciling) {
+      return;
+    }
+    target.reconciling = true;
+    void reconcileHITLResume(target);
+  }, [messages, activeConversationKey, markResumeDecided, reconcileHITLResume]);
 
   // A plain-text send abandons pending cards. If that send fails before SSE, put the buttons back.
   useEffect(() => {
@@ -1368,7 +1440,10 @@ export const AIChat: React.FC<AIChatProps> = ({
     }
     handoff.set(activeConversationKey, calls);
     if (hasPendingHITLCards(lastMsg.message.hitlCards)) {
-      void ensureAutoToolStash(activeConversationKey, calls);
+      // GET restore keeps call ids for resume. Live hitl_pending still stashes.
+      if (!calls.every((call) => call.hitlFromHistory)) {
+        void ensureAutoToolStash(activeConversationKey, calls);
+      }
       return;
     }
     void handleClientToolHandoff(calls);
