@@ -267,7 +267,13 @@ func buildAgent(ctx context.Context, provider aimodel.Provider, opts *ChatComple
 
 	reg := newToolSetsRegistry(func() context.Context { return ctx }, opts.ToolSetsProvider, opts.ClientTools)
 	agentOpts = append(agentOpts, agent.WithToolRegistry(reg))
-	agentOpts = append(agentOpts, agent.WithInterrupter(newUIToolInterrupter(reg, opts.SessionID, opts.SessionStore)))
+	agentOpts = append(agentOpts, agent.WithInterrupter(newUIToolInterrupter(hitlInterrupterConfig{
+		Registry:  reg,
+		SessionID: opts.SessionID,
+		Store:     opts.SessionStore,
+		Mode:      ResolveHITLMode(opts.HITLMode),
+		Catalog:   opts.HITLCatalog,
+	})))
 
 	if opts.SessionID != "" && opts.SessionStore != nil {
 		agentOpts = append(agentOpts, agent.WithSession(opts.SessionID, opts.SessionStore))

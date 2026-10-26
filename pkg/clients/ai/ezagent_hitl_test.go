@@ -1,0 +1,91 @@
+// Copyright 2025 Sven Victor
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package ai
+
+import (
+	"context"
+	"testing"
+
+	"github.com/sashabaranov/go-openai"
+	"github.com/sven-victor/ez-agent/run"
+	"github.com/sven-victor/ez-agent/tool"
+	"github.com/sven-victor/ez-console/pkg/toolset"
+)
+
+func TestInterrupterInteractiveStopsApproval(t *testing.T) {
+	reg := newToolSetsRegistry(func() context.Context { return context.Background() }, func(ctx context.Context) (toolset.ToolSets, error) {
+		return toolset.ToolSets{
+			"mcp3": toolset.NewAdHocToolSet(toolset.NewAdHocTool(openai.Tool{
+				Type:     openai.ToolTypeFunction,
+				Function: &openai.FunctionDefinition{Name: "delete_user", Parameters: map[string]any{"type": "object"}},
+			}, func(ctx context.Context, name, parameters string) (string, error) {
+				t.Fatal("approval tool must not run before a decision")
+				return "", nil
+			})),
+		}, nil
+	}, nil)
+	st := &run.State{}
+	intr := newUIToolInterrupter(hitlInterrupterConfig{
+		Registry: reg,
+		Mode:     HITLModeInteractive,
+		Catalog:  HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval}},
+	})
+	stop, err := intr.BeforeTools(context.Background(), st, []tool.Call{
+		{ID: "c1", Name: "mcp3_delete_user", Input: []byte(`{"id":"u1"}`)},
+	})
+	if err != nil || !stop {
+		t.Fatalf("stop=%v err=%v", stop, err)
+	}
+}
+
+func TestInterrupterAutoRejectContinuesWithoutCall(t *testing.T) {
+	called := false
+	reg := newToolSetsRegistry(func() context.Context { return context.Background() }, func(ctx context.Context) (toolset.ToolSets, error) {
+		return toolset.ToolSets{
+			"mcp3": toolset.NewAdHocToolSet(toolset.NewAdHocTool(openai.Tool{
+				Type:     openai.ToolTypeFunction,
+				Function: &openai.FunctionDefinition{Name: "delete_user", Parameters: map[string]any{"type": "object"}},
+			}, func(ctx context.Context, name, parameters string) (string, error) {
+				called = true
+				return "deleted", nil
+			})),
+			"utils1": toolset.NewAdHocToolSet(toolset.NewAdHocTool(openai.Tool{
+				Type:     openai.ToolTypeFunction,
+				Function: &openai.FunctionDefinition{Name: "now", Parameters: map[string]any{"type": "object"}},
+			}, func(ctx context.Context, name, parameters string) (string, error) {
+				return "2026-10-26", nil
+			})),
+		}, nil
+	}, nil)
+	st := &run.State{}
+	intr := newUIToolInterrupter(hitlInterrupterConfig{
+		Registry: reg,
+		Mode:     HITLModeAutoReject,
+		Catalog:  HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval}},
+	})
+	stop, err := intr.BeforeTools(context.Background(), st, []tool.Call{
+		{ID: "n1", Name: "utils1_now", Input: []byte(`{}`)},
+		{ID: "c1", Name: "mcp3_delete_user", Input: []byte(`{"id":"u1"}`)},
+	})
+	if err != nil || stop {
+		t.Fatalf("stop=%v err=%v", stop, err)
+	}
+	if called {
+		t.Fatal("gated tool was executed")
+	}
+	if len(st.Messages) < 1 {
+		t.Fatal("expected tool result messages")
+	}
+}

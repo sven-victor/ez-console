@@ -118,7 +118,7 @@ func TestMixedBatchEndOfChatSkipsClientHandoff(t *testing.T) {
 	if err := store.Append(context.Background(), "s1", assistant); err != nil {
 		t.Fatal(err)
 	}
-	intr := newUIToolInterrupter(reg, "s1", store)
+	intr := newUIToolInterrupter(hitlInterrupterConfig{Registry: reg, SessionID: "s1", Store: store, Mode: HITLModeInteractive})
 	interrupt, err := intr.BeforeTools(context.Background(), st, []tool.Call{
 		{ID: "1", Name: "summary_save", Input: []byte(`{}`)},
 		{ID: "2", Name: "ui_confirm", Input: []byte(`{}`)},

@@ -26,50 +26,96 @@ import (
 	"github.com/sven-victor/ez-agent/tool"
 )
 
-// newUIToolInterrupter implements HITL aligned with classic behavior:
-// - no ui_* tools → do not interrupt (loop runs server tools)
-// - only ui_* tools → interrupt
-// - mixed batch → execute non-ui_* tools first, append results, then interrupt for ui_*
-func newUIToolInterrupter(reg tool.Registry, sessionID string, store memory.SessionStore) loop.Interrupter {
+// AutoRejectToolResultContent is the synthetic tool result written when a channel
+// cannot prompt the user. The model sees a rejection and the gated tool is not called.
+const AutoRejectToolResultContent = `{"error":"tool call was rejected: this channel cannot prompt the user for confirmation"}`
+
+// hitlInterrupterConfig configures the agent-loop gate for approval, choice, and other ui_* tools.
+type hitlInterrupterConfig struct {
+	Registry  tool.Registry
+	SessionID string
+	Store     memory.SessionStore
+	Mode      HITLMode
+	Catalog   HITLCatalog
+}
+
+// newUIToolInterrupter runs free tools, then either interrupts (interactive)
+// or appends a rejection per gated call and lets the loop continue (auto_reject).
+// A batch with no gated calls returns immediately so the loop executes those tools once.
+func newUIToolInterrupter(cfg hitlInterrupterConfig) loop.Interrupter {
 	return loop.FuncInterrupter(func(ctx context.Context, st *run.State, calls []tool.Call) (bool, error) {
-		var serverCalls, uiCalls []tool.Call
+		var free, gated []tool.Call
 		for _, c := range calls {
-			if strings.HasPrefix(c.Name, ClientToolPrefix) {
-				uiCalls = append(uiCalls, c)
+			if ClassifyHITL(c.Name, cfg.Catalog) == HITLClassNone {
+				free = append(free, c)
 			} else {
-				serverCalls = append(serverCalls, c)
+				gated = append(gated, c)
 			}
 		}
-		if len(uiCalls) == 0 {
+		if len(gated) == 0 {
 			return false, nil
 		}
-		if len(serverCalls) > 0 {
-			results, err := executeServerTools(ctx, reg, serverCalls)
+
+		var freeParts []message.ToolResult
+		if len(free) > 0 {
+			results, err := executeServerTools(ctx, cfg.Registry, free)
 			if err != nil {
 				return false, err
 			}
 			if toolResultEndsChat(results) {
 				// The server tool already ended the chat. Do not hand the
-				// remaining ui_* calls to the browser or write tool results.
+				// remaining gated calls onward or write tool results.
 				dropAssistantToolUses(st)
-				if store != nil && sessionID != "" {
-					if err := store.ReplaceAll(ctx, sessionID, st.Messages); err != nil {
+				if cfg.Store != nil && cfg.SessionID != "" {
+					if err := cfg.Store.ReplaceAll(ctx, cfg.SessionID, st.Messages); err != nil {
 						return false, err
 					}
 				}
 				return false, tool.ErrEndOfChat
 			}
-			msg := message.NewToolResultMessage(toolResultsToParts(results)...)
-			message.EnsureID(&msg)
-			st.AppendMessage(msg)
-			if store != nil && sessionID != "" {
-				if err := store.Append(ctx, sessionID, msg); err != nil {
-					return false, err
-				}
-			}
+			freeParts = toolResultsToParts(results)
 		}
-		return true, nil
+
+		if ResolveHITLMode(cfg.Mode) == HITLModeInteractive {
+			if err := appendToolResultMessage(ctx, st, cfg.SessionID, cfg.Store, freeParts); err != nil {
+				return false, err
+			}
+			return true, nil
+		}
+
+		parts := append(freeParts, autoRejectParts(gated)...)
+		if err := appendToolResultMessage(ctx, st, cfg.SessionID, cfg.Store, parts); err != nil {
+			return false, err
+		}
+		return false, nil
 	})
+}
+
+func autoRejectParts(calls []tool.Call) []message.ToolResult {
+	results := make([]tool.Result, len(calls))
+	for i, c := range calls {
+		results[i] = tool.Result{
+			ToolUseID: c.ID,
+			OK:        false,
+			Content:   []message.Part{message.Text{Text: AutoRejectToolResultContent}},
+		}
+	}
+	return toolResultsToParts(results)
+}
+
+func appendToolResultMessage(ctx context.Context, st *run.State, sessionID string, store memory.SessionStore, parts []message.ToolResult) error {
+	if len(parts) == 0 {
+		return nil
+	}
+	msg := message.NewToolResultMessage(parts...)
+	message.EnsureID(&msg)
+	if st != nil {
+		st.AppendMessage(msg)
+	}
+	if store != nil && sessionID != "" {
+		return store.Append(ctx, sessionID, msg)
+	}
+	return nil
 }
 
 func toolResultEndsChat(results []tool.Result) bool {
