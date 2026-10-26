@@ -77,6 +77,11 @@ func (s *aiChatService) GetSimpleChatMessages(ctx context.Context, organizationI
 	return s.sessionService.GetSimpleChatMessages(ctx, organizationID, userID, sessionID)
 }
 
+// SaveHITLCards implements AIChatService.
+func (s *aiChatService) SaveHITLCards(ctx context.Context, organizationID string, userID string, sessionID string, cards []ai.HITLCard) error {
+	return s.sessionService.SaveHITLCards(ctx, organizationID, userID, sessionID, cards)
+}
+
 // GetUserChatSessions implements AIChatService.
 func (s *aiChatService) GetUserChatSessions(ctx context.Context, organizationID string, userID string, current int, pageSize int) ([]model.AIChatSession, int64, error) {
 	return s.sessionService.GetUserChatSessions(ctx, organizationID, userID, current, pageSize)
@@ -113,6 +118,7 @@ type AIChatService interface {
 	AddChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string, toolCalls model.AIToolCalls, toolCallID string) (*model.AIChatMessage, error)
 	GetChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
 	GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
+	SaveHITLCards(ctx context.Context, organizationID, userID, sessionID string, cards []ai.HITLCard) error
 	UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error
 	DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error
 	DeleteChatSession(ctx context.Context, organizationID, userID, sessionID string) error

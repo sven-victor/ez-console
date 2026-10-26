@@ -197,6 +197,38 @@ func TestAssignIncreasingMessageTimes(t *testing.T) {
 	}
 }
 
+func TestHITLCardsMetadataRoundTrip(t *testing.T) {
+	cards := []ai.HITLCard{{
+		ToolCallID: "call_1",
+		Kind:       ai.HITLCardChoice,
+		Title:      "How?",
+		ToolName:   ai.UIChooseToolName,
+		Status:     ai.HITLStatusPending,
+		Options:    []ai.HITLOption{{ID: "A", Label: "Disable"}, {ID: ai.HITLOptionReject, Label: "Don't execute"}},
+	}}
+	meta := MetadataWithHITLCards(nil, cards)
+	got := HITLCardsFromMetadata(meta)
+	if len(got) != 1 || got[0].ToolCallID != "call_1" || got[0].Kind != ai.HITLCardChoice {
+		t.Fatalf("%#v", got)
+	}
+}
+
+func TestChatMessagesFromModelKeepsPendingHITLToolCalls(t *testing.T) {
+	rows := []model.AIChatMessage{{
+		Role: model.AIChatMessageRoleAssistant,
+		ToolCalls: model.AIToolCalls{
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_choose", Arguments: `{}`}},
+		},
+		Metadata: MetadataWithHITLCards(nil, []ai.HITLCard{{
+			ToolCallID: "call_1", Kind: ai.HITLCardChoice, Status: ai.HITLStatusPending,
+		}}),
+	}}
+	out := ChatMessagesFromModel(rows)
+	if len(out) != 1 || len(out[0].ToolCalls) != 1 {
+		t.Fatalf("pending HITL tool_calls must be kept for display, got %#v", out)
+	}
+}
+
 func unpairedToolUseIDs(msgs []message.Message) []string {
 	results := make(map[string]struct{})
 	var uses []string

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -23,6 +24,7 @@ type AISessionService interface {
 	AddChatMessage(ctx context.Context, organizationID, userID, sessionID string, role model.AIChatMessageRole, content string, toolCalls model.AIToolCalls, toolCallID string) (*model.AIChatMessage, error)
 	GetChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
 	GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error)
+	SaveHITLCards(ctx context.Context, organizationID, userID, sessionID string, cards []ai.HITLCard) error
 	UpdateChatToolCallResult(ctx context.Context, organizationID, userID, sessionID string, toolCallID string, result string) error
 	DeleteSessionAllMessages(ctx context.Context, organizationID, userID, sessionID string) error
 	DeleteChatSession(ctx context.Context, organizationID, userID, sessionID string) error
@@ -172,17 +174,104 @@ func (s *dbSessionService) GetChatMessages(ctx context.Context, organizationID, 
 	return messages, nil
 }
 
-// GetChatMessages gets messages for a chat session
+// GetSimpleChatMessages returns display history: user and assistant rows without
+// tool calls, plus any row that stores metadata.hitl_cards (those assistant rows
+// still have tool_calls). Summarized rows are excluded via GetChatMessages.
 func (s *dbSessionService) GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
-	var messages []model.AIChatMessage
+	messages, err := s.GetChatMessages(ctx, organizationID, userID, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	filtered := make([]model.AIChatMessage, 0, len(messages))
+	for _, msg := range messages {
+		if includeInSimpleChatHistory(msg) {
+			filtered = append(filtered, msg)
+		}
+	}
+	return filtered, nil
+}
+
+func includeInSimpleChatHistory(msg model.AIChatMessage) bool {
+	simpleRole := msg.Role == model.AIChatMessageRoleUser || msg.Role == model.AIChatMessageRoleAssistant
+	if simpleRole && len(msg.ToolCalls) == 0 {
+		return true
+	}
+	return len(HITLCardsFromMetadata(msg.Metadata)) > 0
+}
+
+const hitlCardsMetadataKey = "hitl_cards"
+
+// MetadataWithHITLCards returns a copy of m with cards stored under "hitl_cards".
+func MetadataWithHITLCards(m model.AIChatMessageMetadata, cards []ai.HITLCard) model.AIChatMessageMetadata {
+	out := make(model.AIChatMessageMetadata, len(m)+1)
+	for k, v := range m {
+		out[k] = v
+	}
+	out[hitlCardsMetadataKey] = cards
+	return out
+}
+
+// HITLCardsFromMetadata reads cards stored under "hitl_cards".
+// Values may be a typed slice or the map form produced by JSON scan.
+func HITLCardsFromMetadata(m model.AIChatMessageMetadata) []ai.HITLCard {
+	if len(m) == 0 {
+		return nil
+	}
+	raw, ok := m[hitlCardsMetadataKey]
+	if !ok || raw == nil {
+		return nil
+	}
+	if cards, ok := raw.([]ai.HITLCard); ok {
+		return cards
+	}
+	encoded, err := json.Marshal(raw)
+	if err != nil {
+		return nil
+	}
+	var cards []ai.HITLCard
+	if err := json.Unmarshal(encoded, &cards); err != nil {
+		return nil
+	}
+	return cards
+}
+
+func pendingHITLToolCallIDs(m model.AIChatMessageMetadata) map[string]struct{} {
+	ids := make(map[string]struct{})
+	for _, card := range HITLCardsFromMetadata(m) {
+		if card.Status == ai.HITLStatusPending && card.ToolCallID != "" {
+			ids[card.ToolCallID] = struct{}{}
+		}
+	}
+	return ids
+}
+
+// SaveHITLCards writes cards onto the latest non-summarized assistant row that has tool_calls.
+func (s *dbSessionService) SaveHITLCards(ctx context.Context, organizationID, userID, sessionID string, cards []ai.HITLCard) error {
+	var rows []model.AIChatMessage
 	if err := db.Session(ctx).
 		Where("organization_id = ? AND user_id = ? AND session_id = ?", organizationID, userID, sessionID).
-		Where("role in ? and (tool_calls is null or tool_calls = '')", []model.AIChatMessageRole{model.AIChatMessageRoleUser, model.AIChatMessageRoleAssistant}).
-		Order("message_time ASC").Limit(100).Find(&messages).Error; err != nil {
-		return nil, fmt.Errorf("failed to get chat messages: %w", err)
+		Where("role = ? AND summarized = ?", model.AIChatMessageRoleAssistant, false).
+		Order("message_time DESC").
+		Find(&rows).Error; err != nil {
+		return fmt.Errorf("failed to save hitl cards: %w", err)
 	}
-
-	return messages, nil
+	var target *model.AIChatMessage
+	for i := range rows {
+		if len(rows[i].ToolCalls) > 0 {
+			target = &rows[i]
+			break
+		}
+	}
+	if target == nil {
+		return fmt.Errorf("failed to save hitl cards: no assistant message with tool calls")
+	}
+	meta := MetadataWithHITLCards(target.Metadata, cards)
+	if err := db.Session(ctx).Model(&model.AIChatMessage{}).
+		Where("id = ? AND organization_id = ? AND user_id = ? AND session_id = ?", target.ID, organizationID, userID, sessionID).
+		Update("metadata", meta).Error; err != nil {
+		return fmt.Errorf("failed to save hitl cards: %w", err)
+	}
+	return nil
 }
 
 // UpdateChatMessage updates a chat message
@@ -390,9 +479,10 @@ func modelRowsToAgentMessages(rows []model.AIChatMessage) []message.Message {
 }
 
 // ChatMessagesFromModel converts model.AIChatMessage slice to ChatMessage slice.
-// For assistant messages with ToolCalls, only ToolCalls that have a corresponding
-// role=tool message (same ToolCallID) are kept. This avoids 400 errors when the
-// session was interrupted during tool execution and some tool results are missing.
+// For assistant messages with ToolCalls, a call is kept when a role=tool row
+// shares its ToolCallID, or when that call is on a pending HITL card in the
+// row's metadata. Other unpaired calls are dropped so an interrupted session
+// does not send tool_calls the provider will reject.
 func ChatMessagesFromModel(messages []model.AIChatMessage) []ai.ChatMessage {
 	// Collect ToolCallIDs that have a tool response (role=tool)
 	respondedToolCallIDs := make(map[string]struct{})
@@ -406,19 +496,22 @@ func ChatMessagesFromModel(messages []model.AIChatMessage) []ai.ChatMessage {
 	for _, msg := range messages {
 		var toolCalls []ai.ToolCall
 		if msg.Role == model.AIChatMessageRoleAssistant && len(msg.ToolCalls) > 0 {
-			// Only include ToolCalls that have a corresponding role=tool message
+			pendingHITL := pendingHITLToolCallIDs(msg.Metadata)
 			for _, tc := range msg.ToolCalls {
-				if _, ok := respondedToolCallIDs[tc.ID]; ok {
-					toolCalls = append(toolCalls, ai.ToolCall{
-						Index: nil, // set to contiguous 0,1,2... below
-						ID:    tc.ID,
-						Type:  openai.ToolType(tc.Type),
-						Function: ai.FunctionCall{
-							Name:      tc.Function.Name,
-							Arguments: tc.Function.Arguments,
-						},
-					})
+				_, responded := respondedToolCallIDs[tc.ID]
+				_, pending := pendingHITL[tc.ID]
+				if !responded && !pending {
+					continue
 				}
+				toolCalls = append(toolCalls, ai.ToolCall{
+					Index: nil, // set to contiguous 0,1,2... below
+					ID:    tc.ID,
+					Type:  openai.ToolType(tc.Type),
+					Function: ai.FunctionCall{
+						Name:      tc.Function.Name,
+						Arguments: tc.Function.Arguments,
+					},
+				})
 			}
 			// Re-index to contiguous 0,1,2,... for API compatibility
 			for i := range toolCalls {
