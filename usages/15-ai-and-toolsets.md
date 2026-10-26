@@ -1431,6 +1431,7 @@ On the backend, `AIChatController.StreamChat`:
 5. Stream emits `client_tool_pending` (all pending `ui_*` calls, declared in this request or not) and ends with `ErrClientToolHandoff`.
 6. Frontend executes tools, then POSTs `client_tool_results` on the next turn. Unknown tool names get an error result; empty handler results are normalized to `{"ok":true}` because the server rejects empty `content`.
 7. Results are persisted as `role=tool` messages and a new completion stream starts.
+8. If the second request never happens (refresh, closed chat, session switch, or page unload), the session keeps an unpaired `tool_use`. The next ordinary user turn prepends a synthetic `role=tool` error result for every unpaired call **before** the new user message, then persists that pair. A request that already includes `client_tool_results` is left alone so a normal HITL handoff is not double-answered. `SessionStore.Load` still returns mid-HITL history as-is.
 
 ### Ending the chat from a tool
 

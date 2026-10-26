@@ -16,6 +16,7 @@ package service
 
 import (
 	"testing"
+	"time"
 
 	"github.com/sashabaranov/go-openai"
 	"github.com/sven-victor/ez-agent/message"
@@ -70,4 +71,151 @@ func TestChatMessagesFromModelAllKeepsUnpaired(t *testing.T) {
 	if len(all) == 0 || len(all[0].ToolCalls) != 2 {
 		t.Fatalf("all should keep unpaired calls, got %#v", all)
 	}
+}
+
+func TestFindUnpairedToolCallsLastAssistantOrphan(t *testing.T) {
+	rows := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleUser, Content: "filter disabled users"},
+		{Role: model.AIChatMessageRoleAssistant, ToolCalls: model.AIToolCalls{
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`}},
+		}},
+	}
+	got := FindUnpairedToolCalls(rows)
+	if len(got) != 1 || got[0].ID != "call_1" {
+		t.Fatalf("expected orphan call_1, got %#v", got)
+	}
+}
+
+func TestFindUnpairedToolCallsMixedBatchOnlyUnpaired(t *testing.T) {
+	rows := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleAssistant, ToolCalls: model.AIToolCalls{
+			{ID: "srv_1", Type: "function", Function: model.AIFunctionCall{Name: "utils1_now", Arguments: `{}`}},
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`}},
+		}},
+		{Role: model.AIChatMessageRoleTool, Content: "2026-10-25", ToolCallID: "srv_1"},
+	}
+	got := FindUnpairedToolCalls(rows)
+	if len(got) != 1 || got[0].ID != "call_1" {
+		t.Fatalf("expected only orphan call_1, got %#v", got)
+	}
+}
+
+func TestFindUnpairedToolCallsAllPaired(t *testing.T) {
+	rows := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleAssistant, ToolCalls: model.AIToolCalls{
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`}},
+		}},
+		{Role: model.AIChatMessageRoleTool, Content: `{"ok":true}`, ToolCallID: "call_1"},
+	}
+	if got := FindUnpairedToolCalls(rows); len(got) != 0 {
+		t.Fatalf("expected no orphans, got %#v", got)
+	}
+}
+
+func TestFindUnpairedToolCallsOrphanNotLast(t *testing.T) {
+	rows := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleAssistant, ToolCalls: model.AIToolCalls{
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`}},
+		}},
+		{Role: model.AIChatMessageRoleUser, Content: "never mind, show roles"},
+	}
+	got := FindUnpairedToolCalls(rows)
+	if len(got) != 1 || got[0].ID != "call_1" {
+		t.Fatalf("expected orphan earlier in history, got %#v", got)
+	}
+}
+
+func TestRepairOrphanToolCallsPlainTextPrependsSyntheticResults(t *testing.T) {
+	existing := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleAssistant, ToolCalls: model.AIToolCalls{
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`}},
+		}},
+	}
+	incoming := []ai.ChatMessage{{Role: model.AIChatMessageRoleUser, Content: "show roles"}}
+	got := RepairOrphanToolCalls(existing, incoming, false)
+	if len(got) != 2 {
+		t.Fatalf("expected [tool, user], got %#v", got)
+	}
+	if got[0].Role != model.AIChatMessageRoleTool || got[0].ToolCallID != "call_1" {
+		t.Fatalf("first incoming should be synthetic tool for call_1, got %#v", got[0])
+	}
+	if got[0].Content != OrphanToolResultContent {
+		t.Fatalf("synthetic content=%q", got[0].Content)
+	}
+	if got[1].Role != model.AIChatMessageRoleUser || got[1].Content != "show roles" {
+		t.Fatalf("user message should follow synthetic tools, got %#v", got[1])
+	}
+}
+
+func TestRepairOrphanToolCallsSkipsWhenClientResultsPresent(t *testing.T) {
+	existing := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleAssistant, ToolCalls: model.AIToolCalls{
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`}},
+		}},
+	}
+	incoming := []ai.ChatMessage{{
+		Role:       model.AIChatMessageRoleTool,
+		Content:    `{"ok":true}`,
+		ToolCallID: "call_1",
+	}}
+	got := RepairOrphanToolCalls(existing, incoming, true)
+	if len(got) != 1 || got[0].ToolCallID != "call_1" || got[0].Content != `{"ok":true}` {
+		t.Fatalf("HITL second turn must not synthesize results, got %#v", got)
+	}
+}
+
+func TestRepairOrphanToolCallsHistoryPairsAfterSyntheticResults(t *testing.T) {
+	rows := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleAssistant, ToolCalls: model.AIToolCalls{
+			{ID: "call_1", Type: "function", Function: model.AIFunctionCall{Name: "ui_search_users", Arguments: `{}`}},
+		}},
+	}
+	incoming := RepairOrphanToolCalls(rows, []ai.ChatMessage{{
+		Role:    model.AIChatMessageRoleUser,
+		Content: "show roles",
+	}}, false)
+	history := append(ChatMessagesFromModelAll(rows), incoming...)
+	agentMsgs := ai.ChatMessagesToAgent(history)
+	uses := unpairedToolUseIDs(agentMsgs)
+	if len(uses) != 0 {
+		t.Fatalf("repaired history still has unpaired tool uses: %v", uses)
+	}
+}
+
+func TestAssignIncreasingMessageTimes(t *testing.T) {
+	start := time.Date(2026, 10, 25, 15, 0, 0, 0, time.UTC)
+	rows := []*model.AIChatMessage{
+		{Role: model.AIChatMessageRoleTool, ToolCallID: "call_1"},
+		{Role: model.AIChatMessageRoleUser, Content: "show roles"},
+	}
+	assignIncreasingMessageTimes(rows, start)
+	if !rows[0].MessageTime.Equal(start) {
+		t.Fatalf("first time=%s", rows[0].MessageTime)
+	}
+	if rows[1].MessageTime.Sub(rows[0].MessageTime) != time.Microsecond {
+		t.Fatalf("expected 1µs gap, got %s then %s", rows[0].MessageTime, rows[1].MessageTime)
+	}
+}
+
+func unpairedToolUseIDs(msgs []message.Message) []string {
+	results := make(map[string]struct{})
+	var uses []string
+	for _, msg := range msgs {
+		for _, p := range msg.Parts {
+			switch v := p.(type) {
+			case message.ToolResult:
+				results[v.ToolUseID] = struct{}{}
+			}
+		}
+	}
+	for _, msg := range msgs {
+		for _, p := range msg.Parts {
+			if use, ok := p.(message.ToolUse); ok {
+				if _, paired := results[use.ID]; !paired {
+					uses = append(uses, use.ID)
+				}
+			}
+		}
+	}
+	return uses
 }

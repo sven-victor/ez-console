@@ -292,6 +292,10 @@ func (s *dbSessionStore) Append(ctx context.Context, id string, msgs ...message.
 	if len(rows) == 0 {
 		return nil
 	}
+	// Same-batch rows can share time.Now(); bump microseconds so Load's
+	// ORDER BY message_time ASC keeps tool results immediately after the
+	// assistant tool_calls they pair with (and before the next user turn).
+	assignIncreasingMessageTimes(rows, time.Now())
 	if err := db.Session(ctx).Create(&rows).Error; err != nil {
 		return fmt.Errorf("session append: %w", err)
 	}
@@ -511,4 +515,71 @@ func AgentMessageToModelRows(organizationID, userID, sessionID string, msg messa
 		rows = append(rows, row)
 	}
 	return rows
+}
+
+// OrphanToolResultContent is persisted when a tool_use never received a result
+// (refresh, closed chat, session switch, or page unload during HITL handoff).
+const OrphanToolResultContent = `{"error":"client tool was not executed: the user left the page or the handoff was interrupted"}`
+
+// FindUnpairedToolCalls returns assistant tool_calls that have no matching
+// role=tool row. Summarized messages should already be excluded by the caller.
+func FindUnpairedToolCalls(messages []model.AIChatMessage) []model.AIToolCall {
+	responded := make(map[string]struct{})
+	for _, msg := range messages {
+		if msg.Role == model.AIChatMessageRoleTool && msg.ToolCallID != "" {
+			responded[msg.ToolCallID] = struct{}{}
+		}
+	}
+	var unpaired []model.AIToolCall
+	seen := make(map[string]struct{})
+	for _, msg := range messages {
+		if msg.Role != model.AIChatMessageRoleAssistant {
+			continue
+		}
+		for _, tc := range msg.ToolCalls {
+			if tc.ID == "" {
+				continue
+			}
+			if _, ok := responded[tc.ID]; ok {
+				continue
+			}
+			if _, dup := seen[tc.ID]; dup {
+				continue
+			}
+			seen[tc.ID] = struct{}{}
+			unpaired = append(unpaired, tc)
+		}
+	}
+	return unpaired
+}
+
+// RepairOrphanToolCalls prepends synthetic error tool results for unpaired
+// tool_calls. Skip when this turn already carries client_tool_results so a
+// normal HITL second request is not double-answered.
+func RepairOrphanToolCalls(existing []model.AIChatMessage, incoming []ai.ChatMessage, hasClientToolResults bool) []ai.ChatMessage {
+	if hasClientToolResults {
+		return incoming
+	}
+	orphans := FindUnpairedToolCalls(existing)
+	if len(orphans) == 0 {
+		return incoming
+	}
+	out := make([]ai.ChatMessage, 0, len(orphans)+len(incoming))
+	for _, tc := range orphans {
+		out = append(out, ai.ChatMessage{
+			Role:       model.AIChatMessageRoleTool,
+			Content:    OrphanToolResultContent,
+			ToolCallID: tc.ID,
+		})
+	}
+	return append(out, incoming...)
+}
+
+func assignIncreasingMessageTimes(rows []*model.AIChatMessage, start time.Time) {
+	for i, row := range rows {
+		if row == nil {
+			continue
+		}
+		row.MessageTime = start.Add(time.Duration(i) * time.Microsecond)
+	}
 }

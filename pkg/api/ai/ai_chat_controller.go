@@ -423,6 +423,9 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 		util.RespondWithError(ctx, util.NewError("E5001", util.NewErrorMessage("E5001", "Failed to get chat messages", err)))
 		return
 	}
+	// If the previous HITL handoff never came back, pair leftover tool_calls
+	// with synthetic error results so the provider does not reject the session.
+	chatMessages = service.RepairOrphanToolCalls(existingMessages, chatMessages, len(req.ClientToolResults) > 0)
 	initialMessageCount := 0
 	for _, msg := range existingMessages {
 		if msg.Role != model.AIChatMessageRoleTool {
