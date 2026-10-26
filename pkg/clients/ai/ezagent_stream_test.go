@@ -136,3 +136,16 @@ func TestEZAgentChatStreamRecvHandoffAfterClientToolPending(t *testing.T) {
 		t.Fatalf("handoff Recv: %v", err)
 	}
 }
+
+func TestEZAgentChatStreamRecvHandoffAfterHITLPending(t *testing.T) {
+	s := newTestChatStream(1)
+	s.pending <- &ChatStreamEvent{EventType: EventTypeHITLPending}
+	finishPump(s)
+
+	if _, err := s.Recv(context.Background()); err != nil {
+		t.Fatalf("pending event: %v", err)
+	}
+	if _, err := s.Recv(context.Background()); !errors.Is(err, ErrClientToolHandoff) {
+		t.Fatalf("handoff Recv: %v", err)
+	}
+}

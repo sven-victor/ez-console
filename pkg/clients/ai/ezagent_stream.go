@@ -80,7 +80,7 @@ func (s *ezAgentChatStream) takePending(ev *ChatStreamEvent, ok bool) (*ChatStre
 	if !ok {
 		return nil, s.streamEndErr()
 	}
-	if ev.EventType == EventTypeClientToolPending {
+	if ev.EventType == EventTypeClientToolPending || ev.EventType == EventTypeHITLPending {
 		s.handoff = true
 	}
 	return ev, nil
