@@ -52,9 +52,10 @@ type HITLDecision struct {
 }
 
 type HITLSpec struct {
-	Mode    HITLCardKind
-	Title   string
-	Options []HITLOption
+	Mode        HITLCardKind
+	Title       string
+	Description string
+	Options     []HITLOption
 }
 
 type HITLCatalog map[string]HITLSpec

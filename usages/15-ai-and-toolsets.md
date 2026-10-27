@@ -1503,7 +1503,7 @@ MCP servers are not trusted to declare `x-hitl` on their schemas. Gate those too
 
 Names are logical. Empty strings are ignored. An MCP tool omitted from the list runs without an approval card.
 
-When the catalog entry has no options, the card uses `approve` / "Execute" (`primary: true`) and `reject` / "Don't execute". Entries built from `approval_tools` use those defaults, and the card title is empty. The tool name is still shown on the card.
+When the catalog entry has no options, the card uses `approve` / "Execute" (`primary: true`) and `reject` / "Don't execute". Entries built from `approval_tools` use those defaults, and the card title is empty. The tool name is still shown on the card. `BuildHITLCatalog` copies the tool's `ListTools` description onto the card when listing succeeds.
 
 #### `ui_choose`
 

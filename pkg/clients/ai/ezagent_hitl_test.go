@@ -218,7 +218,7 @@ func TestSplitPendingCallsSeparatesAutoAndCards(t *testing.T) {
 		{ID: "b", Name: "ui_choose", Input: []byte(`{"title":"How?","description":"Pick a next step.","options":[{"id":"A","label":"Disable"},{"id":"B","label":"Delete"}]}`)},
 		{ID: "c", Name: "mcp3_delete_user", Input: []byte(`{"id":"u1"}`)},
 	}}
-	auto, cards := SplitPendingCalls(pending, HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval, Title: "Delete this user?"}})
+	auto, cards := SplitPendingCalls(pending, HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval, Title: "Delete this user?", Description: "Delete a user by id"}})
 	if len(auto) != 1 || auto[0].Name != "ui_search_users" {
 		t.Fatalf("auto=%#v", auto)
 	}
@@ -237,7 +237,7 @@ func TestSplitPendingCallsSeparatesAutoAndCards(t *testing.T) {
 	if !hasReject {
 		t.Fatal("choice card must append reject")
 	}
-	if cards[1].Kind != HITLCardApproval || cards[1].Title != "Delete this user?" {
+	if cards[1].Kind != HITLCardApproval || cards[1].Title != "Delete this user?" || cards[1].Description != "Delete a user by id" {
 		t.Fatalf("approval=%#v", cards[1])
 	}
 }

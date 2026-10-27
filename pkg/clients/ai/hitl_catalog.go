@@ -24,15 +24,47 @@ func BuildHITLCatalog(ctx context.Context, ts toolset.ToolSets) (HITLCatalog, er
 		if lister == nil {
 			continue
 		}
+		descs := toolDescriptionsByName(ctx, set)
 		for _, name := range lister.ApprovalToolNames() {
 			if name == "" {
 				continue
 			}
-			cat[fmt.Sprintf("%s_%s", key, name)] = HITLSpec{Mode: HITLCardApproval}
+			exposed := fmt.Sprintf("%s_%s", key, name)
+			cat[exposed] = HITLSpec{
+				Mode:        HITLCardApproval,
+				Description: firstNonEmpty(descs[name], descs[exposed]),
+			}
 		}
 	}
 	cat[UIChooseToolName] = HITLSpec{Mode: HITLCardChoice}
 	return cat, nil
+}
+
+func toolDescriptionsByName(ctx context.Context, set toolset.ToolSet) map[string]string {
+	out := map[string]string{}
+	if set == nil {
+		return out
+	}
+	tools, err := set.ListTools(ctx)
+	if err != nil {
+		return out
+	}
+	for _, tool := range tools {
+		if tool.Function == nil || tool.Function.Name == "" || tool.Function.Description == "" {
+			continue
+		}
+		out[tool.Function.Name] = tool.Function.Description
+	}
+	return out
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if value != "" {
+			return value
+		}
+	}
+	return ""
 }
 
 func approvalLister(set toolset.ToolSet) ApprovalToolLister {

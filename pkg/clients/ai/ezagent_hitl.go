@@ -265,13 +265,14 @@ func approvalHITLCard(c run.PendingCall, spec HITLSpec) HITLCard {
 		opts = DefaultHITLOptions(HITLCardApproval)
 	}
 	return HITLCard{
-		ToolCallID: c.ID,
-		Kind:       HITLCardApproval,
-		Title:      spec.Title,
-		ToolName:   c.Name,
-		Arguments:  string(c.Input),
-		Options:    opts,
-		Status:     HITLStatusPending,
+		ToolCallID:  c.ID,
+		Kind:        HITLCardApproval,
+		Title:       spec.Title,
+		Description: spec.Description,
+		ToolName:    c.Name,
+		Arguments:   string(c.Input),
+		Options:     opts,
+		Status:      HITLStatusPending,
 	}
 }
 

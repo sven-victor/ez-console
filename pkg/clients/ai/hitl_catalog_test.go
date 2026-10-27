@@ -29,14 +29,17 @@ func TestBuildHITLCatalogPrefixesLogicalNames(t *testing.T) {
 	ts := toolset.ToolSets{
 		"mcp3": approvalListToolset{
 			names: []string{"delete_user"},
-			tools: []openai.Tool{{Type: openai.ToolTypeFunction, Function: &openai.FunctionDefinition{Name: "delete_user"}}},
+			tools: []openai.Tool{{Type: openai.ToolTypeFunction, Function: &openai.FunctionDefinition{
+				Name:        "delete_user",
+				Description: "Delete a user by id",
+			}}},
 		},
 	}
 	cat, err := BuildHITLCatalog(context.Background(), ts)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cat["mcp3_delete_user"].Mode != HITLCardApproval {
+	if cat["mcp3_delete_user"].Mode != HITLCardApproval || cat["mcp3_delete_user"].Description != "Delete a user by id" {
 		t.Fatalf("%#v", cat)
 	}
 	if cat[UIChooseToolName].Mode != HITLCardChoice {
