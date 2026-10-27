@@ -418,6 +418,7 @@ interface PlainTextAbandon {
 
 /** Set from AIProvider when an SSE chunk arrives, including while another chat is open. */
 const hitlFollowUpChunkHandlers = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onChunk: (_conversationKey: string) => { },
 };
 
