@@ -217,5 +217,12 @@ export default {
     skillsOptional: 'optional',
     skillsSelected: '{{count}} selected',
     skillDomain: 'Skill domain',
+    fetchConversationFailed: 'Failed to fetch conversation',
+    createConversationFailed: 'Failed to create conversation',
+    hitlArguments: 'Arguments',
+    hitlChose: 'You chose {{label}}.',
+    hitlAbandoned: 'You continued without choosing.',
+    hitlExecute: 'Execute',
+    hitlDontExecute: "Don't execute",
   },
 };

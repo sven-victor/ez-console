@@ -192,5 +192,12 @@ export default {
     skillsOptional: 'اختياري',
     skillsSelected: '{{count}} محدد',
     skillDomain: 'مجال المهارة',
+    fetchConversationFailed: 'فشل تحميل المحادثة',
+    createConversationFailed: 'فشل إنشاء المحادثة',
+    hitlArguments: 'الوسائط',
+    hitlChose: 'لقد اخترت {{label}}.',
+    hitlAbandoned: 'تابعت دون اختيار.',
+    hitlExecute: 'تنفيذ',
+    hitlDontExecute: 'لا تنفذ',
   },
 };

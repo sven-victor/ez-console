@@ -192,5 +192,12 @@ export default {
     skillsOptional: 'optionnel',
     skillsSelected: '{{count}} sélectionné(s)',
     skillDomain: 'Domaine de compétence',
+    fetchConversationFailed: 'Échec du chargement de la conversation',
+    createConversationFailed: 'Échec de la création de la conversation',
+    hitlArguments: 'Arguments',
+    hitlChose: 'Vous avez choisi {{label}}.',
+    hitlAbandoned: 'Vous avez continué sans choisir.',
+    hitlExecute: 'Exécuter',
+    hitlDontExecute: 'Ne pas exécuter',
   },
 };

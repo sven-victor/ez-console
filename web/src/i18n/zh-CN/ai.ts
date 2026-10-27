@@ -216,5 +216,12 @@ export default {
     skillsOptional: '可选',
     skillsSelected: '已选 {{count}} 个',
     skillDomain: '技能域',
+    fetchConversationFailed: '获取对话失败',
+    createConversationFailed: '创建对话失败',
+    hitlArguments: '参数',
+    hitlChose: '你选择了{{label}}。',
+    hitlAbandoned: '你未选择，已继续对话。',
+    hitlExecute: '执行',
+    hitlDontExecute: '不执行',
   },
 };

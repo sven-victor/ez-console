@@ -120,9 +120,29 @@ function cardDescription(card: API.HITLCard): string {
   }
 }
 
-function selectedOptionLabel(card: API.HITLCard, selectedId: string): string {
+function optionDisplayLabel(
+  option: Pick<API.HITLOption, 'id' | 'label'> | undefined,
+  t: (key: string, opts?: Record<string, string>) => string,
+): string {
+  if (!option) {
+    return '';
+  }
+  if (option.id === 'approve') {
+    return t('chat.hitlExecute', { defaultValue: option.label || 'Execute' });
+  }
+  if (option.id === 'reject') {
+    return t('chat.hitlDontExecute', { defaultValue: option.label || "Don't execute" });
+  }
+  return option.label;
+}
+
+function selectedOptionLabel(
+  card: API.HITLCard,
+  selectedId: string,
+  t: (key: string, opts?: Record<string, string>) => string,
+): string {
   const selected = card.options?.find((option) => option.id === selectedId);
-  return selected?.label || selectedId || '…';
+  return optionDisplayLabel(selected, t) || selectedId || '…';
 }
 
 /**
@@ -164,7 +184,7 @@ export const HITLCard: React.FC<HITLCardProps> = ({
       <Typography.Text>
         {t('chat.hitlChose', {
           defaultValue: 'You chose {{label}}.',
-          label: selectedOptionLabel(card, selectedId),
+          label: selectedOptionLabel(card, selectedId, t),
         })}
       </Typography.Text>
     );
@@ -195,7 +215,7 @@ export const HITLCard: React.FC<HITLCardProps> = ({
               }}
             >
               <Flex vertical align="flex-start">
-                <span>{option.label}</span>
+                <span>{optionDisplayLabel(option, t)}</span>
                 {option.description ? (
                   <span style={{ fontSize: 12, fontWeight: 400, opacity: 0.85 }}>
                     {option.description}

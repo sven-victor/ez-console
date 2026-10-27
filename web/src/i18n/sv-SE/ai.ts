@@ -192,5 +192,12 @@ export default {
     skillsOptional: 'valfritt',
     skillsSelected: '{{count}} valda',
     skillDomain: 'Färdighetsdomän',
+    fetchConversationFailed: 'Misslyckades med att hämta konversation',
+    createConversationFailed: 'Misslyckades med att skapa konversation',
+    hitlArguments: 'Argument',
+    hitlChose: 'Du valde {{label}}.',
+    hitlAbandoned: 'Du fortsatte utan att välja.',
+    hitlExecute: 'Kör',
+    hitlDontExecute: 'Kör inte',
   },
 };

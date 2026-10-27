@@ -192,5 +192,12 @@ export default {
     skillsOptional: 'opcional',
     skillsSelected: '{{count}} seleccionado(s)',
     skillDomain: 'Dominio de habilidad',
+    fetchConversationFailed: 'Error al cargar la conversación',
+    createConversationFailed: 'Error al crear la conversación',
+    hitlArguments: 'Argumentos',
+    hitlChose: 'Has elegido {{label}}.',
+    hitlAbandoned: 'Continuaste sin elegir.',
+    hitlExecute: 'Ejecutar',
+    hitlDontExecute: 'No ejecutar',
   },
 };

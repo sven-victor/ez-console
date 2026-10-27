@@ -192,5 +192,12 @@ export default {
     skillsOptional: 'optional',
     skillsSelected: '{{count}} ausgewählt',
     skillDomain: 'Fähigkeitsbereich',
+    fetchConversationFailed: 'Konversation konnte nicht geladen werden',
+    createConversationFailed: 'Konversation konnte nicht erstellt werden',
+    hitlArguments: 'Argumente',
+    hitlChose: 'Sie haben {{label}} gewählt.',
+    hitlAbandoned: 'Sie haben fortgefahren, ohne zu wählen.',
+    hitlExecute: 'Ausführen',
+    hitlDontExecute: 'Nicht ausführen',
   },
 };
