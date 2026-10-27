@@ -225,6 +225,7 @@ export function useGlobalAITools(routes: IRoute[], enabled: boolean): void {
           type: 'object',
           properties: {
             title: { type: 'string' },
+            description: { type: 'string' },
             options: {
               type: 'array',
               minItems: 2,

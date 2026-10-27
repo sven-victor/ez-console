@@ -38,6 +38,7 @@ type HITLCard struct {
 	ToolCallID       string         `json:"tool_call_id"`
 	Kind             HITLCardKind   `json:"kind"`
 	Title            string         `json:"title"`
+	Description      string         `json:"description,omitempty"`
 	ToolName         string         `json:"tool_name"`
 	Arguments        string         `json:"arguments"`
 	Options          []HITLOption   `json:"options"`

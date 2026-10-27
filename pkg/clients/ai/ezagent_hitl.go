@@ -218,7 +218,7 @@ func SplitPendingCalls(pending *run.PendingTools, catalog HITLCatalog) (auto []C
 }
 
 // BuildHITLCards turns gated pending calls into pending cards.
-// ui_choose reads title and options from arguments and appends reject when absent.
+// ui_choose reads title, description, and options from arguments and appends reject when absent.
 // Approval uses the catalog title and options, or DefaultHITLOptions when the catalog has none.
 func BuildHITLCards(calls []run.PendingCall, catalog HITLCatalog) []HITLCard {
 	if len(calls) == 0 {
@@ -238,8 +238,9 @@ func BuildHITLCards(calls []run.PendingCall, catalog HITLCatalog) []HITLCard {
 
 func choiceHITLCard(c run.PendingCall) HITLCard {
 	var args struct {
-		Title   string       `json:"title"`
-		Options []HITLOption `json:"options"`
+		Title       string       `json:"title"`
+		Description string       `json:"description"`
+		Options     []HITLOption `json:"options"`
 	}
 	_ = json.Unmarshal(c.Input, &args)
 	opts := args.Options
@@ -247,13 +248,14 @@ func choiceHITLCard(c run.PendingCall) HITLCard {
 		opts = append(opts, DefaultHITLOptions(HITLCardChoice)...)
 	}
 	return HITLCard{
-		ToolCallID: c.ID,
-		Kind:       HITLCardChoice,
-		Title:      args.Title,
-		ToolName:   c.Name,
-		Arguments:  string(c.Input),
-		Options:    opts,
-		Status:     HITLStatusPending,
+		ToolCallID:  c.ID,
+		Kind:        HITLCardChoice,
+		Title:       args.Title,
+		Description: args.Description,
+		ToolName:    c.Name,
+		Arguments:   string(c.Input),
+		Options:     opts,
+		Status:      HITLStatusPending,
 	}
 }
 

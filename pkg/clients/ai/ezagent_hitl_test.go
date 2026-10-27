@@ -215,7 +215,7 @@ func TestLoopToolRegistryAutoRejectMixedBatch(t *testing.T) {
 func TestSplitPendingCallsSeparatesAutoAndCards(t *testing.T) {
 	pending := &run.PendingTools{Calls: []run.PendingCall{
 		{ID: "a", Name: "ui_search_users", Input: []byte(`{}`)},
-		{ID: "b", Name: "ui_choose", Input: []byte(`{"title":"How?","options":[{"id":"A","label":"Disable"},{"id":"B","label":"Delete"}]}`)},
+		{ID: "b", Name: "ui_choose", Input: []byte(`{"title":"How?","description":"Pick a next step.","options":[{"id":"A","label":"Disable"},{"id":"B","label":"Delete"}]}`)},
 		{ID: "c", Name: "mcp3_delete_user", Input: []byte(`{"id":"u1"}`)},
 	}}
 	auto, cards := SplitPendingCalls(pending, HITLCatalog{"mcp3_delete_user": {Mode: HITLCardApproval, Title: "Delete this user?"}})
@@ -225,7 +225,7 @@ func TestSplitPendingCallsSeparatesAutoAndCards(t *testing.T) {
 	if len(cards) != 2 {
 		t.Fatalf("cards=%#v", cards)
 	}
-	if cards[0].Kind != HITLCardChoice || cards[0].ToolCallID != "b" {
+	if cards[0].Kind != HITLCardChoice || cards[0].ToolCallID != "b" || cards[0].Description != "Pick a next step." {
 		t.Fatalf("choice=%#v", cards[0])
 	}
 	hasReject := false

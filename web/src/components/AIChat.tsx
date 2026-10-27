@@ -150,6 +150,14 @@ const useStyle = createStyles(({ token, css }) => {
         .ant-bubble.ant-bubble-start{
           padding-inline-end: 10%;
         }
+        /* Live SSE bubbles shrink to text. Stretch the body when HITL cards are in the footer. */
+        .ant-bubble.ant-bubble-start:has(.hitl-card-stack) .ant-bubble-body {
+          width: 100%;
+          max-width: 100%;
+        }
+        .ant-bubble.ant-bubble-start .ant-bubble-footer:has(.hitl-card-stack) {
+          width: 100%;
+        }
       }
       .x-markdown-light pre .ant-codeHighlighter .ant-codeHighlighter-code pre{
         background-color: #f5f5f5;
@@ -345,6 +353,11 @@ function hasPendingHITLCards(cards: API.HITLCard[] | undefined): boolean {
   return !!cards?.some((card) => card.status === 'pending');
 }
 
+/** Decided and abandoned cards stay in metadata but are not shown in the transcript. */
+function pendingHITLCards(cards: API.HITLCard[] | undefined): API.HITLCard[] {
+  return (cards ?? []).filter((card) => card.status === 'pending');
+}
+
 /**
  * Auto browser tools that were interrupted beside pending cards.
  * Approval and ui_choose calls stay on the cards; decided cards do not replay tools.
@@ -405,7 +418,7 @@ interface PlainTextAbandon {
 
 /** Set from AIProvider when an SSE chunk arrives, including while another chat is open. */
 const hitlFollowUpChunkHandlers = {
-  onChunk: (_conversationKey: string) => {},
+  onChunk: (_conversationKey: string) => { },
 };
 
 /** Put an unsaved resume back on pending buttons. Does not touch abandoned cards. */
@@ -561,29 +574,29 @@ const providerFactory = (conversationKey: string) => {
   let provider = providerCaches.get(conversationKey);
   if (!provider) {
     provider = new AIProvider({
-        request: XRequest<ChatStreamInput, ChatStreamOutput>(
-          `/api/ai/chat/sessions/${conversationKey}`,
+      request: XRequest<ChatStreamInput, ChatStreamOutput>(
+        `/api/ai/chat/sessions/${conversationKey}`,
+        {
+          manual: true,
+          middlewares:
           {
-            manual: true,
-            middlewares:
-            {
-              onRequest: async (baseURL, options) => {
-                const orgID = localStorage.getItem('orgID');
-                const { sessionId } = (options.params ?? {}) as Partial<ChatStreamInput>;
-                const headers = {
-                  ...options.headers,
-                  'Accept-Language': localStorage.getItem('i18nextLng') || 'en-US',
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                  ...(orgID ? { 'X-Scope-OrgID': orgID } : {}),
-                };
+            onRequest: async (baseURL, options) => {
+              const orgID = localStorage.getItem('orgID');
+              const { sessionId } = (options.params ?? {}) as Partial<ChatStreamInput>;
+              const headers = {
+                ...options.headers,
+                'Accept-Language': localStorage.getItem('i18nextLng') || 'en-US',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                ...(orgID ? { 'X-Scope-OrgID': orgID } : {}),
+              };
 
-                return [sessionId ? `/api/ai/chat/sessions/${sessionId}` : baseURL, { ...options, headers }];
-              },
-            }
-            ,
-          },
-        ),
-      });
+              return [sessionId ? `/api/ai/chat/sessions/${sessionId}` : baseURL, { ...options, headers }];
+            },
+          }
+          ,
+        },
+      ),
+    });
     providerCaches.set(conversationKey, provider);
   }
   provider.conversationKey = conversationKey;
@@ -682,6 +695,9 @@ const ChatList: React.FC<ChatListProps> = ({
 }) => {
   const { styles } = useStyle();
   const { isDarkMode } = useThemeMode();
+  // Immediate per-card highlight. Bubble.List often skips a footer refresh
+  // until the last card submits and hitlSubmitting changes.
+  const [hitlLocalSelections, setHitlLocalSelections] = useState<Record<string, string>>({});
 
   const components: XMarkdownProps['components'] = useMemo(() => {
     if (!bubble.components) return { code: Code, };
@@ -736,49 +752,57 @@ const ChatList: React.FC<ChatListProps> = ({
   } = bubble;
 
   const bubbleMessages: BubbleListProps['items'] = useMemo(() => {
-    return (messages || []).map((i) => ({
-      ...i.message,
-      key: i.id,
-      // An approval turn can have cards and no assistant text. Hide the empty content shell.
-      ...(!i.message.content && i.message.hitlCards?.length ? {
-        variant: 'borderless' as const,
-        styles: { content: { display: 'none' } },
-      } : {}),
-      contentRender: contentRender,
-      footer: (_: string, info: Info) => {
-        const extra = footerRender?.(i, info, onSendMessage);
-        const cards = i.message.hitlCards;
-        if (!cards?.length) {
-          return extra;
-        }
-        return (
-          <Flex vertical gap={8}>
-            {extra || null}
-            {cards.map((card) => (
-              <HITLCard
-                key={card.tool_call_id}
-                card={card}
-                submittingOptionId={
-                  hitlSubmitting?.messageId === i.id && hitlSubmitting.toolCallId === card.tool_call_id
-                    ? hitlSubmitting.optionId
-                    : undefined
-                }
-                disabled={
-                  hitlSubmitting?.messageId === i.id
-                  && hitlSubmitting.toolCallId !== card.tool_call_id
-                }
-                onSelect={
-                  card.status === 'pending'
-                    ? (optionId) => onHITLSelect?.(i.id, card.tool_call_id, optionId)
-                    : undefined
-                }
-              />
-            ))}
-          </Flex>
-        );
-      },
-    } as BubbleItemType & Pick<ChatStreamMessage, 'hitlCards'>)).filter((i) => i.content || i.hitlCards?.length);
-  }, [messages, contentRender, footerRender, onSendMessage, hitlSubmitting, onHITLSelect]);
+    return (messages || []).map((i) => {
+      const pendingCards = pendingHITLCards(i.message.hitlCards);
+      return ({
+        ...i.message,
+        key: i.id,
+        // Stretch the bubble so live SSE cards match history width. Hide an empty content shell.
+        ...(pendingCards.length ? {
+          variant: 'borderless' as const,
+          styles: {
+            ...(!i.message.content ? { content: { display: 'none' } } : {}),
+            body: { width: '100%', maxWidth: '100%' },
+            footer: { width: '100%' },
+          },
+        } : {}),
+        contentRender: contentRender,
+        footer: (_: string, info: Info) => {
+          const extra = footerRender?.(i, info, onSendMessage);
+          if (!pendingCards.length) {
+            return extra;
+          }
+          const batchSubmitting = hitlSubmitting?.messageId === i.id;
+          return (
+            <Flex className="hitl-card-stack" vertical gap={8} style={{ width: '100%' }}>
+              {extra || null}
+              {pendingCards.map((card) => {
+                const localKey = `${i.id}:${card.tool_call_id}`;
+                const selectedOptionId = hitlLocalSelections[localKey] || card.selected_option_id;
+                return (
+                  <HITLCard
+                    key={card.tool_call_id}
+                    card={selectedOptionId && selectedOptionId !== card.selected_option_id
+                      ? { ...card, selected_option_id: selectedOptionId }
+                      : card}
+                    submitting={batchSubmitting}
+                    onSelect={
+                      !batchSubmitting
+                        ? (optionId) => {
+                          setHitlLocalSelections((current) => ({ ...current, [localKey]: optionId }));
+                          onHITLSelect?.(i.id, card.tool_call_id, optionId);
+                        }
+                        : undefined
+                    }
+                  />
+                );
+              })}
+            </Flex>
+          );
+        },
+      } as BubbleItemType & Pick<ChatStreamMessage, 'hitlCards'>);
+    }).filter((i) => i.content || pendingHITLCards(i.hitlCards).length);
+  }, [messages, contentRender, footerRender, onSendMessage, hitlSubmitting, onHITLSelect, hitlLocalSelections]);
 
   return (
     <div className={styles.chatList}>
@@ -996,7 +1020,7 @@ export const AIChat: React.FC<AIChatProps> = ({
   const hitlResumeGenerationRef = useRef(0);
   const hitlResumeFlightRef = useRef<HitlResumeFlight | null>(null);
   const hitlResumeTargetRef = useRef<HitlResumeTarget | null>(null);
-  const reconcileHITLResumeRef = useRef<(target: HitlResumeTarget) => void>(() => {});
+  const reconcileHITLResumeRef = useRef<(target: HitlResumeTarget) => void>(() => { });
   const plainTextAbandonRef = useRef<PlainTextAbandon | null>(null);
   const [hitlSubmitting, setHitlSubmitting] = useState<HITLSubmitState | null>(null);
   hitlFollowUpChunkHandlers.onChunk = (conversationKey: string) => {
@@ -1478,7 +1502,8 @@ export const AIChat: React.FC<AIChatProps> = ({
       const chatMessages: MessageInfo<ChatStreamMessage>[] = [];
       let buffer: MessageInfo<ChatStreamMessage> = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
       const flushAssistant = () => {
-        if (buffer.message.content.length === 0 && !buffer.message.hitlCards?.length) {
+        const pendingCards = pendingHITLCards(buffer.message.hitlCards);
+        if (buffer.message.content.length === 0 && !pendingCards.length) {
           return;
         }
         chatMessages.push({
@@ -1486,8 +1511,8 @@ export const AIChat: React.FC<AIChatProps> = ({
           message: {
             content: buffer.message.content,
             role: buffer.message.role,
-            ...(buffer.message.hitlCards?.length ? { hitlCards: buffer.message.hitlCards } : {}),
-            ...(hasPendingHITLCards(buffer.message.hitlCards) && buffer.message.pendingClientToolCalls?.length
+            ...(pendingCards.length ? { hitlCards: pendingCards } : {}),
+            ...(pendingCards.length && buffer.message.pendingClientToolCalls?.length
               ? { pendingClientToolCalls: buffer.message.pendingClientToolCalls }
               : {}),
           },
@@ -1518,7 +1543,7 @@ export const AIChat: React.FC<AIChatProps> = ({
             }
             break;
           case 'user':
-            if (buffer.message.content.length > 0 || buffer.message.hitlCards?.length) {
+            if (buffer.message.content.length > 0 || pendingHITLCards(buffer.message.hitlCards).length) {
               flushAssistant();
               buffer = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
             }

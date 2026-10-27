@@ -1517,6 +1517,7 @@ When the catalog entry has no options, the card uses `approve` / "Execute" (`pri
     "type": "object",
     "properties": {
       "title": { "type": "string" },
+      "description": { "type": "string" },
       "options": {
         "type": "array",
         "minItems": 2,
@@ -1537,7 +1538,7 @@ When the catalog entry has no options, the card uses `approve` / "Execute" (`pri
 }
 ```
 
-The card reads `title` and `options` from the tool arguments and appends `reject` / "Don't execute" when the model left it out. The tool has no browser side effect. The card protocol handles it. The registered handler, if something calls it directly, returns `{"error":"ui_choose is presented as a chat card and must not be auto-executed"}`.
+The card reads `title`, `description`, and `options` from the tool arguments and appends `reject` / "Don't execute" when the model left it out. `description` is shown on the card; the raw arguments JSON is not. The tool has no browser side effect. The card protocol handles it. The registered handler, if something calls it directly, returns `{"error":"ui_choose is presented as a chat card and must not be auto-executed"}`.
 
 #### Card snapshot
 
@@ -1550,8 +1551,9 @@ Cards are stored on the assistant row that owns the `tool_calls`, under `metadat
       "tool_call_id": "call_1",
       "kind": "choice",
       "title": "How should I proceed?",
+      "description": "The user asked for a next action.",
       "tool_name": "ui_choose",
-      "arguments": "{\"title\":\"How should I proceed?\",\"options\":[]}",
+      "arguments": "{\"title\":\"How should I proceed?\",\"description\":\"The user asked for a next action.\",\"options\":[]}",
       "options": [
         { "id": "A", "label": "Disable the user" },
         { "id": "reject", "label": "Don't execute" }

@@ -69,6 +69,9 @@ func (t *UtilsToolSet) Call(ctx context.Context, name string, parameters string)
 	}
 	return "", fmt.Errorf("tool %s not found", name)
 }
+func (t *UtilsToolSet) ApprovalToolNames() []string {
+	return []string{"now", "random_string"}
+}
 
 // ListTools implements ToolSet.
 func (t *UtilsToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
