@@ -36,12 +36,12 @@ const Re = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, ze = (e) => {
+}, Ce = (e) => {
   if (!e)
     return "";
   const [t, a] = e.split("@");
   return t.length <= 2 ? t[0] + "*".repeat(t.length - 1) + "@" + a : t[0] + "*".repeat(t.length - 2) + t[t.length - 1] + "@" + a;
-}, Ce = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Ee = (e) => {
+}, ze = (e) => e ? "/".endsWith("/") ? e.startsWith("/") ? "/" + e.substring(1) : "/" + e : e.startsWith("/") ? "/" + e : "//" + e : "/", Ee = (e) => {
   const t = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return e.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((a, r) => r !== 0 && t.includes(a) ? a : a.charAt(0).toUpperCase() + a.slice(1)).join(" ");
 }, Fe = (e, t, a) => {
@@ -1026,7 +1026,7 @@ const A = {
     resetCountersConfirm: "Reset rate-limit and quota counters for this subject? They will be able to send requests immediately.",
     resetCountersSuccess: "Counters reset"
   }
-}, P = {
+}, w = {
   title: "System Management",
   settings: {
     title: "System Settings",
@@ -1221,6 +1221,8 @@ const A = {
       currentOrganizationTooltip: "If you disable multi-organization, this organization will become the default organization.",
       enableSkillToolBinding: "Link AI tools to skills",
       enableSkillToolBindingTooltip: "When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools.",
+      showToolCalls: "Show tool calls",
+      showToolCallsTooltip: "When enabled, AI chat shows server tool calls under each assistant message. Client tools and confirmation cards are unchanged.",
       clearSiteCache: "Clear site cache",
       clearSiteCacheConfirm: "Clear all server-side application caches? Active sessions may need to sign in again.",
       clearSiteCacheSuccess: "Site cache cleared successfully",
@@ -1699,7 +1701,7 @@ const A = {
     settings: "System Settings",
     audit: "Audit Logs"
   }
-}, w = {
+}, P = {
   models: {
     name: "Name",
     provider: "Provider",
@@ -1900,7 +1902,21 @@ const A = {
     skillsPlaceholder: "Skills (optional)",
     skillsOptional: "optional",
     skillsSelected: "{{count}} selected",
-    skillDomain: "Skill domain"
+    skillDomain: "Skill domain",
+    fetchConversationFailed: "Failed to fetch conversation",
+    createConversationFailed: "Failed to create conversation",
+    hitlArguments: "Arguments",
+    hitlChose: "You chose {{label}}.",
+    hitlAbandoned: "You continued without choosing.",
+    hitlExecute: "Execute",
+    hitlDontExecute: "Don't execute",
+    copyMessage: "Copy message",
+    copied: "Copied",
+    showToolCalls: "Show tool calls",
+    hideToolCalls: "Hide tool calls",
+    toolRunning: "Running",
+    toolDone: "Done",
+    toolFailed: "Failed"
   }
 }, R = {
   listTitle: "Task List",
@@ -2000,7 +2016,7 @@ const A = {
     login_failure_lock: "Your account was locked after too many failed sign-in attempts.",
     mfa_disabled: "Multi-factor authentication was disabled on your account."
   }
-}, z = {
+}, C = {
   login: {
     subtitle: "Melden Sie sich bei Ihrem Konto an",
     username: "Benutzername",
@@ -2142,7 +2158,7 @@ const A = {
     confirm: "Bestätigen",
     cancel: "Abbrechen"
   }
-}, C = {
+}, z = {
   login: {
     subtitle: "Inicia sesión en tu cuenta",
     username: "Nombre de usuario",
@@ -3602,6 +3618,8 @@ const A = {
       currentOrganizationTooltip: "如果关闭多组织，该组织将成为默认组织。",
       enableSkillToolBinding: "将 AI 工具与技能关联",
       enableSkillToolBindingTooltip: "启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。",
+      showToolCalls: "显示工具调用",
+      showToolCallsTooltip: "开启后，AI 聊天会在助手消息下方显示服务端工具调用。客户端工具和人工确认卡片不受影响。",
       clearSiteCache: "清理站点缓存",
       clearSiteCacheConfirm: "确定清理服务端所有应用缓存吗？已登录用户可能需要重新登录。",
       clearSiteCacheSuccess: "站点缓存已清理",
@@ -4283,7 +4301,21 @@ const A = {
     skillsPlaceholder: "技能（可选）",
     skillsOptional: "可选",
     skillsSelected: "已选 {{count}} 个",
-    skillDomain: "技能域"
+    skillDomain: "技能域",
+    fetchConversationFailed: "获取对话失败",
+    createConversationFailed: "创建对话失败",
+    hitlArguments: "参数",
+    hitlChose: "你选择了{{label}}。",
+    hitlAbandoned: "你未选择，已继续对话。",
+    hitlExecute: "执行",
+    hitlDontExecute: "不执行",
+    copyMessage: "复制消息",
+    copied: "已复制",
+    showToolCalls: "显示工具调用",
+    hideToolCalls: "隐藏工具调用",
+    toolRunning: "运行中",
+    toolDone: "完成",
+    toolFailed: "失败"
   }
 }, q = {
   listTitle: "任务列表",
@@ -5258,6 +5290,8 @@ const A = {
       enableMultiOrgTooltip: "Multi-Organisations-Funktion aktivieren. Wenn aktiviert, können Organisationen im Tab Organisationsverwaltung verwaltet werden.",
       enableSkillToolBinding: "KI-Tools mit Skills verknüpfen",
       enableSkillToolBindingTooltip: "Wenn aktiviert, schränkt der KI-Chat die Tools nach Skill-Bindings ein (weiterhin innerhalb der Rollen-KI-Tool-Berechtigungen).",
+      showToolCalls: "Tool-Aufrufe anzeigen",
+      showToolCallsTooltip: "Wenn aktiviert, zeigt der KI-Chat Server-Tool-Aufrufe unter jeder Assistentennachricht. Client-Tools und Bestätigungskarten bleiben unverändert.",
       clearSiteCache: "Website-Cache leeren",
       clearSiteCacheConfirm: "Alle serverseitigen Anwendungs-Caches leeren? Aktive Sitzungen müssen sich ggf. erneut anmelden.",
       clearSiteCacheSuccess: "Website-Cache erfolgreich geleert",
@@ -5914,7 +5948,21 @@ const A = {
     skillsPlaceholder: "Fähigkeiten (optional)",
     skillsOptional: "optional",
     skillsSelected: "{{count}} ausgewählt",
-    skillDomain: "Fähigkeitsbereich"
+    skillDomain: "Fähigkeitsbereich",
+    fetchConversationFailed: "Konversation konnte nicht geladen werden",
+    createConversationFailed: "Konversation konnte nicht erstellt werden",
+    hitlArguments: "Argumente",
+    hitlChose: "Sie haben {{label}} gewählt.",
+    hitlAbandoned: "Sie haben fortgefahren, ohne zu wählen.",
+    hitlExecute: "Ausführen",
+    hitlDontExecute: "Nicht ausführen",
+    copyMessage: "Nachricht kopieren",
+    copied: "Kopiert",
+    showToolCalls: "Tool-Aufrufe anzeigen",
+    hideToolCalls: "Tool-Aufrufe ausblenden",
+    toolRunning: "Läuft",
+    toolDone: "Fertig",
+    toolFailed: "Fehlgeschlagen"
   }
 }, j = {
   listTitle: "Aufgabenliste",
@@ -6889,6 +6937,8 @@ const A = {
       enableMultiOrgTooltip: "Habilitar la función de multiorganización. Cuando está habilitado, las organizaciones se pueden gestionar en la pestaña Gestión de organizaciones.",
       enableSkillToolBinding: "Vincular herramientas de IA a habilidades",
       enableSkillToolBindingTooltip: "Si está habilitado, el chat de IA restringe las herramientas según los enlaces por habilidad (aún dentro de los permisos de rol).",
+      showToolCalls: "Mostrar llamadas de herramientas",
+      showToolCallsTooltip: "Si está habilitado, el chat de IA muestra las llamadas de herramientas del servidor bajo cada mensaje del asistente. Las herramientas del cliente y las tarjetas de confirmación no cambian.",
       clearSiteCache: "Vaciar caché del sitio",
       clearSiteCacheConfirm: "¿Vaciar todas las cachés de aplicación del servidor? Las sesiones activas puede que deban iniciar sesión de nuevo.",
       clearSiteCacheSuccess: "Caché del sitio vaciada correctamente",
@@ -7545,7 +7595,21 @@ const A = {
     skillsPlaceholder: "Habilidades (opcional)",
     skillsOptional: "opcional",
     skillsSelected: "{{count}} seleccionado(s)",
-    skillDomain: "Dominio de habilidad"
+    skillDomain: "Dominio de habilidad",
+    fetchConversationFailed: "Error al cargar la conversación",
+    createConversationFailed: "Error al crear la conversación",
+    hitlArguments: "Argumentos",
+    hitlChose: "Has elegido {{label}}.",
+    hitlAbandoned: "Continuaste sin elegir.",
+    hitlExecute: "Ejecutar",
+    hitlDontExecute: "No ejecutar",
+    copyMessage: "Copiar mensaje",
+    copied: "Copiado",
+    showToolCalls: "Mostrar llamadas de herramientas",
+    hideToolCalls: "Ocultar llamadas de herramientas",
+    toolRunning: "En curso",
+    toolDone: "Listo",
+    toolFailed: "Error"
   }
 }, J = {
   listTitle: "Lista de tareas",
@@ -8520,6 +8584,8 @@ const A = {
       enableMultiOrgTooltip: "Activer la fonctionnalité multi-organisation. Lorsque activé, les organisations peuvent être gérées dans l'onglet Gestion des organisations.",
       enableSkillToolBinding: "Lier les outils IA aux compétences",
       enableSkillToolBindingTooltip: "Si activé, le chat IA restreint les outils selon les liaisons par compétence lorsque des compétences sont dans le périmètre (toujours dans les permissions des rôles).",
+      showToolCalls: "Afficher les appels d'outils",
+      showToolCallsTooltip: "Si activé, le chat IA affiche les appels d'outils serveur sous chaque message de l'assistant. Les outils client et les cartes de confirmation restent inchangés.",
       clearSiteCache: "Vider le cache du site",
       clearSiteCacheConfirm: "Vider tous les caches applicatifs côté serveur ? Les sessions actives devront peut-être se reconnecter.",
       clearSiteCacheSuccess: "Cache du site vidé avec succès",
@@ -9176,7 +9242,21 @@ const A = {
     skillsPlaceholder: "Compétences (optionnel)",
     skillsOptional: "optionnel",
     skillsSelected: "{{count}} sélectionné(s)",
-    skillDomain: "Domaine de compétence"
+    skillDomain: "Domaine de compétence",
+    fetchConversationFailed: "Échec du chargement de la conversation",
+    createConversationFailed: "Échec de la création de la conversation",
+    hitlArguments: "Arguments",
+    hitlChose: "Vous avez choisi {{label}}.",
+    hitlAbandoned: "Vous avez continué sans choisir.",
+    hitlExecute: "Exécuter",
+    hitlDontExecute: "Ne pas exécuter",
+    copyMessage: "Copier le message",
+    copied: "Copié",
+    showToolCalls: "Afficher les appels d'outils",
+    hideToolCalls: "Masquer les appels d'outils",
+    toolRunning: "En cours",
+    toolDone: "Terminé",
+    toolFailed: "Échec"
   }
 }, te = {
   listTitle: "Liste des tâches",
@@ -10151,6 +10231,8 @@ const A = {
       enableMultiOrgTooltip: "تمكين ميزة التنظيم المتعدد. عند التمكين، يمكن إدارة المنظمات في علامة تبويب إدارة المنظمات.",
       enableSkillToolBinding: "ربط أدوات الذكاء الاصطناعي بالمهارات",
       enableSkillToolBindingTooltip: "عند التمكين، يحد محادثة الذكاء الاصطناعي الأدوات حسب ارتباطات المهارة (ضمن أذونات الأدوات للدور).",
+      showToolCalls: "إظهار استدعاءات الأدوات",
+      showToolCallsTooltip: "عند التمكين، تعرض محادثة الذكاء الاصطناعي استدعاءات أدوات الخادم أسفل كل رسالة مساعد. أدوات العميل وبطاقات التأكيد لا تتغير.",
       clearSiteCache: "مسح ذاكرة التخزين المؤقت للموقع",
       clearSiteCacheConfirm: "مسح جميع ذاكرات التخزين المؤقت للتطبيق على الخادم؟ قد تحتاج الجلسات النشطة إلى تسجيل الدخول مرة أخرى.",
       clearSiteCacheSuccess: "تم مسح ذاكرة التخزين المؤقت للموقع بنجاح",
@@ -10807,7 +10889,21 @@ const A = {
     skillsPlaceholder: "المهارات (اختياري)",
     skillsOptional: "اختياري",
     skillsSelected: "{{count}} محدد",
-    skillDomain: "مجال المهارة"
+    skillDomain: "مجال المهارة",
+    fetchConversationFailed: "فشل تحميل المحادثة",
+    createConversationFailed: "فشل إنشاء المحادثة",
+    hitlArguments: "الوسائط",
+    hitlChose: "لقد اخترت {{label}}.",
+    hitlAbandoned: "تابعت دون اختيار.",
+    hitlExecute: "تنفيذ",
+    hitlDontExecute: "لا تنفذ",
+    copyMessage: "نسخ الرسالة",
+    copied: "تم النسخ",
+    showToolCalls: "إظهار استدعاءات الأدوات",
+    hideToolCalls: "إخفاء استدعاءات الأدوات",
+    toolRunning: "قيد التشغيل",
+    toolDone: "تم",
+    toolFailed: "فشل"
   }
 }, ne = {
   listTitle: "قائمة المهام",
@@ -11782,6 +11878,8 @@ const A = {
       enableMultiOrgTooltip: "Aktivera multiorganisationsfunktionen. När den är aktiverad kan organisationer hanteras i fliken Organisationshantering.",
       enableSkillToolBinding: "Koppla AI-verktyg till färdigheter",
       enableSkillToolBindingTooltip: "När det är aktiverat begränsar AI-chatten verktyg enligt färdighetsbindningar (inom rollbehörigheter).",
+      showToolCalls: "Visa verktygsanrop",
+      showToolCallsTooltip: "När det är aktiverat visar AI-chatten serververktygsanrop under varje assistentmeddelande. Klientverktyg och bekräftelsekort ändras inte.",
       clearSiteCache: "Töm webbplatsens cache",
       clearSiteCacheConfirm: "Tömma alla programcacher på servern? Aktiva sessioner kan behöva logga in igen.",
       clearSiteCacheSuccess: "Webbplatsens cache har tömts",
@@ -12438,7 +12536,21 @@ const A = {
     skillsPlaceholder: "Färdigheter (valfritt)",
     skillsOptional: "valfritt",
     skillsSelected: "{{count}} valda",
-    skillDomain: "Färdighetsdomän"
+    skillDomain: "Färdighetsdomän",
+    fetchConversationFailed: "Misslyckades med att hämta konversation",
+    createConversationFailed: "Misslyckades med att skapa konversation",
+    hitlArguments: "Argument",
+    hitlChose: "Du valde {{label}}.",
+    hitlAbandoned: "Du fortsatte utan att välja.",
+    hitlExecute: "Kör",
+    hitlDontExecute: "Kör inte",
+    copyMessage: "Kopiera meddelande",
+    copied: "Kopierat",
+    showToolCalls: "Visa verktygsanrop",
+    hideToolCalls: "Dölj verktygsanrop",
+    toolRunning: "Körs",
+    toolDone: "Klar",
+    toolFailed: "Misslyckades"
   }
 }, me = {
   listTitle: "Uppgiftslista",
@@ -12556,13 +12668,13 @@ f.use(b).use(v).init({
       translation: y,
       common: S,
       authorization: T,
-      system: P,
-      ai: w,
+      system: w,
+      ai: P,
       task: R,
       inbox: D
     },
     "de-DE": {
-      translation: z,
+      translation: C,
       common: x,
       authorization: O,
       system: B,
@@ -12571,7 +12683,7 @@ f.use(b).use(v).init({
       inbox: K
     },
     "es-ES": {
-      translation: C,
+      translation: z,
       common: G,
       authorization: H,
       system: W,
@@ -12728,10 +12840,10 @@ export {
   Ie as d,
   De as e,
   Re as f,
-  Ce as g,
+  ze as g,
   Ne as h,
   Fe as i,
   _e as j,
-  ze as m,
+  Ce as m,
   Ee as t
 };

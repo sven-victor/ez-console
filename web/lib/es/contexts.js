@@ -1,4 +1,4 @@
-import { useContext as J, createContext as V, useState as I, useEffect as E, useCallback as C, useRef as x, useMemo as F } from "react";
+import { useContext as F, createContext as V, useState as I, useEffect as E, useCallback as C, useRef as x, useMemo as J } from "react";
 import { f as H, r as he } from "./client.js";
 import { a as z } from "./index.js";
 import { useNavigate as ge, useLocation as ye, matchRoutes as Q } from "react-router-dom";
@@ -18,22 +18,22 @@ const G = V({
   updateUser: () => {
   },
   error: void 0
-}), Ae = () => J(G), $ = (n, t = !0) => {
+}), Ae = () => F(G), $ = (n, t = !0) => {
   n ? (t && localStorage.setItem("token", n), H.defaults.headers.common.Authorization = `Bearer ${n}`) : (t && localStorage.removeItem("token"), delete H.defaults.headers.common.Authorization);
 }, Me = ({ children: n }) => {
-  const { message: t } = re.useApp(), [e, r] = I(void 0), [u, i] = I(!0), { run: d, runAsync: f, error: l } = Y(async () => {
-    const p = localStorage.getItem("token");
-    return p ? ($(p, !1), z.authorization.getCurrentUser()) : null;
+  const { message: t } = re.useApp(), [e, r] = I(void 0), [u, i] = I(!0), { run: d, runAsync: p, error: l } = Y(async () => {
+    const f = localStorage.getItem("token");
+    return f ? ($(f, !1), z.authorization.getCurrentUser()) : null;
   }, {
     manual: !0,
     onBefore: () => {
       r(void 0);
     },
-    onSuccess: (p) => {
-      r(p);
+    onSuccess: (f) => {
+      r(f);
     },
-    onError: (p) => {
-      console.error("Failed to get current user:", p), y();
+    onError: (f) => {
+      console.error("Failed to get current user:", f), y();
     },
     onFinally: () => {
       i(!1);
@@ -42,9 +42,9 @@ const G = V({
   E(() => {
     d();
   }, []);
-  const a = async (p) => {
+  const a = async (f) => {
     try {
-      const c = await z.authorization.login(p), { token: A, user: v, needs_mfa: m, password_expired: b, mfa_token: P, mfa_type: w } = c;
+      const c = await z.authorization.login(f), { token: A, user: v, needs_mfa: m, password_expired: b, mfa_token: P, mfa_type: w } = c;
       if (m)
         throw { needsMFA: !0, mfaToken: P, mfaType: w, user: v };
       if (b)
@@ -53,9 +53,9 @@ const G = V({
     } catch (c) {
       throw c && c.needsMFA || c && c.password_expired || t.error("Login failed, please check your username and password"), c;
     }
-  }, s = C(async (p) => {
+  }, s = C(async (f) => {
     try {
-      const c = await z.oauth.handleCallback(p, { headers: { "X-Base-Path": we() } });
+      const c = await z.oauth.handleCallback(f, { headers: { "X-Base-Path": we() } });
       let A = "";
       if (c && typeof c == "object")
         if ("code" in c && c.code === "0" && "data" in c) {
@@ -70,15 +70,15 @@ const G = V({
           A = m;
         }
       $(A);
-      const v = await f();
+      const v = await p();
       return r(v || null), v || null;
     } catch (c) {
       throw r(void 0), c && c.needsMFA || c && c.passwordExpired, c;
     }
   }, []), y = () => {
     z.authorization.logout(), $(null), r(null);
-  }, T = (p) => {
-    r(p);
+  }, k = (f) => {
+    r(f);
   };
   return /* @__PURE__ */ W.jsx(
     G.Provider,
@@ -89,14 +89,14 @@ const G = V({
         login: a,
         oauthLogin: s,
         logout: y,
-        updateUser: T,
+        updateUser: k,
         error: l
       },
       children: n
     }
   );
 }, oe = () => {
-  const n = J(G);
+  const n = F(G);
   if (n === void 0)
     throw new Error("useAuth must be used within an AuthProvider");
   return n;
@@ -126,14 +126,14 @@ const G = V({
   inboxRevision: 0,
   bumpInboxRevision: () => {
   }
-}), X = () => J(se), $e = ({ children: n }) => {
+}), X = () => F(se), $e = ({ children: n }) => {
   const { user: t } = Ae(), { data: e = null, loading: r, runAsync: u, error: i } = Y(async () => z.system.getSiteConfig(), {
     manual: !0
   });
   E(() => {
     t !== void 0 && u();
   }, [t]);
-  const [d, f] = I(localStorage.getItem("orgID"));
+  const [d, p] = I(localStorage.getItem("orgID"));
   E(() => {
     d ? localStorage.setItem("orgID", d) : localStorage.removeItem("orgID");
   }, [d]), E(() => {
@@ -142,20 +142,20 @@ const G = V({
       return;
     const m = (e == null ? void 0 : e.enable_multi_org) ?? !1, b = e == null ? void 0 : e.default_organization_id;
     if (!m && b) {
-      f(b);
+      p(b);
       return;
     }
     const P = localStorage.getItem("orgID");
     if (P) {
       const h = (w = t == null ? void 0 : t.organizations) == null ? void 0 : w.find((g) => g.id === P);
       if (h) {
-        f(h.id);
+        p(h.id);
         return;
       }
     }
-    f(((S = (_ = t == null ? void 0 : t.organizations) == null ? void 0 : _[0]) == null ? void 0 : S.id) ?? null);
+    p(((S = (_ = t == null ? void 0 : t.organizations) == null ? void 0 : _[0]) == null ? void 0 : S.id) ?? null);
   }, [e, t == null ? void 0 : t.organizations]);
-  const [l, a] = I(!1), [s, y] = I([]), [T, p] = I(0), [c, A] = I(0), v = C(() => {
+  const [l, a] = I(!1), [s, y] = I([]), [k, f] = I(0), [c, A] = I(0), v = C(() => {
     A((m) => m + 1);
   }, []);
   return /* @__PURE__ */ W.jsx(
@@ -169,10 +169,10 @@ const G = V({
         fetchSiteConfig: u,
         currentOrgId: d,
         setCurrentOrgId: (m) => {
-          f(m);
+          p(m);
         },
         clearCurrentOrgId: () => {
-          f(null);
+          p(null);
         },
         error: i,
         tasks: s,
@@ -186,8 +186,8 @@ const G = V({
         addTask: (m) => {
           y((b) => [m, ...b]), a(!0);
         },
-        inboxUnreadCount: T,
-        setInboxUnreadCount: p,
+        inboxUnreadCount: k,
+        setInboxUnreadCount: f,
         inboxRevision: c,
         bumpInboxRevision: v
       },
@@ -196,7 +196,7 @@ const G = V({
   );
 }, Ie = () => {
   var l;
-  const { user: n } = J(G), { currentOrgId: t } = X(), e = (l = n == null ? void 0 : n.roles) == null ? void 0 : l.filter((a) => !a.organization_id || a.organization_id === t), r = () => e ? e.some((a) => a.name === "admin" && !a.organization_id) : !1, u = (a) => e ? r() ? !0 : e.some((s) => s.permissions ? s.permissions.some((y) => y.code === a) : !1) : !1;
+  const { user: n } = F(G), { currentOrgId: t } = X(), e = (l = n == null ? void 0 : n.roles) == null ? void 0 : l.filter((a) => !a.organization_id || a.organization_id === t), r = () => e ? e.some((a) => a.name === "admin" && !a.organization_id) : !1, u = (a) => e ? r() ? !0 : e.some((s) => s.permissions ? s.permissions.some((y) => y.code === a) : !1) : !1;
   return {
     hasPermission: u,
     hasAllPermissions: (a) => a.every((s) => u(s)),
@@ -214,8 +214,8 @@ function Se(n) {
     if (!u || u.startsWith(":"))
       continue;
     const i = u.indexOf(":"), d = i === -1 ? u : u.slice(0, i);
-    let f = i === -1 ? "" : u.slice(i + 1);
-    f.startsWith(" ") && (f = f.slice(1)), d === "id" ? t = f : d === "event" ? e = f : d === "data" && r.push(f);
+    let p = i === -1 ? "" : u.slice(i + 1);
+    p.startsWith(" ") && (p = p.slice(1)), d === "id" ? t = p : d === "event" ? e = p : d === "data" && r.push(p);
   }
   return !t && !e && r.length === 0 ? null : { id: t, event: e, data: r.join(`
 `) };
@@ -225,10 +225,10 @@ async function Pe(n, t, e) {
   let i = "";
   try {
     for (; !t.aborted; ) {
-      const { done: d, value: f } = await r.read();
+      const { done: d, value: p } = await r.read();
       if (d)
         break;
-      i += u.decode(f, { stream: !0 }), i = i.replace(/\r\n/g, `
+      i += u.decode(p, { stream: !0 }), i = i.replace(/\r\n/g, `
 `).replace(/\r/g, `
 `);
       let l = i.indexOf(`
@@ -282,7 +282,7 @@ function Ge() {
       u.current = s, t(s);
     }).catch(() => {
     });
-    const f = (a) => {
+    const p = (a) => {
       if (a.id && (r.current = a.id), !a.data)
         return;
       let s;
@@ -304,7 +304,7 @@ function Ge() {
             signal: i.signal,
             headers: a
           });
-          d = 1e3, await Pe(s, i.signal, f);
+          d = 1e3, await Pe(s, i.signal, p);
         } catch {
           if (i.signal.aborted)
             return;
@@ -356,7 +356,7 @@ const ae = V({
 function Z() {
   return typeof window < "u" ? window.location.pathname : "";
 }
-function Te(n, t) {
+function ke(n, t) {
   return typeof t == "function" ? {
     id: n,
     apply: (e) => {
@@ -394,66 +394,66 @@ function te(n, t) {
     e.set(r.name, r);
   return Array.from(e.values());
 }
-const ke = () => J(ae), Be = ({ children: n }) => {
-  const { message: t } = re.useApp(), { t: e } = ne("ai"), [r, u] = I("sidebar"), [i, d] = I(!1), [f, l] = I(!1), [a, s] = I(void 0), [y, T] = I(), [p, c] = I(null), A = x(0), v = x(null), m = x([]), [b, P] = I(null), [w, _] = I([]), S = x([]), h = C((o) => {
+const Oe = () => F(ae), qe = ({ children: n }) => {
+  const { message: t } = re.useApp(), { t: e } = ne("ai"), [r, u] = I("sidebar"), [i, d] = I(!1), [p, l] = I(!1), [a, s] = I(void 0), [y, k] = I(), [f, c] = I(null), A = x(0), v = x(null), m = x([]), [b, P] = I(null), [w, _] = I([]), S = x([]), h = C((o) => {
     v.current = o, P(o);
   }, []), g = C((o) => {
     m.current = o, _(o);
   }, []), R = C(() => {
     const o = v.current;
     o && o.routeKey !== Z() && h(null);
-  }, [h]), k = C((o) => {
+  }, [h]), O = C((o) => {
     const D = o.pageData ? [{
       name: "ui_get_page_data",
       description: `This is a browser/client-side method. If the user explicitly instructs you to retrieve page data or if you believe it is necessary to retrieve page data, you can try invoking this method. ${o.pageDataDescription || "Returns a JSON snapshot of the current page data."}`,
       parameters: { type: "object", properties: {}, required: [] },
       handler: () => ve(o.pageData) ? o.pageData : be(o.pageData) ? JSON.stringify(o.pageData()) : JSON.stringify(o.pageData)
-    }] : [], O = ++A.current, N = Z(), U = v.current;
+    }] : [], T = ++A.current, j = Z(), L = v.current;
     h({
-      id: O,
-      routeKey: N,
+      id: T,
+      routeKey: j,
       // Keep prompts from an earlier registration of the same page when this
       // call does not provide any (matches the previous incremental behavior).
-      prompts: o.ephemeralSystemPrompts ?? ((U == null ? void 0 : U.routeKey) === N ? U.prompts : []),
+      prompts: o.ephemeralSystemPrompts ?? ((L == null ? void 0 : L.routeKey) === j ? L.prompts : []),
       tools: [...D, ...o.tools ?? []]
     });
-    const j = S.current;
-    return S.current = [], j.forEach((M) => M(!0)), () => {
+    const U = S.current;
+    return S.current = [], U.forEach((M) => M(!0)), () => {
       var M;
-      ((M = v.current) == null ? void 0 : M.id) === O && h(null);
+      ((M = v.current) == null ? void 0 : M.id) === T && h(null);
     };
   }, [h]), K = C((o) => {
     const D = ++A.current;
-    return g([...m.current, Te(D, o)]), () => {
-      g(m.current.filter((O) => O.id !== D));
+    return g([...m.current, ke(D, o)]), () => {
+      g(m.current.filter((T) => T.id !== D));
     };
-  }, [g]), L = C(
+  }, [g]), N = C(
     () => te(m.current, v.current),
     []
-  ), B = C(
+  ), q = C(
     () => ee(m.current, v.current),
     []
-  ), q = C((o = 3e3) => new Promise((D) => {
-    let O = !1;
-    const N = (j) => {
-      O || (O = !0, clearTimeout(U), D(j));
-    }, U = setTimeout(() => {
-      S.current = S.current.filter((j) => j !== N), N(!1);
+  ), B = C((o = 3e3) => new Promise((D) => {
+    let T = !1;
+    const j = (U) => {
+      T || (T = !0, clearTimeout(L), D(U));
+    }, L = setTimeout(() => {
+      S.current = S.current.filter((U) => U !== j), j(!1);
     }, o);
-    S.current.push(N);
-  }), []), ce = F(() => te(w, b), [w, b]), ue = F(() => ee(w, b), [w, b]);
+    S.current.push(j);
+  }), []), ce = J(() => te(w, b), [w, b]), ue = J(() => ee(w, b), [w, b]);
   E(() => {
     const o = localStorage.getItem("activeConversationKey");
     o && s(o);
   }, []);
   const de = C((o, D) => {
-    const O = xe(D);
-    d(!0), p ? p(o, O) : T({ message: o, options: O });
-  }, [p, d]);
+    const T = xe(D);
+    d(!0), f ? f(o, T) : k({ message: o, options: T });
+  }, [f, d]);
   E(() => {
-    p && y && (p(y.message, y.options), T(void 0));
-  }, [p, y]);
-  const { loading: me, runAsync: fe, data: pe } = Y(async () => (await z.ai.listChatSessions({ current: 1, page_size: 20 })).data, {
+    f && y && (f(y.message, y.options), k(void 0));
+  }, [f, y]);
+  const { loading: me, runAsync: pe, data: fe } = Y(async () => (await z.ai.listChatSessions({ current: 1, page_size: 20 })).data, {
     ready: i,
     onError: (o) => {
       t.error(e("chat.fetchConversationsFailed", { defaultValue: "Failed to fetch conversations: {{errmsg}}", errmsg: o.message ?? o }));
@@ -475,30 +475,30 @@ const ke = () => J(ae), Be = ({ children: n }) => {
         onCallAI: C((o) => {
           c(() => o);
         }, [c]),
-        loaded: f,
+        loaded: p,
         setLoaded: (o) => {
           l(o);
         },
-        fetchConversations: fe,
+        fetchConversations: pe,
         fetchConversationsLoading: me,
-        conversations: pe,
+        conversations: fe,
         activeConversationKey: a,
         setActiveConversationKey: (o) => {
           s(o), localStorage.setItem("activeConversationKey", o);
         },
         ephemeralSystemPrompts: ue,
         clientTools: ce,
-        registerPageAI: k,
+        registerPageAI: O,
         resetPageAIContext: R,
         registerGlobalAI: K,
-        getClientTools: L,
-        getEphemeralSystemPrompts: B,
-        waitForPageAI: q
+        getClientTools: N,
+        getEphemeralSystemPrompts: q,
+        waitForPageAI: B
       },
       children: n
     }
   );
-}, Oe = 3e3;
+}, Te = 3e3;
 function le(n, t, e, r = [], u = !1, i) {
   const d = [];
   for (const l of n) {
@@ -513,8 +513,8 @@ function le(n, t, e, r = [], u = !1, i) {
       has_params: y.includes(":")
     }), "children" in l && l.children && d.push(...le(l.children, t, e, s, a, y ?? i));
   }
-  const f = /* @__PURE__ */ new Set();
-  return d.filter((l) => f.has(l.path) ? !1 : (f.add(l.path), !0));
+  const p = /* @__PURE__ */ new Set();
+  return d.filter((l) => p.has(l.path) ? !1 : (p.add(l.path), !0));
 }
 function Re(n) {
   return n.length === 0 ? "" : [
@@ -524,16 +524,16 @@ function Re(n) {
   ].join(`
 `);
 }
-function qe(n, t) {
-  const { registerGlobalAI: e, getClientTools: r, waitForPageAI: u } = ke(), i = ge(), d = ye(), { hasAnyPermission: f } = Ie(), { user: l } = oe(), { currentOrgId: a } = X(), { t: s, i18n: y } = ne(), T = x(d);
-  T.current = d;
-  const p = x(i);
-  p.current = i;
+function Be(n, t) {
+  const { registerGlobalAI: e, getClientTools: r, waitForPageAI: u } = Oe(), i = ge(), d = ye(), { hasAnyPermission: p } = Ie(), { user: l } = oe(), { currentOrgId: a } = X(), { t: s, i18n: y } = ne(), k = x(d);
+  k.current = d;
+  const f = x(i);
+  f.current = i;
   const c = x(n);
   c.current = n;
-  const A = x(f);
-  A.current = f;
-  const v = ((l == null ? void 0 : l.roles) ?? []).map((_) => _.id).join(","), m = F(
+  const A = x(p);
+  A.current = p;
+  const v = ((l == null ? void 0 : l.roles) ?? []).map((_) => _.id).join(","), m = J(
     () => le(
       n,
       A.current,
@@ -549,16 +549,16 @@ function qe(n, t) {
     [n, v, a, y.language, s]
   ), b = x(m);
   b.current = m;
-  const P = F(() => {
+  const P = J(() => {
     const _ = () => b.current.filter((h) => !h.has_params).map((h) => ({ path: h.path, label: h.label })), S = () => {
-      const h = T.current, g = Q(c.current, h.pathname) ?? [], R = g.map((k) => k.route.name).filter(Boolean);
+      const h = k.current, g = Q(c.current, h.pathname) ?? [], R = g.map((O) => O.route.name).filter(Boolean);
       return {
         path: h.pathname,
         search: h.search,
         hash: h.hash,
         route_name: R.join("."),
         params: g.length > 0 ? g[g.length - 1].params : {},
-        available_tools: r().map((k) => k.name)
+        available_tools: r().map((O) => O.name)
       };
     };
     return [
@@ -590,27 +590,55 @@ function qe(n, t) {
           }
           if (typeof g != "string" || !g.startsWith("/") || g.startsWith("//"))
             return JSON.stringify({ error: 'path must be an absolute in-app path starting with "/"', navigable_paths: _() });
-          const R = g.split(/[?#]/)[0], k = Q(c.current, R);
-          if (!k || k.length === 0)
+          const R = g.split(/[?#]/)[0], O = Q(c.current, R);
+          if (!O || O.length === 0)
             return JSON.stringify({ error: `No page matches path "${R}"`, navigable_paths: _() });
-          const K = k[k.length - 1].route;
+          const K = O[O.length - 1].route;
           if (K.permissions && !A.current(K.permissions))
             return JSON.stringify({ error: `You do not have permission to open "${R}"`, navigable_paths: _() });
-          const L = T.current;
-          if (L.pathname === R && `${L.pathname}${L.search}${L.hash}` === g)
+          const N = k.current;
+          if (N.pathname === R && `${N.pathname}${N.search}${N.hash}` === g)
             return JSON.stringify({ ok: !0, already_on_page: !0, ...S() });
-          const B = u(Oe);
-          p.current(g);
-          const q = await B;
+          const q = u(Te);
+          f.current(g);
+          const B = await q;
           return JSON.stringify({
             ok: !0,
-            page_registered_ai_tools: q,
+            page_registered_ai_tools: B,
             ...S()
           });
         }
+      },
+      {
+        name: "ui_choose",
+        description: "Ask the user to pick one option when several valid next actions exist. Do not use this to confirm a tool you can call yourself; call that tool and let approval cards handle confirmation.",
+        parameters: {
+          type: "object",
+          properties: {
+            title: { type: "string" },
+            description: { type: "string" },
+            options: {
+              type: "array",
+              minItems: 2,
+              maxItems: 6,
+              items: {
+                type: "object",
+                properties: {
+                  id: { type: "string" },
+                  label: { type: "string" },
+                  description: { type: "string" }
+                },
+                required: ["id", "label"]
+              }
+            }
+          },
+          required: ["title", "options"]
+        },
+        // Safety net: the card protocol owns this tool. Never treat a handler result as the user's choice.
+        handler: () => JSON.stringify({ error: "ui_choose is presented as a chat card and must not be auto-executed" })
       }
     ];
-  }, [r, u]), w = F(() => Re(m), [m]);
+  }, [r, u]), w = J(() => Re(m), [m]);
   E(() => {
     if (t)
       return e({
@@ -625,10 +653,10 @@ export {
   Ie as a,
   X as b,
   Ae as c,
-  ke as d,
+  Oe as d,
   Ge as e,
-  qe as f,
-  Be as g,
+  Be as f,
+  qe as g,
   xe as n,
   oe as u
 };

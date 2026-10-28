@@ -305,8 +305,7 @@ export declare interface AIToolCall {
     function: AIFunctionCall;
     id: string;
     index: number;
-    /** Display title rendered from the current tool definition. Not persisted. */
-    title?: string;
+    title: string;
     type: string;
 }
 
@@ -908,6 +907,11 @@ export declare namespace API {
         getUserRateLimitParams,
         getUserSessionsParams,
         HealthResult,
+        HITLCard,
+        HITLCardKind,
+        HITLCardStatus,
+        HITLDecision,
+        HITLOption,
         ID,
         ImportLDAPUsersRequest,
         InboxMessage,
@@ -1336,6 +1340,7 @@ export declare interface ChatStreamEvent {
     client_tool_calls: ClientToolPendingCall[];
     content: string;
     event_type: EventType;
+    hitl_cards: HITLCard[];
     message_id: string;
     role: AIChatMessageRole;
     tool_calls: ToolCall[];
@@ -1345,6 +1350,9 @@ export declare interface ChatStreamEvent {
 declare interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'> {
     error?: string;
     pendingClientToolCalls?: ClientToolPendingCall_2[];
+    hitlCards?: API.HITLCard[];
+    /** Server tool calls shown under the bubble when the system setting is on. */
+    toolCalls?: DisplayToolCall[];
     messageId?: string;
     status?: MessageStatus;
 }
@@ -1378,6 +1386,8 @@ declare interface ClientToolPendingCall_2 {
     id: string;
     name: string;
     arguments: string;
+    /** Set on calls rebuilt from GET. Resume may run them; opening the session must not. */
+    hitlFromHistory?: boolean;
 }
 
 export declare interface ClientToolResult {
@@ -1589,6 +1599,29 @@ export declare interface DisableMFARequest {
     password: string;
 }
 
+/**
+ * Copyright 2025 Sven Victor
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+declare interface DisplayToolCall {
+    id: string;
+    name: string;
+    arguments: string;
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    title?: string;
+}
+
 export declare interface downloadAITraceEventsParams {
     /** Trace ID */
     trace_id: string;
@@ -1599,7 +1632,7 @@ export declare interface downloadFileParams {
     fileKey: string;
 }
 
-export declare type Duration = 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
+export declare type Duration = -9223372036854776000 | 9223372036854776000 | 1 | 1000 | 1000000 | 1000000000 | 60000000000 | 3600000000000;
 
 export declare const DynamicIcon: ({ iconName }: DynamicIconProps) => JSX_2.Element | null;
 
@@ -1624,7 +1657,7 @@ export declare interface ErrorResponse {
     trace_id: string;
 }
 
-export declare type EventType = "content" | "tool_call" | "error" | "client_tool_pending";
+export declare type EventType = "content" | "tool_call" | "error" | "client_tool_pending" | "hitl_pending";
 
 export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, aiChatProps, }: EZAppProps): JSX_2.Element;
 
@@ -1910,6 +1943,34 @@ export declare interface HealthResult {
     message: string;
     reason: string;
     status: string;
+}
+
+export declare interface HITLCard {
+    arguments: string;
+    description: string;
+    kind: HITLCardKind;
+    options: HITLOption[];
+    selected_option_id: string;
+    status: HITLCardStatus;
+    title: string;
+    tool_call_id: string;
+    tool_name: string;
+}
+
+export declare type HITLCardKind = "approval" | "choice";
+
+export declare type HITLCardStatus = "pending" | "decided" | "abandoned";
+
+export declare interface HITLDecision {
+    option_id: string;
+    tool_call_id: string;
+}
+
+export declare interface HITLOption {
+    description: string;
+    id: string;
+    label: string;
+    primary: boolean;
 }
 
 /**
@@ -3452,6 +3513,8 @@ export declare interface SendMessageRequest {
     domains: string[];
     /** page-level system prompts, memory-only (not persisted) */
     ephemeral_system_prompts: string[];
+    /** decisions for pending approval and choice cards */
+    hitl_decisions: HITLDecision[];
     /** optional: load these specific skills by id */
     skill_ids: string[];
 }
@@ -3565,13 +3628,13 @@ export declare interface SiteConfig {
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
     enable_skill_tool_binding: boolean;
-    show_tool_calls: boolean;
     home_page: string;
     logo: string;
     menu: MenuConfig[];
     name: string;
     name_i18n: Record<string, any>;
     navigation: Navigation[];
+    show_tool_calls: boolean;
 }
 
 declare interface SiteContextType {
@@ -3727,11 +3790,11 @@ export declare interface SystemSettings {
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
     enable_skill_tool_binding: boolean;
-    show_tool_calls: boolean;
     home_page: string;
     logo: string;
     name: string;
     name_i18n: Record<string, any>;
+    show_tool_calls: boolean;
 }
 
 export declare const Table: <T extends API.Entity>({ actionRef, ...props }: TableActionRefProps<T>) => default_2.JSX.Element | null;
@@ -3879,8 +3942,8 @@ export declare interface ToolCall {
     index: number;
     start_time: string;
     status: ToolCallStatus;
-    /** Display title rendered from the tool template or description */
-    title?: string;
+    /** Title is a display string rendered from the tool's title template or description. */
+    title: string;
     type: ToolType;
 }
 

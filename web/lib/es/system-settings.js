@@ -1445,6 +1445,18 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             children: /* @__PURE__ */ e.jsx(de, {})
           }
         ),
+        /* @__PURE__ */ e.jsx(
+          o.Item,
+          {
+            label: t("settings.base.showToolCalls", { defaultValue: "Show tool calls" }),
+            name: "show_tool_calls",
+            valuePropName: "checked",
+            tooltip: t("settings.base.showToolCallsTooltip", {
+              defaultValue: "When enabled, AI chat shows server tool calls under each assistant message. Client tools and confirmation cards are unchanged."
+            }),
+            children: /* @__PURE__ */ e.jsx(de, {})
+          }
+        ),
         /* @__PURE__ */ e.jsx(o.Item, { children: /* @__PURE__ */ e.jsxs(H, { children: [
           /* @__PURE__ */ e.jsx(
             E,
