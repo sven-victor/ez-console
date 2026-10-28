@@ -1838,7 +1838,7 @@ export const AIChat: React.FC<AIChatProps> = ({
       });
       return;
     }
-    createNewConversation(message, options.messages, true, domains);
+    createNewConversation(message, options.messages, options.anonymous ?? true, domains);
   };
 
   useEffect(() => {

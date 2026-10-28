@@ -201,8 +201,9 @@ declare interface AIContextType {
      * @param message The user message to send.
      * @param options Context messages, or {@link CallAIOptions}.
      *   A `SimpleChatMessage[]` starts a new anonymous session with that context.
-     *   `{ messages, domains, newSession }` can also set skill domains and reuse
-     *   the active session (`newSession` defaults to true).
+     *   `{ messages, domains, newSession, anonymous }` can also set skill domains,
+     *   reuse the active session (`newSession` defaults to true), and choose
+     *   whether a new session is anonymous (`anonymous` defaults to true).
      */
     callAI: (message: string, options?: CallAIArgument) => void;
     onCallAI: (callback: (message: string, options?: CallAIArgument) => void) => void;
@@ -1295,11 +1296,18 @@ export declare interface CallAIOptions {
      */
     domains?: string[];
     /**
-     * Create a new anonymous session before sending. Defaults to true.
+     * Create a new session before sending. Defaults to true.
      * When false, the message is sent to the active session. A session is still
      * created when none is active.
      */
     newSession?: boolean;
+    /**
+     * Store a newly created session as anonymous. Defaults to true, so the
+     * session stays out of the conversation list.
+     * Set false to create a normal session that appears in history.
+     * Ignored when the message is appended to an existing session.
+     */
+    anonymous?: boolean;
 }
 
 export declare interface callToolParams {
