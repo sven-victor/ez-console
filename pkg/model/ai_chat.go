@@ -50,12 +50,14 @@ type AIFunctionCall struct {
 	Arguments string `json:"arguments"`
 }
 
-// AIToolCall represents a tool call in a chat message
+// AIToolCall represents a tool call in a chat message.
+// Title is rendered for the chat UI from the current tool definition and is not persisted.
 type AIToolCall struct {
 	Index    *int           `json:"index,omitempty"`
 	ID       string         `json:"id"`
 	Type     string         `json:"type"`
 	Function AIFunctionCall `json:"function"`
+	Title    string         `json:"title,omitempty"`
 }
 
 // AIChatMessageMetadata represents metadata for a chat message

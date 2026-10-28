@@ -51,6 +51,8 @@ type ToolCall struct {
 	Status    ToolCallStatus  `json:"status,omitempty"`
 	Result    string          `json:"-"`
 	StartTime time.Time       `json:"start_time,omitempty"`
+	// Title is a display string rendered from the tool's title template or description.
+	Title string `json:"title,omitempty"`
 }
 
 type EventType string

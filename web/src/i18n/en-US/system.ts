@@ -216,6 +216,9 @@ export default {
       enableSkillToolBinding: 'Link AI tools to skills',
       enableSkillToolBindingTooltip:
         'When enabled, AI chat narrows tools by per-skill bindings when skills are in scope (still within role AI tool permissions). The Skills editor shows linked tools.',
+      showToolCalls: 'Show tool calls',
+      showToolCallsTooltip:
+        'When enabled, AI chat shows server tool calls under each assistant message. Client tools and confirmation cards are unchanged.',
       clearSiteCache: 'Clear site cache',
       clearSiteCacheConfirm:
         'Clear all server-side application caches? Active sessions may need to sign in again.',

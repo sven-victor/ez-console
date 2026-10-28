@@ -208,6 +208,9 @@ export default {
       enableSkillToolBinding: 'KI-Tools mit Skills verknüpfen',
       enableSkillToolBindingTooltip:
         'Wenn aktiviert, schränkt der KI-Chat die Tools nach Skill-Bindings ein (weiterhin innerhalb der Rollen-KI-Tool-Berechtigungen).',
+      showToolCalls: 'Tool-Aufrufe anzeigen',
+      showToolCallsTooltip:
+        'Wenn aktiviert, zeigt der KI-Chat Server-Tool-Aufrufe unter jeder Assistentennachricht. Client-Tools und Bestätigungskarten bleiben unverändert.',
       clearSiteCache: 'Website-Cache leeren',
       clearSiteCacheConfirm:
         'Alle serverseitigen Anwendungs-Caches leeren? Aktive Sitzungen müssen sich ggf. erneut anmelden.',

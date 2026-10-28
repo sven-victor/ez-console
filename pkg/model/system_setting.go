@@ -41,6 +41,8 @@ const (
 	SettingSystemDefaultOrganizationID SettingKey = "system_default_organization_id"
 
 	SettingSystemEnableSkillToolBinding SettingKey = "system_enable_skill_tool_binding" // Whether to link AI tools to skills for chat
+
+	SettingSystemShowToolCalls SettingKey = "system_show_tool_calls" // Whether AI chat shows server tool calls in the transcript
 )
 
 var SystemSettingKeys = []SettingKey{
@@ -52,6 +54,7 @@ var SystemSettingKeys = []SettingKey{
 	SettingSystemEnableMultiOrg,
 	SettingSystemDefaultOrganizationID,
 	SettingSystemEnableSkillToolBinding,
+	SettingSystemShowToolCalls,
 }
 
 var SettingKeys = []SettingKey{}
@@ -66,6 +69,7 @@ type SystemSettings struct {
 	EnableMultiOrg         bool   `json:"enable_multi_org"`
 	DefaultOrganizationID  string `json:"default_organization_id"`
 	EnableSkillToolBinding bool   `json:"enable_skill_tool_binding"`
+	ShowToolCalls          bool   `json:"show_tool_calls"`
 }
 
 func init() {

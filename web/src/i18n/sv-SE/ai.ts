@@ -199,5 +199,12 @@ export default {
     hitlAbandoned: 'Du fortsatte utan att välja.',
     hitlExecute: 'Kör',
     hitlDontExecute: 'Kör inte',
+    copyMessage: 'Kopiera meddelande',
+    copied: 'Kopierat',
+    showToolCalls: 'Visa verktygsanrop',
+    hideToolCalls: 'Dölj verktygsanrop',
+    toolRunning: 'Körs',
+    toolDone: 'Klar',
+    toolFailed: 'Misslyckades',
   },
 };

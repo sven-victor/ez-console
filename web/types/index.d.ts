@@ -305,6 +305,8 @@ export declare interface AIToolCall {
     function: AIFunctionCall;
     id: string;
     index: number;
+    /** Display title rendered from the current tool definition. Not persisted. */
+    title?: string;
     type: string;
 }
 
@@ -3563,6 +3565,7 @@ export declare interface SiteConfig {
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
     enable_skill_tool_binding: boolean;
+    show_tool_calls: boolean;
     home_page: string;
     logo: string;
     menu: MenuConfig[];
@@ -3724,6 +3727,7 @@ export declare interface SystemSettings {
     disable_local_user_login: boolean;
     enable_multi_org: boolean;
     enable_skill_tool_binding: boolean;
+    show_tool_calls: boolean;
     home_page: string;
     logo: string;
     name: string;
@@ -3875,6 +3879,8 @@ export declare interface ToolCall {
     index: number;
     start_time: string;
     status: ToolCallStatus;
+    /** Display title rendered from the tool template or description */
+    title?: string;
     type: ToolType;
 }
 

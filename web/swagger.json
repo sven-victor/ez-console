@@ -7721,6 +7721,7 @@
             "type": "object",
             "required": [
                 "arguments",
+                "description",
                 "kind",
                 "options",
                 "selected_option_id",
@@ -7731,6 +7732,9 @@
             ],
             "properties": {
                 "arguments": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "kind": {
@@ -7859,6 +7863,7 @@
                 "index",
                 "start_time",
                 "status",
+                "title",
                 "type"
             ],
             "properties": {
@@ -7877,6 +7882,10 @@
                 },
                 "status": {
                     "$ref": "#/definitions/ai.ToolCallStatus"
+                },
+                "title": {
+                    "description": "Title is a display string rendered from the tool's title template or description.",
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/openai.ToolType"
@@ -9367,6 +9376,7 @@
                 "function",
                 "id",
                 "index",
+                "title",
                 "type"
             ],
             "properties": {
@@ -9378,6 +9388,9 @@
                 },
                 "index": {
                     "type": "integer"
+                },
+                "title": {
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
@@ -10919,7 +10932,8 @@
                 "home_page",
                 "logo",
                 "name",
-                "name_i18n"
+                "name_i18n",
+                "show_tool_calls"
             ],
             "properties": {
                 "default_organization_id": {
@@ -10948,6 +10962,9 @@
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "show_tool_calls": {
+                    "type": "boolean"
                 }
             }
         },
@@ -11907,7 +11924,8 @@
                 "menu",
                 "name",
                 "name_i18n",
-                "navigation"
+                "navigation",
+                "show_tool_calls"
             ],
             "properties": {
                 "attrs": {
@@ -11952,6 +11970,9 @@
                     "items": {
                         "$ref": "#/definitions/service.Navigation"
                     }
+                },
+                "show_tool_calls": {
+                    "type": "boolean"
                 }
             }
         },

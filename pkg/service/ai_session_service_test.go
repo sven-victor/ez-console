@@ -246,7 +246,7 @@ func TestIncludeInSimpleChatHistory(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "assistant unpaired tool calls without cards",
+			name: "assistant client tool calls without cards",
 			msg: model.AIChatMessage{
 				Role: model.AIChatMessageRoleAssistant,
 				ToolCalls: model.AIToolCalls{{
@@ -254,6 +254,25 @@ func TestIncludeInSimpleChatHistory(t *testing.T) {
 				}},
 			},
 			want: false,
+		},
+		{
+			name: "assistant server tool calls without text",
+			msg: model.AIChatMessage{
+				Role: model.AIChatMessageRoleAssistant,
+				ToolCalls: model.AIToolCalls{{
+					ID: "call_2", Type: "function", Function: model.AIFunctionCall{Name: "list_users"},
+				}},
+			},
+			want: true,
+		},
+		{
+			name: "assistant text stored with tool calls",
+			msg: model.AIChatMessage{
+				Role:      model.AIChatMessageRoleAssistant,
+				Content:   "Done",
+				ToolCalls: model.AIToolCalls{{ID: "call_3", Type: "function", Function: model.AIFunctionCall{Name: "list_users"}}},
+			},
+			want: true,
 		},
 		{
 			name: "empty assistant content without cards",
@@ -267,6 +286,54 @@ func TestIncludeInSimpleChatHistory(t *testing.T) {
 				t.Fatalf("includeInSimpleChatHistory() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestOmitHiddenServerToolCalls(t *testing.T) {
+	pending := MetadataWithHITLCards(nil, []ai.HITLCard{{
+		ToolCallID: "call_hitl",
+		Kind:       ai.HITLCardApproval,
+		ToolName:   "delete_user",
+		Status:     ai.HITLStatusPending,
+	}})
+	in := []model.AIChatMessage{
+		{Role: model.AIChatMessageRoleUser, Content: "hi"},
+		{
+			Role: model.AIChatMessageRoleAssistant,
+			ToolCalls: model.AIToolCalls{{
+				ID: "srv", Function: model.AIFunctionCall{Name: "list_users"},
+			}},
+		},
+		{
+			Role:    model.AIChatMessageRoleAssistant,
+			Content: "done",
+			ToolCalls: model.AIToolCalls{
+				{ID: "srv2", Function: model.AIFunctionCall{Name: "list_users"}},
+				{ID: "ui1", Function: model.AIFunctionCall{Name: "ui_search_users"}},
+			},
+		},
+		{
+			Role:     model.AIChatMessageRoleAssistant,
+			Metadata: pending,
+			ToolCalls: model.AIToolCalls{
+				{ID: "call_hitl", Function: model.AIFunctionCall{Name: "delete_user"}},
+				{ID: "ui2", Function: model.AIFunctionCall{Name: "ui_open"}},
+				{ID: "srv3", Function: model.AIFunctionCall{Name: "list_roles"}},
+			},
+		},
+	}
+	out := omitHiddenServerToolCalls(in)
+	if len(out) != 3 {
+		t.Fatalf("len=%d, want 3 (server-only row dropped)", len(out))
+	}
+	if out[0].Role != model.AIChatMessageRoleUser || out[0].Content != "hi" {
+		t.Fatalf("user row %#v", out[0])
+	}
+	if out[1].Content != "done" || len(out[1].ToolCalls) != 1 || out[1].ToolCalls[0].ID != "ui1" {
+		t.Fatalf("content row %#v", out[1].ToolCalls)
+	}
+	if len(out[2].ToolCalls) != 2 || out[2].ToolCalls[0].ID != "call_hitl" || out[2].ToolCalls[1].ID != "ui2" {
+		t.Fatalf("hitl row %#v", out[2].ToolCalls)
 	}
 }
 

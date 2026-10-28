@@ -43,12 +43,14 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next';
 import dayjs from 'dayjs';
 import { normalizeCallAIOptions, useAI, type CallAIArgument, type RegisteredClientTool } from '@/contexts/AIContext';
+import { useSite } from '@/contexts/SiteContext';
 import classNames from 'classnames';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import '@ant-design/x-markdown/themes/light.css';
 import '@ant-design/x-markdown/themes/dark.css';
 import type { BubbleItemType, Info } from '@ant-design/x/es/bubble/interface';
 import { HITLCard } from '@/components/HITLCard';
+import { ChatMessageActions, type DisplayToolCall } from '@/components/ChatMessageActions';
 
 const useStyle = createStyles(({ token, css }) => {
   return {
@@ -155,8 +157,15 @@ const useStyle = createStyles(({ token, css }) => {
           width: 100%;
           max-width: 100%;
         }
-        .ant-bubble.ant-bubble-start .ant-bubble-footer:has(.hitl-card-stack) {
+        .ant-bubble.ant-bubble-start .ant-bubble-footer:has(.hitl-card-stack),
+        .ant-bubble.ant-bubble-start:has(.chat-message-actions.has-tools) .ant-bubble-body,
+        .ant-bubble.ant-bubble-start .ant-bubble-footer:has(.chat-message-actions.has-tools) {
           width: 100%;
+          max-width: 100%;
+        }
+        .ant-bubble-end .ant-bubble-footer {
+          display: flex;
+          justify-content: flex-end;
         }
       }
       .x-markdown-light pre .ant-codeHighlighter .ant-codeHighlighter-code pre{
@@ -242,6 +251,8 @@ interface ChatStreamMessage extends Pick<API.ChatStreamEvent, 'content' | 'role'
   error?: string;
   pendingClientToolCalls?: ClientToolPendingCall[];
   hitlCards?: API.HITLCard[];
+  /** Server tool calls shown under the bubble when the system setting is on. */
+  toolCalls?: DisplayToolCall[];
   messageId?: string;
   status?: MessageStatus;
 }
@@ -323,6 +334,7 @@ function normalizeHITLCard(value: unknown): API.HITLCard | undefined {
     title: raw.title,
     tool_name: raw.tool_name,
     arguments: args,
+    description: '',
     options,
     status: raw.status,
     selected_option_id: typeof raw.selected_option_id === 'string' ? raw.selected_option_id : '',
@@ -387,6 +399,107 @@ function pendingAutoClientToolCalls(
   return calls.length > 0 ? calls : undefined;
 }
 
+function isClientToolName(name: string | undefined): boolean {
+  return !!name && (name === 'ui_choose' || name.startsWith('ui_'));
+}
+
+/** Approved server tools are executed before the follow-up stream, so they join the tool list only then. */
+function isExecutedApprovalCard(card: API.HITLCard | undefined): boolean {
+  return !!card && card.kind === 'approval' && card.status === 'decided' && card.selected_option_id === 'approve';
+}
+
+function executedApprovalToolCalls(cards: API.HITLCard[] | undefined, decisionIDs: string[]): DisplayToolCall[] {
+  const ids = new Set(decisionIDs);
+  const out: DisplayToolCall[] = [];
+  for (const card of cards ?? []) {
+    if (!ids.has(card.tool_call_id) || !isExecutedApprovalCard(card) || !card.tool_name) {
+      continue;
+    }
+    out.push({
+      id: card.tool_call_id,
+      name: card.tool_name,
+      arguments: card.arguments || '',
+      status: 'completed',
+    });
+  }
+  return out;
+}
+
+function displayToolCallsFromHistory(
+  toolCalls: API.AIToolCall[] | null | undefined,
+  cards: API.HITLCard[] | undefined,
+): DisplayToolCall[] {
+  const cardsByID = new Map((cards ?? []).map((card) => [card.tool_call_id, card]));
+  const out: DisplayToolCall[] = [];
+  for (const call of toolCalls ?? []) {
+    const name = call?.function?.name;
+    if (!call?.id || !name || isClientToolName(name)) {
+      continue;
+    }
+    const card = cardsByID.get(call.id);
+    // Pending, rejected, and choice cards stay on the HITL card. Executed approvals are listed.
+    if (card && !isExecutedApprovalCard(card)) {
+      continue;
+    }
+    out.push({
+      id: call.id,
+      name,
+      arguments: typeof call.function?.arguments === 'string' ? call.function.arguments : '',
+      status: 'completed',
+      title: call.title || undefined,
+    });
+  }
+  return out;
+}
+
+function displayToolCallsFromStream(toolCalls: API.ToolCall[] | null | undefined): DisplayToolCall[] {
+  const out: DisplayToolCall[] = [];
+  for (const call of toolCalls ?? []) {
+    const name = call?.function?.name;
+    if (!call?.id || !name || isClientToolName(name)) {
+      continue;
+    }
+    const status = call.status === 'pending' || call.status === 'running' || call.status === 'failed' || call.status === 'completed'
+      ? call.status
+      : 'running';
+    out.push({
+      id: call.id,
+      name,
+      arguments: typeof call.function?.arguments === 'string' ? call.function.arguments : '',
+      status,
+      title: call.title || undefined,
+    });
+  }
+  return out;
+}
+
+function mergeDisplayToolCalls(current: DisplayToolCall[] | undefined, incoming: DisplayToolCall[]): DisplayToolCall[] {
+  const next = [...(current ?? [])];
+  for (const call of incoming) {
+    const idx = next.findIndex((item) => item.id === call.id);
+    if (idx >= 0) {
+      next[idx] = {
+        ...next[idx],
+        ...call,
+        arguments: call.arguments || next[idx].arguments,
+        title: call.title || next[idx].title,
+      };
+    } else {
+      next.push(call);
+    }
+  }
+  return next;
+}
+
+function withoutHITLToolCalls(current: DisplayToolCall[] | undefined, cards: API.HITLCard[] | undefined): DisplayToolCall[] | undefined {
+  if (!current?.length || !cards?.length) {
+    return current;
+  }
+  const cardIDs = new Set(cards.map((card) => card.tool_call_id));
+  const next = current.filter((call) => !cardIDs.has(call.id));
+  return next.length > 0 ? next : undefined;
+}
+
 interface HitlResumeFlight {
   generation: number;
   /** True only after isRequesting becomes true, not merely because onRequest was called. */
@@ -415,6 +528,9 @@ interface PlainTextAbandon {
   streamStarted: boolean;
   restore: () => void;
 }
+
+/** Mirrors system_show_tool_calls. Server tool calls are ignored while this is false. */
+let showServerToolCalls = false;
 
 /** Set from AIProvider when an SSE chunk arrives, including while another chat is open. */
 const hitlFollowUpChunkHandlers = {
@@ -520,6 +636,16 @@ class AIProvider<
       chunkJson.content || '';
     switch (chunkJson.event_type) {
       case 'tool_call':
+        return {
+          ...originMessage,
+          content: content,
+          role: 'assistant',
+          messageId: chunkJson.message_id,
+          toolCalls: showServerToolCalls
+            ? mergeDisplayToolCalls(originMessage?.toolCalls, displayToolCallsFromStream(chunkJson.tool_calls))
+            : originMessage?.toolCalls,
+          status,
+        } as ChatMessage;
       case 'content':
         return {
           ...originMessage,
@@ -553,6 +679,7 @@ class AIProvider<
           role: 'assistant',
           pendingClientToolCalls: chunkJson.client_tool_calls,
           hitlCards: chunkJson.hitl_cards,
+          toolCalls: withoutHITLToolCalls(originMessage?.toolCalls, chunkJson.hitl_cards),
           messageId: chunkJson.message_id,
           status,
         } as ChatMessage;
@@ -683,6 +810,7 @@ interface ChatListProps {
   onSendMessage: (val: string) => void;
   hitlSubmitting?: HITLSubmitState | null;
   onHITLSelect?: (messageId: string | number, toolCallId: string, optionId: string) => void;
+  showToolCalls?: boolean;
 }
 
 const ChatList: React.FC<ChatListProps> = ({
@@ -693,6 +821,7 @@ const ChatList: React.FC<ChatListProps> = ({
   onSendMessage,
   hitlSubmitting,
   onHITLSelect,
+  showToolCalls = false,
 }) => {
   const { styles } = useStyle();
   const { isDarkMode } = useThemeMode();
@@ -770,12 +899,33 @@ const ChatList: React.FC<ChatListProps> = ({
         contentRender: contentRender,
         footer: (_: string, info: Info) => {
           const extra = footerRender?.(i, info, onSendMessage);
+          const tools = showToolCalls && i.message.role === 'assistant' ? (i.message.toolCalls ?? []) : [];
+          const text = i.message.content || '';
+          const live = i.status === 'loading' || i.status === 'updating';
+          const actions = text || tools.length > 0 ? (
+            <ChatMessageActions
+              key={live ? 'live' : 'settled'}
+              text={text}
+              tools={tools}
+              live={live}
+              align={i.message.role === 'user' ? 'end' : 'start'}
+            />
+          ) : null;
           if (!pendingCards.length) {
-            return extra;
+            if (!actions && !extra) {
+              return undefined;
+            }
+            return (
+              <Flex vertical gap={8} style={{ width: tools.length > 0 ? '100%' : undefined }}>
+                {actions}
+                {extra}
+              </Flex>
+            );
           }
           const batchSubmitting = hitlSubmitting?.messageId === i.id;
           return (
             <Flex className="hitl-card-stack" vertical gap={8} style={{ width: '100%' }}>
+              {actions}
               {extra || null}
               {pendingCards.map((card) => {
                 const localKey = `${i.id}:${card.tool_call_id}`;
@@ -801,9 +951,9 @@ const ChatList: React.FC<ChatListProps> = ({
             </Flex>
           );
         },
-      } as BubbleItemType & Pick<ChatStreamMessage, 'hitlCards'>);
-    }).filter((i) => i.content || pendingHITLCards(i.hitlCards).length);
-  }, [messages, contentRender, footerRender, onSendMessage, hitlSubmitting, onHITLSelect, hitlLocalSelections]);
+      } as BubbleItemType & Pick<ChatStreamMessage, 'hitlCards' | 'toolCalls'>);
+    }).filter((i) => i.content || pendingHITLCards(i.hitlCards).length || (showToolCalls && (i.toolCalls?.length ?? 0) > 0));
+  }, [messages, contentRender, footerRender, onSendMessage, hitlSubmitting, onHITLSelect, hitlLocalSelections, showToolCalls]);
 
   return (
     <div className={styles.chatList}>
@@ -861,6 +1011,9 @@ export const AIChat: React.FC<AIChatProps> = ({
   const { t } = useTranslation('ai');
   const { t: tCommon } = useTranslation('common');
   const { styles } = useStyle();
+  const { siteConfig } = useSite();
+  const showToolCalls = siteConfig?.show_tool_calls ?? false;
+  showServerToolCalls = showToolCalls;
 
 
   const convertConversation = (conversation: API.AIChatSession) => {
@@ -1319,16 +1472,21 @@ export const AIChat: React.FC<AIChatProps> = ({
 
   const markResumeDecided = useCallback((target: HitlResumeTarget) => {
     target.streamStarted = true;
-    setMessage(target.messageId, (origin) => ({
-      message: {
-        ...origin.message,
-        hitlCards: origin.message.hitlCards?.map((card) => (
-          target.decisionIDs.includes(card.tool_call_id) && card.status === 'pending'
-            ? { ...card, status: 'decided' as const }
-            : card
-        )),
-      },
-    }));
+    setMessage(target.messageId, (origin) => {
+      const hitlCards = origin.message.hitlCards?.map((card) => (
+        target.decisionIDs.includes(card.tool_call_id) && card.status === 'pending'
+          ? { ...card, status: 'decided' as const }
+          : card
+      ));
+      const executed = showServerToolCalls ? executedApprovalToolCalls(hitlCards, target.decisionIDs) : [];
+      return {
+        message: {
+          ...origin.message,
+          hitlCards,
+          ...(executed.length ? { toolCalls: mergeDisplayToolCalls(origin.message.toolCalls, executed) } : {}),
+        },
+      };
+    });
     releaseAutoToolStash(target.conversationId);
     hitlResumeTargetRef.current = null;
     hitlResumeFlightRef.current = null;
@@ -1364,25 +1522,30 @@ export const AIChat: React.FC<AIChatProps> = ({
       target.reconciling = false;
       return;
     }
-    setMessage(target.messageId, (origin) => ({
-      message: {
-        ...origin.message,
-        hitlCards: origin.message.hitlCards?.map((card) => {
-          if (!target.decisionIDs.includes(card.tool_call_id) || card.status === 'abandoned') {
-            return card;
-          }
-          const server = serverCards?.get(card.tool_call_id);
-          if (server?.status === 'pending') {
-            return { ...server, status: 'pending' as const, selected_option_id: '' };
-          }
-          if (server) {
-            return server;
-          }
-          // Missing card or a failed refetch: do not offer approve again.
-          return { ...card, status: 'decided' as const };
-        }),
-      },
-    }));
+    setMessage(target.messageId, (origin) => {
+      const hitlCards = origin.message.hitlCards?.map((card) => {
+        if (!target.decisionIDs.includes(card.tool_call_id) || card.status === 'abandoned') {
+          return card;
+        }
+        const server = serverCards?.get(card.tool_call_id);
+        if (server?.status === 'pending') {
+          return { ...server, status: 'pending' as const, selected_option_id: '' };
+        }
+        if (server) {
+          return server;
+        }
+        // Missing card or a failed refetch: do not offer approve again.
+        return { ...card, status: 'decided' as const };
+      });
+      const executed = showServerToolCalls ? executedApprovalToolCalls(hitlCards, target.decisionIDs) : [];
+      return {
+        message: {
+          ...origin.message,
+          hitlCards,
+          ...(executed.length ? { toolCalls: mergeDisplayToolCalls(origin.message.toolCalls, executed) } : {}),
+        },
+      };
+    });
     finishHITLResume();
   }, [finishHITLResume, setMessage]);
   reconcileHITLResumeRef.current = (target) => {
@@ -1504,7 +1667,8 @@ export const AIChat: React.FC<AIChatProps> = ({
       let buffer: MessageInfo<ChatStreamMessage> = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
       const flushAssistant = () => {
         const pendingCards = pendingHITLCards(buffer.message.hitlCards);
-        if (buffer.message.content.length === 0 && !pendingCards.length) {
+        const toolCalls = buffer.message.toolCalls ?? [];
+        if (buffer.message.content.length === 0 && !pendingCards.length && toolCalls.length === 0) {
           return;
         }
         chatMessages.push({
@@ -1512,6 +1676,7 @@ export const AIChat: React.FC<AIChatProps> = ({
           message: {
             content: buffer.message.content,
             role: buffer.message.role,
+            ...(toolCalls.length ? { toolCalls } : {}),
             ...(pendingCards.length ? { hitlCards: pendingCards } : {}),
             ...(pendingCards.length && buffer.message.pendingClientToolCalls?.length
               ? { pendingClientToolCalls: buffer.message.pendingClientToolCalls }
@@ -1531,6 +1696,10 @@ export const AIChat: React.FC<AIChatProps> = ({
             buffer.id = item.id;
             {
               const cards = hitlCardsFromMetadata(item.metadata);
+              const calls = showServerToolCalls ? displayToolCallsFromHistory(item.tool_calls, cards) : [];
+              if (calls.length) {
+                buffer.message.toolCalls = mergeDisplayToolCalls(buffer.message.toolCalls, calls);
+              }
               if (cards?.length) {
                 buffer.message.hitlCards = [...(buffer.message.hitlCards ?? []), ...cards];
                 const autoCalls = pendingAutoClientToolCalls(item.tool_calls, cards);
@@ -1544,7 +1713,7 @@ export const AIChat: React.FC<AIChatProps> = ({
             }
             break;
           case 'user':
-            if (buffer.message.content.length > 0 || pendingHITLCards(buffer.message.hitlCards).length) {
+            if (buffer.message.content.length > 0 || pendingHITLCards(buffer.message.hitlCards).length || (buffer.message.toolCalls?.length ?? 0) > 0) {
               flushAssistant();
               buffer = { id: '', message: { content: '', role: 'assistant' }, status: 'success' };
             }
@@ -1867,6 +2036,7 @@ export const AIChat: React.FC<AIChatProps> = ({
               onSendMessage={onSubmit}
               hitlSubmitting={hitlSubmitting}
               onHITLSelect={handleHITLSelect}
+              showToolCalls={showToolCalls}
             />
             {chatSender}
           </div>

@@ -224,5 +224,12 @@ export default {
     hitlAbandoned: 'You continued without choosing.',
     hitlExecute: 'Execute',
     hitlDontExecute: "Don't execute",
+    copyMessage: 'Copy message',
+    copied: 'Copied',
+    showToolCalls: 'Show tool calls',
+    hideToolCalls: 'Hide tool calls',
+    toolRunning: 'Running',
+    toolDone: 'Done',
+    toolFailed: 'Failed',
   },
 };

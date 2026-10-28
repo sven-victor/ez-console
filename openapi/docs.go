@@ -7730,6 +7730,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "arguments",
+                "description",
                 "kind",
                 "options",
                 "selected_option_id",
@@ -7740,6 +7741,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "arguments": {
+                    "type": "string"
+                },
+                "description": {
                     "type": "string"
                 },
                 "kind": {
@@ -7868,6 +7872,7 @@ const docTemplate = `{
                 "index",
                 "start_time",
                 "status",
+                "title",
                 "type"
             ],
             "properties": {
@@ -7886,6 +7891,10 @@ const docTemplate = `{
                 },
                 "status": {
                     "$ref": "#/definitions/ai.ToolCallStatus"
+                },
+                "title": {
+                    "description": "Title is a display string rendered from the tool's title template or description.",
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/openai.ToolType"
@@ -9376,6 +9385,7 @@ const docTemplate = `{
                 "function",
                 "id",
                 "index",
+                "title",
                 "type"
             ],
             "properties": {
@@ -9387,6 +9397,9 @@ const docTemplate = `{
                 },
                 "index": {
                     "type": "integer"
+                },
+                "title": {
+                    "type": "string"
                 },
                 "type": {
                     "type": "string"
@@ -10928,7 +10941,8 @@ const docTemplate = `{
                 "home_page",
                 "logo",
                 "name",
-                "name_i18n"
+                "name_i18n",
+                "show_tool_calls"
             ],
             "properties": {
                 "default_organization_id": {
@@ -10957,6 +10971,9 @@ const docTemplate = `{
                     "additionalProperties": {
                         "type": "string"
                     }
+                },
+                "show_tool_calls": {
+                    "type": "boolean"
                 }
             }
         },
@@ -11916,7 +11933,8 @@ const docTemplate = `{
                 "menu",
                 "name",
                 "name_i18n",
-                "navigation"
+                "navigation",
+                "show_tool_calls"
             ],
             "properties": {
                 "attrs": {
@@ -11961,6 +11979,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/service.Navigation"
                     }
+                },
+                "show_tool_calls": {
+                    "type": "boolean"
                 }
             }
         },

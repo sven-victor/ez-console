@@ -199,5 +199,12 @@ export default {
     hitlAbandoned: 'Vous avez continué sans choisir.',
     hitlExecute: 'Exécuter',
     hitlDontExecute: 'Ne pas exécuter',
+    copyMessage: 'Copier le message',
+    copied: 'Copié',
+    showToolCalls: 'Afficher les appels d\'outils',
+    hideToolCalls: 'Masquer les appels d\'outils',
+    toolRunning: 'En cours',
+    toolDone: 'Terminé',
+    toolFailed: 'Échec',
   },
 };

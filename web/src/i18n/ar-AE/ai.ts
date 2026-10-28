@@ -199,5 +199,12 @@ export default {
     hitlAbandoned: 'تابعت دون اختيار.',
     hitlExecute: 'تنفيذ',
     hitlDontExecute: 'لا تنفذ',
+    copyMessage: 'نسخ الرسالة',
+    copied: 'تم النسخ',
+    showToolCalls: 'إظهار استدعاءات الأدوات',
+    hideToolCalls: 'إخفاء استدعاءات الأدوات',
+    toolRunning: 'قيد التشغيل',
+    toolDone: 'تم',
+    toolFailed: 'فشل',
   },
 };

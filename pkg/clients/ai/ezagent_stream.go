@@ -32,22 +32,27 @@ import (
 	"github.com/sven-victor/ez-agent/run"
 	"github.com/sven-victor/ez-agent/tool"
 	"github.com/sven-victor/ez-console/pkg/model"
+	"github.com/sven-victor/ez-console/pkg/toolset"
 )
 
 // ezAgentChatStream adapts agent.RunStream events to the console ChatStream SSE contract.
 type ezAgentChatStream struct {
-	parentCtx context.Context // request-scoped values; not canceled for persistence callbacks
-	ctx       context.Context
-	cancel    context.CancelFunc
-	events    <-chan event.Event
-	messageID string
-	pending   chan *ChatStreamEvent
-	errCh     chan error
-	closed    sync.Once
-	closeCh   chan struct{}
-	handoff   bool
-	trace     *agentTraceSink // shared with hooks; records terminal RunError
-	catalog   HITLCatalog
+	parentCtx     context.Context // request-scoped values; not canceled for persistence callbacks
+	ctx           context.Context
+	cancel        context.CancelFunc
+	events        <-chan event.Event
+	messageID     string
+	pending       chan *ChatStreamEvent
+	errCh         chan error
+	closed        sync.Once
+	closeCh       chan struct{}
+	handoff       bool
+	trace         *agentTraceSink // shared with hooks; records terminal RunError
+	catalog       HITLCatalog
+	toolSets      toolset.ToolSetsProvider
+	titles        DisplayTitleCatalog
+	titlesLoaded  bool
+	titlesRetried bool
 }
 
 func (s *ezAgentChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
@@ -110,6 +115,35 @@ func (s *ezAgentChatStream) Close() error {
 	return nil
 }
 
+// shouldDisplayToolCall reports whether a tool belongs in the transcript tool list.
+// Client tools and HITL cards keep their own events and are not duplicated here.
+func (s *ezAgentChatStream) shouldDisplayToolCall(name string) bool {
+	return ClassifyHITL(name, s.catalog) == HITLClassNone
+}
+
+func (s *ezAgentChatStream) loadDisplayTitles() DisplayTitleCatalog {
+	if s.toolSets == nil {
+		return nil
+	}
+	sets, err := s.toolSets(s.persistCtx())
+	if err != nil || len(sets) == 0 {
+		return nil
+	}
+	return BuildDisplayTitleCatalog(s.persistCtx(), sets)
+}
+
+func (s *ezAgentChatStream) displayTitle(name, arguments string) string {
+	if !s.titlesLoaded {
+		s.titles = s.loadDisplayTitles()
+		s.titlesLoaded = true
+	}
+	if !s.titles.Has(name) && !s.titlesRetried {
+		s.titlesRetried = true
+		s.titles = s.loadDisplayTitles()
+	}
+	return s.titles.Render(name, arguments)
+}
+
 func (s *ezAgentChatStream) persistCtx() context.Context {
 	base := s.parentCtx
 	if base == nil {
@@ -160,14 +194,19 @@ func (s *ezAgentChatStream) handleEvent(ev event.Event) error {
 	case event.ModelFinished:
 		return nil
 	case event.ToolStarted:
+		if !s.shouldDisplayToolCall(e.Call.Name) {
+			return nil
+		}
+		args := string(e.Call.Input)
 		tc := ToolCall{
 			ID:   e.Call.ID,
 			Type: "function",
 			Function: FunctionCall{
 				Name:      e.Call.Name,
-				Arguments: string(e.Call.Input),
+				Arguments: args,
 			},
 			Status: ToolCallStatusRunning,
+			Title:  s.displayTitle(e.Call.Name, args),
 		}
 		return s.emit(&ChatStreamEvent{
 			MessageID: s.messageID,
@@ -187,15 +226,20 @@ func (s *ezAgentChatStream) handleEvent(ev event.Event) error {
 		if !e.Result.OK {
 			status = ToolCallStatusFailed
 		}
+		if !s.shouldDisplayToolCall(e.Call.Name) {
+			return nil
+		}
+		args := string(e.Call.Input)
 		tc := ToolCall{
 			ID:   e.Call.ID,
 			Type: "function",
 			Function: FunctionCall{
 				Name:      e.Call.Name,
-				Arguments: string(e.Call.Input),
+				Arguments: args,
 			},
 			Status: status,
 			Result: resultText,
+			Title:  s.displayTitle(e.Call.Name, args),
 		}
 		return s.emit(&ChatStreamEvent{
 			MessageID: s.messageID,
@@ -424,6 +468,7 @@ func newEZAgentStream(ctx context.Context, provider aimodel.Provider, messages [
 		closeCh:   make(chan struct{}),
 		trace:     sink,
 		catalog:   opts.HITLCatalog,
+		toolSets:  opts.ToolSetsProvider,
 	}
 	go stream.pump()
 	return stream, nil

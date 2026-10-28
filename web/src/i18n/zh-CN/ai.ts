@@ -223,5 +223,12 @@ export default {
     hitlAbandoned: '你未选择，已继续对话。',
     hitlExecute: '执行',
     hitlDontExecute: '不执行',
+    copyMessage: '复制消息',
+    copied: '已复制',
+    showToolCalls: '显示工具调用',
+    hideToolCalls: '隐藏工具调用',
+    toolRunning: '运行中',
+    toolDone: '完成',
+    toolFailed: '失败',
   },
 };

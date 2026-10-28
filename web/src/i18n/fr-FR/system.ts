@@ -208,6 +208,9 @@ export default {
       enableSkillToolBinding: 'Lier les outils IA aux compétences',
       enableSkillToolBindingTooltip:
         'Si activé, le chat IA restreint les outils selon les liaisons par compétence lorsque des compétences sont dans le périmètre (toujours dans les permissions des rôles).',
+      showToolCalls: 'Afficher les appels d\'outils',
+      showToolCallsTooltip:
+        'Si activé, le chat IA affiche les appels d\'outils serveur sous chaque message de l\'assistant. Les outils client et les cartes de confirmation restent inchangés.',
       clearSiteCache: 'Vider le cache du site',
       clearSiteCacheConfirm:
         'Vider tous les caches applicatifs côté serveur ? Les sessions actives devront peut-être se reconnecter.',

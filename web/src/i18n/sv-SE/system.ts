@@ -208,6 +208,9 @@ export default {
       enableSkillToolBinding: 'Koppla AI-verktyg till färdigheter',
       enableSkillToolBindingTooltip:
         'När det är aktiverat begränsar AI-chatten verktyg enligt färdighetsbindningar (inom rollbehörigheter).',
+      showToolCalls: 'Visa verktygsanrop',
+      showToolCallsTooltip:
+        'När det är aktiverat visar AI-chatten serververktygsanrop under varje assistentmeddelande. Klientverktyg och bekräftelsekort ändras inte.',
       clearSiteCache: 'Töm webbplatsens cache',
       clearSiteCacheConfirm:
         'Tömma alla programcacher på servern? Aktiva sessioner kan behöva logga in igen.',

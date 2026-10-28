@@ -211,6 +211,9 @@ export default {
       enableSkillToolBinding: '将 AI 工具与技能关联',
       enableSkillToolBindingTooltip:
         '启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。',
+      showToolCalls: '显示工具调用',
+      showToolCallsTooltip:
+        '开启后，AI 聊天会在助手消息下方显示服务端工具调用。客户端工具和人工确认卡片不受影响。',
       clearSiteCache: '清理站点缓存',
       clearSiteCacheConfirm:
         '确定清理服务端所有应用缓存吗？已登录用户可能需要重新登录。',

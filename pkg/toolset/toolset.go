@@ -40,6 +40,33 @@ type ToolSet interface {
 	ListTools(ctx context.Context) ([]openai.Tool, error)
 }
 
+// DisplayTitleLister supplies optional Go text/template strings keyed by logical tool name.
+// Templates are rendered for the chat UI only and are not sent to the model.
+// A missing name or an empty template means the tool description is used instead.
+type DisplayTitleLister interface {
+	DisplayTitles() map[string]string
+}
+
+// DisplayTitlesFrom returns logical display-title templates from set.
+// BindingAwareToolSet is unwrapped. Other wrappers must implement DisplayTitleLister and forward.
+func DisplayTitlesFrom(set ToolSet) map[string]string {
+	for set != nil {
+		if lister, ok := set.(DisplayTitleLister); ok {
+			titles := lister.DisplayTitles()
+			if titles == nil {
+				return map[string]string{}
+			}
+			return titles
+		}
+		wrapped, ok := set.(*BindingAwareToolSet)
+		if !ok {
+			return nil
+		}
+		set = wrapped.Inner
+	}
+	return nil
+}
+
 type ToolSetFactory interface {
 	GetConfigFields() []util.ConfigField
 	CreateToolSet(configJSON string) (ToolSet, error)
@@ -244,6 +271,20 @@ func (f *allowedToolNamesToolSet) Call(ctx context.Context, name string, paramet
 		}
 	}
 	return f.inner.Call(ctx, name, parameters)
+}
+
+func (f *allowedToolNamesToolSet) DisplayTitles() map[string]string {
+	titles := DisplayTitlesFrom(f.inner)
+	if _, all := f.allowed["*"]; all {
+		return titles
+	}
+	out := make(map[string]string, len(titles))
+	for name, tmpl := range titles {
+		if _, ok := f.allowed[name]; ok {
+			out[name] = tmpl
+		}
+	}
+	return out
 }
 
 func (f *allowedToolNamesToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {

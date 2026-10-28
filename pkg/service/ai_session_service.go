@@ -176,8 +176,11 @@ func (s *dbSessionService) GetChatMessages(ctx context.Context, organizationID, 
 
 // GetSimpleChatMessages returns display history ordered by message_time.
 // Summarized rows are included so a later summary cannot hide a pending card.
-// A row is kept when it is user or assistant with no tool calls, or when it
-// stores metadata.hitl_cards. Empty assistant text with no cards is dropped.
+// A row is kept when it is a user message, an assistant message with text,
+// an assistant message that called a server tool, or when it stores
+// metadata.hitl_cards. Client-only tool rows and role=tool results stay out
+// of the transcript. Callers that serve the chat UI must pass the result
+// through omitHiddenServerToolCalls when system_show_tool_calls is off.
 // There is no row cap: a new pending card past the old limit of 100 must still load.
 func (s *dbSessionService) GetSimpleChatMessages(ctx context.Context, organizationID, userID, sessionID string) ([]model.AIChatMessage, error) {
 	var messages []model.AIChatMessage
@@ -200,14 +203,86 @@ func includeInSimpleChatHistory(msg model.AIChatMessage) bool {
 	if len(HITLCardsFromMetadata(msg.Metadata)) > 0 {
 		return true
 	}
-	simpleRole := msg.Role == model.AIChatMessageRoleUser || msg.Role == model.AIChatMessageRoleAssistant
-	if !simpleRole || len(msg.ToolCalls) != 0 {
+	if msg.Role == model.AIChatMessageRoleUser {
+		return len(msg.ToolCalls) == 0
+	}
+	if msg.Role != model.AIChatMessageRoleAssistant {
 		return false
 	}
-	if msg.Role == model.AIChatMessageRoleAssistant && msg.Content == "" {
-		return false
+	if msg.Content != "" {
+		return true
 	}
-	return true
+	return hasDisplayServerToolCall(msg)
+}
+
+// hasDisplayServerToolCall reports a server-side tool call that is not a client
+// tool and not the subject of an HITL card on this row.
+func hasDisplayServerToolCall(msg model.AIChatMessage) bool {
+	cardIDs := make(map[string]struct{})
+	for _, card := range HITLCardsFromMetadata(msg.Metadata) {
+		if card.ToolCallID != "" {
+			cardIDs[card.ToolCallID] = struct{}{}
+		}
+	}
+	for _, tc := range msg.ToolCalls {
+		if tc.ID != "" {
+			if _, onCard := cardIDs[tc.ID]; onCard {
+				continue
+			}
+		}
+		if ai.ClassifyHITL(tc.Function.Name, nil) != ai.HITLClassNone {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+// omitHiddenServerToolCalls removes server tool calls from display history.
+// Client tools and calls named on HITL cards are kept. An assistant row that
+// then has no text, no cards, and no remaining calls is dropped.
+func omitHiddenServerToolCalls(messages []model.AIChatMessage) []model.AIChatMessage {
+	out := make([]model.AIChatMessage, 0, len(messages))
+	for _, msg := range messages {
+		msg.ToolCalls = clientAndHITLToolCalls(msg)
+		if msg.Role == model.AIChatMessageRoleAssistant &&
+			msg.Content == "" &&
+			len(HITLCardsFromMetadata(msg.Metadata)) == 0 &&
+			len(msg.ToolCalls) == 0 {
+			continue
+		}
+		out = append(out, msg)
+	}
+	return out
+}
+
+// clientAndHITLToolCalls keeps browser tools and calls that belong to an HITL card.
+func clientAndHITLToolCalls(msg model.AIChatMessage) model.AIToolCalls {
+	if len(msg.ToolCalls) == 0 {
+		return msg.ToolCalls
+	}
+	cardIDs := make(map[string]struct{})
+	for _, card := range HITLCardsFromMetadata(msg.Metadata) {
+		if card.ToolCallID != "" {
+			cardIDs[card.ToolCallID] = struct{}{}
+		}
+	}
+	kept := make(model.AIToolCalls, 0, len(msg.ToolCalls))
+	for _, tc := range msg.ToolCalls {
+		if tc.ID != "" {
+			if _, onCard := cardIDs[tc.ID]; onCard {
+				kept = append(kept, tc)
+				continue
+			}
+		}
+		if ai.ClassifyHITL(tc.Function.Name, nil) != ai.HITLClassNone {
+			kept = append(kept, tc)
+		}
+	}
+	if len(kept) == 0 {
+		return nil
+	}
+	return kept
 }
 
 const hitlCardsMetadataKey = "hitl_cards"

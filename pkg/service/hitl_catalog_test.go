@@ -40,3 +40,20 @@ func TestBuildHITLCatalogReachesMCPThroughChatWrappers(t *testing.T) {
 		t.Fatal("ui_choose missing")
 	}
 }
+
+func TestDisplayTitlesForwardThroughChatWrappers(t *testing.T) {
+	utils := &toolset.UtilsToolSet{}
+	disabled := newToolSetDisabledToolsFilter(utils, map[string]struct{}{"now": {}})
+	filtered := newFilteredToolSet(disabled, map[string]struct{}{"sleep": {}})
+	wrapped := toolset.NewBindingAwareToolSet(filtered, "res", "utils")
+	cat := ai.BuildDisplayTitleCatalog(context.Background(), toolset.ToolSets{"utils3": wrapped})
+	if got := cat.Render("utils3_sleep", `{"seconds":2}`); got != "Sleep 2 seconds" {
+		t.Fatalf("sleep: %q", got)
+	}
+	if cat.Has("utils3_now") {
+		t.Fatal("disabled tool should be omitted")
+	}
+	if cat.Has("utils3_random_string") {
+		t.Fatal("filtered tool should be omitted")
+	}
+}

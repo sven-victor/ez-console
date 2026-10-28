@@ -208,6 +208,9 @@ export default {
       enableSkillToolBinding: 'Vincular herramientas de IA a habilidades',
       enableSkillToolBindingTooltip:
         'Si está habilitado, el chat de IA restringe las herramientas según los enlaces por habilidad (aún dentro de los permisos de rol).',
+      showToolCalls: 'Mostrar llamadas de herramientas',
+      showToolCallsTooltip:
+        'Si está habilitado, el chat de IA muestra las llamadas de herramientas del servidor bajo cada mensaje del asistente. Las herramientas del cliente y las tarjetas de confirmación no cambian.',
       clearSiteCache: 'Vaciar caché del sitio',
       clearSiteCacheConfirm:
         '¿Vaciar todas las cachés de aplicación del servidor? Las sesiones activas puede que deban iniciar sesión de nuevo.',

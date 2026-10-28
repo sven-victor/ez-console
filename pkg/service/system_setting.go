@@ -303,6 +303,11 @@ var defaultSettings = []DefaultSetting{
 		Comment: "When enabled, AI chat restricts tools by skill bindings when skills are in scope",
 	},
 	{
+		Key:     model.SettingSystemShowToolCalls,
+		Value:   "false",
+		Comment: "When enabled, AI chat shows server tool calls under assistant messages",
+	},
+	{
 		Key:     model.SettingRateLimitEnabled,
 		Value:   "true",
 		Comment: "Runtime switch for HTTP rate limiting (false disables without restart)",
@@ -363,6 +368,7 @@ func (s *settingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 	disableLocalUserLogin, _ := strconv.ParseBool(settings[string(model.SettingSystemDisableLocalUserLogin)])
 	enableMultiOrg, _ := strconv.ParseBool(settings[string(model.SettingSystemEnableMultiOrg)])
 	enableSkillToolBinding, _ := strconv.ParseBool(settings[string(model.SettingSystemEnableSkillToolBinding)])
+	showToolCalls, _ := strconv.ParseBool(settings[string(model.SettingSystemShowToolCalls)])
 	defaultOrganizationID := settings[string(model.SettingSystemDefaultOrganizationID)]
 	if defaultOrganizationID == "" {
 		defaultOrganizationID = model.DefaultOrganizationID
@@ -377,6 +383,7 @@ func (s *settingService) GetSystemSettings(ctx context.Context) (*model.SystemSe
 		EnableMultiOrg:         enableMultiOrg,
 		DefaultOrganizationID:  defaultOrganizationID,
 		EnableSkillToolBinding: enableSkillToolBinding,
+		ShowToolCalls:          showToolCalls,
 	}
 	if err := json.Unmarshal([]byte(settings[string(model.SettingSystemNameI18n)]), &baseSettings.NameI18n); err != nil {
 		baseSettings.NameI18n = map[string]string{}
@@ -440,10 +447,11 @@ func (s *settingService) UpdateSystemSettings(ctx context.Context, settings mode
 		string(model.SettingSystemLogo):     settings.Logo,
 		string(model.SettingSystemHomePage): settings.HomePage,
 
-		string(model.SettingSystemDisableLocalUserLogin):   strconv.FormatBool(settings.DisableLocalUserLogin),
-		string(model.SettingSystemEnableMultiOrg):          strconv.FormatBool(settings.EnableMultiOrg),
-		string(model.SettingSystemDefaultOrganizationID):   defaultOrgID,
-		string(model.SettingSystemEnableSkillToolBinding):  strconv.FormatBool(settings.EnableSkillToolBinding),
+		string(model.SettingSystemDisableLocalUserLogin):  strconv.FormatBool(settings.DisableLocalUserLogin),
+		string(model.SettingSystemEnableMultiOrg):         strconv.FormatBool(settings.EnableMultiOrg),
+		string(model.SettingSystemDefaultOrganizationID):  defaultOrgID,
+		string(model.SettingSystemEnableSkillToolBinding): strconv.FormatBool(settings.EnableSkillToolBinding),
+		string(model.SettingSystemShowToolCalls):          strconv.FormatBool(settings.ShowToolCalls),
 	}
 	return s.UpdateSettings(ctx, settingsMap)
 }

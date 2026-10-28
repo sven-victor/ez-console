@@ -73,8 +73,51 @@ func (s *aiChatService) GetChatMessages(ctx context.Context, organizationID stri
 }
 
 // GetSimpleChatMessages implements AIChatService.
+// Server tool calls are omitted unless system_show_tool_calls is on.
+// Client tools and HITL calls stay so the browser can still resume them.
 func (s *aiChatService) GetSimpleChatMessages(ctx context.Context, organizationID string, userID string, sessionID string) ([]model.AIChatMessage, error) {
-	return s.sessionService.GetSimpleChatMessages(ctx, organizationID, userID, sessionID)
+	messages, err := s.sessionService.GetSimpleChatMessages(ctx, organizationID, userID, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	showToolCalls, _ := s.baseService.GetBoolSetting(ctx, model.SettingSystemShowToolCalls, false)
+	if !showToolCalls {
+		return omitHiddenServerToolCalls(messages), nil
+	}
+	return s.withDisplayTitles(ctx, organizationID, messages), nil
+}
+
+// withDisplayTitles fills response-only titles from the current tool definitions.
+// A toolset load failure leaves titles empty so history still loads.
+func (s *aiChatService) withDisplayTitles(ctx context.Context, organizationID string, messages []model.AIChatMessage) []model.AIChatMessage {
+	sets, err := s.baseService.GetAuthorizedToolSets(ctx, organizationID)
+	if err != nil || len(sets) == 0 {
+		return messages
+	}
+	catalog := ai.BuildDisplayTitleCatalog(ctx, sets)
+	if len(catalog) == 0 {
+		return messages
+	}
+	for i := range messages {
+		if len(messages[i].ToolCalls) == 0 {
+			continue
+		}
+		calls := make(model.AIToolCalls, len(messages[i].ToolCalls))
+		copy(calls, messages[i].ToolCalls)
+		changed := false
+		for j := range calls {
+			title := catalog.Render(calls[j].Function.Name, calls[j].Function.Arguments)
+			if title == "" {
+				continue
+			}
+			calls[j].Title = title
+			changed = true
+		}
+		if changed {
+			messages[i].ToolCalls = calls
+		}
+	}
+	return messages
 }
 
 // SaveHITLCards implements AIChatService.
@@ -757,6 +800,23 @@ func (f *filteredToolSet) Call(ctx context.Context, name string, parameters stri
 
 func (f *filteredToolSet) ApprovalToolNames() []string {
 	return approvalToolNames(f.base)
+}
+
+func (f *filteredToolSet) DisplayTitles() map[string]string {
+	titles := toolset.DisplayTitlesFrom(f.base)
+	if len(f.allowed) == 0 {
+		return titles
+	}
+	if _, all := f.allowed["*"]; all {
+		return titles
+	}
+	out := make(map[string]string, len(titles))
+	for name, tmpl := range titles {
+		if _, ok := f.allowed[name]; ok {
+			out[name] = tmpl
+		}
+	}
+	return out
 }
 
 func (f *filteredToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {

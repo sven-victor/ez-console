@@ -70,6 +70,16 @@ func (t *UtilsToolSet) Call(ctx context.Context, name string, parameters string)
 	return "", fmt.Errorf("tool %s not found", name)
 }
 
+// DisplayTitles implements DisplayTitleLister.
+// Templates use the model's call arguments and are not part of the tool schema.
+func (t *UtilsToolSet) DisplayTitles() map[string]string {
+	return map[string]string{
+		"now":           "Current time",
+		"sleep":         "Sleep {{.seconds}} seconds",
+		"random_string": "Random string ({{.string_length}})",
+	}
+}
+
 // ListTools implements ToolSet.
 func (t *UtilsToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 	return []openai.Tool{{

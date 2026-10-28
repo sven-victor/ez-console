@@ -75,6 +75,8 @@ definitions:
     properties:
       arguments:
         type: string
+      description:
+        type: string
       kind:
         $ref: '#/definitions/ai.HITLCardKind'
       options:
@@ -93,6 +95,7 @@ definitions:
         type: string
     required:
     - arguments
+    - description
     - kind
     - options
     - selected_option_id
@@ -178,6 +181,10 @@ definitions:
         type: string
       status:
         $ref: '#/definitions/ai.ToolCallStatus'
+      title:
+        description: Title is a display string rendered from the tool's title template
+          or description.
+        type: string
       type:
         $ref: '#/definitions/openai.ToolType'
     required:
@@ -186,6 +193,7 @@ definitions:
     - index
     - start_time
     - status
+    - title
     - type
     type: object
   ai.ToolCallStatus:
@@ -1244,12 +1252,15 @@ definitions:
         type: string
       index:
         type: integer
+      title:
+        type: string
       type:
         type: string
     required:
     - function
     - id
     - index
+    - title
     - type
     type: object
   model.AITraceEvent:
@@ -2393,6 +2404,8 @@ definitions:
         additionalProperties:
           type: string
         type: object
+      show_tool_calls:
+        type: boolean
     required:
     - default_organization_id
     - disable_local_user_login
@@ -2402,6 +2415,7 @@ definitions:
     - logo
     - name
     - name_i18n
+    - show_tool_calls
     type: object
   model.Task:
     properties:
@@ -3114,6 +3128,8 @@ definitions:
         items:
           $ref: '#/definitions/service.Navigation'
         type: array
+      show_tool_calls:
+        type: boolean
     required:
     - attrs
     - default_organization_id
@@ -3126,6 +3142,7 @@ definitions:
     - name
     - name_i18n
     - navigation
+    - show_tool_calls
     type: object
   service.SkillFilePreview:
     properties:

@@ -143,6 +143,7 @@ export interface AIToolCall {
   function: AIFunctionCall;
   id: string;
   index: number;
+  title: string;
   type: string;
 }
 
@@ -772,6 +773,7 @@ export interface HealthResult {
 
 export interface HITLCard {
   arguments: string;
+  description: string;
   kind: HITLCardKind;
   options: HITLOption[];
   selected_option_id: string;
@@ -2230,6 +2232,7 @@ export interface SiteConfig {
   name: string;
   name_i18n: Record<string, any>;
   navigation: Navigation[];
+  show_tool_calls: boolean;
 }
 
 export interface Skill {
@@ -2359,6 +2362,7 @@ export interface SystemSettings {
   logo: string;
   name: string;
   name_i18n: Record<string, any>;
+  show_tool_calls: boolean;
 }
 
 export interface Task {
@@ -2475,6 +2479,8 @@ export interface ToolCall {
   index: number;
   start_time: string;
   status: ToolCallStatus;
+  /** Title is a display string rendered from the tool's title template or description. */
+  title: string;
   type: ToolType;
 }
 

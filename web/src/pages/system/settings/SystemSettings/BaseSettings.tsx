@@ -182,6 +182,17 @@ const BaseSettingsForm: React.FC = () => {
       >
         <Switch />
       </Form.Item>
+      <Form.Item
+        label={t('settings.base.showToolCalls', { defaultValue: 'Show tool calls' })}
+        name="show_tool_calls"
+        valuePropName="checked"
+        tooltip={t('settings.base.showToolCallsTooltip', {
+          defaultValue:
+            'When enabled, AI chat shows server tool calls under each assistant message. Client tools and confirmation cards are unchanged.',
+        })}
+      >
+        <Switch />
+      </Form.Item>
 
       {/* Submit Button */}
       <Form.Item>

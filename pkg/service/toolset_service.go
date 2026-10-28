@@ -669,6 +669,21 @@ func (t *toolSetDisabledToolsFilter) ApprovalToolNames() []string {
 	return approvalToolNames(t.inner)
 }
 
+func (t *toolSetDisabledToolsFilter) DisplayTitles() map[string]string {
+	titles := toolset.DisplayTitlesFrom(t.inner)
+	if len(titles) == 0 || len(t.disabled) == 0 {
+		return titles
+	}
+	out := make(map[string]string, len(titles))
+	for name, tmpl := range titles {
+		if _, off := t.disabled[name]; off {
+			continue
+		}
+		out[name] = tmpl
+	}
+	return out
+}
+
 func (t *toolSetDisabledToolsFilter) ListTools(ctx context.Context) ([]openai.Tool, error) {
 	tools, err := t.inner.ListTools(ctx)
 	if err != nil {

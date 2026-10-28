@@ -518,6 +518,9 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Content-Type", "text/event-stream")
 	ctx.Writer.Header().Set("Cache-Control", "no-cache")
 	ctx.Writer.Header().Set("Connection", "keep-alive")
+	// Server tool_call events follow system_show_tool_calls. Client-tool and
+	// HITL events use their own types and are always forwarded.
+	showToolCalls, _ := c.service.GetBoolSetting(ctx, model.SettingSystemShowToolCalls, false)
 	ctx.Stream(func(w io.Writer) bool {
 		event, err := stream.Recv(ctx)
 		if err != nil {
@@ -535,7 +538,7 @@ func (c *AIChatController) StreamChat(ctx *gin.Context) {
 			})
 			return false
 		}
-		if event.EventType == ai.EventTypeToolCall {
+		if event.EventType == ai.EventTypeToolCall && !showToolCalls {
 			return true
 		}
 		if event.EventType == ai.EventTypeHITLPending || event.EventType == ai.EventTypeClientToolPending {
