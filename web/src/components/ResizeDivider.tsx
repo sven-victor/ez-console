@@ -15,6 +15,8 @@
  */
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { createStyles } from 'antd-style';
+import classNames from 'classnames';
 
 interface ResizeDividerProps {
   onResize: (newWidth: number) => void;
@@ -22,11 +24,57 @@ interface ResizeDividerProps {
   maxWidth?: number;
 }
 
+const useStyles = createStyles(({ token, css }) => ({
+  root: css`
+    width: 8px;
+    align-self: stretch;
+    cursor: col-resize;
+    position: relative;
+    flex-shrink: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: ${token.colorBorder};
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: ${token.colorFill};
+    }
+  `,
+  dragging: css`
+    background-color: ${token.colorPrimary};
+    transition: none;
+
+    &:hover {
+      background-color: ${token.colorPrimary};
+    }
+  `,
+  grip: css`
+    width: 3px;
+    height: 40px;
+    border-radius: 2px;
+    background-color: ${token.colorTextQuaternary};
+    opacity: 0.85;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    pointer-events: none;
+  `,
+  gripHover: css`
+    background-color: ${token.colorBgContainer};
+    opacity: 1;
+  `,
+  gripDragging: css`
+    background-color: ${token.colorTextLightSolid};
+    opacity: 1;
+  `,
+}));
+
 const ResizeDivider: React.FC<ResizeDividerProps> = ({
   onResize,
   minWidth = 300,
   maxWidth = window.innerWidth * 0.5,
 }) => {
+  const { styles } = useStyles();
   const [isDragging, setIsDragging] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 
@@ -71,35 +119,14 @@ const ResizeDivider: React.FC<ResizeDividerProps> = ({
       onMouseDown={handleMouseDown}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
-      style={{
-        width: '8px',
-        height: '100vh',
-        cursor: 'col-resize',
-        position: 'relative',
-        flexShrink: 0,
-        transition: isDragging ? 'none' : 'background-color 0.2s ease',
-        backgroundColor: isDragging
-          ? '#1890ff'
-          : isHovering
-            ? '#bfbfbf'
-            : '#e8e8e8',
-        zIndex: 100,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
+      className={classNames(styles.root, isDragging && styles.dragging)}
     >
-      {/* Visual indicator line */}
       <div
-        style={{
-          width: '3px',
-          height: '40px',
-          borderRadius: '2px',
-          backgroundColor: isDragging || isHovering ? '#fff' : '#999',
-          opacity: isDragging || isHovering ? 1 : 0.5,
-          transition: 'opacity 0.2s ease',
-          pointerEvents: 'none',
-        }}
+        className={classNames(
+          styles.grip,
+          isHovering && styles.gripHover,
+          isDragging && styles.gripDragging,
+        )}
       />
     </div>
   );

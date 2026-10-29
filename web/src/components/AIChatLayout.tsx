@@ -26,11 +26,20 @@ import { AIChatFloatButton } from './AIChatFloatButton';
 const AIChatDialog = lazy(() => import('./AIChat'));
 
 
-const useStyle = createStyles(({ token, css }) => {
+const useStyle = createStyles(({ token, css, appearance }) => {
+  const isDark = appearance === 'dark';
+  const floatShadow = isDark
+    ? '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08)'
+    : '0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08)';
+  const floatShadowHover = isDark
+    ? '0 16px 48px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.12)'
+    : '0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1)';
+
   return {
     siderLayout: css`
       position: relative;
       height: 100vh;
+      background-color: ${token.colorBgContainer};
     `,
     siderLayoutContent: css`
       height: 100%;
@@ -44,15 +53,15 @@ const useStyle = createStyles(({ token, css }) => {
       top: 16px;
       height: calc(100vh - 32px);
       border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+      box-shadow: ${floatShadow};
       z-index: 1000;
       overflow: hidden;
-      backdrop-filter: blur(8px);
-      border: 1px solid ${token.colorBorderSecondary};
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      
+      background-color: ${token.colorBgElevated};
+      border: 1px solid ${isDark ? token.colorBorder : token.colorBorderSecondary};
+      transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
       &:hover {
-        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: ${floatShadowHover};
       }
     `,
   };
