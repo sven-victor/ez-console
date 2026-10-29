@@ -32,6 +32,7 @@ import { isNumber } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
 import localizer from 'ajv-i18n';
 import SelectWidget from './SelectWidget';
+import TreeSelectWidget from './TreeSelectWidget';
 
 const { FieldTemplate: FieldTemplateAntd } = Templates
 
@@ -665,6 +666,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
         remoteSelect: RemoteSelectWidget,
         toolsetsSelect: ToolsetsSelectWidget,
         select: SelectWidget,
+        treeSelect: TreeSelectWidget,
       }}
       templates={{
         FieldTemplate: I18nFieldTemplate(t),

@@ -1819,7 +1819,7 @@ Event types include: `llm_request`, `llm_response`, `token_usage`, `tool_call`, 
 
 ### Overview {#json-schema-form-overview}
 
-The frontend uses a JSON Schema–driven approach to render configuration forms for AI models and toolsets. Instead of hand-coding form fields for each provider/toolset type, a single `JsonSchemaConfigForm` component (`web/src/components/JsonSchemaConfigForm.tsx`) interprets the JSON Schema returned by the backend and dynamically generates the form.
+The frontend uses a JSON Schema–driven approach to render configuration forms for AI models and toolsets. Instead of hand-coding form fields for each provider/toolset type, a single `JsonSchemaConfigForm` component (`web/src/components/JsonSchemaConfigForm/index.tsx`) interprets the JSON Schema returned by the backend and dynamically generates the form.
 
 This is built on top of [React JSON Schema Form (RJSF)](https://rjsf-team.github.io/react-jsonschema-form/) with the Ant Design theme (`@rjsf/antd`) and the AJV8 validator (`@rjsf/validator-ajv8`).
 
@@ -1853,7 +1853,7 @@ jsonschema_extras:"x-ui-placeholder=..."    → "x-ui-placeholder": "..." → "u
 jsonschema_extras:"x-ui-field=objectEditor" → "x-ui-field": "objectEditor" → "ui:field": "objectEditor"
 ```
 
-The `buildUiSchema()` function (`web/src/components/JsonSchemaConfigForm.tsx`) walks the entire schema tree (including `$ref` definitions, `dependencies`, `oneOf`, `anyOf`, `allOf`) and extracts all `x-ui-*` keys:
+The `buildUiSchema()` function (`web/src/components/JsonSchemaConfigForm/index.tsx`) walks the entire schema tree (including `$ref` definitions, `dependencies`, `oneOf`, `anyOf`, `allOf`) and extracts all `x-ui-*` keys:
 
 ```typescript
 function walk(node: any): any {
@@ -1874,7 +1874,7 @@ function walk(node: any): any {
 
 | Extension | Mapped to | Effect |
 |-----------|-----------|--------|
-| `x-ui-widget` | `ui:widget` | Override the default widget (e.g. `textarea`, `hidden`) |
+| `x-ui-widget` | `ui:widget` | Override the default widget (e.g. `textarea`, `hidden`, `treeSelect`) |
 | `x-ui-field` | `ui:field` | Override the default field renderer (e.g. `objectEditor` for JSON editor) |
 | `x-ui-placeholder` | `ui:placeholder` | Input placeholder text |
 | `x-ui-col-xs` | `ui:col-xs` | Column span in grid layout (Ant Design grid system, out of 24) |
@@ -2076,6 +2076,78 @@ The same `DataSource` fields work on a legacy single select:
 #### ToolsetsSelect (`ui:widget = "toolsetsSelect"`)
 
 `ToolsetsSelect` is `RemoteSelect` with `x-data-source.type` forced to `"toolsets"`. Filtering, search, paging, and multi-select behave as above. `GET /api/system/toolsets` accepts `type` (toolset type) and `search` (keyword). Set `filter` to `{"type": "utils"}` to list only the utils toolset, and set `search_key` to `"search"`.
+
+#### TreeSelect (`ui:widget = "treeSelect"`)
+
+A tree dropdown whose options are embedded in the field schema. The widget does not fetch options. `x-tree-options` supplies the tree, and `enum` lists every selectable value so JSON Schema validation still applies. A disabled node stays in the tree and is omitted from `enum`.
+
+A string field stores one leaf value. A `[]string` field with `uniqueItems=true` stores leaf values. A parent stands for its leaves: checking Platform stores `["api", "worker"]`, and `platform` itself is not written. `enum` lists only those leaves, so a parent value does not pass validation. Labels and paths are not stored.
+
+```json
+{
+  "type": "string",
+  "title": "Service node",
+  "enum": ["api", "worker", "postgres", "cache"],
+  "x-ui-widget": "treeSelect",
+  "x-tree-options": [
+    {
+      "value": "platform",
+      "label": "Platform",
+      "children": [
+        { "value": "api", "label": "API" },
+        { "value": "worker", "label": "Worker" }
+      ]
+    },
+    {
+      "value": "data",
+      "label": "Data",
+      "disabled": true,
+      "children": [
+        { "value": "postgres", "label": "Postgres" },
+        { "value": "cache", "label": "Cache" }
+      ]
+    }
+  ]
+}
+```
+
+Selecting API stores `"api"`. Checking Platform stores `["api", "worker"]`. Data cannot be selected. A multi-select with Platform and Postgres checked stores `["api", "worker", "postgres"]`. A single select can only choose a leaf, so Platform is disabled there. Clearing a single select removes the value. Clearing a multi-select stores `[]`.
+
+Struct tags cannot express a nested tree. Declare `x-ui-widget=treeSelect` on the field, then attach `x-tree-options` and the matching `enum` while building the schema. For an array field, put `enum` on `items` and put `x-tree-options` on the array property:
+
+```go
+ServiceNode string `json:"service_node,omitempty" jsonschema:"title=Service node" jsonschema_extras:"x-ui-widget=treeSelect"`
+
+ServiceNodes []string `json:"service_nodes,omitempty" jsonschema:"uniqueItems=true,title=Service nodes" jsonschema_extras:"x-ui-widget=treeSelect"`
+```
+
+```go
+prop.Extras["x-ui-widget"] = "treeSelect"
+prop.Extras["x-tree-options"] = []map[string]any{
+    {
+        "value": "platform",
+        "label": "Platform",
+        "children": []map[string]any{
+            {"value": "api", "label": "API"},
+            {"value": "worker", "label": "Worker"},
+        },
+    },
+    {
+        "value":    "data",
+        "label":    "Data",
+        "disabled": true,
+        "children": []map[string]any{
+            {"value": "postgres", "label": "Postgres"},
+            {"value": "cache", "label": "Cache"},
+        },
+    },
+}
+// String field. Parents are omitted because they are not stored values.
+prop.Enum = []any{"api", "worker", "postgres", "cache"}
+// []string field: set Items.Enum to the same list instead of prop.Enum.
+```
+
+The dropdown filters locally on the node label. The local complex toolset fixture demonstrates both fields as `service_node` and `service_nodes`.
 
 ### Using JsonSchemaConfigForm in Pages
 
