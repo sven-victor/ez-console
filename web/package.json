@@ -48,7 +48,8 @@
     "react-infinite-scroll-component": "^6.1.0",
     "react-query": ">=3.39.3",
     "react-quill-new": "^3.8.3",
-    "react-router-dom": ">=7.15.1"
+    "react-router-dom": ">=7.15.1",
+    "react-syntax-highlighter": ">=16.1.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
@@ -58,6 +59,7 @@
     "@types/node": "^20.19.43",
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "@umijs/openapi": "^1.14.1",
     "@vitejs/plugin-react": "^4.7.0",
     "eslint": "^9.39.5",

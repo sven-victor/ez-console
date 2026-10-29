@@ -51,6 +51,7 @@ import '@ant-design/x-markdown/themes/dark.css';
 import type { BubbleItemType, Info } from '@ant-design/x/es/bubble/interface';
 import { HITLCard } from '@/components/HITLCard';
 import { ChatMessageActions, type DisplayToolCall } from '@/components/ChatMessageActions';
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const useStyle = createStyles(({ token, css }) => {
   return {
@@ -734,14 +735,22 @@ const providerFactory = (conversationKey: string) => {
 const Code: React.FC<ComponentProps> = (props) => {
   const { className, children } = props;
   const lang = className?.match(/language-(\w+)/)?.[1] || '';
-
+  const { isDarkMode } = useThemeMode();
+  const style = isDarkMode ? oneDark : oneLight;
   if (typeof children !== 'string') return null;
   if (lang === 'mermaid') {
     return <Mermaid>{children}</Mermaid>;
   }
-  return <code className="ant-highlightCode-code">
-    <CodeHighlighter lang={lang}>{children}</CodeHighlighter>
-  </code>;
+  return <CodeHighlighter highlightProps={{
+    style: {
+      ...style,
+      'pre[class*="language-"]': {
+        ...style['pre[class*="language-"]'],
+        margin: 0,
+        borderRadius: 0
+      },
+    }
+  }} lang={lang}>{children}</CodeHighlighter>;
 };
 
 
