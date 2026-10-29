@@ -519,7 +519,6 @@ func (s *dbSessionStore) ReplaceAll(ctx context.Context, id string, msgs []messa
 			} else {
 				if err := tx.Model(&existing).Updates(map[string]interface{}{
 					"content":      m.Content,
-					"role":         m.Role,
 					"tool_calls":   m.ToolCalls,
 					"tool_call_id": m.ToolCallID,
 					"status":       m.Status,
