@@ -22,11 +22,11 @@ import "./forbidden.js";
 import "./not_found.js";
 import "./client.js";
 import "i18next";
-const Tt = i(() => import("./dashboard.js")), Ot = i(() => import("./login.js")), Dt = i(() => import("./activate.js")), Rt = i(() => import("./profile.js")), Bt = i(() => import("./inbox_list.js")), oe = i(() => import("./not_found.js")), Et = i(() => import("./forbidden.js")), $t = i(() => import("./users.js").then((n) => n.U)), Ft = i(() => import("./users.js").then((n) => n.a)), re = i(() => import("./users.js").then((n) => n.b)), Ut = i(() => import("./roles.js").then((n) => n.R)), le = i(() => import("./roles.js").then((n) => n.a)), Pt = i(() => import("./system-settings.js").then((n) => n.i)), Vt = i(() => import("./system-settings.js").then((n) => n.O)), Kt = i(() => import("./system-settings.js").then((n) => n.S)), Jt = i(() => import("./system-settings.js").then((n) => n.a)), Ht = i(() => import("./system-settings.js").then((n) => n.A)), Gt = i(() => import("./system-settings.js").then((n) => n.T)), qt = i(() => import("./system-settings.js").then((n) => n.b)), Qt = i(() => import("./audit.js")), Yt = i(() => import("./service-accounts.js").then((n) => n.S)), Wt = i(() => import("./service-accounts.js").then((n) => n.a)), Zt = i(() => import("./task_list.js")), Xt = i(() => import("./task_detail.js")), en = i(() => import("./task_schedule_list.js"));
-function o(n, r) {
-  return /* @__PURE__ */ e.jsx(et, { fallback: /* @__PURE__ */ e.jsx(nt, {}), children: /* @__PURE__ */ e.jsx(n, { ...r }) });
+const Tt = i(() => import("./dashboard.js")), Ot = i(() => import("./login.js")), Dt = i(() => import("./activate.js")), Rt = i(() => import("./profile.js")), Bt = i(() => import("./inbox_list.js")), oe = i(() => import("./not_found.js")), Et = i(() => import("./forbidden.js")), $t = i(() => import("./users.js").then((t) => t.U)), Ft = i(() => import("./users.js").then((t) => t.a)), re = i(() => import("./users.js").then((t) => t.b)), Ut = i(() => import("./roles.js").then((t) => t.R)), le = i(() => import("./roles.js").then((t) => t.a)), Pt = i(() => import("./system-settings.js").then((t) => t.i)), Vt = i(() => import("./system-settings.js").then((t) => t.O)), Kt = i(() => import("./system-settings.js").then((t) => t.S)), Jt = i(() => import("./system-settings.js").then((t) => t.a)), Ht = i(() => import("./system-settings.js").then((t) => t.A)), Gt = i(() => import("./system-settings.js").then((t) => t.T)), qt = i(() => import("./system-settings.js").then((t) => t.b)), Qt = i(() => import("./audit.js")), Yt = i(() => import("./service-accounts.js").then((t) => t.S)), Wt = i(() => import("./service-accounts.js").then((t) => t.a)), Zt = i(() => import("./task_list.js")), Xt = i(() => import("./task_detail.js")), en = i(() => import("./task_schedule_list.js"));
+function o(t, r) {
+  return /* @__PURE__ */ e.jsx(et, { fallback: /* @__PURE__ */ e.jsx(nt, {}), children: /* @__PURE__ */ e.jsx(t, { ...r }) });
 }
-const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoutes: f = [], extraPublicRoutes: M = [] }) => {
+const tn = ({ transformSettingTabs: t, transformLangConfig: r, extraPrivateRoutes: f = [], extraPublicRoutes: M = [] }) => {
   const b = [
     {
       path: "/login",
@@ -232,7 +232,7 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
                   path: "/system/settings",
                   index: !0,
                   hideInMenu: !0,
-                  element: o(Pt, { transformItems: n }),
+                  element: o(Pt, { transformItems: t }),
                   name: "settings"
                 },
                 {
@@ -306,7 +306,7 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
   system: K,
   oauth: ue,
   tasks: pe
-}, { Header: nn, Content: an, Footer: sn, Sider: on } = H, rn = Nt(({ token: n, css: r }) => ({
+}, { Header: nn, Content: an, Footer: sn, Sider: on } = H, rn = Nt(({ token: t, css: r }) => ({
   layout: r`
       min-height: 100vh;
       display: flex;
@@ -316,8 +316,8 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
       padding: 0;
       display: flex;
       justify-content: space-between;
-      background-color: ${n.colorBgContainer};
-      border-block-end: 1px solid ${n.colorBorderSecondary};
+      background-color: ${t.colorBgContainer};
+      border-block-end: 1px solid ${t.colorBorderSecondary};
     `,
   footer: r`
       text-align: center;
@@ -325,7 +325,7 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
     `,
   contentContainer: r`
       padding: 24px;
-      background-color: ${n.colorBgContainer};
+      background-color: ${t.colorBgContainer};
     `,
   content: r`
       margin: 0 16px;
@@ -335,7 +335,7 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
   mainLayout: r`
       flex: 1;
       min-width: 0;
-      background-color: ${n.colorBgContainer};
+      background-color: ${t.colorBgContainer};
     `,
   breadcrumb: r`
       margin-left: 8px;
@@ -381,7 +381,7 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
       flex: 1 1 0%;
     `
 })), ln = ({
-  element: n,
+  element: t,
   siderWidth: r = 250,
   routes: f,
   transformLangConfig: M,
@@ -413,11 +413,11 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
   C(() => {
     var a, s;
     if (m) {
-      const w = ((a = m.navigation) == null ? void 0 : a.filter((g) => g.path !== m.home_page)) ?? [], t = [...m.home_page ? [{
+      const w = ((a = m.navigation) == null ? void 0 : a.filter((g) => g.path !== m.home_page)) ?? [], n = [...m.home_page ? [{
         name: "home",
         path: m.home_page
       }] : [], ...w];
-      t.length > 1 ? Y(t) : Y([]), ve(m.logo), (s = document.getElementById("site-icon")) == null || s.setAttribute("href", m.logo);
+      n.length > 1 ? Y(n) : Y([]), ve(m.logo), (s = document.getElementById("site-icon")) == null || s.setAttribute("href", m.logo);
     }
   }, [m]), C(() => {
     l.language && we((m == null ? void 0 : m.name_i18n[l.language]) || (m == null ? void 0 : m.name) || "");
@@ -425,50 +425,50 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
   const U = () => {
     const a = P(f, x.pathname), s = [];
     if (a) {
-      for (const [w, t] of a.entries())
-        if (t.route.path === "/" && !t.route.name)
+      for (const [w, n] of a.entries())
+        if (n.route.path === "/" && !n.route.name)
           s.push({
-            href: t.route.path,
+            href: n.route.path,
             title: j("home"),
             key: "home"
           });
-        else if (t.route.name) {
+        else if (n.route.name) {
           const g = a.slice(0, w + 1).map((D) => D.route.name).filter(Boolean).join(".");
-          if ((s.length > 0 ? s[s.length - 1].path : void 0) === (t.route.path || t.pathnameBase))
+          if ((s.length > 0 ? s[s.length - 1].path : void 0) === (n.route.path || n.pathnameBase))
             continue;
           s.push({
-            path: t.pathnameBase,
-            title: t.route.name ? d(`breadcrumbs.${g.replace(/\./g, "_")}`, { defaultValue: Ne(t.route.name) }) : void 0,
-            key: t.pathname || t.route.name
+            path: n.pathnameBase,
+            title: n.route.name ? d(`breadcrumbs.${g.replace(/\./g, "_")}`, { defaultValue: Ne(n.route.name) }) : void 0,
+            key: n.pathname || n.route.name
           });
         }
     }
     return s;
   }, ke = (a) => a.some((s) => N(s)), Ie = It(f, (a) => "children" in a && a.children ? a.children : []).map((a) => a == null ? void 0 : a.name).filter((a) => a !== void 0), Z = (a, s = []) => {
-    const w = (t) => t && t.replace(/_/g, " ").split(" ").map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(" ");
-    return a.flatMap((t) => "children" in t && t.children && !t.name ? t.children : [t]).map((t) => {
-      if ("hideInMenu" in t && t.hideInMenu || t.permissions && !ke(t.permissions))
+    const w = (n) => n && n.replace(/_/g, " ").split(" ").map((g) => g.charAt(0).toUpperCase() + g.slice(1)).join(" ");
+    return a.flatMap((n) => "children" in n && n.children && !n.name ? n.children : [n]).map((n) => {
+      if ("hideInMenu" in n && n.hideInMenu || n.permissions && !ke(n.permissions))
         return null;
-      const g = w(t.name);
-      if (!t.name)
+      const g = w(n.name);
+      if (!n.name)
         return null;
-      if ("children" in t && t.children) {
-        const I = Z(t.children, [...s, t.name]);
-        return I.length == 0 && t.path ? {
-          key: t.path,
-          icon: t.icon,
-          label: /* @__PURE__ */ e.jsx(B, { to: t.path, children: d(`menu.${[...s, t.name].join(".")}`, { defaultValue: g }) })
+      if ("children" in n && n.children) {
+        const I = Z(n.children, [...s, n.name]);
+        return I.length == 0 && n.path ? {
+          key: n.path,
+          icon: n.icon,
+          label: /* @__PURE__ */ e.jsx(B, { to: n.path, children: d(`menu.${[...s, n.name].join(".")}`, { defaultValue: g }) })
         } : {
-          key: t.path ?? t.name,
-          icon: t.icon,
-          label: d(`menu.${[...s, t.name, t.name].join(".")}`, { defaultValue: g }),
+          key: n.path ?? n.name,
+          icon: n.icon,
+          label: d(`menu.${[...s, n.name, n.name].join(".")}`, { defaultValue: g }),
           children: I
         };
       }
-      return t.name && t.path ? {
-        key: t.path,
-        icon: t.icon,
-        label: /* @__PURE__ */ e.jsx(B, { to: t.path, children: d(`menu.${[...s, t.name].join(".")}`, { defaultValue: g }) })
+      return n.name && n.path ? {
+        key: n.path,
+        icon: n.icon,
+        label: /* @__PURE__ */ e.jsx(B, { to: n.path, children: d(`menu.${[...s, n.name].join(".")}`, { defaultValue: g }) })
       } : null;
     }).filter(Boolean);
   };
@@ -544,7 +544,7 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
       "theme-switch"
     )
   ], Ae = (a) => a ? Mt(a).replace(/[^a-zA-Z0-9-]/g, "-") : "";
-  return (E ?? ((a, s, w, t, g) => {
+  return (E ?? ((a, s, w, n, g) => {
     var D, ee;
     const I = Ae((ee = (D = P(f, x.pathname)) == null ? void 0 : D.pop()) == null ? void 0 : ee.route.name);
     return /* @__PURE__ */ e.jsxs(H, { className: u("main-layout", c.layout, { [`page-${I}`]: I }), children: [
@@ -578,7 +578,7 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
             /* @__PURE__ */ e.jsx(We, { className: u("site-breadcrumb", c.breadcrumb), itemRender: (R) => {
               const te = R.href || R.path;
               return te ? /* @__PURE__ */ e.jsx(B, { to: te, children: R.title }) : /* @__PURE__ */ e.jsx("span", { children: R.title });
-            }, items: t })
+            }, items: n })
           ] }),
           /* @__PURE__ */ e.jsx("div", { className: u("header-items", c.headerItems), children: w })
         ] }),
@@ -596,13 +596,13 @@ const tn = ({ transformSettingTabs: n, transformLangConfig: r, extraPrivateRoute
       ] }),
       O && (k === "sidebar" || k === "float-sidebar") && (A || L) && /* @__PURE__ */ e.jsx(Lt, { ...v })
     ] });
-  }))(je, Z(f), z(ze), U(), n ?? /* @__PURE__ */ e.jsx(Ke, {}));
+  }))(je, Z(f), z(ze), U(), t ?? /* @__PURE__ */ e.jsx(Ke, {}));
 }, fe = "theme-mode";
 function mn() {
   try {
-    const n = localStorage.getItem(fe);
-    if (n === "light" || n === "dark" || n === "auto")
-      return n;
+    const t = localStorage.getItem(fe);
+    if (t === "light" || t === "dark" || t === "auto")
+      return t;
   } catch {
   }
   return "light";
@@ -624,7 +624,7 @@ const cn = new Fe({
   "sv-SE": Oe
 };
 function Bn({
-  transformRouter: n = (p) => p,
+  transformRouter: t = (p) => p,
   transformSettingTabs: r = (p) => p,
   transformLangConfig: f = (p) => p,
   extraPrivateRoutes: M = [],
@@ -641,7 +641,7 @@ function Bn({
   const k = (y) => y.map((d) => !("children" in d) || d.children === void 0 ? d : {
     ...d,
     children: k(d.children)
-  }), A = n(k(tn({
+  }), A = t(k(tn({
     transformSettingTabs: r,
     transformLangConfig: f,
     extraPrivateRoutes: M,
@@ -678,7 +678,7 @@ function Bn({
     }
   ) });
 }
-const En = i(() => import("./ai-chat.js")), $n = i(() => import("./json-schema-config-form.js").then((n) => ({ default: n.JsonSchemaConfigForm }))), Fn = i(() => import("./json-schema-config-form.js").then((n) => ({ default: n.JsonSchemaConfigFormItem }))), Un = i(() => import("./markdown-viewer.js")), Pn = i(() => import("./markdown-viewer.js").then((n) => ({ default: n.Code }))), Vn = {
+const En = i(() => import("./ai-chat.js")), $n = i(() => import("./components.js").then((t) => t.r).then((t) => ({ default: t.JsonSchemaConfigForm }))), Fn = i(() => import("./components.js").then((t) => t.r).then((t) => ({ default: t.JsonSchemaConfigFormItem }))), Un = i(() => import("./markdown-viewer.js")), Pn = i(() => import("./markdown-viewer.js").then((t) => ({ default: t.Code }))), Vn = {
   ...ce,
   ...de,
   ...ue,

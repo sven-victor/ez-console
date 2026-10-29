@@ -3995,7 +3995,7 @@ export declare interface ToolSet {
 
 export declare type ToolSetStatus = "enabled" | "disabled";
 
-export declare type ToolSetType = "utils" | "local_complex";
+export declare type ToolSetType = "utils";
 
 export declare interface ToolSetTypeDefinition {
     allow_manual_create: boolean;

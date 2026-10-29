@@ -1,23 +1,24 @@
-var kt = Object.defineProperty;
-var jt = (a, s, l) => s in a ? kt(a, s, { enumerable: !0, configurable: !0, writable: !0, value: l }) : a[s] = l;
-var $e = (a, s, l) => jt(a, typeof s != "symbol" ? s + "" : s, l);
-import { j as c, k as wt, l as St, m as It, n as Tt } from "./vendor.js";
+var jt = Object.defineProperty;
+var wt = (a, s, l) => s in a ? jt(a, s, { enumerable: !0, configurable: !0, writable: !0, value: l }) : a[s] = l;
+var Pe = (a, s, l) => wt(a, typeof s != "symbol" ? s + "" : s, l);
+import { j as u, k as St, l as It, m as Tt, n as Rt } from "./vendor.js";
 import { a as E } from "./index.js";
-import { PlusOutlined as Ue, ReloadOutlined as Rt, DeleteOutlined as At, HistoryOutlined as Lt, CloseOutlined as Ht } from "@ant-design/icons";
-import { Conversations as Ft, Sender as Ye, XProvider as Dt, Bubble as Nt, Mermaid as $t, CodeHighlighter as Pt } from "@ant-design/x";
-import { useXConversations as zt, useXChat as qt, XRequest as Bt, AbstractChatProvider as Ot } from "@ant-design/x-sdk";
+import { PlusOutlined as Ue, ReloadOutlined as At, DeleteOutlined as Lt, HistoryOutlined as Ht, CloseOutlined as Ft } from "@ant-design/icons";
+import { Conversations as Dt, Sender as Ye, XProvider as Nt, Bubble as Pt, Mermaid as $t, CodeHighlighter as zt } from "@ant-design/x";
+import { useXConversations as qt, useXChat as Bt, XRequest as Ot, AbstractChatProvider as Vt } from "@ant-design/x-sdk";
 import { XMarkdown as Qe } from "@ant-design/x-markdown";
 import { useRequest as Q } from "ahooks";
-import { App as Vt, Tag as Ze, Button as Ce, Spin as le, Space as et, Flex as ce, Dropdown as tt, Radio as Kt } from "antd";
-import { createStyles as Et, useThemeMode as Mt } from "antd-style";
+import { App as Kt, Tag as Ze, Button as ve, Spin as le, Space as et, Flex as ce, Dropdown as tt, Radio as Et } from "antd";
+import { createStyles as Mt, useThemeMode as rt } from "antd-style";
 import Xt, { useEffect as I, useState as Z, useMemo as ue, useCallback as T, useRef as L } from "react";
 import { useTranslation as nt } from "react-i18next";
-import Pe from "dayjs";
+import $e from "dayjs";
 import { d as Jt, b as Gt, n as Wt } from "./contexts.js";
 import Ut from "classnames";
 /* empty css             */
 import { C as Yt, q as Qt } from "./components.js";
-const rt = Et(({ token: a, css: s }) => ({
+import { o as Zt, a as en } from "./highlighter.js";
+const it = Mt(({ token: a, css: s }) => ({
   siderLayout: s`
       width: 100%;
       height: calc(100vh - 60px);
@@ -200,7 +201,7 @@ const rt = Et(({ token: a, css: s }) => ({
       color: ${a.colorText};
     `
 }));
-function Zt(a) {
+function tn(a) {
   if (a == null || typeof a != "object")
     return;
   const s = a;
@@ -210,12 +211,12 @@ function Zt(a) {
   for (const r of s.options) {
     if (r == null || typeof r != "object")
       continue;
-    const u = r;
-    typeof u.id != "string" || typeof u.label != "string" || l.push({
-      id: u.id,
-      label: u.label,
-      description: typeof u.description == "string" ? u.description : "",
-      primary: u.primary === !0
+    const c = r;
+    typeof c.id != "string" || typeof c.label != "string" || l.push({
+      id: c.id,
+      label: c.label,
+      description: typeof c.description == "string" ? c.description : "",
+      primary: c.primary === !0
     });
   }
   let o = "";
@@ -248,43 +249,43 @@ function st(a) {
     return;
   const o = [];
   for (const r of l) {
-    const u = Zt(r);
-    u && o.push(u);
+    const c = tn(r);
+    c && o.push(c);
   }
   return o.length > 0 ? o : void 0;
 }
-function it(a) {
+function lt(a) {
   return !!(a != null && a.some((s) => s.status === "pending"));
 }
 function ke(a) {
   return (a ?? []).filter((s) => s.status === "pending");
 }
-function en(a, s) {
+function nn(a, s) {
   var r;
-  if (!it(s))
+  if (!lt(s))
     return;
-  const l = new Set(s.map((u) => u.tool_call_id)), o = [];
-  for (const u of a ?? []) {
-    const f = (r = u == null ? void 0 : u.function) == null ? void 0 : r.name;
-    !(u != null && u.id) || !f || !f.startsWith("ui_") || f === "ui_choose" || l.has(u.id) || o.push({
-      id: u.id,
+  const l = new Set(s.map((c) => c.tool_call_id)), o = [];
+  for (const c of a ?? []) {
+    const f = (r = c == null ? void 0 : c.function) == null ? void 0 : r.name;
+    !(c != null && c.id) || !f || !f.startsWith("ui_") || f === "ui_choose" || l.has(c.id) || o.push({
+      id: c.id,
       name: f,
-      arguments: typeof u.function.arguments == "string" ? u.function.arguments : "",
+      arguments: typeof c.function.arguments == "string" ? c.function.arguments : "",
       hitlFromHistory: !0
     });
   }
   return o.length > 0 ? o : void 0;
 }
-function lt(a) {
+function ct(a) {
   return !!a && (a === "ui_choose" || a.startsWith("ui_"));
 }
-function ct(a) {
+function ut(a) {
   return !!a && a.kind === "approval" && a.status === "decided" && a.selected_option_id === "approve";
 }
 function ot(a, s) {
   const l = new Set(s), o = [];
   for (const r of a ?? [])
-    !l.has(r.tool_call_id) || !ct(r) || !r.tool_name || o.push({
+    !l.has(r.tool_call_id) || !ut(r) || !r.tool_name || o.push({
       id: r.tool_call_id,
       name: r.tool_name,
       arguments: r.arguments || "",
@@ -292,35 +293,35 @@ function ot(a, s) {
     });
   return o;
 }
-function tn(a, s) {
-  var r, u;
+function sn(a, s) {
+  var r, c;
   const l = new Map((s ?? []).map((f) => [f.tool_call_id, f])), o = [];
   for (const f of a ?? []) {
     const _ = (r = f == null ? void 0 : f.function) == null ? void 0 : r.name;
-    if (!(f != null && f.id) || !_ || lt(_))
+    if (!(f != null && f.id) || !_ || ct(_))
       continue;
     const M = l.get(f.id);
-    M && !ct(M) || o.push({
+    M && !ut(M) || o.push({
       id: f.id,
       name: _,
-      arguments: typeof ((u = f.function) == null ? void 0 : u.arguments) == "string" ? f.function.arguments : "",
+      arguments: typeof ((c = f.function) == null ? void 0 : c.arguments) == "string" ? f.function.arguments : "",
       status: "completed",
       title: f.title || void 0
     });
   }
   return o;
 }
-function nn(a) {
+function on(a) {
   var l, o;
   const s = [];
   for (const r of a ?? []) {
-    const u = (l = r == null ? void 0 : r.function) == null ? void 0 : l.name;
-    if (!(r != null && r.id) || !u || lt(u))
+    const c = (l = r == null ? void 0 : r.function) == null ? void 0 : l.name;
+    if (!(r != null && r.id) || !c || ct(c))
       continue;
     const f = r.status === "pending" || r.status === "running" || r.status === "failed" || r.status === "completed" ? r.status : "running";
     s.push({
       id: r.id,
-      name: u,
+      name: c,
       arguments: typeof ((o = r.function) == null ? void 0 : o.arguments) == "string" ? r.function.arguments : "",
       status: f,
       title: r.title || void 0
@@ -331,7 +332,7 @@ function nn(a) {
 function _e(a, s) {
   const l = [...a ?? []];
   for (const o of s) {
-    const r = l.findIndex((u) => u.id === o.id);
+    const r = l.findIndex((c) => c.id === o.id);
     r >= 0 ? l[r] = {
       ...l[r],
       ...o,
@@ -341,37 +342,37 @@ function _e(a, s) {
   }
   return l;
 }
-function sn(a, s) {
+function an(a, s) {
   if (!(a != null && a.length) || !(s != null && s.length))
     return a;
   const l = new Set(s.map((r) => r.tool_call_id)), o = a.filter((r) => !l.has(r.id));
   return o.length > 0 ? o : void 0;
 }
 let ie = !1;
-const ut = {
+const dt = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onChunk: (a) => {
   }
 };
-function on(a, s, l) {
+function rn(a, s, l) {
   a(s, (o) => {
     var r;
     return {
       message: {
         ...o.message,
-        hitlCards: (r = o.message.hitlCards) == null ? void 0 : r.map((u) => l.includes(u.tool_call_id) && u.status !== "abandoned" ? { ...u, status: "pending", selected_option_id: "" } : u)
+        hitlCards: (r = o.message.hitlCards) == null ? void 0 : r.map((c) => l.includes(c.tool_call_id) && c.status !== "abandoned" ? { ...c, status: "pending", selected_option_id: "" } : c)
       }
     };
   });
 }
-class an extends Error {
+class ln extends Error {
   constructor(l, o) {
     super(l);
-    $e(this, "buffer");
+    Pe(this, "buffer");
     this.buffer = o;
   }
 }
-function rn(a) {
+function cn(a) {
   if (a == null || typeof a != "object")
     return !1;
   const s = a;
@@ -380,10 +381,10 @@ function rn(a) {
   const l = typeof s.message == "string" ? s.message : "";
   return /aborted/i.test(l) || /BodyStreamBuffer/i.test(l);
 }
-class ln extends Ot {
+class un extends Vt {
   constructor() {
     super(...arguments);
-    $e(this, "conversationKey", "");
+    Pe(this, "conversationKey", "");
   }
   transformParams(l, o) {
     if (typeof l != "object")
@@ -400,15 +401,15 @@ class ln extends Ot {
     };
   }
   transformMessage(l) {
-    const { originMessage: o, chunk: r, status: u } = l || {};
+    const { originMessage: o, chunk: r, status: c } = l || {};
     if (!r)
       return {
         ...o,
         content: (o == null ? void 0 : o.content) || "",
         role: "assistant",
-        status: u
+        status: c
       };
-    u === "updating" && ut.onChunk(this.conversationKey);
+    c === "updating" && dt.onChunk(this.conversationKey);
     let f;
     try {
       f = JSON.parse(r.data);
@@ -417,7 +418,7 @@ class ln extends Ot {
         ...o,
         content: (o == null ? void 0 : o.content) || "",
         role: "assistant",
-        status: u
+        status: c
       };
     }
     const _ = f.message_id === (o == null ? void 0 : o.messageId) ? `${(o == null ? void 0 : o.content) || ""}${f.content || ""}` : f.content || "";
@@ -428,8 +429,8 @@ class ln extends Ot {
           content: _,
           role: "assistant",
           messageId: f.message_id,
-          toolCalls: ie ? _e(o == null ? void 0 : o.toolCalls, nn(f.tool_calls)) : o == null ? void 0 : o.toolCalls,
-          status: u
+          toolCalls: ie ? _e(o == null ? void 0 : o.toolCalls, on(f.tool_calls)) : o == null ? void 0 : o.toolCalls,
+          status: c
         };
       case "content":
         return {
@@ -437,7 +438,7 @@ class ln extends Ot {
           content: _,
           role: "assistant",
           messageId: f.message_id,
-          status: u
+          status: c
         };
       case "error":
         return {
@@ -446,7 +447,7 @@ class ln extends Ot {
           role: "assistant",
           error: f.content,
           messageId: f.message_id,
-          status: u
+          status: c
         };
       case "client_tool_pending":
         return {
@@ -455,7 +456,7 @@ class ln extends Ot {
           role: "assistant",
           pendingClientToolCalls: f.client_tool_calls,
           messageId: f.message_id,
-          status: u
+          status: c
         };
       case "hitl_pending":
         return {
@@ -464,9 +465,9 @@ class ln extends Ot {
           role: "assistant",
           pendingClientToolCalls: f.client_tool_calls,
           hitlCards: f.hitl_cards,
-          toolCalls: sn(o == null ? void 0 : o.toolCalls, f.hitl_cards),
+          toolCalls: an(o == null ? void 0 : o.toolCalls, f.hitl_cards),
           messageId: f.message_id,
-          status: u
+          status: c
         };
       default:
         return {
@@ -474,38 +475,47 @@ class ln extends Ot {
           content: _ || (o == null ? void 0 : o.content) || "",
           role: "assistant",
           messageId: f.message_id || (o == null ? void 0 : o.messageId),
-          status: u
+          status: c
         };
     }
   }
 }
-const at = /* @__PURE__ */ new Map(), cn = (a) => {
+const at = /* @__PURE__ */ new Map(), dn = (a) => {
   let s = at.get(a);
-  return s || (s = new ln({
-    request: Bt(
+  return s || (s = new un({
+    request: Ot(
       `/api/ai/chat/sessions/${a}`,
       {
         manual: !0,
         middlewares: {
           onRequest: async (l, o) => {
-            const r = localStorage.getItem("orgID"), { sessionId: u } = o.params ?? {}, f = {
+            const r = localStorage.getItem("orgID"), { sessionId: c } = o.params ?? {}, f = {
               ...o.headers,
               "Accept-Language": localStorage.getItem("i18nextLng") || "en-US",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
               ...r ? { "X-Scope-OrgID": r } : {}
             };
-            return [u ? `/api/ai/chat/sessions/${u}` : l, { ...o, headers: f }];
+            return [c ? `/api/ai/chat/sessions/${c}` : l, { ...o, headers: f }];
           }
         }
       }
     )
   }), at.set(a, s)), s.conversationKey = a, s;
-}, un = (a) => {
-  var r;
-  const { className: s, children: l } = a, o = ((r = s == null ? void 0 : s.match(/language-(\w+)/)) == null ? void 0 : r[1]) || "";
-  return typeof l != "string" ? null : o === "mermaid" ? /* @__PURE__ */ c.jsx($t, { children: l }) : /* @__PURE__ */ c.jsx("code", { className: "ant-highlightCode-code", children: /* @__PURE__ */ c.jsx(Pt, { lang: o, children: l }) });
-}, dn = Xt.createContext({});
-function ve(a) {
+}, fn = (a) => {
+  var f;
+  const { className: s, children: l } = a, o = ((f = s == null ? void 0 : s.match(/language-(\w+)/)) == null ? void 0 : f[1]) || "", { isDarkMode: r } = rt(), c = r ? Zt : en;
+  return typeof l != "string" ? null : o === "mermaid" ? /* @__PURE__ */ u.jsx($t, { children: l }) : /* @__PURE__ */ u.jsx(zt, { highlightProps: {
+    style: {
+      ...c,
+      'pre[class*="language-"]': {
+        ...c['pre[class*="language-"]'],
+        margin: 0,
+        borderRadius: 0
+      }
+    }
+  }, lang: o, children: l });
+}, mn = Xt.createContext({});
+function Ce(a) {
   if (!a || a.length === 0)
     return [];
   const s = /* @__PURE__ */ new Set(), l = [];
@@ -515,27 +525,27 @@ function ve(a) {
   }
   return l;
 }
-const fn = ({
+const gn = ({
   bubble: a = {},
   messages: s,
   loading: l,
   layout: o = "classic",
   onSendMessage: r,
-  hitlSubmitting: u,
+  hitlSubmitting: c,
   onHITLSelect: f,
   showToolCalls: _ = !1
 }) => {
-  const { styles: M } = rt(), { isDarkMode: je } = Mt(), [H, de] = Z({}), ee = ue(() => {
-    if (!a.components) return { code: un };
+  const { styles: M } = it(), { isDarkMode: je } = rt(), [H, de] = Z({}), ee = ue(() => {
+    if (!a.components) return { code: fn };
     const p = {};
-    for (const C in a.components) {
-      const $ = a.components[C];
-      if (typeof $ == "string") {
-        p[C] = $;
+    for (const v in a.components) {
+      const P = a.components[v];
+      if (typeof P == "string") {
+        p[v] = P;
         continue;
       }
-      p[C] = (X) => /* @__PURE__ */ c.jsx(
-        $,
+      p[v] = (X) => /* @__PURE__ */ u.jsx(
+        P,
         {
           ...X,
           onSendMessage: r
@@ -544,7 +554,7 @@ const fn = ({
     }
     return p;
   }, [r, a.components]), {
-    contentRender: B = (p) => p ? /* @__PURE__ */ c.jsx(
+    contentRender: B = (p) => p ? /* @__PURE__ */ u.jsx(
       Qe,
       {
         paragraphTag: "div",
@@ -555,15 +565,15 @@ const fn = ({
     ) : null,
     footerRender: O = ({ message: p }) => {
       if (p.error)
-        return /* @__PURE__ */ c.jsx("div", { children: /* @__PURE__ */ c.jsx(Qe, { content: p.error, components: ee }) });
+        return /* @__PURE__ */ u.jsx("div", { children: /* @__PURE__ */ u.jsx(Qe, { content: p.error, components: ee }) });
     }
   } = a, k = ue(() => (s || []).map((p) => {
-    const C = ke(p.message.hitlCards);
+    const v = ke(p.message.hitlCards);
     return {
       ...p.message,
       key: p.id,
       // Stretch the bubble so live SSE cards match history width. Hide an empty content shell.
-      ...C.length ? {
+      ...v.length ? {
         variant: "borderless",
         styles: {
           ...p.message.content ? {} : { content: { display: "none" } },
@@ -572,8 +582,8 @@ const fn = ({
         }
       } : {},
       contentRender: B,
-      footer: ($, X) => {
-        const V = O == null ? void 0 : O(p, X, r), J = _ && p.message.role === "assistant" ? p.message.toolCalls ?? [] : [], h = p.message.content || "", G = p.status === "loading" || p.status === "updating", te = h || J.length > 0 ? /* @__PURE__ */ c.jsx(
+      footer: (P, X) => {
+        const V = O == null ? void 0 : O(p, X, r), J = _ && p.message.role === "assistant" ? p.message.toolCalls ?? [] : [], h = p.message.content || "", G = p.status === "loading" || p.status === "updating", te = h || J.length > 0 ? /* @__PURE__ */ u.jsx(
           Yt,
           {
             text: h,
@@ -583,24 +593,24 @@ const fn = ({
           },
           G ? "live" : "settled"
         ) : null;
-        if (!C.length)
-          return !te && !V ? void 0 : /* @__PURE__ */ c.jsxs(ce, { vertical: !0, gap: 8, style: { width: J.length > 0 ? "100%" : void 0 }, children: [
+        if (!v.length)
+          return !te && !V ? void 0 : /* @__PURE__ */ u.jsxs(ce, { vertical: !0, gap: 8, style: { width: J.length > 0 ? "100%" : void 0 }, children: [
             te,
             V
           ] });
-        const fe = (u == null ? void 0 : u.messageId) === p.id;
-        return /* @__PURE__ */ c.jsxs(ce, { className: "hitl-card-stack", vertical: !0, gap: 8, style: { width: "100%" }, children: [
+        const fe = (c == null ? void 0 : c.messageId) === p.id;
+        return /* @__PURE__ */ u.jsxs(ce, { className: "hitl-card-stack", vertical: !0, gap: 8, style: { width: "100%" }, children: [
           te,
           V || null,
-          C.map((R) => {
-            const P = `${p.id}:${R.tool_call_id}`, ne = H[P] || R.selected_option_id;
-            return /* @__PURE__ */ c.jsx(
+          v.map((R) => {
+            const $ = `${p.id}:${R.tool_call_id}`, ne = H[$] || R.selected_option_id;
+            return /* @__PURE__ */ u.jsx(
               Qt,
               {
                 card: ne && ne !== R.selected_option_id ? { ...R, selected_option_id: ne } : R,
                 submitting: fe,
                 onSelect: fe ? void 0 : (me) => {
-                  de((W) => ({ ...W, [P]: me })), f == null || f(p.id, R.tool_call_id, me);
+                  de((W) => ({ ...W, [$]: me })), f == null || f(p.id, R.tool_call_id, me);
                 }
               },
               R.tool_call_id
@@ -610,11 +620,11 @@ const fn = ({
       }
     };
   }).filter((p) => {
-    var C;
-    return p.content || ke(p.hitlCards).length || _ && (((C = p.toolCalls) == null ? void 0 : C.length) ?? 0) > 0;
-  }), [s, B, O, r, u, f, H, _]);
-  return /* @__PURE__ */ c.jsx("div", { className: M.chatList, children: /* @__PURE__ */ c.jsx(le, { spinning: l, children: /* @__PURE__ */ c.jsx(
-    Nt.List,
+    var v;
+    return p.content || ke(p.hitlCards).length || _ && (((v = p.toolCalls) == null ? void 0 : v.length) ?? 0) > 0;
+  }), [s, B, O, r, c, f, H, _]);
+  return /* @__PURE__ */ u.jsx("div", { className: M.chatList, children: /* @__PURE__ */ u.jsx(le, { spinning: l, children: /* @__PURE__ */ u.jsx(
+    Pt.List,
     {
       items: k,
       style: {
@@ -624,7 +634,7 @@ const fn = ({
       roles: {
         assistant: {
           placement: "start",
-          loadingRender: () => /* @__PURE__ */ c.jsx(le, { size: "small" })
+          loadingRender: () => /* @__PURE__ */ u.jsx(le, { size: "small" })
         },
         user: {
           placement: "end"
@@ -633,7 +643,7 @@ const fn = ({
       role: {
         assistant: {
           placement: "start",
-          loadingRender: () => /* @__PURE__ */ c.jsx(le, { size: "small" })
+          loadingRender: () => /* @__PURE__ */ u.jsx(le, { size: "small" })
         },
         user: {
           placement: "end"
@@ -641,7 +651,7 @@ const fn = ({
       }
     }
   ) }) });
-}, An = ({
+}, Fn = ({
   bubble: a = {},
   ephemeralSystemPrompts: s,
   clientTools: l,
@@ -649,7 +659,7 @@ const fn = ({
 }) => {
   const {
     layout: r,
-    setVisible: u,
+    setVisible: c,
     setLayout: f,
     onCallAI: _,
     activeConversationKey: M,
@@ -659,12 +669,12 @@ const fn = ({
     getEphemeralSystemPrompts: ee,
     getClientTools: B,
     registerGlobalAI: O
-  } = Jt(), { t: k } = nt("ai"), { t: p } = nt("common"), { styles: C } = rt(), { siteConfig: $ } = Gt(), X = ($ == null ? void 0 : $.show_tool_calls) ?? !1;
+  } = Jt(), { t: k } = nt("ai"), { t: p } = nt("common"), { styles: v } = it(), { siteConfig: P } = Gt(), X = (P == null ? void 0 : P.show_tool_calls) ?? !1;
   ie = X;
   const V = (e) => ({
     key: e.id,
     label: e.title,
-    group: Pe(e.start_time).isSame(Pe(), "day") ? k("chat.today") : Pe(e.start_time).format("YYYY-MM-DD")
+    group: $e(e.start_time).isSame($e(), "day") ? k("chat.today") : $e(e.start_time).format("YYYY-MM-DD")
   }), {
     conversations: J,
     activeConversationKey: h,
@@ -672,21 +682,21 @@ const fn = ({
     addConversation: te,
     setConversations: fe,
     getConversation: R,
-    setConversation: P,
+    setConversation: $,
     removeConversation: ne,
     getMessages: me
-  } = zt({
+  } = qt({
     defaultActiveConversationKey: M,
     defaultConversations: (H == null ? void 0 : H.map((e) => V(e))) || []
   });
   I(() => {
     je(h);
   }, [h]);
-  const { message: W } = Vt.useApp(), [ze, qe] = Z(""), [dt, ft] = Z(!1), we = (o == null ? void 0 : o.join("\0")) ?? "", Se = ue(
-    () => ve(we ? we.split("\0") : []),
+  const { message: W } = Kt.useApp(), [ze, qe] = Z(""), [ft, mt] = Z(!1), we = (o == null ? void 0 : o.join("\0")) ?? "", Se = ue(
+    () => Ce(we ? we.split("\0") : []),
     [we]
   ), Ie = (s == null ? void 0 : s.join("\0")) ?? "", Te = ue(
-    () => ve(Ie ? Ie.split("\0") : []),
+    () => Ce(Ie ? Ie.split("\0") : []),
     [Ie]
   );
   I(() => {
@@ -714,21 +724,21 @@ const fn = ({
     ...(Be ?? []).map((e) => ({
       skillType: "domain",
       key: e,
-      label: /* @__PURE__ */ c.jsxs(c.Fragment, { children: [
-        /* @__PURE__ */ c.jsx(Ze, { children: k("chat.skillDomain", { defaultValue: "Skill domain" }) }),
+      label: /* @__PURE__ */ u.jsxs(u.Fragment, { children: [
+        /* @__PURE__ */ u.jsx(Ze, { children: k("chat.skillDomain", { defaultValue: "Skill domain" }) }),
         e
       ] })
     })),
     ...((ge == null ? void 0 : ge.data) ?? []).map((e) => ({
       skillType: "skill",
       key: e.id,
-      label: /* @__PURE__ */ c.jsxs(c.Fragment, { children: [
-        /* @__PURE__ */ c.jsx(Ze, { children: k("chat.skill", { defaultValue: "Skill" }) }),
+      label: /* @__PURE__ */ u.jsxs(u.Fragment, { children: [
+        /* @__PURE__ */ u.jsx(Ze, { children: k("chat.skill", { defaultValue: "Skill" }) }),
         e.name
       ] })
     }))
-  ], [ge, Be]), [se, Ve] = Z(), { onRequest: K, messages: y, isRequesting: oe, abort: mt, onReload: gt, setMessages: Ae, setMessage: N } = qt({
-    provider: cn(h),
+  ], [ge, Be]), [se, Ve] = Z(), { onRequest: K, messages: y, isRequesting: oe, abort: gt, onReload: pt, setMessages: Ae, setMessage: N } = Bt({
+    provider: dn(h),
     // every conversation has its own provider
     conversationKey: h,
     defaultMessages: [],
@@ -736,10 +746,10 @@ const fn = ({
       content: p("loading"),
       role: "assistant"
     }),
-    requestFallback: (e, { error: t }) => rn(t) ? {
+    requestFallback: (e, { error: t }) => cn(t) ? {
       content: "",
       role: "assistant"
-    } : t instanceof an ? {
+    } : t instanceof ln ? {
       content: t.buffer.join(""),
       role: "assistant",
       // TODO: show error in message list
@@ -752,7 +762,7 @@ const fn = ({
     const e = {
       domains: U.filter((i) => i.type === "domain").map((i) => i.value),
       skill_ids: U.filter((i) => i.type === "skill").map((i) => i.value)
-    }, t = ve(ee());
+    }, t = Ce(ee());
     t.length > 0 && (e.ephemeral_system_prompts = t);
     const n = B();
     return n.length > 0 && (e.client_tools = n.map((i) => ({
@@ -760,11 +770,11 @@ const fn = ({
       description: i.description,
       parameters: i.parameters
     }))), e;
-  }, [U, ee, B]), pt = L(/* @__PURE__ */ new Map()), Le = L(/* @__PURE__ */ new Map()), ae = L(h);
+  }, [U, ee, B]), ht = L(/* @__PURE__ */ new Map()), Le = L(/* @__PURE__ */ new Map()), ae = L(h);
   ae.current = h;
   const w = L(!1), q = L(!1), He = L(0), j = L(null), A = L(null), Ke = L(() => {
   }), re = L(null), [Y, F] = Z(null);
-  ut.onChunk = (e) => {
+  dt.onChunk = (e) => {
     const t = A.current;
     t && t.conversationId === e && (t.streamStarted = !0);
     const n = re.current;
@@ -826,11 +836,11 @@ const fn = ({
       F(null);
       return;
     }
-    const g = n.map((v) => v.tool_call_id), b = () => on(N, e, g), x = { generation: m, streamRequested: !1, posted: !1, revert: b };
+    const g = n.map((C) => C.tool_call_id), b = () => rn(N, e, g), x = { generation: m, streamRequested: !1, posted: !1, revert: b };
     j.current = x, w.current = !0;
     try {
-      let v = [];
-      if (t != null && t.length && (v = await he(d, t)), He.current !== m || ae.current !== d) {
+      let C = [];
+      if (t != null && t.length && (C = await he(d, t)), He.current !== m || ae.current !== d) {
         j.current === x && (j.current = null, w.current = !1, q.current = !1, A.current = null, F(null), b());
         return;
       }
@@ -843,14 +853,14 @@ const fn = ({
         submit: i
       }, x.posted = !0, K({
         content: "",
-        ...v.length > 0 ? { client_tool_results: v } : {},
+        ...C.length > 0 ? { client_tool_results: C } : {},
         hitl_decisions: n,
         ...z()
       });
     } catch {
-      const v = A.current;
-      if (x.posted && v && j.current === x) {
-        v.reconciling || (v.reconciling = !0, Ke.current(v));
+      const C = A.current;
+      if (x.posted && C && j.current === x) {
+        C.reconciling || (C.reconciling = !0, Ke.current(C));
         return;
       }
       A.current = null, j.current === x && (j.current = null), w.current = !1, q.current = !1, F(null), b();
@@ -863,12 +873,12 @@ const fn = ({
       n = [], i = (b = m[m.length - 1]) == null ? void 0 : b.id;
       let d = !1;
       const g = m.map((x) => {
-        const v = x.message.hitlCards;
-        return v != null && v.some((D) => D.status === "pending") ? (d = !0, n.push({ id: x.id, cards: v }), {
+        const C = x.message.hitlCards;
+        return C != null && C.some((D) => D.status === "pending") ? (d = !0, n.push({ id: x.id, cards: C }), {
           ...x,
           message: {
             ...x.message,
-            hitlCards: v.map((D) => D.status === "pending" ? { ...D, status: "abandoned" } : D)
+            hitlCards: C.map((D) => D.status === "pending" ? { ...D, status: "abandoned" } : D)
           }
         }) : x;
       });
@@ -891,7 +901,7 @@ const fn = ({
       };
     }
     F(null);
-  }, [Ae]), ht = T((e, t, n) => {
+  }, [Ae]), bt = T((e, t, n) => {
     if (Y || w.current)
       return;
     let i;
@@ -899,7 +909,7 @@ const fn = ({
       const b = g.message.hitlCards, x = b == null ? void 0 : b.find((S) => S.tool_call_id === t);
       if (!b || !x || x.status !== "pending")
         return {};
-      const v = b.map((S) => S.tool_call_id === t ? { ...S, selected_option_id: n } : S), D = v.filter((S) => S.status === "pending");
+      const C = b.map((S) => S.tool_call_id === t ? { ...S, selected_option_id: n } : S), D = C.filter((S) => S.status === "pending");
       return D.length > 0 && D.every((S) => S.selected_option_id) && (i = {
         calls: g.message.pendingClientToolCalls,
         decisions: D.map((S) => ({
@@ -907,7 +917,7 @@ const fn = ({
           option_id: S.selected_option_id
         }))
       }), {
-        message: { ...g.message, hitlCards: v }
+        message: { ...g.message, hitlCards: C }
       };
     }) || !i)
       return;
@@ -1013,9 +1023,9 @@ const fn = ({
     const e = y[y.length - 1], t = (i = e == null ? void 0 : e.message) == null ? void 0 : i.pendingClientToolCalls;
     if (!(t != null && t.length))
       return;
-    const n = pt.current;
+    const n = ht.current;
     if (n.get(h) !== t) {
-      if (n.set(h, t), it(e.message.hitlCards)) {
+      if (n.set(h, t), lt(e.message.hitlCards)) {
         t.every((m) => m.hitlFromHistory) || he(h, t);
         return;
       }
@@ -1033,7 +1043,7 @@ const fn = ({
         ...z()
       });
     }
-  }, { run: bt, loading: yt } = Q(async (e) => await E.ai.getChatSession({ sessionId: e }), {
+  }, { run: yt, loading: xt } = Q(async (e) => await E.ai.getChatSession({ sessionId: e }), {
     manual: !0,
     onError: () => {
       W.error(k("chat.fetchConversationFailed", { defaultValue: "Failed to fetch conversation" }));
@@ -1064,10 +1074,10 @@ const fn = ({
           case "assistant":
             n.status = d.status === "completed" && n.status === "success" ? "success" : "error", n.message.role = "assistant", n.id !== d.id && d.content && (n.message.content = d.content), n.id = d.id;
             {
-              const g = st(d.metadata), b = ie ? tn(d.tool_calls, g) : [];
+              const g = st(d.metadata), b = ie ? sn(d.tool_calls, g) : [];
               if (b.length && (n.message.toolCalls = _e(n.message.toolCalls, b)), g != null && g.length) {
                 n.message.hitlCards = [...n.message.hitlCards ?? [], ...g];
-                const x = en(d.tool_calls, g);
+                const x = nn(d.tool_calls, g);
                 x != null && x.length && (n.message.pendingClientToolCalls = [
                   ...n.message.pendingClientToolCalls ?? [],
                   ...x
@@ -1105,12 +1115,12 @@ const fn = ({
   I(() => {
     fe((H == null ? void 0 : H.map((e) => V(e))) || []);
   }, [H]);
-  const { run: xt } = Q(async (e) => await E.ai.deleteChatSession({ sessionId: e }), {
+  const { run: vt } = Q(async (e) => await E.ai.deleteChatSession({ sessionId: e }), {
     manual: !0,
     onError(e, [t]) {
       W.error(k("chat.deleteConversationFailed", { defaultValue: "Failed to delete conversation" }));
       const n = R(t);
-      n && P(t, { ...n, loading: !1 });
+      n && $(t, { ...n, loading: !1 });
     },
     onSuccess(e, [t]) {
       ne(t);
@@ -1119,12 +1129,12 @@ const fn = ({
     manual: !0,
     onSuccess: ({ title: e }, [t]) => {
       const n = R(t);
-      n && P(t, { ...n, title: e, loading: !1 });
+      n && $(t, { ...n, title: e, loading: !1 });
     },
     onError: (e, [t]) => {
       W.error(k("chat.titleGenerationFailed", { defaultValue: "Failed to generate title: {{error}}", error: e.message || e }));
       const n = R(t);
-      n && P(t, { ...n, loading: !1 });
+      n && $(t, { ...n, loading: !1 });
     }
   });
   I(() => {
@@ -1143,13 +1153,13 @@ const fn = ({
       const e = me(h);
       if (e && e.length > 0)
         return;
-      bt(h);
+      yt(h);
     }
   }, [h]);
   const We = L(() => {
   });
   We.current = (e, t) => {
-    const n = Wt(t), i = n.domains !== void 0 ? ve(n.domains) : void 0;
+    const n = Wt(t), i = n.domains !== void 0 ? Ce(n.domains) : void 0;
     if (i !== void 0 && Re((m) => [
       ...i.map((d) => ({ type: "domain", value: d })),
       ...m.filter((d) => d.type === "skill")
@@ -1163,35 +1173,35 @@ const fn = ({
       });
       return;
     }
-    xe(e, n.messages, !0, i);
+    xe(e, n.messages, n.anonymous ?? !0, i);
   }, I(() => {
     _ && _((e, t) => {
       We.current(e, t);
     });
   }, [_]);
-  const vt = /* @__PURE__ */ c.jsxs("div", { className: C.sider, children: [
-    /* @__PURE__ */ c.jsx(
-      Ce,
+  const _t = /* @__PURE__ */ u.jsxs("div", { className: v.sider, children: [
+    /* @__PURE__ */ u.jsx(
+      ve,
       {
         onClick: () => {
           xe();
         },
         type: "link",
-        className: C.addBtn,
-        icon: /* @__PURE__ */ c.jsx(Ue, {}),
+        className: v.addBtn,
+        icon: /* @__PURE__ */ u.jsx(Ue, {}),
         loading: Ne,
         children: k("chat.newConversation", { defaultValue: "New Conversation" })
       }
     ),
-    /* @__PURE__ */ c.jsx(le, { spinning: de, wrapperClassName: C.conversationsSpin, children: /* @__PURE__ */ c.jsx(
-      Ft,
+    /* @__PURE__ */ u.jsx(le, { spinning: de, wrapperClassName: v.conversationsSpin, children: /* @__PURE__ */ u.jsx(
+      Dt,
       {
         items: J,
         activeKey: h,
         onActiveChange: async (e) => {
           e && G(e);
         },
-        className: C.conversations,
+        className: v.conversations,
         groupable: !0,
         styles: { item: { padding: "0 8px" } },
         menu: (e) => ({
@@ -1199,34 +1209,34 @@ const fn = ({
             {
               label: k("chat.regenerateTitle"),
               key: "regenerateTitle",
-              icon: /* @__PURE__ */ c.jsx(Rt, {}),
+              icon: /* @__PURE__ */ u.jsx(At, {}),
               onClick: () => {
-                P(e.key, { ...e, loading: !0 }), Ct(e.key);
+                $(e.key, { ...e, loading: !0 }), Ct(e.key);
               }
             },
             {
               label: p("delete"),
               key: "delete",
-              icon: /* @__PURE__ */ c.jsx(At, {}),
+              icon: /* @__PURE__ */ u.jsx(Lt, {}),
               danger: !0,
               onClick: () => {
-                P(e.key, { ...e, loading: !0 }), xt(e.key);
+                $(e.key, { ...e, loading: !0 }), vt(e.key);
               }
             }
           ]
         })
       }
     ) })
-  ] }), _t = /* @__PURE__ */ c.jsx(c.Fragment, { children: /* @__PURE__ */ c.jsx(et, { direction: "vertical", style: { width: "100%", maxWidth: 700, margin: "0 auto" }, children: /* @__PURE__ */ c.jsx(
+  ] }), kt = /* @__PURE__ */ u.jsx(u.Fragment, { children: /* @__PURE__ */ u.jsx(et, { direction: "vertical", style: { width: "100%", maxWidth: 700, margin: "0 auto" }, children: /* @__PURE__ */ u.jsx(
     Ye,
     {
-      footer: (e) => /* @__PURE__ */ c.jsxs(ce, { justify: "space-between", align: "center", children: [
-        /* @__PURE__ */ c.jsx(ce, { gap: "small", align: "center", children: /* @__PURE__ */ c.jsx(
+      footer: (e) => /* @__PURE__ */ u.jsxs(ce, { justify: "space-between", align: "center", children: [
+        /* @__PURE__ */ u.jsx(ce, { gap: "small", align: "center", children: /* @__PURE__ */ u.jsx(
           tt,
           {
-            open: dt,
+            open: ft,
             onOpenChange: (t, n) => {
-              (n.source === "trigger" || t) && ft(t);
+              (n.source === "trigger" || t) && mt(t);
             },
             menu: {
               selectedKeys: U.map((t) => t.value),
@@ -1239,7 +1249,7 @@ const fn = ({
                 key: t.key
               }))
             },
-            children: /* @__PURE__ */ c.jsxs(Ye.Switch, { value: !1, icon: /* @__PURE__ */ c.jsx(wt, {}), children: [
+            children: /* @__PURE__ */ u.jsxs(Ye.Switch, { value: !1, icon: /* @__PURE__ */ u.jsx(St, {}), children: [
               k("chat.skill", { defaultValue: "Skills" }),
               " ",
               "(",
@@ -1248,7 +1258,7 @@ const fn = ({
             ] })
           }
         ) }),
-        /* @__PURE__ */ c.jsx(ce, { align: "center", children: e })
+        /* @__PURE__ */ u.jsx(ce, { align: "center", children: e })
       ] }),
       suffix: !1,
       value: ze,
@@ -1262,17 +1272,17 @@ const fn = ({
           Fe();
           return;
         }
-        mt();
+        gt();
       },
       loading: oe || Y !== null,
-      className: Ut(C.sender, "chat-sender"),
+      className: Ut(v.sender, "chat-sender"),
       placeholder: k("chat.inputPlaceholder")
     }
   ) }) });
-  return /* @__PURE__ */ c.jsx(Dt, { children: /* @__PURE__ */ c.jsxs(dn.Provider, { value: { onReload: gt, setMessage: N }, children: [
-    /* @__PURE__ */ c.jsxs("div", { style: { height: "50px", width: "100%", position: "relative" }, children: [
-      /* @__PURE__ */ c.jsx(
-        Kt.Group,
+  return /* @__PURE__ */ u.jsx(Nt, { children: /* @__PURE__ */ u.jsxs(mn.Provider, { value: { onReload: pt, setMessage: N }, children: [
+    /* @__PURE__ */ u.jsxs("div", { style: { height: "50px", width: "100%", position: "relative" }, children: [
+      /* @__PURE__ */ u.jsx(
+        Et.Group,
         {
           style: {
             position: "absolute",
@@ -1282,15 +1292,15 @@ const fn = ({
           },
           options: [
             {
-              label: /* @__PURE__ */ c.jsx(St, { style: { transform: "scaleX(-1)" } }),
+              label: /* @__PURE__ */ u.jsx(It, { style: { transform: "scaleX(-1)" } }),
               value: "classic"
             },
             {
-              label: /* @__PURE__ */ c.jsx(It, {}),
+              label: /* @__PURE__ */ u.jsx(Tt, {}),
               value: "sidebar"
             },
             {
-              label: /* @__PURE__ */ c.jsx(Tt, {}),
+              label: /* @__PURE__ */ u.jsx(Rt, {}),
               value: "float-sidebar"
             }
           ],
@@ -1299,20 +1309,20 @@ const fn = ({
           value: r
         }
       ),
-      /* @__PURE__ */ c.jsxs(et, { style: { float: "right", marginTop: 10 }, children: [
-        /* @__PURE__ */ c.jsx(
-          Ce,
+      /* @__PURE__ */ u.jsxs(et, { style: { float: "right", marginTop: 10 }, children: [
+        /* @__PURE__ */ u.jsx(
+          ve,
           {
             type: "primary",
             onClick: () => {
               xe();
             },
             loading: Ne,
-            icon: /* @__PURE__ */ c.jsx(Ue, {}),
+            icon: /* @__PURE__ */ u.jsx(Ue, {}),
             style: { display: r === "classic" ? "none" : "block" }
           }
         ),
-        /* @__PURE__ */ c.jsx(
+        /* @__PURE__ */ u.jsx(
           tt,
           {
             menu: {
@@ -1325,36 +1335,36 @@ const fn = ({
               }
             },
             placement: "bottomRight",
-            children: /* @__PURE__ */ c.jsx(Ce, { icon: de ? /* @__PURE__ */ c.jsx(le, { size: "small" }) : /* @__PURE__ */ c.jsx(Lt, {}), style: { display: r === "classic" ? "none" : "block" } })
+            children: /* @__PURE__ */ u.jsx(ve, { icon: de ? /* @__PURE__ */ u.jsx(le, { size: "small" }) : /* @__PURE__ */ u.jsx(Ht, {}), style: { display: r === "classic" ? "none" : "block" } })
           }
         ),
-        /* @__PURE__ */ c.jsx(Ce, { type: "text", onClick: () => u(!1), children: /* @__PURE__ */ c.jsx(Ht, {}) })
+        /* @__PURE__ */ u.jsx(ve, { type: "text", onClick: () => c(!1), children: /* @__PURE__ */ u.jsx(Ft, {}) })
       ] })
     ] }),
-    /* @__PURE__ */ c.jsxs("div", { className: r === "classic" ? C.classicLayout : C.siderLayout, style: {
+    /* @__PURE__ */ u.jsxs("div", { className: r === "classic" ? v.classicLayout : v.siderLayout, style: {
       minWidth: r === "classic" ? "500px" : "400px"
     }, children: [
-      r === "classic" ? vt : null,
-      /* @__PURE__ */ c.jsxs("div", { className: C.chat, children: [
-        /* @__PURE__ */ c.jsx(
-          fn,
+      r === "classic" ? _t : null,
+      /* @__PURE__ */ u.jsxs("div", { className: v.chat, children: [
+        /* @__PURE__ */ u.jsx(
+          gn,
           {
             bubble: a,
             messages: y,
-            loading: yt || Ne,
+            loading: xt || Ne,
             layout: r,
             onSendMessage: Ge,
             hitlSubmitting: Y,
-            onHITLSelect: ht,
+            onHITLSelect: bt,
             showToolCalls: X
           }
         ),
-        _t
+        kt
       ] })
     ] })
   ] }) });
 };
 export {
-  An as AIChat,
-  An as default
+  Fn as AIChat,
+  Fn as default
 };

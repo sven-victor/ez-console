@@ -1492,7 +1492,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       ]
     }
   ) });
-}, tl = et(() => import("./json-schema-config-form.js").then((l) => ({
+}, tl = et(() => import("./components.js").then((l) => l.r).then((l) => ({
   default: l.JsonSchemaConfigFormItem
 }))), { TextArea: _t } = v, sl = ({ schema: l, uiSchema: t, name: a, provider: s }) => {
   const { t: n } = G("ai", { keyPrefix: `models.${s}.form` });
@@ -2061,7 +2061,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     )
   ] });
-}, al = et(() => import("./json-schema-config-form.js").then((l) => ({
+}, al = et(() => import("./components.js").then((l) => l.r).then((l) => ({
   default: l.JsonSchemaConfigFormItem
 }))), { TextArea: il } = v, nl = ({ schema: l, uiSchema: t, name: a, type: s }) => {
   const { t: n } = G("system", { keyPrefix: `settings.toolsets.${s}.form` });
@@ -5466,7 +5466,7 @@ const Ml = ({ from: l, to: t, label: a, color: s, kind: n, failed: i, styles: r,
 }, ga = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   default: Dl
-}, Symbol.toStringTag, { value: "Module" })), ql = et(() => import("./json-schema-config-form.js")), { Text: $e, Title: Ul } = Ge, $l = ({
+}, Symbol.toStringTag, { value: "Module" })), ql = et(() => import("./components.js").then((l) => l.r)), { Text: $e, Title: Ul } = Ge, $l = ({
   content: l,
   maxHeight: t = 400
 }) => {
