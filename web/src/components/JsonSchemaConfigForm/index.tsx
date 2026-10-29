@@ -18,7 +18,7 @@ import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, us
 import Form, { Templates } from '@rjsf/antd';
 import { FieldProps, FieldTemplateProps, RJSFSchema, Widget } from '@rjsf/utils/lib';
 import { customizeValidator } from '@rjsf/validator-ajv8';
-import { createStyles } from 'antd-style';
+import { createStyles, useTheme } from 'antd-style';
 import { useRequest } from 'ahooks';
 import api from '@/service/api';
 import { request } from '@/service/client';
@@ -31,6 +31,7 @@ import { TFunction } from 'i18next';
 import { isNumber } from 'lodash-es';
 import { useTranslation } from 'react-i18next';
 import localizer from 'ajv-i18n';
+import SelectWidget from './SelectWidget';
 
 const { FieldTemplate: FieldTemplateAntd } = Templates
 
@@ -124,6 +125,7 @@ function parseJson(str: string): unknown {
 
 /** Object field that renders a CodeMirror JSON editor; supports schema.examples dropdown in top-right. */
 function ObjectField({ t, ...props }: FieldProps & { t?: TFunction }) {
+  const { isDarkMode } = useTheme();
   const { formData, schema, onChange, disabled, id, required, name, fieldPathId } = props;
   const examples = Array.isArray((schema as { examples?: unknown[] }).examples)
     ? (schema as { examples: unknown[] }).examples
@@ -228,6 +230,7 @@ function ObjectField({ t, ...props }: FieldProps & { t?: TFunction }) {
       <ReactCodeMirror
         value={localValue}
         height="200px"
+        theme={isDarkMode ? 'dark' : 'light'}
         extensions={[json()]}
         onChange={handleEditorChange}
         editable={!disabled}
@@ -661,6 +664,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       widgets={{
         remoteSelect: RemoteSelectWidget,
         toolsetsSelect: ToolsetsSelectWidget,
+        select: SelectWidget,
       }}
       templates={{
         FieldTemplate: I18nFieldTemplate(t),
