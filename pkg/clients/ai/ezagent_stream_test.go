@@ -16,9 +16,14 @@ package ai
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 	"testing"
+
+	"github.com/sven-victor/ez-agent/event"
+	"github.com/sven-victor/ez-agent/tool"
 )
 
 func newTestChatStream(buf int) *ezAgentChatStream {
@@ -134,6 +139,89 @@ func TestEZAgentChatStreamRecvHandoffAfterClientToolPending(t *testing.T) {
 	}
 	if _, err := s.Recv(context.Background()); !errors.Is(err, ErrClientToolHandoff) {
 		t.Fatalf("handoff Recv: %v", err)
+	}
+}
+
+func TestModelTextAfterToolStartsANewMarkdownBlock(t *testing.T) {
+	s := newTestChatStream(16)
+	s.ctx = context.Background()
+
+	steps := []event.Event{
+		event.ModelDelta{TextDelta: "正在调用xxx查询xxx："},
+		event.ToolStarted{Call: tool.Call{ID: "1", Name: "query_xxx", Input: json.RawMessage(`{}`)}},
+		event.ToolFinished{Call: tool.Call{ID: "1", Name: "query_xxx", Input: json.RawMessage(`{}`)}, Result: tool.Result{OK: true}},
+		event.ModelDelta{TextDelta: "正在调用yyy查询yyy："},
+		event.ToolStarted{Call: tool.Call{ID: "2", Name: "query_yyy", Input: json.RawMessage(`{}`)}},
+		event.ToolFinished{Call: tool.Call{ID: "2", Name: "query_yyy", Input: json.RawMessage(`{}`)}, Result: tool.Result{OK: true}},
+		event.ModelDelta{TextDelta: "###执行结果"},
+		event.ModelDelta{TextDelta: "\n正文"},
+	}
+	for _, ev := range steps {
+		if err := s.handleEvent(ev); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	got := joinedContent(s)
+	want := "正在调用xxx查询xxx：\n\n正在调用yyy查询yyy：\n\n###执行结果\n正文"
+	if got != want {
+		t.Fatalf("content %q, want %q", got, want)
+	}
+}
+
+func TestModelTextAfterToolKeepsOpeningFenceOnItsOwnLine(t *testing.T) {
+	s := newTestChatStream(8)
+	s.ctx = context.Background()
+
+	steps := []event.Event{
+		event.ModelDelta{TextDelta: "正在调用xxx查询xxx："},
+		event.ModelDelta{TextDelta: "正在调用yyy查询yyy："},
+		event.ToolStarted{Call: tool.Call{ID: "1", Name: "ui_lookup", Input: json.RawMessage(`{}`)}},
+		event.ModelDelta{TextDelta: "```\nprint(1)\n```"},
+	}
+	for _, ev := range steps {
+		if err := s.handleEvent(ev); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	got := joinedContent(s)
+	want := "正在调用xxx查询xxx：正在调用yyy查询yyy：\n\n```\nprint(1)\n```"
+	if got != want {
+		t.Fatalf("content %q, want %q", got, want)
+	}
+}
+
+func TestModelTextAlreadySeparatedIsNotPaddedAgain(t *testing.T) {
+	s := newTestChatStream(8)
+	s.ctx = context.Background()
+	steps := []event.Event{
+		event.ModelDelta{TextDelta: "done\n\n"},
+		event.ToolStarted{Call: tool.Call{ID: "1", Name: "query", Input: json.RawMessage(`{}`)}},
+		event.ModelDelta{TextDelta: "### 标题"},
+	}
+	for _, ev := range steps {
+		if err := s.handleEvent(ev); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got := joinedContent(s)
+	if got != "done\n\n### 标题" {
+		t.Fatalf("content %q", got)
+	}
+}
+
+func joinedContent(s *ezAgentChatStream) string {
+	var b strings.Builder
+	for {
+		select {
+		case ev := <-s.pending:
+			if ev.EventType == EventTypeContent {
+				b.WriteString(ev.Content)
+			}
+		default:
+			return b.String()
+		}
 	}
 }
 

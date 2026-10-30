@@ -53,6 +53,11 @@ type ezAgentChatStream struct {
 	titles        DisplayTitleCatalog
 	titlesLoaded  bool
 	titlesRetried bool
+	// breakBeforeNextText is set after a tool boundary. The next model turn
+	// is a new paragraph so block markdown (headings, fences) stays at the
+	// start of a line. Deltas inside one turn are not separated.
+	breakBeforeNextText bool
+	textTail            string // last two bytes of assistant text already emitted
 }
 
 func (s *ezAgentChatStream) Recv(ctx context.Context) (*ChatStreamEvent, error) {
@@ -185,15 +190,22 @@ func (s *ezAgentChatStream) handleEvent(ev event.Event) error {
 		if e.TextDelta == "" {
 			return nil
 		}
+		delta := e.TextDelta
+		if s.breakBeforeNextText {
+			delta = markdownTurnGap(s.textTail) + delta
+			s.breakBeforeNextText = false
+		}
+		s.noteText(delta)
 		return s.emit(&ChatStreamEvent{
 			MessageID: s.messageID,
-			Content:   e.TextDelta,
+			Content:   delta,
 			Role:      model.AIChatMessageRoleAssistant,
 			EventType: EventTypeContent,
 		})
 	case event.ModelFinished:
 		return nil
 	case event.ToolStarted:
+		s.markToolBoundary()
 		if !s.shouldDisplayToolCall(e.Call.Name) {
 			return nil
 		}
@@ -226,6 +238,7 @@ func (s *ezAgentChatStream) handleEvent(ev event.Event) error {
 		if !e.Result.OK {
 			status = ToolCallStatusFailed
 		}
+		s.markToolBoundary()
 		if !s.shouldDisplayToolCall(e.Call.Name) {
 			return nil
 		}
@@ -286,6 +299,39 @@ func (s *ezAgentChatStream) handleEvent(ev event.Event) error {
 		return nil
 	default:
 		return nil
+	}
+}
+
+// markdownTurnGap is the newline prefix that puts the next model turn on
+// its own paragraph. Block markdown is only recognized at the start of a line;
+// gluing it to the previous turn ("……：###标题" or "……：```") leaves the
+// heading and fence unparsed.
+func markdownTurnGap(prevTail string) string {
+	switch {
+	case prevTail == "":
+		return ""
+	case strings.HasSuffix(prevTail, "\n\n"):
+		return ""
+	case strings.HasSuffix(prevTail, "\n"):
+		return "\n"
+	default:
+		return "\n\n"
+	}
+}
+
+func (s *ezAgentChatStream) noteText(delta string) {
+	if delta == "" {
+		return
+	}
+	s.textTail += delta
+	if len(s.textTail) > 2 {
+		s.textTail = s.textTail[len(s.textTail)-2:]
+	}
+}
+
+func (s *ezAgentChatStream) markToolBoundary() {
+	if s.textTail != "" {
+		s.breakBeforeNextText = true
 	}
 }
 
