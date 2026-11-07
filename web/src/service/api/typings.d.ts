@@ -94,6 +94,8 @@ declare global {
     }
   
     interface AIModel {
+      /** Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. */
+      auto_cache_breakpoint: boolean;
       /** Configuration (includes api_key, model_id, base_url, etc.) */
       config: Record<string, any>;
       created_at: string;
@@ -317,6 +319,8 @@ declare global {
     type Condition = true;
   
     interface CreateAIModelRequest {
+      /** Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true. */
+      auto_cache_breakpoint?: boolean;
       config: Record<string, any>;
       description?: string;
       is_default?: boolean;
@@ -2526,7 +2530,7 @@ declare global {
   
     type ToolSetStatus = "enabled" | "disabled";
   
-    type ToolSetType = "utils";
+    type ToolSetType = "local_complex" | "utils";
   
     interface ToolSetTypeDefinition {
       allow_manual_create: boolean;
@@ -2559,6 +2563,8 @@ declare global {
     }
   
     interface UpdateAIModelRequest {
+      /** Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true. */
+      auto_cache_breakpoint?: boolean;
       config?: Record<string, any>;
       description?: string;
       is_default?: boolean;

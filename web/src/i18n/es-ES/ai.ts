@@ -38,6 +38,9 @@ export default {
     systemPrompt: 'Prompt del sistema',
     systemPromptHelp: 'Prompt del sistema opcional antepuesto a cada conversación de este modelo.',
     systemPromptPlaceholder: 'Introduzca el prompt del sistema (opcional)',
+    autoCacheBreakpoint: 'Añadir automáticamente un punto de interrupción de caché',
+    autoCacheBreakpointHelp:
+      'Inserta un punto de interrupción de caché del prompt después del prompt del sistema de este modelo. Se ignora si el modelo no lo admite.',
     maxChatTokens: 'Máx. tokens de chat (contexto / resumen)',
     maxChatTokensHelp:
       '0 usa solo max_tokens de la configuración del proveedor. Un valor positivo fija la ventana de contexto para el resumen de este modelo.',
@@ -153,6 +156,10 @@ export default {
     completionTokens: 'Tokens de Completado',
     totalTokens: 'Tokens Totales',
     activeTokens: 'Tokens Activos',
+    cacheReadTokens: 'Lectura de caché',
+    cacheWriteTokens: 'Escritura de caché',
+    cacheHitRate: 'Tasa de aciertos de caché',
+    cacheIncludedHint: 'Los tokens de caché están incluidos en los tokens de prompt.',
     tool: 'Herramienta',
     arguments: 'Argumentos',
     result: 'Resultado',

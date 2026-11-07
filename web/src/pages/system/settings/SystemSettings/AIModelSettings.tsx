@@ -81,6 +81,7 @@ interface AIModel {
   status: 'enabled' | 'disabled';
   is_default: boolean;
   system_prompt?: string;
+  auto_cache_breakpoint?: boolean;
   max_chat_tokens?: number;
   max_chat_iterations?: number;
   purposes?: string[];
@@ -108,6 +109,7 @@ interface AIModelFormData {
   is_default?: boolean;
   status?: 'enabled' | 'disabled';
   system_prompt?: string;
+  auto_cache_breakpoint?: boolean;
   max_chat_tokens?: number;
   max_chat_iterations?: number;
 }
@@ -343,6 +345,7 @@ const AIModelSettings: React.FC = () => {
       config: config, // Spread config fields to form
       status: record.status,
       system_prompt: record.system_prompt ?? '',
+      auto_cache_breakpoint: record.auto_cache_breakpoint ?? true,
       max_chat_tokens: record.max_chat_tokens ?? 0,
       max_chat_iterations: record.max_chat_iterations ?? 0,
     };
@@ -368,6 +371,7 @@ const AIModelSettings: React.FC = () => {
         is_default: false,
         status: 'enabled' as const,
         system_prompt: m.system_prompt ?? '',
+        auto_cache_breakpoint: m.auto_cache_breakpoint ?? true,
         max_chat_tokens: m.max_chat_tokens ?? 0,
         max_chat_iterations: m.max_chat_iterations ?? 0,
       });
@@ -395,6 +399,7 @@ const AIModelSettings: React.FC = () => {
       is_default: values.is_default,
       status: values.status,
       system_prompt: values.system_prompt ?? '',
+      auto_cache_breakpoint: values.auto_cache_breakpoint ?? true,
       max_chat_tokens: values.max_chat_tokens ?? 0,
       max_chat_iterations: values.max_chat_iterations ?? 0,
     };
@@ -742,6 +747,17 @@ const AIModelSettings: React.FC = () => {
                 </Form.Item>
               </Col>
             </Row>
+            <Form.Item
+              name="auto_cache_breakpoint"
+              valuePropName="checked"
+              initialValue={true}
+              label={t('models.autoCacheBreakpoint', { defaultValue: 'Automatically add cache breakpoint' })}
+              tooltip={t('models.autoCacheBreakpointHelp', {
+                defaultValue: 'Insert a prompt-cache breakpoint after this model\'s system prompt. Ignored when the model does not support it.',
+              })}
+            >
+              <Switch />
+            </Form.Item>
             <Form.Item
               name="is_default"
               valuePropName="checked"

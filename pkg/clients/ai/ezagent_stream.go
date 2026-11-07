@@ -347,11 +347,10 @@ func (s *ezAgentChatStream) emit(ev *ChatStreamEvent) error {
 }
 
 func buildAgent(ctx context.Context, provider aimodel.Provider, opts *ChatCompletionOptions, preferComplete bool) (*agent.Agent, *agentTraceSink, error) {
-	systemParts := collectSystemText(opts)
 	var agentOpts []agent.Option
 	agentOpts = append(agentOpts, agent.WithProvider(provider))
-	if systemParts != "" {
-		agentOpts = append(agentOpts, agent.WithSystem(systemParts))
+	if sys := collectSystem(opts); sys.Text != "" || len(sys.Parts) > 0 {
+		agentOpts = append(agentOpts, agent.WithSystemConfig(sys))
 	}
 
 	maxTurns := opts.MaxIterations
@@ -435,26 +434,40 @@ func buildAgent(ctx context.Context, provider aimodel.Provider, opts *ChatComple
 	return a, sink, err
 }
 
-func collectSystemText(opts *ChatCompletionOptions) string {
-	var b strings.Builder
-	// Skill metadata is injected by PrepareChatCompletionSkillLoader into message
-	// system prompts and merged via splitSystemFromMessages.
-	if opts != nil {
-		if p := strings.TrimSpace(opts.ModelSystemPrompt); p != "" {
-			b.WriteString(p)
-		}
-		for _, p := range opts.EphemeralSystemPrompts {
-			p = strings.TrimSpace(p)
-			if p == "" {
-				continue
-			}
-			if b.Len() > 0 {
-				b.WriteString("\n\n")
-			}
-			b.WriteString(p)
+// collectSystem splits the stable model prompt from ephemeral prompts.
+// A cache breakpoint is inserted after the stable prompt unless disabled or the stable prompt is empty.
+// Providers that do not support breakpoints ignore the marker.
+func collectSystem(opts *ChatCompletionOptions) aimodel.System {
+	if opts == nil {
+		return aimodel.System{}
+	}
+	stable := strings.TrimSpace(opts.ModelSystemPrompt)
+	ephemeralParts := make([]string, 0, len(opts.EphemeralSystemPrompts))
+	for _, p := range opts.EphemeralSystemPrompts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			ephemeralParts = append(ephemeralParts, p)
 		}
 	}
-	return b.String()
+	ephemeral := strings.Join(ephemeralParts, "\n\n")
+	if opts.AutoCacheBreakpointDisabled || stable == "" {
+		text := stable
+		if ephemeral != "" {
+			if text != "" {
+				text += "\n\n"
+			}
+			text += ephemeral
+		}
+		return aimodel.System{Text: text}
+	}
+	sys := aimodel.System{
+		Text:  stable,
+		Parts: []message.Part{message.CacheBreakpoint{}},
+	}
+	if ephemeral != "" {
+		sys.Parts = append(sys.Parts, message.Text{Text: ephemeral})
+	}
+	return sys
 }
 
 func messagesToRunInput(msgs []ChatMessage) run.Input {

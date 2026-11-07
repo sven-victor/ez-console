@@ -27,8 +27,9 @@ import {
   Typography,
   Empty,
   Spin,
-  Descriptions,
   Collapse,
+  Statistic,
+  Progress,
   Segmented,
   Drawer,
 } from 'antd';
@@ -261,6 +262,36 @@ const useStyles = createStyles(({ token, css }) => ({
     color: ${token.colorTextSecondary};
     z-index: 2;
   `,
+  tokenPanel: css`
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: inherit;
+    overflow: auto;
+  `,
+  tokenGrid: css`
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  `,
+  tokenStat: css`
+    padding: 8px 12px;
+    border-radius: ${token.borderRadius}px;
+    background: ${token.colorFillQuaternary};
+    .ant-statistic-title {
+      margin-bottom: 2px;
+      font-size: 12px;
+    }
+    .ant-statistic-content {
+      font-size: 20px;
+      font-variant-numeric: tabular-nums;
+    }
+  `,
+  cacheHint: css`
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+  `,
 }));
 
 interface JsonPayload {
@@ -466,6 +497,27 @@ interface TokenUsageStats {
   completion_tokens: number;
   total_tokens: number;
   active_tokens: number;
+  /** Subset of prompt_tokens. Absent on traces recorded before cache fields existed. */
+  cache_read_tokens?: number;
+  cache_write_tokens?: number;
+}
+
+function hasCacheFields(stats: TokenUsageStats): boolean {
+  return stats.cache_read_tokens != null || stats.cache_write_tokens != null;
+}
+
+function cacheHitPercent(prompt: number, cacheRead: number): number {
+  if (prompt <= 0 || cacheRead <= 0) return 0;
+  return Math.min(100, Math.round((cacheRead / prompt) * 1000) / 10);
+}
+
+function formatTokenUsageSuffix(stats: TokenUsageStats | null): string {
+  if (!stats || stats.total_tokens == null) return '';
+  const total = stats.total_tokens.toLocaleString();
+  if (stats.cache_read_tokens == null || stats.prompt_tokens <= 0 || stats.cache_read_tokens <= 0) {
+    return ` · ${total}`;
+  }
+  return ` · ${total} · cache ${cacheHitPercent(stats.prompt_tokens, stats.cache_read_tokens)}%`;
 }
 interface ToolCall {
   tool_call_id?: string;
@@ -500,43 +552,72 @@ const TokenUsageBlock: React.FC<{ entry: ParsedTraceEvent; t: Translate, maxHeig
   t,
   maxHeight,
 }) => {
+  const { styles } = useStyles();
   if (!entry.isJSON) {
     return <JsonBlock payload={entry.display} maxHeight={maxHeight} />;
   }
   const parsed = entry.parsed as TokenUsageStats;
+  const showCache = hasCacheFields(parsed);
+  const cacheRead = parsed.cache_read_tokens ?? 0;
+  const cacheWrite = parsed.cache_write_tokens ?? 0;
+  const hit = cacheHitPercent(parsed.prompt_tokens, cacheRead);
+  const stats: { key: string; label: string; value: number }[] = [
+    { key: 'prompt', label: t('trace.promptTokens', { defaultValue: 'Prompt Tokens' }), value: parsed.prompt_tokens },
+    { key: 'completion', label: t('trace.completionTokens', { defaultValue: 'Completion Tokens' }), value: parsed.completion_tokens },
+    { key: 'total', label: t('trace.totalTokens', { defaultValue: 'Total Tokens' }), value: parsed.total_tokens },
+    { key: 'active', label: t('trace.activeTokens', { defaultValue: 'Active Tokens' }), value: parsed.active_tokens },
+  ];
   return (
-    <Descriptions size="small" column={2} bordered style={{ maxHeight: maxHeight, overflow: 'auto' }}>
-      {parsed.prompt_tokens !== undefined && (
-        <Descriptions.Item
-          label={t('trace.promptTokens', { defaultValue: 'Prompt Tokens' })}
-        >
-          {parsed.prompt_tokens}
-        </Descriptions.Item>
+    <div className={styles.tokenPanel} style={{ maxHeight }}>
+      <div className={styles.tokenGrid}>
+        {stats.map((item) => (
+          item.value !== undefined ? (
+            <div key={item.key} className={styles.tokenStat}>
+              <Statistic title={item.label} value={item.value} groupSeparator="," />
+            </div>
+          ) : null
+        ))}
+      </div>
+      {showCache && (
+        <div>
+          <div className={styles.tokenGrid}>
+            <div className={styles.tokenStat}>
+              <Statistic
+                title={t('trace.cacheReadTokens', { defaultValue: 'Cache read' })}
+                value={cacheRead}
+                groupSeparator=","
+              />
+            </div>
+            <div className={styles.tokenStat}>
+              <Statistic
+                title={t('trace.cacheWriteTokens', { defaultValue: 'Cache write' })}
+                value={cacheWrite}
+                groupSeparator=","
+              />
+            </div>
+            <div className={styles.tokenStat}>
+              <Statistic
+                title={t('trace.cacheHitRate', { defaultValue: 'Cache hit rate' })}
+                value={hit}
+                precision={hit % 1 === 0 ? 0 : 1}
+                suffix="%"
+              />
+            </div>
+          </div>
+          <Progress
+            percent={hit}
+            showInfo={false}
+            size="small"
+            style={{ marginTop: 8, marginBottom: 0 }}
+          />
+          <Text type="secondary" className={styles.cacheHint}>
+            {t('trace.cacheIncludedHint', {
+              defaultValue: 'Cache tokens are included in prompt tokens.',
+            })}
+          </Text>
+        </div>
       )}
-      {parsed.completion_tokens !== undefined && (
-        <Descriptions.Item
-          label={t('trace.completionTokens', {
-            defaultValue: 'Completion Tokens',
-          })}
-        >
-          {parsed.completion_tokens}
-        </Descriptions.Item>
-      )}
-      {parsed.total_tokens !== undefined && (
-        <Descriptions.Item
-          label={t('trace.totalTokens', { defaultValue: 'Total Tokens' })}
-        >
-          {parsed.total_tokens}
-        </Descriptions.Item>
-      )}
-      {parsed.active_tokens !== undefined && (
-        <Descriptions.Item
-          label={t('trace.activeTokens', { defaultValue: 'Active Tokens' })}
-        >
-          {parsed.active_tokens}
-        </Descriptions.Item>
-      )}
-    </Descriptions>
+    </div>
   );
 };
 
@@ -885,8 +966,7 @@ function buildSequenceMessages(
         };
       case 'token_usage': {
         const parsed = entry.isJSON ? (entry.parsed as TokenUsageStats) : null;
-        const extra =
-          parsed?.total_tokens != null ? ` · ${parsed.total_tokens}` : '';
+        const extra = formatTokenUsageSuffix(parsed);
         return {
           id: event.id,
           entry,

@@ -7956,6 +7956,10 @@ const docTemplate = `{
                 "provider"
             ],
             "properties": {
+                "auto_cache_breakpoint": {
+                    "description": "Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true.",
+                    "type": "boolean"
+                },
                 "config": {
                     "type": "object"
                 },
@@ -8120,6 +8124,10 @@ const docTemplate = `{
                 "provider"
             ],
             "properties": {
+                "auto_cache_breakpoint": {
+                    "description": "Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true.",
+                    "type": "boolean"
+                },
                 "config": {
                     "type": "object"
                 },
@@ -9263,6 +9271,7 @@ const docTemplate = `{
         "model.AIModel": {
             "type": "object",
             "required": [
+                "auto_cache_breakpoint",
                 "config",
                 "created_at",
                 "created_by",
@@ -9281,6 +9290,10 @@ const docTemplate = `{
                 "updated_by"
             ],
             "properties": {
+                "auto_cache_breakpoint": {
+                    "description": "Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it.",
+                    "type": "boolean"
+                },
                 "config": {
                     "description": "Configuration (includes api_key, model_id, base_url, etc.)",
                     "type": "object"
@@ -12913,9 +12926,41 @@ const docTemplate = `{
                 1000000,
                 1000000000,
                 60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
+                3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
+                1,
+                1000,
+                1000000,
+                1000000000,
+                60000000000,
                 3600000000000
             ],
             "x-enum-varnames": [
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
+                "minDuration",
+                "maxDuration",
+                "Nanosecond",
+                "Microsecond",
+                "Millisecond",
+                "Second",
+                "Minute",
+                "Hour",
                 "minDuration",
                 "maxDuration",
                 "Nanosecond",
@@ -12937,9 +12982,11 @@ const docTemplate = `{
         "toolset.ToolSetType": {
             "type": "string",
             "enum": [
+                "local_complex",
                 "utils"
             ],
             "x-enum-varnames": [
+                "ToolSetTypeLocalComplex",
                 "ToolSetTypeUtils"
             ]
         },

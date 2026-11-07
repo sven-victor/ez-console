@@ -175,7 +175,7 @@ func (s *aiModelService) UpdateAIModel(ctx context.Context, organizationID, id s
 
 		if err := tx.Model(&model.AIModel{}).
 			Where("organization_id = ? AND resource_id = ?", organizationID, id).
-			Select("config", "name", "description", "provider", "is_default", "updated_by", "status", "system_prompt", "max_chat_tokens", "max_chat_iterations").
+			Select("config", "name", "description", "provider", "is_default", "updated_by", "status", "system_prompt", "auto_cache_breakpoint", "max_chat_tokens", "max_chat_iterations").
 			Updates(req).Error; err != nil {
 			return fmt.Errorf("failed to update AI model: %w", err)
 		}

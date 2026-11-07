@@ -17,22 +17,9 @@ package ai
 import (
 	"context"
 
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sven-victor/ez-agent/event"
 	aimodel "github.com/sven-victor/ez-agent/model"
 	"github.com/sven-victor/ez-console/pkg/util"
-)
-
-var (
-	// aiTokensTotal tracks the total number of tokens used in AI interactions
-	aiTokensTotal = promauto.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "ai_tokens_total",
-			Help: "Total number of tokens used in AI interactions",
-		},
-		[]string{"type"}, // type can be "prompt" or "completion"
-	)
 )
 
 var _ ClassicChatClient = (*classicChatClient)(nil)
@@ -51,7 +38,7 @@ func (c *ClassicChatClientFactory) CreateClient(ctx context.Context, organizatio
 	if err != nil {
 		return nil, err
 	}
-	return &classicChatClient{aiClient: client}, nil
+	return &classicChatClient{aiClient: observeProvider(client)}, nil
 }
 
 // GetConfigFields implements AIClientFactory.
@@ -84,22 +71,7 @@ func (c *classicChatClient) Exchange(ctx context.Context, messages []ChatMessage
 	if client, ok := c.aiClient.(ClassicChatClient); ok {
 		return client.Exchange(ctx, messages, options...)
 	}
-
-	opts := ChatCompletionOptions{
-		MaxIterations:     10,
-		ToolResultMaxSize: 32 * 1024,
-	}
-	for _, option := range options {
-		option(&opts)
-	}
-
-	var err error
-	messages, err = PrepareChatCompletionSkillLoader(ctx, &opts, messages)
-	if err != nil {
-		return nil, err
-	}
-
-	return runEZAgent(ctx, c.aiClient, messages, opts)
+	return exchangeViaAgent(ctx, c.aiClient, messages, options...)
 }
 
 // ExchangeStream implements ClassicChatClient using ez-agent RunStream.
@@ -107,6 +79,10 @@ func (c *classicChatClient) ExchangeStream(ctx context.Context, messages []ChatM
 	if client, ok := c.aiClient.(ClassicChatClient); ok {
 		return client.ExchangeStream(ctx, messages, options...)
 	}
+	return exchangeStreamViaAgent(ctx, c.aiClient, messages, options...)
+}
+
+func exchangeViaAgent(ctx context.Context, provider aimodel.Provider, messages []ChatMessage, options ...WithChatOptions) ([]ChatMessage, error) {
 	opts := ChatCompletionOptions{
 		MaxIterations:     10,
 		ToolResultMaxSize: 32 * 1024,
@@ -120,8 +96,24 @@ func (c *classicChatClient) ExchangeStream(ctx context.Context, messages []ChatM
 	if err != nil {
 		return nil, err
 	}
+	return runEZAgent(ctx, provider, messages, opts)
+}
 
-	return newEZAgentStream(ctx, c.aiClient, messages, opts, false)
+func exchangeStreamViaAgent(ctx context.Context, provider aimodel.Provider, messages []ChatMessage, options ...WithChatOptions) (ChatStream, error) {
+	opts := ChatCompletionOptions{
+		MaxIterations:     10,
+		ToolResultMaxSize: 32 * 1024,
+	}
+	for _, option := range options {
+		option(&opts)
+	}
+
+	var err error
+	messages, err = PrepareChatCompletionSkillLoader(ctx, &opts, messages)
+	if err != nil {
+		return nil, err
+	}
+	return newEZAgentStream(ctx, provider, messages, opts, false)
 }
 
 // Caps implements ClassicChatClient.

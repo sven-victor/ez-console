@@ -433,6 +433,7 @@ func withAIModelChatTokenAndIterationOptions(aiModel *model.AIModel) []ai.WithCh
 	if systemPrompt != "" {
 		out = append(out, ai.WithChatModelSystemPrompt(systemPrompt))
 	}
+	out = append(out, ai.WithChatAutoCacheBreakpoint(aiModel.AutoCacheBreakpoint))
 	if maxTokens > 0 {
 		out = append(out, ai.WithChatMaxTokens(maxTokens))
 	}

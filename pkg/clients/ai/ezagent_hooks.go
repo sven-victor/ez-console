@@ -214,6 +214,8 @@ func buildAgentHooks(opts *ChatCompletionOptions) (*hook.Registry, *agentTraceSi
 				CompletionTokens: usage.OutputTokens,
 				TotalTokens:      usage.TotalTokens,
 				ActiveTokens:     usage.TotalTokens,
+				CacheReadTokens:  usage.CacheReadTokens,
+				CacheWriteTokens: usage.CacheWriteTokens,
 			}
 			if stats.TotalTokens == 0 {
 				stats.TotalTokens = stats.PromptTokens + stats.CompletionTokens

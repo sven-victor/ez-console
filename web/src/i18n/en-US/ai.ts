@@ -38,6 +38,9 @@ export default {
     systemPrompt: 'System Prompt',
     systemPromptHelp: 'Optional system prompt prepended to every conversation for this model.',
     systemPromptPlaceholder: 'Enter system prompt (optional)',
+    autoCacheBreakpoint: 'Automatically add cache breakpoint',
+    autoCacheBreakpointHelp:
+      "Insert a prompt-cache breakpoint after this model's system prompt. Ignored when the model does not support it.",
     maxChatTokens: 'Max chat tokens (context / summarization)',
     maxChatTokensHelp:
       '0 uses provider config max_tokens only. A positive value sets the context window for summarization for this model.',
@@ -178,6 +181,10 @@ export default {
     completionTokens: 'Completion Tokens',
     totalTokens: 'Total Tokens',
     activeTokens: 'Active Tokens',
+    cacheReadTokens: 'Cache read',
+    cacheWriteTokens: 'Cache write',
+    cacheHitRate: 'Cache hit rate',
+    cacheIncludedHint: 'Cache tokens are included in prompt tokens.',
     tool: 'Tool',
     arguments: 'Arguments',
     result: 'Result',

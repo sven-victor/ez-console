@@ -38,6 +38,9 @@ export default {
     systemPrompt: 'Systemprompt',
     systemPromptHelp: 'Valfri systemprompt som läggs till före varje konversation för denna modell.',
     systemPromptPlaceholder: 'Ange systemprompt (valfritt)',
+    autoCacheBreakpoint: 'Lägg till cachebrytpunkt automatiskt',
+    autoCacheBreakpointHelp:
+      'Infogar en cachebrytpunkt för prompten efter den här modellens systemprompt. Ignoreras om modellen inte stöder det.',
     maxChatTokens: 'Max chattokens (kontext / sammanfattning)',
     maxChatTokensHelp:
       '0 använder endast max_tokens från leverantörskonfigurationen. Ett positivt värde anger kontextfönster för sammanfattning för denna modell.',
@@ -153,6 +156,10 @@ export default {
     completionTokens: 'Kompletteringstokens',
     totalTokens: 'Totala tokens',
     activeTokens: 'Aktiva tokens',
+    cacheReadTokens: 'Cacheläsning',
+    cacheWriteTokens: 'Cacheskrivning',
+    cacheHitRate: 'Cacheträff',
+    cacheIncludedHint: 'Cachetokens ingår i prompttokens.',
     tool: 'Verktyg',
     arguments: 'Argument',
     result: 'Resultat',

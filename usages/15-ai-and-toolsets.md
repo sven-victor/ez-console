@@ -1764,6 +1764,7 @@ The `WithChatOptions` functional options control `Exchange` / `ExchangeStream` (
 | `WithChatHITLCatalog(catalog)` | Exposed-name catalog from `BuildHITLCatalog` (`{key}_{logical}` approvals plus `ui_choose`) | Chat service builds this from `approval_tools` / `ApprovalToolNames` |
 | `WithChatSession(id, store)` | DB-backed ez-agent session window | none |
 | `WithChatModelSystemPrompt(prompt)` | Model-level system prompt | none |
+| `WithChatAutoCacheBreakpoint(bool)` | Insert a prompt-cache breakpoint after the model system prompt. Providers that do not support it ignore the marker. The model field `auto_cache_breakpoint` sets this (default true) | true |
 | `WithChatEphemeralSystemPrompts([]string)` | Page-only system text (not persisted) | none |
 | `WithChatTrace(writer, counter)` | ez-agent hook-based debug tracing | none |
 | `WithChatOnSummary(callback)` | After successful LLM summarization (`AfterSummary`) | none |
@@ -2710,7 +2711,7 @@ function UserManagementPage() {
 
 ### Observability
 
-1. **Prometheus Metrics**: Token usage via `ai_tokens_total{type=prompt|completion}`.
+1. **Prometheus Metrics**: Each `Complete` and `Stream` records `ai_model_requests_total{provider,status}`, `ai_model_request_duration_seconds{provider}`, `ai_tokens_total{provider,type=prompt|completion}`, and `ai_cache_tokens_total{provider,type=read|write}`. Prompt totals already include cache tokens. Summary model calls use the same counters. A custom `ClassicChatClient` is counted only when its model calls go through `Complete` or `Stream`.
 2. **Debug Trace**: Toggle `ai_debug_enabled` and inspect `/api/ai/trace/events`.
 3. **Structured Logging**: AI operations use `go-kit/log` with contextual fields.
 

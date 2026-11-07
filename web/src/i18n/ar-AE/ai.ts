@@ -38,6 +38,9 @@ export default {
     systemPrompt: 'موجه النظام',
     systemPromptHelp: 'موجه نظام اختياري يُضاف في بداية كل محادثة لهذا النموذج.',
     systemPromptPlaceholder: 'أدخل موجه النظام (اختياري)',
+    autoCacheBreakpoint: 'إضافة نقطة توقف للتخزين المؤقت تلقائيًا',
+    autoCacheBreakpointHelp:
+      'يدرج نقطة توقف لذاكرة التخزين المؤقت للموجه بعد موجه النظام لهذا النموذج. يُتجاهل إذا كان النموذج لا يدعمه.',
     maxChatTokens: 'الحد الأقصى لرموز المحادثة (السياق / التلخيص)',
     maxChatTokensHelp:
       '0 يستخدم فقط max_tokens من إعدادات المزود. قيمة موجبة تحدد نافذة السياق للتلخيص لهذا النموذج.',
@@ -153,6 +156,10 @@ export default {
     completionTokens: 'رموز الإكمال',
     totalTokens: 'إجمالي الرموز',
     activeTokens: 'الرموز النشطة',
+    cacheReadTokens: 'قراءة التخزين المؤقت',
+    cacheWriteTokens: 'كتابة التخزين المؤقت',
+    cacheHitRate: 'معدل إصابة التخزين المؤقت',
+    cacheIncludedHint: 'رموز التخزين المؤقت مضمّنة في رموز الموجه.',
     tool: 'أداة',
     arguments: 'المعاملات',
     result: 'النتيجة',

@@ -62,27 +62,37 @@ func (c *AIModelController) RegisterRoutes(router *gin.RouterGroup) {
 
 // CreateAIModelRequest represents the request to create an AI model
 type CreateAIModelRequest struct {
-	Name              string                `json:"name" binding:"required"`
-	Description       string                `json:"description" validate:"optional"`
-	Provider          model.AIModelProvider `json:"provider" binding:"required"`
-	Config            model.AIModelConfig   `json:"config" binding:"required" swaggertype:"object"`
-	IsDefault         bool                  `json:"is_default" validate:"optional"`
-	SystemPrompt      string                `json:"system_prompt" validate:"optional"`
-	MaxChatTokens     int                   `json:"max_chat_tokens" validate:"optional"`
-	MaxChatIterations int                   `json:"max_chat_iterations" validate:"optional"`
+	Name                string                `json:"name" binding:"required"`
+	Description         string                `json:"description" validate:"optional"`
+	Provider            model.AIModelProvider `json:"provider" binding:"required"`
+	Config              model.AIModelConfig   `json:"config" binding:"required" swaggertype:"object"`
+	IsDefault           bool                  `json:"is_default" validate:"optional"`
+	SystemPrompt        string                `json:"system_prompt" validate:"optional"`
+	AutoCacheBreakpoint *bool                 `json:"auto_cache_breakpoint" validate:"optional"` // Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true.
+	MaxChatTokens       int                   `json:"max_chat_tokens" validate:"optional"`
+	MaxChatIterations   int                   `json:"max_chat_iterations" validate:"optional"`
 }
 
 // UpdateAIModelRequest represents the request to update an AI model
 type UpdateAIModelRequest struct {
-	Name              string                `json:"name" binding:"required"`
-	Description       string                `json:"description" validate:"optional"`
-	Provider          model.AIModelProvider `json:"provider" binding:"required"`
-	Config            model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
-	IsDefault         bool                  `json:"is_default" validate:"optional"`
-	Status            model.AIModelStatus   `json:"status" validate:"optional"`
-	SystemPrompt      string                `json:"system_prompt" validate:"optional"`
-	MaxChatTokens     int                   `json:"max_chat_tokens" validate:"optional"`
-	MaxChatIterations int                   `json:"max_chat_iterations" validate:"optional"`
+	Name                string                `json:"name" binding:"required"`
+	Description         string                `json:"description" validate:"optional"`
+	Provider            model.AIModelProvider `json:"provider" binding:"required"`
+	Config              model.AIModelConfig   `json:"config" validate:"optional" swaggertype:"object"`
+	IsDefault           bool                  `json:"is_default" validate:"optional"`
+	Status              model.AIModelStatus   `json:"status" validate:"optional"`
+	SystemPrompt        string                `json:"system_prompt" validate:"optional"`
+	AutoCacheBreakpoint *bool                 `json:"auto_cache_breakpoint" validate:"optional"` // Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true.
+	MaxChatTokens       int                   `json:"max_chat_tokens" validate:"optional"`
+	MaxChatIterations   int                   `json:"max_chat_iterations" validate:"optional"`
+}
+
+// autoCacheBreakpointOrDefault treats an omitted flag as enabled.
+func autoCacheBreakpointOrDefault(v *bool) bool {
+	if v == nil {
+		return true
+	}
+	return *v
 }
 
 // ListAIModels lists AI models with pagination
@@ -227,6 +237,7 @@ func (c *AIModelController) CreateAIModel(ctx *gin.Context) {
 	)
 	aiModel.IsDefault = req.IsDefault
 	aiModel.SystemPrompt = systemPrompt
+	aiModel.AutoCacheBreakpoint = autoCacheBreakpointOrDefault(req.AutoCacheBreakpoint)
 	aiModel.MaxChatTokens = req.MaxChatTokens
 	aiModel.MaxChatIterations = req.MaxChatIterations
 
@@ -356,16 +367,17 @@ func (c *AIModelController) UpdateAIModel(ctx *gin.Context) {
 	}
 
 	aiModel := &model.AIModel{
-		Name:              req.Name,
-		Description:       req.Description,
-		Provider:          req.Provider,
-		Config:            req.Config,
-		IsDefault:         req.IsDefault,
-		UpdatedBy:         userID.(string),
-		Status:            req.Status,
-		SystemPrompt:      systemPrompt,
-		MaxChatTokens:     req.MaxChatTokens,
-		MaxChatIterations: req.MaxChatIterations,
+		Name:                req.Name,
+		Description:         req.Description,
+		Provider:            req.Provider,
+		Config:              req.Config,
+		IsDefault:           req.IsDefault,
+		UpdatedBy:           userID.(string),
+		Status:              req.Status,
+		SystemPrompt:        systemPrompt,
+		AutoCacheBreakpoint: autoCacheBreakpointOrDefault(req.AutoCacheBreakpoint),
+		MaxChatTokens:       req.MaxChatTokens,
+		MaxChatIterations:   req.MaxChatIterations,
 	}
 
 	updatedModel, err := c.service.UpdateAIModel(ctx, organizationID, id, aiModel)

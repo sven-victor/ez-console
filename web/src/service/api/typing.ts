@@ -92,6 +92,8 @@ export interface AIFunctionCall {
 }
 
 export interface AIModel {
+  /** Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. */
+  auto_cache_breakpoint: boolean;
   /** Configuration (includes api_key, model_id, base_url, etc.) */
   config: Record<string, any>;
   created_at: string;
@@ -315,6 +317,8 @@ export interface CloneSkillRequest {
 export type Condition = true;
 
 export interface CreateAIModelRequest {
+  /** Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true. */
+  auto_cache_breakpoint?: boolean;
   config: Record<string, any>;
   description?: string;
   is_default?: boolean;
@@ -2524,7 +2528,7 @@ export interface ToolSet {
 
 export type ToolSetStatus = "enabled" | "disabled";
 
-export type ToolSetType = "utils";
+export type ToolSetType = "local_complex" | "utils";
 
 export interface ToolSetTypeDefinition {
   allow_manual_create: boolean;
@@ -2557,6 +2561,8 @@ export interface updateAIModelParams {
 }
 
 export interface UpdateAIModelRequest {
+  /** Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true. */
+  auto_cache_breakpoint?: boolean;
   config?: Record<string, any>;
   description?: string;
   is_default?: boolean;

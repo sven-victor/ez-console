@@ -38,6 +38,9 @@ export default {
     systemPrompt: 'Invite système',
     systemPromptHelp: 'Invite système facultative ajoutée au début de chaque conversation pour ce modèle.',
     systemPromptPlaceholder: 'Entrez l\'invite système (facultatif)',
+    autoCacheBreakpoint: 'Ajouter automatiquement un point d’arrêt de cache',
+    autoCacheBreakpointHelp:
+      'Insère un point d’arrêt de cache de prompt après le prompt système de ce modèle. Ignoré si le modèle ne le prend pas en charge.',
     maxChatTokens: 'Jetons de conversation max. (contexte / résumé)',
     maxChatTokensHelp:
       '0 n\'utilise que max_tokens de la configuration du fournisseur. Une valeur positive définit la fenêtre de contexte pour le résumé de ce modèle.',
@@ -153,6 +156,10 @@ export default {
     completionTokens: 'Tokens de Complétion',
     totalTokens: 'Tokens Totaux',
     activeTokens: 'Tokens Actifs',
+    cacheReadTokens: 'Lecture du cache',
+    cacheWriteTokens: 'Écriture du cache',
+    cacheHitRate: 'Taux de succès du cache',
+    cacheIncludedHint: 'Les tokens de cache sont inclus dans les tokens de prompt.',
     tool: 'Outil',
     arguments: 'Arguments',
     result: 'Résultat',

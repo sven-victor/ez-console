@@ -93,6 +93,9 @@ type TokenUsageStats struct {
 	CompletionTokens int `json:"completion_tokens"`
 	TotalTokens      int `json:"total_tokens"`
 	ActiveTokens     int `json:"active_tokens"` // Estimated tokens for unsummarized messages to be sent next
+	// Cache tokens are subsets of PromptTokens. Zero is reported so the trace can distinguish "no cache" from a missing field.
+	CacheReadTokens  int `json:"cache_read_tokens"`
+	CacheWriteTokens int `json:"cache_write_tokens"`
 }
 
 type ChatStreamEvent struct {
@@ -195,6 +198,9 @@ type ChatCompletionOptions struct {
 
 	// ModelSystemPrompt is the AIModel-level system prompt (base instruction).
 	ModelSystemPrompt string
+	// AutoCacheBreakpointDisabled omits the prompt-cache breakpoint after ModelSystemPrompt.
+	// The zero value inserts the breakpoint. Providers that do not support it ignore the marker.
+	AutoCacheBreakpointDisabled bool
 
 	// SummarizerProvider runs conversation summarization when set.
 	// The conversation provider is unchanged. Nil keeps summarization on the conversation provider.
@@ -302,6 +308,14 @@ func WithChatSession(sessionID string, store memory.SessionStore) WithChatOption
 func WithChatModelSystemPrompt(prompt string) WithChatOptions {
 	return func(options *ChatCompletionOptions) {
 		options.ModelSystemPrompt = prompt
+	}
+}
+
+// WithChatAutoCacheBreakpoint controls the breakpoint inserted after the model system prompt.
+// Providers that do not support prompt-cache breakpoints ignore the marker.
+func WithChatAutoCacheBreakpoint(enabled bool) WithChatOptions {
+	return func(options *ChatCompletionOptions) {
+		options.AutoCacheBreakpointDisabled = !enabled
 	}
 }
 
