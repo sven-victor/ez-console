@@ -41,6 +41,8 @@ const ActionButton: React.FC<ActionProps> = (action) => {
   const [loading, setLoading] = useState(false);
   const { permission, icon, tooltip, onClick, confirm, label, ...rest } = action;
   const disabled = !!rest.disabled;
+  const [tooltipOpen, setTooltipOpen] = useState(false)
+
 
   const handleClick = onClick ? async () => {
     setLoading(true);
@@ -48,6 +50,7 @@ const ActionButton: React.FC<ActionProps> = (action) => {
       await onClick();
     } finally {
       setLoading(false);
+      setTooltipOpen(false);
     }
   } : undefined;
 
@@ -88,11 +91,11 @@ const ActionButton: React.FC<ActionProps> = (action) => {
 
   if (tooltip) {
     node = disabled ? (
-      <Tooltip title={tooltip}>
+      <Tooltip title={tooltip} open={tooltipOpen} onOpenChange={setTooltipOpen}>
         <span style={{ display: 'inline-block', cursor: 'not-allowed' }}>{node}</span>
       </Tooltip>
     ) : (
-      <Tooltip title={tooltip}>{node}</Tooltip>
+      <Tooltip title={tooltip} open={tooltipOpen} onOpenChange={setTooltipOpen}>{node}</Tooltip>
     );
   }
 
