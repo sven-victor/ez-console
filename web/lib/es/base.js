@@ -59,7 +59,7 @@ const Re = (e, t = "YYYY-MM-DDTHH:mm:ssZ") => {
   }
   return !0;
 };
-function _e(e) {
+function Ie(e) {
   try {
     return { parsed: JSON.parse(e), isJSON: !0 };
   } catch {
@@ -1725,6 +1725,8 @@ const A = {
     systemPrompt: "System Prompt",
     systemPromptHelp: "Optional system prompt prepended to every conversation for this model.",
     systemPromptPlaceholder: "Enter system prompt (optional)",
+    autoCacheBreakpoint: "Automatically add cache breakpoint",
+    autoCacheBreakpointHelp: "Insert a prompt-cache breakpoint after this model's system prompt. Ignored when the model does not support it.",
     maxChatTokens: "Max chat tokens (context / summarization)",
     maxChatTokensHelp: "0 uses provider config max_tokens only. A positive value sets the context window for summarization for this model.",
     maxChatIterations: "Max chat iterations (tool rounds)",
@@ -1864,6 +1866,10 @@ const A = {
     completionTokens: "Completion Tokens",
     totalTokens: "Total Tokens",
     activeTokens: "Active Tokens",
+    cacheReadTokens: "Cache read",
+    cacheWriteTokens: "Cache write",
+    cacheHitRate: "Cache hit rate",
+    cacheIncludedHint: "Cache tokens are included in prompt tokens.",
     tool: "Tool",
     arguments: "Arguments",
     result: "Result",
@@ -2584,7 +2590,7 @@ const A = {
     confirm: "تأكيد",
     cancel: "إلغاء"
   }
-}, _ = {
+}, I = {
   login: {
     subtitle: "Logga in på ditt konto",
     username: "Användarnamn",
@@ -2726,7 +2732,7 @@ const A = {
     confirm: "Bekräfta",
     cancel: "Avbryt"
   }
-}, I = {
+}, _ = {
   loading: "加载中...",
   success: "操作成功",
   error: "操作失败",
@@ -4124,6 +4130,8 @@ const A = {
     systemPrompt: "系统提示词",
     systemPromptHelp: "可选。该模型每次对话前都会附加的系统提示词。",
     systemPromptPlaceholder: "请输入系统提示词（可选）",
+    autoCacheBreakpoint: "自动添加缓存断点",
+    autoCacheBreakpointHelp: "在该模型的系统提示词之后插入提示缓存断点。模型不支持时忽略。",
     maxChatTokens: "最大对话 Token（上下文 / 摘要）",
     maxChatTokensHelp: "0 表示仅使用提供商配置中的 max_tokens；大于 0 时为该模型设置摘要用的上下文窗口。",
     maxChatIterations: "最大对话轮次（工具调用）",
@@ -4263,6 +4271,10 @@ const A = {
     completionTokens: "补全 Tokens",
     totalTokens: "总 Tokens",
     activeTokens: "活跃 Tokens",
+    cacheReadTokens: "缓存读取",
+    cacheWriteTokens: "缓存写入",
+    cacheHitRate: "缓存命中率",
+    cacheIncludedHint: "缓存 Token 已包含在提示 Token 中。",
     tool: "工具",
     arguments: "参数",
     result: "结果",
@@ -5796,6 +5808,8 @@ const A = {
     systemPrompt: "Systemprompt",
     systemPromptHelp: "Optionaler Systemprompt, der jeder Unterhaltung für dieses Modell vorangestellt wird.",
     systemPromptPlaceholder: "Systemprompt eingeben (optional)",
+    autoCacheBreakpoint: "Cache-Haltepunkt automatisch setzen",
+    autoCacheBreakpointHelp: "Setzt einen Prompt-Cache-Haltepunkt nach dem Systemprompt dieses Modells. Wird ignoriert, wenn das Modell das nicht unterstützt.",
     maxChatTokens: "Max. Chat-Tokens (Kontext / Zusammenfassung)",
     maxChatTokensHelp: "0 nutzt nur max_tokens der Anbieterkonfiguration. Ein positiver Wert setzt das Kontextfenster für die Zusammenfassung dieses Modells.",
     maxChatIterations: "Max. Chat-Iterationen (Tool-Runden)",
@@ -5910,6 +5924,10 @@ const A = {
     completionTokens: "Vervollständigungs-Tokens",
     totalTokens: "Gesamt-Tokens",
     activeTokens: "Aktive Tokens",
+    cacheReadTokens: "Cache-Lesen",
+    cacheWriteTokens: "Cache-Schreiben",
+    cacheHitRate: "Cache-Trefferquote",
+    cacheIncludedHint: "Cache-Tokens sind in den Prompt-Tokens enthalten.",
     tool: "Werkzeug",
     arguments: "Argumente",
     result: "Ergebnis",
@@ -6062,7 +6080,7 @@ const A = {
     login_failure_lock: "Ihr Konto wurde nach zu vielen fehlgeschlagenen Anmeldeversuchen gesperrt.",
     mfa_disabled: "Die Multi-Faktor-Authentifizierung wurde für Ihr Konto deaktiviert."
   }
-}, G = {
+}, H = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -6138,7 +6156,7 @@ const A = {
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, H = {
+}, G = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -7443,6 +7461,8 @@ const A = {
     systemPrompt: "Prompt del sistema",
     systemPromptHelp: "Prompt del sistema opcional antepuesto a cada conversación de este modelo.",
     systemPromptPlaceholder: "Introduzca el prompt del sistema (opcional)",
+    autoCacheBreakpoint: "Añadir automáticamente un punto de interrupción de caché",
+    autoCacheBreakpointHelp: "Inserta un punto de interrupción de caché del prompt después del prompt del sistema de este modelo. Se ignora si el modelo no lo admite.",
     maxChatTokens: "Máx. tokens de chat (contexto / resumen)",
     maxChatTokensHelp: "0 usa solo max_tokens de la configuración del proveedor. Un valor positivo fija la ventana de contexto para el resumen de este modelo.",
     maxChatIterations: "Máx. iteraciones de chat (rondas de herramientas)",
@@ -7557,6 +7577,10 @@ const A = {
     completionTokens: "Tokens de Completado",
     totalTokens: "Tokens Totales",
     activeTokens: "Tokens Activos",
+    cacheReadTokens: "Lectura de caché",
+    cacheWriteTokens: "Escritura de caché",
+    cacheHitRate: "Tasa de aciertos de caché",
+    cacheIncludedHint: "Los tokens de caché están incluidos en los tokens de prompt.",
     tool: "Herramienta",
     arguments: "Argumentos",
     result: "Resultado",
@@ -9090,6 +9114,8 @@ const A = {
     systemPrompt: "Invite système",
     systemPromptHelp: "Invite système facultative ajoutée au début de chaque conversation pour ce modèle.",
     systemPromptPlaceholder: "Entrez l'invite système (facultatif)",
+    autoCacheBreakpoint: "Ajouter automatiquement un point d’arrêt de cache",
+    autoCacheBreakpointHelp: "Insère un point d’arrêt de cache de prompt après le prompt système de ce modèle. Ignoré si le modèle ne le prend pas en charge.",
     maxChatTokens: "Jetons de conversation max. (contexte / résumé)",
     maxChatTokensHelp: "0 n'utilise que max_tokens de la configuration du fournisseur. Une valeur positive définit la fenêtre de contexte pour le résumé de ce modèle.",
     maxChatIterations: "Itérations de conversation max. (tours d'outils)",
@@ -9204,6 +9230,10 @@ const A = {
     completionTokens: "Tokens de Complétion",
     totalTokens: "Tokens Totaux",
     activeTokens: "Tokens Actifs",
+    cacheReadTokens: "Lecture du cache",
+    cacheWriteTokens: "Écriture du cache",
+    cacheHitRate: "Taux de succès du cache",
+    cacheIncludedHint: "Les tokens de cache sont inclus dans les tokens de prompt.",
     tool: "Outil",
     arguments: "Arguments",
     result: "Résultat",
@@ -10737,6 +10767,8 @@ const A = {
     systemPrompt: "موجه النظام",
     systemPromptHelp: "موجه نظام اختياري يُضاف في بداية كل محادثة لهذا النموذج.",
     systemPromptPlaceholder: "أدخل موجه النظام (اختياري)",
+    autoCacheBreakpoint: "إضافة نقطة توقف للتخزين المؤقت تلقائيًا",
+    autoCacheBreakpointHelp: "يدرج نقطة توقف لذاكرة التخزين المؤقت للموجه بعد موجه النظام لهذا النموذج. يُتجاهل إذا كان النموذج لا يدعمه.",
     maxChatTokens: "الحد الأقصى لرموز المحادثة (السياق / التلخيص)",
     maxChatTokensHelp: "0 يستخدم فقط max_tokens من إعدادات المزود. قيمة موجبة تحدد نافذة السياق للتلخيص لهذا النموذج.",
     maxChatIterations: "الحد الأقصى لتكرارات المحادثة (جولات الأدوات)",
@@ -10851,6 +10883,10 @@ const A = {
     completionTokens: "رموز الإكمال",
     totalTokens: "إجمالي الرموز",
     activeTokens: "الرموز النشطة",
+    cacheReadTokens: "قراءة التخزين المؤقت",
+    cacheWriteTokens: "كتابة التخزين المؤقت",
+    cacheHitRate: "معدل إصابة التخزين المؤقت",
+    cacheIncludedHint: "رموز التخزين المؤقت مضمّنة في رموز الموجه.",
     tool: "أداة",
     arguments: "المعاملات",
     result: "النتيجة",
@@ -12384,6 +12420,8 @@ const A = {
     systemPrompt: "Systemprompt",
     systemPromptHelp: "Valfri systemprompt som läggs till före varje konversation för denna modell.",
     systemPromptPlaceholder: "Ange systemprompt (valfritt)",
+    autoCacheBreakpoint: "Lägg till cachebrytpunkt automatiskt",
+    autoCacheBreakpointHelp: "Infogar en cachebrytpunkt för prompten efter den här modellens systemprompt. Ignoreras om modellen inte stöder det.",
     maxChatTokens: "Max chattokens (kontext / sammanfattning)",
     maxChatTokensHelp: "0 använder endast max_tokens från leverantörskonfigurationen. Ett positivt värde anger kontextfönster för sammanfattning för denna modell.",
     maxChatIterations: "Max chattiterationer (verktygsrundor)",
@@ -12498,6 +12536,10 @@ const A = {
     completionTokens: "Kompletteringstokens",
     totalTokens: "Totala tokens",
     activeTokens: "Aktiva tokens",
+    cacheReadTokens: "Cacheläsning",
+    cacheWriteTokens: "Cacheskrivning",
+    cacheHitRate: "Cacheträff",
+    cacheIncludedHint: "Cachetokens ingår i prompttokens.",
     tool: "Verktyg",
     arguments: "Argument",
     result: "Resultat",
@@ -12657,7 +12699,7 @@ f.use(b).use(v).init({
   resources: {
     "zh-CN": {
       translation: A,
-      common: I,
+      common: _,
       authorization: L,
       system: M,
       ai: U,
@@ -12684,8 +12726,8 @@ f.use(b).use(v).init({
     },
     "es-ES": {
       translation: z,
-      common: G,
-      authorization: H,
+      common: H,
+      authorization: G,
       system: W,
       ai: Z,
       task: J,
@@ -12710,7 +12752,7 @@ f.use(b).use(v).init({
       inbox: le
     },
     "sv-SE": {
-      translation: _,
+      translation: I,
       common: de,
       authorization: ce,
       system: ue,
@@ -12763,7 +12805,7 @@ async function be(e) {
     ...e || {}
   });
 }
-const Ie = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const _e = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   downloadFile: ve,
   getStatistics: be,
@@ -12837,13 +12879,13 @@ export {
   Ue as a,
   Me as b,
   Le as c,
-  Ie as d,
+  _e as d,
   De as e,
   Re as f,
   ze as g,
   Ne as h,
   Fe as i,
-  _e as j,
+  Ie as j,
   Ce as m,
   Ee as t
 };
