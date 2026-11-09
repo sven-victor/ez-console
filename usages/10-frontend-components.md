@@ -27,6 +27,7 @@ import type { EZAppProps } from 'ez-console';
 | `transformHeaderItems` | `(items) => items` | Transform header action items |
 | `renderLayout` | `(siteIconUrl, menuItems, headerItems, breadcrumbs, content) => ReactNode` | Custom layout renderer |
 | `aiChatProps` | `AIChatProps?` | Props forwarded to the built-in AI chat component. Includes `ephemeralSystemPrompts` (host system prompts on every request) and `defaultSkillDomains` (domains selected by default; omitted means the client sends `domains: []`) |
+| `style` | `GlobalStyleFn?` | Theme-aware global CSS, rendered inside `ThemeProvider` via `createGlobalStyle`. The function receives `{ theme }` and must stay referentially stable |
 
 ```typescript
 <EZApp

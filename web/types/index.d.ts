@@ -5,6 +5,7 @@ import { AxiosResponse } from 'axios';
 import { ButtonProps } from 'antd';
 import { ComponentProps } from '@ant-design/x-markdown';
 import { ComponentType } from 'react';
+import { CSSObject } from 'antd-style';
 import { default as default_2 } from 'react';
 import { DropDownProps } from 'antd/es/dropdown';
 import { FC } from 'react';
@@ -24,6 +25,7 @@ import { StrictRJSFSchema } from '@rjsf/utils';
 import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
 import { TFunction } from 'i18next';
+import { Theme } from 'antd-style';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { XMarkdown } from '@ant-design/x-markdown';
@@ -1671,7 +1673,7 @@ export declare interface ErrorResponse {
 
 export declare type EventType = "content" | "tool_call" | "error" | "client_tool_pending" | "hitl_pending";
 
-export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, aiChatProps, }: EZAppProps): JSX_2.Element;
+export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, aiChatProps, style, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;
@@ -1684,6 +1686,8 @@ export declare interface EZAppProps {
     transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
     renderLayout?: (siteIconUrl: string | null, menuItems: ItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType_2[], content: React.ReactNode) => React.ReactNode;
     aiChatProps?: AIChatProps;
+    /** Theme-aware global CSS. Keep the function referentially stable. */
+    style?: GlobalStyleFn;
 }
 
 export declare function fetchSSE(url: string, config?: SSEConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;
@@ -1920,6 +1924,11 @@ export declare interface getUserSessionsParams {
     /** Number of items per page */
     page_size?: number;
 }
+
+/** Theme-aware global CSS. Keep the function referentially stable. */
+export declare type GlobalStyleFn = (scope: {
+    theme: Theme;
+}) => CSSObject;
 
 /** Options for an app-wide AI registration (see `registerGlobalAI`). */
 export declare interface GlobalAIOptions {

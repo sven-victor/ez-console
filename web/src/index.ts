@@ -16,7 +16,8 @@
 
 export {
   default as EZApp,
-  type AppProps as EZAppProps
+  type AppProps as EZAppProps,
+  type GlobalStyleFn,
 } from '@/App'
 
 export { useTranslation } from 'react-i18next';

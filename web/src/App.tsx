@@ -19,7 +19,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { App as AntdApp, ConfigProvider, type TabsProps as AntTabsProps } from 'antd';
 import type { Locale } from 'antd/es/locale';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
 import { type ItemType as MenuItemType } from 'antd/es/menu/interface';
 
@@ -42,10 +42,17 @@ import { getURL } from './utils';
 import { LanguageConfig } from './components/LanguageSwitch';
 import { SiteProvider } from './contexts/SiteContext';
 import { AIProvider } from './contexts/AIContext';
-import { ThemeProvider, type ThemeMode } from 'antd-style';
+import { createGlobalStyle, ThemeProvider, type CSSObject, type Theme, type ThemeMode } from 'antd-style';
 import { type AIChatProps } from './components/AIChat';
 
 const THEME_MODE_STORAGE_KEY = 'theme-mode';
+
+export type GlobalStyleFn = (scope: { theme: Theme }) => CSSObject;
+
+function AppGlobalStyle({ styles }: { styles: GlobalStyleFn }) {
+  const GlobalStyle = useMemo(() => createGlobalStyle(styles), [styles]);
+  return <GlobalStyle />;
+}
 
 function getStoredThemeMode(): ThemeMode {
   try {
@@ -90,6 +97,8 @@ export interface AppProps {
   transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
   renderLayout?: (siteIconUrl: string | null, menuItems: MenuItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
   aiChatProps?: AIChatProps;
+  /** Theme-aware global CSS. Keep the function referentially stable. */
+  style?: GlobalStyleFn;
 }
 
 function App({
@@ -102,6 +111,7 @@ function App({
   transformHeaderItems = (items) => items,
   renderLayout,
   aiChatProps,
+  style,
 }: AppProps) {
   const { i18n } = useTranslation();
   const [antdLocale, setAntdLocale] = useState(antdLocales[i18n.language] || enUS);
@@ -165,6 +175,7 @@ function App({
           }
         }}
       >
+        {style ? <AppGlobalStyle styles={style} /> : null}
         <ConfigProvider locale={antdLocale}>
           <AntdApp>
             <AuthProvider>
