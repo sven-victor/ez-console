@@ -106,10 +106,12 @@ const useStyle = createStyles(({ token, css }) => {
         font-size: 16px;
         width: 64px;
         height: 64px;
+        border-radius: 0px;
       }
     `,
     layoutLogo: css`
-      margin: 8px;
+      padding: 8px;
+      border-inline-end: 1px solid rgba(5, 5, 5, 0.06);
       display: flex;
     `,
     layoutLogoContainer: css`
