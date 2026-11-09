@@ -25,6 +25,8 @@ import {
   Form,
   Input,
   Tag,
+  Col,
+  Row,
 } from 'antd';
 import {
   PlusOutlined,
@@ -244,31 +246,40 @@ const OrganizationSettings: React.FC = () => {
   ];
 
   return (
-    <Card
-      title={t('settings.organizations.title', { defaultValue: 'Organization Management' })}
-      extra={
-        <Space>
-          <Button icon={<ReloadOutlined />} onClick={refresh}>
-            {tCommon('refresh', { defaultValue: 'Refresh' })}
-          </Button>
-          <PermissionGuard permission="system:organization:create">
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
-              {t('settings.organizations.create', { defaultValue: 'Create Organization' })}
-            </Button>
-          </PermissionGuard>
-        </Space>
-      }
-    >
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        <Input.Search
-          placeholder={t('settings.organizations.searchPlaceholder', { defaultValue: 'Search organizations...' })}
-          allowClear
-          onSearch={(value) => {
-            setSearchText(value);
-            setCurrent(1);
-          }}
-          style={{ width: 300 }}
-        />
+    <div>
+      <Card
+        style={{ marginBottom: 16 }}
+      >
+
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Input.Search
+              placeholder={t('settings.organizations.searchPlaceholder', { defaultValue: 'Search organizations...' })}
+              allowClear
+              onSearch={(value) => {
+                setSearchText(value);
+                setCurrent(1);
+              }}
+              style={{ width: 300 }}
+            />
+          </Col>
+          <Col>
+            <Space>
+              <Button icon={<ReloadOutlined />} onClick={refresh}>
+                {tCommon('refresh', { defaultValue: 'Refresh' })}
+              </Button>
+              <PermissionGuard permission="system:organization:create">
+                <Button type="primary" icon={<PlusOutlined />} onClick={handleCreate}>
+                  {t('settings.organizations.create', { defaultValue: 'Create Organization' })}
+                </Button>
+              </PermissionGuard>
+            </Space>
+          </Col>
+        </Row>
+      </Card>
+      <Card>
+
+
         <Table<API.Organization>
           columns={columns}
           dataSource={data?.data || []}
@@ -292,7 +303,7 @@ const OrganizationSettings: React.FC = () => {
             },
           }}
         />
-      </Space>
+      </Card>
 
       <Modal
         title={
@@ -347,7 +358,7 @@ const OrganizationSettings: React.FC = () => {
           </Form.Item>
         </Form>
       </Modal>
-    </Card>
+    </div>
   );
 };
 
