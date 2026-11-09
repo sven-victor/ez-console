@@ -3,6 +3,7 @@ import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
 import { AxiosResponse } from 'axios';
 import { ButtonProps } from 'antd';
+import { ConfigProviderProps } from 'antd';
 import { ComponentProps } from '@ant-design/x-markdown';
 import { ComponentType } from 'react';
 import { CSSObject } from 'antd-style';
@@ -26,6 +27,7 @@ import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
 import { TFunction } from 'i18next';
 import { Theme } from 'antd-style';
+import { ThemeProviderProps } from 'antd-style';
 import { UploadProps } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { XMarkdown } from '@ant-design/x-markdown';
@@ -1673,7 +1675,7 @@ export declare interface ErrorResponse {
 
 export declare type EventType = "content" | "tool_call" | "error" | "client_tool_pending" | "hitl_pending";
 
-export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, aiChatProps, style, }: EZAppProps): JSX_2.Element;
+export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, aiChatProps, style, themeProviderProps, configProviderProps, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;
@@ -1688,6 +1690,13 @@ export declare interface EZAppProps {
     aiChatProps?: AIChatProps;
     /** Theme-aware global CSS. Keep the function referentially stable. */
     style?: GlobalStyleFn;
+    /** Extra antd-style ThemeProvider props. `children` is reserved by the app shell. */
+    themeProviderProps?: Omit<ThemeProviderProps<Record<string, unknown>>, 'children'>;
+    /**
+     * Extra antd ConfigProvider props. `children` is reserved by the app shell.
+     * `locale` follows the active i18n language.
+     */
+    configProviderProps?: Omit<ConfigProviderProps, 'children' | 'locale'>;
 }
 
 export declare function fetchSSE(url: string, config?: SSEConfig): Promise<ReadableStream<Uint8Array<ArrayBuffer>>>;

@@ -28,6 +28,8 @@ import type { EZAppProps } from 'ez-console';
 | `renderLayout` | `(siteIconUrl, menuItems, headerItems, breadcrumbs, content) => ReactNode` | Custom layout renderer |
 | `aiChatProps` | `AIChatProps?` | Props forwarded to the built-in AI chat component. Includes `ephemeralSystemPrompts` (host system prompts on every request) and `defaultSkillDomains` (domains selected by default; omitted means the client sends `domains: []`) |
 | `style` | `GlobalStyleFn?` | Theme-aware global CSS, rendered inside `ThemeProvider` via `createGlobalStyle`. The function receives `{ theme }` and must stay referentially stable |
+| `themeProviderProps` | `Omit<ThemeProviderProps, 'children'>?` | Extra props for antd-style `ThemeProvider`, including `theme`. Theme mode is still stored locally; a passed `onThemeModeChange` runs after that |
+| `configProviderProps` | `Omit<ConfigProviderProps, 'children' \| 'locale'>?` | Extra props for the inner antd `ConfigProvider`. `locale` follows the active i18n language |
 
 ```typescript
 <EZApp

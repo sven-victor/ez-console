@@ -16,7 +16,7 @@
 
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { App as AntdApp, ConfigProvider, type TabsProps as AntTabsProps } from 'antd';
+import { App as AntdApp, ConfigProvider, type ConfigProviderProps, type TabsProps as AntTabsProps } from 'antd';
 import type { Locale } from 'antd/es/locale';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -42,7 +42,7 @@ import { getURL } from './utils';
 import { LanguageConfig } from './components/LanguageSwitch';
 import { SiteProvider } from './contexts/SiteContext';
 import { AIProvider } from './contexts/AIContext';
-import { createGlobalStyle, ThemeProvider, type CSSObject, type Theme, type ThemeMode } from 'antd-style';
+import { createGlobalStyle, ThemeProvider, type CSSObject, type Theme, type ThemeMode, type ThemeProviderProps } from 'antd-style';
 import { type AIChatProps } from './components/AIChat';
 
 const THEME_MODE_STORAGE_KEY = 'theme-mode';
@@ -99,6 +99,13 @@ export interface AppProps {
   aiChatProps?: AIChatProps;
   /** Theme-aware global CSS. Keep the function referentially stable. */
   style?: GlobalStyleFn;
+  /** Extra antd-style ThemeProvider props. `children` is reserved by the app shell. */
+  themeProviderProps?: Omit<ThemeProviderProps<Record<string, unknown>>, 'children'>;
+  /**
+   * Extra antd ConfigProvider props. `children` is reserved by the app shell.
+   * `locale` follows the active i18n language.
+   */
+  configProviderProps?: Omit<ConfigProviderProps, 'children' | 'locale'>;
 }
 
 function App({
@@ -112,6 +119,8 @@ function App({
   renderLayout,
   aiChatProps,
   style,
+  themeProviderProps,
+  configProviderProps,
 }: AppProps) {
   const { i18n } = useTranslation();
   const [antdLocale, setAntdLocale] = useState(antdLocales[i18n.language] || enUS);
@@ -166,17 +175,19 @@ function App({
   return (
     <QueryClientProvider client={queryClient} >
       <ThemeProvider
-        defaultThemeMode={getStoredThemeMode()}
+        {...themeProviderProps}
+        defaultThemeMode={themeProviderProps?.defaultThemeMode ?? getStoredThemeMode()}
         onThemeModeChange={(mode) => {
           try {
             localStorage.setItem(THEME_MODE_STORAGE_KEY, mode);
           } catch {
             // ignore storage errors
           }
+          themeProviderProps?.onThemeModeChange?.(mode);
         }}
       >
         {style ? <AppGlobalStyle styles={style} /> : null}
-        <ConfigProvider locale={antdLocale}>
+        <ConfigProvider {...configProviderProps} locale={antdLocale}>
           <AntdApp>
             <AuthProvider>
               <SiteProvider>
