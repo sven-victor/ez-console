@@ -30,6 +30,7 @@ import { useSite } from '@/contexts/SiteContext';
 import { clearCache } from 'ahooks';
 import classNames from 'classnames';
 import { createStyles } from 'antd-style';
+import ThemeSwitch from '@/components/ThemeSwitch';
 
 const { Title } = Typography;
 
@@ -37,14 +38,18 @@ interface LoginProps {
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
 }
 
-const useStyle = createStyles(({ css }) => {
+const useStyle = createStyles(({ css, isDarkMode }) => {
   return {
     loginPageContainer: css`
       height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: #f0f2f5;
+      ${isDarkMode ? css`
+        background: #424242;
+      ` : css`
+        background: #f0f2f5;
+      `}
     `,
     loginPageCard: css`
       width: 400px;
@@ -52,6 +57,11 @@ const useStyle = createStyles(({ css }) => {
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     `,
     languageSwitch: css`
+      position: absolute;
+      top: 0;
+      right: 30px;
+    `,
+    themeSwitch: css`
       position: absolute;
       top: 0;
       right: 0;
@@ -276,6 +286,9 @@ const Login: React.FC<LoginProps> = ({ transformLangConfig }) => {
         <Card className={classNames(styles.loginPageCard, 'login-page-card')}>
           <div className={classNames(styles.languageSwitch, 'language-switch')}>
             <LanguageSwitch transformLangConfig={transformLangConfig} />
+          </div>
+          <div className={classNames(styles.themeSwitch, 'theme-switch')}>
+            <ThemeSwitch />
           </div>
           <div className={classNames(styles.loginPageTitle, 'login-page-title')}>
             <Title className='login-page-title-text' level={2}>{siteName}</Title>

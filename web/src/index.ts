@@ -32,6 +32,7 @@ export { default as HeaderDropdown, type HeaderDropdownProps } from '@/component
 export { default as LabelCreater, type LabelCreaterProps } from '@/components/LabelCreater';
 export { default as OrganizationSwitcher } from '@/components/OrganizationSwitcher';
 export { default as LanguageSwitch, AllLangUIConfig, type LanguageSwitchProps } from '@/components/LanguageSwitch';
+export { default as ThemeSwitch, type ThemeSwitchProps } from '@/components/ThemeSwitch';
 export { default as AppLayout, type AppLayoutProps } from '@/components/Layout';
 export { PermissionGuard, type PermissionGuardProps, AdminGuard } from '@/components/PermissionGuard';
 export { default as PrivateRoute, type PrivateRouteProps } from '@/components/PrivateRoute';

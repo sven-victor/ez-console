@@ -26,6 +26,7 @@ import Loading from '@/components/Loading';
 import { useSite } from '@/contexts/SiteContext';
 import { createStyles } from 'antd-style';
 import classNames from 'classnames';
+import ThemeSwitch from '@/components/ThemeSwitch';
 
 const { Title } = Typography;
 
@@ -33,13 +34,17 @@ interface ActivateProps {
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
 }
 
-const useStyle = createStyles(({ css }) => ({
+const useStyle = createStyles(({ css, isDarkMode }) => ({
   container: css`
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #f0f2f5;
+    ${isDarkMode ? css`
+      background: #424242;
+    ` : css`
+      background: #f0f2f5;
+    `}
   `,
   card: css`
     width: 400px;
@@ -47,6 +52,11 @@ const useStyle = createStyles(({ css }) => ({
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   `,
   languageSwitch: css`
+    position: absolute;
+    top: 0;
+    right: 30px;
+  `,
+  themeSwitch: css`
     position: absolute;
     top: 0;
     right: 0;
@@ -128,7 +138,9 @@ const Activate: React.FC<ActivateProps> = ({ transformLangConfig }) => {
           <div className={classNames(styles.languageSwitch, 'language-switch')}>
             <LanguageSwitch transformLangConfig={transformLangConfig} />
           </div>
-
+          <div className={classNames(styles.themeSwitch, 'theme-switch')}>
+            <ThemeSwitch />
+          </div>
           <div className={classNames(styles.titleArea, 'activate-page-title')}>
             <Title level={2}>{siteName}</Title>
             <p>{t('activate.subtitle', { defaultValue: 'Activate your account' })}</p>

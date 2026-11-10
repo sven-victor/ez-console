@@ -21,8 +21,6 @@ import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   SwapOutlined,
-  MoonOutlined,
-  SunOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate, matchRoutes } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -47,6 +45,7 @@ import { useGlobalAITools } from '@/hooks/useGlobalAITools';
 import { useThemeMode, createStyles } from 'antd-style';
 import classNames from 'classnames';
 import { type AIChatProps } from './AIChat';
+import ThemeSwitch from './ThemeSwitch';
 const { Header, Content, Footer, Sider } = Layout;
 
 const useStyle = createStyles(({ token, css }) => {
@@ -149,7 +148,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   renderLayout,
   aiChatProps,
 }) => {
-  const { themeMode, setThemeMode, isDarkMode } = useThemeMode();
+  const { isDarkMode } = useThemeMode();
   const { styles } = useStyle();
   const { layout, visible: chatVisible, loaded: chatLoaded, resetPageAIContext } = useAI()
   const { t, i18n } = useTranslation();
@@ -361,22 +360,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
       <span className={classNames("header-user-name", styles.userName)}>{user?.full_name || user?.username}</span>
     </HeaderDropdown>,
     <LanguageSwitch key="language-switch" className="header-item language-switch" transformLangConfig={transformLangConfig} />,
-    <HeaderDropdown
-      key="theme-switch"
-      className="header-item theme-switch"
-      menu={{
-        items: [
-          { key: 'light', label: <span><SunOutlined /> {tCommon('light', { defaultValue: 'Light Mode' })}</span> },
-          { key: 'dark', label: <span><MoonOutlined /> {tCommon('dark', { defaultValue: 'Dark Mode' })}</span> }
-        ],
-        onClick: ({ key }) => {
-          setThemeMode(key as 'light' | 'dark')
-        },
-        selectedKeys: [themeMode],
-      }}
-    >
-      {themeMode === 'light' ? <SunOutlined /> : <MoonOutlined />}
-    </HeaderDropdown>
+    <ThemeSwitch key="theme-switch" className="header-item theme-switch" />
   ]
 
   const sanitizeClassName = (className?: string) => {
