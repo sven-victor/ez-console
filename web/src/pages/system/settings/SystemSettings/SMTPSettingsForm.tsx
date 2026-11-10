@@ -134,7 +134,7 @@ const SMTPSettingsForm: React.FC = () => {
             name="username"
             rules={[{ required: isEnabled, message: t('settings.smtp.usernameRequired', { defaultValue: 'Username is required.' }) }]}
           >
-            <Input disabled={!isEnabled} placeholder="user@example.com" />
+            <Input disabled={!isEnabled} placeholder="user@example.com" autoComplete='off' />
           </Form.Item>
 
           <Form.Item

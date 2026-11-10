@@ -92,6 +92,9 @@ func (f *OpenAIClientFactory) GetConfigSchema() (*jsonschema.Schema, map[string]
 	uiSchema := map[string]any{
 		"ui:width": 800,
 		"ui:field": "LayoutGridField",
+		"api_key": map[string]any{
+			"ui:autocomplete": "new-password",
+		},
 		"ui:layoutGrid": map[string]any{
 			"ui:row": map[string]any{
 				"gutter":    []int{12, 0},

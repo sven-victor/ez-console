@@ -103,6 +103,9 @@ func (f *AnthropicClientFactory) GetConfigSchema() (*jsonschema.Schema, map[stri
 				}},
 			},
 		},
+		"api_key": map[string]any{
+			"ui:autocomplete": "off",
+		},
 	}
 	return schema, uiSchema, nil
 }

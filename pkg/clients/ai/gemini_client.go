@@ -103,6 +103,9 @@ func (f *GeminiClientFactory) GetConfigSchema() (*jsonschema.Schema, map[string]
 				}},
 			},
 		},
+		"api_key": map[string]any{
+			"ui:autocomplete": "off",
+		},
 	}
 	return schema, uiSchema, nil
 }

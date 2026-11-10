@@ -509,6 +509,15 @@ func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]an
 		"args": map[string]any{
 			"ui:field": "objectEditor",
 		},
+		"username": map[string]any{
+			"ui:autocomplete": "off",
+		},
+		"password": map[string]any{
+			"ui:autocomplete": "new-password",
+		},
+		"token": map[string]any{
+			"ui:autocomplete": "new-password",
+		},
 		"ui:layoutGrid": map[string]any{
 			"ui:row": map[string]any{
 				"gutter":    []int{12, 0},

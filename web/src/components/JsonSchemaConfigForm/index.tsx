@@ -33,6 +33,7 @@ import { useTranslation } from 'react-i18next';
 import localizer from 'ajv-i18n';
 import SelectWidget from './SelectWidget';
 import TreeSelectWidget from './TreeSelectWidget';
+import PasswordWidget from './PasswordWidget';
 
 const { FieldTemplate: FieldTemplateAntd } = Templates
 
@@ -667,6 +668,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
         toolsetsSelect: ToolsetsSelectWidget,
         select: SelectWidget,
         treeSelect: TreeSelectWidget,
+        password: PasswordWidget,
       }}
       templates={{
         FieldTemplate: I18nFieldTemplate(t),
