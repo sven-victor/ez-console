@@ -1,22 +1,26 @@
 import { j as e } from "./vendor.js";
-import { useState as n, useEffect as L } from "react";
-import { Result as h, Card as C, Typography as b, Alert as E, Button as w, Form as d, Input as j } from "antd";
+import { useState as c, useEffect as L } from "react";
+import { Result as x, Card as C, Typography as b, Alert as E, Button as w, Form as d, Input as j } from "antd";
 import { LockOutlined as y } from "@ant-design/icons";
 import { useSearchParams as q, useNavigate as B } from "react-router-dom";
 import { useTranslation as R } from "react-i18next";
 import { a as F } from "./index.js";
 import { A as _ } from "./client.js";
-import { L as z, a as Y } from "./components.js";
-import { b as G } from "./contexts.js";
-import { createStyles as M } from "antd-style";
-import c from "classnames";
-const { Title: O } = b, U = M(({ css: a }) => ({
+import { L as z, a as Y, b as G } from "./components.js";
+import { b as M } from "./contexts.js";
+import { createStyles as O } from "antd-style";
+import n from "classnames";
+const { Title: U } = b, $ = O(({ css: a, isDarkMode: r }) => ({
   container: a`
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #f0f2f5;
+    ${r ? a`
+      background: #424242;
+    ` : a`
+      background: #f0f2f5;
+    `}
   `,
   card: a`
     width: 400px;
@@ -24,6 +28,11 @@ const { Title: O } = b, U = M(({ css: a }) => ({
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   `,
   languageSwitch: a`
+    position: absolute;
+    top: 0;
+    right: 30px;
+  `,
+  themeSwitch: a`
     position: absolute;
     top: 0;
     right: 0;
@@ -35,44 +44,45 @@ const { Title: O } = b, U = M(({ css: a }) => ({
   errorAlert: a`
     margin-bottom: 20px;
   `
-})), re = ({ transformLangConfig: a }) => {
-  const { styles: o } = U(), [p] = q(), { t, i18n: f } = R(), V = B(), { siteConfig: r, loading: A, error: l } = G(), [m] = n(p.get("token")), [P, g] = n(!1), [v, u] = n(
+})), se = ({ transformLangConfig: a }) => {
+  const { styles: r } = $(), [p] = q(), { t, i18n: f } = R(), V = B(), { siteConfig: s, loading: A, error: l } = M(), [m] = c(p.get("token")), [P, g] = c(!1), [h, u] = c(
     p.get("token") ? null : t("activate.invalidToken", { defaultValue: "Invalid or expired activation link" })
-  ), [k, N] = n(!1), [S, T] = n("");
+  ), [S, k] = c(!1), [N, T] = c("");
   L(() => {
-    var s, i;
-    r && (T(((s = r.name_i18n) == null ? void 0 : s[f.language]) || r.name || ""), window.document.title = r.name, (i = document.getElementById("site-icon")) == null || i.setAttribute("href", r.logo || ""));
-  }, [r, f.language]);
-  const I = async (s) => {
+    var i, o;
+    s && (T(((i = s.name_i18n) == null ? void 0 : i[f.language]) || s.name || ""), window.document.title = s.name, (o = document.getElementById("site-icon")) == null || o.setAttribute("href", s.logo || ""));
+  }, [s, f.language]);
+  const I = async (i) => {
     if (!m) {
       u(t("activate.invalidToken", { defaultValue: "Invalid or expired activation link" }));
       return;
     }
     try {
-      g(!0), u(null), await F.authorization.activateUser({ token: m, password: s.password }), N(!0);
-    } catch (i) {
-      i instanceof _ ? u(t("activate.error", { defaultValue: "Activation failed: {{error}}", error: i.message })) : u(t("activate.error", { defaultValue: "Activation failed" }));
+      g(!0), u(null), await F.authorization.activateUser({ token: m, password: i.password }), k(!0);
+    } catch (o) {
+      o instanceof _ ? u(t("activate.error", { defaultValue: "Activation failed: {{error}}", error: o.message })) : u(t("activate.error", { defaultValue: "Activation failed" }));
     } finally {
       g(!1);
     }
   };
-  return A ? /* @__PURE__ */ e.jsx(z, {}) : r ? /* @__PURE__ */ e.jsx("div", { className: "activate-page", children: /* @__PURE__ */ e.jsx("div", { className: c(o.container, "activate-page-container"), children: /* @__PURE__ */ e.jsxs(C, { className: c(o.card, "activate-page-card"), children: [
-    /* @__PURE__ */ e.jsx("div", { className: c(o.languageSwitch, "language-switch"), children: /* @__PURE__ */ e.jsx(Y, { transformLangConfig: a }) }),
-    /* @__PURE__ */ e.jsxs("div", { className: c(o.titleArea, "activate-page-title"), children: [
-      /* @__PURE__ */ e.jsx(O, { level: 2, children: S }),
+  return A ? /* @__PURE__ */ e.jsx(z, {}) : s ? /* @__PURE__ */ e.jsx("div", { className: "activate-page", children: /* @__PURE__ */ e.jsx("div", { className: n(r.container, "activate-page-container"), children: /* @__PURE__ */ e.jsxs(C, { className: n(r.card, "activate-page-card"), children: [
+    /* @__PURE__ */ e.jsx("div", { className: n(r.languageSwitch, "language-switch"), children: /* @__PURE__ */ e.jsx(Y, { transformLangConfig: a }) }),
+    /* @__PURE__ */ e.jsx("div", { className: n(r.themeSwitch, "theme-switch"), children: /* @__PURE__ */ e.jsx(G, {}) }),
+    /* @__PURE__ */ e.jsxs("div", { className: n(r.titleArea, "activate-page-title"), children: [
+      /* @__PURE__ */ e.jsx(U, { level: 2, children: N }),
       /* @__PURE__ */ e.jsx("p", { children: t("activate.subtitle", { defaultValue: "Activate your account" }) })
     ] }),
-    v && /* @__PURE__ */ e.jsx(
+    h && /* @__PURE__ */ e.jsx(
       E,
       {
-        className: c(o.errorAlert, "activate-page-error"),
-        message: v,
+        className: n(r.errorAlert, "activate-page-error"),
+        message: h,
         type: "error",
         showIcon: !0
       }
     ),
-    k ? /* @__PURE__ */ e.jsx(
-      h,
+    S ? /* @__PURE__ */ e.jsx(
+      x,
       {
         status: "success",
         title: t("activate.success", { defaultValue: "Account activated successfully" }),
@@ -107,9 +117,9 @@ const { Title: O } = b, U = M(({ css: a }) => ({
           dependencies: ["password"],
           rules: [
             { required: !0, message: t("activate.confirmPasswordRequired", { defaultValue: "Please confirm your password" }) },
-            ({ getFieldValue: s }) => ({
-              validator(i, x) {
-                return !x || s("password") === x ? Promise.resolve() : Promise.reject(new Error(t("activate.passwordMismatch", { defaultValue: "Passwords do not match" })));
+            ({ getFieldValue: i }) => ({
+              validator(o, v) {
+                return !v || i("password") === v ? Promise.resolve() : Promise.reject(new Error(t("activate.passwordMismatch", { defaultValue: "Passwords do not match" })));
               }
             })
           ],
@@ -126,7 +136,7 @@ const { Title: O } = b, U = M(({ css: a }) => ({
       /* @__PURE__ */ e.jsx(d.Item, { children: /* @__PURE__ */ e.jsx(w, { type: "primary", htmlType: "submit", loading: P, block: !0, disabled: !m, children: t("activate.activateButton", { defaultValue: "Activate Account" }) }) })
     ] })
   ] }) }) }) : /* @__PURE__ */ e.jsx(
-    h,
+    x,
     {
       status: "500",
       title: "500",
@@ -138,5 +148,5 @@ const { Title: O } = b, U = M(({ css: a }) => ({
   );
 };
 export {
-  re as default
+  se as default
 };

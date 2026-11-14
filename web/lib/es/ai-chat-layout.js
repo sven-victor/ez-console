@@ -3,7 +3,7 @@ import { lazy as b, useEffect as l, useState as u } from "react";
 import { Modal as m } from "antd";
 import { d as n } from "./contexts.js";
 import { w as h } from "./index.js";
-import { j as f, R as g } from "./components.js";
+import { k as f, R as g } from "./components.js";
 import { createStyles as w } from "antd-style";
 import v from "classnames";
 const p = b(() => import("./ai-chat.js")), y = w(({ token: o, css: e, appearance: r }) => {

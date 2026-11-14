@@ -5,7 +5,7 @@ import { j as u, k as St, l as It, m as Tt, n as Rt } from "./vendor.js";
 import { a as E } from "./index.js";
 import { PlusOutlined as Ue, ReloadOutlined as At, DeleteOutlined as Lt, HistoryOutlined as Ht, CloseOutlined as Ft } from "@ant-design/icons";
 import { Conversations as Dt, Sender as Ye, XProvider as Nt, Bubble as Pt, Mermaid as $t, CodeHighlighter as zt } from "@ant-design/x";
-import { useXConversations as qt, useXChat as Bt, XRequest as Ot, AbstractChatProvider as Vt } from "@ant-design/x-sdk";
+import { useXConversations as Bt, useXChat as qt, XRequest as Ot, AbstractChatProvider as Vt } from "@ant-design/x-sdk";
 import { XMarkdown as Qe } from "@ant-design/x-markdown";
 import { useRequest as Q } from "ahooks";
 import { App as Kt, Tag as Ze, Button as ve, Spin as le, Space as et, Flex as ce, Dropdown as tt, Radio as Et } from "antd";
@@ -16,7 +16,7 @@ import $e from "dayjs";
 import { d as Jt, b as Gt, n as Wt } from "./contexts.js";
 import Ut from "classnames";
 /* empty css             */
-import { C as Yt, q as Qt } from "./components.js";
+import { C as Yt, r as Qt } from "./components.js";
 import { o as Zt, a as en } from "./highlighter.js";
 const it = Mt(({ token: a, css: s }) => ({
   siderLayout: s`
@@ -554,7 +554,7 @@ const gn = ({
     }
     return p;
   }, [r, a.components]), {
-    contentRender: B = (p) => p ? /* @__PURE__ */ u.jsx(
+    contentRender: q = (p) => p ? /* @__PURE__ */ u.jsx(
       Qe,
       {
         paragraphTag: "div",
@@ -581,7 +581,7 @@ const gn = ({
           footer: { width: "100%" }
         }
       } : {},
-      contentRender: B,
+      contentRender: q,
       footer: (P, X) => {
         const V = O == null ? void 0 : O(p, X, r), J = _ && p.message.role === "assistant" ? p.message.toolCalls ?? [] : [], h = p.message.content || "", G = p.status === "loading" || p.status === "updating", te = h || J.length > 0 ? /* @__PURE__ */ u.jsx(
           Yt,
@@ -622,7 +622,7 @@ const gn = ({
   }).filter((p) => {
     var v;
     return p.content || ke(p.hitlCards).length || _ && (((v = p.toolCalls) == null ? void 0 : v.length) ?? 0) > 0;
-  }), [s, B, O, r, c, f, H, _]);
+  }), [s, q, O, r, c, f, H, _]);
   return /* @__PURE__ */ u.jsx("div", { className: M.chatList, children: /* @__PURE__ */ u.jsx(le, { spinning: l, children: /* @__PURE__ */ u.jsx(
     Pt.List,
     {
@@ -667,7 +667,7 @@ const gn = ({
     conversations: H,
     fetchConversationsLoading: de,
     getEphemeralSystemPrompts: ee,
-    getClientTools: B,
+    getClientTools: q,
     registerGlobalAI: O
   } = Jt(), { t: k } = nt("ai"), { t: p } = nt("common"), { styles: v } = it(), { siteConfig: P } = Gt(), X = (P == null ? void 0 : P.show_tool_calls) ?? !1;
   ie = X;
@@ -685,14 +685,14 @@ const gn = ({
     setConversation: $,
     removeConversation: ne,
     getMessages: me
-  } = qt({
+  } = Bt({
     defaultActiveConversationKey: M,
     defaultConversations: (H == null ? void 0 : H.map((e) => V(e))) || []
   });
   I(() => {
     je(h);
   }, [h]);
-  const { message: W } = Kt.useApp(), [ze, qe] = Z(""), [ft, mt] = Z(!1), we = (o == null ? void 0 : o.join("\0")) ?? "", Se = ue(
+  const { message: W } = Kt.useApp(), [ze, Be] = Z(""), [ft, mt] = Z(!1), we = (o == null ? void 0 : o.join("\0")) ?? "", Se = ue(
     () => Ce(we ? we.split("\0") : []),
     [we]
   ), Ie = (s == null ? void 0 : s.join("\0")) ?? "", Te = ue(
@@ -718,10 +718,10 @@ const gn = ({
       ];
     });
   }, [Se]);
-  const { data: Be } = Q(() => E.system.listSkillDomains()), { data: ge } = Q(
+  const { data: qe } = Q(() => E.system.listSkillDomains()), { data: ge } = Q(
     () => E.system.listSkills({ current: 1, page_size: 500 })
   ), Oe = ue(() => [
-    ...(Be ?? []).map((e) => ({
+    ...(qe ?? []).map((e) => ({
       skillType: "domain",
       key: e,
       label: /* @__PURE__ */ u.jsxs(u.Fragment, { children: [
@@ -737,7 +737,7 @@ const gn = ({
         e.name
       ] })
     }))
-  ], [ge, Be]), [se, Ve] = Z(), { onRequest: K, messages: y, isRequesting: oe, abort: gt, onReload: pt, setMessages: Ae, setMessage: N } = Bt({
+  ], [ge, qe]), [se, Ve] = Z(), { onRequest: K, messages: y, isRequesting: oe, abort: gt, onReload: pt, setMessages: Ae, setMessage: N } = qt({
     provider: dn(h),
     // every conversation has its own provider
     conversationKey: h,
@@ -764,15 +764,15 @@ const gn = ({
       skill_ids: U.filter((i) => i.type === "skill").map((i) => i.value)
     }, t = Ce(ee());
     t.length > 0 && (e.ephemeral_system_prompts = t);
-    const n = B();
+    const n = q();
     return n.length > 0 && (e.client_tools = n.map((i) => ({
       name: i.name,
       description: i.description,
       parameters: i.parameters
     }))), e;
-  }, [U, ee, B]), ht = L(/* @__PURE__ */ new Map()), Le = L(/* @__PURE__ */ new Map()), ae = L(h);
+  }, [U, ee, q]), ht = L(/* @__PURE__ */ new Map()), Le = L(/* @__PURE__ */ new Map()), ae = L(h);
   ae.current = h;
-  const w = L(!1), q = L(!1), He = L(0), j = L(null), A = L(null), Ke = L(() => {
+  const w = L(!1), B = L(!1), He = L(0), j = L(null), A = L(null), Ke = L(() => {
   }), re = L(null), [Y, F] = Z(null);
   dt.onChunk = (e) => {
     const t = A.current;
@@ -781,7 +781,7 @@ const gn = ({
     n && n.conversationId === e && (n.streamStarted = !0);
   };
   const pe = T(async (e) => {
-    const t = [], n = B();
+    const t = [], n = q();
     for (const i of e) {
       if (i.name === "ui_choose")
         continue;
@@ -808,7 +808,7 @@ const gn = ({
       }
     }
     return t;
-  }, [B]), he = T((e, t) => {
+  }, [q]), he = T((e, t) => {
     const n = Le.current.get(e);
     if (n && n.calls === t)
       return n.promise;
@@ -827,7 +827,7 @@ const gn = ({
     });
   }, [pe, K, z]), Fe = T(() => {
     const e = j.current;
-    !e || e.streamRequested || e.posted || (He.current += 1, j.current = null, w.current = !1, q.current = !1, A.current = null, F(null), e.revert());
+    !e || e.streamRequested || e.posted || (He.current += 1, j.current = null, w.current = !1, B.current = !1, A.current = null, F(null), e.revert());
   }, []), Me = T(async (e, t, n, i) => {
     if (w.current)
       return;
@@ -841,7 +841,7 @@ const gn = ({
     try {
       let C = [];
       if (t != null && t.length && (C = await he(d, t)), He.current !== m || ae.current !== d) {
-        j.current === x && (j.current = null, w.current = !1, q.current = !1, A.current = null, F(null), b());
+        j.current === x && (j.current = null, w.current = !1, B.current = !1, A.current = null, F(null), b());
         return;
       }
       A.current = {
@@ -863,7 +863,7 @@ const gn = ({
         C.reconciling || (C.reconciling = !0, Ke.current(C));
         return;
       }
-      A.current = null, j.current === x && (j.current = null), w.current = !1, q.current = !1, F(null), b();
+      A.current = null, j.current === x && (j.current = null), w.current = !1, B.current = !1, F(null), b();
     }
   }, [he, K, z, N]), ye = T(() => {
     const e = ae.current, t = Ae;
@@ -936,10 +936,10 @@ const gn = ({
   }, [h, Fe]), I(() => {
     const e = j.current;
     if (oe) {
-      e && (e.streamRequested = !0), (e || w.current) && (q.current = !0);
+      e && (e.streamRequested = !0), (e || w.current) && (B.current = !0);
       return;
     }
-    q.current && (q.current = !1, w.current = !1);
+    B.current && (B.current = !1, w.current = !1);
   }, [oe]);
   const Xe = T((e) => {
     e.streamStarted = !0, N(e.messageId, (t) => {
@@ -952,9 +952,9 @@ const gn = ({
           ...i.length ? { toolCalls: _e(t.message.toolCalls, i) } : {}
         }
       };
-    }), be(e.conversationId), A.current = null, j.current = null, w.current = !1, q.current = !1, F(null);
+    }), be(e.conversationId), A.current = null, j.current = null, w.current = !1, B.current = !1, F(null);
   }, [be, N]), Je = T(() => {
-    A.current = null, j.current = null, w.current = !1, q.current = !1, F(null);
+    A.current = null, j.current = null, w.current = !1, B.current = !1, F(null);
   }, []), De = T(async (e) => {
     let t = null;
     try {
@@ -1263,9 +1263,9 @@ const gn = ({
       suffix: !1,
       value: ze,
       onSubmit: async () => {
-        Ge(ze.trim()), qe("");
+        Ge(ze.trim()), Be("");
       },
-      onChange: qe,
+      onChange: Be,
       onCancel: () => {
         const e = j.current;
         if (e && !e.streamRequested) {

@@ -1,62 +1,63 @@
-import { A as p, b as m, c as d, J as u, d as f, M as A, e as l, f as c, w as h } from "./es/index.js";
+import { A as p, b as m, c as d, J as u, d as f, M as A, e as c, f as h, w as l } from "./es/index.js";
 import { useTranslation as C } from "react-i18next";
 import "./es/base.js";
-import { b as I, c as S, d as w, A as b, e as L, D as P, H as D, f as F, a as H, L as M, O as v, g as y, P as E, h as G, i as J } from "./es/components.js";
+import { c as w, d as x, e as I, A as b, f as L, D as P, H as D, g as F, a as H, L as M, O as v, h as y, P as E, i as G, b as J, j as T } from "./es/components.js";
 import { A as B, a as N, b as O } from "./es/ai-chat-layout.js";
 import "react";
-import { default as U } from "./es/forbidden.js";
+import { default as j } from "./es/forbidden.js";
 import { default as z } from "./es/not_found.js";
-import { d as V, u as Z, a as j, b as K } from "./es/contexts.js";
-import { A as W, H as X, a as Y, c as _, d as $, e as aa, f as sa, g as ea, r as oa, s as ta } from "./es/client.js";
+import { d as V, u as Z, a as K, b as Q } from "./es/contexts.js";
+import { A as X, H as Y, a as _, c as $, d as aa, e as sa, f as ea, g as oa, r as ta, s as ra } from "./es/client.js";
 import "./es/authorization.js";
 import "./es/oauth.js";
 import "./es/system.js";
 import "./es/tasks.js";
-import { default as ia } from "i18next";
+import { default as na } from "i18next";
 export {
   p as AIChat,
   B as AIChatButton,
   N as AIChatModal,
   O as AIChatSider,
-  I as Actions,
-  S as AdminGuard,
-  w as AllLangUIConfig,
-  W as ApiError,
+  w as Actions,
+  x as AdminGuard,
+  I as AllLangUIConfig,
+  X as ApiError,
   m as AppLayout,
   b as Avatar,
   L as AvatarUpload,
   P as DynamicIcon,
   d as EZApp,
-  U as Forbidden,
+  j as Forbidden,
   D as HeaderDropdown,
-  X as HttpClient,
+  Y as HttpClient,
   u as JsonSchemaConfigForm,
   f as JsonSchemaConfigFormItem,
   F as LabelCreater,
   H as LanguageSwitch,
   M as Loading,
   A as MarkdownCode,
-  l as MarkdownViewer,
+  c as MarkdownViewer,
   z as NotFound,
   v as OrganizationSwitcher,
   y as PermissionGuard,
   E as PrivateRoute,
   G as Table,
-  c as api,
-  Y as apiDelete,
-  _ as apiGet,
-  $ as apiPost,
-  aa as apiPut,
-  sa as client,
-  ea as fetchSSE,
-  J as getIconByName,
-  ia as i18n,
-  oa as request,
-  ta as setClient,
+  J as ThemeSwitch,
+  h as api,
+  _ as apiDelete,
+  $ as apiGet,
+  aa as apiPost,
+  sa as apiPut,
+  ea as client,
+  oa as fetchSSE,
+  T as getIconByName,
+  na as i18n,
+  ta as request,
+  ra as setClient,
   V as useAI,
   Z as useAuth,
-  j as usePermission,
-  K as useSite,
+  K as usePermission,
+  Q as useSite,
   C as useTranslation,
-  h as withSuspense
+  l as withSuspense
 };

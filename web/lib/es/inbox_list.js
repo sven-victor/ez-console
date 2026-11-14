@@ -1,14 +1,14 @@
 import { j as r } from "./vendor.js";
-import { useRef as i, useState as w, useEffect as m } from "react";
+import { useRef as o, useState as w, useEffect as m } from "react";
 import { App as U, Typography as v, Tag as b, Card as C, Space as h, Select as M, Button as y } from "antd";
 import { CheckOutlined as E, ReloadOutlined as O } from "@ant-design/icons";
 import { useTranslation as k } from "react-i18next";
 import { a as s } from "./index.js";
-import { b as S, h as L } from "./components.js";
+import { c as S, i as L } from "./components.js";
 import { c as D, a as d, b as z, P as R } from "./base.js";
 import { b as F } from "./contexts.js";
 const Q = () => {
-  const { message: u } = U.useApp(), { t } = k("inbox"), { t: n } = k("common"), l = i(null), [o, j] = w(!1), c = i(!0), f = i(!0), { inboxRevision: A, setInboxUnreadCount: I, bumpInboxRevision: x } = F();
+  const { message: u } = U.useApp(), { t } = k("inbox"), { t: n } = k("common"), l = o(null), [i, j] = w(!1), c = o(!0), f = o(!0), { inboxRevision: A, setInboxUnreadCount: I, bumpInboxRevision: x } = F();
   m(() => {
     var e, a;
     if (c.current) {
@@ -16,7 +16,7 @@ const Q = () => {
       return;
     }
     (a = (e = l.current) == null ? void 0 : e.reload) == null || a.call(e);
-  }, [o]), m(() => {
+  }, [i]), m(() => {
     var e, a;
     if (f.current) {
       f.current = !1;
@@ -89,7 +89,7 @@ const Q = () => {
   ], T = (e) => s.inbox.listInboxMessages({
     current: e.current ?? R.DEFAULT_CURRENT,
     page_size: e.page_size ?? R.DEFAULT_PAGE_SIZE,
-    unread: o || void 0
+    unread: i || void 0
   });
   return /* @__PURE__ */ r.jsx(
     C,
@@ -101,7 +101,7 @@ const Q = () => {
           /* @__PURE__ */ r.jsx(
             M,
             {
-              value: o,
+              value: i,
               onChange: (e) => j(e),
               options: [
                 { value: !1, label: t("filterAll", { defaultValue: "All" }) },

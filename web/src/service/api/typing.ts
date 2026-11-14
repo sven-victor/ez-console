@@ -2528,7 +2528,7 @@ export interface ToolSet {
 
 export type ToolSetStatus = "enabled" | "disabled";
 
-export type ToolSetType = "local_complex" | "utils";
+export type ToolSetType = "utils";
 
 export interface ToolSetTypeDefinition {
   allow_manual_create: boolean;

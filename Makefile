@@ -5,14 +5,14 @@ GO ?= go
 FIRST_GOPATH := $(firstword $(subst :, ,$(shell $(GO) env GOPATH)))
 
 SWAG ?= $(FIRST_GOPATH)/bin/swag
-
+SWAG_OPTIONS ?= 
 VERSION ?= 1.0.0
 
 $(SWAG):
 	go install github.com/swaggo/swag/cmd/swag@v1.16.4
 
 openapi: $(SWAG)
-	$(SWAG) init -g main.go -o openapi -pd --requiredByDefault --overridesFile overrides.swaggo
+	$(SWAG) init $(SWAG_OPTIONS) --parseGoList -g main.go -o openapi -pd --requiredByDefault --overridesFile overrides.swaggo
 
 web/src/service/api:openapi
 	cp openapi/swagger.json web/swagger.json

@@ -4,8 +4,8 @@ import { App as A, Tag as y, Progress as F, Card as v, Space as m, Select as E, 
 import { EyeOutlined as L, StopOutlined as $, RedoOutlined as N, DownloadOutlined as z, DeleteOutlined as B, SearchOutlined as x, ReloadOutlined as G, CalendarOutlined as U } from "@ant-design/icons";
 import { useTranslation as w } from "react-i18next";
 import { a as i } from "./index.js";
-import { b as q, h as M, g as Z } from "./components.js";
-import { P as g } from "./base.js";
+import { c as q, i as M, h as Z } from "./components.js";
+import { P as V } from "./base.js";
 import { useNavigate as H } from "react-router-dom";
 const J = {
   pending: "default",
@@ -14,7 +14,7 @@ const J = {
   failed: "error",
   cancelled: "default"
 }, le = () => {
-  const { message: n } = A.useApp(), { t: a } = w("task"), { t: o } = w("common"), r = h(null), [u, V] = k(""), [d, j] = k(), f = h(!0), p = H(), T = O(() => {
+  const { message: n } = A.useApp(), { t: a } = w("task"), { t: o } = w("common"), r = h(null), [u, g] = k(""), [d, j] = k(), f = h(!0), p = H(), T = O(() => {
     const e = a("type", { returnObjects: !0 });
     return !e || typeof e != "object" ? [] : Object.entries(e).map(([t, l]) => ({
       value: t,
@@ -159,8 +159,8 @@ const J = {
       )
     }
   ], I = (e) => i.tasks.listTasks({
-    current: e.current ?? g.DEFAULT_CURRENT,
-    page_size: e.page_size ?? g.DEFAULT_PAGE_SIZE,
+    current: e.current ?? V.DEFAULT_CURRENT,
+    page_size: e.page_size ?? V.DEFAULT_PAGE_SIZE,
     search: u || void 0,
     type: d || void 0
   });
@@ -188,7 +188,7 @@ const J = {
               placeholder: a("searchPlaceholder", { defaultValue: "Search by type or ID" }),
               prefix: /* @__PURE__ */ s.jsx(x, {}),
               value: u,
-              onChange: (e) => V(e.target.value),
+              onChange: (e) => g(e.target.value),
               onPressEnter: () => {
                 var e, t;
                 return (t = (e = r.current) == null ? void 0 : e.reload) == null ? void 0 : t.call(e);

@@ -3,9 +3,9 @@ import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
 import { AxiosResponse } from 'axios';
 import { ButtonProps } from 'antd';
-import { ConfigProviderProps } from 'antd';
 import { ComponentProps } from '@ant-design/x-markdown';
 import { ComponentType } from 'react';
+import { ConfigProviderProps } from 'antd';
 import { CSSObject } from 'antd-style';
 import { default as default_2 } from 'react';
 import { DropDownProps } from 'antd/es/dropdown';
@@ -1934,11 +1934,6 @@ export declare interface getUserSessionsParams {
     page_size?: number;
 }
 
-/** Theme-aware global CSS. Keep the function referentially stable. */
-export declare type GlobalStyleFn = (scope: {
-    theme: Theme;
-}) => CSSObject;
-
 /** Options for an app-wide AI registration (see `registerGlobalAI`). */
 export declare interface GlobalAIOptions {
     /** Prompts merged into every chat request, ahead of page-level prompts. */
@@ -1959,6 +1954,10 @@ export declare interface GlobalAIOptions {
  *   global registrations changes.
  */
 export declare type GlobalAIOptionsInput = GlobalAIOptions | ((ori: GlobalAIOptions) => GlobalAIOptions);
+
+export declare type GlobalStyleFn = (scope: {
+    theme: Theme;
+}) => CSSObject;
 
 export declare const HeaderDropdown: default_2.FC<HeaderDropdownProps>;
 
@@ -3942,6 +3941,12 @@ declare interface TextRequestConfig extends Omit<RequestConfig, 'responseType'> 
     responseType: 'text';
 }
 
+export declare const ThemeSwitch: React.FC<ThemeSwitchProps>;
+
+export declare interface ThemeSwitchProps {
+    className?: string;
+}
+
 export declare interface toggleTaskScheduleParams {
     /** Schedule ID */
     id: string;
@@ -4017,7 +4022,7 @@ export declare interface ToolSet {
 
 export declare type ToolSetStatus = "enabled" | "disabled";
 
-export declare type ToolSetType = "local_complex" | "utils";
+export declare type ToolSetType = "utils";
 
 export declare interface ToolSetTypeDefinition {
     allow_manual_create: boolean;

@@ -3812,16 +3812,12 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
     - 1000000000
     - 60000000000
     - 3600000000000
-    - -9223372036854775808
-    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3846,16 +3842,12 @@ definitions:
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
     - Second
     - Minute
     - Hour
-    - minDuration
-    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -3864,11 +3856,9 @@ definitions:
     - Hour
   toolset.ToolSetType:
     enum:
-    - local_complex
     - utils
     type: string
     x-enum-varnames:
-    - ToolSetTypeLocalComplex
     - ToolSetTypeUtils
   util.ErrorResponse:
     properties:

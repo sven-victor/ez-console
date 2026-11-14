@@ -2530,7 +2530,7 @@ declare global {
   
     type ToolSetStatus = "enabled" | "disabled";
   
-    type ToolSetType = "local_complex" | "utils";
+    type ToolSetType = "utils";
   
     interface ToolSetTypeDefinition {
       allow_manual_create: boolean;

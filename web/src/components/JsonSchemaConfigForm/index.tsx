@@ -623,6 +623,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
     validate: (value: Record<string, unknown>): Promise<void> => {
       const result = i18nValidator.validateFormData(value, schema, undefined, undefined, mergedUiSchema);
       if (result.errors.filter(error => error.name !== 'additionalProperties').length > 0) {
+        console.error(result.errors);
         return Promise.reject(result.errors[0].message);
       }
       return Promise.resolve();
