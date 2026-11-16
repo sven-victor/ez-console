@@ -66,6 +66,7 @@ export default {
     deleteFailed: 'Échec de la suppression du modèle IA',
     testSuccess: 'Test de connexion du modèle IA réussi',
     testFailed: 'Test de connexion du modèle IA échoué',
+    testFailedDetail: 'Test de connexion du modèle IA échoué : {{error}}',
     setDefaultSuccess: 'Modèle IA par défaut défini avec succès',
     setDefaultFailed: 'Échec de la définition du modèle IA par défaut',
     deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce modèle IA ?',

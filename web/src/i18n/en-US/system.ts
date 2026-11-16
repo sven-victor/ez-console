@@ -626,6 +626,7 @@ export default {
       presetDisabledDelete: 'Built-in toolsets cannot be deleted.',
       testSuccess: 'Toolset connection test successful',
       testFailed: 'Toolset connection test failed',
+      testFailedDetail: 'Toolset connection test failed: {{error}}',
       statusUpdateSuccess: 'Status updated successfully',
       statusUpdateFailed: 'Failed to update status',
       tooltipEnableToolSet: 'Enable this toolset',

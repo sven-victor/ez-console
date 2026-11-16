@@ -2440,6 +2440,11 @@ declare global {
       id: string;
     }
   
+    interface TestAIModelConfigRequest {
+      config: Record<string, any>;
+      provider: AIModelProvider;
+    }
+  
     interface testAIModelParams {
       /** AI model ID */
       id: string;
@@ -2448,6 +2453,11 @@ declare global {
     interface TestOAuthCallbackResponse {
       user: User;
       user_info: Record<string, any>;
+    }
+  
+    interface TestToolSetConfigRequest {
+      config?: Record<string, any>;
+      type: ToolSetType;
     }
   
     interface testToolSetParams {

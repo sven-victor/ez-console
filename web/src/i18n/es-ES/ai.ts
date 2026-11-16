@@ -66,6 +66,7 @@ export default {
     deleteFailed: 'Error al eliminar modelo de IA',
     testSuccess: 'Prueba de conexión del modelo de IA exitosa',
     testFailed: 'Prueba de conexión del modelo de IA fallida',
+    testFailedDetail: 'Prueba de conexión del modelo de IA fallida: {{error}}',
     setDefaultSuccess: 'Modelo de IA predeterminado establecido exitosamente',
     setDefaultFailed: 'Error al establecer modelo de IA predeterminado',
     deleteConfirm: '¿Está seguro de que desea eliminar este modelo de IA?',

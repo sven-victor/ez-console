@@ -26,6 +26,31 @@ const (
 	testNewKey = "abcdefghijklmnop"
 )
 
+func TestDecryptPasswordFields(t *testing.T) {
+	t.Setenv(safe.SecretEnvName, testOldKey)
+	cipher := safe.NewEncryptedString("sk-live", testOldKey).String()
+	require.True(t, IsEncrypted(cipher))
+
+	config := map[string]interface{}{
+		"api_key":  cipher,
+		"token":    "plain-token",
+		"model_id": "gpt-4",
+	}
+	err := DecryptPasswordFields([]ConfigField{
+		{Name: "api_key", Type: FieldTypePassword},
+		{Name: "token", Type: FieldTypePassword},
+		{Name: "model_id", Type: FieldTypeString},
+	}, config)
+	require.NoError(t, err)
+	require.Equal(t, "sk-live", config["api_key"])
+	require.Equal(t, "plain-token", config["token"])
+	require.Equal(t, "gpt-4", config["model_id"])
+
+	cloned := CloneConfigMap(config)
+	cloned["api_key"] = "changed"
+	require.Equal(t, "sk-live", config["api_key"])
+}
+
 func TestIsEncrypted(t *testing.T) {
 	require.True(t, IsEncrypted("{CRYPT}$2$abc"))
 	require.False(t, IsEncrypted(""))

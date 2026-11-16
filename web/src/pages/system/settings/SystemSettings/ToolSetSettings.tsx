@@ -217,11 +217,45 @@ const ToolSetSettings: React.FC = () => {
         message.success(t('settings.toolsets.testSuccess', { defaultValue: 'toolset connection test successful' }));
       },
       onError: (error) => {
-        message.error(t('settings.toolsets.testFailed', { defaultValue: 'toolset connection test failed' }));
+        message.error(t('settings.toolsets.testFailedDetail', {
+          defaultValue: 'Toolset connection test failed: {{error}}',
+          error: error.message,
+        }));
         console.error('Failed to test toolset:', error);
       },
     }
   );
+
+  const { loading: testingConfig, runAsync: testToolSetConfig } = useRequest(
+    (values: ToolSetFormData) => api.system.testToolSetConfig({
+      type: values.type as API.ToolSetType,
+      config: values.config ?? {},
+    }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('settings.toolsets.testSuccess', { defaultValue: 'toolset connection test successful' }));
+      },
+      onError: (error) => {
+        message.error(t('settings.toolsets.testFailedDetail', {
+          defaultValue: 'Toolset connection test failed: {{error}}',
+          error: error.message,
+        }));
+        console.error('Failed to test toolset config:', error);
+      },
+    }
+  );
+
+  const handleTestConnection = async () => {
+    try {
+      const values = await form.validateFields() as ToolSetFormData;
+      await testToolSetConfig(values);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'errorFields' in error) {
+        return;
+      }
+    }
+  };
 
   // Get toolset tools
   const { loading: loadingTools, runAsync: fetchTools } = useRequest(
@@ -596,6 +630,14 @@ const ToolSetSettings: React.FC = () => {
                 loading={creating || updating}
               >
                 {editingToolSet ? tCommon('update', { defaultValue: 'Update' }) : tCommon('create', { defaultValue: 'Create' })}
+              </Button>
+              <Button
+                htmlType="button"
+                icon={<ThunderboltOutlined />}
+                loading={testingConfig}
+                onClick={handleTestConnection}
+              >
+                {t('settings.toolsets.test', { defaultValue: 'Test Connection' })}
               </Button>
               <Button
                 onClick={() => {

@@ -569,6 +569,7 @@ export default {
       presetDisabledDelete: 'Integrierte Toolsets können nicht gelöscht werden.',
       testSuccess: 'Toolset-Verbindungstest erfolgreich',
       testFailed: 'Toolset-Verbindungstest fehlgeschlagen',
+      testFailedDetail: 'Toolset-Verbindungstest fehlgeschlagen: {{error}}',
       statusUpdateSuccess: 'Status erfolgreich aktualisiert',
       statusUpdateFailed: 'Status konnte nicht aktualisiert werden',
       tooltipEnableToolSet: 'Dieses Toolset aktivieren',

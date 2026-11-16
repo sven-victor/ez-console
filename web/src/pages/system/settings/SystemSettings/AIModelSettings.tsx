@@ -225,11 +225,45 @@ const AIModelSettings: React.FC = () => {
         message.success(t('models.testSuccess', { defaultValue: 'AI model connection test successful' }));
       },
       onError: (error) => {
-        message.error(t('models.testFailed', { defaultValue: 'AI model connection test failed' }));
+        message.error(t('models.testFailedDetail', {
+          defaultValue: 'AI model connection test failed: {{error}}',
+          error: error.message,
+        }));
         console.error('Failed to test AI model:', error);
       },
     }
   );
+
+  const { loading: testingConfig, runAsync: testModelConfig } = useRequest(
+    (values: AIModelFormData) => api.ai.testAiModelConfig({
+      provider: values.provider,
+      config: values.config ?? {},
+    }),
+    {
+      manual: true,
+      onSuccess: () => {
+        message.success(t('models.testSuccess', { defaultValue: 'AI model connection test successful' }));
+      },
+      onError: (error) => {
+        message.error(t('models.testFailedDetail', {
+          defaultValue: 'AI model connection test failed: {{error}}',
+          error: error.message,
+        }));
+        console.error('Failed to test AI model config:', error);
+      },
+    }
+  );
+
+  const handleTestConnection = async () => {
+    try {
+      const values = await form.validateFields() as AIModelFormData;
+      await testModelConfig(values);
+    } catch (error) {
+      if (error && typeof error === 'object' && 'errorFields' in error) {
+        return;
+      }
+    }
+  };
 
   // Set default AI model
   const { runAsync: setDefaultModel } = useRequest(
@@ -777,6 +811,14 @@ const AIModelSettings: React.FC = () => {
                 loading={creating || updating}
               >
                 {editingModel ? tCommon('update', { defaultValue: 'Update' }) : tCommon('create', { defaultValue: 'Create' })}
+              </Button>
+              <Button
+                htmlType="button"
+                icon={<CheckCircleOutlined />}
+                loading={testingConfig}
+                onClick={handleTestConnection}
+              >
+                {t('models.test', { defaultValue: 'Test Connection' })}
               </Button>
               <Button
                 onClick={() => {

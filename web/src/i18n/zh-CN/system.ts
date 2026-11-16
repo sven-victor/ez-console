@@ -622,6 +622,7 @@ export default {
       presetDisabledDelete: '内置工具集不能删除。',
       testSuccess: '工具集连接测试成功',
       testFailed: '工具集连接测试失败',
+      testFailedDetail: '工具集连接测试失败: {{error}}',
       statusUpdateSuccess: '状态已更新',
       statusUpdateFailed: '更新状态失败',
       tooltipEnableToolSet: '启用此工具集',

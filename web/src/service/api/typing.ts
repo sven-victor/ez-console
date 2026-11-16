@@ -2438,6 +2438,11 @@ export interface terminateSessionParams {
   id: string;
 }
 
+export interface TestAIModelConfigRequest {
+  config: Record<string, any>;
+  provider: AIModelProvider;
+}
+
 export interface testAIModelParams {
   /** AI model ID */
   id: string;
@@ -2446,6 +2451,11 @@ export interface testAIModelParams {
 export interface TestOAuthCallbackResponse {
   user: User;
   user_info: Record<string, any>;
+}
+
+export interface TestToolSetConfigRequest {
+  config?: Record<string, any>;
+  type: ToolSetType;
 }
 
 export interface testToolSetParams {

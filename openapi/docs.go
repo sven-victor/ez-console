@@ -489,6 +489,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/ai/models/test": {
+            "post": {
+                "description": "Test an AI model connection using the submitted configuration without persisting it",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI/Models"
+                ],
+                "summary": "Test AI model config",
+                "operationId": "testAIModelConfig",
+                "parameters": [
+                    {
+                        "description": "AI model configuration",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/aiapi.TestAIModelConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/ai/models/types": {
             "get": {
                 "description": "Get the type definitions for AI providers",
@@ -6760,6 +6807,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/system/toolsets/test": {
+            "post": {
+                "description": "Test a toolset connection using the submitted configuration without persisting it",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ToolSets"
+                ],
+                "summary": "Test toolset config",
+                "operationId": "testToolSetConfig",
+                "parameters": [
+                    {
+                        "description": "Toolset configuration",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/systemapi.TestToolSetConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/util.Response-util_MessageData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/util.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/system/toolsets/types": {
             "get": {
                 "description": "Get the type definitions for toolsets",
@@ -8092,6 +8186,21 @@ const docTemplate = `{
             "properties": {
                 "model_id": {
                     "type": "string"
+                }
+            }
+        },
+        "aiapi.TestAIModelConfigRequest": {
+            "type": "object",
+            "required": [
+                "config",
+                "provider"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object"
+                },
+                "provider": {
+                    "$ref": "#/definitions/model.AIModelProvider"
                 }
             }
         },
@@ -12607,6 +12716,20 @@ const docTemplate = `{
                 }
             }
         },
+        "systemapi.TestToolSetConfigRequest": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "config": {
+                    "type": "object"
+                },
+                "type": {
+                    "$ref": "#/definitions/toolset.ToolSetType"
+                }
+            }
+        },
         "systemapi.Tool": {
             "type": "object",
             "required": [
@@ -12927,6 +13050,8 @@ const docTemplate = `{
                 1000000000,
                 60000000000,
                 3600000000000,
+                -9223372036854775808,
+                9223372036854775807,
                 1,
                 1000,
                 1000000,
@@ -12957,6 +13082,8 @@ const docTemplate = `{
                 "Second",
                 "Minute",
                 "Hour",
+                "minDuration",
+                "maxDuration",
                 "Nanosecond",
                 "Microsecond",
                 "Millisecond",

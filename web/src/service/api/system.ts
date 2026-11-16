@@ -1169,6 +1169,21 @@ export async function getToolSetTools(
   );
 }
 
+/** Test toolset config Test a toolset connection using the submitted configuration without persisting it POST /api/system/toolsets/test */
+export async function testToolSetConfig(
+  body: API.TestToolSetConfigRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseUtilMessageData>("/api/system/toolsets/test", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** Get toolset type definitions Get the type definitions for toolsets GET /api/system/toolsets/types */
 export async function getToolSetTypeDefinitions(options?: {
   [key: string]: any;

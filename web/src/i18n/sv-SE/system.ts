@@ -569,6 +569,7 @@ export default {
       presetDisabledDelete: 'Inbyggda verktygsset kan inte tas bort.',
       testSuccess: 'Verktygsset-anslutningstest lyckades',
       testFailed: 'Verktygsset-anslutningstest misslyckades',
+      testFailedDetail: 'Verktygsset-anslutningstest misslyckades: {{error}}',
       statusUpdateSuccess: 'Status uppdaterad',
       statusUpdateFailed: 'Det gick inte att uppdatera status',
       tooltipEnableToolSet: 'Aktivera detta verktygsset',

@@ -229,6 +229,21 @@ export async function testAiModel(
   });
 }
 
+/** Test AI model config Test an AI model connection using the submitted configuration without persisting it POST /api/ai/models/test */
+export async function testAiModelConfig(
+  body: API.TestAIModelConfigRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseUtilMessageData>("/api/ai/models/test", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** Get AI type definitions Get the type definitions for AI providers GET /api/ai/models/types */
 export async function getAiTypeDefinitions(options?: { [key: string]: any }) {
   return request<API.ResponseArrayServiceAITypeDefinition>(

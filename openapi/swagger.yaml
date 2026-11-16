@@ -339,6 +339,16 @@ definitions:
     required:
     - model_id
     type: object
+  aiapi.TestAIModelConfigRequest:
+    properties:
+      config:
+        type: object
+      provider:
+        $ref: '#/definitions/model.AIModelProvider'
+    required:
+    - config
+    - provider
+    type: object
   aiapi.ToggleTraceRequest:
     properties:
       enabled:
@@ -3581,6 +3591,15 @@ definitions:
     - err
     - trace_id
     type: object
+  systemapi.TestToolSetConfigRequest:
+    properties:
+      config:
+        type: object
+      type:
+        $ref: '#/definitions/toolset.ToolSetType'
+    required:
+    - type
+    type: object
   systemapi.Tool:
     properties:
       function:
@@ -3812,6 +3831,8 @@ definitions:
     - 1000000000
     - 60000000000
     - 3600000000000
+    - -9223372036854775808
+    - 9223372036854775807
     - 1
     - 1000
     - 1000000
@@ -3842,6 +3863,8 @@ definitions:
     - Second
     - Minute
     - Hour
+    - minDuration
+    - maxDuration
     - Nanosecond
     - Microsecond
     - Millisecond
@@ -5797,6 +5820,38 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Test AI model
+      tags:
+      - AI/Models
+  /api/ai/models/test:
+    post:
+      consumes:
+      - application/json
+      description: Test an AI model connection using the submitted configuration without
+        persisting it
+      operationId: testAIModelConfig
+      parameters:
+      - description: AI model configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/aiapi.TestAIModelConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Test AI model config
       tags:
       - AI/Models
   /api/ai/models/types:
@@ -10086,6 +10141,38 @@ paths:
           schema:
             $ref: '#/definitions/util.ErrorResponse'
       summary: Get toolset tools
+      tags:
+      - ToolSets
+  /api/system/toolsets/test:
+    post:
+      consumes:
+      - application/json
+      description: Test a toolset connection using the submitted configuration without
+        persisting it
+      operationId: testToolSetConfig
+      parameters:
+      - description: Toolset configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/systemapi.TestToolSetConfigRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/util.Response-util_MessageData'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/util.ErrorResponse'
+      summary: Test toolset config
       tags:
       - ToolSets
   /api/system/toolsets/types:

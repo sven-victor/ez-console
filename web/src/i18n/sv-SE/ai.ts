@@ -66,6 +66,7 @@ export default {
     deleteFailed: 'Misslyckades med att ta bort AI-modell',
     testSuccess: 'AI-modell-anslutningstest lyckades',
     testFailed: 'AI-modell-anslutningstest misslyckades',
+    testFailedDetail: 'AI-modell-anslutningstest misslyckades: {{error}}',
     setDefaultSuccess: 'Standard AI-modell angiven framgångsrikt',
     setDefaultFailed: 'Misslyckades med att ange standard AI-modell',
     deleteConfirm: 'Är du säker på att du vill ta bort denna AI-modell?',

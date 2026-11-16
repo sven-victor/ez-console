@@ -66,6 +66,7 @@ export default {
     deleteFailed: 'KI-Modell konnte nicht gelöscht werden',
     testSuccess: 'KI-Modell-Verbindungstest erfolgreich',
     testFailed: 'KI-Modell-Verbindungstest fehlgeschlagen',
+    testFailedDetail: 'KI-Modell-Verbindungstest fehlgeschlagen: {{error}}',
     setDefaultSuccess: 'Standard-KI-Modell erfolgreich festgelegt',
     setDefaultFailed: 'Standard-KI-Modell konnte nicht festgelegt werden',
     deleteConfirm: 'Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?',

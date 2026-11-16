@@ -91,6 +91,7 @@ export default {
     deleteFailed: 'Failed to delete AI model',
     testSuccess: 'AI model connection test successful',
     testFailed: 'AI model connection test failed',
+    testFailedDetail: 'AI model connection test failed: {{error}}',
     setDefaultSuccess: 'Default AI model set successfully',
     setDefaultFailed: 'Failed to set default AI model',
     deleteConfirm: 'Are you sure you want to delete this AI model?',

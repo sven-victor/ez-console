@@ -66,6 +66,45 @@ func DecryptString(ciphertext string) (string, error) {
 	return encryptedString.UnsafeString()
 }
 
+// CloneConfigMap returns a shallow copy of config. A nil config becomes an empty map.
+func CloneConfigMap[M ~map[string]interface{}](config M) M {
+	cloned := make(map[string]interface{}, len(config))
+	for key, value := range config {
+		cloned[key] = value
+	}
+	return M(cloned)
+}
+
+// DecryptPasswordFields replaces ciphertext password fields with plaintext.
+// Plaintext and empty values are left unchanged. config is updated in place.
+func DecryptPasswordFields[M ~map[string]interface{}](fields []ConfigField, config M) error {
+	if config == nil {
+		return nil
+	}
+	for _, field := range fields {
+		if field.Type != FieldTypePassword {
+			continue
+		}
+		value, ok := config[field.Name]
+		if !ok || value == nil {
+			continue
+		}
+		raw, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("config field %s is not a string", field.Name)
+		}
+		if raw == "" {
+			continue
+		}
+		plain, err := DecryptString(raw)
+		if err != nil {
+			return fmt.Errorf("failed to read config field %s: %w", field.Name, err)
+		}
+		config[field.Name] = plain
+	}
+	return nil
+}
+
 // ReencryptCiphertext decrypts ct with oldKey and encrypts the plaintext with newKey.
 // Non-ciphertext input is returned unchanged. Decryption that yields invalid UTF-8
 // is treated as a wrong-key (or corrupt data) failure so a rotate run can abort.

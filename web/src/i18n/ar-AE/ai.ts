@@ -66,6 +66,7 @@ export default {
     deleteFailed: 'فشل في حذف النموذج الذكي',
     testSuccess: 'نجح اختبار اتصال النموذج الذكي',
     testFailed: 'فشل اختبار اتصال النموذج الذكي',
+    testFailedDetail: 'فشل اختبار اتصال النموذج الذكي: {{error}}',
     setDefaultSuccess: 'تم تعيين النموذج الذكي الافتراضي بنجاح',
     setDefaultFailed: 'فشل في تعيين النموذج الذكي الافتراضي',
     deleteConfirm: 'هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟',

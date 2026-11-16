@@ -45,6 +45,7 @@ func (c *ToolSetController) RegisterRoutes(router *gin.RouterGroup) {
 	{
 		toolsets.GET("", middleware.RequirePermission("system:toolsets:view"), c.ListToolSets)
 		toolsets.POST("", middleware.RequirePermission("system:toolsets:create"), c.CreateToolSet)
+		toolsets.POST("/test", middleware.RequireAnyPermission("system:toolsets:test", "system:toolsets:create", "system:toolsets:update"), c.TestToolSetConfig)
 		toolsets.GET("/:id", middleware.RequirePermission("system:toolsets:view"), c.GetToolSet)
 		toolsets.PUT("/:id", middleware.RequirePermission("system:toolsets:update"), c.UpdateToolSet)
 		toolsets.DELETE("/:id", middleware.RequirePermission("system:toolsets:delete"), c.DeleteToolSet)
@@ -449,6 +450,58 @@ func (c *ToolSetController) UpdateToolSetStatus(ctx *gin.Context) {
 	if err != nil {
 		util.RespondWithError(ctx, err)
 	}
+}
+
+// TestToolSetConfigRequest tests a toolset connection from unsaved form values.
+type TestToolSetConfigRequest struct {
+	Type   toolset.ToolSetType `json:"type" binding:"required"`
+	Config model.ToolSetConfig `json:"config" validate:"optional" swaggertype:"object"`
+}
+
+// TestToolSetConfig tests a toolset connection without saving it.
+//
+//	@Summary		Test toolset config
+//	@Description	Test a toolset connection using the submitted configuration without persisting it
+//	@ID             testToolSetConfig
+//	@Tags			ToolSets
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		TestToolSetConfigRequest	true	"Toolset configuration"
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/toolsets/test [post]
+func (c *ToolSetController) TestToolSetConfig(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
+	var req TestToolSetConfigRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+
+	factory, exists := toolset.GetToolSetFactory(req.Type)
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported toolset type: %s", req.Type)))
+		return
+	}
+	for _, configField := range factory.GetConfigFields() {
+		if configField.Required && req.Config[configField.Name] == "" {
+			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
+			return
+		}
+	}
+
+	if err := c.service.TestToolSetConfig(ctx, req.Type, req.Config); err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	util.RespondWithMessage(ctx, "Toolset connection test successful")
 }
 
 // TestToolSet tests a toolset connection

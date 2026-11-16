@@ -43,6 +43,7 @@ type AIModelService interface {
 	GetDefaultAIModel(ctx context.Context, organizationID string) (*model.AIModel, error)
 	SetDefaultAIModel(ctx context.Context, organizationID, id string) error
 	TestAIModel(ctx context.Context, organizationID, id string) error
+	TestAIModelConfig(ctx context.Context, organizationID string, provider model.AIModelProvider, config model.AIModelConfig) error
 	GetAITypeDefinitions(ctx context.Context) []AITypeDefinition
 	ListAIModelPurposes(ctx context.Context, organizationID string) ([]AIModelPurposeView, error)
 	SetAIModelPurpose(ctx context.Context, organizationID, purpose, modelID string) (*AIModelPurposeView, error)
@@ -297,13 +298,22 @@ func (s *aiModelService) TestAIModel(ctx context.Context, organizationID, id str
 	if err != nil {
 		return fmt.Errorf("failed to get AI model: %w", err)
 	}
+	return s.TestAIModelConfig(ctx, organizationID, aiModel.Provider, aiModel.Config)
+}
 
-	factory, ok := ai.GetFactory(aiModel.Provider)
+// TestAIModelConfig tests a connection using the given provider config without persisting it.
+func (s *aiModelService) TestAIModelConfig(ctx context.Context, organizationID string, provider model.AIModelProvider, config model.AIModelConfig) error {
+	factory, ok := ai.GetFactory(provider)
 	if !ok {
-		return fmt.Errorf("unsupported provider: %s", aiModel.Provider)
+		return fmt.Errorf("unsupported provider: %s", provider)
 	}
 
-	client, err := factory.CreateClient(ctx, organizationID, aiModel.Config)
+	cfg := util.CloneConfigMap(config)
+	if err := util.DecryptPasswordFields(factory.GetConfigFields(), cfg); err != nil {
+		return err
+	}
+
+	client, err := factory.CreateClient(ctx, organizationID, cfg)
 	if err != nil {
 		return fmt.Errorf("failed to create AI client: %w", err)
 	}

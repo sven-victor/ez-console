@@ -43,6 +43,7 @@ type ToolSetService interface {
 	ListToolSets(ctx context.Context, organizationID string, current, pageSize int, search string, toolSetType string, includeTools bool, isPreset *bool) ([]model.ToolSet, int64, error)
 	GetEnabledToolSets(ctx context.Context, organizationID string) ([]model.ToolSet, error)
 	TestToolSet(ctx context.Context, organizationID, id string) error
+	TestToolSetConfig(ctx context.Context, toolSetType toolset.ToolSetType, config model.ToolSetConfig) error
 	GetToolSetInstance(ctx context.Context, organizationID, id string) (toolset.ToolSet, error)
 	CreateToolSetInstance(toolSet *model.ToolSet) (toolset.ToolSet, error)
 	GetAllEnabledToolSetInstances(ctx context.Context, organizationID string) (toolset.ToolSets, error)
@@ -244,26 +245,38 @@ func (s *toolSetService) GetEnabledToolSets(ctx context.Context, organizationID 
 
 // TestToolSet tests an toolset connection
 func (s *toolSetService) TestToolSet(ctx context.Context, organizationID, id string) error {
-	toolset, err := s.GetToolSet(ctx, organizationID, id)
+	toolSet, err := s.GetToolSet(ctx, organizationID, id)
 	if err != nil {
 		return fmt.Errorf("failed to get toolset: %w", err)
 	}
+	return s.TestToolSetConfig(ctx, toolSet.Type, toolSet.Config)
+}
 
-	// Create toolset instance
-	toolsetInstance, err := s.CreateToolSetInstance(toolset)
+// TestToolSetConfig tests a connection using the given toolset config without persisting it.
+func (s *toolSetService) TestToolSetConfig(ctx context.Context, toolSetType toolset.ToolSetType, config model.ToolSetConfig) error {
+	factory, exists := toolset.GetToolSetFactory(toolSetType)
+	if !exists {
+		return fmt.Errorf("unsupported toolset type: %s", toolSetType)
+	}
+
+	cfg := util.CloneConfigMap(config)
+	if err := util.DecryptPasswordFields(factory.GetConfigFields(), cfg); err != nil {
+		return err
+	}
+
+	toolsetInstance, err := s.CreateToolSetInstance(&model.ToolSet{
+		Type:   toolSetType,
+		Config: cfg,
+	})
 	if err != nil {
 		return fmt.Errorf("failed to create toolset instance: %w", err)
 	}
-
-	// Validate and test the toolset
 	if err := toolsetInstance.Validate(); err != nil {
 		return fmt.Errorf("toolset validation failed: %w", err)
 	}
-
 	if err := toolsetInstance.Test(ctx); err != nil {
 		return fmt.Errorf("toolset test failed: %w", err)
 	}
-
 	return nil
 }
 

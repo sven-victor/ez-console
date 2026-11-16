@@ -89,6 +89,7 @@ export default {
     deleteFailed: '删除AI模型失败',
     testSuccess: 'AI模型连接测试成功',
     testFailed: 'AI模型连接测试失败',
+    testFailedDetail: 'AI模型连接测试失败: {{error}}',
     setDefaultSuccess: '默认AI模型设置成功',
     setDefaultFailed: '设置默认AI模型失败',
     deleteConfirm: '确定要删除此AI模型吗？',

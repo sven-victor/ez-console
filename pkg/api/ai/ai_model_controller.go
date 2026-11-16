@@ -51,6 +51,7 @@ func (c *AIModelController) RegisterRoutes(router *gin.RouterGroup) {
 	{
 		models.GET("", middleware.RequirePermission("ai:models:view"), c.ListAIModels)
 		models.POST("", middleware.RequirePermission("ai:models:create"), c.CreateAIModel)
+		models.POST("/test", middleware.RequireAnyPermission("ai:models:test", "ai:models:create", "ai:models:update"), c.TestAIModelConfig)
 		models.GET("/:id", middleware.RequirePermission("ai:models:view"), c.GetAIModel)
 		models.PUT("/:id", middleware.RequirePermission("ai:models:update"), c.UpdateAIModel)
 		models.DELETE("/:id", middleware.RequirePermission("ai:models:delete"), c.DeleteAIModel)
@@ -422,6 +423,58 @@ func (c *AIModelController) DeleteAIModel(ctx *gin.Context) {
 	}
 
 	util.RespondWithMessage(ctx, "AI model deleted successfully")
+}
+
+// TestAIModelConfigRequest tests a model connection from unsaved form values.
+type TestAIModelConfigRequest struct {
+	Provider model.AIModelProvider `json:"provider" binding:"required"`
+	Config   model.AIModelConfig   `json:"config" binding:"required" swaggertype:"object"`
+}
+
+// TestAIModelConfig tests an AI model connection without saving it.
+//
+//	@Summary		Test AI model config
+//	@Description	Test an AI model connection using the submitted configuration without persisting it
+//	@ID             testAIModelConfig
+//	@Tags			AI/Models
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		TestAIModelConfigRequest	true	"AI model configuration"
+//	@Success		200	{object}	util.Response[util.MessageData]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/ai/models/test [post]
+func (c *AIModelController) TestAIModelConfig(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
+	var req TestAIModelConfigRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+
+	factory, exists := ai.GetFactory(req.Provider)
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported provider: %s", req.Provider)))
+		return
+	}
+	for _, configField := range factory.GetConfigFields() {
+		if configField.Required && req.Config[configField.Name] == "" {
+			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
+			return
+		}
+	}
+
+	if err := c.service.TestAIModelConfig(ctx, organizationID, req.Provider, req.Config); err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	util.RespondWithMessage(ctx, "AI model connection test successful")
 }
 
 // TestAIModel tests an AI model connection
