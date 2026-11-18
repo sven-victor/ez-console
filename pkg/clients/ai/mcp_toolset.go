@@ -330,13 +330,14 @@ func (m *MCPToolSet) ListTools(ctx context.Context) ([]openai.Tool, error) {
 
 // MCPToolSetConfig is the config shape for the MCP toolset (for JSON Schema reflection).
 type MCPToolSetConfig struct {
-	Endpoint string                 `json:"endpoint" jsonschema:"required,title=Endpoint,description=The endpoint of the MCP server"`
-	Protocol string                 `json:"protocol" jsonschema:"required,title=Protocol,description=The protocol of the MCP server,enum=http,enum=websocket,default=http" jsonschema_extras:"x-ui-col-xs=12"`
-	AuthType string                 `json:"auth_type" jsonschema:"required,title=Authentication Type,description=The authentication type,enum=none,enum=basic,enum=bearer,default=basic" jsonschema_extras:"x-ui-col-xs=12"`
-	Username string                 `json:"username,omitempty" jsonschema:"title=Username,description=The username for the MCP server" jsonschema_extras:"x-ui-col-xs=12"`
-	Password string                 `json:"password,omitempty" jsonschema:"title=Password,description=The password for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=12"`
-	Token    string                 `json:"token,omitempty" jsonschema:"title=Bearer Token,description=The bearer token for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=24"`
-	Args     map[string]interface{} `json:"args,omitempty" jsonschema:"title=Arguments" jsonschema_extras:"x-ui-field=objectEditor"`
+	Endpoint      string                 `json:"endpoint" jsonschema:"required,title=Endpoint,description=The endpoint of the MCP server"`
+	Protocol      string                 `json:"protocol" jsonschema:"required,title=Protocol,description=The protocol of the MCP server,enum=http,enum=websocket,default=http" jsonschema_extras:"x-ui-col-xs=12"`
+	AuthType      string                 `json:"auth_type" jsonschema:"required,title=Authentication Type,description=The authentication type,enum=none,enum=basic,enum=bearer,default=basic" jsonschema_extras:"x-ui-col-xs=12"`
+	Username      string                 `json:"username,omitempty" jsonschema:"title=Username,description=The username for the MCP server" jsonschema_extras:"x-ui-col-xs=12"`
+	Password      string                 `json:"password,omitempty" jsonschema:"title=Password,description=The password for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=12"`
+	Token         string                 `json:"token,omitempty" jsonschema:"title=Bearer Token,description=The bearer token for the MCP server,format=password" jsonschema_extras:"x-ui-col-xs=24"`
+	ApprovalTools []string               `json:"approval_tools,omitempty" jsonschema:"title=Approval Tools,description=MCP tools that require an approval card before they run"`
+	Args          map[string]interface{} `json:"args,omitempty" jsonschema:"title=Arguments" jsonschema_extras:"x-ui-field=objectEditor"`
 }
 
 var mcpConfigFields = []util.ConfigField{
@@ -414,6 +415,24 @@ func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]an
 		schema.Extras = make(map[string]any)
 	}
 	if def, ok := schema.Definitions["MCPToolSetConfig"]; ok {
+		if approvalDef, ok := def.Properties.Get("approval_tools"); ok && approvalDef != nil {
+			if approvalDef.Extras == nil {
+				approvalDef.Extras = map[string]any{}
+			}
+			approvalDef.Extras["x-ui-widget"] = "remoteSelect"
+			approvalDef.Extras["x-data-source"] = map[string]any{
+				"type":       "api",
+				"url":        "/api/system/toolsets/tools/preview",
+				"method":     "POST",
+				"label_key":  "name",
+				"value_key":  "name",
+				"body_key":   "config",
+				"depends_on": []string{"endpoint", "protocol", "auth_type", "username", "password", "token", "args"},
+				"ready_on":   []string{"endpoint"},
+				"params":     map[string]any{"type": "mcp"},
+				"cache":      false,
+			}
+		}
 		if argsDef, ok := def.Properties.Get("args"); ok && argsDef != nil {
 			argsDef.Description = "Optional MCP client options. Supported keys: headers (or header) as an object of HTTP header name/value pairs; proxy as an http/https/socks5/socks5h URL."
 			argsDef.Examples = []any{
@@ -551,6 +570,11 @@ func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]an
 					"ui:col": {
 						"xs":       12,
 						"children": []string{"password"},
+					},
+				}, {
+					"ui:col": {
+						"xs":       24,
+						"children": []string{"approval_tools"},
 					},
 				}, {
 					"ui:col": {

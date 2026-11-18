@@ -16,7 +16,7 @@
 
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import Form, { Templates } from '@rjsf/antd';
-import { FieldProps, FieldTemplateProps, RJSFSchema, Widget, WidgetProps } from '@rjsf/utils/lib';
+import { FieldProps, FieldTemplateProps, RJSFSchema } from '@rjsf/utils/lib';
 import { customizeValidator } from '@rjsf/validator-ajv8';
 import { createStyles, useTheme } from 'antd-style';
 import { Select, Form as AntForm, type FormItemProps } from 'antd';
@@ -30,7 +30,7 @@ import localizer from 'ajv-i18n';
 import SelectWidget from './SelectWidget';
 import TreeSelectWidget from './TreeSelectWidget';
 import PasswordWidget from './PasswordWidget';
-import { DataSource, getRemoteSelectWidget } from './RemoteSelectWidget';
+import RemoteSelectWidget, { ToolsetsSelectWidget } from './RemoteSelectWidget';
 
 const { FieldTemplate: FieldTemplateAntd } = Templates
 
@@ -86,22 +86,6 @@ export interface JsonSchemaConfigFormProps {
   t?: TFunction;
 }
 
-const getToolsetsSelectWidget = (): Widget => {
-  const Component = getRemoteSelectWidget({});
-  Component.displayName = 'ToolsetsSelectWidget';
-  return (props: WidgetProps) => {
-    return <Component
-      {...props}
-      schema={{
-        ...(props.schema || {}),
-        'x-data-source': {
-          ...(((props.schema as { 'x-data-source'?: Partial<DataSource> })?.['x-data-source']) || {}),
-          type: 'toolsets'
-        }
-      }}
-    />;
-  }
-}
 
 function formatJson(value: unknown): string {
   if (value === undefined || value === null) {
@@ -443,6 +427,11 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
 }) => {
   const { styles } = useStyle();
   const formData = value ?? {};
+  const formValuesRef = useRef(formData);
+  const formValueListenersRef = useRef(new Set<() => void>());
+  if (formValuesRef.current !== formData) {
+    formValuesRef.current = formData;
+  }
 
   const { i18n } = useTranslation()
 
@@ -465,6 +454,23 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
     },
     [onChange]
   );
+  useEffect(() => {
+    formValueListenersRef.current.forEach((listener) => listener());
+  });
+
+  // formContext must stay referentially stable. RJSF rebuilds its registry when this
+  // value changes, and a new registry remounts fields, which drops input focus.
+  const formContext = useMemo(() => ({
+    descriptionLocation: 'tooltip' as const,
+    getFormValues: () => formValuesRef.current,
+    subscribeFormValues: (listener: () => void) => {
+      formValueListenersRef.current.add(listener);
+      return () => {
+        formValueListenersRef.current.delete(listener);
+      };
+    },
+  }), []);
+
   const mergedUiSchema = React.useMemo(() => {
     if (!schema) {
       return {};
@@ -488,14 +494,15 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       uiSchema={mergedUiSchema || {}}
       disabled={disabled}
       showErrorList={false}
-      liveValidate="onChange"
+      liveValidate="onBlur"
+      liveOmit="onBlur"
       autoComplete='off'
       fields={{
         objectEditor: I18nObjectField(t),
       }}
       widgets={{
-        remoteSelect: getRemoteSelectWidget(formData),
-        toolsetsSelect: getToolsetsSelectWidget(),
+        remoteSelect: RemoteSelectWidget,
+        toolsetsSelect: ToolsetsSelectWidget,
         select: SelectWidget,
         treeSelect: TreeSelectWidget,
         password: PasswordWidget,
@@ -503,9 +510,7 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       templates={{
         FieldTemplate: I18nFieldTemplate(t),
       }}
-      formContext={{
-        descriptionLocation: 'tooltip'
-      }}
+      formContext={formContext}
     />
   );
 };

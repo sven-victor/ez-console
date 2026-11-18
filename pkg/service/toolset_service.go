@@ -44,6 +44,7 @@ type ToolSetService interface {
 	GetEnabledToolSets(ctx context.Context, organizationID string) ([]model.ToolSet, error)
 	TestToolSet(ctx context.Context, organizationID, id string) error
 	TestToolSetConfig(ctx context.Context, toolSetType toolset.ToolSetType, config model.ToolSetConfig) error
+	ListToolsFromConfig(ctx context.Context, toolSetType toolset.ToolSetType, config model.ToolSetConfig) ([]openai.Tool, error)
 	GetToolSetInstance(ctx context.Context, organizationID, id string) (toolset.ToolSet, error)
 	CreateToolSetInstance(toolSet *model.ToolSet) (toolset.ToolSet, error)
 	GetAllEnabledToolSetInstances(ctx context.Context, organizationID string) (toolset.ToolSets, error)
@@ -254,14 +255,38 @@ func (s *toolSetService) TestToolSet(ctx context.Context, organizationID, id str
 
 // TestToolSetConfig tests a connection using the given toolset config without persisting it.
 func (s *toolSetService) TestToolSetConfig(ctx context.Context, toolSetType toolset.ToolSetType, config model.ToolSetConfig) error {
+	toolsetInstance, err := s.instantiateToolSet(toolSetType, config)
+	if err != nil {
+		return err
+	}
+	if err := toolsetInstance.Test(ctx); err != nil {
+		return fmt.Errorf("toolset test failed: %w", err)
+	}
+	return nil
+}
+
+// ListToolsFromConfig lists tools using unsaved form config. It does not persist the toolset.
+func (s *toolSetService) ListToolsFromConfig(ctx context.Context, toolSetType toolset.ToolSetType, config model.ToolSetConfig) ([]openai.Tool, error) {
+	toolsetInstance, err := s.instantiateToolSet(toolSetType, config)
+	if err != nil {
+		return nil, err
+	}
+	tools, err := toolsetInstance.ListTools(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tools: %w", err)
+	}
+	return tools, nil
+}
+
+func (s *toolSetService) instantiateToolSet(toolSetType toolset.ToolSetType, config model.ToolSetConfig) (toolset.ToolSet, error) {
 	factory, exists := toolset.GetToolSetFactory(toolSetType)
 	if !exists {
-		return fmt.Errorf("unsupported toolset type: %s", toolSetType)
+		return nil, fmt.Errorf("unsupported toolset type: %s", toolSetType)
 	}
 
 	cfg := util.CloneConfigMap(config)
 	if err := util.DecryptPasswordFields(factory.GetConfigFields(), cfg); err != nil {
-		return err
+		return nil, err
 	}
 
 	toolsetInstance, err := s.CreateToolSetInstance(&model.ToolSet{
@@ -269,15 +294,12 @@ func (s *toolSetService) TestToolSetConfig(ctx context.Context, toolSetType tool
 		Config: cfg,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create toolset instance: %w", err)
+		return nil, fmt.Errorf("failed to create toolset instance: %w", err)
 	}
 	if err := toolsetInstance.Validate(); err != nil {
-		return fmt.Errorf("toolset validation failed: %w", err)
+		return nil, fmt.Errorf("toolset validation failed: %w", err)
 	}
-	if err := toolsetInstance.Test(ctx); err != nil {
-		return fmt.Errorf("toolset test failed: %w", err)
-	}
-	return nil
+	return toolsetInstance, nil
 }
 
 // GetToolSetInstance creates a toolset instance from database model

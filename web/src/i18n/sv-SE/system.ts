@@ -619,6 +619,10 @@ export default {
             label: 'Bearer-token',
             description: 'Bearer-token för MCP-servern',
           },
+          approval_tools: {
+            label: 'Godkännandeverktyg',
+            description: 'MCP-verktyg som kräver godkännande innan de körs',
+          },
         },
       },
     },

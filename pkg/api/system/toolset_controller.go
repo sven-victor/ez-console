@@ -46,6 +46,7 @@ func (c *ToolSetController) RegisterRoutes(router *gin.RouterGroup) {
 		toolsets.GET("", middleware.RequirePermission("system:toolsets:view"), c.ListToolSets)
 		toolsets.POST("", middleware.RequirePermission("system:toolsets:create"), c.CreateToolSet)
 		toolsets.POST("/test", middleware.RequireAnyPermission("system:toolsets:test", "system:toolsets:create", "system:toolsets:update"), c.TestToolSetConfig)
+		toolsets.POST("/tools/preview", middleware.RequireAnyPermission("system:toolsets:test", "system:toolsets:create", "system:toolsets:update"), c.PreviewToolSetTools)
 		toolsets.GET("/:id", middleware.RequirePermission("system:toolsets:view"), c.GetToolSet)
 		toolsets.PUT("/:id", middleware.RequirePermission("system:toolsets:update"), c.UpdateToolSet)
 		toolsets.DELETE("/:id", middleware.RequirePermission("system:toolsets:delete"), c.DeleteToolSet)
@@ -502,6 +503,72 @@ func (c *ToolSetController) TestToolSetConfig(ctx *gin.Context) {
 	}
 
 	util.RespondWithMessage(ctx, "Toolset connection test successful")
+}
+
+// ToolPreview is one tool name returned for an unsaved toolset configuration.
+type ToolPreview struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+}
+
+// PreviewToolSetTools lists tools using the submitted configuration without persisting it.
+//
+//	@Summary		Preview toolset tools
+//	@Description	List tools from an unsaved toolset configuration
+//	@ID             previewToolSetTools
+//	@Tags			ToolSets
+//	@Accept			json
+//	@Produce		json
+//	@Param			request	body		TestToolSetConfigRequest	true	"Toolset configuration"
+//	@Success		200	{object}	util.Response[[]ToolPreview]
+//	@Failure		400	{object}	util.ErrorResponse
+//	@Failure		500	{object}	util.ErrorResponse
+//	@Router			/api/system/toolsets/tools/preview [post]
+func (c *ToolSetController) PreviewToolSetTools(ctx *gin.Context) {
+	organizationID := ctx.GetString("organization_id")
+	if organizationID == "" {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4012", "Organization not authenticated"))
+		return
+	}
+
+	var req TestToolSetConfigRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		util.RespondWithError(ctx, util.NewError("E4001", err))
+		return
+	}
+	if req.Config == nil {
+		req.Config = model.ToolSetConfig{}
+	}
+
+	factory, exists := toolset.GetToolSetFactory(req.Type)
+	if !exists {
+		util.RespondWithError(ctx, util.NewErrorMessage("E4001", fmt.Sprintf("unsupported toolset type: %s", req.Type)))
+		return
+	}
+	for _, configField := range factory.GetConfigFields() {
+		if configField.Required && req.Config[configField.Name] == "" {
+			util.RespondWithError(ctx, util.NewError("E4001", fmt.Errorf("config field %s is required", configField.Name)))
+			return
+		}
+	}
+
+	tools, err := c.service.ListToolsFromConfig(ctx, req.Type, req.Config)
+	if err != nil {
+		util.RespondWithError(ctx, util.NewError("E5001", err))
+		return
+	}
+
+	previews := make([]ToolPreview, 0, len(tools))
+	for _, item := range tools {
+		if item.Function == nil || item.Function.Name == "" {
+			continue
+		}
+		previews = append(previews, ToolPreview{
+			Name:        item.Function.Name,
+			Description: item.Function.Description,
+		})
+	}
+	util.RespondWithSuccess(ctx, http.StatusOK, previews)
 }
 
 // TestToolSet tests a toolset connection

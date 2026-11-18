@@ -672,6 +672,10 @@ export default {
             label: 'Bearer 令牌',
             description: 'MCP 服务器的 Bearer 令牌',
           },
+          approval_tools: {
+            label: '审批工具',
+            description: '执行前需要审批确认的 MCP 工具',
+          },
         },
       }
     },

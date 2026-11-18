@@ -92,3 +92,45 @@ func TestMCPToolSetFactoryCreateToolSetArgs(t *testing.T) {
 		t.Fatalf("args proxy not loaded: %#v", mcpTS.config)
 	}
 }
+
+func TestMCPConfigSchemaApprovalToolsRemoteSelect(t *testing.T) {
+	t.Parallel()
+
+	schema, _, err := (&MCPToolSetFactory{}).GetConfigSchema()
+	if err != nil {
+		t.Fatal(err)
+	}
+	raw, err := json.Marshal(schema)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var doc map[string]any
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		t.Fatal(err)
+	}
+	defs, _ := doc["$defs"].(map[string]any)
+	def, _ := defs["MCPToolSetConfig"].(map[string]any)
+	props, _ := def["properties"].(map[string]any)
+	field, _ := props["approval_tools"].(map[string]any)
+	if field["type"] != "array" {
+		t.Fatalf("approval_tools type=%v", field["type"])
+	}
+	if field["x-ui-widget"] != "remoteSelect" {
+		t.Fatalf("widget=%v", field["x-ui-widget"])
+	}
+	source, _ := field["x-data-source"].(map[string]any)
+	if source["type"] != "api" || source["method"] != "POST" || source["url"] != "/api/system/toolsets/tools/preview" {
+		t.Fatalf("data source=%v", source)
+	}
+	if source["body_key"] != "config" || source["value_key"] != "name" || source["label_key"] != "name" {
+		t.Fatalf("mapping=%v", source)
+	}
+	params, _ := source["params"].(map[string]any)
+	if params["type"] != "mcp" {
+		t.Fatalf("params=%v", params)
+	}
+	ready, _ := source["ready_on"].([]any)
+	if len(ready) != 1 || ready[0] != "endpoint" {
+		t.Fatalf("ready_on=%v", source["ready_on"])
+	}
+}

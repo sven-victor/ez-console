@@ -77,9 +77,17 @@ type DataSource struct {
 	// The client defaults to "search" when this is empty.
 	SearchKey string `json:"search_key,omitempty"`
 
-	// DependsOn specifies field dependencies (field names that this field depends on)
-	// When dependent fields change, this field's options should be reloaded
+	// DependsOn specifies field dependencies (field names that this field depends on).
+	// When dependent fields change, this field's options should be reloaded.
+	// On a non-GET request those values are sent under BodyKey.
 	DependsOn []string `json:"depends_on,omitempty"`
+
+	// BodyKey is the JSON object key that receives DependsOn form values.
+	// Used when Method is POST, PUT, or PATCH. Defaults to "config" on the client.
+	BodyKey string `json:"body_key,omitempty"`
+
+	// ReadyOn lists form fields that must be non-empty before options are fetched.
+	ReadyOn []string `json:"ready_on,omitempty"`
 }
 
 // VisibleConditionOperator defines operators for visibility conditions

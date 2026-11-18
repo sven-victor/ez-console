@@ -618,6 +618,10 @@ export default {
             label: 'رمز Bearer',
             description: 'رمز Bearer لخادم MCP',
           },
+          approval_tools: {
+            label: 'أدوات الموافقة',
+            description: 'أدوات MCP التي تتطلب بطاقة موافقة قبل التنفيذ',
+          },
         },
       },
     },

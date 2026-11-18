@@ -1184,6 +1184,24 @@ export async function testToolSetConfig(
   });
 }
 
+/** Preview toolset tools List tools from an unsaved toolset configuration POST /api/system/toolsets/tools/preview */
+export async function previewToolSetTools(
+  body: API.TestToolSetConfigRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.ResponseArraySystemapiToolPreview>(
+    "/api/system/toolsets/tools/preview",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: body,
+      ...(options || {}),
+    }
+  );
+}
+
 /** Get toolset type definitions Get the type definitions for toolsets GET /api/system/toolsets/types */
 export async function getToolSetTypeDefinitions(options?: {
   [key: string]: any;

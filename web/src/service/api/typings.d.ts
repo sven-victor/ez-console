@@ -1626,6 +1626,13 @@ declare global {
       trace_id: string;
     }
   
+    interface ResponseArraySystemapiToolPreview {
+      code: string;
+      data: ToolPreview[];
+      err: string;
+      trace_id: string;
+    }
+  
     interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
       code: string;
       data: CreateServiceAccountAccessKeyResponse;
@@ -2508,6 +2515,11 @@ declare global {
       parameters: any;
       strict: boolean;
       type: string;
+    }
+  
+    interface ToolPreview {
+      description: string;
+      name: string;
     }
   
     interface ToolSet {

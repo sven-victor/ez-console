@@ -619,6 +619,10 @@ export default {
             label: 'Token Bearer',
             description: 'El token Bearer del servidor MCP',
           },
+          approval_tools: {
+            label: 'Herramientas de aprobación',
+            description: 'Herramientas MCP que requieren una tarjeta de aprobación antes de ejecutarse',
+          },
         },
       },
     },

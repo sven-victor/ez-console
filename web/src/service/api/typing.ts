@@ -1624,6 +1624,13 @@ export interface ResponseArraySystemapiTool {
   trace_id: string;
 }
 
+export interface ResponseArraySystemapiToolPreview {
+  code: string;
+  data: ToolPreview[];
+  err: string;
+  trace_id: string;
+}
+
 export interface ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse {
   code: string;
   data: CreateServiceAccountAccessKeyResponse;
@@ -2506,6 +2513,11 @@ export interface ToolDefinition {
   parameters: any;
   strict: boolean;
   type: string;
+}
+
+export interface ToolPreview {
+  description: string;
+  name: string;
 }
 
 export interface ToolSet {

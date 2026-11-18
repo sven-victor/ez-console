@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Widget, WidgetProps } from '@rjsf/utils/lib';
 import { useRequest } from 'ahooks';
 import api from '@/service/api';
@@ -27,9 +27,14 @@ export interface DataSource {
   cache: boolean;
   /** Cache TTL in seconds (0 = no expiration) */
   cache_ttl: number;
-  /** DependsOn specifies field dependencies (field names that this field depends on)
-When dependent fields change, this field's options should be reloaded */
+  /** DependsOn specifies field dependencies (field names that this field depends on).
+When dependent fields change, this field's options should be reloaded.
+On a non-GET request those values are sent under body_key. */
   depends_on: string[];
+  /** JSON object key that receives depends_on form values. Defaults to "config". */
+  body_key?: string;
+  /** Form fields that must be non-empty before options are fetched. */
+  ready_on?: string[];
   /** Query filters. Toolsets: {"type": "utils"}. Users: {"status": "normal"}. Overrides params. */
   filter: Record<string, unknown>;
   /** Response mapping fields (for API and other sources) */
@@ -50,7 +55,64 @@ When dependent fields change, this field's options should be reloaded */
 
 export type DataSourceType = "static" | "api" | "toolsets" | "internal";
 
-type RemoteOption = { label: React.ReactNode; value: string };
+type RemoteOption = { label: React.ReactNode; value: string; title?: string };
+
+export type RemoteRequest = {
+  params?: Record<string, unknown>;
+  data?: Record<string, unknown>;
+  localFilter: boolean;
+};
+
+function isBlank(value: unknown): boolean {
+  return value == null || (typeof value === "string" && value.trim() === "");
+}
+
+export function isRemoteSourceReady(formValues: Record<string, unknown>, readyOn: string[] | undefined): boolean {
+  if (!readyOn || readyOn.length === 0) {
+    return true;
+  }
+  return readyOn.every((key) => !isBlank(formValues[key]));
+}
+
+export function buildRemoteRequest(
+  source: Partial<DataSource>,
+  formValues: Record<string, unknown>,
+  keyword: string,
+): RemoteRequest {
+  const method = (source.method || "GET").toUpperCase();
+  const dependsOn = source.depends_on ?? [];
+  const sendsBody = method !== "GET" && method !== "HEAD" && dependsOn.length > 0;
+  if (!sendsBody) {
+    return { params: buildRemoteQuery(source, keyword), localFilter: false };
+  }
+  const config: Record<string, unknown> = {};
+  for (const key of dependsOn) {
+    if (Object.prototype.hasOwnProperty.call(formValues, key)) {
+      config[key] = formValues[key];
+    }
+  }
+  return {
+    data: {
+      ...(source.params || {}),
+      ...(source.filter || {}),
+      [source.body_key || "config"]: config,
+    },
+    localFilter: true,
+  };
+}
+
+function errorText(error: unknown): string {
+  if (!error) {
+    return "";
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (typeof error === "object" && error && "err" in error) {
+    return String((error as { err?: unknown }).err ?? "");
+  }
+  return String(error);
+}
 
 function rowsFromPayload(payload: unknown): Record<string, unknown>[] {
   if (Array.isArray(payload)) {
@@ -73,7 +135,8 @@ function toRemoteOption(
   const rawValue = source.value_key ? item[source.value_key] : undefined;
   const value = rawValue != null && String(rawValue) !== "" ? String(rawValue) : fallbackValue;
   const label = rawLabel != null && String(rawLabel) !== "" ? String(rawLabel) : (fallbackLabel || value);
-  return { label: renderLabel ? renderLabel(label, item) : label, value };
+  const description = typeof item.description === "string" ? item.description : "";
+  return { label: renderLabel ? renderLabel(label, item) : label, value, title: description || undefined };
 }
 
 function buildRemoteQuery(source: Partial<DataSource>, keyword: string): Record<string, unknown> {
@@ -98,9 +161,10 @@ function selectedKeys(value: unknown, multiple: boolean): string[] {
   return [String(value)];
 }
 
-async function fetchRemoteOptions(source: Partial<DataSource>, query: Record<string, unknown>): Promise<RemoteOption[]> {
+async function fetchRemoteOptions(source: Partial<DataSource>, remoteRequest: RemoteRequest): Promise<RemoteOption[]> {
   switch (source.type) {
     case "toolsets": {
+      const query = remoteRequest.params || {};
       const result = await api.system.listToolSets(query as API.listToolSetsParams);
       return (result.data ?? [])
         .map((item: API.ToolSet) => toRemoteOption(
@@ -120,9 +184,14 @@ async function fetchRemoteOptions(source: Partial<DataSource>, query: Record<str
       const payload = source.url.startsWith("/")
         ? await request<{ data: unknown; current?: number; total?: number; page_size?: number }>(source.url, {
           method: source.method,
-          params: query,
+          params: remoteRequest.params,
+          data: remoteRequest.data,
         })
-        : (await axios(source.url, { params: query, method: source.method })).data;
+        : (await axios(source.url, {
+          params: remoteRequest.params,
+          data: remoteRequest.data,
+          method: source.method,
+        })).data;
       return rowsFromPayload(payload)
         .map((item) => toRemoteOption(item, source))
         .filter((option) => option.value !== "");
@@ -133,21 +202,52 @@ async function fetchRemoteOptions(source: Partial<DataSource>, query: Record<str
 }
 
 
+type FormValuesContext = {
+  getFormValues?: () => Record<string, unknown>;
+  subscribeFormValues?: (listener: () => void) => () => void;
+};
+
+const EMPTY_FORM_VALUES: Record<string, unknown> = {};
+
+function getEmptyFormValues() {
+  return EMPTY_FORM_VALUES;
+}
+
+function subscribeNoop() {
+  return () => undefined;
+}
+
+type RemoteSelectProps = WidgetProps & { formValues?: Record<string, unknown> };
+
+function useLiveFormValues(props: RemoteSelectProps): Record<string, unknown> {
+  const context = props.registry?.formContext as FormValuesContext | undefined;
+  const liveValues = useSyncExternalStore(
+    context?.subscribeFormValues ?? subscribeNoop,
+    context?.getFormValues ?? getEmptyFormValues,
+    context?.getFormValues ?? getEmptyFormValues,
+  );
+  return props.formValues ?? liveValues;
+}
+
 export const RemoteSelectWidget: Widget = (props) => {
   const { schema, value, onChange, disabled, readonly, multiple: multipleProp, placeholder } = props;
-  // const formValues = props.formValues as Record<string, unknown> || {};
+  const formValues = useLiveFormValues(props as RemoteSelectProps);
   const source: Partial<DataSource> = schema?.["x-data-source"] || {};
   const multiple = Boolean(multipleProp) || schema?.type === "array";
   const [keyword, setKeyword] = useState("");
   const labelCacheRef = useRef<Map<string, React.ReactNode>>(new Map());
-  const query = useMemo(() => buildRemoteQuery(source, keyword), [source, keyword]);
-  const requestKey = `${source.type ?? ""}:${source.method ?? ""}:${source.url ?? ""}:${JSON.stringify(query)}`;
+  const remoteRequest = useMemo(
+    () => buildRemoteRequest(source, formValues, keyword),
+    [source, formValues, keyword],
+  );
+  const requestKey = `${source.type ?? ""}:${source.method ?? ""}:${source.url ?? ""}:${JSON.stringify(remoteRequest.data ?? remoteRequest.params)}`;
   const cacheMs = typeof source.cache_ttl === "number" ? source.cache_ttl * 1000 : 0;
+  const ready = (source.type === "toolsets" || source.type === "api") && isRemoteSourceReady(formValues, source.ready_on);
 
-  const { data: fetchedOptions, loading: loadingOptions } = useRequest(
-    () => fetchRemoteOptions(source, query),
+  const { data: fetchedOptions, loading: loadingOptions, error } = useRequest(
+    () => fetchRemoteOptions(source, remoteRequest),
     {
-      ready: source.type === "toolsets" || source.type === "api",
+      ready,
       refreshDeps: [requestKey],
       debounceWait: 300,
       cacheKey: requestKey,
@@ -172,35 +272,61 @@ export const RemoteSelectWidget: Widget = (props) => {
 
   const selectValue = multiple ? selectedKeys(value, true) : selectedKeys(value, false)[0];
 
+  const loadError = ready ? errorText(error) : "";
+
   return (
-    <Select
-      mode={multiple ? "multiple" : undefined}
-      maxTagCount={multiple ? "responsive" : undefined}
-      maxTagPlaceholder={(omitted) => `+${omitted.length}`}
-      showSearch
-      filterOption={false}
-      onSearch={setKeyword}
-      onOpenChange={(open) => {
-        if (!open) {
-          setKeyword("");
-        }
-      }}
-      options={options}
-      value={selectValue}
-      loading={loadingOptions}
-      disabled={disabled || readonly}
-      placeholder={placeholder}
-      allowClear
-      onChange={(next) => onChange?.(multiple ? (Array.isArray(next) ? next : []) : next)}
-      style={{ width: "100%" }}
-    />
+    <div>
+      <Select
+        mode={multiple ? "multiple" : undefined}
+        maxTagCount={multiple ? "responsive" : undefined}
+        maxTagPlaceholder={(omitted) => `+${omitted.length}`}
+        showSearch
+        filterOption={remoteRequest.localFilter ? (input, option) => {
+          const query = input.trim().toLowerCase();
+          if (!query) {
+            return true;
+          }
+          const optionValue = String(option?.value ?? "").toLowerCase();
+          const optionLabel = typeof option?.label === "string" ? option.label.toLowerCase() : "";
+          const optionTitle = String(option?.title ?? "").toLowerCase();
+          return optionValue.includes(query) || optionLabel.includes(query) || optionTitle.includes(query);
+        } : false}
+        onSearch={remoteRequest.localFilter ? undefined : setKeyword}
+        onOpenChange={(open) => {
+          if (!open) {
+            setKeyword("");
+          }
+        }}
+        options={options}
+        value={selectValue}
+        loading={loadingOptions}
+        disabled={disabled || readonly}
+        placeholder={placeholder}
+        allowClear
+        onChange={(next) => onChange?.(multiple ? (Array.isArray(next) ? next : []) : next)}
+        style={{ width: "100%" }}
+      />
+      {loadError ? <div style={{ color: "#ff4d4f", marginTop: 4 }}>{loadError}</div> : null}
+    </div>
   );
 }
 
-export const getRemoteSelectWidget = (formValues: Record<string, unknown>): React.ComponentType<WidgetProps> => {
-  return (props: WidgetProps) => <RemoteSelectWidget {...props} formValues={formValues} />
-}
 
 RemoteSelectWidget.displayName = 'RemoteSelectWidget';
+
+export const ToolsetsSelectWidget: Widget = (props: WidgetProps) => {
+  return <RemoteSelectWidget
+    {...props}
+    schema={{
+      ...(props.schema || {}),
+      'x-data-source': {
+        ...(((props.schema as { 'x-data-source'?: Partial<DataSource> })?.['x-data-source']) || {}),
+        type: 'toolsets'
+      }
+    }}
+  />;
+}
+ToolsetsSelectWidget.displayName = 'ToolsetsSelectWidget';
+
 
 export default RemoteSelectWidget;

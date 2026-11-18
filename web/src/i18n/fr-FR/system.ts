@@ -619,6 +619,10 @@ export default {
             label: 'Jeton Bearer',
             description: 'Le jeton Bearer du serveur MCP',
           },
+          approval_tools: {
+            label: 'Outils d\'approbation',
+            description: 'Outils MCP qui exigent une approbation avant exécution',
+          },
         },
       },
     },
