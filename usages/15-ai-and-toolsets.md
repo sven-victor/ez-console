@@ -2025,7 +2025,7 @@ LinkedToolset []string `json:"linked_toolset,omitempty" jsonschema:"uniqueItems=
 | `search_key` | Query parameter that receives the search text. Defaults to `search`. The user list uses `keywords`. |
 | `cache_ttl` | Cache and freshness time in seconds. The cache key includes `type`, method, URL, and the full query, so a different filter or keyword does not reuse another result. |
 
-The dropdown does not filter the current page locally. Typing waits 300ms, then refetches. Closing the dropdown clears the keyword and loads the first page again. A selected value that is absent from the current page keeps the last label seen in this session; until a response includes it, the control shows the raw id.
+The dropdown does not filter the current page locally. Options are requested when the dropdown opens, not when the form mounts. A successful response stays fresh for `cache_ttl` seconds (`0` means the rest of the form session) and is not requested again; a failed response is not cached, so the next open tries again. Opening the dropdown while that request is still running does not start another one. Typing waits 300ms, then refetches. Closing the dropdown clears the keyword. A selected value that is absent from the current page keeps the last label seen in this session; until a response includes it, the control shows the raw id.
 
 ```go
 // Single user select with remote search.

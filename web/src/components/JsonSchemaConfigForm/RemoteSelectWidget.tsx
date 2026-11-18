@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { Widget, WidgetProps } from '@rjsf/utils/lib';
 import { useRequest } from 'ahooks';
 import api from '@/service/api';
@@ -236,25 +236,34 @@ export const RemoteSelectWidget: Widget = (props) => {
   const multiple = Boolean(multipleProp) || schema?.type === "array";
   const [keyword, setKeyword] = useState("");
   const labelCacheRef = useRef<Map<string, React.ReactNode>>(new Map());
+  const openRef = useRef(false);
   const remoteRequest = useMemo(
     () => buildRemoteRequest(source, formValues, keyword),
     [source, formValues, keyword],
   );
   const requestKey = `${source.type ?? ""}:${source.method ?? ""}:${source.url ?? ""}:${JSON.stringify(remoteRequest.data ?? remoteRequest.params)}`;
   const cacheMs = typeof source.cache_ttl === "number" ? source.cache_ttl * 1000 : 0;
+  const freshFor = cacheMs > 0 ? cacheMs : -1;
   const ready = (source.type === "toolsets" || source.type === "api") && isRemoteSourceReady(formValues, source.ready_on);
 
-  const { data: fetchedOptions, loading: loadingOptions, error } = useRequest(
+  const { data: fetchedOptions, loading: loadingOptions, error, run } = useRequest(
     () => fetchRemoteOptions(source, remoteRequest),
     {
+      manual: true,
       ready,
-      refreshDeps: [requestKey],
       debounceWait: 300,
       cacheKey: requestKey,
-      cacheTime: cacheMs,
-      staleTime: cacheMs,
+      cacheTime: freshFor,
+      staleTime: freshFor,
     },
   );
+
+  useEffect(() => {
+    if (!openRef.current) {
+      return;
+    }
+    run();
+  }, [requestKey, ready, run]);
 
   const options = useMemo(() => {
     const merged = new Map<string, RemoteOption>();
@@ -293,8 +302,13 @@ export const RemoteSelectWidget: Widget = (props) => {
         } : false}
         onSearch={remoteRequest.localFilter ? undefined : setKeyword}
         onOpenChange={(open) => {
+          openRef.current = open;
           if (!open) {
             setKeyword("");
+            return;
+          }
+          if (!loadingOptions) {
+            run();
           }
         }}
         options={options}
