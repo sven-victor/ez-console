@@ -16,17 +16,24 @@
 
 import React from 'react';
 import { Spin } from 'antd';
+import { SpinSize } from 'antd/es/spin';
 
-const Loading: React.FC = () => {
+export interface LoadingProps {
+  style?: React.CSSProperties;
+  size?: SpinSize;
+}
+
+const Loading: React.FC<LoadingProps> = ({ style, size = 'large' }: LoadingProps) => {
   return (
     <div style={{
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       height: '100vh',
-      width: '100%'
+      width: '100%',
+      ...style,
     }}>
-      <Spin size="large" />
+      <Spin size={size} />
     </div>
   );
 };

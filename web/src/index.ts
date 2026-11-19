@@ -40,13 +40,11 @@ export { default as Table, type TableRefProps, type TableActionRefProps, type Ta
 export { type AIChatProps } from '@/components/AIChat';
 export { AIChatModal, AIChatButton, AIChatSider } from '@/components/AIChatLayout';
 export { type MarkdownViewerProps } from '@/components/MarkdownViewer';
-export { type JsonSchemaConfigFormItemProps, type JsonSchemaConfigFormProps } from '@/components/JsonSchemaConfigForm';
+export { type JsonSchemaConfigFormItemProps, type JsonSchemaConfigFormProps } from '@/components/JsonSchemaConfigForm/JsonSchemaConfigForm';
 
 import { lazy } from 'react';
 const AIChat = lazy(() => import('@/components/AIChat'));
 
-const JsonSchemaConfigForm = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({ default: module.JsonSchemaConfigForm })));
-const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({ default: module.JsonSchemaConfigFormItem })));
 const MarkdownViewer = lazy(() => import('@/components/MarkdownViewer'));
 const MarkdownCode = lazy(() => import('@/components/MarkdownViewer').then(module => ({ default: module.Code })));
 
@@ -89,10 +87,10 @@ const api = {
   ...tasksapi,
 }
 
+export { JsonSchemaConfigForm, JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
+
 export {
   api,
-  JsonSchemaConfigForm,
-  JsonSchemaConfigFormItem,
   MarkdownViewer,
   MarkdownCode,
   AIChat,

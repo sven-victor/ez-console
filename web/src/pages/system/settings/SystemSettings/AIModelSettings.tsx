@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   App,
   Card,
@@ -53,12 +53,8 @@ import api from '@/service/api';
 import usePermission from '@/hooks/usePermission';
 import { PermissionGuard } from '@/components/PermissionGuard';
 import Actions from '@/components/Actions';
-import Loading from '@/components/Loading';
+import { JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
-
-const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({
-  default: module.JsonSchemaConfigFormItem
-})));
 
 const { TextArea } = Input;
 
@@ -734,14 +730,12 @@ const AIModelSettings: React.FC = () => {
             </Form.Item>
 
             {currentProviderDefinition && (
-              <Suspense fallback={<Loading />}>
-                <AIModelJsonForm
-                  name="config"
-                  schema={currentProviderDefinition.config_schema as unknown as RJSFSchema}
-                  uiSchema={currentProviderDefinition.ui_schema as UiSchema}
-                  provider={selectedProvider}
-                />
-              </Suspense>
+              <AIModelJsonForm
+                name="config"
+                schema={currentProviderDefinition.config_schema as unknown as RJSFSchema}
+                uiSchema={currentProviderDefinition.ui_schema as UiSchema}
+                provider={selectedProvider}
+              />
             )}
             <Form.Item
               name="system_prompt"

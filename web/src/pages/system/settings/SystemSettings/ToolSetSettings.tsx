@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   App,
@@ -49,12 +49,8 @@ import type { ColumnsType } from 'antd/es/table';
 import api from '@/service/api';
 import Actions from '@/components/Actions';
 import { PermissionGuard } from '@/components/PermissionGuard';
-import Loading from '@/components/Loading';
+import { JsonSchemaConfigFormItem } from '@/components/JsonSchemaConfigForm';
 import type { RJSFSchema, UiSchema } from '@rjsf/utils';
-
-const JsonSchemaConfigFormItem = lazy(() => import('@/components/JsonSchemaConfigForm').then(module => ({
-  default: module.JsonSchemaConfigFormItem
-})));
 
 const { TextArea } = Input;
 
@@ -610,14 +606,12 @@ const ToolSetSettings: React.FC = () => {
               />
             </Form.Item>
 
-            <Suspense fallback={<Loading />}>
-              <ToolSetJsonForm
-                name="config"
-                schema={currentTypeDefinition?.config_schema as unknown as RJSFSchema}
-                uiSchema={currentTypeDefinition?.ui_schema as UiSchema}
-                type={selectedType}
-              />
-            </Suspense>
+            <ToolSetJsonForm
+              name="config"
+              schema={currentTypeDefinition?.config_schema as unknown as RJSFSchema}
+              uiSchema={currentTypeDefinition?.ui_schema as UiSchema}
+              type={selectedType}
+            />
             <Form.Item hidden name="status" label={t('settings.toolsets.status', { defaultValue: 'Status' })}>
               <Input />
             </Form.Item>

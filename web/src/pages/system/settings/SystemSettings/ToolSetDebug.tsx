@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React, { useState, lazy, Suspense, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   App,
   Card,
@@ -38,11 +38,9 @@ import ReactCodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import JsonView from '@uiw/react-json-view';
 import api from '@/service/api';
-import Loading from '@/components/Loading';
+import { JsonSchemaConfigForm } from '@/components/JsonSchemaConfigForm';
 import type { RJSFSchema } from '@rjsf/utils';
 import { tryParseJSON } from '@/utils';
-
-const JsonSchemaConfigForm = lazy(() => import('@/components/JsonSchemaConfigForm'));
 
 const { Text, Title } = Typography;
 
@@ -307,13 +305,11 @@ const ToolSetDebug: React.FC = () => {
 
             {formMode === 'schema' ? (
               selectedTool.function?.parameters ? (
-                <Suspense fallback={<Loading />}>
-                  <JsonSchemaConfigForm
-                    schema={selectedTool.function.parameters as RJSFSchema}
-                    value={paramsFormData}
-                    onChange={setParamsFormData}
-                  />
-                </Suspense>
+                <JsonSchemaConfigForm
+                  schema={selectedTool.function.parameters as RJSFSchema}
+                  value={paramsFormData}
+                  onChange={setParamsFormData}
+                />
               ) : (
                 <Text type="secondary">
                   {t('settings.toolsets.noParameters', { defaultValue: 'This tool has no parameters' })}

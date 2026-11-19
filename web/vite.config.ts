@@ -59,7 +59,7 @@ const baseConfig: UserConfig = {
           if (id.includes('/node_modules/highlight.js/')) return 'highlight';
           if (id.includes('/src/components/AIChat.tsx')) return 'ai-chat';
           if (id.includes('/src/components/AIChatLayout.tsx')) return 'ai-chat-layout';
-          if (id.includes('/src/components/JsonSchemaConfigForm.tsx')) return 'json-schema-config-form';
+          if (id.includes('/src/components/JsonSchemaConfigForm/') && !id.includes('/src/components/JsonSchemaConfigForm/index.tsx')) return 'json-schema-config-form';
           if (id.includes('/src/components/MarkdownViewer.tsx')) return 'markdown-viewer';
           if (id.includes('/node_modules/react-syntax-highlighter/')) return 'highlighter';
           if (id.includes('/node_modules/mermaid/')) return 'mermaid';
@@ -106,7 +106,7 @@ export default defineConfig((env: ConfigEnv) => {
           filename: '../dist/stats.html',
           gzipSize: true
         }),
-        ...baseConfig.plugins,
+        ...(baseConfig.plugins || []),
         dts({
           insertTypesEntry: true,
           entryRoot: 'src',
@@ -135,10 +135,10 @@ export default defineConfig((env: ConfigEnv) => {
         },
         sourcemap: false,
         rollupOptions: {
-          ...baseConfig.build.rollupOptions,
+          ...(baseConfig.build?.rollupOptions || {}),
           treeshake: true,
           output: {
-            ...baseConfig.build.rollupOptions.output,
+            ...(baseConfig.build?.rollupOptions?.output || {}),
             entryFileNames: 'ez-console.[format].js',
             chunkFileNames: '[format]/[name].js',
             assetFileNames: (chunkInfo) => {

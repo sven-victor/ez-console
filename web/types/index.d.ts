@@ -2088,9 +2088,9 @@ export declare interface IRouteItem {
     hideInMenu?: boolean;
 }
 
-export declare const JsonSchemaConfigForm: LazyExoticComponent<FC<JsonSchemaConfigFormProps>>;
+export declare const JsonSchemaConfigForm: FC<JsonSchemaConfigFormProps>;
 
-export declare const JsonSchemaConfigFormItem: LazyExoticComponent<({ schema, uiSchema, t, ...props }: JsonSchemaConfigFormItemProps) => JSX_2.Element>;
+export declare const JsonSchemaConfigFormItem: FC<JsonSchemaConfigFormItemProps>;
 
 export declare interface JsonSchemaConfigFormItemProps extends FormItemProps {
     schema: RJSFSchema;
