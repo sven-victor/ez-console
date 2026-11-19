@@ -16,7 +16,7 @@
 
 import React from 'react';
 import { Spin } from 'antd';
-import { SpinSize } from 'antd/es/spin';
+import { type SpinSize } from 'antd/es/spin';
 
 export interface LoadingProps {
   style?: React.CSSProperties;
