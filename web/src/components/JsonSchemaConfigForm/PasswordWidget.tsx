@@ -18,6 +18,7 @@ import type { ChangeEvent, FocusEvent } from 'react';
 import type { FormContextType, RJSFSchema, StrictRJSFSchema, WidgetProps, GenericObjectType } from '@rjsf/utils';
 import { ariaDescribedByIds, getInputProps } from '@rjsf/utils';
 import { Input } from 'antd';
+import { useDraftValue } from './draftValue';
 
 /** The `PasswordWidget` component uses the `BaseInputTemplate` changing the type to `password`.
  *
@@ -35,13 +36,22 @@ export default function PasswordWidget<
   const { type: _, ...inputProps } = getInputProps<T, S, F>(props.schema, 'password', options, false);
 
   const emptyValue = options.emptyValue || '';
+  const { draft, updateDraft, flush, markFocused } = useDraftValue(value || '');
 
   const handleChange = ({ target }: ChangeEvent<HTMLInputElement>) =>
-    onChange(target.value === '' ? emptyValue : target.value);
+    updateDraft(target.value === '' ? emptyValue : target.value);
 
-  const handleBlur = ({ target }: FocusEvent<HTMLInputElement>) => onBlur(id, target.value);
+  const handleBlur = ({ target }: FocusEvent<HTMLInputElement>) => {
+    markFocused(false);
+    const next = target.value === '' ? emptyValue : target.value;
+    flush(next, onChange);
+    onBlur(id, next);
+  };
 
-  const handleFocus = ({ target }: FocusEvent<HTMLInputElement>) => onFocus(id, target.value);
+  const handleFocus = ({ target }: FocusEvent<HTMLInputElement>) => {
+    markFocused(true);
+    onFocus(id, target.value);
+  };
 
   return (
     <Input.Password
@@ -53,7 +63,7 @@ export default function PasswordWidget<
       onChange={!readonly ? handleChange : undefined}
       onFocus={!readonly ? handleFocus : undefined}
       placeholder={placeholder}
-      value={value || ''}
+      value={typeof draft === 'string' ? draft : ''}
       aria-describedby={ariaDescribedByIds(id)}
     />
   );

@@ -31,11 +31,14 @@ import SelectWidget from './SelectWidget';
 import TreeSelectWidget from './TreeSelectWidget';
 import PasswordWidget from './PasswordWidget';
 import RemoteSelectWidget, { ToolsetsSelectWidget } from './RemoteSelectWidget';
+import DeferredBaseInputTemplate, { DeferredTextareaWidget } from './DeferredInputs';
 
 const { FieldTemplate: FieldTemplateAntd } = Templates
 
 /** Default indent for JSON stringify */
 const JSON_EDITOR_INDENT = 2;
+/** Wait until typing pauses before pushing the JSON editor into the schema form. */
+const JSON_COMMIT_DELAY_MS = 300;
 
 const useStyle = createStyles(({ css }) => {
   return {
@@ -119,10 +122,33 @@ function ObjectField({ t, ...props }: FieldProps & { t?: TFunction }) {
     : [];
   const lastFormDataRef = useRef<unknown>(undefined);
   const isInternalChangeRef = useRef(false);
+  const pendingRef = useRef<unknown>(undefined);
+  const pendingValidRef = useRef(false);
+  const commitTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const onChangeRef = useRef(onChange);
+  const pathRef = useRef(fieldPathId.path);
+  onChangeRef.current = onChange;
+  pathRef.current = fieldPathId.path;
 
   const [localValue, setLocalValue] = useState(() => formatJson(formData));
   const [parseError, setParseError] = useState<string | null>(null);
   const keyPrefix = serializeKey(props.fieldPathId.path);
+
+  const flushEditor = useCallback(() => {
+    if (commitTimerRef.current) {
+      clearTimeout(commitTimerRef.current);
+      commitTimerRef.current = undefined;
+    }
+    if (!pendingValidRef.current) {
+      return;
+    }
+    pendingValidRef.current = false;
+    isInternalChangeRef.current = true;
+    lastFormDataRef.current = pendingRef.current;
+    onChangeRef.current(pendingRef.current as Record<string, unknown>, pathRef.current);
+  }, []);
+
+  useEffect(() => () => flushEditor(), [flushEditor]);
 
   // Keep editor in sync when formData changes from outside (e.g. form reset)
   useEffect(() => {
@@ -144,14 +170,22 @@ function ObjectField({ t, ...props }: FieldProps & { t?: TFunction }) {
       const parsed = parseJson(value);
       if (parsed === undefined && value.trim() !== '') {
         setParseError('Invalid JSON');
+        pendingValidRef.current = false;
+        if (commitTimerRef.current) {
+          clearTimeout(commitTimerRef.current);
+          commitTimerRef.current = undefined;
+        }
         return;
       }
       setParseError(null);
-      lastFormDataRef.current = parsed;
-      isInternalChangeRef.current = true;
-      onChange(parsed as Record<string, unknown>, fieldPathId.path);
+      pendingRef.current = parsed;
+      pendingValidRef.current = true;
+      if (commitTimerRef.current) {
+        clearTimeout(commitTimerRef.current);
+      }
+      commitTimerRef.current = setTimeout(flushEditor, JSON_COMMIT_DELAY_MS);
     },
-    [onChange, fieldPathId],
+    [flushEditor],
   );
 
   const handleExampleSelect = useCallback(
@@ -173,6 +207,11 @@ function ObjectField({ t, ...props }: FieldProps & { t?: TFunction }) {
       const str = formatJson(obj);
       setLocalValue(str);
       setParseError(null);
+      if (commitTimerRef.current) {
+        clearTimeout(commitTimerRef.current);
+        commitTimerRef.current = undefined;
+      }
+      pendingValidRef.current = false;
       lastFormDataRef.current = obj;
       isInternalChangeRef.current = true;
       onChange(obj as Record<string, unknown>, fieldPathId.path);
@@ -220,6 +259,7 @@ function ObjectField({ t, ...props }: FieldProps & { t?: TFunction }) {
         theme={isDarkMode ? 'dark' : 'light'}
         extensions={[json()]}
         onChange={handleEditorChange}
+        onBlur={flushEditor}
         editable={!disabled}
         basicSetup={{ lineNumbers: true, foldGutter: true }}
       />
@@ -406,6 +446,18 @@ const I18nFieldTemplate: (t?: TFunction) => React.FC<FieldTemplateProps<unknown,
   }
 }
 
+const EMPTY_SCHEMA: RJSFSchema = {};
+const EMPTY_FORM_DATA: Record<string, unknown> = {};
+
+const FORM_WIDGETS = {
+  remoteSelect: RemoteSelectWidget,
+  toolsetsSelect: ToolsetsSelectWidget,
+  select: SelectWidget,
+  treeSelect: TreeSelectWidget,
+  password: PasswordWidget,
+  TextareaWidget: DeferredTextareaWidget,
+};
+
 const getLocalizer = (language: string) => {
   const simpleLanguage = language.split('-')[0];
   return localizer[language as keyof typeof localizer] || localizer[simpleLanguage as keyof typeof localizer];
@@ -426,11 +478,17 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
   t,
 }) => {
   const { styles } = useStyle();
-  const formData = value ?? {};
-  const formValuesRef = useRef(formData);
+  const formValuesRef = useRef(value ?? EMPTY_FORM_DATA);
   const formValueListenersRef = useRef(new Set<() => void>());
-  if (formValuesRef.current !== formData) {
-    formValuesRef.current = formData;
+  // Last object given to the parent. Antd echoes that same reference on the next render.
+  const emittedRef = useRef(value);
+  const [seed, setSeed] = useState(value);
+  const [formInstance, setFormInstance] = useState(0);
+  if (value !== emittedRef.current) {
+    emittedRef.current = value;
+    formValuesRef.current = value ?? EMPTY_FORM_DATA;
+    setSeed(value);
+    setFormInstance((instance) => instance + 1);
   }
 
   const { i18n } = useTranslation()
@@ -450,13 +508,14 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
 
   const handleChange = useCallback(
     ({ formData: next }: { formData?: Record<string, unknown> }) => {
-      onChange?.(next ?? {});
+      const data = next ?? {};
+      emittedRef.current = data;
+      formValuesRef.current = data;
+      formValueListenersRef.current.forEach((listener) => listener());
+      onChange?.(data);
     },
     [onChange]
   );
-  useEffect(() => {
-    formValueListenersRef.current.forEach((listener) => listener());
-  });
 
   // formContext must stay referentially stable. RJSF rebuilds its registry when this
   // value changes, and a new registry remounts fields, which drops input focus.
@@ -482,13 +541,22 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
     }
   }, [schema, uiSchema]);
 
+  const fields = useMemo(() => ({ objectEditor: I18nObjectField(t) }), [t]);
+  const templates = useMemo(() => ({
+    FieldTemplate: I18nFieldTemplate(t),
+    BaseInputTemplate: DeferredBaseInputTemplate,
+  }), [t]);
+
   return (
     <Form
+      // Uncontrolled while typing. Echoing formData makes RJSF resolve the schema again on every commit.
+      // Remount only when the parent value is not the object we just emitted.
+      key={formInstance}
       // Render as div so this can nest inside an outer antd <Form> without invalid nested <form>s.
       tagName="div"
       className={classNames(styles.jsonSchemaForm, 'json-schema-config-form')}
-      schema={schema || {}}
-      formData={formData}
+      schema={schema || EMPTY_SCHEMA}
+      initialFormData={seed}
       onChange={handleChange}
       validator={i18nValidator}
       uiSchema={mergedUiSchema || {}}
@@ -497,19 +565,9 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
       liveValidate="onBlur"
       liveOmit="onBlur"
       autoComplete='off'
-      fields={{
-        objectEditor: I18nObjectField(t),
-      }}
-      widgets={{
-        remoteSelect: RemoteSelectWidget,
-        toolsetsSelect: ToolsetsSelectWidget,
-        select: SelectWidget,
-        treeSelect: TreeSelectWidget,
-        password: PasswordWidget,
-      }}
-      templates={{
-        FieldTemplate: I18nFieldTemplate(t),
-      }}
+      fields={fields}
+      widgets={FORM_WIDGETS}
+      templates={templates}
       formContext={formContext}
     />
   );

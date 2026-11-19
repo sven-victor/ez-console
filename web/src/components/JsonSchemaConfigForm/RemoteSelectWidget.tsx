@@ -209,24 +209,59 @@ type FormValuesContext = {
 
 const EMPTY_FORM_VALUES: Record<string, unknown> = {};
 
-function getEmptyFormValues() {
-  return EMPTY_FORM_VALUES;
-}
-
 function subscribeNoop() {
   return () => undefined;
 }
 
 type RemoteSelectProps = WidgetProps & { formValues?: Record<string, unknown> };
 
+function watchedFormKeys(schema: WidgetProps['schema']): string[] {
+  const source = (schema as { 'x-data-source'?: Partial<DataSource> } | undefined)?.['x-data-source'];
+  if (!source) {
+    return [];
+  }
+  return [...(source.depends_on ?? []), ...(source.ready_on ?? [])];
+}
+
+function sliceFormValues(all: Record<string, unknown>, keys: string[]): Record<string, unknown> {
+  const slice: Record<string, unknown> = {};
+  for (const key of keys) {
+    if (Object.prototype.hasOwnProperty.call(all, key)) {
+      slice[key] = all[key];
+    }
+  }
+  return slice;
+}
+
+function sameSlice(prev: Record<string, unknown>, next: Record<string, unknown>, keys: string[]): boolean {
+  return keys.every((key) => Object.is(prev[key], next[key])
+    && Object.prototype.hasOwnProperty.call(prev, key) === Object.prototype.hasOwnProperty.call(next, key));
+}
+
 function useLiveFormValues(props: RemoteSelectProps): Record<string, unknown> {
   const context = props.registry?.formContext as FormValuesContext | undefined;
-  const liveValues = useSyncExternalStore(
-    context?.subscribeFormValues ?? subscribeNoop,
-    context?.getFormValues ?? getEmptyFormValues,
-    context?.getFormValues ?? getEmptyFormValues,
-  );
-  return props.formValues ?? liveValues;
+  const watched = watchedFormKeys(props.schema);
+  const watchedKey = watched.join('\0');
+  const cacheRef = useRef(EMPTY_FORM_VALUES);
+  const getSnapshot = () => {
+    if (props.formValues) {
+      return props.formValues;
+    }
+    if (!watchedKey) {
+      return EMPTY_FORM_VALUES;
+    }
+    const all = context?.getFormValues?.() ?? EMPTY_FORM_VALUES;
+    const next = sliceFormValues(all, watched);
+    if (sameSlice(cacheRef.current, next, watched)) {
+      return cacheRef.current;
+    }
+    cacheRef.current = next;
+    return next;
+  };
+  const subscribe = props.formValues || !watchedKey
+    ? subscribeNoop
+    : (context?.subscribeFormValues ?? subscribeNoop);
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
 export const RemoteSelectWidget: Widget = (props) => {
