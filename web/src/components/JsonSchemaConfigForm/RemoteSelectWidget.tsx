@@ -35,6 +35,8 @@ On a non-GET request those values are sent under body_key. */
   body_key?: string;
   /** Form fields that must be non-empty before options are fetched. */
   ready_on?: string[];
+  /** When true, fetch options the first time the dropdown opens. Default is to fetch as soon as the field is ready. */
+  load_on_open?: boolean;
   /** Query filters. Toolsets: {"type": "utils"}. Users: {"status": "normal"}. Overrides params. */
   filter: Record<string, unknown>;
   /** Response mapping fields (for API and other sources) */
@@ -148,6 +150,38 @@ function buildRemoteQuery(source: Partial<DataSource>, keyword: string): Record<
     ...(source.filter || {}),
     ...(keyword ? { [searchKey]: keyword } : {}),
   };
+}
+
+function readFlag(value: unknown): boolean | undefined {
+  if (typeof value === "boolean") {
+    return value;
+  }
+  if (value === "true") {
+    return true;
+  }
+  if (value === "false") {
+    return false;
+  }
+  return undefined;
+}
+
+// loadOnOpen reports whether options wait for the dropdown.
+// ui:options.loadOnOpen wins, then ui:load-on-open / x-ui-load-on-open, then x-data-source.load_on_open.
+function loadOnOpen(props: WidgetProps, source: Partial<DataSource>): boolean {
+  const fromOptions = readFlag(props.options?.loadOnOpen);
+  if (fromOptions !== undefined) {
+    return fromOptions;
+  }
+  const uiSchema = props.uiSchema as Record<string, unknown> | undefined;
+  const fromUi = readFlag(uiSchema?.["ui:loadOnOpen"] ?? uiSchema?.["ui:load-on-open"]);
+  if (fromUi !== undefined) {
+    return fromUi;
+  }
+  const fromSchemaUi = readFlag((props.schema as { "x-ui-load-on-open"?: unknown } | undefined)?.["x-ui-load-on-open"]);
+  if (fromSchemaUi !== undefined) {
+    return fromSchemaUi;
+  }
+  return readFlag(source.load_on_open) ?? false;
 }
 
 function selectedKeys(value: unknown, multiple: boolean): string[] {
@@ -280,12 +314,14 @@ export const RemoteSelectWidget: Widget = (props) => {
   const cacheMs = typeof source.cache_ttl === "number" ? source.cache_ttl * 1000 : 0;
   const freshFor = cacheMs > 0 ? cacheMs : -1;
   const ready = (source.type === "toolsets" || source.type === "api") && isRemoteSourceReady(formValues, source.ready_on);
+  const deferUntilOpen = loadOnOpen(props, source);
 
   const { data: fetchedOptions, loading: loadingOptions, error, run } = useRequest(
     () => fetchRemoteOptions(source, remoteRequest),
     {
-      manual: true,
+      manual: deferUntilOpen,
       ready,
+      refreshDeps: [requestKey],
       debounceWait: 300,
       cacheKey: requestKey,
       cacheTime: freshFor,
@@ -294,11 +330,11 @@ export const RemoteSelectWidget: Widget = (props) => {
   );
 
   useEffect(() => {
-    if (!openRef.current) {
+    if (!deferUntilOpen || !openRef.current) {
       return;
     }
     run();
-  }, [requestKey, ready, run]);
+  }, [deferUntilOpen, requestKey, ready, run]);
 
   const options = useMemo(() => {
     const merged = new Map<string, RemoteOption>();
@@ -342,7 +378,7 @@ export const RemoteSelectWidget: Widget = (props) => {
             setKeyword("");
             return;
           }
-          if (!loadingOptions) {
+          if (deferUntilOpen && !loadingOptions) {
             run();
           }
         }}

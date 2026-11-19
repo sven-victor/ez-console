@@ -1879,6 +1879,7 @@ function walk(node: any): any {
 | `x-ui-field` | `ui:field` | Override the default field renderer (e.g. `objectEditor` for JSON editor) |
 | `x-ui-placeholder` | `ui:placeholder` | Input placeholder text |
 | `x-ui-col-xs` | `ui:col-xs` | Column span in grid layout (Ant Design grid system, out of 24) |
+| `x-ui-load-on-open` | `ui:load-on-open` | RemoteSelect only. `true` fetches options when the dropdown opens. Default loads as soon as the field is ready. `ui:options.loadOnOpen` overrides this |
 | `x-hidden` | `ui:widget=hidden` | Hide the field entirely |
 | `x-disabled` | `ui:disabled=true` | Disable the field |
 
@@ -2024,8 +2025,9 @@ LinkedToolset []string `json:"linked_toolset,omitempty" jsonschema:"uniqueItems=
 | `filter` | Fixed query parameters. Toolset type uses the list parameter `type`, for example `{"type": "utils"}` → `GET /api/system/toolsets?type=utils`. User status uses `{"status": "normal"}`. |
 | `search_key` | Query parameter that receives the search text. Defaults to `search`. The user list uses `keywords`. |
 | `cache_ttl` | Cache and freshness time in seconds. The cache key includes `type`, method, URL, and the full query, so a different filter or keyword does not reuse another result. |
+| `load_on_open` | When `true`, options are requested the first time the dropdown opens. Default `false` loads as soon as the field is ready. `ui:options.loadOnOpen` and `x-ui-load-on-open` override this value. |
 
-The dropdown does not filter the current page locally. Options are requested when the dropdown opens, not when the form mounts. A successful response stays fresh for `cache_ttl` seconds (`0` means the rest of the form session) and is not requested again; a failed response is not cached, so the next open tries again. Opening the dropdown while that request is still running does not start another one. Typing waits 300ms, then refetches. Closing the dropdown clears the keyword. A selected value that is absent from the current page keeps the last label seen in this session; until a response includes it, the control shows the raw id.
+The dropdown does not filter the current page locally. With `load_on_open` (or `ui:options.loadOnOpen` / `x-ui-load-on-open`), options are requested when the dropdown opens. Otherwise they load as soon as the field is ready. A successful response stays fresh for `cache_ttl` seconds (`0` means the rest of the form session) and is not requested again; a failed response is not cached, so the next open tries again. Opening the dropdown while that request is still running does not start another one. Typing waits 300ms, then refetches. Closing the dropdown clears the keyword. A selected value that is absent from the current page keeps the last label seen in this session; until a response includes it, the control shows the raw id.
 
 ```go
 // Single user select with remote search.

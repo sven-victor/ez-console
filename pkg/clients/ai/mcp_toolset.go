@@ -428,9 +428,10 @@ func (f *MCPToolSetFactory) GetConfigSchema() (*jsonschema.Schema, map[string]an
 				"value_key":  "name",
 				"body_key":   "config",
 				"depends_on": []string{"endpoint", "protocol", "auth_type", "username", "password", "token", "args"},
-				"ready_on":   []string{"endpoint"},
-				"params":     map[string]any{"type": "mcp"},
-				"cache":      false,
+				"ready_on":     []string{"endpoint"},
+				"params":       map[string]any{"type": "mcp"},
+				"cache":        false,
+				"load_on_open": true,
 			}
 		}
 		if argsDef, ok := def.Properties.Get("args"); ok && argsDef != nil {

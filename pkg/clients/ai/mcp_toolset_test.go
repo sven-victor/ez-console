@@ -133,4 +133,7 @@ func TestMCPConfigSchemaApprovalToolsRemoteSelect(t *testing.T) {
 	if len(ready) != 1 || ready[0] != "endpoint" {
 		t.Fatalf("ready_on=%v", source["ready_on"])
 	}
+	if source["load_on_open"] != true {
+		t.Fatalf("load_on_open=%v", source["load_on_open"])
+	}
 }

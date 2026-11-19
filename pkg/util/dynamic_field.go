@@ -88,6 +88,11 @@ type DataSource struct {
 
 	// ReadyOn lists form fields that must be non-empty before options are fetched.
 	ReadyOn []string `json:"ready_on,omitempty"`
+
+	// LoadOnOpen defers the options request until the dropdown opens.
+	// The default is to load as soon as the field is ready.
+	// A ui:options loadOnOpen value or x-ui-load-on-open overrides this.
+	LoadOnOpen bool `json:"load_on_open,omitempty"`
 }
 
 // VisibleConditionOperator defines operators for visibility conditions
