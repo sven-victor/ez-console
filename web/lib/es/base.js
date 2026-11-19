@@ -1629,6 +1629,7 @@ const A = {
       presetDisabledDelete: "Built-in toolsets cannot be deleted.",
       testSuccess: "Toolset connection test successful",
       testFailed: "Toolset connection test failed",
+      testFailedDetail: "Toolset connection test failed: {{error}}",
       statusUpdateSuccess: "Status updated successfully",
       statusUpdateFailed: "Failed to update status",
       tooltipEnableToolSet: "Enable this toolset",
@@ -1677,6 +1678,10 @@ const A = {
           token: {
             label: "Bearer Token",
             description: "The bearer token for the MCP server"
+          },
+          approval_tools: {
+            label: "Approval Tools",
+            description: "MCP tools that require an approval card before they run"
           }
         }
       }
@@ -1776,6 +1781,7 @@ const A = {
     deleteFailed: "Failed to delete AI model",
     testSuccess: "AI model connection test successful",
     testFailed: "AI model connection test failed",
+    testFailedDetail: "AI model connection test failed: {{error}}",
     setDefaultSuccess: "Default AI model set successfully",
     setDefaultFailed: "Failed to set default AI model",
     deleteConfirm: "Are you sure you want to delete this AI model?",
@@ -4034,6 +4040,7 @@ const A = {
       presetDisabledDelete: "内置工具集不能删除。",
       testSuccess: "工具集连接测试成功",
       testFailed: "工具集连接测试失败",
+      testFailedDetail: "工具集连接测试失败: {{error}}",
       statusUpdateSuccess: "状态已更新",
       statusUpdateFailed: "更新状态失败",
       tooltipEnableToolSet: "启用此工具集",
@@ -4082,6 +4089,10 @@ const A = {
           token: {
             label: "Bearer 令牌",
             description: "MCP 服务器的 Bearer 令牌"
+          },
+          approval_tools: {
+            label: "审批工具",
+            description: "执行前需要审批确认的 MCP 工具"
           }
         }
       }
@@ -4181,6 +4192,7 @@ const A = {
     deleteFailed: "删除AI模型失败",
     testSuccess: "AI模型连接测试成功",
     testFailed: "AI模型连接测试失败",
+    testFailedDetail: "AI模型连接测试失败: {{error}}",
     setDefaultSuccess: "默认AI模型设置成功",
     setDefaultFailed: "设置默认AI模型失败",
     deleteConfirm: "确定要删除此AI模型吗？",
@@ -4403,7 +4415,7 @@ const A = {
     password_expiry_notification_task: "每小时扫描用户，并在每个密码周期内发送一次密码到期提醒",
     inbox_cleanup_task: "删除过期站内信并限制每位用户的消息数量"
   }
-}, N = {
+}, x = {
   title: "站内信",
   bell: "通知",
   empty: "暂无消息",
@@ -4427,7 +4439,7 @@ const A = {
     login_failure_lock: "由于登录失败次数过多，您的账号已被锁定。",
     mfa_disabled: "您账号的多因素认证已被关闭。"
   }
-}, x = {
+}, N = {
   loading: "Wird geladen...",
   success: "Vorgang erfolgreich",
   error: "Vorgang fehlgeschlagen",
@@ -5661,6 +5673,7 @@ const A = {
       presetDisabledDelete: "Integrierte Toolsets können nicht gelöscht werden.",
       testSuccess: "Toolset-Verbindungstest erfolgreich",
       testFailed: "Toolset-Verbindungstest fehlgeschlagen",
+      testFailedDetail: "Toolset-Verbindungstest fehlgeschlagen: {{error}}",
       statusUpdateSuccess: "Status erfolgreich aktualisiert",
       statusUpdateFailed: "Status konnte nicht aktualisiert werden",
       tooltipEnableToolSet: "Dieses Toolset aktivieren",
@@ -5709,6 +5722,10 @@ const A = {
           token: {
             label: "Bearer-Token",
             description: "Das Bearer-Token für den MCP-Server"
+          },
+          approval_tools: {
+            label: "Genehmigungswerkzeuge",
+            description: "MCP-Tools, die vor der Ausführung eine Genehmigung erfordern"
           }
         }
       }
@@ -5834,6 +5851,7 @@ const A = {
     deleteFailed: "KI-Modell konnte nicht gelöscht werden",
     testSuccess: "KI-Modell-Verbindungstest erfolgreich",
     testFailed: "KI-Modell-Verbindungstest fehlgeschlagen",
+    testFailedDetail: "KI-Modell-Verbindungstest fehlgeschlagen: {{error}}",
     setDefaultSuccess: "Standard-KI-Modell erfolgreich festgelegt",
     setDefaultFailed: "Standard-KI-Modell konnte nicht festgelegt werden",
     deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?",
@@ -6080,7 +6098,7 @@ const A = {
     login_failure_lock: "Ihr Konto wurde nach zu vielen fehlgeschlagenen Anmeldeversuchen gesperrt.",
     mfa_disabled: "Die Multi-Faktor-Authentifizierung wurde für Ihr Konto deaktiviert."
   }
-}, H = {
+}, G = {
   loading: "Cargando...",
   success: "Operación exitosa",
   error: "Operación fallida",
@@ -6156,7 +6174,7 @@ const A = {
     "fr-FR": "Francés",
     "zh-CN": "Chino"
   }
-}, G = {
+}, H = {
   user: {
     management: "Gestión de usuarios",
     create: "Crear usuario",
@@ -7314,6 +7332,7 @@ const A = {
       presetDisabledDelete: "Los conjuntos integrados no se pueden eliminar.",
       testSuccess: "Prueba de conexión del conjunto de herramientas exitosa",
       testFailed: "Prueba de conexión del conjunto de herramientas fallida",
+      testFailedDetail: "Prueba de conexión del conjunto de herramientas fallida: {{error}}",
       statusUpdateSuccess: "Estado actualizado correctamente",
       statusUpdateFailed: "No se pudo actualizar el estado",
       tooltipEnableToolSet: "Habilitar este conjunto de herramientas",
@@ -7362,6 +7381,10 @@ const A = {
           token: {
             label: "Token Bearer",
             description: "El token Bearer del servidor MCP"
+          },
+          approval_tools: {
+            label: "Herramientas de aprobación",
+            description: "Herramientas MCP que requieren una tarjeta de aprobación antes de ejecutarse"
           }
         }
       }
@@ -7487,6 +7510,7 @@ const A = {
     deleteFailed: "Error al eliminar modelo de IA",
     testSuccess: "Prueba de conexión del modelo de IA exitosa",
     testFailed: "Prueba de conexión del modelo de IA fallida",
+    testFailedDetail: "Prueba de conexión del modelo de IA fallida: {{error}}",
     setDefaultSuccess: "Modelo de IA predeterminado establecido exitosamente",
     setDefaultFailed: "Error al establecer modelo de IA predeterminado",
     deleteConfirm: "¿Está seguro de que desea eliminar este modelo de IA?",
@@ -8967,6 +8991,7 @@ const A = {
       presetDisabledDelete: "Les ensembles d'outils intégrés ne peuvent pas être supprimés.",
       testSuccess: "Test de connexion de l'ensemble d'outils réussi",
       testFailed: "Test de connexion de l'ensemble d'outils échoué",
+      testFailedDetail: "Test de connexion de l'ensemble d'outils échoué : {{error}}",
       statusUpdateSuccess: "Statut mis à jour avec succès",
       statusUpdateFailed: "Échec de la mise à jour du statut",
       tooltipEnableToolSet: "Activer cet ensemble d'outils",
@@ -9015,6 +9040,10 @@ const A = {
           token: {
             label: "Jeton Bearer",
             description: "Le jeton Bearer du serveur MCP"
+          },
+          approval_tools: {
+            label: "Outils d'approbation",
+            description: "Outils MCP qui exigent une approbation avant exécution"
           }
         }
       }
@@ -9140,6 +9169,7 @@ const A = {
     deleteFailed: "Échec de la suppression du modèle IA",
     testSuccess: "Test de connexion du modèle IA réussi",
     testFailed: "Test de connexion du modèle IA échoué",
+    testFailedDetail: "Test de connexion du modèle IA échoué : {{error}}",
     setDefaultSuccess: "Modèle IA par défaut défini avec succès",
     setDefaultFailed: "Échec de la définition du modèle IA par défaut",
     deleteConfirm: "Êtes-vous sûr de vouloir supprimer ce modèle IA ?",
@@ -10620,6 +10650,7 @@ const A = {
       presetDisabledDelete: "لا يمكن حذف مجموعات الأدوات المدمجة.",
       testSuccess: "نجح اختبار اتصال مجموعة الأدوات",
       testFailed: "فشل اختبار اتصال مجموعة الأدوات",
+      testFailedDetail: "فشل اختبار اتصال مجموعة الأدوات: {{error}}",
       statusUpdateSuccess: "تم تحديث الحالة بنجاح",
       statusUpdateFailed: "فشل تحديث الحالة",
       tooltipEnableToolSet: "تفعيل مجموعة الأدوات هذه",
@@ -10668,6 +10699,10 @@ const A = {
           token: {
             label: "رمز Bearer",
             description: "رمز Bearer لخادم MCP"
+          },
+          approval_tools: {
+            label: "أدوات الموافقة",
+            description: "أدوات MCP التي تتطلب بطاقة موافقة قبل التنفيذ"
           }
         }
       }
@@ -10793,6 +10828,7 @@ const A = {
     deleteFailed: "فشل في حذف النموذج الذكي",
     testSuccess: "نجح اختبار اتصال النموذج الذكي",
     testFailed: "فشل اختبار اتصال النموذج الذكي",
+    testFailedDetail: "فشل اختبار اتصال النموذج الذكي: {{error}}",
     setDefaultSuccess: "تم تعيين النموذج الذكي الافتراضي بنجاح",
     setDefaultFailed: "فشل في تعيين النموذج الذكي الافتراضي",
     deleteConfirm: "هل أنت متأكد من أنك تريد حذف هذا النموذج الذكي؟",
@@ -12273,6 +12309,7 @@ const A = {
       presetDisabledDelete: "Inbyggda verktygsset kan inte tas bort.",
       testSuccess: "Verktygsset-anslutningstest lyckades",
       testFailed: "Verktygsset-anslutningstest misslyckades",
+      testFailedDetail: "Verktygsset-anslutningstest misslyckades: {{error}}",
       statusUpdateSuccess: "Status uppdaterad",
       statusUpdateFailed: "Det gick inte att uppdatera status",
       tooltipEnableToolSet: "Aktivera detta verktygsset",
@@ -12321,6 +12358,10 @@ const A = {
           token: {
             label: "Bearer-token",
             description: "Bearer-token för MCP-servern"
+          },
+          approval_tools: {
+            label: "Godkännandeverktyg",
+            description: "MCP-verktyg som kräver godkännande innan de körs"
           }
         }
       }
@@ -12446,6 +12487,7 @@ const A = {
     deleteFailed: "Misslyckades med att ta bort AI-modell",
     testSuccess: "AI-modell-anslutningstest lyckades",
     testFailed: "AI-modell-anslutningstest misslyckades",
+    testFailedDetail: "AI-modell-anslutningstest misslyckades: {{error}}",
     setDefaultSuccess: "Standard AI-modell angiven framgångsrikt",
     setDefaultFailed: "Misslyckades med att ange standard AI-modell",
     deleteConfirm: "Är du säker på att du vill ta bort denna AI-modell?",
@@ -12704,7 +12746,7 @@ f.use(b).use(v).init({
       system: M,
       ai: U,
       task: q,
-      inbox: N
+      inbox: x
     },
     "en-US": {
       translation: y,
@@ -12717,7 +12759,7 @@ f.use(b).use(v).init({
     },
     "de-DE": {
       translation: C,
-      common: x,
+      common: N,
       authorization: O,
       system: B,
       ai: V,
@@ -12726,8 +12768,8 @@ f.use(b).use(v).init({
     },
     "es-ES": {
       translation: z,
-      common: H,
-      authorization: G,
+      common: G,
+      authorization: H,
       system: W,
       ai: Z,
       task: J,
@@ -12857,7 +12899,7 @@ function h(e) {
 function m(e) {
   return h(e).replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
-function Ne(e) {
+function xe(e) {
   if (typeof e != "string" || !e.trim()) return e;
   const t = e.trimStart();
   if (!t.startsWith("---")) return e;
@@ -12883,7 +12925,7 @@ export {
   De as e,
   Re as f,
   ze as g,
-  Ne as h,
+  xe as h,
   Fe as i,
   Ie as j,
   Ce as m,

@@ -1,23 +1,21 @@
-import { j as e, g as Pt, h as Lt } from "./vendor.js";
-import { App as me, Form as o, Spin as je, Switch as oe, Select as $, Input as v, Alert as st, Divider as Ge, Space as K, Button as E, InputNumber as re, Modal as ce, Skeleton as as, Descriptions as pe, Steps as is, Tag as ne, Table as Pe, Radio as Be, Tabs as Ot, Popconfirm as Rt, Tooltip as nt, Typography as Qe, Card as ie, Row as He, Col as ve, Checkbox as ct, Empty as Je, AutoComplete as kt, Upload as ns, Tree as os, Menu as rs, Collapse as ds, Timeline as us, Segmented as ot, Drawer as cs, Statistic as tt, Progress as ms, Result as ps } from "antd";
+import { j as e, g as Ut, h as $t } from "./vendor.js";
+import { App as ge, Form as o, Spin as ye, Switch as ue, Select as H, Input as V, Alert as nt, Divider as Xe, Space as K, Button as E, InputNumber as ce, Modal as fe, Skeleton as fs, Descriptions as he, Steps as gs, Tag as de, Table as Me, Radio as Je, Tabs as Bt, Popconfirm as Ht, Tooltip as ut, Typography as Ye, Card as ie, Row as Ke, Col as Se, Checkbox as pt, Empty as We, AutoComplete as Tt, Upload as hs, Tree as xs, Menu as ys, Collapse as js, Timeline as bs, Segmented as ct, Drawer as Vs, Statistic as it, Progress as ks, Result as vs } from "antd";
 import { useTranslation as G } from "react-i18next";
-import { useState as b, useEffect as Le, useMemo as ye, Suspense as Ye, lazy as et, useCallback as xe, useRef as fs } from "react";
+import { useState as x, useEffect as ze, useMemo as ke, useCallback as Ve, Suspense as bt, lazy as Vt, useRef as _s } from "react";
 import { useRequest as A } from "ahooks";
-import { SaveOutlined as We, ReloadOutlined as Se, LoadingOutlined as gs, CheckCircleTwoTone as hs, ClearOutlined as xs, StarFilled as ys, CheckCircleOutlined as js, StarOutlined as bs, EditOutlined as Ne, CopyOutlined as Mt, DeleteOutlined as Oe, BugOutlined as Nt, TagsOutlined as Vs, PlusOutlined as De, ThunderboltOutlined as ks, ToolOutlined as gt, SettingOutlined as vs, FileTextOutlined as lt, EyeOutlined as Dt, UploadOutlined as vt, UnorderedListOutlined as qt, CalendarOutlined as _s, UndoOutlined as ht, ArrowLeftOutlined as yt, FolderOutlined as Ut, FileOutlined as $t, FileAddOutlined as Ss, FolderAddOutlined as ws, SearchOutlined as Cs, DownloadOutlined as Ts, ApartmentOutlined as Fs, WarningOutlined as Is, DashboardOutlined as As, MessageOutlined as Es, SendOutlined as zs, CloseCircleOutlined as Bt, AlignLeftOutlined as Jt, CodeOutlined as Ht, PlayCircleOutlined as Ps } from "@ant-design/icons";
-import { a as S } from "./index.js";
-import { g as _t, h as Wt, j as Ze } from "./base.js";
-import { h as ue, e as Ls, c as qe, L as Ke } from "./components.js";
-import Kt from "react-quill-new";
-import { b as jt, u as Os, a as bt } from "./contexts.js";
-import { useNavigate as Ce, useLocation as Rs, useParams as rt, useSearchParams as Gt } from "react-router-dom";
-import { l as Ms, c as Ns, u as Ds, d as qs, g as Us, b as $s, e as Bs, f as Js, r as Hs } from "./system.js";
-import { l as Ws, b as Ks } from "./authorization.js";
-import { createStyles as Vt } from "antd-style";
-import Gs from "classnames";
-import at from "@uiw/react-json-view";
-import Qs from "@uiw/react-codemirror";
-import { json as Zs } from "@codemirror/lang-json";
-const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/, Xs = {
+import { SaveOutlined as Ge, ReloadOutlined as Ce, LoadingOutlined as Ss, CheckCircleTwoTone as ws, ClearOutlined as Cs, StarFilled as Ts, CheckCircleOutlined as Ft, StarOutlined as Fs, EditOutlined as qe, CopyOutlined as Jt, DeleteOutlined as Ne, BugOutlined as Wt, TagsOutlined as Is, PlusOutlined as Ue, ThunderboltOutlined as It, ToolOutlined as xt, SettingOutlined as As, FileTextOutlined as ot, EyeOutlined as Kt, UploadOutlined as At, UnorderedListOutlined as Gt, CalendarOutlined as Es, UndoOutlined as yt, ArrowLeftOutlined as kt, FolderOutlined as Qt, FileOutlined as Zt, FileAddOutlined as zs, FolderAddOutlined as Ps, SearchOutlined as Ls, DownloadOutlined as Os, ApartmentOutlined as Rs, WarningOutlined as Ms, DashboardOutlined as Ns, MessageOutlined as Ds, SendOutlined as qs, CloseCircleOutlined as Xt, AlignLeftOutlined as Yt, CodeOutlined as es, PlayCircleOutlined as Us } from "@ant-design/icons";
+import { a as k } from "./index.js";
+import { g as Et, h as ts, j as et } from "./base.js";
+import { i as pe, e as $s, c as $e, g as ss, L as vt, J as Bs } from "./components.js";
+import ls from "react-quill-new";
+import { b as _t, u as Hs, a as St } from "./contexts.js";
+import { useNavigate as Fe, useLocation as Js, useParams as mt, useSearchParams as as } from "react-router-dom";
+import { l as Ws, c as Ks, u as Gs, d as Qs, g as Zs, b as Xs, e as Ys, f as el, r as tl } from "./system.js";
+import { l as sl, b as ll } from "./authorization.js";
+import { createStyles as wt } from "antd-style";
+import al from "classnames";
+import rt from "@uiw/react-json-view";
+const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])(:[0-9]+)?(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)*$/, il = {
   github: {
     email_field: "email",
     username_field: "login",
@@ -93,72 +91,72 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
     },
     scope: ""
   }
-}, Ys = ({ initialData: s, onRefresh: t }) => {
-  const { message: a } = me.useApp(), { t: l } = G("system"), { t: n } = G("common"), [i] = o.useForm(), [r, m] = b((s == null ? void 0 : s.provider) || "custom"), [d, c] = b((s == null ? void 0 : s.provider) === "custom" || (s == null ? void 0 : s.provider) === "autoDiscover"), [f, V] = b((s == null ? void 0 : s.enabled) || !1), [x, O] = b((s == null ? void 0 : s.auto_create_user) || !1), { loading: I, data: L, refresh: _ } = A(S.system.getOauthSettings, {
+}, nl = ({ initialData: s, onRefresh: t }) => {
+  const { message: a } = ge.useApp(), { t: l } = G("system"), { t: n } = G("common"), [i] = o.useForm(), [r, p] = x((s == null ? void 0 : s.provider) || "custom"), [d, c] = x((s == null ? void 0 : s.provider) === "custom" || (s == null ? void 0 : s.provider) === "autoDiscover"), [m, b] = x((s == null ? void 0 : s.enabled) || !1), [y, O] = x((s == null ? void 0 : s.auto_create_user) || !1), { loading: I, data: M, refresh: v } = A(k.system.getOauthSettings, {
     manual: !!s,
-    onSuccess: (F) => {
-      i.setFieldsValue(F), m(F.provider), c(F.provider === "custom" || F.provider === "autoDiscover"), V(F.enabled), O(F.auto_create_user);
+    onSuccess: (T) => {
+      i.setFieldsValue(T), p(T.provider), c(T.provider === "custom" || T.provider === "autoDiscover"), b(T.enabled), O(T.auto_create_user);
     },
-    onError: (F) => {
-      a.error(l("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get OAuth settings", F);
+    onError: (T) => {
+      a.error(l("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get OAuth settings", T);
     }
   });
-  Le(() => {
-    s && (i.setFieldsValue(s), m(s.provider), c(s.provider === "custom" || s.provider === "autoDiscover"), V(s.enabled), O(s.auto_create_user));
+  ze(() => {
+    s && (i.setFieldsValue(s), p(s.provider), c(s.provider === "custom" || s.provider === "autoDiscover"), b(s.enabled), O(s.auto_create_user));
   }, [s, i]);
-  const q = (F) => {
-    m(F), c(F === "custom" || F === "autoDiscover");
-    const w = Xs[F];
-    w && i.setFieldsValue({
-      auth_endpoint: w.endpoints.auth_endpoint,
-      token_endpoint: w.endpoints.token_endpoint,
-      userinfo_endpoint: w.endpoints.userinfo_endpoint,
-      scope: w.scope,
+  const q = (T) => {
+    p(T), c(T === "custom" || T === "autoDiscover");
+    const P = il[T];
+    P && i.setFieldsValue({
+      auth_endpoint: P.endpoints.auth_endpoint,
+      token_endpoint: P.endpoints.token_endpoint,
+      userinfo_endpoint: P.endpoints.userinfo_endpoint,
+      scope: P.scope,
       // Set field mappings
-      email_field: w.email_field,
-      username_field: w.username_field,
-      full_name_field: w.full_name_field,
-      avatar_field: w.avatar_field,
-      role_field: w.role_field,
+      email_field: P.email_field,
+      username_field: P.username_field,
+      full_name_field: P.full_name_field,
+      avatar_field: P.avatar_field,
+      role_field: P.role_field,
       // Set display configuration
-      icon_url: w.icon_url,
-      display_name: w.display_name
+      icon_url: P.icon_url,
+      display_name: P.display_name
     });
-  }, C = (F) => {
-    V(F);
-  }, D = (F) => {
-    O(F);
-  }, { loading: g, run: J } = A(S.system.updateOauthSettings, {
+  }, w = (T) => {
+    b(T);
+  }, U = (T) => {
+    O(T);
+  }, { loading: f, run: W } = A(k.system.updateOauthSettings, {
     manual: !0,
     onSuccess: () => {
-      a.success(l("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), t ? t() : _();
+      a.success(l("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), t ? t() : v();
     },
-    onError: (F) => {
-      a.error(l("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update OAuth settings", F);
+    onError: (T) => {
+      a.error(l("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update OAuth settings", T);
     }
-  }), Y = (F) => {
-    J(F);
-  }, W = () => {
-    t ? t() : _();
-  }, { loading: ee, run: Q } = A(async ({ redirect_uri: F, ...w }) => {
-    let M;
-    return F ? M = new URL(F) : M = new URL(window.location.origin), M.pathname = _t("/system/settings/oauth/test-callback"), M.searchParams.set("provider", r), S.system.testOauthConnection({ redirect_uri: M.toString(), ...w });
+  }), Y = (T) => {
+    W(T);
+  }, J = () => {
+    t ? t() : v();
+  }, { loading: le, run: Q } = A(async ({ redirect_uri: T, ...P }) => {
+    let $;
+    return T ? $ = new URL(T) : $ = new URL(window.location.origin), $.pathname = Et("/system/settings/oauth/test-callback"), $.searchParams.set("provider", r), k.system.testOauthConnection({ redirect_uri: $.toString(), ...P });
   }, {
     manual: !0,
-    onSuccess: ({ url: F }) => {
-      window.open(F, "_blank");
+    onSuccess: ({ url: T }) => {
+      window.open(T, "_blank");
     },
-    onError: (F) => {
-      a.error(l("settings.oauth.testConnection.failed", { defaultValue: "Failed to test connection: {{error}}", error: F.message })), console.error("Failed to test OAuth connection", F);
+    onError: (T) => {
+      a.error(l("settings.oauth.testConnection.failed", { defaultValue: "Failed to test connection: {{error}}", error: T.message })), console.error("Failed to test OAuth connection", T);
     }
-  }), te = () => r === "custom";
-  return /* @__PURE__ */ e.jsx(je, { spinning: I, children: /* @__PURE__ */ e.jsxs(
+  }), se = () => r === "custom";
+  return /* @__PURE__ */ e.jsx(ye, { spinning: I, children: /* @__PURE__ */ e.jsxs(
     o,
     {
       form: i,
       layout: "vertical",
       onFinish: Y,
-      initialValues: s || L,
+      initialValues: s || M,
       children: [
         /* @__PURE__ */ e.jsx(
           o.Item,
@@ -167,7 +165,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: l("settings.oauth.enabled.label", { defaultValue: "Enable OAuth" }),
             valuePropName: "checked",
             tooltip: l("settings.oauth.enabled.tooltip", { defaultValue: "Enable or disable OAuth login for the system." }),
-            children: /* @__PURE__ */ e.jsx(oe, { onChange: C })
+            children: /* @__PURE__ */ e.jsx(ue, { onChange: w })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -178,17 +176,17 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.provider.tooltip", { defaultValue: "Select an OAuth provider or configure a custom one." }),
             rules: [
               {
-                required: f,
+                required: m,
                 message: l("settings.oauth.provider.required", { defaultValue: "Please select an OAuth provider." })
               }
             ],
-            children: /* @__PURE__ */ e.jsxs($, { onChange: q, disabled: !f, children: [
-              /* @__PURE__ */ e.jsx($.Option, { value: "github", children: l("settings.oauth.provider.options.github", { defaultValue: "GitHub" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "google", children: l("settings.oauth.provider.options.google", { defaultValue: "Google" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "dingtalk", children: l("settings.oauth.provider.options.dingtalk", { defaultValue: "DingTalk" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "wechat", children: l("settings.oauth.provider.options.wechat", { defaultValue: "WeChat" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "autoDiscover", children: l("settings.oauth.provider.options.autoDiscover", { defaultValue: "Auto Discover" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "custom", children: l("settings.oauth.provider.options.custom", { defaultValue: "Custom" }) })
+            children: /* @__PURE__ */ e.jsxs(H, { onChange: q, disabled: !m, children: [
+              /* @__PURE__ */ e.jsx(H.Option, { value: "github", children: l("settings.oauth.provider.options.github", { defaultValue: "GitHub" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "google", children: l("settings.oauth.provider.options.google", { defaultValue: "Google" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "dingtalk", children: l("settings.oauth.provider.options.dingtalk", { defaultValue: "DingTalk" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "wechat", children: l("settings.oauth.provider.options.wechat", { defaultValue: "WeChat" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "autoDiscover", children: l("settings.oauth.provider.options.autoDiscover", { defaultValue: "Auto Discover" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "custom", children: l("settings.oauth.provider.options.custom", { defaultValue: "Custom" }) })
             ] })
           }
         ),
@@ -199,9 +197,9 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: l("settings.oauth.displayName.label", { defaultValue: "Display Name" }),
             tooltip: l("settings.oauth.displayName.tooltip", { defaultValue: "The name displayed on the login button for this provider." }),
             children: /* @__PURE__ */ e.jsx(
-              v,
+              V,
               {
-                disabled: !f,
+                disabled: !m,
                 placeholder: r !== "custom" ? l(`settings.oauth.provider.options.${r}`, { defaultValue: r }) : ""
               }
             )
@@ -215,11 +213,11 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.iconUrl.tooltip", { defaultValue: "URL of the icon for this provider. Displayed on the login button." }),
             rules: [
               {
-                pattern: Ue,
+                pattern: Be,
                 message: l("settings.oauth.iconUrl.invalidUrl", { defaultValue: "Please enter a valid URL." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f, placeholder: "https://example.com/icon.png" })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m, placeholder: "https://example.com/icon.png" })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -230,11 +228,11 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.clientId.tooltip", { defaultValue: "The Client ID provided by the OAuth provider." }),
             rules: [
               {
-                required: f,
+                required: m,
                 message: l("settings.oauth.clientId.required", { defaultValue: "Client ID is required." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -245,14 +243,14 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.clientSecret.tooltip", { defaultValue: "The Client Secret provided by the OAuth provider. This will be stored encrypted." }),
             rules: [
               {
-                required: f,
+                required: m,
                 message: l("settings.oauth.clientSecret.required", { defaultValue: "Client Secret is required." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v.Password, { disabled: !f, autoComplete: "new-password", visibilityToggle: !1, placeholder: l("settings.oauth.clientSecret.unchanged", { defaultValue: "Leave blank to keep unchanged" }) })
+            children: /* @__PURE__ */ e.jsx(V.Password, { disabled: !m, autoComplete: "new-password", visibilityToggle: !1, placeholder: l("settings.oauth.clientSecret.unchanged", { defaultValue: "Leave blank to keep unchanged" }) })
           }
         ),
-        te() && /* @__PURE__ */ e.jsx(
+        se() && /* @__PURE__ */ e.jsx(
           o.Item,
           {
             name: "auth_endpoint",
@@ -260,15 +258,15 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.authEndpoint.tooltip", { defaultValue: "The authorization endpoint URL of the OAuth provider." }),
             rules: [
               {
-                required: f && r === "custom",
+                required: m && r === "custom",
                 message: l("settings.oauth.authEndpoint.required", { defaultValue: "Authorization Endpoint is required." })
               },
               {
-                pattern: Ue,
+                pattern: Be,
                 message: l("settings.oauth.authEndpoint.invalidUrl", { defaultValue: "Please enter a valid URL." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -280,18 +278,18 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.wellknownEndpoint.tooltip", { defaultValue: "The wellknown endpoint URL of the OAuth provider." }),
             rules: [
               {
-                pattern: Ue,
+                pattern: Be,
                 message: l("settings.oauth.wellknownEndpoint.invalidUrl", { defaultValue: "Please enter a valid URL." })
               },
               {
-                required: f && r === "autoDiscover",
+                required: m && r === "autoDiscover",
                 message: l("settings.oauth.wellknownEndpoint.required", { defaultValue: "Wellknown Endpoint is required." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m })
           }
         ),
-        te() && /* @__PURE__ */ e.jsx(
+        se() && /* @__PURE__ */ e.jsx(
           o.Item,
           {
             name: "token_endpoint",
@@ -299,18 +297,18 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.tokenEndpoint.tooltip", { defaultValue: "The token endpoint URL of the OAuth provider." }),
             rules: [
               {
-                required: f && r === "custom",
+                required: m && r === "custom",
                 message: l("settings.oauth.tokenEndpoint.required", { defaultValue: "Token Endpoint is required." })
               },
               {
-                pattern: Ue,
+                pattern: Be,
                 message: l("settings.oauth.tokenEndpoint.invalidUrl", { defaultValue: "Please enter a valid URL." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m })
           }
         ),
-        te() && /* @__PURE__ */ e.jsx(
+        se() && /* @__PURE__ */ e.jsx(
           o.Item,
           {
             name: "userinfo_endpoint",
@@ -318,15 +316,15 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.userInfoEndpoint.tooltip", { defaultValue: "The user information endpoint URL of the OAuth provider." }),
             rules: [
               {
-                required: f && r === "custom",
+                required: m && r === "custom",
                 message: l("settings.oauth.userInfoEndpoint.required", { defaultValue: "User Info Endpoint is required." })
               },
               {
-                pattern: Ue,
+                pattern: Be,
                 message: l("settings.oauth.userInfoEndpoint.invalidUrl", { defaultValue: "Please enter a valid URL." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -337,11 +335,11 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.scope.tooltip", { defaultValue: "The scopes to request from the OAuth provider, separated by spaces." }),
             rules: [
               {
-                required: f,
+                required: m,
                 message: l("settings.oauth.scope.required", { defaultValue: "Scope is required." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -350,11 +348,11 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "redirect_uri",
             label: l("settings.oauth.redirectUri.label", { defaultValue: "Redirect URI" }),
             tooltip: l("settings.oauth.redirectUri.tooltip", { defaultValue: "The Redirect URI registered with the OAuth provider. This should match the one configured in your application." }),
-            rules: [(F) => F.getFieldValue("redirect_uri") !== "" ? {
-              pattern: Ue,
+            rules: [(T) => T.getFieldValue("redirect_uri") !== "" ? {
+              pattern: Be,
               message: l("settings.oauth.redirectUri.invalidUrl", { defaultValue: "Please enter a valid URL." })
             } : { required: !1 }],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f, placeholder: `http://${window.location.host}${_t(`/login?provider=settings.${r}`)}` })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m, placeholder: `http://${window.location.host}${Et(`/login?provider=settings.${r}`)}` })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -364,7 +362,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: l("settings.oauth.autoCreateUser.label", { defaultValue: "Auto Create User" }),
             valuePropName: "checked",
             tooltip: l("settings.oauth.autoCreateUser.tooltip", { defaultValue: "Automatically create a new user if one does not exist with the OAuth email." }),
-            children: /* @__PURE__ */ e.jsx(oe, { onChange: D, disabled: !f })
+            children: /* @__PURE__ */ e.jsx(ue, { onChange: U, disabled: !m })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -375,11 +373,11 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: l("settings.oauth.defaultRole.tooltip", { defaultValue: "The default role to assign to new users created via OAuth. Enter role ID." }),
             rules: [
               {
-                required: f && x,
+                required: m && y,
                 message: l("settings.oauth.defaultRole.required", { defaultValue: "Default Role is required when auto create user is enabled." })
               }
             ],
-            children: /* @__PURE__ */ e.jsx(v, { disabled: !f || !x })
+            children: /* @__PURE__ */ e.jsx(V, { disabled: !m || !y })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -389,16 +387,16 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: l("settings.oauth.roleMappingMode.label", { defaultValue: "Role Mapping Mode" }),
             tooltip: l("settings.oauth.roleMappingMode.tooltip", { defaultValue: "Controls how user roles are synchronized from OAuth2 provider." }),
             initialValue: "new_user_only",
-            children: /* @__PURE__ */ e.jsxs($, { disabled: !f, children: [
-              /* @__PURE__ */ e.jsx($.Option, { value: "disabled", children: l("settings.oauth.roleMappingMode.options.disabled.label", { defaultValue: "Disabled" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "new_user_only", children: l("settings.oauth.roleMappingMode.options.new_user_only.label", { defaultValue: "New User Only" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "temporary", children: l("settings.oauth.roleMappingMode.options.temporary.label", { defaultValue: "Temporary" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "enforce", children: l("settings.oauth.roleMappingMode.options.enforce.label", { defaultValue: "Enforce" }) })
+            children: /* @__PURE__ */ e.jsxs(H, { disabled: !m, children: [
+              /* @__PURE__ */ e.jsx(H.Option, { value: "disabled", children: l("settings.oauth.roleMappingMode.options.disabled.label", { defaultValue: "Disabled" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "new_user_only", children: l("settings.oauth.roleMappingMode.options.new_user_only.label", { defaultValue: "New User Only" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "temporary", children: l("settings.oauth.roleMappingMode.options.temporary.label", { defaultValue: "Temporary" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "enforce", children: l("settings.oauth.roleMappingMode.options.enforce.label", { defaultValue: "Enforce" }) })
             ] })
           }
         ),
         /* @__PURE__ */ e.jsx(
-          st,
+          nt,
           {
             style: { marginBottom: 16 },
             type: "info",
@@ -447,12 +445,12 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: l("settings.oauth.mfaEnabled.label", { defaultValue: "MFA Enabled" }),
             valuePropName: "checked",
             tooltip: l("settings.oauth.mfaEnabled.tooltip", { defaultValue: "Enable MFA for OAuth login(Only valid when MFA is enabled by the user)." }),
-            children: /* @__PURE__ */ e.jsx(oe, { disabled: !f })
+            children: /* @__PURE__ */ e.jsx(ue, { disabled: !m })
           }
         ),
-        /* @__PURE__ */ e.jsx(Ge, { children: l("settings.oauth.fieldMapping.title", { defaultValue: "Field Mapping" }) }),
+        /* @__PURE__ */ e.jsx(Xe, { children: l("settings.oauth.fieldMapping.title", { defaultValue: "Field Mapping" }) }),
         /* @__PURE__ */ e.jsx(
-          st,
+          nt,
           {
             style: { marginBottom: 16 },
             type: "info",
@@ -467,7 +465,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "email_field",
             label: l("settings.oauth.fieldMapping.emailField.label", { defaultValue: "Email Field" }),
             tooltip: l("settings.oauth.fieldMapping.emailField.tooltip", { defaultValue: "The field name in the user info response that contains the user email. (e.g., email)" }),
-            children: /* @__PURE__ */ e.jsx(v, { placeholder: "email", disabled: !f || !d })
+            children: /* @__PURE__ */ e.jsx(V, { placeholder: "email", disabled: !m || !d })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -476,7 +474,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "username_field",
             label: l("settings.oauth.fieldMapping.usernameField.label", { defaultValue: "Username Field" }),
             tooltip: l("settings.oauth.fieldMapping.usernameField.tooltip", { defaultValue: "The field name in the user info response that contains the username. (e.g., login, sub)" }),
-            children: /* @__PURE__ */ e.jsx(v, { placeholder: "login", autoComplete: "off", disabled: !f || !d })
+            children: /* @__PURE__ */ e.jsx(V, { placeholder: "login", autoComplete: "off", disabled: !m || !d })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -485,7 +483,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "full_name_field",
             label: l("settings.oauth.fieldMapping.fullNameField.label", { defaultValue: "Full Name Field" }),
             tooltip: l("settings.oauth.fieldMapping.fullNameField.tooltip", { defaultValue: "The field name in the user info response that contains the user's full name. (e.g., name)" }),
-            children: /* @__PURE__ */ e.jsx(v, { placeholder: "name", disabled: !f || !d })
+            children: /* @__PURE__ */ e.jsx(V, { placeholder: "name", disabled: !m || !d })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -494,7 +492,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "avatar_field",
             label: l("settings.oauth.fieldMapping.avatarField.label", { defaultValue: "Avatar URL Field" }),
             tooltip: l("settings.oauth.fieldMapping.avatarField.tooltip", { defaultValue: "The field name in the user info response that contains the URL to the user's avatar. (e.g., picture, avatar_url)" }),
-            children: /* @__PURE__ */ e.jsx(v, { placeholder: "avatar_url", disabled: !f || !d })
+            children: /* @__PURE__ */ e.jsx(V, { placeholder: "avatar_url", disabled: !m || !d })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -503,7 +501,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "role_field",
             label: l("settings.oauth.fieldMapping.roleField.label", { defaultValue: "Role Field" }),
             tooltip: l("settings.oauth.fieldMapping.roleField.tooltip", { defaultValue: "The field name in the user info response that contains the user's role. (Optional)" }),
-            children: /* @__PURE__ */ e.jsx(v, { placeholder: "role", disabled: !f || !d })
+            children: /* @__PURE__ */ e.jsx(V, { placeholder: "role", disabled: !m || !d })
           }
         ),
         /* @__PURE__ */ e.jsx(o.Item, { children: /* @__PURE__ */ e.jsxs(K, { children: [
@@ -512,18 +510,18 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               type: "primary",
               htmlType: "submit",
-              loading: g,
-              icon: /* @__PURE__ */ e.jsx(We, {}),
+              loading: f,
+              icon: /* @__PURE__ */ e.jsx(Ge, {}),
               children: n("save", { defaultValue: "Save" })
             }
           ),
           /* @__PURE__ */ e.jsx(
             E,
             {
-              loading: ee,
+              loading: le,
               onClick: async () => {
-                const F = i.getFieldsValue();
-                Q(F);
+                const T = i.getFieldsValue();
+                Q(T);
               },
               children: l("settings.oauth.testConnection.button", { defaultValue: "Test Connection" })
             }
@@ -531,8 +529,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
           /* @__PURE__ */ e.jsx(
             E,
             {
-              onClick: W,
-              icon: /* @__PURE__ */ e.jsx(Se, {}),
+              onClick: J,
+              icon: /* @__PURE__ */ e.jsx(Ce, {}),
               children: n("refresh", { defaultValue: "Refresh" })
             }
           )
@@ -540,26 +538,26 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       ]
     }
   ) });
-}, el = () => {
-  const { message: s } = me.useApp(), { t } = G("system"), { t: a } = G("common"), [l] = o.useForm(), { loading: n, data: i, refresh: r } = A(S.system.getSecuritySettings, {
-    onSuccess: (f) => {
-      l.setFieldsValue(f);
+}, ol = () => {
+  const { message: s } = ge.useApp(), { t } = G("system"), { t: a } = G("common"), [l] = o.useForm(), { loading: n, data: i, refresh: r } = A(k.system.getSecuritySettings, {
+    onSuccess: (m) => {
+      l.setFieldsValue(m);
     },
-    onError: (f) => {
-      s.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", f);
+    onError: (m) => {
+      s.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", m);
     }
-  }), { loading: m, run: d } = A(S.system.updateSecuritySettings, {
+  }), { loading: p, run: d } = A(k.system.updateSecuritySettings, {
     manual: !0,
     onSuccess: () => {
       s.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), r();
     },
-    onError: (f) => {
-      s.error(t("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update system settings", f);
+    onError: (m) => {
+      s.error(t("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update system settings", m);
     }
-  }), c = (f) => {
-    d(f);
+  }), c = (m) => {
+    d(m);
   };
-  return /* @__PURE__ */ e.jsx(je, { spinning: n, children: /* @__PURE__ */ e.jsxs(
+  return /* @__PURE__ */ e.jsx(ye, { spinning: n, children: /* @__PURE__ */ e.jsxs(
     o,
     {
       form: l,
@@ -574,7 +572,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: t("settings.security.mfa.label", { defaultValue: "Enforce Multi-Factor Authentication (MFA)" }),
             valuePropName: "checked",
             tooltip: t("settings.security.mfa.tooltip", { defaultValue: "If enabled, all users will be required to set up MFA." }),
-            children: /* @__PURE__ */ e.jsx(oe, {})
+            children: /* @__PURE__ */ e.jsx(ue, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -583,11 +581,11 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "password_complexity",
             label: t("settings.security.passwordComplexity.label", { defaultValue: "Password Complexity" }),
             tooltip: t("settings.security.passwordComplexity.tooltip", { defaultValue: "Define the complexity requirements for user passwords." }),
-            children: /* @__PURE__ */ e.jsxs($, { children: [
-              /* @__PURE__ */ e.jsx($.Option, { value: "low", children: t("settings.security.passwordComplexity.options.low", { defaultValue: "Low" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "medium", children: t("settings.security.passwordComplexity.options.medium", { defaultValue: "Medium" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "high", children: t("settings.security.passwordComplexity.options.high", { defaultValue: "High" }) }),
-              /* @__PURE__ */ e.jsx($.Option, { value: "very_high", children: t("settings.security.passwordComplexity.options.veryHigh", { defaultValue: "Very High" }) })
+            children: /* @__PURE__ */ e.jsxs(H, { children: [
+              /* @__PURE__ */ e.jsx(H.Option, { value: "low", children: t("settings.security.passwordComplexity.options.low", { defaultValue: "Low" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "medium", children: t("settings.security.passwordComplexity.options.medium", { defaultValue: "Medium" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "high", children: t("settings.security.passwordComplexity.options.high", { defaultValue: "High" }) }),
+              /* @__PURE__ */ e.jsx(H.Option, { value: "very_high", children: t("settings.security.passwordComplexity.options.veryHigh", { defaultValue: "Very High" }) })
             ] })
           }
         ),
@@ -598,7 +596,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: t("settings.security.passwordMinLength.label", { defaultValue: "Minimum Password Length" }),
             tooltip: t("settings.security.passwordMinLength.tooltip", { defaultValue: "The minimum number of characters required for a password." }),
             rules: [{ type: "number", min: 6, max: 32 }],
-            children: /* @__PURE__ */ e.jsx(re, { min: 6, max: 32, style: { width: "100%" } })
+            children: /* @__PURE__ */ e.jsx(ce, { min: 6, max: 32, style: { width: "100%" } })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -607,7 +605,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "password_expiry_days",
             label: t("settings.security.passwordExpiry.label", { defaultValue: "Password Expiry (Days)" }),
             tooltip: t("settings.security.passwordExpiry.tooltip", { defaultValue: "Number of days after which passwords expire. Set to 0 to disable expiry." }),
-            children: /* @__PURE__ */ e.jsx(re, { min: 0, style: { width: "100%" }, addonAfter: t("settings.days", { defaultValue: "Days" }) })
+            children: /* @__PURE__ */ e.jsx(ce, { min: 0, style: { width: "100%" }, addonAfter: t("settings.days", { defaultValue: "Days" }) })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -616,7 +614,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "password_expiry_notify_days",
             label: t("settings.security.passwordExpiryNotify.label", { defaultValue: "Password Expiry Notification (Days Before Expiry)" }),
             tooltip: t("settings.security.passwordExpiryNotify.tooltip", { defaultValue: "Notify users by email this many days before password expiry. Set to 0 to disable." }),
-            children: /* @__PURE__ */ e.jsx(re, { min: 0, style: { width: "100%" }, addonAfter: t("settings.days", { defaultValue: "Days" }) })
+            children: /* @__PURE__ */ e.jsx(ce, { min: 0, style: { width: "100%" }, addonAfter: t("settings.days", { defaultValue: "Days" }) })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -626,21 +624,21 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: t("settings.security.loginFailureLock.label", { defaultValue: "Lock Account on Login Failure" }),
             valuePropName: "checked",
             tooltip: t("settings.security.loginFailureLock.tooltip", { defaultValue: "Lock user accounts after a specified number of failed login attempts." }),
-            children: /* @__PURE__ */ e.jsx(oe, {})
+            children: /* @__PURE__ */ e.jsx(ue, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
           o.Item,
           {
             noStyle: !0,
-            shouldUpdate: (f, V) => f.login_failure_lock !== V.login_failure_lock,
-            children: ({ getFieldValue: f }) => f("login_failure_lock") ? /* @__PURE__ */ e.jsx(
+            shouldUpdate: (m, b) => m.login_failure_lock !== b.login_failure_lock,
+            children: ({ getFieldValue: m }) => m("login_failure_lock") ? /* @__PURE__ */ e.jsx(
               o.Item,
               {
                 name: "login_failure_attempts",
                 label: t("settings.security.loginFailureAttempts.label", { defaultValue: "Login Failure Attempts" }),
                 tooltip: t("settings.security.loginFailureAttempts.tooltip", { defaultValue: "Number of failed login attempts before locking the account." }),
-                children: /* @__PURE__ */ e.jsx(re, { min: 1, max: 10, style: { width: "100%" } })
+                children: /* @__PURE__ */ e.jsx(ce, { min: 1, max: 10, style: { width: "100%" } })
               }
             ) : null
           }
@@ -649,14 +647,14 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
           o.Item,
           {
             noStyle: !0,
-            shouldUpdate: (f, V) => f.login_failure_lock !== V.login_failure_lock,
-            children: ({ getFieldValue: f }) => f("login_failure_lock") ? /* @__PURE__ */ e.jsx(
+            shouldUpdate: (m, b) => m.login_failure_lock !== b.login_failure_lock,
+            children: ({ getFieldValue: m }) => m("login_failure_lock") ? /* @__PURE__ */ e.jsx(
               o.Item,
               {
                 name: "login_failure_lockout_minutes",
                 label: t("settings.security.loginFailureLockoutMinutes.label", { defaultValue: "Login Failure Lockout (Minutes)" }),
                 tooltip: t("settings.security.loginFailureLockoutMinutes.tooltip", { defaultValue: "Number of minutes to lock the account after a specified number of failed login attempts." }),
-                children: /* @__PURE__ */ e.jsx(re, { min: 1, max: 10, style: { width: "100%" }, addonAfter: t("settings.minutes", { defaultValue: "Minutes" }) })
+                children: /* @__PURE__ */ e.jsx(ce, { min: 1, max: 10, style: { width: "100%" }, addonAfter: t("settings.minutes", { defaultValue: "Minutes" }) })
               }
             ) : null
           }
@@ -668,21 +666,21 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             label: t("settings.security.historyPasswordCheck.label", { defaultValue: "Enforce Password History Policy" }),
             valuePropName: "checked",
             tooltip: t("settings.security.historyPasswordCheck.tooltip", { defaultValue: "Prevent users from reusing recent passwords." }),
-            children: /* @__PURE__ */ e.jsx(oe, {})
+            children: /* @__PURE__ */ e.jsx(ue, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
           o.Item,
           {
             noStyle: !0,
-            shouldUpdate: (f, V) => f.history_password_check !== V.history_password_check,
-            children: ({ getFieldValue: f }) => f("history_password_check") ? /* @__PURE__ */ e.jsx(
+            shouldUpdate: (m, b) => m.history_password_check !== b.history_password_check,
+            children: ({ getFieldValue: m }) => m("history_password_check") ? /* @__PURE__ */ e.jsx(
               o.Item,
               {
                 name: "history_password_count",
                 label: t("settings.security.historyPasswordCount.label", { defaultValue: "Password History Count" }),
                 tooltip: t("settings.security.historyPasswordCount.tooltip", { defaultValue: "Number of previous passwords to remember and prevent reuse." }),
-                children: /* @__PURE__ */ e.jsx(re, { min: 1, max: 10, style: { width: "100%" } })
+                children: /* @__PURE__ */ e.jsx(ce, { min: 1, max: 10, style: { width: "100%" } })
               }
             ) : null
           }
@@ -693,7 +691,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "user_inactive_days",
             label: t("settings.security.inactiveAccountLock.label", { defaultValue: "Auto-lock Inactive Accounts (Days)" }),
             tooltip: t("settings.security.inactiveAccountLock.tooltip", { defaultValue: "Number of days of inactivity after which user accounts are automatically locked. Set to 0 to disable." }),
-            children: /* @__PURE__ */ e.jsx(re, { min: 0, style: { width: "100%" }, addonAfter: t("settings.days", { defaultValue: "Days" }) })
+            children: /* @__PURE__ */ e.jsx(ce, { min: 0, style: { width: "100%" }, addonAfter: t("settings.days", { defaultValue: "Days" }) })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -702,7 +700,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "session_timeout_minutes",
             label: t("settings.security.sessionTimeout.label", { defaultValue: "Session Timeout (Minutes)" }),
             tooltip: t("settings.security.sessionTimeout.tooltip", { defaultValue: "Automatically log out users after a period of inactivity." }),
-            children: /* @__PURE__ */ e.jsx(re, { min: 5, style: { width: "100%" }, addonAfter: t("settings.minutes", { defaultValue: "Minutes" }) })
+            children: /* @__PURE__ */ e.jsx(ce, { min: 5, style: { width: "100%" }, addonAfter: t("settings.minutes", { defaultValue: "Minutes" }) })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -711,7 +709,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             name: "session_idle_timeout_minutes",
             label: t("settings.security.sessionIdleTimeout.label", { defaultValue: "Session Idle Timeout (Minutes)" }),
             tooltip: t("settings.security.sessionIdleTimeout.tooltip", { defaultValue: "Automatically log out users after a period of inactivity." }),
-            children: /* @__PURE__ */ e.jsx(re, { min: 5, style: { width: "100%" }, addonAfter: t("settings.minutes", { defaultValue: "Minutes" }) })
+            children: /* @__PURE__ */ e.jsx(ce, { min: 5, style: { width: "100%" }, addonAfter: t("settings.minutes", { defaultValue: "Minutes" }) })
           }
         ),
         /* @__PURE__ */ e.jsx(o.Item, { children: /* @__PURE__ */ e.jsxs(K, { children: [
@@ -720,8 +718,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               type: "primary",
               htmlType: "submit",
-              loading: m,
-              icon: /* @__PURE__ */ e.jsx(We, {}),
+              loading: p,
+              icon: /* @__PURE__ */ e.jsx(Ge, {}),
               children: a("save", { defaultValue: "Save" })
             }
           ),
@@ -729,7 +727,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             E,
             {
               onClick: () => r(),
-              icon: /* @__PURE__ */ e.jsx(Se, {}),
+              icon: /* @__PURE__ */ e.jsx(Ce, {}),
               children: a("refresh", { defaultValue: "Refresh" })
             }
           )
@@ -737,46 +735,46 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       ]
     }
   ) });
-}, tl = ({ fetchItems: s, importItems: t, columns: a, ...l }) => {
-  const { message: n } = me.useApp(), { t: i } = G("system"), [r, m] = b([]), [d, c] = b([]), { run: f, loading: V } = A(s, {
+}, rl = ({ fetchItems: s, importItems: t, columns: a, ...l }) => {
+  const { message: n } = ge.useApp(), { t: i } = G("system"), [r, p] = x([]), [d, c] = x([]), { run: m, loading: b } = A(s, {
     onError: (I) => {
       n.error(i("settings.ldap.importError", { error: `${I.message}` }));
     },
     onSuccess: (I) => {
-      m(I);
+      p(I);
     },
     manual: !0
-  }), { run: x, loading: O } = A(async () => {
-    for (const I of d.filter((L) => {
-      const _ = r.find((q) => q.ldap_dn === L);
-      return !(!_ || _.status === "imported");
+  }), { run: y, loading: O } = A(async () => {
+    for (const I of d.filter((M) => {
+      const v = r.find((q) => q.ldap_dn === M);
+      return !(!v || v.status === "imported");
     })) {
-      const L = await t([I]);
-      m((_) => [..._].map((C) => {
-        for (const D of L)
-          if (C.ldap_dn === D.ldap_dn)
-            return { ...D, status: "imported" };
-        return C;
+      const M = await t([I]);
+      p((v) => [...v].map((w) => {
+        for (const U of M)
+          if (w.ldap_dn === U.ldap_dn)
+            return { ...U, status: "imported" };
+        return w;
       }));
     }
   }, {
     manual: !0
   });
-  return Le(() => {
-    l.visible && (m([]), f(), c([]));
+  return ze(() => {
+    l.visible && (p([]), m(), c([]));
   }, [l.visible]), /* @__PURE__ */ e.jsx(
-    ce,
+    fe,
     {
       title: i("settings.ldap.importTitle"),
       ...l,
       onOk: () => {
-        x();
+        y();
       },
       width: 900,
       confirmLoading: O,
-      loading: V,
+      loading: b,
       children: /* @__PURE__ */ e.jsx(
-        Pe,
+        Me,
         {
           rowKey: "ldap_dn",
           rowSelection: {
@@ -787,13 +785,13 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               disabled: I.status === "imported"
             })
           },
-          columns: a.map(({ render: I, ...L }) => I ? {
-            ...L,
-            render: (_, q, C) => {
-              const D = d.includes(q.ldap_dn) && O && q.status !== "imported";
-              return I(_, q, C, D);
+          columns: a.map(({ render: I, ...M }) => I ? {
+            ...M,
+            render: (v, q, w) => {
+              const U = d.includes(q.ldap_dn) && O && q.status !== "imported";
+              return I(v, q, w, U);
             }
-          } : L),
+          } : M),
           dataSource: r,
           pagination: !1,
           scroll: { y: 400, x: "max-content" }
@@ -801,40 +799,40 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       )
     }
   );
-}, sl = () => {
-  var q, C, D;
-  const { message: s } = me.useApp(), { t } = G("system"), [a] = o.useForm(), [l, n] = b(!1), [i, r] = b(null), [m, d] = b(!1), [c, f] = b(!1), [V] = o.useForm(), [x, O] = b(!1);
-  A(S.system.getLdapSettings, {
-    onSuccess: (g) => {
-      a.setFieldsValue(g), O(g.enabled);
+}, dl = () => {
+  var q, w, U;
+  const { message: s } = ge.useApp(), { t } = G("system"), [a] = o.useForm(), [l, n] = x(!1), [i, r] = x(null), [p, d] = x(!1), [c, m] = x(!1), [b] = o.useForm(), [y, O] = x(!1);
+  A(k.system.getLdapSettings, {
+    onSuccess: (f) => {
+      a.setFieldsValue(f), O(f.enabled);
     },
-    onError: (g) => {
-      s.error(t("settings.ldap.loadError", { defaultValue: "Failed to load LDAP settings: {{error}}", error: `${g.message}` }));
+    onError: (f) => {
+      s.error(t("settings.ldap.loadError", { defaultValue: "Failed to load LDAP settings: {{error}}", error: `${f.message}` }));
     }
-  }), Le(() => {
+  }), ze(() => {
     r(null);
-  }, [m]);
-  const I = async (g) => {
+  }, [p]);
+  const I = async (f) => {
     n(!0);
     try {
-      await S.system.updateLdapSettings(g), s.success(t("settings.ldap.saveSuccess", { defaultValue: "LDAP settings saved successfully." }));
+      await k.system.updateLdapSettings(f), s.success(t("settings.ldap.saveSuccess", { defaultValue: "LDAP settings saved successfully." }));
     } catch {
       s.error(t("settings.ldap.saveError", { defaultValue: "Failed to save LDAP settings." }));
     } finally {
       n(!1);
     }
-  }, { run: L, loading: _ } = A(async (g) => {
-    const J = await a.validateFields();
-    return await S.system.testLdapConnection({
-      ...g,
-      ...J
+  }, { run: M, loading: v } = A(async (f) => {
+    const W = await a.validateFields();
+    return await k.system.testLdapConnection({
+      ...f,
+      ...W
     });
   }, {
-    onSuccess: (g) => {
-      r(g);
+    onSuccess: (f) => {
+      r(f);
     },
-    onError: (g) => {
-      s.error(t("settings.ldap.testError", { defaultValue: "LDAP connection test failed: {{error}}", error: `${g.message}` }));
+    onError: (f) => {
+      s.error(t("settings.ldap.testError", { defaultValue: "LDAP connection test failed: {{error}}", error: `${f.message}` }));
     },
     manual: !0
   });
@@ -858,7 +856,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               label: t("settings.ldap.enabled", { defaultValue: "Enable LDAP Authentication" }),
               name: "enabled",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(oe, { onChange: (g) => O(g) })
+              children: /* @__PURE__ */ e.jsx(ue, { onChange: (f) => O(f) })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -866,8 +864,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.serverUrl", { defaultValue: "LDAP Server URL" }),
               name: "server_url",
-              rules: [{ required: x, message: t("settings.ldap.serverUrlRequired", { defaultValue: "LDAP Server URL is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x, placeholder: "ldap://ldap.example.com:389" })
+              rules: [{ required: y, message: t("settings.ldap.serverUrlRequired", { defaultValue: "LDAP Server URL is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y, placeholder: "ldap://ldap.example.com:389" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -875,8 +873,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.bindDn", { defaultValue: "Bind DN" }),
               name: "bind_dn",
-              rules: [{ required: x, message: t("settings.ldap.bindDnRequired", { defaultValue: "Bind DN is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x, placeholder: "cn=admin,dc=example,dc=com" })
+              rules: [{ required: y, message: t("settings.ldap.bindDnRequired", { defaultValue: "Bind DN is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y, placeholder: "cn=admin,dc=example,dc=com" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -884,8 +882,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.bindPassword", { defaultValue: "Bind Password" }),
               name: "bind_password",
-              rules: [{ required: x, message: t("settings.ldap.bindPasswordRequired", { defaultValue: "Bind Password is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v.Password, { hidden: !0, autoComplete: "new-password" })
+              rules: [{ required: y, message: t("settings.ldap.bindPasswordRequired", { defaultValue: "Bind Password is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V.Password, { hidden: !0, autoComplete: "new-password" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -893,8 +891,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.baseDn", { defaultValue: "Base DN" }),
               name: "base_dn",
-              rules: [{ required: x, message: t("settings.ldap.baseDnRequired", { defaultValue: "Base DN is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x, placeholder: "dc=example,dc=com" })
+              rules: [{ required: y, message: t("settings.ldap.baseDnRequired", { defaultValue: "Base DN is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y, placeholder: "dc=example,dc=com" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -902,7 +900,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.userFilter", { defaultValue: "User Filter" }),
               name: "user_filter",
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x, hidden: !0, autoComplete: "off", placeholder: "(objectClass=person)" })
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y, hidden: !0, autoComplete: "off", placeholder: "(objectClass=person)" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -910,8 +908,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.userAttr", { defaultValue: "User Attribute" }),
               name: "user_attr",
-              rules: [{ required: x, message: t("settings.ldap.userAttrRequired", { defaultValue: "User Attribute is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x })
+              rules: [{ required: y, message: t("settings.ldap.userAttrRequired", { defaultValue: "User Attribute is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -919,8 +917,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.emailAttr", { defaultValue: "Email Attribute" }),
               name: "email_attr",
-              rules: [{ required: x, message: t("settings.ldap.emailAttrRequired", { defaultValue: "Email Attribute is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x })
+              rules: [{ required: y, message: t("settings.ldap.emailAttrRequired", { defaultValue: "Email Attribute is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -928,8 +926,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.displayNameAttr", { defaultValue: "Display Name Attribute" }),
               name: "display_name_attr",
-              rules: [{ required: x, message: t("settings.ldap.displayNameAttrRequired", { defaultValue: "Display Name Attribute is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x })
+              rules: [{ required: y, message: t("settings.ldap.displayNameAttrRequired", { defaultValue: "Display Name Attribute is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -937,8 +935,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.defaultRole", { defaultValue: "Default Role" }),
               name: "default_role",
-              rules: [{ required: x, message: t("settings.ldap.defaultRoleRequired", { defaultValue: "Default Role is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !x })
+              rules: [{ required: y, message: t("settings.ldap.defaultRoleRequired", { defaultValue: "Default Role is required." }) }],
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -947,17 +945,17 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               name: "timeout",
               label: t("settings.ldap.timeout", { defaultValue: "Timeout" }),
               tooltip: t("settings.ldap.timeoutTooltip", { defaultValue: "Timeout for LDAP connection in seconds" }),
-              children: /* @__PURE__ */ e.jsx(v, { type: "number", defaultValue: 15, disabled: !x })
+              children: /* @__PURE__ */ e.jsx(V, { type: "number", defaultValue: 15, disabled: !y })
             }
           ),
-          /* @__PURE__ */ e.jsx(Ge, { children: t("settings.ldap.tlsDivider", { defaultValue: "TLS Configuration" }) }),
+          /* @__PURE__ */ e.jsx(Xe, { children: t("settings.ldap.tlsDivider", { defaultValue: "TLS Configuration" }) }),
           /* @__PURE__ */ e.jsx(
             o.Item,
             {
               label: t("settings.ldap.startTls", { defaultValue: "Use StartTLS" }),
               name: "start_tls",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(oe, { disabled: !x })
+              children: /* @__PURE__ */ e.jsx(ue, { disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -966,7 +964,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               label: t("settings.ldap.insecure", { defaultValue: "Skip TLS Verification (Insecure)" }),
               name: "insecure",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(oe, { disabled: !x })
+              children: /* @__PURE__ */ e.jsx(ue, { disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -974,8 +972,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.caCert", { defaultValue: "CA Certificate" }),
               name: "ca_cert",
-              children: /* @__PURE__ */ e.jsx(v.TextArea, { placeholder: t("settings.ldap.caCertPlaceholder", { defaultValue: `-----BEGIN CERTIFICATE-----
-...` }), disabled: !x })
+              children: /* @__PURE__ */ e.jsx(V.TextArea, { placeholder: t("settings.ldap.caCertPlaceholder", { defaultValue: `-----BEGIN CERTIFICATE-----
+...` }), disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -983,8 +981,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.clientCert", { defaultValue: "Client Certificate" }),
               name: "client_cert",
-              children: /* @__PURE__ */ e.jsx(v.TextArea, { placeholder: t("settings.ldap.clientCertPlaceholder", { defaultValue: `-----BEGIN CERTIFICATE-----
-...` }), disabled: !x })
+              children: /* @__PURE__ */ e.jsx(V.TextArea, { placeholder: t("settings.ldap.clientCertPlaceholder", { defaultValue: `-----BEGIN CERTIFICATE-----
+...` }), disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -992,28 +990,28 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.ldap.clientKey", { defaultValue: "Client Key" }),
               name: "client_key",
-              children: /* @__PURE__ */ e.jsx(v.TextArea, { placeholder: t("settings.ldap.clientKeyPlaceholder", { defaultValue: `-----BEGIN PRIVATE KEY-----
-...` }), disabled: !x })
+              children: /* @__PURE__ */ e.jsx(V.TextArea, { placeholder: t("settings.ldap.clientKeyPlaceholder", { defaultValue: `-----BEGIN PRIVATE KEY-----
+...` }), disabled: !y })
             }
           ),
           /* @__PURE__ */ e.jsxs(o.Item, { children: [
-            /* @__PURE__ */ e.jsx(ue, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", loading: l, children: t("settings.ldap.save", { defaultValue: "Save Settings" }) }) }),
-            /* @__PURE__ */ e.jsx(ue, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(
+            /* @__PURE__ */ e.jsx(pe, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", loading: l, children: t("settings.ldap.save", { defaultValue: "Save Settings" }) }) }),
+            /* @__PURE__ */ e.jsx(pe, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(
               E,
               {
-                disabled: !x,
+                disabled: !y,
                 style: { marginLeft: 8 },
                 onClick: () => d(!0),
                 children: t("settings.ldap.testConnection", { defaultValue: "Test Connection" })
               }
             ) }),
-            /* @__PURE__ */ e.jsx(ue, { permissions: ["authorization:user:create"], children: /* @__PURE__ */ e.jsx(
+            /* @__PURE__ */ e.jsx(pe, { permissions: ["authorization:user:create"], children: /* @__PURE__ */ e.jsx(
               E,
               {
-                disabled: !x,
+                disabled: !y,
                 style: { marginLeft: 8 },
                 onClick: () => {
-                  f(!0);
+                  m(!0);
                 },
                 children: t("settings.ldap.import", { defaultValue: "Import Users" })
               }
@@ -1023,19 +1021,19 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     ),
     /* @__PURE__ */ e.jsxs(
-      ce,
+      fe,
       {
         title: t("settings.ldap.test.title", { defaultValue: "Test LDAP Connection" }),
-        open: m,
+        open: p,
         onCancel: () => d(!1),
         footer: null,
         children: [
           /* @__PURE__ */ e.jsxs(
             o,
             {
-              form: V,
+              form: b,
               layout: "vertical",
-              onFinish: L,
+              onFinish: M,
               children: [
                 /* @__PURE__ */ e.jsx(
                   o.Item,
@@ -1043,7 +1041,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     label: t("settings.ldap.test.username", { defaultValue: "LDAP Username" }),
                     name: "username",
                     rules: [{ required: !0, message: t("settings.ldap.test.usernameRequired", { defaultValue: "Please enter LDAP username for testing." }) }],
-                    children: /* @__PURE__ */ e.jsx(v, { disabled: !x })
+                    children: /* @__PURE__ */ e.jsx(V, { disabled: !y })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
@@ -1052,11 +1050,11 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     label: t("settings.ldap.test.password", { defaultValue: "LDAP Password" }),
                     name: "password",
                     rules: [{ required: !0, message: t("settings.ldap.test.passwordRequired", { defaultValue: "Please enter LDAP password for testing." }) }],
-                    children: /* @__PURE__ */ e.jsx(v.Password, { disabled: !x })
+                    children: /* @__PURE__ */ e.jsx(V.Password, { disabled: !y })
                   }
                 ),
                 /* @__PURE__ */ e.jsxs(o.Item, { children: [
-                  /* @__PURE__ */ e.jsx(ue, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(E, { disabled: !x, type: "primary", htmlType: "submit", children: t("settings.ldap.test.test", { defaultValue: "Test" }) }) }),
+                  /* @__PURE__ */ e.jsx(pe, { permissions: ["system:settings:update"], children: /* @__PURE__ */ e.jsx(E, { disabled: !y, type: "primary", htmlType: "submit", children: t("settings.ldap.test.test", { defaultValue: "Test" }) }) }),
                   /* @__PURE__ */ e.jsx(
                     E,
                     {
@@ -1069,21 +1067,21 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               ]
             }
           ),
-          /* @__PURE__ */ e.jsx(je, { spinning: _, children: /* @__PURE__ */ e.jsx(as, { active: _, loading: _, children: i && (i.user ? /* @__PURE__ */ e.jsxs(pe, { bordered: !0, children: [
-            /* @__PURE__ */ e.jsx(pe.Item, { label: "Username", span: 3, children: i.user.username }),
-            /* @__PURE__ */ e.jsx(pe.Item, { label: "Email", span: 3, children: i.user.email }),
-            /* @__PURE__ */ e.jsx(pe.Item, { label: "FullName", span: 3, children: i.user.full_name }),
-            /* @__PURE__ */ e.jsx(pe.Item, { label: "CreatedAt", span: 3, children: i.user.created_at }),
-            /* @__PURE__ */ e.jsx(pe.Item, { label: "UpdatedAt", span: 3, children: i.user.updated_at })
+          /* @__PURE__ */ e.jsx(ye, { spinning: v, children: /* @__PURE__ */ e.jsx(fs, { active: v, loading: v, children: i && (i.user ? /* @__PURE__ */ e.jsxs(he, { bordered: !0, children: [
+            /* @__PURE__ */ e.jsx(he.Item, { label: "Username", span: 3, children: i.user.username }),
+            /* @__PURE__ */ e.jsx(he.Item, { label: "Email", span: 3, children: i.user.email }),
+            /* @__PURE__ */ e.jsx(he.Item, { label: "FullName", span: 3, children: i.user.full_name }),
+            /* @__PURE__ */ e.jsx(he.Item, { label: "CreatedAt", span: 3, children: i.user.created_at }),
+            /* @__PURE__ */ e.jsx(he.Item, { label: "UpdatedAt", span: 3, children: i.user.updated_at })
           ] }) : /* @__PURE__ */ e.jsx(
-            is,
+            gs,
             {
               direction: "vertical",
-              current: (q = i.message) == null ? void 0 : q.findIndex((g) => !g.success),
-              status: (C = i.message) != null && C.find((g) => !g.success) ? "error" : "finish",
-              items: (D = i.message) == null ? void 0 : D.map((g) => ({
-                status: g.success ? "finish" : "error",
-                title: g.message
+              current: (q = i.message) == null ? void 0 : q.findIndex((f) => !f.success),
+              status: (w = i.message) != null && w.find((f) => !f.success) ? "error" : "finish",
+              items: (U = i.message) == null ? void 0 : U.map((f) => ({
+                status: f.success ? "finish" : "error",
+                title: f.message
               }))
             }
           )) }) })
@@ -1091,12 +1089,12 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     ),
     /* @__PURE__ */ e.jsx(
-      tl,
+      rl,
       {
         visible: c,
-        onCancel: () => f(!1),
-        fetchItems: () => S.system.importLdapUsers({}),
-        importItems: (g) => S.system.importLdapUsers({ user_dn: g }),
+        onCancel: () => m(!1),
+        fetchItems: () => k.system.importLdapUsers({}),
+        importItems: (f) => k.system.importLdapUsers({ user_dn: f }),
         columns: [{
           title: t("settings.ldap.username", { defaultValue: "Username" }),
           dataIndex: "username"
@@ -1110,65 +1108,65 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
           title: t("settings.ldap.importStatus", { defaultValue: "Import Status" }),
           dataIndex: "imported",
           fixed: "right",
-          render: (g, J, Y, W) => W ? /* @__PURE__ */ e.jsx(je, { indicator: /* @__PURE__ */ e.jsx(gs, { spin: !0 }) }) : g ? /* @__PURE__ */ e.jsx(hs, { twoToneColor: "#52c41a" }) : J.id ? /* @__PURE__ */ e.jsx(ne, { color: "blue", children: t("settings.ldap.importTypeBound", { defaultValue: "Bound" }) }) : /* @__PURE__ */ e.jsx(ne, { color: "green", children: t("settings.ldap.importTypeNew", { defaultValue: "New" }) })
+          render: (f, W, Y, J) => J ? /* @__PURE__ */ e.jsx(ye, { indicator: /* @__PURE__ */ e.jsx(Ss, { spin: !0 }) }) : f ? /* @__PURE__ */ e.jsx(ws, { twoToneColor: "#52c41a" }) : W.id ? /* @__PURE__ */ e.jsx(de, { color: "blue", children: t("settings.ldap.importTypeBound", { defaultValue: "Bound" }) }) : /* @__PURE__ */ e.jsx(de, { color: "green", children: t("settings.ldap.importTypeNew", { defaultValue: "New" }) })
         }]
       }
     )
   ] });
-}, ll = () => {
-  const { message: s } = me.useApp(), { t } = G("system"), { t: a } = G("common"), [l] = o.useForm(), [n, i] = b(null), [r, m] = b(!1), [d] = o.useForm(), [c, f] = b(!1), { data: V } = A(S.system.getSmtpSettingFields), { loading: x } = A(S.system.getSmtpSettings, {
-    onSuccess: (C) => {
-      l.setFieldsValue(C), f(C.enabled);
+}, ul = () => {
+  const { message: s } = ge.useApp(), { t } = G("system"), { t: a } = G("common"), [l] = o.useForm(), [n, i] = x(null), [r, p] = x(!1), [d] = o.useForm(), [c, m] = x(!1), { data: b } = A(k.system.getSmtpSettingFields), { loading: y } = A(k.system.getSmtpSettings, {
+    onSuccess: (w) => {
+      l.setFieldsValue(w), m(w.enabled);
     },
-    onError: (C) => {
-      s.error(t("settings.smtp.loadError", { defaultValue: "Failed to load SMTP settings: {{error}}", error: `${C.message}` }));
+    onError: (w) => {
+      s.error(t("settings.smtp.loadError", { defaultValue: "Failed to load SMTP settings: {{error}}", error: `${w.message}` }));
     }
   });
-  Le(() => {
+  ze(() => {
     i(null);
   }, [r]);
-  const { run: O, loading: I } = A(({ port: C, ...D }) => S.system.updateSmtpSettings({ ...D, port: Number(C) }), {
+  const { run: O, loading: I } = A(({ port: w, ...U }) => k.system.updateSmtpSettings({ ...U, port: Number(w) }), {
     manual: !0,
     onSuccess: () => {
       s.success(t("settings.smtp.saveSuccess", { defaultValue: "SMTP settings saved successfully." }));
     },
-    onError: (C) => {
-      s.error(t("settings.smtp.saveError", { defaultValue: "Failed to save SMTP settings: {{error}}", error: `${C.message}` }));
+    onError: (w) => {
+      s.error(t("settings.smtp.saveError", { defaultValue: "Failed to save SMTP settings: {{error}}", error: `${w.message}` }));
     }
-  }), { run: L, loading: _ } = A(async (C) => {
-    const { port: D, ...g } = await l.validateFields();
-    return await S.system.testSmtpConnection({
-      ...C,
-      ...g,
-      port: Number(D)
+  }), { run: M, loading: v } = A(async (w) => {
+    const { port: U, ...f } = await l.validateFields();
+    return await k.system.testSmtpConnection({
+      ...w,
+      ...f,
+      port: Number(U)
     });
   }, {
-    onSuccess: (C) => {
-      i(C);
+    onSuccess: (w) => {
+      i(w);
     },
-    onError: (C) => {
-      s.error(t("settings.smtp.testError", { defaultValue: "SMTP connection test failed: {{error}}", error: `${C.message}` }));
+    onError: (w) => {
+      s.error(t("settings.smtp.testError", { defaultValue: "SMTP connection test failed: {{error}}", error: `${w.message}` }));
     },
     manual: !0
-  }), q = (C) => {
-    switch (C.value_type) {
+  }), q = (w) => {
+    switch (w.value_type) {
       case "number":
-        return /* @__PURE__ */ e.jsx(re, { style: { width: "100%" }, disabled: !c, min: C.min, max: C.max, step: C.step });
+        return /* @__PURE__ */ e.jsx(ce, { style: { width: "100%" }, disabled: !c, min: w.min, max: w.max, step: w.step });
       case "percentage":
-        return /* @__PURE__ */ e.jsx(re, { style: { width: "100%" }, disabled: !c, min: 0, max: 100, step: C.step || 0.01, addonAfter: "%" });
+        return /* @__PURE__ */ e.jsx(ce, { style: { width: "100%" }, disabled: !c, min: 0, max: 100, step: w.step || 0.01, addonAfter: "%" });
       case "string_list":
-        return /* @__PURE__ */ e.jsx($, { mode: "tags", tokenSeparators: [","], disabled: !c });
+        return /* @__PURE__ */ e.jsx(H, { mode: "tags", tokenSeparators: [","], disabled: !c });
       case "enum":
-        return /* @__PURE__ */ e.jsx($, { disabled: !c, options: C.enum_options || [] });
+        return /* @__PURE__ */ e.jsx(H, { disabled: !c, options: w.enum_options || [] });
       case "rich_text":
-        return /* @__PURE__ */ e.jsx(Kt, { theme: "snow", readOnly: !c });
+        return /* @__PURE__ */ e.jsx(ls, { theme: "snow", readOnly: !c });
       case "string":
       default:
-        return /* @__PURE__ */ e.jsx(v, { disabled: !c });
+        return /* @__PURE__ */ e.jsx(V, { disabled: !c });
     }
   };
   return /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-    /* @__PURE__ */ e.jsx(je, { spinning: x, children: /* @__PURE__ */ e.jsxs(
+    /* @__PURE__ */ e.jsx(ye, { spinning: y, children: /* @__PURE__ */ e.jsxs(
       o,
       {
         form: l,
@@ -1185,7 +1183,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               label: t("settings.smtp.enabled", { defaultValue: "Enable SMTP" }),
               name: "enabled",
               valuePropName: "checked",
-              children: /* @__PURE__ */ e.jsx(oe, { onChange: (C) => f(C) })
+              children: /* @__PURE__ */ e.jsx(ue, { onChange: (w) => m(w) })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1194,7 +1192,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               label: t("settings.smtp.host", { defaultValue: "SMTP Host" }),
               name: "host",
               rules: [{ required: c, message: t("settings.smtp.hostRequired", { defaultValue: "SMTP Host is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !c, placeholder: "smtp.example.com" })
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !c, placeholder: "smtp.example.com" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1203,7 +1201,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               label: t("settings.smtp.port", { defaultValue: "SMTP Port" }),
               name: "port",
               rules: [{ required: c, message: t("settings.smtp.portRequired", { defaultValue: "SMTP Port is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { type: "number", disabled: !c, placeholder: "587" })
+              children: /* @__PURE__ */ e.jsx(V, { type: "number", disabled: !c, placeholder: "587" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1212,7 +1210,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               label: t("settings.smtp.username", { defaultValue: "Username" }),
               name: "username",
               rules: [{ required: c, message: t("settings.smtp.usernameRequired", { defaultValue: "Username is required." }) }],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !c, placeholder: "user@example.com", autoComplete: "off" })
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !c, placeholder: "user@example.com", autoComplete: "off" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1220,7 +1218,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.smtp.password", { defaultValue: "Password" }),
               name: "password",
-              children: /* @__PURE__ */ e.jsx(v.Password, { disabled: !c, autoComplete: "new-password" })
+              children: /* @__PURE__ */ e.jsx(V.Password, { disabled: !c, autoComplete: "new-password" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1229,10 +1227,10 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               label: t("settings.smtp.encryption", { defaultValue: "Encryption" }),
               name: "encryption",
               rules: [{ required: c, message: t("settings.smtp.encryptionRequired", { defaultValue: "Encryption is required." }) }],
-              children: /* @__PURE__ */ e.jsxs(Be.Group, { disabled: !c, children: [
-                /* @__PURE__ */ e.jsx(Be.Button, { value: "None", children: t("settings.smtp.encryptionNone", { defaultValue: "None" }) }),
-                /* @__PURE__ */ e.jsx(Be.Button, { value: "SSL/TLS", children: t("settings.smtp.encryptionSslTls", { defaultValue: "SSL/TLS" }) }),
-                /* @__PURE__ */ e.jsx(Be.Button, { value: "STARTTLS", children: t("settings.smtp.encryptionStartTls", { defaultValue: "STARTTLS" }) })
+              children: /* @__PURE__ */ e.jsxs(Je.Group, { disabled: !c, children: [
+                /* @__PURE__ */ e.jsx(Je.Button, { value: "None", children: t("settings.smtp.encryptionNone", { defaultValue: "None" }) }),
+                /* @__PURE__ */ e.jsx(Je.Button, { value: "SSL/TLS", children: t("settings.smtp.encryptionSslTls", { defaultValue: "SSL/TLS" }) }),
+                /* @__PURE__ */ e.jsx(Je.Button, { value: "STARTTLS", children: t("settings.smtp.encryptionStartTls", { defaultValue: "STARTTLS" }) })
               ] })
             }
           ),
@@ -1245,7 +1243,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                 { required: c, message: t("settings.smtp.fromAddressRequired", { defaultValue: "From Address is required." }) },
                 { type: "email", message: t("settings.smtp.fromAddressInvalid", { defaultValue: "Invalid email address." }) }
               ],
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !c, placeholder: "noreply@example.com" })
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !c, placeholder: "noreply@example.com" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1253,7 +1251,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               label: t("settings.smtp.fromName", { defaultValue: "From Name" }),
               name: "from_name",
-              children: /* @__PURE__ */ e.jsx(v, { disabled: !c, placeholder: t("settings.smtp.fromNamePlaceholder", { defaultValue: "System Notifications" }) })
+              children: /* @__PURE__ */ e.jsx(V, { disabled: !c, placeholder: t("settings.smtp.fromNamePlaceholder", { defaultValue: "System Notifications" }) })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -1263,7 +1261,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               name: "admin_emails",
               tooltip: t("settings.smtp.adminEmailsTooltip", { defaultValue: "Email addresses that receive admin notifications." }),
               children: /* @__PURE__ */ e.jsx(
-                $,
+                H,
                 {
                   mode: "tags",
                   tokenSeparators: [","],
@@ -1273,25 +1271,25 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
               )
             }
           ),
-          /* @__PURE__ */ e.jsx(Ge, { children: t("settings.smtp.templateDivider", { defaultValue: "Template Configuration" }) }),
-          (V || []).map((C) => /* @__PURE__ */ e.jsx(
+          /* @__PURE__ */ e.jsx(Xe, { children: t("settings.smtp.templateDivider", { defaultValue: "Template Configuration" }) }),
+          (b || []).map((w) => /* @__PURE__ */ e.jsx(
             o.Item,
             {
-              label: t(C.label_key || `settings.smtp.${C.key}`, { defaultValue: C.key }),
-              name: C.key,
-              tooltip: C.tooltip_key ? t(C.tooltip_key, { defaultValue: "" }) : void 0,
-              children: q(C)
+              label: t(w.label_key || `settings.smtp.${w.key}`, { defaultValue: w.key }),
+              name: w.key,
+              tooltip: w.tooltip_key ? t(w.tooltip_key, { defaultValue: "" }) : void 0,
+              children: q(w)
             },
-            C.key
+            w.key
           )),
           /* @__PURE__ */ e.jsxs(o.Item, { children: [
-            /* @__PURE__ */ e.jsx(ue, { permission: "system:settings:update", children: /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", loading: I, style: { marginRight: 8 }, children: a("save", { defaultValue: "Save" }) }) }),
+            /* @__PURE__ */ e.jsx(pe, { permission: "system:settings:update", children: /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", loading: I, style: { marginRight: 8 }, children: a("save", { defaultValue: "Save" }) }) }),
             /* @__PURE__ */ e.jsx(
               E,
               {
-                onClick: () => m(!0),
-                disabled: !c || _,
-                loading: _,
+                onClick: () => p(!0),
+                disabled: !c || v,
+                loading: v,
                 children: t("settings.smtp.testConnection", { defaultValue: "Test Connection" })
               }
             )
@@ -1300,21 +1298,21 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     ) }),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
         title: t("settings.smtp.testConnectionTitle", { defaultValue: "Test SMTP Connection" }),
         open: r,
-        onCancel: () => m(!1),
+        onCancel: () => p(!1),
         footer: [
-          /* @__PURE__ */ e.jsx(E, { onClick: () => m(!1), children: a("cancel", { defaultValue: "Cancel" }) }, "back"),
-          /* @__PURE__ */ e.jsx(E, { type: "primary", loading: _, onClick: () => d.submit(), children: t("settings.smtp.sendTestEmail", { defaultValue: "Send Test Email" }) }, "submit")
+          /* @__PURE__ */ e.jsx(E, { onClick: () => p(!1), children: a("cancel", { defaultValue: "Cancel" }) }, "back"),
+          /* @__PURE__ */ e.jsx(E, { type: "primary", loading: v, onClick: () => d.submit(), children: t("settings.smtp.sendTestEmail", { defaultValue: "Send Test Email" }) }, "submit")
         ],
         children: /* @__PURE__ */ e.jsxs(
           o,
           {
             form: d,
             layout: "vertical",
-            onFinish: (C) => L(C),
+            onFinish: (w) => M(w),
             children: [
               /* @__PURE__ */ e.jsx(
                 o.Item,
@@ -1325,7 +1323,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     { required: !0, message: t("settings.smtp.testEmailRecipientRequired", { defaultValue: "Recipient email address is required." }) },
                     { type: "email", message: t("settings.smtp.testEmailRecipientInvalid", { defaultValue: "Invalid email address." }) }
                   ],
-                  children: /* @__PURE__ */ e.jsx(v, { placeholder: "test@example.com" })
+                  children: /* @__PURE__ */ e.jsx(V, { placeholder: "test@example.com" })
                 }
               ),
               n && /* @__PURE__ */ e.jsx(o.Item, { label: t("settings.smtp.testResult", { defaultValue: "Test Result" }), children: n.success ? /* @__PURE__ */ e.jsx("span", { style: { color: "green" }, children: t("settings.smtp.testSuccess", { defaultValue: "Connection successful!" }) }) : /* @__PURE__ */ e.jsx("span", { style: { color: "red" }, children: t("settings.smtp.testFailed", { defaultValue: "Connection failed: {{error}}", error: n.message }) }) })
@@ -1335,71 +1333,71 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     )
   ] });
-}, al = () => {
-  const { message: s } = me.useApp(), { t, i18n: a } = G("system"), { t: l } = G("common"), [n] = o.useForm(), { fetchSiteConfig: i, currentOrgId: r } = jt(), { user: m } = Os(), d = o.useWatch("enable_multi_org", n), c = o.useWatch("default_organization_id", n), f = ye(() => {
-    var J;
-    const g = (J = m == null ? void 0 : m.organizations) == null ? void 0 : J.find((Y) => Y.id === r);
-    return g != null && g.name ? `${g.name} (${r})` : r || "";
-  }, [m == null ? void 0 : m.organizations, r]), V = ye(() => {
-    var J;
-    const g = (J = m == null ? void 0 : m.organizations) == null ? void 0 : J.find((Y) => Y.id === c);
-    return g != null && g.name ? `${g.name} (${c})` : c || "";
-  }, [m == null ? void 0 : m.organizations, c]), { loading: x, data: O, refresh: I } = A(S.system.getSystemBaseSettings, {
-    onSuccess: (g) => {
-      n.setFieldsValue(g);
+}, cl = () => {
+  const { message: s } = ge.useApp(), { t, i18n: a } = G("system"), { t: l } = G("common"), [n] = o.useForm(), { fetchSiteConfig: i, currentOrgId: r } = _t(), { user: p } = Hs(), d = o.useWatch("enable_multi_org", n), c = o.useWatch("default_organization_id", n), m = ke(() => {
+    var W;
+    const f = (W = p == null ? void 0 : p.organizations) == null ? void 0 : W.find((Y) => Y.id === r);
+    return f != null && f.name ? `${f.name} (${r})` : r || "";
+  }, [p == null ? void 0 : p.organizations, r]), b = ke(() => {
+    var W;
+    const f = (W = p == null ? void 0 : p.organizations) == null ? void 0 : W.find((Y) => Y.id === c);
+    return f != null && f.name ? `${f.name} (${c})` : c || "";
+  }, [p == null ? void 0 : p.organizations, c]), { loading: y, data: O, refresh: I } = A(k.system.getSystemBaseSettings, {
+    onSuccess: (f) => {
+      n.setFieldsValue(f);
     },
-    onError: (g) => {
-      s.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", g);
+    onError: (f) => {
+      s.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" })), console.error("Failed to get system settings", f);
     }
-  }), { loading: L, run: _ } = A(S.system.updateSystemBaseSettings, {
+  }), { loading: M, run: v } = A(k.system.updateSystemBaseSettings, {
     manual: !0,
     onSuccess: async () => {
       s.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), I(), await i();
     },
-    onError: (g) => {
-      s.error(t("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update system settings", g);
+    onError: (f) => {
+      s.error(t("settings.updateFailed", { defaultValue: "Failed to update settings" })), console.error("Failed to update system settings", f);
     }
-  }), { loading: q, run: C } = A(S.system.clearSiteCache, {
+  }), { loading: q, run: w } = A(k.system.clearSiteCache, {
     manual: !0,
     onSuccess: () => {
       s.success(
         t("settings.base.clearSiteCacheSuccess", { defaultValue: "Site cache cleared successfully" })
       );
     },
-    onError: (g) => {
-      s.error(t("settings.base.clearSiteCacheFailed", { defaultValue: "Failed to clear site cache" })), console.error("Failed to clear site cache", g);
+    onError: (f) => {
+      s.error(t("settings.base.clearSiteCacheFailed", { defaultValue: "Failed to clear site cache" })), console.error("Failed to clear site cache", f);
     }
-  }), D = (g) => {
-    _(g);
+  }), U = (f) => {
+    v(f);
   };
-  return /* @__PURE__ */ e.jsx(je, { spinning: x, children: /* @__PURE__ */ e.jsxs(
+  return /* @__PURE__ */ e.jsx(ye, { spinning: y, children: /* @__PURE__ */ e.jsxs(
     o,
     {
       form: n,
       layout: "vertical",
-      onFinish: D,
+      onFinish: U,
       initialValues: O,
       children: [
-        /* @__PURE__ */ e.jsx(o.Item, { label: t("settings.base.name", { defaultValue: "Name" }), children: /* @__PURE__ */ e.jsx(Ot, { items: [{
+        /* @__PURE__ */ e.jsx(o.Item, { label: t("settings.base.name", { defaultValue: "Name" }), children: /* @__PURE__ */ e.jsx(Bt, { items: [{
           key: "default",
           label: l("language.default", { defaultValue: "Default" }),
           forceRender: !0,
-          children: /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", children: /* @__PURE__ */ e.jsx(v, {}) }) })
-        }, ...Ls.map((g) => ({
-          key: g.lang,
-          label: a.language !== g.lang ? l(`language.${g.lang}`, { defaultValue: g.label, lang: g.label }) : g.label,
+          children: /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", children: /* @__PURE__ */ e.jsx(V, {}) }) })
+        }, ...$s.map((f) => ({
+          key: f.lang,
+          label: a.language !== f.lang ? l(`language.${f.lang}`, { defaultValue: f.label, lang: f.label }) : f.label,
           forceRender: !0,
-          children: /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(o.Item, { name: ["name_i18n", g.lang], children: /* @__PURE__ */ e.jsx(v, {}) }) })
+          children: /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(o.Item, { name: ["name_i18n", f.lang], children: /* @__PURE__ */ e.jsx(V, {}) }) })
         }))] }) }),
-        /* @__PURE__ */ e.jsx(o.Item, { label: t("settings.base.logo", { defaultValue: "Logo" }), name: "logo", children: /* @__PURE__ */ e.jsx(v, {}) }),
-        /* @__PURE__ */ e.jsx(o.Item, { label: t("settings.base.homePage", { defaultValue: "Home Page" }), name: "home_page", children: /* @__PURE__ */ e.jsx(v, {}) }),
+        /* @__PURE__ */ e.jsx(o.Item, { label: t("settings.base.logo", { defaultValue: "Logo" }), name: "logo", children: /* @__PURE__ */ e.jsx(V, {}) }),
+        /* @__PURE__ */ e.jsx(o.Item, { label: t("settings.base.homePage", { defaultValue: "Home Page" }), name: "home_page", children: /* @__PURE__ */ e.jsx(V, {}) }),
         /* @__PURE__ */ e.jsx(
           o.Item,
           {
             label: t("settings.base.disableLocalUserLogin", { defaultValue: "Disable Local User Login" }),
             name: "disable_local_user_login",
             tooltip: t("settings.base.disableLocalUserLoginTooltip", { defaultValue: "Disable local user login, It is only valid when other authentication methods are enabled." }),
-            children: /* @__PURE__ */ e.jsx(oe, {})
+            children: /* @__PURE__ */ e.jsx(ue, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -1410,10 +1408,10 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: t("settings.base.enableMultiOrgTooltip", {
               defaultValue: "Enable multi-organization feature. When enabled, organizations can be managed in the Organization Management tab. When disabled, the current organization becomes the default organization."
             }),
-            children: /* @__PURE__ */ e.jsx(oe, {})
+            children: /* @__PURE__ */ e.jsx(ue, {})
           }
         ),
-        /* @__PURE__ */ e.jsx(o.Item, { name: "default_organization_id", hidden: !0, children: /* @__PURE__ */ e.jsx(v, {}) }),
+        /* @__PURE__ */ e.jsx(o.Item, { name: "default_organization_id", hidden: !0, children: /* @__PURE__ */ e.jsx(V, {}) }),
         !d && /* @__PURE__ */ e.jsx(
           o.Item,
           {
@@ -1421,17 +1419,17 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: t("settings.base.defaultOrganizationTooltip", {
               defaultValue: "Used when multi-organization is disabled. Switching multi-organization off sets this to the currently selected organization."
             }),
-            children: /* @__PURE__ */ e.jsx(v, { value: V, disabled: !0 })
+            children: /* @__PURE__ */ e.jsx(V, { value: b, disabled: !0 })
           }
         ),
-        d && f && /* @__PURE__ */ e.jsx(
+        d && m && /* @__PURE__ */ e.jsx(
           o.Item,
           {
             label: t("settings.base.currentOrganization", { defaultValue: "Current Organization" }),
             tooltip: t("settings.base.currentOrganizationTooltip", {
               defaultValue: "If you disable multi-organization, this organization will become the default organization."
             }),
-            children: /* @__PURE__ */ e.jsx(v, { value: f, disabled: !0 })
+            children: /* @__PURE__ */ e.jsx(V, { value: m, disabled: !0 })
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -1442,7 +1440,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: t("settings.base.enableSkillToolBindingTooltip", {
               defaultValue: "When enabled, AI chat narrows tools by skill bindings when skills are in scope (still within role AI tool permissions)."
             }),
-            children: /* @__PURE__ */ e.jsx(oe, {})
+            children: /* @__PURE__ */ e.jsx(ue, {})
           }
         ),
         /* @__PURE__ */ e.jsx(
@@ -1454,7 +1452,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             tooltip: t("settings.base.showToolCallsTooltip", {
               defaultValue: "When enabled, AI chat shows server tool calls under each assistant message. Client tools and confirmation cards are unchanged."
             }),
-            children: /* @__PURE__ */ e.jsx(oe, {})
+            children: /* @__PURE__ */ e.jsx(ue, {})
           }
         ),
         /* @__PURE__ */ e.jsx(o.Item, { children: /* @__PURE__ */ e.jsxs(K, { children: [
@@ -1463,8 +1461,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             {
               type: "primary",
               htmlType: "submit",
-              loading: L,
-              icon: /* @__PURE__ */ e.jsx(We, {}),
+              loading: M,
+              icon: /* @__PURE__ */ e.jsx(Ge, {}),
               children: l("save", { defaultValue: "Save" })
             }
           ),
@@ -1472,32 +1470,30 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
             E,
             {
               onClick: () => I(),
-              icon: /* @__PURE__ */ e.jsx(Se, {}),
+              icon: /* @__PURE__ */ e.jsx(Ce, {}),
               children: l("refresh", { defaultValue: "Refresh" })
             }
           ),
-          /* @__PURE__ */ e.jsx(ue, { permission: "system:settings:update", children: /* @__PURE__ */ e.jsx(
-            Rt,
+          /* @__PURE__ */ e.jsx(pe, { permission: "system:settings:update", children: /* @__PURE__ */ e.jsx(
+            Ht,
             {
               title: t("settings.base.clearSiteCacheConfirm", {
                 defaultValue: "Clear all server-side application caches? Active sessions may need to sign in again."
               }),
               okText: l("ok", { defaultValue: "OK" }),
               cancelText: l("cancel", { defaultValue: "Cancel" }),
-              onConfirm: () => C(),
-              children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(xs, {}), loading: q, children: t("settings.base.clearSiteCache", { defaultValue: "Clear site cache" }) })
+              onConfirm: () => w(),
+              children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Cs, {}), loading: q, children: t("settings.base.clearSiteCache", { defaultValue: "Clear site cache" }) })
             }
           ) })
         ] }) })
       ]
     }
   ) });
-}, il = et(() => import("./components.js").then((s) => s.s).then((s) => ({
-  default: s.JsonSchemaConfigFormItem
-}))), { TextArea: St } = v, nl = ({ schema: s, uiSchema: t, name: a, provider: l }) => {
+}, { TextArea: zt } = V, ml = ({ schema: s, uiSchema: t, name: a, provider: l }) => {
   const { t: n } = G("ai", { keyPrefix: `models.${l}.form` });
   return /* @__PURE__ */ e.jsx(
-    il,
+    ss,
     {
       name: a,
       schema: s,
@@ -1505,298 +1501,339 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       t: n
     }
   );
-}, ol = () => {
-  var y;
-  const { message: s, modal: t } = me.useApp(), { t: a } = G("ai"), { t: l } = G("common"), n = Ce(), { hasPermission: i } = bt(), r = i("ai:models:update"), [m] = o.useForm(), [d, c] = b(!1), [f, V] = b(null), [x, O] = b(""), [I, L] = b(""), [_, q] = b(!1), [C, D] = b(!1), [g, J] = b(!1), [Y, W] = b([]), [ee, Q] = b({}), [te, F] = b({}), [w, M] = b([]), { loading: H, data: k } = A(
-    () => S.ai.getAiTypeDefinitions(),
+}, pl = () => {
+  var st;
+  const { message: s, modal: t } = ge.useApp(), { t: a } = G("ai"), { t: l } = G("common"), n = Fe(), { hasPermission: i } = St(), r = i("ai:models:update"), [p] = o.useForm(), [d, c] = x(!1), [m, b] = x(!1), [y, O] = x(null), [I, M] = x(""), [v, q] = x(""), [w, U] = x(!1), [f, W] = x(!1), [Y, J] = x(!1), [le, Q] = x([]), [se, T] = x({}), [P, $] = x({}), [N, _] = x([]), { loading: j, data: F } = A(
+    () => k.ai.getAiTypeDefinitions(),
     {
       refreshDeps: [],
-      onError: (u) => {
-        s.error(a("models.fetchTypeDefinitionsFailed", { defaultValue: "Failed to fetch AI type definitions" })), console.error("Failed to fetch AI type definitions:", u);
+      onError: (g) => {
+        s.error(a("models.fetchTypeDefinitionsFailed", { defaultValue: "Failed to fetch AI type definitions" })), console.error("Failed to fetch AI type definitions:", g);
       }
     }
-  ), h = ye(() => k == null ? void 0 : k.find((u) => u.provider === I), [k, I]), { loading: R, data: N, refresh: B } = A(
-    () => S.ai.listAiModels({ current: 1, page_size: 100, search: x }),
+  ), R = ke(() => F == null ? void 0 : F.find((g) => g.provider === v), [F, v]), { loading: Z, data: B, refresh: ne } = A(
+    () => k.ai.listAiModels({ current: 1, page_size: 100, search: I }),
     {
-      refreshDeps: [x],
-      onError: (u) => {
-        s.error(a("models.fetchFailed", { defaultValue: "Failed to fetch AI models" })), console.error("Failed to fetch AI models:", u);
+      refreshDeps: [I],
+      onError: (g) => {
+        s.error(a("models.fetchFailed", { defaultValue: "Failed to fetch AI models" })), console.error("Failed to fetch AI models:", g);
       }
     }
-  ), { loading: Z, run: de } = A(
-    ({ config: u, ...j }) => S.ai.createAiModel({ config: u ?? {}, ...j }),
-    {
-      manual: !0,
-      onSuccess: () => {
-        s.success(a("models.createSuccess", { defaultValue: "AI model created successfully" })), c(!1), m.resetFields(), B();
-      },
-      onError: (u) => {
-        s.error(a("models.createFailed", { defaultValue: "Failed to create AI model" })), console.error("Failed to create AI model:", u);
-      }
-    }
-  ), { loading: he, run: Ae } = A(
-    ({ id: u, data: j }) => S.ai.updateAiModel({ id: u }, j),
+  ), { loading: je, run: Pe } = A(
+    ({ config: g, ...L }) => k.ai.createAiModel({ config: g ?? {}, ...L }),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(a("models.updateSuccess", { defaultValue: "AI model updated successfully" })), c(!1), m.resetFields(), V(null), B();
+        s.success(a("models.createSuccess", { defaultValue: "AI model created successfully" })), c(!1), ne();
       },
-      onError: (u) => {
-        s.error(a("models.updateFailed", { defaultValue: "Failed to update AI model" })), console.error("Failed to update AI model:", u);
+      onError: (g) => {
+        s.error(a("models.createFailed", { defaultValue: "Failed to create AI model" })), console.error("Failed to create AI model:", g);
       }
     }
-  ), { runAsync: Ee } = A(
-    (u) => S.ai.deleteAiModel({ id: u }),
+  ), { loading: Le, run: Oe } = A(
+    ({ id: g, data: L }) => k.ai.updateAiModel({ id: g }, L),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(a("models.deleteSuccess", { defaultValue: "AI model deleted successfully" })), B();
+        s.success(a("models.updateSuccess", { defaultValue: "AI model updated successfully" })), c(!1), ne();
       },
-      onError: (u) => {
-        s.error(a("models.deleteFailed", { defaultValue: "Failed to delete AI model" })), console.error("Failed to delete AI model:", u);
+      onError: (g) => {
+        s.error(a("models.updateFailed", { defaultValue: "Failed to update AI model" })), console.error("Failed to update AI model:", g);
       }
     }
-  ), { runAsync: ze } = A(
-    (u) => S.ai.testAiModel({ id: u }),
+  ), { runAsync: Ie } = A(
+    (g) => k.ai.deleteAiModel({ id: g }),
+    {
+      manual: !0,
+      onSuccess: () => {
+        s.success(a("models.deleteSuccess", { defaultValue: "AI model deleted successfully" })), ne();
+      },
+      onError: (g) => {
+        s.error(a("models.deleteFailed", { defaultValue: "Failed to delete AI model" })), console.error("Failed to delete AI model:", g);
+      }
+    }
+  ), { runAsync: ve } = A(
+    (g) => k.ai.testAiModel({ id: g }),
     {
       manual: !0,
       onSuccess: () => {
         s.success(a("models.testSuccess", { defaultValue: "AI model connection test successful" }));
       },
-      onError: (u) => {
-        s.error(a("models.testFailed", { defaultValue: "AI model connection test failed" })), console.error("Failed to test AI model:", u);
+      onError: (g) => {
+        s.error(a("models.testFailedDetail", {
+          defaultValue: "AI model connection test failed: {{error}}",
+          error: g.message
+        })), console.error("Failed to test AI model:", g);
       }
     }
-  ), { runAsync: Te } = A(
-    (u) => S.ai.setDefaultAiModel({ id: u }),
+  ), { loading: Ae, runAsync: C } = A(
+    (g) => k.ai.testAiModelConfig({
+      provider: g.provider,
+      config: g.config ?? {}
+    }),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(a("models.setDefaultSuccess", { defaultValue: "Default AI model set successfully" })), B();
+        s.success(a("models.testSuccess", { defaultValue: "AI model connection test successful" }));
       },
-      onError: (u) => {
-        s.error(a("models.setDefaultFailed", { defaultValue: "Failed to set default AI model" })), console.error("Failed to set default AI model:", u);
+      onError: (g) => {
+        s.error(a("models.testFailedDetail", {
+          defaultValue: "AI model connection test failed: {{error}}",
+          error: g.message
+        })), console.error("Failed to test AI model config:", g);
       }
     }
-  ), be = Y.some(
-    (u) => (ee[u.key] ?? "") !== (te[u.key] ?? "")
-  ), Ve = (u, j) => a(`models.purposes.${u}.label`, { defaultValue: j || u }), T = async () => {
-    q(!0), D(!0);
+  ), oe = async () => {
     try {
-      const [u, j] = await Promise.all([
-        S.ai.listAiModelPurposes(),
-        S.ai.listAiModels({ current: 1, page_size: 100, search: "" })
-      ]), U = {};
-      for (const X of u)
-        U[X.key] = X.model_id ?? "";
-      W(u), F(U), Q(U), M(j.data ?? []);
-    } catch (u) {
-      s.error(a("models.purposeFetchFailed", { defaultValue: "Failed to load purpose assignments" })), console.error("Failed to load purpose assignments:", u), q(!1);
-    } finally {
-      D(!1);
+      const g = await p.validateFields();
+      await C(g);
+    } catch (g) {
+      if (g && typeof g == "object" && "errorFields" in g)
+        return;
     }
-  }, ae = () => {
-    g || q(!1);
-  }, fe = async () => {
-    const u = Y.filter(
-      (j) => (ee[j.key] ?? "") !== (te[j.key] ?? "")
+  }, { runAsync: be } = A(
+    (g) => k.ai.setDefaultAiModel({ id: g }),
+    {
+      manual: !0,
+      onSuccess: () => {
+        s.success(a("models.setDefaultSuccess", { defaultValue: "Default AI model set successfully" })), ne();
+      },
+      onError: (g) => {
+        s.error(a("models.setDefaultFailed", { defaultValue: "Failed to set default AI model" })), console.error("Failed to set default AI model:", g);
+      }
+    }
+  ), Te = le.some(
+    (g) => (se[g.key] ?? "") !== (P[g.key] ?? "")
+  ), Re = (g, L) => a(`models.purposes.${g}.label`, { defaultValue: L || g }), z = async () => {
+    U(!0), W(!0);
+    try {
+      const [g, L] = await Promise.all([
+        k.ai.listAiModelPurposes(),
+        k.ai.listAiModels({ current: 1, page_size: 100, search: "" })
+      ]), re = {};
+      for (const lt of g)
+        re[lt.key] = lt.model_id ?? "";
+      Q(g), $(re), T(re), _(L.data ?? []);
+    } catch (g) {
+      s.error(a("models.purposeFetchFailed", { defaultValue: "Failed to load purpose assignments" })), console.error("Failed to load purpose assignments:", g), U(!1);
+    } finally {
+      W(!1);
+    }
+  }, D = () => {
+    Y || U(!1);
+  }, ae = async () => {
+    const g = le.filter(
+      (L) => (se[L.key] ?? "") !== (P[L.key] ?? "")
     );
-    if (u.length === 0) {
-      q(!1);
+    if (g.length === 0) {
+      U(!1);
       return;
     }
     J(!0);
     try {
-      for (const j of u)
-        await S.ai.setAiModelPurpose({ purpose: j.key }, { model_id: ee[j.key] ?? "" });
-      s.success(a("models.purposeSaveSuccess", { defaultValue: "Purpose assignments saved" })), q(!1), B();
-    } catch (j) {
-      s.error(a("models.purposeSaveFailed", { defaultValue: "Failed to save purpose assignments" })), console.error("Failed to save purpose assignments:", j), B();
+      for (const L of g)
+        await k.ai.setAiModelPurpose({ purpose: L.key }, { model_id: se[L.key] ?? "" });
+      s.success(a("models.purposeSaveSuccess", { defaultValue: "Purpose assignments saved" })), U(!1), ne();
+    } catch (L) {
+      s.error(a("models.purposeSaveFailed", { defaultValue: "Failed to save purpose assignments" })), console.error("Failed to save purpose assignments:", L), ne();
     } finally {
       J(!1);
     }
-  }, Fe = (u) => {
-    const j = u.purposes ?? [];
-    if (j.length > 0) {
+  }, me = (g) => {
+    const L = g.purposes ?? [];
+    if (L.length > 0) {
       t.warning({
         title: a("models.deleteBlockedTitle", { defaultValue: "This model cannot be deleted" }),
         content: a("models.deletePurposeConfirm", {
           defaultValue: "This model is used for: {{purposes}}. Unassign those purposes before deleting it.",
-          purposes: j.map((U) => Ve(U)).join(", ")
+          purposes: L.map((re) => Re(re)).join(", ")
         })
       });
       return;
     }
-    Ee(u.id);
-  }, Re = () => {
-    V(null), L(""), m.resetFields(), c(!0);
-  }, z = (u) => {
-    V(u), L(u.provider);
-    const j = u.config || {}, U = {
-      name: u.name,
-      description: u.description,
-      provider: u.provider,
-      is_default: u.is_default,
-      config: j,
+    Ie(g.id);
+  }, Ee = () => {
+    c(!1);
+  }, Qe = () => {
+    b(!1), window.setTimeout(() => {
+      p.resetFields(), O(null), q("");
+    }, 0);
+  };
+  ze(() => {
+    if (!d)
+      return;
+    const g = window.setTimeout(() => b(!0), 0);
+    return () => window.clearTimeout(g);
+  }, [d]);
+  const Ze = () => {
+    O(null), q(""), b(!1), p.resetFields(), c(!0);
+  }, h = (g) => {
+    O(g), q(g.provider), b(!1);
+    const L = g.config || {}, re = {
+      name: g.name,
+      description: g.description,
+      provider: g.provider,
+      is_default: g.is_default,
+      config: L,
       // Spread config fields to form
-      status: u.status,
-      system_prompt: u.system_prompt ?? "",
-      auto_cache_breakpoint: u.auto_cache_breakpoint ?? !0,
-      max_chat_tokens: u.max_chat_tokens ?? 0,
-      max_chat_iterations: u.max_chat_iterations ?? 0
+      status: g.status,
+      system_prompt: g.system_prompt ?? "",
+      auto_cache_breakpoint: g.auto_cache_breakpoint ?? !0,
+      max_chat_tokens: g.max_chat_tokens ?? 0,
+      max_chat_iterations: g.max_chat_iterations ?? 0
     };
-    m.setFieldsValue(U), c(!0);
-  }, p = async (u) => {
-    V(null), L(u.provider), m.resetFields();
+    p.setFieldsValue(re), c(!0);
+  }, u = async (g) => {
+    O(null), q(g.provider), b(!1), p.resetFields();
     try {
-      const j = await S.ai.getAiModel({ id: u.id }), U = { ...j.config || {} };
-      "api_key" in U && (U.api_key = ""), m.setFieldsValue({
-        name: `${j.name} (copy)`,
-        description: j.description,
-        provider: j.provider,
-        config: U,
+      const L = await k.ai.getAiModel({ id: g.id }), re = { ...L.config || {} };
+      "api_key" in re && (re.api_key = ""), p.setFieldsValue({
+        name: `${L.name} (copy)`,
+        description: L.description,
+        provider: L.provider,
+        config: re,
         is_default: !1,
         status: "enabled",
-        system_prompt: j.system_prompt ?? "",
-        auto_cache_breakpoint: j.auto_cache_breakpoint ?? !0,
-        max_chat_tokens: j.max_chat_tokens ?? 0,
-        max_chat_iterations: j.max_chat_iterations ?? 0
+        system_prompt: L.system_prompt ?? "",
+        auto_cache_breakpoint: L.auto_cache_breakpoint ?? !0,
+        max_chat_tokens: L.max_chat_tokens ?? 0,
+        max_chat_iterations: L.max_chat_iterations ?? 0
       }), c(!0);
     } catch {
       s.error(a("models.cloneLoadFailed", { defaultValue: "Failed to load model for clone" }));
     }
-  }, P = (u) => {
-    L(u), m.setFieldValue("config", void 0);
-  }, le = (u) => {
-    const j = u.config ?? {}, U = {
-      name: u.name,
-      description: u.description,
-      provider: u.provider,
-      config: j,
-      is_default: u.is_default,
-      status: u.status,
-      system_prompt: u.system_prompt ?? "",
-      auto_cache_breakpoint: u.auto_cache_breakpoint ?? !0,
-      max_chat_tokens: u.max_chat_tokens ?? 0,
-      max_chat_iterations: u.max_chat_iterations ?? 0
+  }, S = (g) => {
+    q(g), p.setFieldValue("config", void 0);
+  }, ee = (g) => {
+    const L = g.config ?? {}, re = {
+      name: g.name,
+      description: g.description,
+      provider: g.provider,
+      config: L,
+      is_default: g.is_default,
+      status: g.status,
+      system_prompt: g.system_prompt ?? "",
+      auto_cache_breakpoint: g.auto_cache_breakpoint ?? !0,
+      max_chat_tokens: g.max_chat_tokens ?? 0,
+      max_chat_iterations: g.max_chat_iterations ?? 0
     };
-    f ? Ae({ id: f.id, data: U }) : de(U);
-  }, we = [
+    y ? Oe({ id: y.id, data: re }) : Pe(re);
+  }, X = [
     {
       title: a("models.name", { defaultValue: "Name" }),
       dataIndex: "name",
       key: "name",
-      render: (u, j) => /* @__PURE__ */ e.jsxs(K, { children: [
-        /* @__PURE__ */ e.jsx("span", { children: u }),
-        j.is_default && /* @__PURE__ */ e.jsx(nt, { title: a("models.defaultModel", { defaultValue: "Default Model" }), children: /* @__PURE__ */ e.jsx(ys, { style: { color: "#faad14" } }) })
+      render: (g, L) => /* @__PURE__ */ e.jsxs(K, { children: [
+        /* @__PURE__ */ e.jsx("span", { children: g }),
+        L.is_default && /* @__PURE__ */ e.jsx(ut, { title: a("models.defaultModel", { defaultValue: "Default Model" }), children: /* @__PURE__ */ e.jsx(Ts, { style: { color: "#faad14" } }) })
       ] })
     },
     {
       title: a("models.provider", { defaultValue: "Provider" }),
       dataIndex: "provider",
       key: "provider",
-      render: (u) => /* @__PURE__ */ e.jsx(ne, { color: "blue", children: u.toUpperCase() })
+      render: (g) => /* @__PURE__ */ e.jsx(de, { color: "blue", children: g.toUpperCase() })
     },
     {
       title: a("models.purposesColumn", { defaultValue: "Purposes" }),
       dataIndex: "purposes",
       key: "purposes",
-      render: (u) => /* @__PURE__ */ e.jsx(K, { size: [4, 4], wrap: !0, children: (u ?? []).map((j) => /* @__PURE__ */ e.jsx(ne, { children: Ve(j) }, j)) })
+      render: (g) => /* @__PURE__ */ e.jsx(K, { size: [4, 4], wrap: !0, children: (g ?? []).map((L) => /* @__PURE__ */ e.jsx(de, { children: Re(L) }, L)) })
     },
     {
       title: a("models.status", { defaultValue: "Status" }),
       dataIndex: "status",
       key: "status",
-      render: (u) => /* @__PURE__ */ e.jsx(ne, { color: u === "enabled" ? "green" : "red", children: u === "enabled" ? l("enabled", { defaultValue: "Enabled" }) : l("disabled", { defaultValue: "Disabled" }) })
+      render: (g) => /* @__PURE__ */ e.jsx(de, { color: g === "enabled" ? "green" : "red", children: g === "enabled" ? l("enabled", { defaultValue: "Enabled" }) : l("disabled", { defaultValue: "Disabled" }) })
     },
     {
       title: l("actions", { defaultValue: "Actions" }),
       key: "actions",
       width: 200,
-      render: (u, j) => /* @__PURE__ */ e.jsx(qe, { actions: [
+      render: (g, L) => /* @__PURE__ */ e.jsx($e, { actions: [
         {
           key: "test",
           permission: "ai:models:test",
-          icon: /* @__PURE__ */ e.jsx(js, {}),
+          icon: /* @__PURE__ */ e.jsx(Ft, {}),
           tooltip: a("models.test", { defaultValue: "Test Connection" }),
-          onClick: async () => ze(j.id)
+          onClick: async () => ve(L.id)
         },
         {
           key: "setDefault",
           permission: "ai:models:update",
-          icon: /* @__PURE__ */ e.jsx(bs, {}),
-          disabled: j.is_default,
+          icon: /* @__PURE__ */ e.jsx(Fs, {}),
+          disabled: L.is_default,
           tooltip: a("models.setDefault", { defaultValue: "Set as Default" }),
-          onClick: async () => Te(j.id)
+          onClick: async () => be(L.id)
         },
         {
           key: "update",
           permission: "ai:models:update",
-          icon: /* @__PURE__ */ e.jsx(Ne, {}),
+          icon: /* @__PURE__ */ e.jsx(qe, {}),
           tooltip: a("models.editTooltip", { defaultValue: "Edit model" }),
-          onClick: async () => z(j)
+          onClick: async () => h(L)
         },
         {
           key: "clone",
           permission: "ai:models:create",
-          icon: /* @__PURE__ */ e.jsx(Mt, {}),
+          icon: /* @__PURE__ */ e.jsx(Jt, {}),
           tooltip: a("models.cloneTooltip", { defaultValue: "Clone as new model (re-enter API key if needed)" }),
-          onClick: async () => p(j)
+          onClick: async () => u(L)
         },
         {
           key: "delete",
           permission: "ai:models:delete",
-          icon: /* @__PURE__ */ e.jsx(Oe, {}),
+          icon: /* @__PURE__ */ e.jsx(Ne, {}),
           tooltip: a("models.deleteTooltip", { defaultValue: "Delete model" }),
-          onClick: async () => Fe(j),
+          onClick: async () => me(L),
           danger: !0
         }
       ] }, "actions")
     }
-  ], Me = w.find((u) => u.is_default && u.status === "enabled"), dt = [
+  ], te = N.find((g) => g.is_default && g.status === "enabled"), De = [
     {
       title: a("models.purpose", { defaultValue: "Purpose" }),
       dataIndex: "key",
       width: 140,
-      render: (u, j) => Ve(u, j.name)
+      render: (g, L) => Re(g, L.name)
     },
     {
       title: a("models.purposeDescription", { defaultValue: "Description" }),
       dataIndex: "description",
-      render: (u, j) => a(`models.purposes.${j.key}.description`, { defaultValue: u })
+      render: (g, L) => a(`models.purposes.${L.key}.description`, { defaultValue: g })
     },
     {
       title: a("models.purposeModel", { defaultValue: "Model" }),
       key: "model",
       width: 280,
-      render: (u, j) => {
-        const U = ee[j.key] ?? "", X = w.some((ke) => ke.id === U), se = w.filter((ke) => ke.status === "enabled" || ke.id === U).map((ke) => ({
-          label: ke.name,
-          value: ke.id,
-          disabled: ke.status !== "enabled"
+      render: (g, L) => {
+        const re = se[L.key] ?? "", lt = N.some((_e) => _e.id === re), Ct = N.filter((_e) => _e.status === "enabled" || _e.id === re).map((_e) => ({
+          label: _e.name,
+          value: _e.id,
+          disabled: _e.status !== "enabled"
         }));
-        U && !X && se.push({
-          label: j.model_name || U,
-          value: U,
+        re && !lt && Ct.push({
+          label: L.model_name || re,
+          value: re,
           disabled: !0
         });
-        const Ie = w.find((ke) => ke.id === U), ut = !!U && ((Ie == null ? void 0 : Ie.status) === "disabled" || !Ie && j.model_status === "disabled" && U === j.model_id);
+        const at = N.find((_e) => _e.id === re), ms = !!re && ((at == null ? void 0 : at.status) === "disabled" || !at && L.model_status === "disabled" && re === L.model_id);
         return /* @__PURE__ */ e.jsxs("div", { children: [
           /* @__PURE__ */ e.jsx(
-            $,
+            H,
             {
               allowClear: !0,
               style: { width: "100%" },
               disabled: !r,
-              placeholder: Me ? a("models.purposePlaceholder", { defaultValue: "Default: {{name}}", name: Me.name }) : a("models.purposeNoDefault", { defaultValue: "Use the default model" }),
-              value: U || void 0,
-              options: se,
-              onChange: (ke) => {
-                Q((ls) => ({ ...ls, [j.key]: ke ?? "" }));
+              placeholder: te ? a("models.purposePlaceholder", { defaultValue: "Default: {{name}}", name: te.name }) : a("models.purposeNoDefault", { defaultValue: "Use the default model" }),
+              value: re || void 0,
+              options: Ct,
+              onChange: (_e) => {
+                T((ps) => ({ ...ps, [L.key]: _e ?? "" }));
               }
             }
           ),
-          ut && /* @__PURE__ */ e.jsx(Qe.Text, { type: "warning", children: a("models.purposeDisabledFallback", {
+          ms && /* @__PURE__ */ e.jsx(Ye.Text, { type: "warning", children: a("models.purposeDisabledFallback", {
             defaultValue: "This model is disabled. The purpose is using the default model."
           }) })
         ] });
@@ -1804,21 +1841,21 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
     }
   ];
   return /* @__PURE__ */ e.jsxs("div", { children: [
-    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(He, { justify: "space-between", align: "middle", children: [
-      /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsx(
-        v.Search,
+    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(Ke, { justify: "space-between", align: "middle", children: [
+      /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsx(
+        V.Search,
         {
           placeholder: a("models.searchPlaceholder", { defaultValue: "Search AI models..." }),
           style: { width: 300 },
-          onSearch: (u) => O(u),
+          onSearch: (g) => M(g),
           allowClear: !0
         }
       ) }),
-      /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsxs(K, { children: [
-        /* @__PURE__ */ e.jsx(ue, { permission: "ai:trace:manage", children: /* @__PURE__ */ e.jsx(
+      /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsxs(K, { children: [
+        /* @__PURE__ */ e.jsx(pe, { permission: "ai:trace:manage", children: /* @__PURE__ */ e.jsx(
           E,
           {
-            icon: /* @__PURE__ */ e.jsx(Nt, {}),
+            icon: /* @__PURE__ */ e.jsx(Wt, {}),
             onClick: () => n("/system/settings/ai-trace"),
             children: a("trace.debug", { defaultValue: "Debug" })
           }
@@ -1826,69 +1863,70 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
         /* @__PURE__ */ e.jsx(
           E,
           {
-            icon: /* @__PURE__ */ e.jsx(Vs, {}),
-            onClick: T,
+            icon: /* @__PURE__ */ e.jsx(Is, {}),
+            onClick: z,
             children: a("models.assignPurposes", { defaultValue: "Assign purposes" })
           }
         ),
         /* @__PURE__ */ e.jsx(
           E,
           {
-            icon: /* @__PURE__ */ e.jsx(Se, {}),
-            onClick: B,
-            loading: R,
+            icon: /* @__PURE__ */ e.jsx(Ce, {}),
+            onClick: ne,
+            loading: Z,
             children: l("refresh", { defaultValue: "Refresh" })
           }
         ),
-        /* @__PURE__ */ e.jsx(ue, { permission: "ai:models:create", children: /* @__PURE__ */ e.jsx(
+        /* @__PURE__ */ e.jsx(pe, { permission: "ai:models:create", children: /* @__PURE__ */ e.jsx(
           E,
           {
             type: "primary",
-            icon: /* @__PURE__ */ e.jsx(De, {}),
-            onClick: Re,
+            icon: /* @__PURE__ */ e.jsx(Ue, {}),
+            onClick: Ze,
             children: a("models.create", { defaultValue: "Create AI Model" })
           }
         ) })
       ] }) })
     ] }) }),
     /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx(
-      Pe,
+      Me,
       {
-        columns: we,
-        dataSource: (N == null ? void 0 : N.data) || [],
-        loading: R,
+        columns: X,
+        dataSource: (B == null ? void 0 : B.data) || [],
+        loading: Z,
         rowKey: "id",
         pagination: {
-          total: (N == null ? void 0 : N.total) || 0,
-          current: (N == null ? void 0 : N.current) || 1,
-          pageSize: (N == null ? void 0 : N.page_size) || 10,
+          total: (B == null ? void 0 : B.total) || 0,
+          current: (B == null ? void 0 : B.current) || 1,
+          pageSize: (B == null ? void 0 : B.page_size) || 10,
           showSizeChanger: !0,
           showQuickJumper: !0,
-          showTotal: (u, j) => l("pagination.total", {
-            defaultValue: `${j[0]}-${j[1]} of ${u} items`,
-            start: j[0],
-            end: j[1],
-            total: u
+          showTotal: (g, L) => l("pagination.total", {
+            defaultValue: `${L[0]}-${L[1]} of ${g} items`,
+            start: L[0],
+            end: L[1],
+            total: g
           })
         }
       }
     ) }),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
-        title: f ? a("models.edit", { defaultValue: "Edit AI Model" }) : a("models.create", { defaultValue: "Create AI Model" }),
+        title: y ? a("models.edit", { defaultValue: "Edit AI Model" }) : a("models.create", { defaultValue: "Create AI Model" }),
         open: d,
-        onCancel: () => {
-          c(!1), m.resetFields(), V(null);
-        },
+        loading: !m,
+        destroyOnHidden: !0,
+        afterClose: Qe,
+        onCancel: Ee,
         footer: null,
-        width: ((y = h == null ? void 0 : h.ui_schema) == null ? void 0 : y["ui:width"]) || 600,
+        width: ((st = R == null ? void 0 : R.ui_schema) == null ? void 0 : st["ui:width"]) || 600,
         children: /* @__PURE__ */ e.jsxs(
           o,
           {
-            form: m,
+            form: p,
             layout: "vertical",
-            onFinish: le,
+            onFinish: ee,
             autoComplete: "off",
             children: [
               /* @__PURE__ */ e.jsxs("div", { style: { maxHeight: "calc(100vh - 300px)", overflowY: "auto", overflowX: "hidden" }, children: [
@@ -1898,7 +1936,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     name: "name",
                     label: a("models.name", { defaultValue: "Name" }),
                     rules: [{ required: !0, message: a("models.nameRequired", { defaultValue: "Please enter model name" }) }],
-                    children: /* @__PURE__ */ e.jsx(v, { placeholder: a("models.namePlaceholder", { defaultValue: "Enter model name" }) })
+                    children: /* @__PURE__ */ e.jsx(V, { placeholder: a("models.namePlaceholder", { defaultValue: "Enter model name" }) })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
@@ -1907,7 +1945,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     name: "description",
                     label: a("models.description", { defaultValue: "Description" }),
                     children: /* @__PURE__ */ e.jsx(
-                      St,
+                      zt,
                       {
                         rows: 3,
                         placeholder: a("models.descriptionPlaceholder", { defaultValue: "Enter model description" })
@@ -1922,29 +1960,29 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     label: a("models.provider", { defaultValue: "Provider" }),
                     rules: [{ required: !0, message: a("models.providerRequired", { defaultValue: "Please select provider" }) }],
                     children: /* @__PURE__ */ e.jsx(
-                      $,
+                      H,
                       {
-                        loading: H,
+                        loading: j,
                         placeholder: a("models.providerPlaceholder", { defaultValue: "Select provider" }),
-                        onChange: P,
-                        value: I,
-                        options: k == null ? void 0 : k.map((u) => ({
-                          label: u.name,
-                          value: u.provider
+                        onChange: S,
+                        value: v,
+                        options: F == null ? void 0 : F.map((g) => ({
+                          label: g.name,
+                          value: g.provider
                         }))
                       }
                     )
                   }
                 ),
-                h && /* @__PURE__ */ e.jsx(Ye, { fallback: /* @__PURE__ */ e.jsx(Ke, {}), children: /* @__PURE__ */ e.jsx(
-                  nl,
+                R && /* @__PURE__ */ e.jsx(
+                  ml,
                   {
                     name: "config",
-                    schema: h.config_schema,
-                    uiSchema: h.ui_schema,
-                    provider: I
+                    schema: R.config_schema,
+                    uiSchema: R.ui_schema,
+                    provider: v
                   }
-                ) }),
+                ),
                 /* @__PURE__ */ e.jsx(
                   o.Item,
                   {
@@ -1954,7 +1992,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                       defaultValue: "Optional system prompt prepended to every conversation for this model."
                     }),
                     children: /* @__PURE__ */ e.jsx(
-                      St,
+                      zt,
                       {
                         rows: 4,
                         placeholder: a("models.systemPromptPlaceholder", {
@@ -1964,8 +2002,8 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     )
                   }
                 ),
-                /* @__PURE__ */ e.jsxs(He, { gutter: 16, children: [
-                  /* @__PURE__ */ e.jsx(ve, { span: 12, children: /* @__PURE__ */ e.jsx(
+                /* @__PURE__ */ e.jsxs(Ke, { gutter: 16, children: [
+                  /* @__PURE__ */ e.jsx(Se, { span: 12, children: /* @__PURE__ */ e.jsx(
                     o.Item,
                     {
                       name: "max_chat_tokens",
@@ -1973,10 +2011,10 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                       tooltip: a("models.maxChatTokensHelp", {
                         defaultValue: "0 uses provider config max_tokens only. Positive value sets WithChatMaxTokens for this model."
                       }),
-                      children: /* @__PURE__ */ e.jsx(re, { min: 0, style: { width: "100%" }, placeholder: "0" })
+                      children: /* @__PURE__ */ e.jsx(ce, { min: 0, style: { width: "100%" }, placeholder: "0" })
                     }
                   ) }),
-                  /* @__PURE__ */ e.jsx(ve, { span: 12, children: /* @__PURE__ */ e.jsx(
+                  /* @__PURE__ */ e.jsx(Se, { span: 12, children: /* @__PURE__ */ e.jsx(
                     o.Item,
                     {
                       name: "max_chat_iterations",
@@ -1984,7 +2022,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                       tooltip: a("models.maxChatIterationsHelp", {
                         defaultValue: "0 uses default. Positive value caps tool-call iterations for this model."
                       }),
-                      children: /* @__PURE__ */ e.jsx(re, { min: 0, style: { width: "100%" }, placeholder: "0" })
+                      children: /* @__PURE__ */ e.jsx(ce, { min: 0, style: { width: "100%" }, placeholder: "0" })
                     }
                   ) })
                 ] }),
@@ -1998,7 +2036,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     tooltip: a("models.autoCacheBreakpointHelp", {
                       defaultValue: "Insert a prompt-cache breakpoint after this model's system prompt. Ignored when the model does not support it."
                     }),
-                    children: /* @__PURE__ */ e.jsx(oe, {})
+                    children: /* @__PURE__ */ e.jsx(ue, {})
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
@@ -2007,10 +2045,10 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     name: "is_default",
                     valuePropName: "checked",
                     label: a("models.setAsDefault", { defaultValue: "Set as default model" }),
-                    children: /* @__PURE__ */ e.jsx(oe, {})
+                    children: /* @__PURE__ */ e.jsx(ue, {})
                   }
                 ),
-                /* @__PURE__ */ e.jsx(o.Item, { hidden: !0, name: "status", label: a("models.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(v, {}) })
+                /* @__PURE__ */ e.jsx(o.Item, { hidden: !0, name: "status", label: a("models.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(V, {}) })
               ] }),
               /* @__PURE__ */ e.jsx(o.Item, { children: /* @__PURE__ */ e.jsxs(K, { children: [
                 /* @__PURE__ */ e.jsx(
@@ -2018,19 +2056,21 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                   {
                     type: "primary",
                     htmlType: "submit",
-                    loading: Z || he,
-                    children: f ? l("update", { defaultValue: "Update" }) : l("create", { defaultValue: "Create" })
+                    loading: je || Le,
+                    children: y ? l("update", { defaultValue: "Update" }) : l("create", { defaultValue: "Create" })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
                   E,
                   {
-                    onClick: () => {
-                      c(!1), m.resetFields(), V(null), L("");
-                    },
-                    children: l("cancel", { defaultValue: "Cancel" })
+                    htmlType: "button",
+                    icon: /* @__PURE__ */ e.jsx(Ft, {}),
+                    loading: Ae,
+                    onClick: oe,
+                    children: a("models.test", { defaultValue: "Test Connection" })
                   }
-                )
+                ),
+                /* @__PURE__ */ e.jsx(E, { onClick: Ee, children: l("cancel", { defaultValue: "Cancel" }) })
               ] }) })
             ]
           }
@@ -2038,37 +2078,37 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     ),
     /* @__PURE__ */ e.jsxs(
-      ce,
+      fe,
       {
         title: a("models.assignPurposesTitle", { defaultValue: "Assign purposes" }),
-        open: _,
-        onCancel: ae,
+        open: w,
+        onCancel: D,
         width: 760,
         destroyOnHidden: !0,
         footer: [
-          /* @__PURE__ */ e.jsx(E, { onClick: ae, disabled: g, children: l("cancel", { defaultValue: "Cancel" }) }, "cancel"),
+          /* @__PURE__ */ e.jsx(E, { onClick: D, disabled: Y, children: l("cancel", { defaultValue: "Cancel" }) }, "cancel"),
           r ? /* @__PURE__ */ e.jsx(
             E,
             {
               type: "primary",
-              loading: g,
-              disabled: !be || C,
-              onClick: fe,
+              loading: Y,
+              disabled: !Te || f,
+              onClick: ae,
               children: l("ok", { defaultValue: "OK" })
             },
             "ok"
           ) : null
         ],
         children: [
-          /* @__PURE__ */ e.jsx(Qe.Paragraph, { type: "secondary", children: a("models.assignPurposesHelp", {
+          /* @__PURE__ */ e.jsx(Ye.Paragraph, { type: "secondary", children: a("models.assignPurposesHelp", {
             defaultValue: "Leave a purpose empty to use the default model. Only changed rows are saved."
           }) }),
           /* @__PURE__ */ e.jsx(
-            Pe,
+            Me,
             {
-              columns: dt,
-              dataSource: Y,
-              loading: C,
+              columns: De,
+              dataSource: le,
+              loading: f,
               rowKey: "key",
               pagination: !1
             }
@@ -2077,12 +2117,10 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     )
   ] });
-}, rl = et(() => import("./components.js").then((s) => s.s).then((s) => ({
-  default: s.JsonSchemaConfigFormItem
-}))), { TextArea: dl } = v, ul = ({ schema: s, uiSchema: t, name: a, type: l }) => {
+}, { TextArea: fl } = V, gl = ({ schema: s, uiSchema: t, name: a, type: l }) => {
   const { t: n } = G("system", { keyPrefix: `settings.toolsets.${l}.form` });
   return /* @__PURE__ */ e.jsx(
-    rl,
+    ss,
     {
       name: a,
       schema: s,
@@ -2090,161 +2128,200 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       t: n
     }
   );
-}, cl = () => {
-  var z;
-  const { message: s } = me.useApp(), { t } = G("system"), { t: a } = G("common"), l = Ce(), [n] = o.useForm(), [i, r] = b(!1), [m, d] = b(null), [c, f] = b(""), [V, x] = b(!1), [O, I] = b(null), [L, _] = b(""), [q, C] = b(!1), [D, g] = b([]), [J, Y] = b(), [W, ee] = b("user"), [Q, te] = b(null), { loading: F, data: w, refresh: M } = A(
-    () => S.system.listToolSets({
+}, hl = () => {
+  var h;
+  const { message: s } = ge.useApp(), { t } = G("system"), { t: a } = G("common"), l = Fe(), [n] = o.useForm(), [i, r] = x(!1), [p, d] = x(!1), [c, m] = x(null), [b, y] = x(""), [O, I] = x(!1), [M, v] = x(null), [q, w] = x(""), [U, f] = x(!1), [W, Y] = x([]), [J, le] = x(), [Q, se] = x("user"), [T, P] = x(null), { loading: $, data: N, refresh: _ } = A(
+    () => k.system.listToolSets({
       current: 1,
       page_size: 100,
-      search: c,
+      search: b,
       type: J,
-      is_preset: W === "user" ? !1 : void 0
+      is_preset: Q === "user" ? !1 : void 0
     }),
     {
-      refreshDeps: [c, J, W],
-      onError: (p) => {
-        s.error(t("settings.toolsets.fetchFailed", { defaultValue: "Failed to fetch toolsets" })), console.error("Failed to fetch toolsets:", p);
+      refreshDeps: [b, J, Q],
+      onError: (u) => {
+        s.error(t("settings.toolsets.fetchFailed", { defaultValue: "Failed to fetch toolsets" })), console.error("Failed to fetch toolsets:", u);
       }
     }
-  ), { loading: H, data: k } = A(
-    () => S.system.getToolSetTypeDefinitions(),
+  ), { loading: j, data: F } = A(
+    () => k.system.getToolSetTypeDefinitions(),
     {
       refreshDeps: [],
-      onError: (p) => {
-        s.error(t("settings.toolsets.fetchTypeDefinitionsFailed", { defaultValue: "Failed to fetch toolset type definitions" })), console.error("Failed to fetch toolset type definitions:", p);
+      onError: (u) => {
+        s.error(t("settings.toolsets.fetchTypeDefinitionsFailed", { defaultValue: "Failed to fetch toolset type definitions" })), console.error("Failed to fetch toolset type definitions:", u);
       }
     }
-  ), h = ye(() => k == null ? void 0 : k.find((p) => p.tool_set_type === L), [k, L]), R = ye(() => (k ?? []).filter(
-    (p) => p.allow_manual_create || p.tool_set_type === (m == null ? void 0 : m.type)
-  ), [k, m]), { loading: N, run: B } = A(
-    (p) => S.system.createToolSet({
-      ...p,
-      type: p.type
+  ), R = ke(() => F == null ? void 0 : F.find((u) => u.tool_set_type === q), [F, q]), Z = ke(() => (F ?? []).filter(
+    (u) => u.allow_manual_create || u.tool_set_type === (c == null ? void 0 : c.type)
+  ), [F, c]), { loading: B, run: ne } = A(
+    (u) => k.system.createToolSet({
+      ...u,
+      type: u.type
     }),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(t("settings.toolsets.createSuccess", { defaultValue: "toolset created successfully" })), r(!1), n.resetFields(), M();
+        s.success(t("settings.toolsets.createSuccess", { defaultValue: "toolset created successfully" })), r(!1), _();
       },
-      onError: (p) => {
-        s.error(t("settings.toolsets.createFailed", { defaultValue: "Failed to create toolset" })), console.error("Failed to create toolset:", p);
+      onError: (u) => {
+        s.error(t("settings.toolsets.createFailed", { defaultValue: "Failed to create toolset" })), console.error("Failed to create toolset:", u);
       }
     }
-  ), { loading: Z, run: de } = A(
-    ({ id: p, data: P }) => S.system.updateToolSet({ id: p }, {
-      ...P,
-      type: P.type
+  ), { loading: je, run: Pe } = A(
+    ({ id: u, data: S }) => k.system.updateToolSet({ id: u }, {
+      ...S,
+      type: S.type
     }),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(t("settings.toolsets.updateSuccess", { defaultValue: "toolset updated successfully" })), r(!1), n.resetFields(), d(null), M();
+        s.success(t("settings.toolsets.updateSuccess", { defaultValue: "toolset updated successfully" })), r(!1), _();
       },
-      onError: (p) => {
-        s.error(t("settings.toolsets.updateFailed", { defaultValue: "Failed to update toolset" })), console.error("Failed to update toolset:", p);
+      onError: (u) => {
+        s.error(t("settings.toolsets.updateFailed", { defaultValue: "Failed to update toolset" })), console.error("Failed to update toolset:", u);
       }
     }
-  ), { run: he } = A(
-    (p) => S.system.deleteToolSet({ id: p }),
+  ), { run: Le } = A(
+    (u) => k.system.deleteToolSet({ id: u }),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(t("settings.toolsets.deleteSuccess", { defaultValue: "toolset deleted successfully" })), M();
+        s.success(t("settings.toolsets.deleteSuccess", { defaultValue: "toolset deleted successfully" })), _();
       },
-      onError: (p) => {
-        s.error(t("settings.toolsets.deleteFailed", { defaultValue: "Failed to delete toolset" })), console.error("Failed to delete toolset:", p);
+      onError: (u) => {
+        s.error(t("settings.toolsets.deleteFailed", { defaultValue: "Failed to delete toolset" })), console.error("Failed to delete toolset:", u);
       }
     }
-  ), { runAsync: Ae } = A(
-    (p) => S.system.testToolSet({ id: p }),
+  ), { runAsync: Oe } = A(
+    (u) => k.system.testToolSet({ id: u }),
     {
       manual: !0,
       onSuccess: () => {
         s.success(t("settings.toolsets.testSuccess", { defaultValue: "toolset connection test successful" }));
       },
-      onError: (p) => {
-        s.error(t("settings.toolsets.testFailed", { defaultValue: "toolset connection test failed" })), console.error("Failed to test toolset:", p);
+      onError: (u) => {
+        s.error(t("settings.toolsets.testFailedDetail", {
+          defaultValue: "Toolset connection test failed: {{error}}",
+          error: u.message
+        })), console.error("Failed to test toolset:", u);
       }
     }
-  ), { loading: Ee, runAsync: ze } = A(
-    (p) => S.system.getToolSetTools({ id: p }),
+  ), { loading: Ie, runAsync: ve } = A(
+    (u) => k.system.testToolSetConfig({
+      type: u.type,
+      config: u.config ?? {}
+    }),
     {
       manual: !0,
-      onSuccess: (p) => {
-        g(p || []), C(!0);
+      onSuccess: () => {
+        s.success(t("settings.toolsets.testSuccess", { defaultValue: "toolset connection test successful" }));
       },
-      onError: (p) => {
-        s.error(t("settings.toolsets.fetchToolsFailed", { defaultValue: "Failed to fetch tools" })), console.error("Failed to fetch tools:", p);
+      onError: (u) => {
+        s.error(t("settings.toolsets.testFailedDetail", {
+          defaultValue: "Toolset connection test failed: {{error}}",
+          error: u.message
+        })), console.error("Failed to test toolset config:", u);
       }
     }
-  ), Te = xe(
-    async (p, P) => {
-      te(p.id);
+  ), Ae = async () => {
+    try {
+      const u = await n.validateFields();
+      await ve(u);
+    } catch (u) {
+      if (u && typeof u == "object" && "errorFields" in u)
+        return;
+    }
+  }, { loading: C, runAsync: oe } = A(
+    (u) => k.system.getToolSetTools({ id: u }),
+    {
+      manual: !0,
+      onSuccess: (u) => {
+        Y(u || []), f(!0);
+      },
+      onError: (u) => {
+        s.error(t("settings.toolsets.fetchToolsFailed", { defaultValue: "Failed to fetch tools" })), console.error("Failed to fetch tools:", u);
+      }
+    }
+  ), be = Ve(
+    async (u, S) => {
+      P(u.id);
       try {
-        await S.system.updateToolSetStatus(
-          { id: p.id },
-          { status: P ? "enabled" : "disabled" }
-        ), s.success(t("settings.toolsets.statusUpdateSuccess", { defaultValue: "Status updated successfully" })), M();
-      } catch (le) {
-        s.error(t("settings.toolsets.statusUpdateFailed", { defaultValue: "Failed to update status" })), console.error("Failed to update status:", le);
+        await k.system.updateToolSetStatus(
+          { id: u.id },
+          { status: S ? "enabled" : "disabled" }
+        ), s.success(t("settings.toolsets.statusUpdateSuccess", { defaultValue: "Status updated successfully" })), _();
+      } catch (ee) {
+        s.error(t("settings.toolsets.statusUpdateFailed", { defaultValue: "Failed to update status" })), console.error("Failed to update status:", ee);
       } finally {
-        te(null);
+        P(null);
       }
     },
-    [t, M]
-  ), be = () => {
-    d(null), n.resetFields(), _(""), r(!0);
-  }, Ve = (p) => {
-    d(p), _(p.type);
-    const P = { ...p };
-    n.setFieldsValue(P), r(!0);
-  }, T = (p) => {
-    _(p), n.setFieldValue("config", {});
-  }, ae = (p) => {
-    m ? de({ id: m.id, data: p }) : B(p);
-  }, fe = (p) => {
-    he(p);
-  }, Fe = (p) => {
-    I(p), x(!0);
-  }, Re = [
+    [t, _]
+  ), Te = () => {
+    r(!1);
+  }, Re = () => {
+    d(!1), window.setTimeout(() => {
+      n.resetFields(), m(null), w("");
+    }, 0);
+  };
+  ze(() => {
+    if (!i)
+      return;
+    const u = window.setTimeout(() => d(!0), 0);
+    return () => window.clearTimeout(u);
+  }, [i]);
+  const z = () => {
+    m(null), w(""), d(!1), n.resetFields(), r(!0);
+  }, D = (u) => {
+    m(u), w(u.type), d(!1), n.setFieldsValue({ ...u }), r(!0);
+  }, ae = (u) => {
+    w(u), n.setFieldValue("config", {});
+  }, me = (u) => {
+    c ? Pe({ id: c.id, data: u }) : ne(u);
+  }, Ee = (u) => {
+    Le(u);
+  }, Qe = (u) => {
+    v(u), I(!0);
+  }, Ze = [
     {
       title: t("settings.toolsets.name", { defaultValue: "Name" }),
       dataIndex: "name",
       key: "name",
       ellipsis: !0,
-      render: (p, P) => /* @__PURE__ */ e.jsxs(K, { size: 8, wrap: !0, children: [
-        /* @__PURE__ */ e.jsx("span", { children: p }),
-        P.is_preset ? /* @__PURE__ */ e.jsx(ne, { color: "default", children: t("settings.toolsets.presetTag", { defaultValue: "Preset" }) }) : null
+      render: (u, S) => /* @__PURE__ */ e.jsxs(K, { size: 8, wrap: !0, children: [
+        /* @__PURE__ */ e.jsx("span", { children: u }),
+        S.is_preset ? /* @__PURE__ */ e.jsx(de, { color: "default", children: t("settings.toolsets.presetTag", { defaultValue: "Preset" }) }) : null
       ] })
     },
     {
       title: t("settings.toolsets.type", { defaultValue: "Type" }),
       dataIndex: "type",
       key: "type",
-      render: (p) => /* @__PURE__ */ e.jsx(ne, { color: "blue", children: p.toUpperCase() })
+      render: (u) => /* @__PURE__ */ e.jsx(de, { color: "blue", children: u.toUpperCase() })
     },
     {
       title: t("settings.toolsets.status", { defaultValue: "Status" }),
       key: "status",
       width: 120,
-      render: (p, P) => {
-        const le = P.status === "enabled";
+      render: (u, S) => {
+        const ee = S.status === "enabled";
         return /* @__PURE__ */ e.jsx(
-          ue,
+          pe,
           {
             permission: "system:toolsets:update",
-            fallback: /* @__PURE__ */ e.jsx(ne, { color: le ? "green" : "red", children: le ? a("enabled", { defaultValue: "Enabled" }) : a("disabled", { defaultValue: "Disabled" }) }),
+            fallback: /* @__PURE__ */ e.jsx(de, { color: ee ? "green" : "red", children: ee ? a("enabled", { defaultValue: "Enabled" }) : a("disabled", { defaultValue: "Disabled" }) }),
             children: /* @__PURE__ */ e.jsx(
-              nt,
+              ut,
               {
-                title: le ? t("settings.toolsets.tooltipDisableToolSet", { defaultValue: "Disable this toolset" }) : t("settings.toolsets.tooltipEnableToolSet", { defaultValue: "Enable this toolset" }),
+                title: ee ? t("settings.toolsets.tooltipDisableToolSet", { defaultValue: "Disable this toolset" }) : t("settings.toolsets.tooltipEnableToolSet", { defaultValue: "Enable this toolset" }),
                 children: /* @__PURE__ */ e.jsx("span", { children: /* @__PURE__ */ e.jsx(
-                  oe,
+                  ue,
                   {
                     size: "small",
-                    checked: le,
-                    loading: Q === P.id,
-                    onChange: (we) => void Te(P, we)
+                    checked: ee,
+                    loading: T === S.id,
+                    onChange: (X) => void be(S, X)
                   }
                 ) })
               }
@@ -2257,62 +2334,62 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       title: a("actions", { defaultValue: "Actions" }),
       key: "actions",
       width: 200,
-      render: (p, P) => /* @__PURE__ */ e.jsx(qe, { actions: [
+      render: (u, S) => /* @__PURE__ */ e.jsx($e, { actions: [
         {
           key: "debug",
           permission: "system:toolsets:test",
           tooltip: t("settings.toolsets.debug", { defaultValue: "Debug Tool" }),
-          icon: /* @__PURE__ */ e.jsx(Nt, {}),
-          disabled: P.status !== "enabled",
-          onClick: async () => l(`/system/settings/toolsets/${P.id}/debug`)
+          icon: /* @__PURE__ */ e.jsx(Wt, {}),
+          disabled: S.status !== "enabled",
+          onClick: async () => l(`/system/settings/toolsets/${S.id}/debug`)
         },
         {
           key: "test",
           permission: "system:toolsets:test",
           tooltip: t("settings.toolsets.test", { defaultValue: "Test Connection" }),
-          icon: /* @__PURE__ */ e.jsx(ks, {}),
-          disabled: P.status !== "enabled",
-          onClick: async () => Ae(P.id)
+          icon: /* @__PURE__ */ e.jsx(It, {}),
+          disabled: S.status !== "enabled",
+          onClick: async () => Oe(S.id)
         },
         {
           key: "viewTools",
-          icon: /* @__PURE__ */ e.jsx(gt, {}),
+          icon: /* @__PURE__ */ e.jsx(xt, {}),
           permission: "system:toolsets:view",
-          disabled: P.status !== "enabled",
+          disabled: S.status !== "enabled",
           tooltip: t("settings.toolsets.viewTools", { defaultValue: "View Tools" }),
-          onClick: async () => ze(P.id)
+          onClick: async () => oe(S.id)
         },
         {
           key: "viewConfig",
-          icon: /* @__PURE__ */ e.jsx(vs, {}),
+          icon: /* @__PURE__ */ e.jsx(As, {}),
           permission: "system:toolsets:view",
           tooltip: t("settings.toolsets.viewConfig", { defaultValue: "View Configuration" }),
-          onClick: async () => Fe(P.config),
-          disabled: !P.config
+          onClick: async () => Qe(S.config),
+          disabled: !S.config
         },
         {
           key: "edit",
           permission: "system:toolsets:update",
-          tooltip: P.is_preset ? t("settings.toolsets.presetDisabledEdit", {
+          tooltip: S.is_preset ? t("settings.toolsets.presetDisabledEdit", {
             defaultValue: "Built-in toolsets cannot be edited here."
           }) : t("settings.toolsets.edit", { defaultValue: "Edit" }),
-          icon: /* @__PURE__ */ e.jsx(Ne, {}),
-          onClick: async () => Ve(P),
-          disabled: !!P.is_preset
+          icon: /* @__PURE__ */ e.jsx(qe, {}),
+          onClick: async () => D(S),
+          disabled: !!S.is_preset
         },
         {
           key: "delete",
-          icon: /* @__PURE__ */ e.jsx(Oe, {}),
+          icon: /* @__PURE__ */ e.jsx(Ne, {}),
           permission: "system:toolsets:delete",
-          tooltip: P.is_preset ? t("settings.toolsets.presetDisabledDelete", {
+          tooltip: S.is_preset ? t("settings.toolsets.presetDisabledDelete", {
             defaultValue: "Built-in toolsets cannot be deleted."
           }) : a("delete", { defaultValue: "Delete" }),
-          onClick: async () => fe(P.id),
+          onClick: async () => Ee(S.id),
           danger: !0,
-          disabled: !!P.is_preset,
-          confirm: P.is_preset ? void 0 : {
+          disabled: !!S.is_preset,
+          confirm: S.is_preset ? void 0 : {
             title: t("settings.toolsets.deleteConfirm", { defaultValue: "Are you sure you want to delete this toolset?" }),
-            onConfirm: async () => fe(P.id),
+            onConfirm: async () => Ee(S.id),
             okText: a("confirm", { defaultValue: "Confirm" }),
             cancelText: a("cancel", { defaultValue: "Cancel" })
           }
@@ -2321,42 +2398,42 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
     }
   ];
   return /* @__PURE__ */ e.jsxs("div", { children: [
-    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(He, { justify: "space-between", align: "middle", children: [
-      /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsxs(K, { children: [
+    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(Ke, { justify: "space-between", align: "middle", children: [
+      /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsxs(K, { children: [
         /* @__PURE__ */ e.jsx(
-          v.Search,
+          V.Search,
           {
             placeholder: t("settings.toolsets.searchPlaceholder", { defaultValue: "Search toolsets..." }),
             style: { width: 300 },
-            onSearch: (p) => f(p),
+            onSearch: (u) => y(u),
             allowClear: !0
           }
         ),
         /* @__PURE__ */ e.jsxs(
-          $,
+          H,
           {
             placeholder: t("settings.toolsets.typePlaceholder", { defaultValue: "Select type" }),
             value: J,
-            onChange: (p) => Y(p),
-            options: k == null ? void 0 : k.map((p) => ({
-              label: p.name,
-              value: p.tool_set_type
+            onChange: (u) => le(u),
+            options: F == null ? void 0 : F.map((u) => ({
+              label: u.name,
+              value: u.tool_set_type
             })),
             style: { minWidth: 200 },
             allowClear: !0,
             showSearch: !0,
             children: [
-              /* @__PURE__ */ e.jsx($.Option, { value: "", children: "All" }),
-              k == null ? void 0 : k.map((p) => /* @__PURE__ */ e.jsx($.Option, { value: p.tool_set_type, children: p.name }, p.tool_set_type))
+              /* @__PURE__ */ e.jsx(H.Option, { value: "", children: "All" }),
+              F == null ? void 0 : F.map((u) => /* @__PURE__ */ e.jsx(H.Option, { value: u.tool_set_type, children: u.name }, u.tool_set_type))
             ]
           }
         ),
         /* @__PURE__ */ e.jsx(
-          Be.Group,
+          Je.Group,
           {
             optionType: "button",
-            value: W,
-            onChange: (p) => ee(p.target.value),
+            value: Q,
+            onChange: (u) => se(u.target.value),
             options: [
               { value: "user", label: t("settings.toolsets.scopeUser", { defaultValue: "User toolsets" }) },
               { value: "all", label: t("settings.toolsets.scopeAll", { defaultValue: "All toolsets" }) }
@@ -2364,65 +2441,66 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
           }
         )
       ] }) }),
-      /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsxs(K, { children: [
+      /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsxs(K, { children: [
         /* @__PURE__ */ e.jsx(
           E,
           {
-            icon: /* @__PURE__ */ e.jsx(Se, {}),
-            onClick: M,
-            loading: F,
+            icon: /* @__PURE__ */ e.jsx(Ce, {}),
+            onClick: _,
+            loading: $,
             children: a("refresh", { defaultValue: "Refresh" })
           }
         ),
-        /* @__PURE__ */ e.jsx(ue, { permission: "system:toolsets:create", children: /* @__PURE__ */ e.jsx(
+        /* @__PURE__ */ e.jsx(pe, { permission: "system:toolsets:create", children: /* @__PURE__ */ e.jsx(
           E,
           {
             type: "primary",
-            icon: /* @__PURE__ */ e.jsx(De, {}),
-            onClick: be,
+            icon: /* @__PURE__ */ e.jsx(Ue, {}),
+            onClick: z,
             children: t("settings.toolsets.create", { defaultValue: "Create Toolset" })
           }
         ) })
       ] }) })
     ] }) }),
     /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx(
-      Pe,
+      Me,
       {
-        columns: Re,
-        dataSource: (w == null ? void 0 : w.data) || [],
-        loading: F,
+        columns: Ze,
+        dataSource: (N == null ? void 0 : N.data) || [],
+        loading: $,
         rowKey: "id",
         pagination: {
-          total: (w == null ? void 0 : w.total) || 0,
-          current: (w == null ? void 0 : w.current) || 1,
-          pageSize: (w == null ? void 0 : w.page_size) || 10,
+          total: (N == null ? void 0 : N.total) || 0,
+          current: (N == null ? void 0 : N.current) || 1,
+          pageSize: (N == null ? void 0 : N.page_size) || 10,
           showSizeChanger: !0,
           showQuickJumper: !0,
-          showTotal: (p, P) => a("pagination.total", {
-            defaultValue: `${P[0]}-${P[1]} of ${p} items`,
-            start: P[0],
-            end: P[1],
-            total: p
+          showTotal: (u, S) => a("pagination.total", {
+            defaultValue: `${S[0]}-${S[1]} of ${u} items`,
+            start: S[0],
+            end: S[1],
+            total: u
           })
         }
       }
     ) }),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
-        title: m ? t("settings.toolsets.edit", { defaultValue: "Edit Toolset" }) : t("settings.toolsets.create", { defaultValue: "Create Toolset" }),
+        title: c ? t("settings.toolsets.edit", { defaultValue: "Edit Toolset" }) : t("settings.toolsets.create", { defaultValue: "Create Toolset" }),
         open: i,
-        onCancel: () => {
-          r(!1), n.resetFields(), d(null), _("");
-        },
+        loading: !p,
+        destroyOnHidden: !0,
+        afterClose: Re,
+        onCancel: Te,
         footer: null,
-        width: ((z = h == null ? void 0 : h.ui_schema) == null ? void 0 : z["ui:width"]) || 600,
+        width: ((h = R == null ? void 0 : R.ui_schema) == null ? void 0 : h["ui:width"]) || 600,
         children: /* @__PURE__ */ e.jsxs(
           o,
           {
             form: n,
             layout: "vertical",
-            onFinish: ae,
+            onFinish: me,
             autoComplete: "off",
             children: [
               /* @__PURE__ */ e.jsxs("div", { style: { maxHeight: "calc(100vh - 300px)", overflowY: "auto", overflowX: "hidden" }, children: [
@@ -2432,7 +2510,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     name: "name",
                     label: t("settings.toolsets.name", { defaultValue: "Name" }),
                     rules: [{ required: !0, message: t("settings.toolsets.nameRequired", { defaultValue: "Please enter toolset name" }) }],
-                    children: /* @__PURE__ */ e.jsx(v, { placeholder: t("settings.toolsets.namePlaceholder", { defaultValue: "Enter toolset name" }) })
+                    children: /* @__PURE__ */ e.jsx(V, { placeholder: t("settings.toolsets.namePlaceholder", { defaultValue: "Enter toolset name" }) })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
@@ -2441,7 +2519,7 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     name: "description",
                     label: t("settings.toolsets.description", { defaultValue: "Description" }),
                     children: /* @__PURE__ */ e.jsx(
-                      dl,
+                      fl,
                       {
                         rows: 3,
                         placeholder: t("settings.toolsets.descriptionPlaceholder", { defaultValue: "Enter toolset description" })
@@ -2456,31 +2534,31 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                     label: t("settings.toolsets.type", { defaultValue: "Type" }),
                     rules: [{ required: !0, message: t("settings.toolsets.typeRequired", { defaultValue: "Please select type" }) }],
                     children: /* @__PURE__ */ e.jsx(
-                      $,
+                      H,
                       {
-                        loading: H,
+                        loading: j,
                         placeholder: t("settings.toolsets.typePlaceholder", { defaultValue: "Select type" }),
-                        onChange: T,
-                        value: L,
-                        options: R.map((p) => ({
-                          label: p.name,
-                          value: p.tool_set_type
+                        onChange: ae,
+                        value: q,
+                        options: Z.map((u) => ({
+                          label: u.name,
+                          value: u.tool_set_type
                         })),
                         showSearch: !0
                       }
                     )
                   }
                 ),
-                /* @__PURE__ */ e.jsx(Ye, { fallback: /* @__PURE__ */ e.jsx(Ke, {}), children: /* @__PURE__ */ e.jsx(
-                  ul,
+                /* @__PURE__ */ e.jsx(
+                  gl,
                   {
                     name: "config",
-                    schema: h == null ? void 0 : h.config_schema,
-                    uiSchema: h == null ? void 0 : h.ui_schema,
-                    type: L
+                    schema: R == null ? void 0 : R.config_schema,
+                    uiSchema: R == null ? void 0 : R.ui_schema,
+                    type: q
                   }
-                ) }),
-                /* @__PURE__ */ e.jsx(o.Item, { hidden: !0, name: "status", label: t("settings.toolsets.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(v, {}) })
+                ),
+                /* @__PURE__ */ e.jsx(o.Item, { hidden: !0, name: "status", label: t("settings.toolsets.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(V, {}) })
               ] }),
               /* @__PURE__ */ e.jsx(o.Item, { children: /* @__PURE__ */ e.jsxs(K, { children: [
                 /* @__PURE__ */ e.jsx(
@@ -2488,19 +2566,21 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
                   {
                     type: "primary",
                     htmlType: "submit",
-                    loading: N || Z,
-                    children: m ? a("update", { defaultValue: "Update" }) : a("create", { defaultValue: "Create" })
+                    loading: B || je,
+                    children: c ? a("update", { defaultValue: "Update" }) : a("create", { defaultValue: "Create" })
                   }
                 ),
                 /* @__PURE__ */ e.jsx(
                   E,
                   {
-                    onClick: () => {
-                      r(!1), n.resetFields(), d(null), _("");
-                    },
-                    children: a("cancel", { defaultValue: "Cancel" })
+                    htmlType: "button",
+                    icon: /* @__PURE__ */ e.jsx(It, {}),
+                    loading: Ie,
+                    onClick: Ae,
+                    children: t("settings.toolsets.test", { defaultValue: "Test Connection" })
                   }
-                )
+                ),
+                /* @__PURE__ */ e.jsx(E, { onClick: Te, children: a("cancel", { defaultValue: "Cancel" }) })
               ] }) })
             ]
           }
@@ -2508,63 +2588,63 @@ const Ue = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
       }
     ),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
         title: t("settings.toolsets.configuration", { defaultValue: "Configuration" }),
-        open: V,
-        onCancel: () => x(!1),
+        open: O,
+        onCancel: () => I(!1),
         footer: [
-          /* @__PURE__ */ e.jsx(E, { onClick: () => x(!1), children: a("close", { defaultValue: "Close" }) }, "close")
+          /* @__PURE__ */ e.jsx(E, { onClick: () => I(!1), children: a("close", { defaultValue: "Close" }) }, "close")
         ],
         width: 600,
-        children: /* @__PURE__ */ e.jsx("pre", { style: { background: "#f5f5f5", padding: 16, borderRadius: 4, overflow: "auto" }, children: JSON.stringify(O, null, 2) })
+        children: /* @__PURE__ */ e.jsx("pre", { style: { background: "#f5f5f5", padding: 16, borderRadius: 4, overflow: "auto" }, children: JSON.stringify(M, null, 2) })
       }
     ),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
         title: t("settings.toolsets.tools", { defaultValue: "Tools" }),
-        open: q,
-        onCancel: () => C(!1),
+        open: U,
+        onCancel: () => f(!1),
         footer: [
-          /* @__PURE__ */ e.jsx(E, { onClick: () => C(!1), children: a("close", { defaultValue: "Close" }) }, "close")
+          /* @__PURE__ */ e.jsx(E, { onClick: () => f(!1), children: a("close", { defaultValue: "Close" }) }, "close")
         ],
         width: 800,
-        children: /* @__PURE__ */ e.jsx("div", { style: { maxHeight: "600px", overflow: "auto" }, children: Ee ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40 }, children: /* @__PURE__ */ e.jsx(Se, { style: { fontSize: 24 }, spin: !0 }) }) : D.length === 0 ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40, color: "#999" }, children: t("settings.toolsets.noTools", { defaultValue: "No tools available" }) }) : D.map((p, P) => {
-          var le, we, Me;
+        children: /* @__PURE__ */ e.jsx("div", { style: { maxHeight: "600px", overflow: "auto" }, children: C ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40 }, children: /* @__PURE__ */ e.jsx(Ce, { style: { fontSize: 24 }, spin: !0 }) }) : W.length === 0 ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40, color: "#999" }, children: t("settings.toolsets.noTools", { defaultValue: "No tools available" }) }) : W.map((u, S) => {
+          var ee, X, te;
           return /* @__PURE__ */ e.jsx(
             ie,
             {
               style: { marginBottom: 16 },
               title: /* @__PURE__ */ e.jsxs(K, { children: [
-                /* @__PURE__ */ e.jsx(gt, {}),
-                /* @__PURE__ */ e.jsx("strong", { children: ((le = p.function) == null ? void 0 : le.name) || "Unknown" })
+                /* @__PURE__ */ e.jsx(xt, {}),
+                /* @__PURE__ */ e.jsx("strong", { children: ((ee = u.function) == null ? void 0 : ee.name) || "Unknown" })
               ] }),
-              children: /* @__PURE__ */ e.jsxs(He, { gutter: 16, children: [
-                /* @__PURE__ */ e.jsxs(ve, { span: 24, children: [
+              children: /* @__PURE__ */ e.jsxs(Ke, { gutter: 16, children: [
+                /* @__PURE__ */ e.jsxs(Se, { span: 24, children: [
                   /* @__PURE__ */ e.jsx("p", { children: /* @__PURE__ */ e.jsxs("strong", { children: [
                     t("settings.toolsets.description", { defaultValue: "Description" }),
                     ":"
                   ] }) }),
-                  /* @__PURE__ */ e.jsx("p", { style: { marginBottom: 16 }, children: ((we = p.function) == null ? void 0 : we.description) || "-" })
+                  /* @__PURE__ */ e.jsx("p", { style: { marginBottom: 16 }, children: ((X = u.function) == null ? void 0 : X.description) || "-" })
                 ] }),
-                ((Me = p.function) == null ? void 0 : Me.parameters) && /* @__PURE__ */ e.jsxs(ve, { span: 24, children: [
+                ((te = u.function) == null ? void 0 : te.parameters) && /* @__PURE__ */ e.jsxs(Se, { span: 24, children: [
                   /* @__PURE__ */ e.jsx("p", { children: /* @__PURE__ */ e.jsxs("strong", { children: [
                     t("settings.toolsets.parameters", { defaultValue: "Parameters" }),
                     ":"
                   ] }) }),
-                  /* @__PURE__ */ e.jsx("pre", { style: { background: "#f5f5f5", padding: 16, borderRadius: 4, overflow: "auto", fontSize: 12 }, children: JSON.stringify(p.function.parameters, null, 2) })
+                  /* @__PURE__ */ e.jsx("pre", { style: { background: "#f5f5f5", padding: 16, borderRadius: 4, overflow: "auto", fontSize: 12 }, children: JSON.stringify(u.function.parameters, null, 2) })
                 ] })
               ] })
             },
-            P
+            S
           );
         }) })
       }
     )
   ] });
-}, { TextArea: wt } = v;
-function ml(s, t) {
+}, { TextArea: Pt } = V;
+function xl(s, t) {
   const a = {}, l = [], n = new Map(t.map((i) => [i.id, i]));
   for (const i of s) {
     if (i.toolset_id === "*") {
@@ -2576,37 +2656,37 @@ function ml(s, t) {
       l.push({ toolset_id: i.toolset_id, tool_name: i.tool_name });
       continue;
     }
-    const m = (r.tools || []).map((d) => d.name);
+    const p = (r.tools || []).map((d) => d.name);
     if (i.tool_name === "*") {
-      a[i.toolset_id] = [...m];
+      a[i.toolset_id] = [...p];
       continue;
     }
-    m.includes(i.tool_name) ? (a[i.toolset_id] || (a[i.toolset_id] = []), a[i.toolset_id].includes(i.tool_name) || a[i.toolset_id].push(i.tool_name)) : l.push({ toolset_id: i.toolset_id, tool_name: i.tool_name });
+    p.includes(i.tool_name) ? (a[i.toolset_id] || (a[i.toolset_id] = []), a[i.toolset_id].includes(i.tool_name) || a[i.toolset_id].push(i.tool_name)) : l.push({ toolset_id: i.toolset_id, tool_name: i.tool_name });
   }
   return { selections: a, extraPatterns: l };
 }
-function pl(s, t) {
+function yl(s, t) {
   const a = [], l = /* @__PURE__ */ new Set();
   for (const [n, i] of Object.entries(s))
     for (const r of i) {
-      const m = `${n}|${r}`;
-      l.has(m) || (l.add(m), a.push({ toolset_id: n, tool_name: r }));
+      const p = `${n}|${r}`;
+      l.has(p) || (l.add(p), a.push({ toolset_id: n, tool_name: r }));
     }
   for (const n of t) {
     const i = n.toolset_id.trim(), r = n.tool_name.trim();
     if (!i || !r)
       continue;
-    const m = `${i}|${r}`;
-    l.has(m) || (l.add(m), a.push({ toolset_id: i, tool_name: r }));
+    const p = `${i}|${r}`;
+    l.has(p) || (l.add(p), a.push({ toolset_id: i, tool_name: r }));
   }
   return a;
 }
-function Qt(s, t) {
+function is(s, t) {
   const a = t.trim();
   return !a || s.some((l) => l.value === a) ? s : [...s, { value: a, label: a }];
 }
-function fl(s, t, a, l) {
-  const i = [{ value: "*", label: l }], r = /* @__PURE__ */ new Set(["*"]), m = (d, c) => {
+function jl(s, t, a, l) {
+  const i = [{ value: "*", label: l }], r = /* @__PURE__ */ new Set(["*"]), p = (d, c) => {
     r.has(d) || (r.add(d), i.push({
       value: d,
       label: c ? `${d} — ${c}` : d
@@ -2615,216 +2695,216 @@ function fl(s, t, a, l) {
   if (t && t !== "*") {
     const d = s.find((c) => c.id === t);
     for (const c of (d == null ? void 0 : d.tools) || [])
-      m(c.name, c.description);
+      p(c.name, c.description);
   } else
     for (const d of s)
       for (const c of d.tools || [])
-        m(c.name, c.description);
-  return Qt(i, a);
+        p(c.name, c.description);
+  return is(i, a);
 }
-const gl = () => {
-  const { message: s } = me.useApp(), { t } = G("system"), { t: a } = G("common"), l = Ce(), { enableSkillToolBinding: n } = jt(), [i] = o.useForm(), [r, m] = b(""), [d, c] = b(), [f, V] = b("user"), [x, O] = b(!1), [I, L] = b(null), [_, q] = b(null), [C, D] = b(!1), [g] = o.useForm(), [J, Y] = b(!1), [W, ee] = b(null), [Q, te] = b([]), [F, w] = b({}), [M, H] = b([]), [k, h] = b(!1), R = ye(() => [
+const bl = () => {
+  const { message: s } = ge.useApp(), { t } = G("system"), { t: a } = G("common"), l = Fe(), { enableSkillToolBinding: n } = _t(), [i] = o.useForm(), [r, p] = x(""), [d, c] = x(), [m, b] = x("user"), [y, O] = x(!1), [I, M] = x(null), [v, q] = x(null), [w, U] = x(!1), [f] = o.useForm(), [W, Y] = x(!1), [J, le] = x(null), [Q, se] = x([]), [T, P] = x({}), [$, N] = x([]), [_, j] = x(!1), F = ke(() => [
     {
       value: "*",
       label: t("settings.skills.patternToolsetAll", { defaultValue: "* (all toolsets)" })
     },
-    ...Q.map((y) => ({
-      value: y.id,
-      label: `${y.name} (${y.id})`
+    ...Q.map((h) => ({
+      value: h.id,
+      label: `${h.name} (${h.id})`
     }))
-  ], [Q, t]), N = xe(() => {
-    te([]), w({}), H([]);
-  }, []), { loading: B, data: Z, refresh: de } = A(
-    () => S.system.listSkills({
+  ], [Q, t]), R = Ve(() => {
+    se([]), P({}), N([]);
+  }, []), { loading: Z, data: B, refresh: ne } = A(
+    () => k.system.listSkills({
       current: 1,
       page_size: 100,
       search: r || void 0,
       domain: d,
-      is_preset: f === "user" ? !1 : void 0
+      is_preset: m === "user" ? !1 : void 0
     }),
     {
-      refreshDeps: [r, d, f],
+      refreshDeps: [r, d, m],
       onError: () => {
         s.error(t("settings.skills.fetchFailed", { defaultValue: "Failed to fetch skills" }));
       }
     }
-  ), { data: he = [] } = A(() => S.system.listSkillDomains()), Ae = (Z == null ? void 0 : Z.data) || [], Ee = (Z == null ? void 0 : Z.total) || 0, { run: ze } = A(
-    (y) => S.system.deleteSkill({ id: y }),
+  ), { data: je = [] } = A(() => k.system.listSkillDomains()), Pe = (B == null ? void 0 : B.data) || [], Le = (B == null ? void 0 : B.total) || 0, { run: Oe } = A(
+    (h) => k.system.deleteSkill({ id: h }),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(t("settings.skills.deleteSuccess", { defaultValue: "Skill deleted" })), de();
+        s.success(t("settings.skills.deleteSuccess", { defaultValue: "Skill deleted" })), ne();
       },
       onError: () => {
         s.error(t("settings.skills.deleteFailed", { defaultValue: "Failed to delete skill" }));
       }
     }
-  ), Te = xe(
-    async (y, u) => {
-      ee(y.id);
+  ), Ie = Ve(
+    async (h, u) => {
+      le(h.id);
       try {
-        await S.system.updateSkillStatus({ id: y.id }, { status: u ? "enabled" : "disabled" }), s.success(t("settings.skills.statusUpdateSuccess", { defaultValue: "Skill status updated" })), de();
+        await k.system.updateSkillStatus({ id: h.id }, { status: u ? "enabled" : "disabled" }), s.success(t("settings.skills.statusUpdateSuccess", { defaultValue: "Skill status updated" })), ne();
       } catch {
         s.error(t("settings.skills.statusUpdateFailed", { defaultValue: "Failed to update skill status" }));
       } finally {
-        ee(null);
+        le(null);
       }
     },
-    [t, de]
-  ), { loading: be, run: Ve } = A(
-    (y) => S.system.uploadSkill(y.body, y.file),
+    [t, ne]
+  ), { loading: ve, run: Ae } = A(
+    (h) => k.system.uploadSkill(h.body, h.file),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(t("settings.skills.uploadSuccess", { defaultValue: "Skill uploaded" })), D(!1), g.resetFields(), de();
+        s.success(t("settings.skills.uploadSuccess", { defaultValue: "Skill uploaded" })), U(!1), f.resetFields(), ne();
       },
       onError: () => {
         s.error(t("settings.skills.uploadFailed", { defaultValue: "Upload failed" }));
       }
     }
-  ), T = xe(
-    async (y) => {
+  ), C = Ve(
+    async (h) => {
       var u;
-      h(!0);
+      j(!0);
       try {
-        const [j, U] = await Promise.all([
-          S.system.listToolSets(
+        const [S, ee] = await Promise.all([
+          k.system.listToolSets(
             { page_size: 1e3, include_tools: !0 }
           ),
-          S.system.listSkillAiToolBindings(
-            { id: y, current: 1, page_size: 1e3 }
+          k.system.listSkillAiToolBindings(
+            { id: h, current: 1, page_size: 1e3 }
           )
-        ]), X = ((u = j.data) == null ? void 0 : u.filter((ut) => ut.status === "enabled")) || [];
-        te(X);
-        const { selections: se, extraPatterns: Ie } = ml(U.data || [], X);
-        w(se), H(Ie);
+        ]), X = ((u = S.data) == null ? void 0 : u.filter((st) => st.status === "enabled")) || [];
+        se(X);
+        const { selections: te, extraPatterns: De } = xl(ee.data || [], X);
+        P(te), N(De);
       } catch {
-        s.error(t("settings.skills.aiToolsLoadFailed", { defaultValue: "Failed to load AI tool bindings" })), N();
+        s.error(t("settings.skills.aiToolsLoadFailed", { defaultValue: "Failed to load AI tool bindings" })), R();
       } finally {
-        h(!1);
+        j(!1);
       }
     },
-    [N, t]
+    [R, t]
   );
-  Le(() => {
-    !x || !(I != null && I.id) || !n || T(I.id);
-  }, [x, I == null ? void 0 : I.id, n, T]);
-  const ae = (y, u) => {
-    w((j) => ({ ...j, [y]: u }));
-  }, fe = (y, u, j) => {
-    w((U) => ({
-      ...U,
-      [y]: j ? [...u] : []
+  ze(() => {
+    !y || !(I != null && I.id) || !n || C(I.id);
+  }, [y, I == null ? void 0 : I.id, n, C]);
+  const oe = (h, u) => {
+    P((S) => ({ ...S, [h]: u }));
+  }, be = (h, u, S) => {
+    P((ee) => ({
+      ...ee,
+      [h]: S ? [...u] : []
     }));
-  }, Fe = () => {
-    L(null), q(null), i.resetFields(), N(), O(!0);
-  }, Re = (y) => {
-    L(y), q(null), i.setFieldsValue({
-      name: y.name,
-      description: y.description,
-      category: y.category,
-      domain: y.domain
-    }), N(), O(!0);
-  }, z = (y) => {
-    L(null), q(y), i.setFieldsValue({
-      name: t("settings.skills.cloneNameDefault", { name: y.name, defaultValue: "{{name}} (copy)" }),
-      description: y.description,
-      category: y.category,
-      domain: y.domain
-    }), N(), O(!0);
-  }, p = () => {
-    i.validateFields().then(async (y) => {
+  }, Te = () => {
+    M(null), q(null), i.resetFields(), R(), O(!0);
+  }, Re = (h) => {
+    M(h), q(null), i.setFieldsValue({
+      name: h.name,
+      description: h.description,
+      category: h.category,
+      domain: h.domain
+    }), R(), O(!0);
+  }, z = (h) => {
+    M(null), q(h), i.setFieldsValue({
+      name: t("settings.skills.cloneNameDefault", { name: h.name, defaultValue: "{{name}} (copy)" }),
+      description: h.description,
+      category: h.category,
+      domain: h.domain
+    }), R(), O(!0);
+  }, D = () => {
+    i.validateFields().then(async (h) => {
       Y(!0);
       try {
         if (I) {
           const u = {
-            name: y.name,
-            description: y.description ?? "",
-            category: y.category ?? "",
-            domain: y.domain ?? ""
+            name: h.name,
+            description: h.description ?? "",
+            category: h.category ?? "",
+            domain: h.domain ?? ""
           };
-          if (await S.system.updateSkill({ id: I.id }, u), n) {
-            const j = pl(F, M);
-            await S.system.replaceSkillAiToolBindings(
+          if (await k.system.updateSkill({ id: I.id }, u), n) {
+            const S = yl(T, $);
+            await k.system.replaceSkillAiToolBindings(
               { id: I.id },
-              { bindings: j }
+              { bindings: S }
             );
           }
           s.success(t("settings.skills.updateSuccess", { defaultValue: "Skill updated" }));
-        } else if (_) {
+        } else if (v) {
           const u = {
-            source_id: _.id,
-            name: y.name,
-            description: y.description ?? "",
-            category: y.category ?? "",
-            domain: y.domain ?? ""
-          }, { id: j } = await S.system.cloneSkill(u);
-          s.success(t("settings.skills.cloneSuccess", { defaultValue: "Skill cloned" })), O(!1), q(null), i.resetFields(), N(), de(), j && l(`/system/settings/skills/${j}/edit`);
+            source_id: v.id,
+            name: h.name,
+            description: h.description ?? "",
+            category: h.category ?? "",
+            domain: h.domain ?? ""
+          }, { id: S } = await k.system.cloneSkill(u);
+          s.success(t("settings.skills.cloneSuccess", { defaultValue: "Skill cloned" })), O(!1), q(null), i.resetFields(), R(), ne(), S && l(`/system/settings/skills/${S}/edit`);
           return;
         } else {
           const u = {
-            name: y.name,
-            description: y.description ?? "",
-            category: y.category ?? "",
-            domain: y.domain ?? "",
-            content: y.content ?? ""
+            name: h.name,
+            description: h.description ?? "",
+            category: h.category ?? "",
+            domain: h.domain ?? "",
+            content: h.content ?? ""
           };
-          await S.system.createSkill(u), s.success(t("settings.skills.createSuccess", { defaultValue: "Skill created" }));
+          await k.system.createSkill(u), s.success(t("settings.skills.createSuccess", { defaultValue: "Skill created" }));
         }
-        O(!1), L(null), q(null), i.resetFields(), N(), de();
+        O(!1), M(null), q(null), i.resetFields(), R(), ne();
       } catch {
         s.error(
-          I ? t("settings.skills.updateFailed", { defaultValue: "Failed to update skill" }) : _ ? t("settings.skills.cloneFailed", { defaultValue: "Failed to clone skill" }) : t("settings.skills.createFailed", { defaultValue: "Failed to create skill" })
+          I ? t("settings.skills.updateFailed", { defaultValue: "Failed to update skill" }) : v ? t("settings.skills.cloneFailed", { defaultValue: "Failed to clone skill" }) : t("settings.skills.createFailed", { defaultValue: "Failed to create skill" })
         );
       } finally {
         Y(!1);
       }
     });
-  }, P = () => {
-    var X, se;
-    const y = (X = g.getFieldValue("file")) == null ? void 0 : X.fileList, u = ((se = y == null ? void 0 : y[0]) == null ? void 0 : se.originFileObj) ?? (y == null ? void 0 : y[0]);
+  }, ae = () => {
+    var X, te;
+    const h = (X = f.getFieldValue("file")) == null ? void 0 : X.fileList, u = ((te = h == null ? void 0 : h[0]) == null ? void 0 : te.originFileObj) ?? (h == null ? void 0 : h[0]);
     if (!u) {
       s.error(t("settings.skills.selectFile", { defaultValue: "Please select a file" }));
       return;
     }
-    const j = g.getFieldValue("category"), U = g.getFieldValue("domain");
-    Ve({ body: { category: j, domain: U }, file: u });
-  }, le = n && I, we = le ? 720 : 560, Me = !I && !_, dt = [
+    const S = f.getFieldValue("category"), ee = f.getFieldValue("domain");
+    Ae({ body: { category: S, domain: ee }, file: u });
+  }, me = n && I, Ee = me ? 720 : 560, Qe = !I && !v, Ze = [
     {
       title: t("settings.skills.name", { defaultValue: "Name" }),
       dataIndex: "name",
       key: "name",
       ellipsis: !0,
-      render: (y, u) => /* @__PURE__ */ e.jsxs(K, { size: 8, wrap: !0, children: [
-        /* @__PURE__ */ e.jsx("span", { children: y }),
-        u.is_preset ? /* @__PURE__ */ e.jsx(ne, { color: "default", children: t("settings.skills.presetTag", { defaultValue: "Preset" }) }) : null
+      render: (h, u) => /* @__PURE__ */ e.jsxs(K, { size: 8, wrap: !0, children: [
+        /* @__PURE__ */ e.jsx("span", { children: h }),
+        u.is_preset ? /* @__PURE__ */ e.jsx(de, { color: "default", children: t("settings.skills.presetTag", { defaultValue: "Preset" }) }) : null
       ] })
     },
     { title: t("settings.skills.description", { defaultValue: "Description" }), dataIndex: "description", key: "description", ellipsis: !0 },
-    { title: t("settings.skills.category", { defaultValue: "Category" }), dataIndex: "category", key: "category", render: (y) => y ? /* @__PURE__ */ e.jsx(ne, { children: y }) : "-", width: 180 },
-    { title: t("settings.skills.domain", { defaultValue: "Domain" }), dataIndex: "domain", key: "domain", render: (y) => y ? /* @__PURE__ */ e.jsx(ne, { color: "blue", children: y }) : "-", width: 180 },
+    { title: t("settings.skills.category", { defaultValue: "Category" }), dataIndex: "category", key: "category", render: (h) => h ? /* @__PURE__ */ e.jsx(de, { children: h }) : "-", width: 180 },
+    { title: t("settings.skills.domain", { defaultValue: "Domain" }), dataIndex: "domain", key: "domain", render: (h) => h ? /* @__PURE__ */ e.jsx(de, { color: "blue", children: h }) : "-", width: 180 },
     {
       title: t("settings.skills.statusForAi", { defaultValue: "AI chat" }),
       key: "status",
       width: 120,
-      render: (y, u) => {
-        const j = u.status !== "disabled";
+      render: (h, u) => {
+        const S = u.status !== "disabled";
         return /* @__PURE__ */ e.jsx(
-          ue,
+          pe,
           {
             permission: "system:skills:update",
-            fallback: /* @__PURE__ */ e.jsx(ne, { color: j ? "green" : "red", children: j ? a("enabled", { defaultValue: "Enabled" }) : a("disabled", { defaultValue: "Disabled" }) }),
+            fallback: /* @__PURE__ */ e.jsx(de, { color: S ? "green" : "red", children: S ? a("enabled", { defaultValue: "Enabled" }) : a("disabled", { defaultValue: "Disabled" }) }),
             children: /* @__PURE__ */ e.jsx(
-              nt,
+              ut,
               {
-                title: j ? t("settings.skills.tooltipDisableSkillForAi", { defaultValue: "Disable this skill for AI chat" }) : t("settings.skills.tooltipEnableSkillForAi", { defaultValue: "Enable this skill for AI chat" }),
+                title: S ? t("settings.skills.tooltipDisableSkillForAi", { defaultValue: "Disable this skill for AI chat" }) : t("settings.skills.tooltipEnableSkillForAi", { defaultValue: "Enable this skill for AI chat" }),
                 children: /* @__PURE__ */ e.jsx("span", { children: /* @__PURE__ */ e.jsx(
-                  oe,
+                  ue,
                   {
                     size: "small",
-                    checked: j,
-                    loading: W === u.id,
-                    onChange: (U) => void Te(u, U)
+                    checked: S,
+                    loading: J === u.id,
+                    onChange: (ee) => void Ie(u, ee)
                   }
                 ) })
               }
@@ -2837,13 +2917,13 @@ const gl = () => {
       title: a("actions", { defaultValue: "Actions" }),
       key: "actions",
       width: 220,
-      render: (y, u) => /* @__PURE__ */ e.jsx(
-        qe,
+      render: (h, u) => /* @__PURE__ */ e.jsx(
+        $e,
         {
           actions: [
             {
               key: "edit_files",
-              icon: /* @__PURE__ */ e.jsx(lt, {}),
+              icon: /* @__PURE__ */ e.jsx(ot, {}),
               tooltip: u.is_preset ? t("settings.skills.presetDisabledManageFiles", {
                 defaultValue: "Built-in skills cannot edit files."
               }) : t("settings.skills.actionManageFiles", { defaultValue: "Manage files" }),
@@ -2853,14 +2933,14 @@ const gl = () => {
             },
             {
               key: "view",
-              icon: /* @__PURE__ */ e.jsx(Dt, {}),
+              icon: /* @__PURE__ */ e.jsx(Kt, {}),
               tooltip: t("settings.skills.actionPreview", { defaultValue: "Preview" }),
               onClick: async () => l(`/system/settings/skills/${u.id}/preview`),
               permission: "system:skills:view"
             },
             {
               key: "update",
-              icon: /* @__PURE__ */ e.jsx(Ne, {}),
+              icon: /* @__PURE__ */ e.jsx(qe, {}),
               tooltip: u.is_preset ? t("settings.skills.presetDisabledEditMetadata", {
                 defaultValue: "Built-in skills cannot change metadata."
               }) : t("settings.skills.actionEditMetadata", { defaultValue: "Edit metadata" }),
@@ -2870,14 +2950,14 @@ const gl = () => {
             },
             {
               key: "clone",
-              icon: /* @__PURE__ */ e.jsx(Mt, {}),
+              icon: /* @__PURE__ */ e.jsx(Jt, {}),
               tooltip: t("settings.skills.actionClone", { defaultValue: "Clone" }),
               onClick: async () => z(u),
               permission: "system:skills:create"
             },
             {
               key: "delete",
-              icon: /* @__PURE__ */ e.jsx(Oe, {}),
+              icon: /* @__PURE__ */ e.jsx(Ne, {}),
               tooltip: u.is_preset ? t("settings.skills.presetDisabledDelete", {
                 defaultValue: "Built-in skills cannot be deleted."
               }) : t("settings.skills.actionDelete", { defaultValue: "Delete" }),
@@ -2890,7 +2970,7 @@ const gl = () => {
                 }),
                 okText: a("confirm", { defaultValue: "Confirm" }),
                 cancelText: a("cancel", { defaultValue: "Cancel" }),
-                onConfirm: async () => ze(u.id)
+                onConfirm: async () => Oe(u.id)
               },
               permission: "system:skills:delete"
             }
@@ -2900,34 +2980,34 @@ const gl = () => {
     }
   ];
   return /* @__PURE__ */ e.jsxs("div", { children: [
-    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(He, { justify: "space-between", align: "middle", children: [
-      /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsxs(K, { children: [
+    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(Ke, { justify: "space-between", align: "middle", children: [
+      /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsxs(K, { children: [
         /* @__PURE__ */ e.jsx(
-          v.Search,
+          V.Search,
           {
             placeholder: a("search", { defaultValue: "Search" }),
             allowClear: !0,
-            onSearch: m,
+            onSearch: p,
             style: { width: 300 }
           }
         ),
         /* @__PURE__ */ e.jsx(
-          $,
+          H,
           {
             placeholder: t("settings.skills.domain", { defaultValue: "Domain" }),
             allowClear: !0,
             style: { width: 200 },
             value: d,
             onChange: c,
-            options: he.map((y) => ({ value: y, label: y }))
+            options: je.map((h) => ({ value: h, label: h }))
           }
         ),
         /* @__PURE__ */ e.jsx(
-          Be.Group,
+          Je.Group,
           {
             optionType: "button",
-            value: f,
-            onChange: (y) => V(y.target.value),
+            value: m,
+            onChange: (h) => b(h.target.value),
             options: [
               { value: "user", label: t("settings.skills.scopeUser", { defaultValue: "User skills" }) },
               { value: "all", label: t("settings.skills.scopeAll", { defaultValue: "All skills" }) }
@@ -2935,81 +3015,81 @@ const gl = () => {
           }
         )
       ] }) }),
-      /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsxs(K, { children: [
-        /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Se, {}), onClick: () => de(), children: a("refresh", { defaultValue: "Refresh" }) }),
-        /* @__PURE__ */ e.jsx(ue, { permission: "system:skills:create", children: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(De, {}), onClick: Fe, children: t("settings.skills.create", { defaultValue: "Create skill" }) }) }),
-        /* @__PURE__ */ e.jsx(ue, { permission: "system:skills:create", children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(vt, {}), onClick: () => D(!0), children: t("settings.skills.upload", { defaultValue: "Upload skill" }) }) })
+      /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsxs(K, { children: [
+        /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Ce, {}), onClick: () => ne(), children: a("refresh", { defaultValue: "Refresh" }) }),
+        /* @__PURE__ */ e.jsx(pe, { permission: "system:skills:create", children: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(Ue, {}), onClick: Te, children: t("settings.skills.create", { defaultValue: "Create skill" }) }) }),
+        /* @__PURE__ */ e.jsx(pe, { permission: "system:skills:create", children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(At, {}), onClick: () => U(!0), children: t("settings.skills.upload", { defaultValue: "Upload skill" }) }) })
       ] }) })
     ] }) }),
     /* @__PURE__ */ e.jsxs(ie, { children: [
       /* @__PURE__ */ e.jsx(
-        Pe,
+        Me,
         {
           rowKey: "id",
-          loading: B,
-          columns: dt,
-          dataSource: Ae,
-          pagination: { total: Ee, pageSize: 10, showSizeChanger: !0 }
+          loading: Z,
+          columns: Ze,
+          dataSource: Pe,
+          pagination: { total: Le, pageSize: 10, showSizeChanger: !0 }
         }
       ),
       /* @__PURE__ */ e.jsx(
-        ce,
+        fe,
         {
-          title: I ? t("settings.skills.editSkill", { defaultValue: "Edit skill" }) : _ ? t("settings.skills.cloneSkill", { defaultValue: "Clone skill" }) : t("settings.skills.createSkill", { defaultValue: "Create skill" }),
-          open: x,
-          onOk: p,
+          title: I ? t("settings.skills.editSkill", { defaultValue: "Edit skill" }) : v ? t("settings.skills.cloneSkill", { defaultValue: "Clone skill" }) : t("settings.skills.createSkill", { defaultValue: "Create skill" }),
+          open: y,
+          onOk: D,
           onCancel: () => {
-            O(!1), L(null), q(null), N();
+            O(!1), M(null), q(null), R();
           },
-          confirmLoading: J,
-          width: we,
+          confirmLoading: W,
+          width: Ee,
           children: /* @__PURE__ */ e.jsxs(o, { form: i, layout: "vertical", autoComplete: "off", children: [
-            /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: t("settings.skills.name", { defaultValue: "Name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(v, {}) }),
-            /* @__PURE__ */ e.jsx(o.Item, { name: "description", label: t("settings.skills.description", { defaultValue: "Description" }), children: /* @__PURE__ */ e.jsx(wt, { rows: 2 }) }),
-            /* @__PURE__ */ e.jsx(o.Item, { name: "category", label: t("settings.skills.category", { defaultValue: "Category" }), children: /* @__PURE__ */ e.jsx(v, {}) }),
-            /* @__PURE__ */ e.jsx(o.Item, { name: "domain", label: t("settings.skills.domain", { defaultValue: "Domain" }), children: /* @__PURE__ */ e.jsx($, { allowClear: !0, placeholder: a("optional", { defaultValue: "Optional" }), options: he.map((y) => ({ value: y, label: y })) }) }),
-            Me && /* @__PURE__ */ e.jsx(o.Item, { name: "content", label: t("settings.skills.initialContent", { defaultValue: "Initial SKILL.md content (optional)" }), children: /* @__PURE__ */ e.jsx(wt, { rows: 6, placeholder: `---
+            /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: t("settings.skills.name", { defaultValue: "Name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(V, {}) }),
+            /* @__PURE__ */ e.jsx(o.Item, { name: "description", label: t("settings.skills.description", { defaultValue: "Description" }), children: /* @__PURE__ */ e.jsx(Pt, { rows: 2 }) }),
+            /* @__PURE__ */ e.jsx(o.Item, { name: "category", label: t("settings.skills.category", { defaultValue: "Category" }), children: /* @__PURE__ */ e.jsx(V, {}) }),
+            /* @__PURE__ */ e.jsx(o.Item, { name: "domain", label: t("settings.skills.domain", { defaultValue: "Domain" }), children: /* @__PURE__ */ e.jsx(H, { allowClear: !0, placeholder: a("optional", { defaultValue: "Optional" }), options: je.map((h) => ({ value: h, label: h })) }) }),
+            Qe && /* @__PURE__ */ e.jsx(o.Item, { name: "content", label: t("settings.skills.initialContent", { defaultValue: "Initial SKILL.md content (optional)" }), children: /* @__PURE__ */ e.jsx(Pt, { rows: 6, placeholder: `---
 name: my-skill
 description: ...
 ---
 
 # My Skill` }) }),
-            le && /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(je, { spinning: k, children: Q.length > 0 ? /* @__PURE__ */ e.jsxs("div", { children: [
+            me && /* @__PURE__ */ e.jsx(e.Fragment, { children: /* @__PURE__ */ e.jsx(ye, { spinning: _, children: Q.length > 0 ? /* @__PURE__ */ e.jsxs("div", { children: [
               /* @__PURE__ */ e.jsx(K, { direction: "vertical", size: "middle", style: {
                 width: "100%",
                 overflow: "auto",
                 maxHeight: "calc(100vh - 800px)",
                 minHeight: "calc(300px)"
-              }, children: Q.map((y) => {
-                const u = (y.tools || []).map((se) => se.name), j = F[y.id] || [], U = u.length > 0 && j.length === u.length, X = j.length > 0 && j.length < u.length;
+              }, children: Q.map((h) => {
+                const u = (h.tools || []).map((te) => te.name), S = T[h.id] || [], ee = u.length > 0 && S.length === u.length, X = S.length > 0 && S.length < u.length;
                 return /* @__PURE__ */ e.jsx(
                   ie,
                   {
                     size: "small",
                     title: /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", alignItems: "center", gap: 8 }, children: [
                       /* @__PURE__ */ e.jsx(
-                        ct,
+                        pt,
                         {
-                          checked: U,
+                          checked: ee,
                           indeterminate: X,
-                          onChange: (se) => fe(y.id, u, se.target.checked)
+                          onChange: (te) => be(h.id, u, te.target.checked)
                         }
                       ),
-                      /* @__PURE__ */ e.jsx("span", { children: y.name })
+                      /* @__PURE__ */ e.jsx("span", { children: h.name })
                     ] }),
-                    extra: y.description ? /* @__PURE__ */ e.jsx("span", { children: y.description }) : void 0,
-                    children: (y.tools || []).length > 0 ? /* @__PURE__ */ e.jsx(ct.Group, { style: { width: "100%" }, value: j, onChange: (se) => ae(y.id, se), children: /* @__PURE__ */ e.jsx(K, { direction: "vertical", style: { width: "100%" }, children: (y.tools || []).map((se) => /* @__PURE__ */ e.jsx(ct, { value: se.name, children: /* @__PURE__ */ e.jsxs("div", { children: [
-                      /* @__PURE__ */ e.jsx("div", { children: se.name }),
-                      se.description && /* @__PURE__ */ e.jsx("div", { style: { color: "rgba(0,0,0,0.45)", fontSize: 12 }, children: se.description })
-                    ] }) }, se.name)) }) }) : /* @__PURE__ */ e.jsx(
-                      Je,
+                    extra: h.description ? /* @__PURE__ */ e.jsx("span", { children: h.description }) : void 0,
+                    children: (h.tools || []).length > 0 ? /* @__PURE__ */ e.jsx(pt.Group, { style: { width: "100%" }, value: S, onChange: (te) => oe(h.id, te), children: /* @__PURE__ */ e.jsx(K, { direction: "vertical", style: { width: "100%" }, children: (h.tools || []).map((te) => /* @__PURE__ */ e.jsx(pt, { value: te.name, children: /* @__PURE__ */ e.jsxs("div", { children: [
+                      /* @__PURE__ */ e.jsx("div", { children: te.name }),
+                      te.description && /* @__PURE__ */ e.jsx("div", { style: { color: "rgba(0,0,0,0.45)", fontSize: 12 }, children: te.description })
+                    ] }) }, te.name)) }) }) : /* @__PURE__ */ e.jsx(
+                      We,
                       {
-                        image: Je.PRESENTED_IMAGE_SIMPLE,
+                        image: We.PRESENTED_IMAGE_SIMPLE,
                         description: t("settings.skills.aiToolsetNoTools", { defaultValue: "No tools available in this toolset." })
                       }
                     )
                   },
-                  y.id
+                  h.id
                 );
               }) }),
               /* @__PURE__ */ e.jsxs("div", { style: { marginTop: 12 }, children: [
@@ -3018,7 +3098,7 @@ description: ...
                   defaultValue: "Use * for toolset_id or tool_name (e.g. *:sleep for all toolsets, uuid:* for all tools in one toolset)."
                 }) }),
                 /* @__PURE__ */ e.jsxs(K, { direction: "vertical", style: { width: "100%" }, children: [
-                  M.map((y, u) => /* @__PURE__ */ e.jsxs(
+                  $.map((h, u) => /* @__PURE__ */ e.jsxs(
                     "div",
                     {
                       style: {
@@ -3029,46 +3109,46 @@ description: ...
                       },
                       children: [
                         /* @__PURE__ */ e.jsx(
-                          kt,
+                          Tt,
                           {
                             allowClear: !0,
                             style: { flex: 1, minWidth: 0 },
                             placeholder: t("settings.skills.patternToolsetPlaceholder", { defaultValue: "Toolset ID" }),
-                            value: y.toolset_id,
-                            options: Qt(R, y.toolset_id),
-                            filterOption: (j, U) => {
-                              const X = U;
-                              return `${(X == null ? void 0 : X.value) ?? ""} ${(X == null ? void 0 : X.label) ?? ""}`.toLowerCase().includes(j.toLowerCase());
+                            value: h.toolset_id,
+                            options: is(F, h.toolset_id),
+                            filterOption: (S, ee) => {
+                              const X = ee;
+                              return `${(X == null ? void 0 : X.value) ?? ""} ${(X == null ? void 0 : X.label) ?? ""}`.toLowerCase().includes(S.toLowerCase());
                             },
-                            onChange: (j) => {
-                              const U = typeof j == "string" ? j : "";
-                              H(
-                                (X) => X.map((se, Ie) => Ie === u ? { ...se, toolset_id: U } : se)
+                            onChange: (S) => {
+                              const ee = typeof S == "string" ? S : "";
+                              N(
+                                (X) => X.map((te, De) => De === u ? { ...te, toolset_id: ee } : te)
                               );
                             }
                           }
                         ),
                         /* @__PURE__ */ e.jsx(
-                          kt,
+                          Tt,
                           {
                             allowClear: !0,
                             style: { flex: 1, minWidth: 0 },
                             placeholder: t("settings.skills.patternToolNamePlaceholder", { defaultValue: "Tool name" }),
-                            value: y.tool_name,
-                            options: fl(
+                            value: h.tool_name,
+                            options: jl(
                               Q,
-                              y.toolset_id,
-                              y.tool_name,
+                              h.toolset_id,
+                              h.tool_name,
                               t("settings.skills.patternToolNameAll", { defaultValue: "* (all tools)" })
                             ),
-                            filterOption: (j, U) => {
-                              const X = U;
-                              return `${(X == null ? void 0 : X.value) ?? ""} ${(X == null ? void 0 : X.label) ?? ""}`.toLowerCase().includes(j.toLowerCase());
+                            filterOption: (S, ee) => {
+                              const X = ee;
+                              return `${(X == null ? void 0 : X.value) ?? ""} ${(X == null ? void 0 : X.label) ?? ""}`.toLowerCase().includes(S.toLowerCase());
                             },
-                            onChange: (j) => {
-                              const U = typeof j == "string" ? j : "";
-                              H(
-                                (X) => X.map((se, Ie) => Ie === u ? { ...se, tool_name: U } : se)
+                            onChange: (S) => {
+                              const ee = typeof S == "string" ? S : "";
+                              N(
+                                (X) => X.map((te, De) => De === u ? { ...te, tool_name: ee } : te)
                               );
                             }
                           }
@@ -3079,7 +3159,7 @@ description: ...
                             type: "default",
                             danger: !0,
                             style: { flexShrink: 0 },
-                            onClick: () => H((j) => j.filter((U, X) => X !== u)),
+                            onClick: () => N((S) => S.filter((ee, X) => X !== u)),
                             children: a("delete", { defaultValue: "Delete" })
                           }
                         )
@@ -3087,13 +3167,13 @@ description: ...
                     },
                     u
                   )),
-                  /* @__PURE__ */ e.jsx(E, { type: "dashed", onClick: () => H((y) => [...y, { toolset_id: "", tool_name: "" }]), block: !0, children: t("settings.skills.addWildcardRow", { defaultValue: "Add pattern row" }) })
+                  /* @__PURE__ */ e.jsx(E, { type: "dashed", onClick: () => N((h) => [...h, { toolset_id: "", tool_name: "" }]), block: !0, children: t("settings.skills.addWildcardRow", { defaultValue: "Add pattern row" }) })
                 ] })
               ] })
             ] }) : /* @__PURE__ */ e.jsx(
-              Je,
+              We,
               {
-                image: Je.PRESENTED_IMAGE_SIMPLE,
+                image: We.PRESENTED_IMAGE_SIMPLE,
                 description: t("settings.skills.aiToolsetsEmpty", { defaultValue: "No AI toolsets available for this organization." })
               }
             ) }) })
@@ -3101,69 +3181,69 @@ description: ...
         }
       ),
       /* @__PURE__ */ e.jsx(
-        ce,
+        fe,
         {
           title: t("settings.skills.upload", { defaultValue: "Upload skill" }),
-          open: C,
-          onOk: P,
-          onCancel: () => D(!1),
-          confirmLoading: be,
-          children: /* @__PURE__ */ e.jsxs(o, { form: g, layout: "vertical", children: [
-            /* @__PURE__ */ e.jsx(o.Item, { name: "file", label: t("settings.skills.file", { defaultValue: "File (.md or .zip)" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(ns, { maxCount: 1, beforeUpload: () => !1, accept: ".md,.zip", children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(vt, {}), children: a("selectFile", { defaultValue: "Select file" }) }) }) }),
-            /* @__PURE__ */ e.jsx(o.Item, { name: "category", label: t("settings.skills.category", { defaultValue: "Category" }), children: /* @__PURE__ */ e.jsx(v, {}) }),
-            /* @__PURE__ */ e.jsx(o.Item, { name: "domain", label: t("settings.skills.domain", { defaultValue: "Domain" }), children: /* @__PURE__ */ e.jsx($, { allowClear: !0, placeholder: a("optional", { defaultValue: "Optional" }), options: he.map((y) => ({ value: y, label: y })) }) })
+          open: w,
+          onOk: ae,
+          onCancel: () => U(!1),
+          confirmLoading: ve,
+          children: /* @__PURE__ */ e.jsxs(o, { form: f, layout: "vertical", children: [
+            /* @__PURE__ */ e.jsx(o.Item, { name: "file", label: t("settings.skills.file", { defaultValue: "File (.md or .zip)" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(hs, { maxCount: 1, beforeUpload: () => !1, accept: ".md,.zip", children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(At, {}), children: a("selectFile", { defaultValue: "Select file" }) }) }) }),
+            /* @__PURE__ */ e.jsx(o.Item, { name: "category", label: t("settings.skills.category", { defaultValue: "Category" }), children: /* @__PURE__ */ e.jsx(V, {}) }),
+            /* @__PURE__ */ e.jsx(o.Item, { name: "domain", label: t("settings.skills.domain", { defaultValue: "Domain" }), children: /* @__PURE__ */ e.jsx(H, { allowClear: !0, placeholder: a("optional", { defaultValue: "Optional" }), options: je.map((h) => ({ value: h, label: h })) }) })
           ] })
         }
       )
     ] })
   ] });
-}, hl = () => {
-  const { message: s } = me.useApp(), t = Ce(), { t: a } = G("system"), { t: l } = G("task"), { t: n } = G("common"), [i] = o.useForm(), { data: r } = A(S.system.listLogStorageBackends), { data: m } = A(S.system.getTaskSettingFields), d = (r ?? []).map((_) => ({
-    value: _.id,
-    label: a(`settings.task.logStorage.${_.id}`, { defaultValue: _.name })
-  })), { loading: c, refresh: f } = A(S.system.getTaskSettings, {
-    onSuccess: (_) => {
-      _ && i.setFieldsValue(_);
+}, Vl = () => {
+  const { message: s } = ge.useApp(), t = Fe(), { t: a } = G("system"), { t: l } = G("task"), { t: n } = G("common"), [i] = o.useForm(), { data: r } = A(k.system.listLogStorageBackends), { data: p } = A(k.system.getTaskSettingFields), d = (r ?? []).map((v) => ({
+    value: v.id,
+    label: a(`settings.task.logStorage.${v.id}`, { defaultValue: v.name })
+  })), { loading: c, refresh: m } = A(k.system.getTaskSettings, {
+    onSuccess: (v) => {
+      v && i.setFieldsValue(v);
     },
     onError: () => {
       s.error(a("settings.fetchFailed", { defaultValue: "Failed to fetch settings" }));
     }
-  }), { loading: V, run: x } = A(S.system.updateTaskSettings, {
+  }), { loading: b, run: y } = A(k.system.updateTaskSettings, {
     manual: !0,
     onSuccess: () => {
-      s.success(a("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), f();
+      s.success(a("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), m();
     },
     onError: () => {
       s.error(a("settings.updateFailed", { defaultValue: "Failed to update settings" }));
     }
-  }), O = (_) => {
-    x(_);
-  }, I = (_) => {
-    switch (_.value_type) {
+  }), O = (v) => {
+    y(v);
+  }, I = (v) => {
+    switch (v.value_type) {
       case "int":
       case "number":
         return /* @__PURE__ */ e.jsx(
-          re,
+          ce,
           {
             style: { width: "100%" },
-            addonAfter: _.key.includes("retention_days") ? a("settings.days", { defaultValue: "Days" }) : void 0
+            addonAfter: v.key.includes("retention_days") ? a("settings.days", { defaultValue: "Days" }) : void 0
           }
         );
       case "percentage":
-        return /* @__PURE__ */ e.jsx(re, { style: { width: "100%" }, min: 0, max: 100, step: 0.01, addonAfter: "%" });
+        return /* @__PURE__ */ e.jsx(ce, { style: { width: "100%" }, min: 0, max: 100, step: 0.01, addonAfter: "%" });
       case "bool":
-        return /* @__PURE__ */ e.jsx(oe, {});
+        return /* @__PURE__ */ e.jsx(ue, {});
       case "string_list":
-        return /* @__PURE__ */ e.jsx($, { mode: "tags", tokenSeparators: [","] });
+        return /* @__PURE__ */ e.jsx(H, { mode: "tags", tokenSeparators: [","] });
       case "enum":
-        return /* @__PURE__ */ e.jsx($, { options: _.enum_options || [] });
+        return /* @__PURE__ */ e.jsx(H, { options: v.enum_options || [] });
       case "rich_text":
-        return /* @__PURE__ */ e.jsx(Kt, { theme: "snow" });
+        return /* @__PURE__ */ e.jsx(ls, { theme: "snow" });
       default:
-        return /* @__PURE__ */ e.jsx(v, {});
+        return /* @__PURE__ */ e.jsx(V, {});
     }
-  }, L = (_) => _.value_type === "int" || _.value_type === "number" || _.value_type === "percentage" ? [{ type: "number" }] : [];
-  return /* @__PURE__ */ e.jsx(je, { spinning: c, children: /* @__PURE__ */ e.jsxs(
+  }, M = (v) => v.value_type === "int" || v.value_type === "number" || v.value_type === "percentage" ? [{ type: "number" }] : [];
+  return /* @__PURE__ */ e.jsx(ye, { spinning: c, children: /* @__PURE__ */ e.jsxs(
     o,
     {
       form: i,
@@ -3179,7 +3259,7 @@ description: ...
               defaultValue: "Where task execution logs are stored. Database stores logs in the application database."
             }),
             children: /* @__PURE__ */ e.jsx(
-              $,
+              H,
               {
                 options: d,
                 placeholder: a("settings.task.logStoragePlaceholder", { defaultValue: "Select backend" }),
@@ -3188,31 +3268,31 @@ description: ...
             )
           }
         ),
-        (m ?? []).map((_) => /* @__PURE__ */ e.jsx(
+        (p ?? []).map((v) => /* @__PURE__ */ e.jsx(
           o.Item,
           {
-            name: _.key,
-            label: a(`settings.task.fields.${_.key}`, { defaultValue: _.key }),
-            rules: L(_),
-            valuePropName: _.value_type === "bool" ? "checked" : "value",
-            children: I(_)
+            name: v.key,
+            label: a(`settings.task.fields.${v.key}`, { defaultValue: v.key }),
+            rules: M(v),
+            valuePropName: v.value_type === "bool" ? "checked" : "value",
+            children: I(v)
           },
-          _.key
+          v.key
         )),
         /* @__PURE__ */ e.jsx(o.Item, { children: /* @__PURE__ */ e.jsxs(K, { children: [
-          /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", loading: V, icon: /* @__PURE__ */ e.jsx(We, {}), children: n("save", { defaultValue: "Save" }) }),
-          /* @__PURE__ */ e.jsx(E, { onClick: () => f(), icon: /* @__PURE__ */ e.jsx(Se, {}), children: n("refresh", { defaultValue: "Refresh" }) }),
-          /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(qt, {}), onClick: () => t("/tasks"), children: l("listTitle", { defaultValue: "Task List" }) }),
-          /* @__PURE__ */ e.jsx(ue, { permission: "task:schedule:list", children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(_s, {}), onClick: () => t("/tasks/schedules"), children: l("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) })
+          /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", loading: b, icon: /* @__PURE__ */ e.jsx(Ge, {}), children: n("save", { defaultValue: "Save" }) }),
+          /* @__PURE__ */ e.jsx(E, { onClick: () => m(), icon: /* @__PURE__ */ e.jsx(Ce, {}), children: n("refresh", { defaultValue: "Refresh" }) }),
+          /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Gt, {}), onClick: () => t("/tasks"), children: l("listTitle", { defaultValue: "Task List" }) }),
+          /* @__PURE__ */ e.jsx(pe, { permission: "task:schedule:list", children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Es, {}), onClick: () => t("/tasks/schedules"), children: l("scheduledTasks", { defaultValue: "Scheduled Tasks" }) }) })
         ] }) })
       ]
     }
   ) });
-}, { Text: xl } = Qe, yl = [
+}, { Text: kl } = Ye, vl = [
   { value: "anonymous", label: "anonymous" },
   { value: "user", label: "user" },
   { value: "service_account", label: "service_account" }
-], mt = { marginBottom: 0 }, jl = ({ onResetSubject: s }) => {
+], ft = { marginBottom: 0 }, _l = ({ onResetSubject: s }) => {
   const { t } = G("system"), { t: a } = G("common"), l = [
     { key: "anonymous", label: t("settings.rateLimit.anonymous", { defaultValue: "Anonymous (IP)" }) },
     { key: "user", label: t("settings.rateLimit.user", { defaultValue: "User" }) },
@@ -3221,31 +3301,31 @@ description: ...
     { title: t("settings.rateLimit.subjectType", { defaultValue: "Subject" }), dataIndex: "label", width: 180 },
     {
       title: `${t("settings.rateLimit.rate", { defaultValue: "Rate" })} / ${t("settings.rateLimit.period", { defaultValue: "Period" })}`,
-      render: (i, r) => /* @__PURE__ */ e.jsx(o.Item, { style: mt, children: /* @__PURE__ */ e.jsxs(K.Compact, { children: [
-        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "rate"], rules: [{ required: !0 }], noStyle: !0, children: /* @__PURE__ */ e.jsx(re, { min: 1, style: { width: 88 } }) }),
-        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "period"], noStyle: !0, children: /* @__PURE__ */ e.jsx(v, { placeholder: "1m", style: { width: 72 } }) })
+      render: (i, r) => /* @__PURE__ */ e.jsx(o.Item, { style: ft, children: /* @__PURE__ */ e.jsxs(K.Compact, { children: [
+        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "rate"], rules: [{ required: !0 }], noStyle: !0, children: /* @__PURE__ */ e.jsx(ce, { min: 1, style: { width: 88 } }) }),
+        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "period"], noStyle: !0, children: /* @__PURE__ */ e.jsx(V, { placeholder: "1m", style: { width: 72 } }) })
       ] }) })
     },
     {
       title: t("settings.rateLimit.burst", { defaultValue: "Burst" }),
       width: 120,
-      render: (i, r) => /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "burst"], style: mt, children: /* @__PURE__ */ e.jsx(re, { min: 1, style: { width: "100%" } }) })
+      render: (i, r) => /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "burst"], style: ft, children: /* @__PURE__ */ e.jsx(ce, { min: 1, style: { width: "100%" } }) })
     },
     {
       title: `${t("settings.rateLimit.quota", { defaultValue: "Quota" })} / ${t("settings.rateLimit.quotaPeriod", { defaultValue: "Quota period" })}`,
-      render: (i, r) => /* @__PURE__ */ e.jsx(o.Item, { style: mt, children: /* @__PURE__ */ e.jsxs(K.Compact, { children: [
-        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "quota"], noStyle: !0, children: /* @__PURE__ */ e.jsx(re, { min: 0, style: { width: 100 }, placeholder: "0" }) }),
-        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "quota_period"], noStyle: !0, children: /* @__PURE__ */ e.jsx(v, { placeholder: "1d", style: { width: 72 } }) })
+      render: (i, r) => /* @__PURE__ */ e.jsx(o.Item, { style: ft, children: /* @__PURE__ */ e.jsxs(K.Compact, { children: [
+        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "quota"], noStyle: !0, children: /* @__PURE__ */ e.jsx(ce, { min: 0, style: { width: 100 }, placeholder: "0" }) }),
+        /* @__PURE__ */ e.jsx(o.Item, { name: [r.key, "quota_period"], noStyle: !0, children: /* @__PURE__ */ e.jsx(V, { placeholder: "1d", style: { width: 72 } }) })
       ] }) })
     },
     {
       title: a("actions", { defaultValue: "Actions" }),
       width: 64,
-      render: (i, r) => /* @__PURE__ */ e.jsx(qe, { actions: [
+      render: (i, r) => /* @__PURE__ */ e.jsx($e, { actions: [
         {
           key: "reset",
           permission: "system:rate_limit:update",
-          icon: /* @__PURE__ */ e.jsx(ht, {}),
+          icon: /* @__PURE__ */ e.jsx(yt, {}),
           htmlType: "button",
           tooltip: t("settings.rateLimit.resetSubject", { defaultValue: "Reset counters" }),
           confirm: { title: t("settings.rateLimit.resetSubjectConfirm", { defaultValue: "Reset shared-bucket counters for this subject type?" }) },
@@ -3257,7 +3337,7 @@ description: ...
     }
   ];
   return /* @__PURE__ */ e.jsx(
-    Pe,
+    Me,
     {
       size: "small",
       pagination: !1,
@@ -3266,42 +3346,42 @@ description: ...
       dataSource: l
     }
   );
-}, bl = () => {
-  const { message: s } = me.useApp(), { t } = G("system"), { t: a } = G("common"), { hasPermission: l } = bt(), n = l("system:rate_limit:update"), [i] = o.useForm(), [r] = o.useForm(), [m, d] = b(!1), [c, f] = b(null), [V, x] = b({ current: 1, page_size: 10 }), [O, I] = b(""), { data: L, loading: _, refresh: q } = A(S.system.getRateLimitSettings, {
-    onSuccess: (M) => i.setFieldsValue(M),
+}, Sl = () => {
+  const { message: s } = ge.useApp(), { t } = G("system"), { t: a } = G("common"), { hasPermission: l } = St(), n = l("system:rate_limit:update"), [i] = o.useForm(), [r] = o.useForm(), [p, d] = x(!1), [c, m] = x(null), [b, y] = x({ current: 1, page_size: 10 }), [O, I] = x(""), { data: M, loading: v, refresh: q } = A(k.system.getRateLimitSettings, {
+    onSuccess: ($) => i.setFieldsValue($),
     onError: () => s.error(t("settings.fetchFailed", { defaultValue: "Failed to fetch settings" }))
-  }), { loading: C, run: D } = A(S.system.updateRateLimitSettings, {
+  }), { loading: w, run: U } = A(k.system.updateRateLimitSettings, {
     manual: !0,
     onSuccess: () => {
       s.success(t("settings.updateSuccess", { defaultValue: "Settings updated successfully" })), q();
     },
-    onError: (M) => s.error(M.message || t("settings.updateFailed", { defaultValue: "Failed to update settings" }))
-  }), { data: g, loading: J, refresh: Y } = A(
-    () => S.system.listRateLimitRules({ current: V.current, page_size: V.page_size, search: O || void 0 }),
-    { refreshDeps: [V.current, V.page_size, O] }
-  ), W = () => {
-    f(null), r.resetFields(), r.setFieldsValue({ subject_type: "user", period: "1m", enabled: !0, method: "GET", quota: 0 }), d(!0);
-  }, ee = (M) => {
-    f(M), r.setFieldsValue(M), d(!0);
-  }, { run: Q, loading: te } = A(
-    async (M) => {
-      const H = { ...M, enabled: M.enabled !== !1 };
-      return c != null && c.id ? S.system.updateRateLimitRule({ id: c.id }, H) : S.system.createRateLimitRule(H);
+    onError: ($) => s.error($.message || t("settings.updateFailed", { defaultValue: "Failed to update settings" }))
+  }), { data: f, loading: W, refresh: Y } = A(
+    () => k.system.listRateLimitRules({ current: b.current, page_size: b.page_size, search: O || void 0 }),
+    { refreshDeps: [b.current, b.page_size, O] }
+  ), J = () => {
+    m(null), r.resetFields(), r.setFieldsValue({ subject_type: "user", period: "1m", enabled: !0, method: "GET", quota: 0 }), d(!0);
+  }, le = ($) => {
+    m($), r.setFieldsValue($), d(!0);
+  }, { run: Q, loading: se } = A(
+    async ($) => {
+      const N = { ...$, enabled: $.enabled !== !1 };
+      return c != null && c.id ? k.system.updateRateLimitRule({ id: c.id }, N) : k.system.createRateLimitRule(N);
     },
     {
       manual: !0,
       onSuccess: () => {
         s.success(a("success", { defaultValue: "Operation successful" })), d(!1), Y();
       },
-      onError: (M) => s.error(M.message)
+      onError: ($) => s.error($.message)
     }
-  ), F = async (M) => {
+  ), T = async ($) => {
     try {
-      await S.system.resetRateLimitCounters(M), s.success(t("settings.rateLimit.resetSuccess", { defaultValue: "Counters reset" }));
-    } catch (H) {
-      throw s.error(H instanceof Error ? H.message : t("settings.rateLimit.resetFailed", { defaultValue: "Failed to reset counters" })), H;
+      await k.system.resetRateLimitCounters($), s.success(t("settings.rateLimit.resetSuccess", { defaultValue: "Counters reset" }));
+    } catch (N) {
+      throw s.error(N instanceof Error ? N.message : t("settings.rateLimit.resetFailed", { defaultValue: "Failed to reset counters" })), N;
     }
-  }, w = [
+  }, P = [
     { title: t("settings.rateLimit.subjectType", { defaultValue: "Subject" }), dataIndex: "subject_type", width: 140 },
     { title: t("settings.rateLimit.subjectId", { defaultValue: "Subject ID" }), dataIndex: "subject_id", ellipsis: !0 },
     { title: t("settings.rateLimit.method", { defaultValue: "Method" }), dataIndex: "method", width: 90 },
@@ -3312,48 +3392,48 @@ description: ...
     {
       title: a("actions", { defaultValue: "Actions" }),
       width: 150,
-      render: (M, H) => /* @__PURE__ */ e.jsx(qe, { actions: [
+      render: ($, N) => /* @__PURE__ */ e.jsx($e, { actions: [
         {
           key: "edit",
           permission: "system:rate_limit:update",
-          icon: /* @__PURE__ */ e.jsx(Ne, {}),
+          icon: /* @__PURE__ */ e.jsx(qe, {}),
           tooltip: a("edit", { defaultValue: "Edit" }),
           onClick: async () => {
-            ee(H);
+            le(N);
           }
         },
         {
           key: "delete",
           permission: "system:rate_limit:update",
-          icon: /* @__PURE__ */ e.jsx(Oe, {}),
+          icon: /* @__PURE__ */ e.jsx(Ne, {}),
           danger: !0,
           tooltip: a("delete", { defaultValue: "Delete" }),
           confirm: { title: t("settings.rateLimit.deleteConfirm", { defaultValue: "Delete this rule?" }) },
           onClick: async () => {
-            await S.system.deleteRateLimitRule({ id: H.id }), Y();
+            await k.system.deleteRateLimitRule({ id: N.id }), Y();
           }
         },
         {
           key: "reset",
           permission: "system:rate_limit:update",
-          icon: /* @__PURE__ */ e.jsx(ht, {}),
+          icon: /* @__PURE__ */ e.jsx(yt, {}),
           tooltip: t("settings.rateLimit.resetRule", { defaultValue: "Reset counters" }),
           confirm: { title: t("settings.rateLimit.resetRuleConfirm", { defaultValue: "Reset counters for this rule?" }) },
           onClick: async () => {
-            await F({
+            await T({
               scope: "rule",
-              rule_id: H.id,
-              subject_type: H.subject_type,
-              subject_id: H.subject_id || ""
+              rule_id: N.id,
+              subject_type: N.subject_type,
+              subject_id: N.subject_id || ""
             });
           }
         }
       ] })
     }
   ];
-  return /* @__PURE__ */ e.jsxs(je, { spinning: _, children: [
-    (L == null ? void 0 : L.memory_warn) && /* @__PURE__ */ e.jsx(
-      st,
+  return /* @__PURE__ */ e.jsxs(ye, { spinning: v, children: [
+    (M == null ? void 0 : M.memory_warn) && /* @__PURE__ */ e.jsx(
+      nt,
       {
         type: "warning",
         showIcon: !0,
@@ -3361,99 +3441,99 @@ description: ...
         message: t("settings.rateLimit.memoryWarn", { defaultValue: "Cluster mode with in-memory store: limits are per node. Use rate_limit.store=redis for cluster-wide limits." })
       }
     ),
-    /* @__PURE__ */ e.jsxs(o, { form: i, layout: "vertical", onFinish: D, disabled: !n, children: [
+    /* @__PURE__ */ e.jsxs(o, { form: i, layout: "vertical", onFinish: U, disabled: !n, children: [
       /* @__PURE__ */ e.jsxs(K, { wrap: !0, align: "center", style: { marginBottom: 16 }, children: [
-        /* @__PURE__ */ e.jsx(o.Item, { name: "enabled", label: t("settings.rateLimit.enabled", { defaultValue: "Enable rate limiting" }), valuePropName: "checked", style: { marginBottom: 0 }, children: /* @__PURE__ */ e.jsx(oe, {}) }),
-        /* @__PURE__ */ e.jsxs(xl, { type: "secondary", children: [
+        /* @__PURE__ */ e.jsx(o.Item, { name: "enabled", label: t("settings.rateLimit.enabled", { defaultValue: "Enable rate limiting" }), valuePropName: "checked", style: { marginBottom: 0 }, children: /* @__PURE__ */ e.jsx(ue, {}) }),
+        /* @__PURE__ */ e.jsxs(kl, { type: "secondary", children: [
           t("settings.rateLimit.storeLabel", { defaultValue: "Store" }),
           ": ",
-          (L == null ? void 0 : L.store) || "memory",
+          (M == null ? void 0 : M.store) || "memory",
           " · ",
           t("settings.rateLimit.failOpen", { defaultValue: "Fail open" }),
           ": ",
-          String((L == null ? void 0 : L.fail_open) ?? !0)
+          String((M == null ? void 0 : M.fail_open) ?? !0)
         ] })
       ] }),
-      /* @__PURE__ */ e.jsx(Ge, { children: t("settings.rateLimit.defaults", { defaultValue: "Default shared buckets" }) }),
+      /* @__PURE__ */ e.jsx(Xe, { children: t("settings.rateLimit.defaults", { defaultValue: "Default shared buckets" }) }),
       /* @__PURE__ */ e.jsx(
-        jl,
+        _l,
         {
-          onResetSubject: (M) => F({
+          onResetSubject: ($) => T({
             scope: "subject",
-            subject_type: M,
+            subject_type: $,
             subject_id: "",
             rule_id: ""
           })
         }
       ),
-      /* @__PURE__ */ e.jsx(ue, { permission: "system:rate_limit:update", children: /* @__PURE__ */ e.jsxs(K, { style: { marginTop: 12 }, children: [
-        /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", icon: /* @__PURE__ */ e.jsx(We, {}), loading: C, children: a("save", { defaultValue: "Save" }) }),
-        /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Se, {}), onClick: () => q(), children: a("refresh", { defaultValue: "Refresh" }) }),
+      /* @__PURE__ */ e.jsx(pe, { permission: "system:rate_limit:update", children: /* @__PURE__ */ e.jsxs(K, { style: { marginTop: 12 }, children: [
+        /* @__PURE__ */ e.jsx(E, { type: "primary", htmlType: "submit", icon: /* @__PURE__ */ e.jsx(Ge, {}), loading: w, children: a("save", { defaultValue: "Save" }) }),
+        /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Ce, {}), onClick: () => q(), children: a("refresh", { defaultValue: "Refresh" }) }),
         /* @__PURE__ */ e.jsx(
-          Rt,
+          Ht,
           {
             title: t("settings.rateLimit.resetAllConfirm", { defaultValue: "Reset every rate-limit and quota counter? Currently blocked clients will be allowed immediately." }),
-            onConfirm: () => F({
+            onConfirm: () => T({
               scope: "global",
               subject_type: "anonymous",
               subject_id: "",
               rule_id: ""
             }),
-            children: /* @__PURE__ */ e.jsx(E, { danger: !0, htmlType: "button", icon: /* @__PURE__ */ e.jsx(ht, {}), children: t("settings.rateLimit.resetAll", { defaultValue: "Reset all counters" }) })
+            children: /* @__PURE__ */ e.jsx(E, { danger: !0, htmlType: "button", icon: /* @__PURE__ */ e.jsx(yt, {}), children: t("settings.rateLimit.resetAll", { defaultValue: "Reset all counters" }) })
           }
         )
       ] }) })
     ] }),
-    /* @__PURE__ */ e.jsx(Ge, { children: t("settings.rateLimit.routeRules", { defaultValue: "Route rules" }) }),
+    /* @__PURE__ */ e.jsx(Xe, { children: t("settings.rateLimit.routeRules", { defaultValue: "Route rules" }) }),
     /* @__PURE__ */ e.jsxs(K, { style: { marginBottom: 12 }, children: [
       /* @__PURE__ */ e.jsx(
-        v.Search,
+        V.Search,
         {
           allowClear: !0,
           placeholder: a("search", { defaultValue: "Search" }),
-          onSearch: (M) => {
-            I(M), x((H) => ({ ...H, current: 1 }));
+          onSearch: ($) => {
+            I($), y((N) => ({ ...N, current: 1 }));
           },
           style: { width: 240 }
         }
       ),
-      /* @__PURE__ */ e.jsx(ue, { permission: "system:rate_limit:update", children: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(De, {}), onClick: W, children: a("create", { defaultValue: "Create" }) }) }),
-      /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Se, {}), onClick: () => Y(), children: a("refresh", { defaultValue: "Refresh" }) })
+      /* @__PURE__ */ e.jsx(pe, { permission: "system:rate_limit:update", children: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(Ue, {}), onClick: J, children: a("create", { defaultValue: "Create" }) }) }),
+      /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Ce, {}), onClick: () => Y(), children: a("refresh", { defaultValue: "Refresh" }) })
     ] }),
     /* @__PURE__ */ e.jsx(
-      Pe,
+      Me,
       {
         rowKey: "id",
-        loading: J,
-        columns: w,
-        dataSource: (g == null ? void 0 : g.data) || [],
+        loading: W,
+        columns: P,
+        dataSource: (f == null ? void 0 : f.data) || [],
         pagination: {
-          current: (g == null ? void 0 : g.current) || V.current,
-          pageSize: (g == null ? void 0 : g.page_size) || V.page_size,
-          total: (g == null ? void 0 : g.total) || 0,
-          onChange: (M, H) => x({ current: M, page_size: H })
+          current: (f == null ? void 0 : f.current) || b.current,
+          pageSize: (f == null ? void 0 : f.page_size) || b.page_size,
+          total: (f == null ? void 0 : f.total) || 0,
+          onChange: ($, N) => y({ current: $, page_size: N })
         }
       }
     ),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
-        open: m,
+        open: p,
         title: c ? t("settings.rateLimit.editRule", { defaultValue: "Edit rule" }) : t("settings.rateLimit.createRule", { defaultValue: "Create rule" }),
         onCancel: () => d(!1),
         onOk: () => r.submit(),
-        confirmLoading: te,
+        confirmLoading: se,
         destroyOnClose: !0,
         children: /* @__PURE__ */ e.jsxs(o, { form: r, layout: "vertical", onFinish: Q, disabled: !n, children: [
-          /* @__PURE__ */ e.jsx(o.Item, { name: "subject_type", label: t("settings.rateLimit.subjectType", { defaultValue: "Subject" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx($, { options: yl }) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "subject_id", label: t("settings.rateLimit.subjectId", { defaultValue: "Subject ID" }), children: /* @__PURE__ */ e.jsx(v, { placeholder: t("settings.rateLimit.subjectIdHint", { defaultValue: "Empty = all subjects of this type" }) }) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "method", label: t("settings.rateLimit.method", { defaultValue: "Method" }), children: /* @__PURE__ */ e.jsx(v, { placeholder: "GET" }) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "path", label: t("settings.rateLimit.path", { defaultValue: "Path" }), extra: t("settings.rateLimit.pathHint", { defaultValue: "Gin full path, e.g. /api/ai/chat/sessions/:sessionId. Empty = shared bucket." }), children: /* @__PURE__ */ e.jsx(v, {}) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "rate", label: t("settings.rateLimit.rate", { defaultValue: "Rate" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(re, { min: 1, style: { width: "100%" } }) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "period", label: t("settings.rateLimit.period", { defaultValue: "Period" }), children: /* @__PURE__ */ e.jsx(v, { placeholder: "1m" }) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "burst", label: t("settings.rateLimit.burst", { defaultValue: "Burst" }), children: /* @__PURE__ */ e.jsx(re, { min: 1, style: { width: "100%" } }) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "quota", label: t("settings.rateLimit.quota", { defaultValue: "Quota" }), children: /* @__PURE__ */ e.jsx(re, { min: 0, style: { width: "100%" } }) }),
-          /* @__PURE__ */ e.jsx(o.Item, { name: "quota_period", label: t("settings.rateLimit.quotaPeriod", { defaultValue: "Quota period" }), children: /* @__PURE__ */ e.jsx(v, { placeholder: "1d" }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "subject_type", label: t("settings.rateLimit.subjectType", { defaultValue: "Subject" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(H, { options: vl }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "subject_id", label: t("settings.rateLimit.subjectId", { defaultValue: "Subject ID" }), children: /* @__PURE__ */ e.jsx(V, { placeholder: t("settings.rateLimit.subjectIdHint", { defaultValue: "Empty = all subjects of this type" }) }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "method", label: t("settings.rateLimit.method", { defaultValue: "Method" }), children: /* @__PURE__ */ e.jsx(V, { placeholder: "GET" }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "path", label: t("settings.rateLimit.path", { defaultValue: "Path" }), extra: t("settings.rateLimit.pathHint", { defaultValue: "Gin full path, e.g. /api/ai/chat/sessions/:sessionId. Empty = shared bucket." }), children: /* @__PURE__ */ e.jsx(V, {}) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "rate", label: t("settings.rateLimit.rate", { defaultValue: "Rate" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(ce, { min: 1, style: { width: "100%" } }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "period", label: t("settings.rateLimit.period", { defaultValue: "Period" }), children: /* @__PURE__ */ e.jsx(V, { placeholder: "1m" }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "burst", label: t("settings.rateLimit.burst", { defaultValue: "Burst" }), children: /* @__PURE__ */ e.jsx(ce, { min: 1, style: { width: "100%" } }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "quota", label: t("settings.rateLimit.quota", { defaultValue: "Quota" }), children: /* @__PURE__ */ e.jsx(ce, { min: 0, style: { width: "100%" } }) }),
+          /* @__PURE__ */ e.jsx(o.Item, { name: "quota_period", label: t("settings.rateLimit.quotaPeriod", { defaultValue: "Quota period" }), children: /* @__PURE__ */ e.jsx(V, { placeholder: "1d" }) }),
           /* @__PURE__ */ e.jsx(
             o.Item,
             {
@@ -3462,84 +3542,84 @@ description: ...
               valuePropName: "checked",
               initialValue: !0,
               extra: t("settings.rateLimit.enabledHint", { defaultValue: "Off: this rule is ignored and the next layer applies." }),
-              children: /* @__PURE__ */ e.jsx(oe, {})
+              children: /* @__PURE__ */ e.jsx(ue, {})
             }
           )
         ] })
       }
     )
   ] });
-}, { TextArea: Vl } = v, kl = /^[-_a-zA-Z0-9.]+$/, vl = () => {
-  const { message: s, modal: t } = me.useApp(), a = Ce(), { t: l, i18n: n } = G("system"), { t: i } = G("common"), r = (k) => {
-    if (!k) return "-";
-    const h = new Date(k);
-    return Number.isNaN(h.getTime()) ? "-" : h.toLocaleString(n.language, {
+}, { TextArea: wl } = V, Cl = /^[-_a-zA-Z0-9.]+$/, Tl = () => {
+  const { message: s, modal: t } = ge.useApp(), a = Fe(), { t: l, i18n: n } = G("system"), { t: i } = G("common"), r = (_) => {
+    if (!_) return "-";
+    const j = new Date(_);
+    return Number.isNaN(j.getTime()) ? "-" : j.toLocaleString(n.language, {
       dateStyle: "medium",
       timeStyle: "short"
     });
-  }, [m] = o.useForm(), [d, c] = b(!1), [f, V] = b(null), [x, O] = b(""), [I, L] = b(1), [_, q] = b(10), { loading: C, data: D, refresh: g } = A(
-    () => Ms({ current: I, page_size: _, search: x }),
+  }, [p] = o.useForm(), [d, c] = x(!1), [m, b] = x(null), [y, O] = x(""), [I, M] = x(1), [v, q] = x(10), { loading: w, data: U, refresh: f } = A(
+    () => Ws({ current: I, page_size: v, search: y }),
     {
-      refreshDeps: [I, _, x],
-      onError: (k) => {
-        s.error(l("settings.organizations.fetchFailed", { defaultValue: "Failed to fetch organizations" })), console.error("Failed to fetch organizations:", k);
+      refreshDeps: [I, v, y],
+      onError: (_) => {
+        s.error(l("settings.organizations.fetchFailed", { defaultValue: "Failed to fetch organizations" })), console.error("Failed to fetch organizations:", _);
       }
     }
-  ), { loading: J, run: Y } = A(
-    (k) => Ns(k),
+  ), { loading: W, run: Y } = A(
+    (_) => Ks(_),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(l("settings.organizations.createSuccess", { defaultValue: "Organization created successfully" })), c(!1), m.resetFields(), V(null), g();
+        s.success(l("settings.organizations.createSuccess", { defaultValue: "Organization created successfully" })), c(!1), p.resetFields(), b(null), f();
       },
-      onError: (k) => {
-        s.error((k == null ? void 0 : k.err) || l("settings.organizations.createFailed", { defaultValue: "Failed to create organization" }));
+      onError: (_) => {
+        s.error((_ == null ? void 0 : _.err) || l("settings.organizations.createFailed", { defaultValue: "Failed to create organization" }));
       }
     }
-  ), { loading: W, run: ee } = A(
-    ({ id: k, ...h }) => Ds({ id: k }, h),
+  ), { loading: J, run: le } = A(
+    ({ id: _, ...j }) => Gs({ id: _ }, j),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(l("settings.organizations.updateSuccess", { defaultValue: "Organization updated successfully" })), c(!1), m.resetFields(), V(null), g();
+        s.success(l("settings.organizations.updateSuccess", { defaultValue: "Organization updated successfully" })), c(!1), p.resetFields(), b(null), f();
       },
-      onError: (k) => {
-        s.error((k == null ? void 0 : k.err) || l("settings.organizations.updateFailed", { defaultValue: "Failed to update organization" }));
+      onError: (_) => {
+        s.error((_ == null ? void 0 : _.err) || l("settings.organizations.updateFailed", { defaultValue: "Failed to update organization" }));
       }
     }
   ), { run: Q } = A(
-    (k) => qs({ id: k }),
+    (_) => Qs({ id: _ }),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(l("settings.organizations.deleteSuccess", { defaultValue: "Organization deleted successfully" })), g();
+        s.success(l("settings.organizations.deleteSuccess", { defaultValue: "Organization deleted successfully" })), f();
       },
-      onError: (k) => {
-        s.error((k == null ? void 0 : k.err) || l("settings.organizations.deleteFailed", { defaultValue: "Failed to delete organization" }));
+      onError: (_) => {
+        s.error((_ == null ? void 0 : _.err) || l("settings.organizations.deleteFailed", { defaultValue: "Failed to delete organization" }));
       }
     }
-  ), te = () => {
-    V(null), m.resetFields(), m.setFieldsValue({ status: "active" }), c(!0);
-  }, F = (k) => {
-    V(k), m.setFieldsValue({
-      name: k.name,
-      slug: k.slug,
-      description: k.description,
-      status: k.status
+  ), se = () => {
+    b(null), p.resetFields(), p.setFieldsValue({ status: "active" }), c(!0);
+  }, T = (_) => {
+    b(_), p.setFieldsValue({
+      name: _.name,
+      slug: _.slug,
+      description: _.description,
+      status: _.status
     }), c(!0);
-  }, w = (k) => {
+  }, P = (_) => {
     t.confirm({
       title: l("settings.organizations.deleteConfirm", { defaultValue: "Delete Organization" }),
       content: l("settings.organizations.deleteConfirmContent", {
-        defaultValue: `Are you sure you want to delete organization "${k.name}"? This action cannot be undone.`
+        defaultValue: `Are you sure you want to delete organization "${_.name}"? This action cannot be undone.`
       }),
-      onOk: () => Q(k.id)
+      onOk: () => Q(_.id)
     });
-  }, M = () => {
-    m.validateFields().then((k) => {
-      f ? ee({ id: f.id, ...k }) : Y(k);
+  }, $ = () => {
+    p.validateFields().then((_) => {
+      m ? le({ id: m.id, ..._ }) : Y(_);
     });
-  }, H = [
+  }, N = [
     {
       title: l("settings.organizations.name", { defaultValue: "Name" }),
       dataIndex: "name",
@@ -3549,7 +3629,7 @@ description: ...
       title: l("settings.organizations.slug", { defaultValue: "Slug" }),
       dataIndex: "slug",
       key: "slug",
-      render: (k) => k || "-"
+      render: (_) => _ || "-"
     },
     {
       title: l("settings.organizations.description", { defaultValue: "Description" }),
@@ -3560,39 +3640,39 @@ description: ...
       title: l("settings.organizations.status", { defaultValue: "Status" }),
       dataIndex: "status",
       key: "status",
-      render: (k) => /* @__PURE__ */ e.jsx(ne, { color: k === "active" ? "green" : "default", children: k === "active" ? l("settings.organizations.active", { defaultValue: "Active" }) : l("settings.organizations.disabled", { defaultValue: "Disabled" }) })
+      render: (_) => /* @__PURE__ */ e.jsx(de, { color: _ === "active" ? "green" : "default", children: _ === "active" ? l("settings.organizations.active", { defaultValue: "Active" }) : l("settings.organizations.disabled", { defaultValue: "Disabled" }) })
     },
     {
       title: l("settings.organizations.createdAt", { defaultValue: "Created At" }),
       dataIndex: "created_at",
       key: "created_at",
       width: 200,
-      render: (k) => r(k)
+      render: (_) => r(_)
     },
     {
       title: i("actions", { defaultValue: "Actions" }),
       key: "actions",
-      render: (k, h) => /* @__PURE__ */ e.jsx(
-        qe,
+      render: (_, j) => /* @__PURE__ */ e.jsx(
+        $e,
         {
           actions: [
             {
               key: "view",
-              icon: /* @__PURE__ */ e.jsx(Dt, {}),
-              onClick: async () => a(`/system/settings/organizations/${h.id}`),
+              icon: /* @__PURE__ */ e.jsx(Kt, {}),
+              onClick: async () => a(`/system/settings/organizations/${j.id}`),
               permission: "system:organization:view"
             },
             {
               key: "edit",
-              icon: /* @__PURE__ */ e.jsx(Ne, {}),
-              onClick: async () => F(h),
+              icon: /* @__PURE__ */ e.jsx(qe, {}),
+              onClick: async () => T(j),
               permission: "system:organization:update"
             },
             {
               key: "delete",
-              icon: /* @__PURE__ */ e.jsx(Oe, {}),
+              icon: /* @__PURE__ */ e.jsx(Ne, {}),
               danger: !0,
-              onClick: async () => w(h),
+              onClick: async () => P(j),
               permission: "system:organization:delete"
             }
           ]
@@ -3605,68 +3685,68 @@ description: ...
       ie,
       {
         style: { marginBottom: 16 },
-        children: /* @__PURE__ */ e.jsxs(He, { justify: "space-between", align: "middle", children: [
-          /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsx(
-            v.Search,
+        children: /* @__PURE__ */ e.jsxs(Ke, { justify: "space-between", align: "middle", children: [
+          /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsx(
+            V.Search,
             {
               placeholder: l("settings.organizations.searchPlaceholder", { defaultValue: "Search organizations..." }),
               allowClear: !0,
-              onSearch: (k) => {
-                O(k), L(1);
+              onSearch: (_) => {
+                O(_), M(1);
               },
               style: { width: 300 }
             }
           ) }),
-          /* @__PURE__ */ e.jsx(ve, { children: /* @__PURE__ */ e.jsxs(K, { children: [
-            /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Se, {}), onClick: g, children: i("refresh", { defaultValue: "Refresh" }) }),
-            /* @__PURE__ */ e.jsx(ue, { permission: "system:organization:create", children: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(De, {}), onClick: te, children: l("settings.organizations.create", { defaultValue: "Create Organization" }) }) })
+          /* @__PURE__ */ e.jsx(Se, { children: /* @__PURE__ */ e.jsxs(K, { children: [
+            /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Ce, {}), onClick: f, children: i("refresh", { defaultValue: "Refresh" }) }),
+            /* @__PURE__ */ e.jsx(pe, { permission: "system:organization:create", children: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(Ue, {}), onClick: se, children: l("settings.organizations.create", { defaultValue: "Create Organization" }) }) })
           ] }) })
         ] })
       }
     ),
     /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx(
-      Pe,
+      Me,
       {
-        columns: H,
-        dataSource: (D == null ? void 0 : D.data) || [],
-        loading: C,
+        columns: N,
+        dataSource: (U == null ? void 0 : U.data) || [],
+        loading: w,
         rowKey: "id",
         pagination: {
           current: I,
-          pageSize: _,
-          total: (D == null ? void 0 : D.total) || 0,
+          pageSize: v,
+          total: (U == null ? void 0 : U.total) || 0,
           showSizeChanger: !0,
-          showTotal: (k, h) => i("pagination.total", {
-            defaultValue: `${h[0]}-${h[1]} of ${k} items`,
-            start: h[0],
-            end: h[1],
-            total: k
+          showTotal: (_, j) => i("pagination.total", {
+            defaultValue: `${j[0]}-${j[1]} of ${_} items`,
+            start: j[0],
+            end: j[1],
+            total: _
           }),
-          onChange: (k, h) => {
-            L(k), q(h);
+          onChange: (_, j) => {
+            M(_), q(j);
           }
         }
       }
     ) }),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
-        title: f ? l("settings.organizations.edit", { defaultValue: "Edit Organization" }) : l("settings.organizations.create", { defaultValue: "Create Organization" }),
+        title: m ? l("settings.organizations.edit", { defaultValue: "Edit Organization" }) : l("settings.organizations.create", { defaultValue: "Create Organization" }),
         open: d,
-        onOk: M,
+        onOk: $,
         onCancel: () => {
-          c(!1), m.resetFields(), V(null);
+          c(!1), p.resetFields(), b(null);
         },
-        confirmLoading: J || W,
+        confirmLoading: W || J,
         width: 600,
-        children: /* @__PURE__ */ e.jsxs(o, { form: m, layout: "vertical", children: [
+        children: /* @__PURE__ */ e.jsxs(o, { form: p, layout: "vertical", children: [
           /* @__PURE__ */ e.jsx(
             o.Item,
             {
               name: "name",
               label: l("settings.organizations.name", { defaultValue: "Name" }),
               rules: [{ required: !0, message: l("settings.organizations.nameRequired", { defaultValue: "Please enter organization name" }) }],
-              children: /* @__PURE__ */ e.jsx(v, {})
+              children: /* @__PURE__ */ e.jsx(V, {})
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -3676,10 +3756,10 @@ description: ...
               label: l("settings.organizations.slug", { defaultValue: "Slug" }),
               tooltip: l("settings.organizations.slugTooltip", { defaultValue: "Optional unique identifier. Only letters, digits, hyphens, underscores, and dots are allowed." }),
               rules: [{
-                pattern: kl,
+                pattern: Cl,
                 message: l("settings.organizations.slugInvalid", { defaultValue: "Slug may only contain letters, digits, hyphens, underscores, and dots" })
               }],
-              children: /* @__PURE__ */ e.jsx(v, { placeholder: "my-org" })
+              children: /* @__PURE__ */ e.jsx(V, { placeholder: "my-org" })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -3687,7 +3767,7 @@ description: ...
             {
               name: "description",
               label: l("settings.organizations.description", { defaultValue: "Description" }),
-              children: /* @__PURE__ */ e.jsx(Vl, { rows: 3 })
+              children: /* @__PURE__ */ e.jsx(wl, { rows: 3 })
             }
           ),
           /* @__PURE__ */ e.jsx(
@@ -3696,9 +3776,9 @@ description: ...
               name: "status",
               label: l("settings.organizations.status", { defaultValue: "Status" }),
               rules: [{ required: !0 }],
-              children: /* @__PURE__ */ e.jsxs($, { children: [
-                /* @__PURE__ */ e.jsx($.Option, { value: "active", children: l("settings.organizations.active", { defaultValue: "Active" }) }),
-                /* @__PURE__ */ e.jsx($.Option, { value: "disabled", children: l("settings.organizations.disabled", { defaultValue: "Disabled" }) })
+              children: /* @__PURE__ */ e.jsxs(H, { children: [
+                /* @__PURE__ */ e.jsx(H.Option, { value: "active", children: l("settings.organizations.active", { defaultValue: "Active" }) }),
+                /* @__PURE__ */ e.jsx(H.Option, { value: "disabled", children: l("settings.organizations.disabled", { defaultValue: "Disabled" }) })
               ] })
             }
           )
@@ -3706,180 +3786,180 @@ description: ...
       }
     )
   ] });
-}, _l = ({
+}, Fl = ({
   transformItems: s = (t) => t
 }) => {
-  const { t } = G("system"), a = Ce(), l = Rs(), r = l.hash.replace("#", "") || "base", { enableMultiOrg: m } = jt(), { hasPermission: d } = bt(), c = [
+  const { t } = G("system"), a = Fe(), l = Js(), r = l.hash.replace("#", "") || "base", { enableMultiOrg: p } = _t(), { hasPermission: d } = St(), c = [
     {
       key: "base",
       label: t("settings.tabs.base", { defaultValue: "Base Settings" }),
-      children: /* @__PURE__ */ e.jsx(al, {}),
+      children: /* @__PURE__ */ e.jsx(cl, {}),
       hidden: !d("system:settings:update")
     },
     {
       key: "security",
       label: t("settings.tabs.security", { defaultValue: "Security Settings" }),
-      children: /* @__PURE__ */ e.jsx(el, {}),
+      children: /* @__PURE__ */ e.jsx(ol, {}),
       hidden: !d("system:security:update")
     },
     {
       key: "oauth",
       label: t("settings.tabs.oauth", { defaultValue: "OAuth Settings" }),
-      children: /* @__PURE__ */ e.jsx(Ys, {}),
+      children: /* @__PURE__ */ e.jsx(nl, {}),
       hidden: !d("system:settings:update")
     },
     {
       key: "ldap",
       label: t("settings.tabs.ldap", { defaultValue: "LDAP Settings" }),
-      children: /* @__PURE__ */ e.jsx(sl, {}),
+      children: /* @__PURE__ */ e.jsx(dl, {}),
       hidden: !d("system:settings:update")
     },
     {
       key: "smtp",
       label: t("settings.tabs.smtp", { defaultValue: "SMTP Settings" }),
-      children: /* @__PURE__ */ e.jsx(ll, {}),
+      children: /* @__PURE__ */ e.jsx(ul, {}),
       hidden: !d("system:settings:update")
     },
     {
       key: "ai-models",
       label: t("settings.tabs.aiModels", { defaultValue: "AI Models" }),
-      children: /* @__PURE__ */ e.jsx(ol, {}),
+      children: /* @__PURE__ */ e.jsx(pl, {}),
       hidden: !d("ai:models:view")
     },
     {
       key: "ai-toolsets",
       label: t("settings.tabs.toolSets", { defaultValue: "Tool Sets" }),
-      children: /* @__PURE__ */ e.jsx(cl, {}),
+      children: /* @__PURE__ */ e.jsx(hl, {}),
       hidden: !d("system:toolsets:view")
     },
     {
       key: "skills",
       label: t("settings.tabs.skills", { defaultValue: "Skills" }),
-      children: /* @__PURE__ */ e.jsx(gl, {}),
+      children: /* @__PURE__ */ e.jsx(bl, {}),
       hidden: !d("system:skills:view")
     },
     {
       key: "task",
       label: t("settings.tabs.task", { defaultValue: "Task Settings" }),
-      children: /* @__PURE__ */ e.jsx(hl, {}),
+      children: /* @__PURE__ */ e.jsx(Vl, {}),
       hidden: !d("system:settings:update")
     },
     {
       key: "rate-limit",
       label: t("settings.tabs.rateLimit", { defaultValue: "Rate Limit" }),
-      children: /* @__PURE__ */ e.jsx(bl, {}),
+      children: /* @__PURE__ */ e.jsx(Sl, {}),
       hidden: !d("system:rate_limit:view") && !d("system:rate_limit:update")
     },
     // Only show organization tab if multi-org is enabled
-    ...m ? [{
+    ...p ? [{
       key: "organizations",
       label: t("settings.tabs.organizations", { defaultValue: "Organizations" }),
-      children: /* @__PURE__ */ e.jsx(vl, {}),
+      children: /* @__PURE__ */ e.jsx(Tl, {}),
       hidden: !d("system:organization:view")
     }] : []
   ];
   return /* @__PURE__ */ e.jsx(ie, { title: t("settings.title", { defaultValue: "System Settings" }), children: /* @__PURE__ */ e.jsx(
-    Ot,
+    Bt,
     {
       defaultActiveKey: r,
-      onChange: (f) => {
-        a(`${l.pathname}#${f}`);
+      onChange: (m) => {
+        a(`${l.pathname}#${m}`);
       },
-      items: s(c.filter((f) => !f.hidden), t)
+      items: s(c.filter((m) => !m.hidden), t)
     }
   ) });
-}, ha = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, ja = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: _l
-}, Symbol.toStringTag, { value: "Module" })), Sl = () => {
-  var Te, be, Ve;
-  const { message: s, modal: t } = me.useApp(), a = Ce(), { id: l } = rt(), { t: n } = G("system"), { t: i } = G("common"), [r] = o.useForm(), [m] = o.useForm(), [d, c] = b(!1), [f, V] = b(!1), [x, O] = b(null), [I, L] = b(""), [_, q] = b(1), [C, D] = b(10), { data: g, loading: J, refresh: Y } = A(
-    () => Us({ id: l }),
+  default: Fl
+}, Symbol.toStringTag, { value: "Module" })), Il = () => {
+  var Ie, ve, Ae;
+  const { message: s, modal: t } = ge.useApp(), a = Fe(), { id: l } = mt(), { t: n } = G("system"), { t: i } = G("common"), [r] = o.useForm(), [p] = o.useForm(), [d, c] = x(!1), [m, b] = x(!1), [y, O] = x(null), [I, M] = x(""), [v, q] = x(1), [w, U] = x(10), { data: f, loading: W, refresh: Y } = A(
+    () => Zs({ id: l }),
     {
       ready: !!l,
-      onError: (T) => {
-        s.error(n("settings.organizations.fetchFailed", { defaultValue: "Failed to fetch organization" })), console.error("Failed to fetch organization:", T);
+      onError: (C) => {
+        s.error(n("settings.organizations.fetchFailed", { defaultValue: "Failed to fetch organization" })), console.error("Failed to fetch organization:", C);
       }
     }
-  ), { data: W, loading: ee, refresh: Q } = A(
-    () => $s({ id: l, current: _, page_size: C, search: I }),
+  ), { data: J, loading: le, refresh: Q } = A(
+    () => Xs({ id: l, current: v, page_size: w, search: I }),
     {
       ready: !!l,
-      refreshDeps: [l, _, C, I],
-      onError: (T) => {
-        s.error(n("settings.organizations.users.fetchFailed", { defaultValue: "Failed to fetch organization users" })), console.error("Failed to fetch organization users:", T);
+      refreshDeps: [l, v, w, I],
+      onError: (C) => {
+        s.error(n("settings.organizations.users.fetchFailed", { defaultValue: "Failed to fetch organization users" })), console.error("Failed to fetch organization users:", C);
       }
     }
-  ), { data: te, loading: F } = A(
-    () => Ws({ current: 1, page_size: 1e3 }),
+  ), { data: se, loading: T } = A(
+    () => sl({ current: 1, page_size: 1e3 }),
     {
       ready: d
     }
-  ), { data: w, loading: M } = A(
-    () => Ks({ organization_id: l, current: 1, page_size: 1e3 }),
+  ), { data: P, loading: $ } = A(
+    () => ll({ organization_id: l, current: 1, page_size: 1e3 }),
     {
       ready: !!l
     }
-  ), { loading: H, run: k } = A(
-    (T) => Bs({ id: l }, T),
+  ), { loading: N, run: _ } = A(
+    (C) => Ys({ id: l }, C),
     {
       manual: !0,
       onSuccess: () => {
         s.success(n("settings.organizations.users.addSuccess", { defaultValue: "User added to organization successfully" })), c(!1), r.resetFields(), Q();
       },
-      onError: (T) => {
-        s.error((T == null ? void 0 : T.err) || n("settings.organizations.users.addFailed", { defaultValue: "Failed to add user to organization" }));
+      onError: (C) => {
+        s.error((C == null ? void 0 : C.err) || n("settings.organizations.users.addFailed", { defaultValue: "Failed to add user to organization" }));
       }
     }
-  ), { loading: h, run: R } = A(
-    (T) => Js({ id: l, user_id: x.id }, T),
+  ), { loading: j, run: F } = A(
+    (C) => el({ id: l, user_id: y.id }, C),
     {
       manual: !0,
       onSuccess: () => {
-        s.success(n("settings.organizations.users.updateRolesSuccess", { defaultValue: "User roles updated successfully" })), V(!1), m.resetFields(), O(null), Q();
+        s.success(n("settings.organizations.users.updateRolesSuccess", { defaultValue: "User roles updated successfully" })), b(!1), p.resetFields(), O(null), Q();
       },
-      onError: (T) => {
-        s.error((T == null ? void 0 : T.err) || n("settings.organizations.users.updateRolesFailed", { defaultValue: "Failed to update user roles" }));
+      onError: (C) => {
+        s.error((C == null ? void 0 : C.err) || n("settings.organizations.users.updateRolesFailed", { defaultValue: "Failed to update user roles" }));
       }
     }
-  ), { run: N } = A(
-    (T) => Hs({ id: l, user_id: T }),
+  ), { run: R } = A(
+    (C) => tl({ id: l, user_id: C }),
     {
       manual: !0,
       onSuccess: () => {
         s.success(n("settings.organizations.users.removeSuccess", { defaultValue: "User removed from organization successfully" })), Q();
       },
-      onError: (T) => {
-        s.error((T == null ? void 0 : T.err) || n("settings.organizations.users.removeFailed", { defaultValue: "Failed to remove user from organization" }));
+      onError: (C) => {
+        s.error((C == null ? void 0 : C.err) || n("settings.organizations.users.removeFailed", { defaultValue: "Failed to remove user from organization" }));
       }
     }
-  ), B = () => {
+  ), Z = () => {
     c(!0), r.resetFields();
-  }, Z = (T) => {
-    var ae;
-    O(T), m.setFieldsValue({
-      role_ids: ((ae = T.organization_roles) == null ? void 0 : ae.map((fe) => fe.id)) || []
-    }), V(!0);
-  }, de = (T) => {
+  }, B = (C) => {
+    var oe;
+    O(C), p.setFieldsValue({
+      role_ids: ((oe = C.organization_roles) == null ? void 0 : oe.map((be) => be.id)) || []
+    }), b(!0);
+  }, ne = (C) => {
     t.confirm({
       title: n("settings.organizations.users.removeConfirm", { defaultValue: "Remove User" }),
       content: n("settings.organizations.users.removeConfirmContent", {
-        defaultValue: `Are you sure you want to remove user "${T.full_name || T.username}" from this organization? This will also remove all their roles in this organization.`
+        defaultValue: `Are you sure you want to remove user "${C.full_name || C.username}" from this organization? This will also remove all their roles in this organization.`
       }),
-      onOk: () => N(T.id)
+      onOk: () => R(C.id)
     });
-  }, he = () => {
-    r.validateFields().then((T) => {
-      k(T);
+  }, je = () => {
+    r.validateFields().then((C) => {
+      _(C);
     });
-  }, Ae = () => {
-    m.validateFields().then((T) => {
-      R(T);
+  }, Pe = () => {
+    p.validateFields().then((C) => {
+      F(C);
     });
-  }, Ee = ((Te = te == null ? void 0 : te.data) == null ? void 0 : Te.filter((T) => {
-    var ae;
-    return !((ae = W == null ? void 0 : W.data) != null && ae.some((fe) => fe.id === T.id));
-  })) || [], ze = [
+  }, Le = ((Ie = se == null ? void 0 : se.data) == null ? void 0 : Ie.filter((C) => {
+    var oe;
+    return !((oe = J == null ? void 0 : J.data) != null && oe.some((be) => be.id === C.id));
+  })) || [], Oe = [
     {
       title: n("settings.organizations.users.username", { defaultValue: "Username" }),
       dataIndex: "username",
@@ -3899,35 +3979,35 @@ description: ...
       title: n("settings.organizations.users.status", { defaultValue: "Status" }),
       dataIndex: "status",
       key: "status",
-      render: (T) => /* @__PURE__ */ e.jsx(ne, { color: T === "active" ? "green" : "default", children: T === "active" ? n("settings.organizations.active", { defaultValue: "Active" }) : T })
+      render: (C) => /* @__PURE__ */ e.jsx(de, { color: C === "active" ? "green" : "default", children: C === "active" ? n("settings.organizations.active", { defaultValue: "Active" }) : C })
     },
     {
       title: n("settings.organizations.users.roles", { defaultValue: "Roles" }),
       key: "roles",
-      render: (T, ae) => {
-        var fe;
-        return /* @__PURE__ */ e.jsx(K, { wrap: !0, children: ((fe = ae.organization_roles) == null ? void 0 : fe.map((Fe) => /* @__PURE__ */ e.jsx(ne, { children: Fe.name }, Fe.id))) || /* @__PURE__ */ e.jsx(ne, { children: "No roles" }) });
+      render: (C, oe) => {
+        var be;
+        return /* @__PURE__ */ e.jsx(K, { wrap: !0, children: ((be = oe.organization_roles) == null ? void 0 : be.map((Te) => /* @__PURE__ */ e.jsx(de, { children: Te.name }, Te.id))) || /* @__PURE__ */ e.jsx(de, { children: "No roles" }) });
       }
     },
     {
       title: i("actions", { defaultValue: "Actions" }),
       key: "actions",
-      render: (T, ae) => /* @__PURE__ */ e.jsx(
-        qe,
+      render: (C, oe) => /* @__PURE__ */ e.jsx(
+        $e,
         {
           actions: [
             {
               key: "edit",
               label: n("settings.organizations.users.editRoles", { defaultValue: "Edit Roles" }),
-              icon: /* @__PURE__ */ e.jsx(Ne, {}),
-              onClick: async () => Z(ae)
+              icon: /* @__PURE__ */ e.jsx(qe, {}),
+              onClick: async () => B(oe)
             },
             {
               key: "delete",
               label: n("settings.organizations.users.remove", { defaultValue: "Remove" }),
-              icon: /* @__PURE__ */ e.jsx(Oe, {}),
+              icon: /* @__PURE__ */ e.jsx(Ne, {}),
               danger: !0,
-              onClick: async () => de(ae)
+              onClick: async () => ne(oe)
             }
           ]
         }
@@ -3942,7 +4022,7 @@ description: ...
           /* @__PURE__ */ e.jsx(
             E,
             {
-              icon: /* @__PURE__ */ e.jsx(yt, {}),
+              icon: /* @__PURE__ */ e.jsx(kt, {}),
               onClick: () => a("/system/settings#organizations"),
               children: i("back", { defaultValue: "Back" })
             }
@@ -3950,18 +4030,18 @@ description: ...
           /* @__PURE__ */ e.jsxs("span", { children: [
             n("settings.organizations.detail", { defaultValue: "Organization Detail" }),
             ": ",
-            g == null ? void 0 : g.name
+            f == null ? void 0 : f.name
           ] })
         ] }),
-        extra: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Se, {}), onClick: () => {
+        extra: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Ce, {}), onClick: () => {
           Y(), Q();
         }, children: i("refresh", { defaultValue: "Refresh" }) }),
-        loading: J,
-        children: /* @__PURE__ */ e.jsxs(pe, { column: 2, bordered: !0, children: [
-          /* @__PURE__ */ e.jsx(pe.Item, { label: n("settings.organizations.name", { defaultValue: "Name" }), children: g == null ? void 0 : g.name }),
-          /* @__PURE__ */ e.jsx(pe.Item, { label: n("settings.organizations.slug", { defaultValue: "Slug" }), children: (g == null ? void 0 : g.slug) || "-" }),
-          /* @__PURE__ */ e.jsx(pe.Item, { label: n("settings.organizations.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(ne, { color: (g == null ? void 0 : g.status) === "active" ? "green" : "default", children: (g == null ? void 0 : g.status) === "active" ? n("settings.organizations.active", { defaultValue: "Active" }) : n("settings.organizations.disabled", { defaultValue: "Disabled" }) }) }),
-          /* @__PURE__ */ e.jsx(pe.Item, { label: n("settings.organizations.description", { defaultValue: "Description" }), span: 2, children: (g == null ? void 0 : g.description) || "-" })
+        loading: W,
+        children: /* @__PURE__ */ e.jsxs(he, { column: 2, bordered: !0, children: [
+          /* @__PURE__ */ e.jsx(he.Item, { label: n("settings.organizations.name", { defaultValue: "Name" }), children: f == null ? void 0 : f.name }),
+          /* @__PURE__ */ e.jsx(he.Item, { label: n("settings.organizations.slug", { defaultValue: "Slug" }), children: (f == null ? void 0 : f.slug) || "-" }),
+          /* @__PURE__ */ e.jsx(he.Item, { label: n("settings.organizations.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(de, { color: (f == null ? void 0 : f.status) === "active" ? "green" : "default", children: (f == null ? void 0 : f.status) === "active" ? n("settings.organizations.active", { defaultValue: "Active" }) : n("settings.organizations.disabled", { defaultValue: "Disabled" }) }) }),
+          /* @__PURE__ */ e.jsx(he.Item, { label: n("settings.organizations.description", { defaultValue: "Description" }), span: 2, children: (f == null ? void 0 : f.description) || "-" })
         ] })
       }
     ),
@@ -3969,35 +4049,35 @@ description: ...
       ie,
       {
         title: n("settings.organizations.users.title", { defaultValue: "Organization Users" }),
-        extra: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(De, {}), onClick: B, children: n("settings.organizations.users.add", { defaultValue: "Add User" }) }),
+        extra: /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(Ue, {}), onClick: Z, children: n("settings.organizations.users.add", { defaultValue: "Add User" }) }),
         style: { marginTop: 16 },
         children: /* @__PURE__ */ e.jsxs(K, { direction: "vertical", style: { width: "100%" }, size: "middle", children: [
           /* @__PURE__ */ e.jsx(
-            v.Search,
+            V.Search,
             {
               placeholder: n("settings.organizations.users.searchPlaceholder", { defaultValue: "Search users..." }),
               allowClear: !0,
-              onSearch: (T) => {
-                L(T), q(1);
+              onSearch: (C) => {
+                M(C), q(1);
               },
               style: { width: 300 }
             }
           ),
           /* @__PURE__ */ e.jsx(
-            Pe,
+            Me,
             {
-              columns: ze,
-              dataSource: (W == null ? void 0 : W.data) || [],
-              loading: ee,
+              columns: Oe,
+              dataSource: (J == null ? void 0 : J.data) || [],
+              loading: le,
               rowKey: "id",
               pagination: {
-                current: _,
-                pageSize: C,
-                total: (W == null ? void 0 : W.total) || 0,
+                current: v,
+                pageSize: w,
+                total: (J == null ? void 0 : J.total) || 0,
                 showSizeChanger: !0,
-                showTotal: (T) => i("pagination.total", { defaultValue: `Total ${T} items` }),
-                onChange: (T, ae) => {
-                  q(T), D(ae);
+                showTotal: (C) => i("pagination.total", { defaultValue: `Total ${C} items` }),
+                onChange: (C, oe) => {
+                  q(C), U(oe);
                 }
               }
             }
@@ -4006,15 +4086,15 @@ description: ...
       }
     ),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
         title: n("settings.organizations.users.add", { defaultValue: "Add User" }),
         open: d,
-        onOk: he,
+        onOk: je,
         onCancel: () => {
           c(!1), r.resetFields();
         },
-        confirmLoading: H,
+        confirmLoading: N,
         width: 600,
         children: /* @__PURE__ */ e.jsxs(o, { form: r, layout: "vertical", children: [
           /* @__PURE__ */ e.jsx(
@@ -4024,15 +4104,15 @@ description: ...
               label: n("settings.organizations.users.user", { defaultValue: "User" }),
               rules: [{ required: !0, message: n("settings.organizations.users.userRequired", { defaultValue: "Please select a user" }) }],
               children: /* @__PURE__ */ e.jsx(
-                $,
+                H,
                 {
                   showSearch: !0,
                   placeholder: n("settings.organizations.users.selectUser", { defaultValue: "Select a user" }),
-                  loading: F,
-                  filterOption: (T, ae) => ((ae == null ? void 0 : ae.label) ?? "").toLowerCase().includes(T.toLowerCase()),
-                  options: Ee.map((T) => ({
-                    label: `${T.full_name || T.username} (${T.email})`,
-                    value: T.id
+                  loading: T,
+                  filterOption: (C, oe) => ((oe == null ? void 0 : oe.label) ?? "").toLowerCase().includes(C.toLowerCase()),
+                  options: Le.map((C) => ({
+                    label: `${C.full_name || C.username} (${C.email})`,
+                    value: C.id
                   }))
                 }
               )
@@ -4044,14 +4124,14 @@ description: ...
               name: "role_ids",
               label: n("settings.organizations.users.roles", { defaultValue: "Roles" }),
               children: /* @__PURE__ */ e.jsx(
-                $,
+                H,
                 {
                   mode: "multiple",
                   placeholder: n("settings.organizations.users.selectRoles", { defaultValue: "Select roles (optional)" }),
-                  loading: M,
-                  options: ((be = w == null ? void 0 : w.data) == null ? void 0 : be.map((T) => ({
-                    label: T.name,
-                    value: T.id
+                  loading: $,
+                  options: ((ve = P == null ? void 0 : P.data) == null ? void 0 : ve.map((C) => ({
+                    label: C.name,
+                    value: C.id
                   }))) || []
                 }
               )
@@ -4061,25 +4141,25 @@ description: ...
       }
     ),
     /* @__PURE__ */ e.jsx(
-      ce,
+      fe,
       {
         title: n("settings.organizations.users.editRoles", { defaultValue: "Edit Roles" }),
-        open: f,
-        onOk: Ae,
+        open: m,
+        onOk: Pe,
         onCancel: () => {
-          V(!1), m.resetFields(), O(null);
+          b(!1), p.resetFields(), O(null);
         },
-        confirmLoading: h,
+        confirmLoading: j,
         width: 600,
-        children: /* @__PURE__ */ e.jsxs(o, { form: m, layout: "vertical", children: [
+        children: /* @__PURE__ */ e.jsxs(o, { form: p, layout: "vertical", children: [
           /* @__PURE__ */ e.jsx(
             o.Item,
             {
               label: n("settings.organizations.users.user", { defaultValue: "User" }),
               children: /* @__PURE__ */ e.jsx(
-                v,
+                V,
                 {
-                  value: (x == null ? void 0 : x.full_name) || (x == null ? void 0 : x.username),
+                  value: (y == null ? void 0 : y.full_name) || (y == null ? void 0 : y.username),
                   disabled: !0
                 }
               )
@@ -4091,14 +4171,14 @@ description: ...
               name: "role_ids",
               label: n("settings.organizations.users.roles", { defaultValue: "Roles" }),
               children: /* @__PURE__ */ e.jsx(
-                $,
+                H,
                 {
                   mode: "multiple",
                   placeholder: n("settings.organizations.users.selectRoles", { defaultValue: "Select roles" }),
-                  loading: M,
-                  options: ((Ve = w == null ? void 0 : w.data) == null ? void 0 : Ve.map((T) => ({
-                    label: T.name,
-                    value: T.id
+                  loading: $,
+                  options: ((Ae = P == null ? void 0 : P.data) == null ? void 0 : Ae.map((C) => ({
+                    label: C.name,
+                    value: C.id
                   }))) || []
                 }
               )
@@ -4108,10 +4188,10 @@ description: ...
       }
     )
   ] });
-}, xa = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, ba = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Sl
-}, Symbol.toStringTag, { value: "Module" })), wl = et(() => import("./markdown-viewer.js")), Cl = Vt(({ css: s }) => ({
+  default: Il
+}, Symbol.toStringTag, { value: "Module" })), Al = Vt(() => import("./markdown-viewer.js")), El = wt(({ css: s }) => ({
   fileTree: s`
     .ant-tree-node-content-wrapper{
       padding-inline: 0px;
@@ -4132,47 +4212,47 @@ description: ...
       min-width: 0;
     }
     `
-})), { TextArea: Ct } = v, Tl = (s) => s.toLowerCase().endsWith(".md");
-function Zt(s) {
+})), { TextArea: Lt } = V, zl = (s) => s.toLowerCase().endsWith(".md");
+function ns(s) {
   return s.map((t) => {
     var a;
     return {
       key: t.path,
       title: t.name,
       isLeaf: !t.is_dir,
-      icon: t.is_dir ? /* @__PURE__ */ e.jsx(Ut, {}) : /* @__PURE__ */ e.jsx($t, {}),
-      children: (a = t.children) != null && a.length ? Zt(t.children) : void 0
+      icon: t.is_dir ? /* @__PURE__ */ e.jsx(Qt, {}) : /* @__PURE__ */ e.jsx(Zt, {}),
+      children: (a = t.children) != null && a.length ? ns(t.children) : void 0
     };
   });
 }
-function pt(s) {
+function gt(s) {
   return s.includes("/") ? s.replace(/\/[^/]+$/, "") : "";
 }
-const Fl = () => {
-  const { message: s, modal: t } = me.useApp(), { styles: a } = Cl(), { id: l } = rt(), n = Ce(), { t: i } = G("system"), [r, m] = b(null), [d, c] = b(null), [f, V] = b(!1), [x, O] = b(""), [I, L] = b(!1), [_, q] = b([]), [C, D] = b(!1), [g, J] = b(!1), [Y, W] = b(""), [ee] = o.useForm(), [Q, te] = b(null), [F, w] = b(null), [M, H] = b(""), [k] = o.useForm(), { data: h } = A(
-    () => l ? S.system.getSkill({ id: l }) : Promise.reject(new Error("No id")),
+const Pl = () => {
+  const { message: s, modal: t } = ge.useApp(), { styles: a } = El(), { id: l } = mt(), n = Fe(), { t: i } = G("system"), [r, p] = x(null), [d, c] = x(null), [m, b] = x(!1), [y, O] = x(""), [I, M] = x(!1), [v, q] = x([]), [w, U] = x(!1), [f, W] = x(!1), [Y, J] = x(""), [le] = o.useForm(), [Q, se] = x(null), [T, P] = x(null), [$, N] = x(""), [_] = o.useForm(), { data: j } = A(
+    () => l ? k.system.getSkill({ id: l }) : Promise.reject(new Error("No id")),
     { refreshDeps: [l], ready: !!l }
-  ), { data: R, loading: N, refresh: B } = A(
-    () => l ? S.system.listSkillFilesTree({ id: l }) : Promise.reject(new Error("No id")),
+  ), { data: F, loading: R, refresh: Z } = A(
+    () => l ? k.system.listSkillFilesTree({ id: l }) : Promise.reject(new Error("No id")),
     {
       refreshDeps: [l],
       ready: !!l,
       onSuccess: (z) => {
         if (!r) {
-          for (const p of z)
-            if (!p.is_dir && p.name === "SKILL.md") {
-              c(p.path), m(p.path), V(!1);
+          for (const D of z)
+            if (!D.is_dir && D.name === "SKILL.md") {
+              c(D.path), p(D.path), b(!1);
               return;
             }
-          for (const p of z)
-            if (!p.is_dir && p.name === "SKILLS.md") {
-              c(p.path), m(p.path), V(!1);
+          for (const D of z)
+            if (!D.is_dir && D.name === "SKILLS.md") {
+              c(D.path), p(D.path), b(!1);
               return;
             }
         }
       }
     }
-  ), Z = !!(h != null && h.is_preset), de = ye(() => Zt(R || []), [R]), he = f && d ? d : r ? pt(r) : "", { loading: Ae } = A(() => !l || !r ? Promise.reject(new Error("No id or selected file")) : S.system.getSkillFile({ id: l, path: r || "" }), {
+  ), B = !!(j != null && j.is_preset), ne = ke(() => ns(F || []), [F]), je = m && d ? d : r ? gt(r) : "", { loading: Pe } = A(() => !l || !r ? Promise.reject(new Error("No id or selected file")) : k.system.getSkillFile({ id: l, path: r || "" }), {
     refreshDeps: [l, r],
     ready: !!l && !!r,
     onSuccess: (z) => {
@@ -4182,123 +4262,123 @@ const Fl = () => {
       O("");
     },
     onError: () => s.error(i("settings.skills.editor.failedToLoadFile", { defaultValue: "Failed to load file" }))
-  }), Ee = () => {
-    !l || !r || Z || S.system.putSkillFile({ id: l, path: r }, x).then(() => {
-      s.success(i("settings.skills.editor.saved", { defaultValue: "Saved" })), L(!1);
+  }), Le = () => {
+    !l || !r || B || k.system.putSkillFile({ id: l, path: r }, y).then(() => {
+      s.success(i("settings.skills.editor.saved", { defaultValue: "Saved" })), M(!1);
     }).catch(() => s.error(i("settings.skills.editor.failedToSave", { defaultValue: "Failed to save" })));
-  }, ze = (z, p) => {
-    const P = String(p.node.key), le = !p.node.isLeaf;
-    c(P), V(le), p.node.isLeaf ? m(P) : m(null);
-  }, Te = (z) => {
-    z.event.preventDefault(), te({
+  }, Oe = (z, D) => {
+    const ae = String(D.node.key), me = !D.node.isLeaf;
+    c(ae), b(me), D.node.isLeaf ? p(ae) : p(null);
+  }, Ie = (z) => {
+    z.event.preventDefault(), se({
       path: String(z.node.key),
       isDir: !z.node.isLeaf,
       x: z.event.clientX,
       y: z.event.clientY
     });
-  }, be = xe(() => te(null), []), Ve = xe(
+  }, ve = Ve(() => se(null), []), Ae = Ve(
     (z) => {
-      if (!l || !Q || Z) return;
-      const { path: p, isDir: P } = Q;
-      switch (be(), z) {
+      if (!l || !Q || B) return;
+      const { path: D, isDir: ae } = Q;
+      switch (ve(), z) {
         case "open":
-          m(p), c(p), V(!1);
+          p(D), c(D), b(!1);
           break;
         case "rename": {
-          const le = p.includes("/") ? p.split("/").pop() : p;
-          w({ path: p, isDir: P }), H(le), setTimeout(() => k.setFieldsValue({ name: le }), 0);
+          const me = D.includes("/") ? D.split("/").pop() : D;
+          P({ path: D, isDir: ae }), N(me), setTimeout(() => _.setFieldsValue({ name: me }), 0);
           break;
         }
         case "delete":
           t.confirm({
             title: i("settings.skills.editor.deleteConfirm", { defaultValue: "Delete?" }),
-            content: P ? i("settings.skills.editor.deleteConfirmContentDir", { path: p, defaultValue: `Delete ${p}? This will remove the folder and all its contents.` }) : i("settings.skills.editor.deleteConfirmContent", { path: p, defaultValue: `Delete ${p}?` }),
-            onOk: () => S.system.deleteSkillPath({ id: l, path: p }).then(() => {
-              s.success(i("settings.skills.editor.deleted", { defaultValue: "Deleted" })), r === p && (m(null), O("")), d === p && (c(null), V(!1)), B();
+            content: ae ? i("settings.skills.editor.deleteConfirmContentDir", { path: D, defaultValue: `Delete ${D}? This will remove the folder and all its contents.` }) : i("settings.skills.editor.deleteConfirmContent", { path: D, defaultValue: `Delete ${D}?` }),
+            onOk: () => k.system.deleteSkillPath({ id: l, path: D }).then(() => {
+              s.success(i("settings.skills.editor.deleted", { defaultValue: "Deleted" })), r === D && (p(null), O("")), d === D && (c(null), b(!1)), Z();
             }).catch(() => s.error(i("settings.skills.editor.failedToDelete", { defaultValue: "Failed to delete" })))
           });
           break;
         case "newFile":
-          c(p), V(P), D(!0);
+          c(D), b(ae), U(!0);
           break;
         case "newDir":
-          c(p), V(P), J(!0);
+          c(D), b(ae), W(!0);
           break;
       }
     },
-    [l, Q, be, B, r, d, k, i, Z]
-  ), T = () => {
-    if (!l || !F || Z) return;
-    const z = (k.getFieldValue("name") ?? M).trim();
+    [l, Q, ve, Z, r, d, _, i, B]
+  ), C = () => {
+    if (!l || !T || B) return;
+    const z = (_.getFieldValue("name") ?? $).trim();
     if (!z) {
       s.error(i("settings.skills.editor.nameRequired", { defaultValue: "Name is required" }));
       return;
     }
-    if (!F.isDir && !/\.(md|txt)$/i.test(z)) {
+    if (!T.isDir && !/\.(md|txt)$/i.test(z)) {
       s.error(i("settings.skills.editor.fileNameExtension", { defaultValue: "File name must end with .md or .txt" }));
       return;
     }
-    const p = pt(F.path), P = p ? `${p}/${z}` : z;
-    if (P === F.path) {
-      w(null);
+    const D = gt(T.path), ae = D ? `${D}/${z}` : z;
+    if (ae === T.path) {
+      P(null);
       return;
     }
-    S.system.moveSkillPath({ id: l }, { from_path: F.path, to_path: P }).then(() => {
-      s.success(i("settings.skills.editor.renamed", { defaultValue: "Renamed" })), r === F.path && m(P), d === F.path && c(P), w(null), B();
+    k.system.moveSkillPath({ id: l }, { from_path: T.path, to_path: ae }).then(() => {
+      s.success(i("settings.skills.editor.renamed", { defaultValue: "Renamed" })), r === T.path && p(ae), d === T.path && c(ae), P(null), Z();
     }).catch(() => s.error(i("settings.skills.editor.failedToRename", { defaultValue: "Failed to rename" })));
-  }, ae = (z) => {
-    if (!l || Z) return;
-    const p = String(z.dragNode.key), P = String(z.dragNode.title);
-    let le;
+  }, oe = (z) => {
+    if (!l || B) return;
+    const D = String(z.dragNode.key), ae = String(z.dragNode.title);
+    let me;
     if (z.dropToGap) {
-      const we = pt(String(z.node.key));
-      le = we ? `${we}/${P}` : P;
+      const Ee = gt(String(z.node.key));
+      me = Ee ? `${Ee}/${ae}` : ae;
     } else
-      le = `${z.node.key}/${P}`;
-    le !== p && S.system.moveSkillPath({ id: l }, { from_path: p, to_path: le }).then(() => {
-      s.success(i("settings.skills.editor.moved", { defaultValue: "Moved" })), r === p && m(le), d === p && c(le), B();
+      me = `${z.node.key}/${ae}`;
+    me !== D && k.system.moveSkillPath({ id: l }, { from_path: D, to_path: me }).then(() => {
+      s.success(i("settings.skills.editor.moved", { defaultValue: "Moved" })), r === D && p(me), d === D && c(me), Z();
     }).catch(() => s.error(i("settings.skills.editor.failedToMove", { defaultValue: "Failed to move" })));
-  }, fe = () => {
+  }, be = () => {
     const z = Y.trim();
-    if (!z || !l || Z) return;
-    const p = he ? `${he}/${z}` : z;
+    if (!z || !l || B) return;
+    const D = je ? `${je}/${z}` : z;
     if (!/\.(md|txt)$/i.test(z)) {
       s.error(i("settings.skills.editor.onlyMdTxtAllowed", { defaultValue: "Only .md and .txt files are allowed" }));
       return;
     }
-    S.system.putSkillFile({ id: l, path: p }, "").then(() => {
-      s.success(i("settings.skills.editor.fileCreated", { defaultValue: "File created" })), D(!1), W(""), B(), m(p), O("");
+    k.system.putSkillFile({ id: l, path: D }, "").then(() => {
+      s.success(i("settings.skills.editor.fileCreated", { defaultValue: "File created" })), U(!1), J(""), Z(), p(D), O("");
     }).catch(() => s.error(i("settings.skills.editor.failedToCreateFile", { defaultValue: "Failed to create file" })));
-  }, Fe = () => {
-    var P;
-    const z = (P = ee.getFieldValue("name")) == null ? void 0 : P.trim();
-    if (!z || !l || Z) return;
-    const p = he ? `${he}/${z}` : z;
-    S.system.createSkillDir({ id: l }, { path: p }).then(() => {
-      s.success(i("settings.skills.editor.folderCreated", { defaultValue: "Folder created" })), J(!1), ee.resetFields(), B();
+  }, Te = () => {
+    var ae;
+    const z = (ae = le.getFieldValue("name")) == null ? void 0 : ae.trim();
+    if (!z || !l || B) return;
+    const D = je ? `${je}/${z}` : z;
+    k.system.createSkillDir({ id: l }, { path: D }).then(() => {
+      s.success(i("settings.skills.editor.folderCreated", { defaultValue: "Folder created" })), W(!1), le.resetFields(), Z();
     }).catch(() => s.error(i("settings.skills.editor.failedToCreateFolder", { defaultValue: "Failed to create folder" })));
   }, Re = () => {
     const z = d || r;
-    !l || !z || Z || t.confirm({
+    !l || !z || B || t.confirm({
       title: i("settings.skills.editor.deleteConfirm", { defaultValue: "Delete?" }),
       content: i("settings.skills.editor.deleteConfirmContent", { path: z, defaultValue: `Delete ${z}?` }),
-      onOk: () => S.system.deleteSkillPath({ id: l, path: z }).then(() => {
-        s.success(i("settings.skills.editor.deleted", { defaultValue: "Deleted" })), r === z && (m(null), O("")), d === z && (c(null), V(!1)), B();
+      onOk: () => k.system.deleteSkillPath({ id: l, path: z }).then(() => {
+        s.success(i("settings.skills.editor.deleted", { defaultValue: "Deleted" })), r === z && (p(null), O("")), d === z && (c(null), b(!1)), Z();
       }).catch(() => s.error(i("settings.skills.editor.failedToDelete", { defaultValue: "Failed to delete" })))
     });
   };
   return l ? /* @__PURE__ */ e.jsxs(
     ie,
     {
-      title: (h == null ? void 0 : h.name) ?? i("settings.skills.editor.skill", { defaultValue: "Skill" }),
+      title: (j == null ? void 0 : j.name) ?? i("settings.skills.editor.skill", { defaultValue: "Skill" }),
       extra: /* @__PURE__ */ e.jsx(E, { type: "link", onClick: () => n("/system/settings#skills"), children: i("settings.skills.editor.backToSkills", { defaultValue: "Back to Skills" }) }),
       style: { height: "100%", display: "flex", flexDirection: "column", minHeight: "calc(100vh - 160px)" },
       styles: {
         body: { flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }
       },
       children: [
-        Z ? /* @__PURE__ */ e.jsx(
-          st,
+        B ? /* @__PURE__ */ e.jsx(
+          nt,
           {
             type: "info",
             showIcon: !0,
@@ -4311,23 +4391,23 @@ const Fl = () => {
         /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", gap: 16, flex: 1, minHeight: 0 }, children: [
           /* @__PURE__ */ e.jsxs("div", { style: { width: 260, border: "1px solid #d9d9d9", borderRadius: 8, padding: 8, display: "flex", flexDirection: "column", minHeight: 0 }, children: [
             /* @__PURE__ */ e.jsxs(K, { style: { marginBottom: 8, flexShrink: 0 }, children: [
-              /* @__PURE__ */ e.jsx(E, { size: "small", icon: /* @__PURE__ */ e.jsx(De, {}), disabled: Z, onClick: () => D(!0), children: i("settings.skills.editor.file", { defaultValue: "File" }) }),
-              /* @__PURE__ */ e.jsx(E, { size: "small", icon: /* @__PURE__ */ e.jsx(Ut, {}), disabled: Z, onClick: () => J(!0), children: i("settings.skills.editor.folder", { defaultValue: "Folder" }) })
+              /* @__PURE__ */ e.jsx(E, { size: "small", icon: /* @__PURE__ */ e.jsx(Ue, {}), disabled: B, onClick: () => U(!0), children: i("settings.skills.editor.file", { defaultValue: "File" }) }),
+              /* @__PURE__ */ e.jsx(E, { size: "small", icon: /* @__PURE__ */ e.jsx(Qt, {}), disabled: B, onClick: () => W(!0), children: i("settings.skills.editor.folder", { defaultValue: "Folder" }) })
             ] }),
-            N ? /* @__PURE__ */ e.jsx("div", { children: i("settings.skills.editor.loading", { defaultValue: "Loading..." }) }) : /* @__PURE__ */ e.jsx("div", { style: { flex: 1, minHeight: 0, overflow: "auto" }, children: /* @__PURE__ */ e.jsx(
-              os,
+            R ? /* @__PURE__ */ e.jsx("div", { children: i("settings.skills.editor.loading", { defaultValue: "Loading..." }) }) : /* @__PURE__ */ e.jsx("div", { style: { flex: 1, minHeight: 0, overflow: "auto" }, children: /* @__PURE__ */ e.jsx(
+              xs,
               {
                 showIcon: !0,
                 blockNode: !0,
-                draggable: !Z,
-                expandedKeys: _,
+                draggable: !B,
+                expandedKeys: v,
                 onExpand: (z) => q(z),
                 selectedKeys: d ? [d] : [],
-                onSelect: ze,
-                onRightClick: Z ? void 0 : Te,
-                onDrop: ae,
+                onSelect: Oe,
+                onRightClick: B ? void 0 : Ie,
+                onDrop: oe,
                 className: a.fileTree,
-                treeData: de
+                treeData: ne
               }
             ) })
           ] }),
@@ -4335,30 +4415,30 @@ const Fl = () => {
             r && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
               /* @__PURE__ */ e.jsxs(K, { style: { marginBottom: 8, flexShrink: 0 }, children: [
                 /* @__PURE__ */ e.jsx("span", { children: r }),
-                /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(We, {}), disabled: Z || !I, onClick: Ee, children: i("settings.skills.editor.save", { defaultValue: "Save" }) }),
-                /* @__PURE__ */ e.jsx(E, { danger: !0, icon: /* @__PURE__ */ e.jsx(Oe, {}), disabled: Z, onClick: Re, children: i("settings.skills.editor.delete", { defaultValue: "Delete" }) })
+                /* @__PURE__ */ e.jsx(E, { type: "primary", icon: /* @__PURE__ */ e.jsx(Ge, {}), disabled: B || !I, onClick: Le, children: i("settings.skills.editor.save", { defaultValue: "Save" }) }),
+                /* @__PURE__ */ e.jsx(E, { danger: !0, icon: /* @__PURE__ */ e.jsx(Ne, {}), disabled: B, onClick: Re, children: i("settings.skills.editor.delete", { defaultValue: "Delete" }) })
               ] }),
-              /* @__PURE__ */ e.jsx(je, { spinning: Ae, wrapperClassName: Gs(a.editorSpin, "ez-editor-spin"), children: Tl(r) ? /* @__PURE__ */ e.jsxs("div", { style: { flex: 1, minHeight: 0, minWidth: 0, display: "flex", gap: 16 }, children: [
+              /* @__PURE__ */ e.jsx(ye, { spinning: Pe, wrapperClassName: al(a.editorSpin, "ez-editor-spin"), children: zl(r) ? /* @__PURE__ */ e.jsxs("div", { style: { flex: 1, minHeight: 0, minWidth: 0, display: "flex", gap: 16 }, children: [
                 /* @__PURE__ */ e.jsx("div", { style: { flex: 1, minHeight: 0, minWidth: 0, display: "flex", flexDirection: "column" }, children: /* @__PURE__ */ e.jsx(
-                  Ct,
+                  Lt,
                   {
-                    value: x,
-                    readOnly: Z,
+                    value: y,
+                    readOnly: B,
                     onChange: (z) => {
-                      O(z.target.value), L(!0);
+                      O(z.target.value), M(!0);
                     },
                     style: { flex: 1, minHeight: 0, fontFamily: "monospace", resize: "none" },
                     spellCheck: !1
                   }
                 ) }),
-                /* @__PURE__ */ e.jsx("div", { style: { flex: 1, minHeight: 0, minWidth: 0, overflow: "auto", border: "1px solid #d9d9d9", borderRadius: 8, padding: 12 }, children: /* @__PURE__ */ e.jsx(Ye, { fallback: /* @__PURE__ */ e.jsx(Ke, {}), children: /* @__PURE__ */ e.jsx(wl, { content: Wt(x) }) }) })
+                /* @__PURE__ */ e.jsx("div", { style: { flex: 1, minHeight: 0, minWidth: 0, overflow: "auto", border: "1px solid #d9d9d9", borderRadius: 8, padding: 12 }, children: /* @__PURE__ */ e.jsx(bt, { fallback: /* @__PURE__ */ e.jsx(vt, {}), children: /* @__PURE__ */ e.jsx(Al, { content: ts(y) }) }) })
               ] }) : /* @__PURE__ */ e.jsx(
-                Ct,
+                Lt,
                 {
-                  value: x,
-                  readOnly: Z,
+                  value: y,
+                  readOnly: B,
                   onChange: (z) => {
-                    O(z.target.value), L(!0);
+                    O(z.target.value), M(!0);
                   },
                   style: { flex: 1, minHeight: 0, fontFamily: "monospace", resize: "none" },
                   spellCheck: !1
@@ -4373,44 +4453,44 @@ const Fl = () => {
             "div",
             {
               style: { position: "fixed", inset: 0, zIndex: 999 },
-              onClick: be,
+              onClick: ve,
               onContextMenu: (z) => z.preventDefault(),
               "aria-hidden": !0
             }
           ),
           /* @__PURE__ */ e.jsx("div", { style: { position: "fixed", left: Q.x, top: Q.y, zIndex: 1e3 }, children: /* @__PURE__ */ e.jsx(
-            rs,
+            ys,
             {
               selectable: !1,
               items: [
-                ...Q.isDir ? [] : [{ key: "open", icon: /* @__PURE__ */ e.jsx($t, {}), label: i("settings.skills.editor.open", { defaultValue: "Open" }) }],
-                { key: "rename", icon: /* @__PURE__ */ e.jsx(Ne, {}), label: i("settings.skills.editor.rename", { defaultValue: "Rename" }) },
-                { key: "delete", icon: /* @__PURE__ */ e.jsx(Oe, {}), label: i("settings.skills.editor.delete", { defaultValue: "Delete" }), danger: !0 },
-                { key: "newFile", icon: /* @__PURE__ */ e.jsx(Ss, {}), label: i("settings.skills.editor.newFile", { defaultValue: "New file" }) },
-                { key: "newDir", icon: /* @__PURE__ */ e.jsx(ws, {}), label: i("settings.skills.editor.newFolder", { defaultValue: "New folder" }) }
+                ...Q.isDir ? [] : [{ key: "open", icon: /* @__PURE__ */ e.jsx(Zt, {}), label: i("settings.skills.editor.open", { defaultValue: "Open" }) }],
+                { key: "rename", icon: /* @__PURE__ */ e.jsx(qe, {}), label: i("settings.skills.editor.rename", { defaultValue: "Rename" }) },
+                { key: "delete", icon: /* @__PURE__ */ e.jsx(Ne, {}), label: i("settings.skills.editor.delete", { defaultValue: "Delete" }), danger: !0 },
+                { key: "newFile", icon: /* @__PURE__ */ e.jsx(zs, {}), label: i("settings.skills.editor.newFile", { defaultValue: "New file" }) },
+                { key: "newDir", icon: /* @__PURE__ */ e.jsx(Ps, {}), label: i("settings.skills.editor.newFolder", { defaultValue: "New folder" }) }
               ],
-              onClick: ({ key: z }) => Ve(z)
+              onClick: ({ key: z }) => Ae(z)
             }
           ) })
         ] }),
-        /* @__PURE__ */ e.jsx(ce, { title: i("settings.skills.editor.newFileTitle", { defaultValue: "New file" }), open: C, onOk: fe, onCancel: () => {
-          D(!1), W("");
-        }, okText: i("settings.skills.editor.create", { defaultValue: "Create" }), children: /* @__PURE__ */ e.jsx(v, { placeholder: i("settings.skills.editor.placeholderNewFile", { defaultValue: "filename.md or filename.txt" }), value: Y, onChange: (z) => W(z.target.value) }) }),
-        /* @__PURE__ */ e.jsx(ce, { title: i("settings.skills.editor.newFolderTitle", { defaultValue: "New folder" }), open: g, onOk: () => ee.validateFields().then(Fe), onCancel: () => J(!1), okText: i("settings.skills.editor.create", { defaultValue: "Create" }), children: /* @__PURE__ */ e.jsx(o, { form: ee, layout: "vertical", children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: i("settings.skills.editor.folderName", { defaultValue: "Folder name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(v, { placeholder: i("settings.skills.editor.placeholderFolder", { defaultValue: "folder-name" }) }) }) }) }),
+        /* @__PURE__ */ e.jsx(fe, { title: i("settings.skills.editor.newFileTitle", { defaultValue: "New file" }), open: w, onOk: be, onCancel: () => {
+          U(!1), J("");
+        }, okText: i("settings.skills.editor.create", { defaultValue: "Create" }), children: /* @__PURE__ */ e.jsx(V, { placeholder: i("settings.skills.editor.placeholderNewFile", { defaultValue: "filename.md or filename.txt" }), value: Y, onChange: (z) => J(z.target.value) }) }),
+        /* @__PURE__ */ e.jsx(fe, { title: i("settings.skills.editor.newFolderTitle", { defaultValue: "New folder" }), open: f, onOk: () => le.validateFields().then(Te), onCancel: () => W(!1), okText: i("settings.skills.editor.create", { defaultValue: "Create" }), children: /* @__PURE__ */ e.jsx(o, { form: le, layout: "vertical", children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: i("settings.skills.editor.folderName", { defaultValue: "Folder name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(V, { placeholder: i("settings.skills.editor.placeholderFolder", { defaultValue: "folder-name" }) }) }) }) }),
         /* @__PURE__ */ e.jsx(
-          ce,
+          fe,
           {
             title: i("settings.skills.editor.renameTitle", { defaultValue: "Rename" }),
-            open: !!F,
-            onOk: T,
-            onCancel: () => w(null),
+            open: !!T,
+            onOk: C,
+            onCancel: () => P(null),
             okText: i("settings.skills.editor.rename", { defaultValue: "Rename" }),
             destroyOnClose: !0,
-            children: /* @__PURE__ */ e.jsx(o, { form: k, layout: "vertical", onValuesChange: (z, p) => H(p.name ?? ""), children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: F != null && F.isDir ? i("settings.skills.editor.folderName", { defaultValue: "Folder name" }) : i("settings.skills.editor.fileName", { defaultValue: "File name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(
-              v,
+            children: /* @__PURE__ */ e.jsx(o, { form: _, layout: "vertical", onValuesChange: (z, D) => N(D.name ?? ""), children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: T != null && T.isDir ? i("settings.skills.editor.folderName", { defaultValue: "Folder name" }) : i("settings.skills.editor.fileName", { defaultValue: "File name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(
+              V,
               {
-                placeholder: F != null && F.isDir ? i("settings.skills.editor.placeholderFolder", { defaultValue: "folder-name" }) : i("settings.skills.editor.placeholderFileName", { defaultValue: "name.md" }),
-                onPressEnter: () => T()
+                placeholder: T != null && T.isDir ? i("settings.skills.editor.placeholderFolder", { defaultValue: "folder-name" }) : i("settings.skills.editor.placeholderFileName", { defaultValue: "name.md" }),
+                onPressEnter: () => C()
               }
             ) }) })
           }
@@ -4418,29 +4498,29 @@ const Fl = () => {
       ]
     }
   ) : null;
-}, ya = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Va = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Fl
-}, Symbol.toStringTag, { value: "Module" })), Il = et(() => import("./markdown-viewer.js")), Al = () => {
-  const { message: s } = me.useApp(), { id: t } = rt(), a = Ce(), { t: l } = G("system"), { data: n, loading: i } = A(
-    () => t ? S.system.getSkill({ id: t }) : Promise.reject(new Error("No id")),
+  default: Pl
+}, Symbol.toStringTag, { value: "Module" })), Ll = Vt(() => import("./markdown-viewer.js")), Ol = () => {
+  const { message: s } = ge.useApp(), { id: t } = mt(), a = Fe(), { t: l } = G("system"), { data: n, loading: i } = A(
+    () => t ? k.system.getSkill({ id: t }) : Promise.reject(new Error("No id")),
     { refreshDeps: [t], ready: !!t }
-  ), { data: r, loading: m, mutate: d } = A(
-    () => t ? S.system.previewSkill({ id: t }) : Promise.reject(new Error("No id")),
+  ), { data: r, loading: p, mutate: d } = A(
+    () => t ? k.system.previewSkill({ id: t }) : Promise.reject(new Error("No id")),
     {
       refreshDeps: [t],
       ready: !!t,
       onError: () => s.error(l("settings.skills.previewFailed", { defaultValue: "Failed to load preview" })),
       onBefore: () => d()
     }
-  ), c = ye(() => r == null ? void 0 : r.map((V) => ({
-    key: V.file_name,
-    label: V.file_name,
-    children: /* @__PURE__ */ e.jsx(Ye, { fallback: /* @__PURE__ */ e.jsx(Ke, {}), children: /* @__PURE__ */ e.jsx(Il, { content: Wt(V.content) }) })
+  ), c = ke(() => r == null ? void 0 : r.map((b) => ({
+    key: b.file_name,
+    label: b.file_name,
+    children: /* @__PURE__ */ e.jsx(bt, { fallback: /* @__PURE__ */ e.jsx(vt, {}), children: /* @__PURE__ */ e.jsx(Ll, { content: ts(b.content) }) })
   })), [r]);
   if (!t) return null;
-  const f = i || m;
-  return /* @__PURE__ */ e.jsx(je, { spinning: f, children: /* @__PURE__ */ e.jsx(
+  const m = i || p;
+  return /* @__PURE__ */ e.jsx(ye, { spinning: m, children: /* @__PURE__ */ e.jsx(
     ie,
     {
       title: (n == null ? void 0 : n.name) ?? l("settings.skills.editor.previewTitle", { defaultValue: "Skill Preview" }),
@@ -4448,22 +4528,22 @@ const Fl = () => {
       tabList: c
     }
   ) });
-}, ja = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, ka = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Al
-}, Symbol.toStringTag, { value: "Module" })), { Text: ge, Title: El } = Qe, xt = ["agent", "llm", "tool"], Tt = {
-  llm_request: { color: "blue", icon: /* @__PURE__ */ e.jsx(zs, {}) },
-  llm_response: { color: "green", icon: /* @__PURE__ */ e.jsx(Es, {}) },
-  token_usage: { color: "purple", icon: /* @__PURE__ */ e.jsx(As, {}) },
-  tool_call: { color: "orange", icon: /* @__PURE__ */ e.jsx(gt, {}) },
-  tool_result: { color: "cyan", icon: /* @__PURE__ */ e.jsx(lt, {}) },
-  error: { color: "red", icon: /* @__PURE__ */ e.jsx(Is, {}) },
-  summary: { color: "geekblue", icon: /* @__PURE__ */ e.jsx(lt, {}) }
-}, Ft = {
+  default: Ol
+}, Symbol.toStringTag, { value: "Module" })), { Text: xe, Title: Rl } = Ye, jt = ["agent", "llm", "tool"], Ot = {
+  llm_request: { color: "blue", icon: /* @__PURE__ */ e.jsx(qs, {}) },
+  llm_response: { color: "green", icon: /* @__PURE__ */ e.jsx(Ds, {}) },
+  token_usage: { color: "purple", icon: /* @__PURE__ */ e.jsx(Ns, {}) },
+  tool_call: { color: "orange", icon: /* @__PURE__ */ e.jsx(xt, {}) },
+  tool_result: { color: "cyan", icon: /* @__PURE__ */ e.jsx(ot, {}) },
+  error: { color: "red", icon: /* @__PURE__ */ e.jsx(Ms, {}) },
+  summary: { color: "geekblue", icon: /* @__PURE__ */ e.jsx(ot, {}) }
+}, Rt = {
   agent: "#1677ff",
   llm: "#52c41a",
   tool: "#fa8c16"
-}, zl = {
+}, Ml = {
   llm_request: "#1677ff",
   llm_response: "#52c41a",
   tool_call: "#fa8c16",
@@ -4471,7 +4551,7 @@ const Fl = () => {
   token_usage: "#722ed1",
   error: "#ff4d4f",
   summary: "#2f54eb"
-}, Xt = Vt(({ css: s }) => ({
+}, os = wt(({ css: s }) => ({
   rawToggleWrap: s`
   position: relative;
   .json-block-mode-toggle{
@@ -4484,7 +4564,7 @@ const Fl = () => {
     right: 20px;
     z-index: 2;
   `
-})), Yt = Vt(({ token: s, css: t }) => ({
+})), rs = wt(({ token: s, css: t }) => ({
   sequenceWrap: t`
     overflow-x: auto;
     padding: 8px 4px 16px;
@@ -4666,18 +4746,18 @@ const Fl = () => {
     font-size: 12px;
   `
 }));
-function es(s) {
-  const { parsed: t, isJSON: a } = Ze(s);
+function ds(s) {
+  const { parsed: t, isJSON: a } = et(s);
   return a && typeof t == "object" && t !== null ? { text: s, value: t } : { text: s };
 }
-function It(s) {
+function Mt(s) {
   if (typeof s == "string") return { text: s };
   const t = JSON.stringify(s, null, 2);
   return typeof s == "object" && s !== null ? { text: t, value: s } : { text: t };
 }
-function Pl(s) {
+function Nl(s) {
   const t = s.map((l) => {
-    const { parsed: n, isJSON: i } = Ze(l.content);
+    const { parsed: n, isJSON: i } = et(l.content);
     return {
       event: l,
       isJSON: i,
@@ -4698,16 +4778,16 @@ function Pl(s) {
     if (n !== "llm_response") continue;
     const i = l.display.value;
     if (i && ("raw_request" in i || "raw_response" in i)) {
-      const { raw_request: r, raw_response: m, ...d } = i;
-      l.display = { text: JSON.stringify(d, null, 2), value: d }, r !== void 0 && a && (a.rawRequest = It(r)), m !== void 0 && (l.rawResponse = It(m));
+      const { raw_request: r, raw_response: p, ...d } = i;
+      l.display = { text: JSON.stringify(d, null, 2), value: d }, r !== void 0 && a && (a.rawRequest = Mt(r)), p !== void 0 && (l.rawResponse = Mt(p));
     }
     a = null;
   }
   return t;
 }
-const Xe = ({ children: s, fallback: t }) => {
-  const [a, l] = b(!1);
-  return Le(() => {
+const tt = ({ children: s, fallback: t }) => {
+  const [a, l] = x(!1);
+  return ze(() => {
     let n = 0;
     const i = window.requestAnimationFrame(() => {
       n = window.requestAnimationFrame(() => l(!0));
@@ -4715,12 +4795,12 @@ const Xe = ({ children: s, fallback: t }) => {
     return () => {
       window.cancelAnimationFrame(i), window.cancelAnimationFrame(n);
     };
-  }, []), a ? /* @__PURE__ */ e.jsx(e.Fragment, { children: s }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: t ?? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: "16px 0" }, children: /* @__PURE__ */ e.jsx(je, { size: "small" }) }) });
-}, _e = ({
+  }, []), a ? /* @__PURE__ */ e.jsx(e.Fragment, { children: s }) : /* @__PURE__ */ e.jsx(e.Fragment, { children: t ?? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: "16px 0" }, children: /* @__PURE__ */ e.jsx(ye, { size: "small" }) }) });
+}, we = ({
   payload: s,
   maxHeight: t
 }) => {
-  const [a, l] = b("raw"), n = /* @__PURE__ */ e.jsx(
+  const [a, l] = x("raw"), n = /* @__PURE__ */ e.jsx(
     "pre",
     {
       style: {
@@ -4741,19 +4821,19 @@ const Xe = ({ children: s, fallback: t }) => {
   );
   return s.value ? /* @__PURE__ */ e.jsxs("div", { style: { position: "relative" }, children: [
     /* @__PURE__ */ e.jsx("div", { className: "json-block-mode-toggle", style: { position: "absolute", top: 6, right: 6, zIndex: 2 }, children: /* @__PURE__ */ e.jsx(
-      ot,
+      ct,
       {
         size: "small",
         value: a,
         onChange: (i) => l(i),
         options: [
-          { value: "raw", icon: /* @__PURE__ */ e.jsx(Jt, {}), title: "Raw" },
-          { value: "json", icon: /* @__PURE__ */ e.jsx(Ht, {}), title: "JSON" }
+          { value: "raw", icon: /* @__PURE__ */ e.jsx(Yt, {}), title: "Raw" },
+          { value: "json", icon: /* @__PURE__ */ e.jsx(es, {}), title: "JSON" }
         ]
       }
     ) }),
-    a === "json" ? /* @__PURE__ */ e.jsx(Xe, { children: /* @__PURE__ */ e.jsx(
-      at,
+    a === "json" ? /* @__PURE__ */ e.jsx(tt, { children: /* @__PURE__ */ e.jsx(
+      rt,
       {
         style: {
           background: "var(--ant-color-bg-container)",
@@ -4771,44 +4851,44 @@ const Xe = ({ children: s, fallback: t }) => {
     ) }) : n
   ] }) : n;
 };
-function Ll(s) {
+function Dl(s) {
   return s.cache_read_tokens != null || s.cache_write_tokens != null;
 }
-function ts(s, t) {
+function us(s, t) {
   return s <= 0 || t <= 0 ? 0 : Math.min(100, Math.round(t / s * 1e3) / 10);
 }
-function Ol(s) {
+function ql(s) {
   if (!s || s.total_tokens == null) return "";
   const t = s.total_tokens.toLocaleString();
-  return s.cache_read_tokens == null || s.prompt_tokens <= 0 || s.cache_read_tokens <= 0 ? ` · ${t}` : ` · ${t} · cache ${ts(s.prompt_tokens, s.cache_read_tokens)}%`;
+  return s.cache_read_tokens == null || s.prompt_tokens <= 0 || s.cache_read_tokens <= 0 ? ` · ${t}` : ` · ${t} · cache ${us(s.prompt_tokens, s.cache_read_tokens)}%`;
 }
-const ft = "#ff4d4f";
-function ss(s, t) {
+const ht = "#ff4d4f";
+function cs(s, t) {
   if (!t || !s) return !1;
   if (typeof s.ok == "boolean") return !s.ok;
   const a = (s.result || "").trim();
   return a ? !!(a === "tool call failed" || /^unknown tool:/i.test(a) || /^tool .+ failed:/i.test(a)) : !1;
 }
-const Rl = ({
+const Ul = ({
   entry: s,
   t,
   maxHeight: a
 }) => {
-  const { styles: l } = Yt();
+  const { styles: l } = rs();
   if (!s.isJSON)
-    return /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a });
-  const n = s.parsed, i = Ll(n), r = n.cache_read_tokens ?? 0, m = n.cache_write_tokens ?? 0, d = ts(n.prompt_tokens, r), c = [
+    return /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a });
+  const n = s.parsed, i = Dl(n), r = n.cache_read_tokens ?? 0, p = n.cache_write_tokens ?? 0, d = us(n.prompt_tokens, r), c = [
     { key: "prompt", label: t("trace.promptTokens", { defaultValue: "Prompt Tokens" }), value: n.prompt_tokens },
     { key: "completion", label: t("trace.completionTokens", { defaultValue: "Completion Tokens" }), value: n.completion_tokens },
     { key: "total", label: t("trace.totalTokens", { defaultValue: "Total Tokens" }), value: n.total_tokens },
     { key: "active", label: t("trace.activeTokens", { defaultValue: "Active Tokens" }), value: n.active_tokens }
   ];
   return /* @__PURE__ */ e.jsxs("div", { className: l.tokenPanel, style: { maxHeight: a }, children: [
-    /* @__PURE__ */ e.jsx("div", { className: l.tokenGrid, children: c.map((f) => f.value !== void 0 ? /* @__PURE__ */ e.jsx("div", { className: l.tokenStat, children: /* @__PURE__ */ e.jsx(tt, { title: f.label, value: f.value, groupSeparator: "," }) }, f.key) : null) }),
+    /* @__PURE__ */ e.jsx("div", { className: l.tokenGrid, children: c.map((m) => m.value !== void 0 ? /* @__PURE__ */ e.jsx("div", { className: l.tokenStat, children: /* @__PURE__ */ e.jsx(it, { title: m.label, value: m.value, groupSeparator: "," }) }, m.key) : null) }),
     i && /* @__PURE__ */ e.jsxs("div", { children: [
       /* @__PURE__ */ e.jsxs("div", { className: l.tokenGrid, children: [
         /* @__PURE__ */ e.jsx("div", { className: l.tokenStat, children: /* @__PURE__ */ e.jsx(
-          tt,
+          it,
           {
             title: t("trace.cacheReadTokens", { defaultValue: "Cache read" }),
             value: r,
@@ -4816,15 +4896,15 @@ const Rl = ({
           }
         ) }),
         /* @__PURE__ */ e.jsx("div", { className: l.tokenStat, children: /* @__PURE__ */ e.jsx(
-          tt,
+          it,
           {
             title: t("trace.cacheWriteTokens", { defaultValue: "Cache write" }),
-            value: m,
+            value: p,
             groupSeparator: ","
           }
         ) }),
         /* @__PURE__ */ e.jsx("div", { className: l.tokenStat, children: /* @__PURE__ */ e.jsx(
-          tt,
+          it,
           {
             title: t("trace.cacheHitRate", { defaultValue: "Cache hit rate" }),
             value: d,
@@ -4834,7 +4914,7 @@ const Rl = ({
         ) })
       ] }),
       /* @__PURE__ */ e.jsx(
-        ms,
+        ks,
         {
           percent: d,
           showInfo: !1,
@@ -4842,85 +4922,85 @@ const Rl = ({
           style: { marginTop: 8, marginBottom: 0 }
         }
       ),
-      /* @__PURE__ */ e.jsx(ge, { type: "secondary", className: l.cacheHint, children: t("trace.cacheIncludedHint", {
+      /* @__PURE__ */ e.jsx(xe, { type: "secondary", className: l.cacheHint, children: t("trace.cacheIncludedHint", {
         defaultValue: "Cache tokens are included in prompt tokens."
       }) })
     ] })
   ] });
-}, Ml = ({
+}, $l = ({
   entry: s,
   t,
   maxHeight: a
 }) => {
-  const l = s.isJSON ? s.parsed : null, n = ye(
-    () => l != null && l.arguments ? es(l.arguments) : null,
+  const l = s.isJSON ? s.parsed : null, n = ke(
+    () => l != null && l.arguments ? ds(l.arguments) : null,
     [l]
   );
   return l ? /* @__PURE__ */ e.jsxs("div", { children: [
     l.tool_call_id && /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 8, maxHeight: a, overflow: "auto" }, children: [
-      /* @__PURE__ */ e.jsxs(ge, { strong: !0, children: [
+      /* @__PURE__ */ e.jsxs(xe, { strong: !0, children: [
         t("trace.toolCallId", { defaultValue: "Tool Call ID" }),
         ":",
         " "
       ] }),
-      /* @__PURE__ */ e.jsx(ge, { code: !0, children: l.tool_call_id })
+      /* @__PURE__ */ e.jsx(xe, { code: !0, children: l.tool_call_id })
     ] }),
     l.tool && /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 8, maxHeight: a, overflow: "auto" }, children: [
-      /* @__PURE__ */ e.jsxs(ge, { strong: !0, children: [
+      /* @__PURE__ */ e.jsxs(xe, { strong: !0, children: [
         t("trace.tool", { defaultValue: "Tool" }),
         ": "
       ] }),
-      /* @__PURE__ */ e.jsx(ne, { color: "blue", children: l.tool })
+      /* @__PURE__ */ e.jsx(de, { color: "blue", children: l.tool })
     ] }),
     n && /* @__PURE__ */ e.jsxs("div", { children: [
-      /* @__PURE__ */ e.jsxs(ge, { strong: !0, children: [
+      /* @__PURE__ */ e.jsxs(xe, { strong: !0, children: [
         t("trace.arguments", { defaultValue: "Arguments" }),
         ":"
       ] }),
-      /* @__PURE__ */ e.jsx(_e, { payload: n, maxHeight: a })
+      /* @__PURE__ */ e.jsx(we, { payload: n, maxHeight: a })
     ] })
-  ] }) : /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a });
-}, Nl = ({
+  ] }) : /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a });
+}, Bl = ({
   entry: s,
   t,
   maxHeight: a
 }) => {
-  const l = s.isJSON ? s.parsed : null, n = ye(
-    () => l != null && l.result ? es(l.result) : null,
+  const l = s.isJSON ? s.parsed : null, n = ke(
+    () => l != null && l.result ? ds(l.result) : null,
     [l]
   );
   if (!l)
-    return /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a });
-  const i = ss(l, !0);
+    return /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a });
+  const i = cs(l, !0);
   return /* @__PURE__ */ e.jsxs("div", { children: [
     l.tool_call_id && /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 8, maxHeight: a, overflow: "auto" }, children: [
-      /* @__PURE__ */ e.jsxs(ge, { strong: !0, children: [
+      /* @__PURE__ */ e.jsxs(xe, { strong: !0, children: [
         t("trace.toolCallId", { defaultValue: "Tool Call ID" }),
         ":",
         " "
       ] }),
-      /* @__PURE__ */ e.jsx(ge, { code: !0, children: l.tool_call_id })
+      /* @__PURE__ */ e.jsx(xe, { code: !0, children: l.tool_call_id })
     ] }),
     (typeof l.ok == "boolean" || i) && /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 8 }, children: [
-      /* @__PURE__ */ e.jsxs(ge, { strong: !0, children: [
+      /* @__PURE__ */ e.jsxs(xe, { strong: !0, children: [
         t("trace.status", { defaultValue: "Status" }),
         ": "
       ] }),
-      /* @__PURE__ */ e.jsx(ne, { color: i ? "error" : "success", children: i ? t("trace.failed", { defaultValue: "Failed" }) : t("trace.succeeded", { defaultValue: "Succeeded" }) })
+      /* @__PURE__ */ e.jsx(de, { color: i ? "error" : "success", children: i ? t("trace.failed", { defaultValue: "Failed" }) : t("trace.succeeded", { defaultValue: "Succeeded" }) })
     ] }),
     n && /* @__PURE__ */ e.jsxs("div", { style: { overflow: "auto" }, children: [
-      /* @__PURE__ */ e.jsxs(ge, { strong: !0, children: [
+      /* @__PURE__ */ e.jsxs(xe, { strong: !0, children: [
         t("trace.result", { defaultValue: "Result" }),
         ":"
       ] }),
-      /* @__PURE__ */ e.jsx(_e, { payload: n, maxHeight: a })
+      /* @__PURE__ */ e.jsx(we, { payload: n, maxHeight: a })
     ] })
   ] });
-}, it = { verticalAlign: "-2px" }, Dl = ({ entry: s, t, maxHeight: a }) => {
-  const [l, n] = b("request"), { styles: i } = Xt({ isRaw: l === "raw" });
+}, dt = { verticalAlign: "-2px" }, Hl = ({ entry: s, t, maxHeight: a }) => {
+  const [l, n] = x("request"), { styles: i } = os({ isRaw: l === "raw" });
   return s.rawRequest ? /* @__PURE__ */ e.jsxs("div", { className: i.rawToggleWrap, children: [
     /* @__PURE__ */ e.jsx("div", { className: i.rawToggleHeader, children: /* @__PURE__ */ e.jsx(
-      ot,
+      ct,
       {
         size: "small",
         value: l,
@@ -4928,24 +5008,24 @@ const Rl = ({
         options: [
           {
             value: "request",
-            icon: /* @__PURE__ */ e.jsx(Pt, { style: it }),
+            icon: /* @__PURE__ */ e.jsx(Ut, { style: dt }),
             title: t("trace.request", { defaultValue: "Request" })
           },
           {
             value: "raw",
-            icon: /* @__PURE__ */ e.jsx(Lt, { style: it }),
+            icon: /* @__PURE__ */ e.jsx($t, { style: dt }),
             title: t("trace.rawRequest", { defaultValue: "Raw Request" })
           }
         ]
       }
     ) }),
-    l === "raw" ? /* @__PURE__ */ e.jsx(Xe, { children: /* @__PURE__ */ e.jsx(_e, { payload: s.rawRequest, maxHeight: a }) }) : /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a })
-  ] }) : /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a });
-}, ql = ({ entry: s, t, maxHeight: a }) => {
-  const [l, n] = b("response"), { styles: i } = Xt({ isRaw: l === "raw" });
+    l === "raw" ? /* @__PURE__ */ e.jsx(tt, { children: /* @__PURE__ */ e.jsx(we, { payload: s.rawRequest, maxHeight: a }) }) : /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a })
+  ] }) : /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a });
+}, Jl = ({ entry: s, t, maxHeight: a }) => {
+  const [l, n] = x("response"), { styles: i } = os({ isRaw: l === "raw" });
   return s.rawResponse ? /* @__PURE__ */ e.jsxs("div", { className: i.rawToggleWrap, children: [
     /* @__PURE__ */ e.jsx("div", { className: i.rawToggleHeader, children: /* @__PURE__ */ e.jsx(
-      ot,
+      ct,
       {
         size: "small",
         value: l,
@@ -4953,32 +5033,32 @@ const Rl = ({
         options: [
           {
             value: "response",
-            icon: /* @__PURE__ */ e.jsx(Pt, { style: it }),
+            icon: /* @__PURE__ */ e.jsx(Ut, { style: dt }),
             title: t("trace.response", { defaultValue: "Response" })
           },
           {
             value: "raw",
-            icon: /* @__PURE__ */ e.jsx(Lt, { style: it }),
+            icon: /* @__PURE__ */ e.jsx($t, { style: dt }),
             title: t("trace.rawResponse", { defaultValue: "Raw Response" })
           }
         ]
       }
     ) }),
-    l === "raw" ? /* @__PURE__ */ e.jsx(Xe, { children: /* @__PURE__ */ e.jsx(_e, { payload: s.rawResponse, maxHeight: a }) }) : /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a })
-  ] }) : /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a });
-}, At = ({ entry: s, t, maxHeight: a }) => {
+    l === "raw" ? /* @__PURE__ */ e.jsx(tt, { children: /* @__PURE__ */ e.jsx(we, { payload: s.rawResponse, maxHeight: a }) }) : /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a })
+  ] }) : /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a });
+}, Nt = ({ entry: s, t, maxHeight: a }) => {
   const { event: l } = s;
   switch (l.event_type) {
     case "llm_request":
-      return /* @__PURE__ */ e.jsx(Dl, { entry: s, t, maxHeight: a });
+      return /* @__PURE__ */ e.jsx(Hl, { entry: s, t, maxHeight: a });
     case "llm_response":
-      return /* @__PURE__ */ e.jsx(ql, { entry: s, t, maxHeight: a });
+      return /* @__PURE__ */ e.jsx(Jl, { entry: s, t, maxHeight: a });
     case "token_usage":
-      return /* @__PURE__ */ e.jsx(Rl, { entry: s, t, maxHeight: a });
+      return /* @__PURE__ */ e.jsx(Ul, { entry: s, t, maxHeight: a });
     case "tool_call":
-      return /* @__PURE__ */ e.jsx(Ml, { entry: s, t, maxHeight: a });
+      return /* @__PURE__ */ e.jsx($l, { entry: s, t, maxHeight: a });
     case "tool_result":
-      return /* @__PURE__ */ e.jsx(Nl, { entry: s, t, maxHeight: a });
+      return /* @__PURE__ */ e.jsx(Bl, { entry: s, t, maxHeight: a });
     case "error":
       return /* @__PURE__ */ e.jsx(
         "pre",
@@ -5000,19 +5080,19 @@ const Rl = ({
         }
       );
     default:
-      return /* @__PURE__ */ e.jsx(_e, { payload: s.display, maxHeight: a });
+      return /* @__PURE__ */ e.jsx(we, { payload: s.display, maxHeight: a });
   }
 };
-function Et(s) {
-  return xt.indexOf(s);
+function Dt(s) {
+  return jt.indexOf(s);
 }
-function zt(s, t) {
+function qt(s, t) {
   return s > 0 ? ` (${t("trace.durationMs", {
     ms: s,
     defaultValue: `${s}ms`
   })})` : "";
 }
-function Ul(s, t) {
+function Wl(s, t) {
   const a = /* @__PURE__ */ new Map();
   for (const n of s) {
     if (n.event.event_type !== "tool_call" || !n.isJSON) continue;
@@ -5021,9 +5101,9 @@ function Ul(s, t) {
   }
   const l = t("trace.failed", { defaultValue: "Failed" });
   return s.map((n, i) => {
-    const { event: r } = n, m = t(`trace.eventTypes.${r.event_type}`, {
+    const { event: r } = n, p = t(`trace.eventTypes.${r.event_type}`, {
       defaultValue: r.event_type
-    }), d = zl[r.event_type] || "#8c8c8c";
+    }), d = Ml[r.event_type] || "#8c8c8c";
     switch (r.event_type) {
       case "llm_request":
         return {
@@ -5031,7 +5111,7 @@ function Ul(s, t) {
           entry: n,
           from: "agent",
           to: "llm",
-          label: m,
+          label: p,
           kind: "call",
           color: d
         };
@@ -5041,33 +5121,33 @@ function Ul(s, t) {
           entry: n,
           from: "llm",
           to: "agent",
-          label: `${m}${zt(r.duration_ms, t)}`,
+          label: `${p}${qt(r.duration_ms, t)}`,
           kind: "return",
           color: d
         };
       case "tool_call": {
-        const c = n.isJSON ? n.parsed : null, f = (c == null ? void 0 : c.tool) || m;
+        const c = n.isJSON ? n.parsed : null, m = (c == null ? void 0 : c.tool) || p;
         return {
           id: r.id,
           entry: n,
           from: "agent",
           to: "tool",
-          label: f,
+          label: m,
           kind: "call",
           color: d
         };
       }
       case "tool_result": {
-        const c = n.isJSON ? n.parsed : null, f = ss(c, n.isJSON), V = (c == null ? void 0 : c.tool_call_id) && a.get(c.tool_call_id) || "", x = V ? `${m}: ${V}` : m;
+        const c = n.isJSON ? n.parsed : null, m = cs(c, n.isJSON), b = (c == null ? void 0 : c.tool_call_id) && a.get(c.tool_call_id) || "", y = b ? `${p}: ${b}` : p;
         return {
           id: r.id,
           entry: n,
           from: "tool",
           to: "agent",
-          label: f ? `${x} · ${l}` : x,
+          label: m ? `${y} · ${l}` : y,
           kind: "return",
-          color: f ? ft : d,
-          failed: f
+          color: m ? ht : d,
+          failed: m
         };
       }
       case "summary":
@@ -5076,41 +5156,41 @@ function Ul(s, t) {
           entry: n,
           from: "agent",
           to: "llm",
-          label: m,
+          label: p,
           kind: "call",
           color: d
         };
       case "token_usage": {
-        const c = n.isJSON ? n.parsed : null, f = Ol(c);
+        const c = n.isJSON ? n.parsed : null, m = ql(c);
         return {
           id: r.id,
           entry: n,
           from: "agent",
           to: "agent",
-          label: `${m}${f}`,
+          label: `${p}${m}`,
           kind: "note",
           color: d
         };
       }
       case "error": {
-        const c = i > 0 ? s[i - 1].event : void 0, f = (c == null ? void 0 : c.event_type) === "llm_request", V = `${m}${zt(r.duration_ms, t)} · ${l}`;
-        return f ? {
+        const c = i > 0 ? s[i - 1].event : void 0, m = (c == null ? void 0 : c.event_type) === "llm_request", b = `${p}${qt(r.duration_ms, t)} · ${l}`;
+        return m ? {
           id: r.id,
           entry: n,
           from: "llm",
           to: "agent",
-          label: V,
+          label: b,
           kind: "return",
-          color: ft,
+          color: ht,
           failed: !0
         } : {
           id: r.id,
           entry: n,
           from: "agent",
           to: "agent",
-          label: V,
+          label: b,
           kind: "note",
-          color: ft,
+          color: ht,
           failed: !0
         };
       }
@@ -5120,23 +5200,23 @@ function Ul(s, t) {
           entry: n,
           from: "agent",
           to: "agent",
-          label: m,
+          label: p,
           kind: "note",
           color: d
         };
     }
   });
 }
-const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r, cx: m }) => {
-  const d = Et(s), c = Et(t), f = (Math.min(d, c) + 0.5) * (100 / 3), V = (Math.max(d, c) + 0.5) * (100 / 3), x = V - f, O = c > d, I = n === "return";
+const Kl = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r, cx: p }) => {
+  const d = Dt(s), c = Dt(t), m = (Math.min(d, c) + 0.5) * (100 / 3), b = (Math.max(d, c) + 0.5) * (100 / 3), y = b - m, O = c > d, I = n === "return";
   return /* @__PURE__ */ e.jsxs("div", { className: r.arrowTrack, children: [
     /* @__PURE__ */ e.jsx(
       "div",
       {
         className: r.arrowLine,
         style: {
-          left: `${f}%`,
-          width: `${x}%`,
+          left: `${m}%`,
+          width: `${y}%`,
           borderTopColor: l,
           borderTopStyle: I ? "dashed" : "solid"
         }
@@ -5147,10 +5227,10 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
       {
         className: r.arrowHead,
         style: O ? {
-          left: `calc(${V}% - 2px)`,
+          left: `calc(${b}% - 2px)`,
           borderLeft: `8px solid ${l}`
         } : {
-          left: `calc(${f}% - 6px)`,
+          left: `calc(${m}% - 6px)`,
           borderRight: `8px solid ${l}`
         }
       }
@@ -5158,42 +5238,42 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
     /* @__PURE__ */ e.jsxs(
       "div",
       {
-        className: m(r.arrowLabel, i && r.arrowLabelFailed),
+        className: p(r.arrowLabel, i && r.arrowLabelFailed),
         style: { color: l, borderColor: l },
         title: a,
         children: [
-          i && /* @__PURE__ */ e.jsx(Bt, { className: r.failIcon }),
+          i && /* @__PURE__ */ e.jsx(Xt, { className: r.failIcon }),
           /* @__PURE__ */ e.jsx("span", { children: a })
         ]
       }
     )
   ] });
-}, Bl = ({ entries: s, t, selectedId: a, onSelect: l }) => {
-  const { styles: n, cx: i } = Yt(), r = ye(
-    () => Ul(s, t),
+}, Gl = ({ entries: s, t, selectedId: a, onSelect: l }) => {
+  const { styles: n, cx: i } = rs(), r = ke(
+    () => Wl(s, t),
     [s, t]
-  ), m = (d) => t(`trace.actors.${d}`, {
+  ), p = (d) => t(`trace.actors.${d}`, {
     defaultValue: d === "agent" ? "Agent" : d === "llm" ? "LLM" : "Tool"
   });
   return r.length === 0 ? /* @__PURE__ */ e.jsx(
-    Je,
+    We,
     {
       description: t("trace.noEvents", {
         defaultValue: "No trace events found for this trace ID"
       })
     }
   ) : /* @__PURE__ */ e.jsx("div", { className: n.sequenceWrap, children: /* @__PURE__ */ e.jsxs("div", { className: n.sequenceInner, children: [
-    /* @__PURE__ */ e.jsx("div", { className: n.actorHeader, children: xt.map((d) => /* @__PURE__ */ e.jsx(
+    /* @__PURE__ */ e.jsx("div", { className: n.actorHeader, children: jt.map((d) => /* @__PURE__ */ e.jsx(
       "div",
       {
         className: n.actorBox,
-        style: { borderColor: Ft[d], color: Ft[d] },
-        children: m(d)
+        style: { borderColor: Rt[d], color: Rt[d] },
+        children: p(d)
       },
       d
     )) }),
     /* @__PURE__ */ e.jsxs("div", { className: n.messageList, children: [
-      /* @__PURE__ */ e.jsx("div", { className: n.lifelineBg, children: xt.map((d) => /* @__PURE__ */ e.jsx("div", { className: n.lifeline }, d)) }),
+      /* @__PURE__ */ e.jsx("div", { className: n.lifelineBg, children: jt.map((d) => /* @__PURE__ */ e.jsx("div", { className: n.lifeline }, d)) }),
       r.map((d) => /* @__PURE__ */ e.jsxs(
         "div",
         {
@@ -5222,12 +5302,12 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
                 style: { borderColor: d.color, color: d.color },
                 title: d.label,
                 children: [
-                  d.failed && /* @__PURE__ */ e.jsx(Bt, { className: n.failIcon }),
+                  d.failed && /* @__PURE__ */ e.jsx(Xt, { className: n.failIcon }),
                   /* @__PURE__ */ e.jsx("span", { children: d.label })
                 ]
               }
             ) : /* @__PURE__ */ e.jsx(
-              $l,
+              Kl,
               {
                 from: d.from,
                 to: d.to,
@@ -5245,14 +5325,14 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
       ))
     ] })
   ] }) });
-}, Jl = () => {
-  const { message: s, modal: t } = me.useApp(), { t: a } = G("ai"), l = Ce(), [n, i] = Gt(), [r, m] = b(""), [d, c] = b(""), [f, V] = b("sequence"), [x, O] = b(
+}, Ql = () => {
+  const { message: s, modal: t } = ge.useApp(), { t: a } = G("ai"), l = Fe(), [n, i] = as(), [r, p] = x(""), [d, c] = x(""), [m, b] = x("sequence"), [y, O] = x(
     null
   ), {
     data: I,
-    loading: L,
-    refresh: _
-  } = A(() => S.ai.getAiTraceStatus(), {
+    loading: M,
+    refresh: v
+  } = A(() => k.ai.getAiTraceStatus(), {
     onError: () => {
       s.error(
         a("trace.statusFetchFailed", {
@@ -5260,18 +5340,18 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
         })
       );
     }
-  }), q = (I == null ? void 0 : I.enabled) ?? !1, { loading: C, run: D } = A(
-    (h) => S.ai.toggleAiTrace({ enabled: h }),
+  }), q = (I == null ? void 0 : I.enabled) ?? !1, { loading: w, run: U } = A(
+    (j) => k.ai.toggleAiTrace({ enabled: j }),
     {
       manual: !0,
-      onSuccess: (h, [R]) => {
+      onSuccess: (j, [F]) => {
         s.success(
-          R ? a("trace.enableSuccess", {
+          F ? a("trace.enableSuccess", {
             defaultValue: "AI debug tracing enabled"
           }) : a("trace.disableSuccess", {
             defaultValue: "AI debug tracing disabled"
           })
-        ), _(), R || c("");
+        ), v(), F || c("");
       },
       onError: () => {
         s.error(
@@ -5282,11 +5362,11 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
       }
     }
   ), {
-    data: g,
-    loading: J,
+    data: f,
+    loading: W,
     run: Y
   } = A(
-    (h) => S.ai.getAiTraceEvents({ trace_id: h }),
+    (j) => k.ai.getAiTraceEvents({ trace_id: j }),
     {
       manual: !0,
       onError: () => {
@@ -5297,48 +5377,48 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
         );
       }
     }
-  ), W = xe(
-    (h) => {
-      c(h), O(null), Y(h);
+  ), J = Ve(
+    (j) => {
+      c(j), O(null), Y(j);
     },
     [Y]
-  ), ee = fs(!1);
-  Le(() => {
-    var N, B;
-    if (ee.current) return;
-    ee.current = !0;
-    const h = (N = n.get("trace_id")) == null ? void 0 : N.trim();
-    h && (m(h), W(h));
-    const R = (B = n.get("view")) == null ? void 0 : B.trim();
-    R && V(R);
-  }, [n, W, V]);
-  const Q = xe(() => {
-    const h = r.trim();
-    h && (i(
-      (R) => {
-        const N = new URLSearchParams(R);
-        return N.set("trace_id", h), N;
+  ), le = _s(!1);
+  ze(() => {
+    var R, Z;
+    if (le.current) return;
+    le.current = !0;
+    const j = (R = n.get("trace_id")) == null ? void 0 : R.trim();
+    j && (p(j), J(j));
+    const F = (Z = n.get("view")) == null ? void 0 : Z.trim();
+    F && b(F);
+  }, [n, J, b]);
+  const Q = Ve(() => {
+    const j = r.trim();
+    j && (i(
+      (F) => {
+        const R = new URLSearchParams(F);
+        return R.set("trace_id", j), R;
       },
       { replace: !0 }
-    ), W(h));
-  }, [r, W, i]), te = xe(
-    (h) => {
-      const R = h ? a("trace.enableConfirm", {
+    ), J(j));
+  }, [r, J, i]), se = Ve(
+    (j) => {
+      const F = j ? a("trace.enableConfirm", {
         defaultValue: "Enable AI debug tracing? This will record detailed AI interaction data."
       }) : a("trace.disableConfirm", {
         defaultValue: "Disable AI debug tracing? All stored trace data will be deleted."
       });
       t.confirm({
-        title: h ? a("trace.debugEnabled", { defaultValue: "AI Debug Enabled" }) : a("trace.debugDisabled", { defaultValue: "AI Debug Disabled" }),
-        content: R,
-        onOk: () => D(h)
+        title: j ? a("trace.debugEnabled", { defaultValue: "AI Debug Enabled" }) : a("trace.debugDisabled", { defaultValue: "AI Debug Disabled" }),
+        content: F,
+        onOk: () => U(j)
       });
     },
-    [a, D, t]
-  ), F = xe(async () => {
+    [a, U, t]
+  ), T = Ve(async () => {
     if (d)
       try {
-        const h = await fetch(
+        const j = await fetch(
           `/api/ai/trace/events/download?trace_id=${encodeURIComponent(d)}`,
           {
             headers: {
@@ -5346,9 +5426,9 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
             }
           }
         );
-        if (!h.ok) throw new Error("download failed");
-        const R = await h.blob(), N = window.URL.createObjectURL(R), B = document.createElement("a");
-        B.href = N, B.download = `ai-trace-${d}.json`, document.body.appendChild(B), B.click(), window.URL.revokeObjectURL(N), document.body.removeChild(B);
+        if (!j.ok) throw new Error("download failed");
+        const F = await j.blob(), R = window.URL.createObjectURL(F), Z = document.createElement("a");
+        Z.href = R, Z.download = `ai-trace-${d}.json`, document.body.appendChild(Z), Z.click(), window.URL.revokeObjectURL(R), document.body.removeChild(Z);
       } catch {
         s.error(
           a("trace.downloadFailed", {
@@ -5356,54 +5436,54 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
           })
         );
       }
-  }, [d, a]), w = ye(() => g ?? [], [g]), M = ye(() => Pl(w), [w]);
-  Le(() => {
+  }, [d, a]), P = ke(() => f ?? [], [f]), $ = ke(() => Nl(P), [P]);
+  ze(() => {
     O(null);
-  }, [d, f]);
-  const H = ye(
-    () => M.map((h) => {
-      const { event: R } = h, N = Tt[R.event_type] || {
+  }, [d, m]);
+  const N = ke(
+    () => $.map((j) => {
+      const { event: F } = j, R = Ot[F.event_type] || {
         color: "gray",
-        icon: /* @__PURE__ */ e.jsx(lt, {})
-      }, B = a(`trace.eventTypes.${R.event_type}`, {
-        defaultValue: R.event_type
+        icon: /* @__PURE__ */ e.jsx(ot, {})
+      }, Z = a(`trace.eventTypes.${F.event_type}`, {
+        defaultValue: F.event_type
       });
       return {
-        key: R.id,
-        dot: N.icon,
-        color: N.color,
+        key: F.id,
+        dot: R.icon,
+        color: R.color,
         children: /* @__PURE__ */ e.jsx(
-          ds,
+          js,
           {
             size: "small",
-            defaultActiveKey: [R.id],
+            defaultActiveKey: [F.id],
             items: [
               {
-                key: R.id,
+                key: F.id,
                 label: /* @__PURE__ */ e.jsxs(K, { size: "middle", children: [
-                  /* @__PURE__ */ e.jsx(ne, { color: N.color, children: B }),
-                  /* @__PURE__ */ e.jsxs(ge, { type: "secondary", style: { fontSize: 12 }, children: [
+                  /* @__PURE__ */ e.jsx(de, { color: R.color, children: Z }),
+                  /* @__PURE__ */ e.jsxs(xe, { type: "secondary", style: { fontSize: 12 }, children: [
                     "#",
-                    R.step_order
+                    F.step_order
                   ] }),
-                  R.duration_ms > 0 && /* @__PURE__ */ e.jsxs(ge, { type: "secondary", style: { fontSize: 12 }, children: [
+                  F.duration_ms > 0 && /* @__PURE__ */ e.jsxs(xe, { type: "secondary", style: { fontSize: 12 }, children: [
                     a("trace.duration", { defaultValue: "Duration" }),
                     ":",
                     " ",
-                    R.duration_ms,
+                    F.duration_ms,
                     "ms"
                   ] }),
-                  /* @__PURE__ */ e.jsx(ge, { type: "secondary", style: { fontSize: 12 }, children: new Date(R.created_at).toLocaleString() })
+                  /* @__PURE__ */ e.jsx(xe, { type: "secondary", style: { fontSize: 12 }, children: new Date(F.created_at).toLocaleString() })
                 ] }),
-                children: /* @__PURE__ */ e.jsx(Xe, { children: /* @__PURE__ */ e.jsx(At, { entry: h, t: a, maxHeight: 400 }) })
+                children: /* @__PURE__ */ e.jsx(tt, { children: /* @__PURE__ */ e.jsx(Nt, { entry: j, t: a, maxHeight: 400 }) })
               }
             ]
           }
         )
       };
     }),
-    [M, a]
-  ), k = x ? Tt[x.event.event_type] : null;
+    [$, a]
+  ), _ = y ? Ot[y.event.event_type] : null;
   return /* @__PURE__ */ e.jsxs("div", { children: [
     /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(
       "div",
@@ -5418,25 +5498,25 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
             /* @__PURE__ */ e.jsx(
               E,
               {
-                icon: /* @__PURE__ */ e.jsx(yt, {}),
+                icon: /* @__PURE__ */ e.jsx(kt, {}),
                 onClick: () => l("/system/settings#ai-models"),
                 children: a("trace.back", { defaultValue: "Back" })
               }
             ),
-            /* @__PURE__ */ e.jsx(El, { level: 4, style: { margin: 0 }, children: a("trace.title", { defaultValue: "AI Trace Viewer" }) })
+            /* @__PURE__ */ e.jsx(Rl, { level: 4, style: { margin: 0 }, children: a("trace.title", { defaultValue: "AI Trace Viewer" }) })
           ] }),
           /* @__PURE__ */ e.jsxs(K, { children: [
-            /* @__PURE__ */ e.jsx(ge, { children: q ? a("trace.debugEnabled", {
+            /* @__PURE__ */ e.jsx(xe, { children: q ? a("trace.debugEnabled", {
               defaultValue: "AI Debug Enabled"
             }) : a("trace.debugDisabled", {
               defaultValue: "AI Debug Disabled"
             }) }),
             /* @__PURE__ */ e.jsx(
-              oe,
+              ue,
               {
                 checked: q,
-                loading: L || C,
-                onChange: te
+                loading: M || w,
+                onChange: se
               }
             )
           ] })
@@ -5445,40 +5525,40 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
     ) }),
     /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsxs(K.Compact, { style: { width: "100%" }, children: [
       /* @__PURE__ */ e.jsx(
-        v,
+        V,
         {
           placeholder: a("trace.traceIdPlaceholder", {
             defaultValue: "Enter trace ID to search"
           }),
           value: r,
-          onChange: (h) => m(h.target.value),
+          onChange: (j) => p(j.target.value),
           onPressEnter: Q,
-          prefix: /* @__PURE__ */ e.jsx(Cs, {}),
+          prefix: /* @__PURE__ */ e.jsx(Ls, {}),
           allowClear: !0
         }
       ),
-      /* @__PURE__ */ e.jsx(E, { type: "primary", onClick: Q, loading: J, children: a("trace.search", { defaultValue: "Search" }) }),
-      d && w.length > 0 && /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Ts, {}), onClick: F, children: a("trace.download", { defaultValue: "Download" }) })
+      /* @__PURE__ */ e.jsx(E, { type: "primary", onClick: Q, loading: W, children: a("trace.search", { defaultValue: "Search" }) }),
+      d && P.length > 0 && /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(Os, {}), onClick: T, children: a("trace.download", { defaultValue: "Download" }) })
     ] }) }),
-    J ? /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40 }, children: /* @__PURE__ */ e.jsx(je, { size: "large" }) }) }) : d && w.length === 0 ? /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx(
-      Je,
+    W ? /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40 }, children: /* @__PURE__ */ e.jsx(ye, { size: "large" }) }) }) : d && P.length === 0 ? /* @__PURE__ */ e.jsx(ie, { children: /* @__PURE__ */ e.jsx(
+      We,
       {
         description: a("trace.noEvents", {
           defaultValue: "No trace events found for this trace ID"
         })
       }
-    ) }) : w.length > 0 ? /* @__PURE__ */ e.jsx(
+    ) }) : P.length > 0 ? /* @__PURE__ */ e.jsx(
       ie,
       {
         title: /* @__PURE__ */ e.jsx(
-          ot,
+          ct,
           {
-            value: f,
-            onChange: (h) => {
-              V(h), i(
-                (R) => {
-                  const N = new URLSearchParams(R);
-                  return N.set("view", h), N;
+            value: m,
+            onChange: (j) => {
+              b(j), i(
+                (F) => {
+                  const R = new URLSearchParams(F);
+                  return R.set("view", j), R;
                 },
                 { replace: !0 }
               );
@@ -5489,66 +5569,74 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
                   defaultValue: "Sequence"
                 }),
                 value: "sequence",
-                icon: /* @__PURE__ */ e.jsx(Fs, {})
+                icon: /* @__PURE__ */ e.jsx(Rs, {})
               },
               {
                 label: a("trace.viewTimeline", {
                   defaultValue: "Timeline"
                 }),
                 value: "timeline",
-                icon: /* @__PURE__ */ e.jsx(qt, {})
+                icon: /* @__PURE__ */ e.jsx(Gt, {})
               }
             ]
           }
         ),
-        children: f === "sequence" ? /* @__PURE__ */ e.jsx(
-          Bl,
+        children: m === "sequence" ? /* @__PURE__ */ e.jsx(
+          Gl,
           {
-            entries: M,
+            entries: $,
             t: a,
-            selectedId: x == null ? void 0 : x.event.id,
+            selectedId: y == null ? void 0 : y.event.id,
             onSelect: O
           }
-        ) : /* @__PURE__ */ e.jsx(us, { items: H })
+        ) : /* @__PURE__ */ e.jsx(bs, { items: N })
       }
     ) : null,
     /* @__PURE__ */ e.jsx(
-      cs,
+      Vs,
       {
-        title: x ? /* @__PURE__ */ e.jsxs(K, { children: [
-          /* @__PURE__ */ e.jsx(ne, { color: (k == null ? void 0 : k.color) || "default", children: a(`trace.eventTypes.${x.event.event_type}`, {
-            defaultValue: x.event.event_type
+        title: y ? /* @__PURE__ */ e.jsxs(K, { children: [
+          /* @__PURE__ */ e.jsx(de, { color: (_ == null ? void 0 : _.color) || "default", children: a(`trace.eventTypes.${y.event.event_type}`, {
+            defaultValue: y.event.event_type
           }) }),
-          /* @__PURE__ */ e.jsxs(ge, { type: "secondary", children: [
+          /* @__PURE__ */ e.jsxs(xe, { type: "secondary", children: [
             "#",
-            x.event.step_order
+            y.event.step_order
           ] }),
-          x.event.duration_ms > 0 && /* @__PURE__ */ e.jsxs(ge, { type: "secondary", children: [
+          y.event.duration_ms > 0 && /* @__PURE__ */ e.jsxs(xe, { type: "secondary", children: [
             a("trace.duration", { defaultValue: "Duration" }),
             ":",
             " ",
-            x.event.duration_ms,
+            y.event.duration_ms,
             "ms"
           ] })
         ] }) : null,
-        open: f === "sequence" && !!x,
+        open: m === "sequence" && !!y,
         onClose: () => O(null),
         width: 800,
         styles: { body: { paddingRight: 0 } },
-        children: x && /* @__PURE__ */ e.jsx(Xe, { children: /* @__PURE__ */ e.jsx(At, { entry: x, t: a }) }, x.event.id)
+        children: y && /* @__PURE__ */ e.jsx(tt, { children: /* @__PURE__ */ e.jsx(Nt, { entry: y, t: a }) }, y.event.id)
       }
     )
   ] });
-}, ba = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, va = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Jl
-}, Symbol.toStringTag, { value: "Module" })), Hl = et(() => import("./components.js").then((s) => s.s)), { Text: $e, Title: Wl } = Qe, Kl = ({
+  default: Ql
+}, Symbol.toStringTag, { value: "Module" })), { Text: He, Title: Zl } = Ye, Xl = Vt(
+  () => Promise.all([
+    import("@uiw/react-codemirror"),
+    import("@codemirror/lang-json")
+  ]).then(([{ default: s }, { json: t }]) => {
+    const a = [t()];
+    return { default: (n) => /* @__PURE__ */ e.jsx(s, { ...n, extensions: a }) };
+  })
+), Yl = ({
   content: s,
   maxHeight: t = 400
 }) => {
-  const { parsed: a, isJSON: l } = Ze(s);
+  const { parsed: a, isJSON: l } = et(s);
   return l ? /* @__PURE__ */ e.jsx(
-    at,
+    rt,
     {
       style: {
         background: "var(--ant-color-bg-container)",
@@ -5582,104 +5670,104 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
       children: s
     }
   );
-}, Gl = () => {
-  var k;
-  const { message: s } = me.useApp(), { t } = G("system"), { t: a } = G("common"), l = Ce(), { id: n } = rt(), [i, r] = b(void 0), [m, d] = b("schema"), [c, f] = b({}), [V, x] = b("{}"), [O, I] = b(null), [L, _] = b(null), { loading: q, data: C } = A(
-    () => S.system.getToolSet({ id: n }),
+}, ea = () => {
+  var _;
+  const { message: s } = ge.useApp(), { t } = G("system"), { t: a } = G("common"), l = Fe(), { id: n } = mt(), [i, r] = x(void 0), [p, d] = x("schema"), [c, m] = x({}), [b, y] = x("{}"), [O, I] = x(null), [M, v] = x(null), { loading: q, data: w } = A(
+    () => k.system.getToolSet({ id: n }),
     {
       ready: !!n,
       onError: () => {
         s.error(t("settings.toolsets.fetchFailed", { defaultValue: "Failed to fetch toolset" }));
       }
     }
-  ), { loading: D, data: g } = A(
-    () => S.system.getToolSetTools({ id: n }),
+  ), { loading: U, data: f } = A(
+    () => k.system.getToolSetTools({ id: n }),
     {
       ready: !!n,
       onError: () => {
         s.error(t("settings.toolsets.fetchToolsFailed", { defaultValue: "Failed to fetch tools" }));
       }
     }
-  ), J = g == null ? void 0 : g.find(
-    (h) => {
-      var R;
-      return ((R = h.function) == null ? void 0 : R.name) === i;
+  ), W = f == null ? void 0 : f.find(
+    (j) => {
+      var F;
+      return ((F = j.function) == null ? void 0 : F.name) === i;
     }
-  ), { loading: Y, run: W } = A(
-    (h, R) => S.system.callTool({ id: n }, { name: h, parameters: R }),
+  ), { loading: Y, run: J } = A(
+    (j, F) => k.system.callTool({ id: n }, { name: j, parameters: F }),
     {
       manual: !0,
-      onSuccess: (h) => {
-        I((h == null ? void 0 : h.result) ?? "");
+      onSuccess: (j) => {
+        I((j == null ? void 0 : j.result) ?? "");
       },
-      onError: (h) => {
-        var N, B;
-        const R = ((B = (N = h.response) == null ? void 0 : N.data) == null ? void 0 : B.message) || h.message || t("settings.toolsets.callToolFailed", { defaultValue: "Tool call failed" });
-        s.error(R), I(null);
+      onError: (j) => {
+        var R, Z;
+        const F = ((Z = (R = j.response) == null ? void 0 : R.data) == null ? void 0 : Z.message) || j.message || t("settings.toolsets.callToolFailed", { defaultValue: "Tool call failed" });
+        s.error(F), I(null);
       }
     }
-  ), ee = xe((h) => {
-    r(h), f({}), x("{}"), I(null), _(null);
-  }, []), Q = xe(() => {
-    if (m === "schema")
-      x(JSON.stringify(c, null, 2)), d("code");
+  ), le = Ve((j) => {
+    r(j), m({}), y("{}"), I(null), v(null);
+  }, []), Q = Ve(() => {
+    if (p === "schema")
+      y(JSON.stringify(c, null, 2)), d("code");
     else {
-      const { parsed: h, isJSON: R } = Ze(V);
-      R && (f(h), _(null)), d("schema");
+      const { parsed: j, isJSON: F } = et(b);
+      F && (m(j), v(null)), d("schema");
     }
-  }, [m, c, V]), te = xe((h) => {
-    x(h);
-    const { parsed: R, isJSON: N } = Ze(h);
-    N ? (f(R), _(null)) : _(t("settings.toolsets.invalidJSON", { defaultValue: "Invalid JSON" }));
-  }, [t]), F = xe(() => {
+  }, [p, c, b]), se = Ve((j) => {
+    y(j);
+    const { parsed: F, isJSON: R } = et(j);
+    R ? (m(F), v(null)) : v(t("settings.toolsets.invalidJSON", { defaultValue: "Invalid JSON" }));
+  }, [t]), T = Ve(() => {
     if (!i) {
       s.warning(t("settings.toolsets.selectToolFirst", { defaultValue: "Please select a tool first" }));
       return;
     }
-    let h;
-    if (m === "code") {
-      if (L) {
+    let j;
+    if (p === "code") {
+      if (M) {
         s.error(t("settings.toolsets.invalidJSON", { defaultValue: "Invalid JSON" }));
         return;
       }
-      h = V;
+      j = b;
     } else
-      h = JSON.stringify(c);
-    I(null), W(i, h);
-  }, [i, m, c, V, L, W, t]), w = C, M = (w == null ? void 0 : w.status) === "enabled" ? "green" : "red", H = (w == null ? void 0 : w.status) === "enabled" ? a("enabled", { defaultValue: "Enabled" }) : a("disabled", { defaultValue: "Disabled" });
+      j = JSON.stringify(c);
+    I(null), J(i, j);
+  }, [i, p, c, b, M, J, t]), P = w, $ = (P == null ? void 0 : P.status) === "enabled" ? "green" : "red", N = (P == null ? void 0 : P.status) === "enabled" ? a("enabled", { defaultValue: "Enabled" }) : a("disabled", { defaultValue: "Disabled" });
   return /* @__PURE__ */ e.jsxs("div", { children: [
     /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, children: /* @__PURE__ */ e.jsx("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: /* @__PURE__ */ e.jsxs(K, { children: [
       /* @__PURE__ */ e.jsx(
         E,
         {
-          icon: /* @__PURE__ */ e.jsx(yt, {}),
+          icon: /* @__PURE__ */ e.jsx(kt, {}),
           onClick: () => l("/system/settings#ai-toolsets"),
           children: t("settings.toolsets.backToList", { defaultValue: "Back" })
         }
       ),
-      /* @__PURE__ */ e.jsx(Wl, { level: 4, style: { margin: 0 }, children: t("settings.toolsets.debugTitle", { defaultValue: "Tool Debug" }) })
+      /* @__PURE__ */ e.jsx(Zl, { level: 4, style: { margin: 0 }, children: t("settings.toolsets.debugTitle", { defaultValue: "Tool Debug" }) })
     ] }) }) }),
-    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, loading: q, children: w && /* @__PURE__ */ e.jsxs(pe, { column: 2, size: "small", children: [
-      /* @__PURE__ */ e.jsx(pe.Item, { label: t("settings.toolsets.name", { defaultValue: "Name" }), children: /* @__PURE__ */ e.jsx($e, { strong: !0, children: w.name }) }),
-      /* @__PURE__ */ e.jsx(pe.Item, { label: t("settings.toolsets.type", { defaultValue: "Type" }), children: /* @__PURE__ */ e.jsx(ne, { color: "blue", children: String(w.type).toUpperCase() }) }),
-      /* @__PURE__ */ e.jsx(pe.Item, { label: t("settings.toolsets.description", { defaultValue: "Description" }), span: 2, children: w.description || "-" }),
-      /* @__PURE__ */ e.jsx(pe.Item, { label: t("settings.toolsets.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(ne, { color: M, children: H }) })
+    /* @__PURE__ */ e.jsx(ie, { style: { marginBottom: 16 }, loading: q, children: P && /* @__PURE__ */ e.jsxs(he, { column: 2, size: "small", children: [
+      /* @__PURE__ */ e.jsx(he.Item, { label: t("settings.toolsets.name", { defaultValue: "Name" }), children: /* @__PURE__ */ e.jsx(He, { strong: !0, children: P.name }) }),
+      /* @__PURE__ */ e.jsx(he.Item, { label: t("settings.toolsets.type", { defaultValue: "Type" }), children: /* @__PURE__ */ e.jsx(de, { color: "blue", children: String(P.type).toUpperCase() }) }),
+      /* @__PURE__ */ e.jsx(he.Item, { label: t("settings.toolsets.description", { defaultValue: "Description" }), span: 2, children: P.description || "-" }),
+      /* @__PURE__ */ e.jsx(he.Item, { label: t("settings.toolsets.status", { defaultValue: "Status" }), children: /* @__PURE__ */ e.jsx(de, { color: $, children: N }) })
     ] }) }),
     /* @__PURE__ */ e.jsxs(ie, { children: [
       /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 16 }, children: [
-        /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ e.jsx($e, { strong: !0, children: t("settings.toolsets.selectTool", { defaultValue: "Select Tool" }) }) }),
-        D ? /* @__PURE__ */ e.jsx(je, { size: "small" }) : /* @__PURE__ */ e.jsx(
-          $,
+        /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ e.jsx(He, { strong: !0, children: t("settings.toolsets.selectTool", { defaultValue: "Select Tool" }) }) }),
+        U ? /* @__PURE__ */ e.jsx(ye, { size: "small" }) : /* @__PURE__ */ e.jsx(
+          H,
           {
             style: { width: "100%" },
             placeholder: t("settings.toolsets.selectToolPlaceholder", { defaultValue: "Select a tool to debug" }),
             value: i,
-            onChange: ee,
+            onChange: le,
             optionLabelProp: "label",
-            children: (g ?? []).map((h) => {
-              var Z, de;
-              const R = ((Z = h.function) == null ? void 0 : Z.name) ?? "", N = ((de = h.function) == null ? void 0 : de.description) ?? "", B = N ? `${R} - ${N}` : R;
-              return /* @__PURE__ */ e.jsx($.Option, { value: R, label: B, children: /* @__PURE__ */ e.jsx(
+            children: (f ?? []).map((j) => {
+              var B, ne;
+              const F = ((B = j.function) == null ? void 0 : B.name) ?? "", R = ((ne = j.function) == null ? void 0 : ne.description) ?? "", Z = R ? `${F} - ${R}` : F;
+              return /* @__PURE__ */ e.jsx(H.Option, { value: F, label: Z, children: /* @__PURE__ */ e.jsx(
                 "div",
                 {
                   style: {
@@ -5687,120 +5775,125 @@ const $l = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
                     textOverflow: "ellipsis",
                     whiteSpace: "nowrap"
                   },
-                  title: B,
-                  children: B
+                  title: Z,
+                  children: Z
                 }
-              ) }, R);
+              ) }, F);
             })
           }
         )
       ] }),
-      J && /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 16 }, children: [
+      W && /* @__PURE__ */ e.jsxs("div", { style: { marginBottom: 16 }, children: [
         /* @__PURE__ */ e.jsxs("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }, children: [
-          /* @__PURE__ */ e.jsx($e, { strong: !0, children: t("settings.toolsets.parameters", { defaultValue: "Parameters" }) }),
+          /* @__PURE__ */ e.jsx(He, { strong: !0, children: t("settings.toolsets.parameters", { defaultValue: "Parameters" }) }),
           /* @__PURE__ */ e.jsx(
-            nt,
+            ut,
             {
-              title: m === "schema" ? t("settings.toolsets.switchToCodeEditor", { defaultValue: "Switch to JSON editor" }) : t("settings.toolsets.switchToFormEditor", { defaultValue: "Switch to form editor" }),
+              title: p === "schema" ? t("settings.toolsets.switchToCodeEditor", { defaultValue: "Switch to JSON editor" }) : t("settings.toolsets.switchToFormEditor", { defaultValue: "Switch to form editor" }),
               children: /* @__PURE__ */ e.jsx(
                 E,
                 {
                   size: "small",
-                  icon: m === "schema" ? /* @__PURE__ */ e.jsx(Ht, {}) : /* @__PURE__ */ e.jsx(Jt, {}),
+                  icon: p === "schema" ? /* @__PURE__ */ e.jsx(es, {}) : /* @__PURE__ */ e.jsx(Yt, {}),
                   onClick: Q
                 }
               )
             }
           )
         ] }),
-        m === "schema" ? (k = J.function) != null && k.parameters ? /* @__PURE__ */ e.jsx(Ye, { fallback: /* @__PURE__ */ e.jsx(Ke, {}), children: /* @__PURE__ */ e.jsx(
-          Hl,
+        p === "schema" ? (_ = W.function) != null && _.parameters ? /* @__PURE__ */ e.jsx(
+          Bs,
           {
-            schema: J.function.parameters,
+            schema: W.function.parameters,
             value: c,
-            onChange: f
+            onChange: m
           }
-        ) }) : /* @__PURE__ */ e.jsx($e, { type: "secondary", children: t("settings.toolsets.noParameters", { defaultValue: "This tool has no parameters" }) }) : /* @__PURE__ */ e.jsxs("div", { children: [
+        ) : /* @__PURE__ */ e.jsx(He, { type: "secondary", children: t("settings.toolsets.noParameters", { defaultValue: "This tool has no parameters" }) }) : /* @__PURE__ */ e.jsxs("div", { children: [
           /* @__PURE__ */ e.jsx(
-            Qs,
+            bt,
             {
-              value: V,
-              height: "200px",
-              extensions: [Zs()],
-              onChange: te,
-              basicSetup: { lineNumbers: !0, foldGutter: !0 }
+              fallback: /* @__PURE__ */ e.jsx("div", { style: { height: 200, display: "flex", alignItems: "center", justifyContent: "center" }, children: /* @__PURE__ */ e.jsx(ye, {}) }),
+              children: /* @__PURE__ */ e.jsx(
+                Xl,
+                {
+                  value: b,
+                  height: "200px",
+                  onChange: se,
+                  basicSetup: { lineNumbers: !0, foldGutter: !0 }
+                }
+              )
             }
           ),
-          L && /* @__PURE__ */ e.jsx($e, { type: "danger", style: { fontSize: 12, marginTop: 4, display: "block" }, children: L })
+          M && /* @__PURE__ */ e.jsx(He, { type: "danger", style: { fontSize: 12, marginTop: 4, display: "block" }, children: M })
         ] })
       ] }),
       /* @__PURE__ */ e.jsx("div", { style: { marginBottom: O !== null ? 16 : 0 }, children: /* @__PURE__ */ e.jsx(
         E,
         {
           type: "primary",
-          icon: /* @__PURE__ */ e.jsx(Ps, {}),
+          icon: /* @__PURE__ */ e.jsx(Us, {}),
           loading: Y,
           disabled: !i,
-          onClick: F,
+          onClick: T,
           children: t("settings.toolsets.callTool", { defaultValue: "Run" })
         }
       ) }),
       O !== null && /* @__PURE__ */ e.jsxs("div", { children: [
-        /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ e.jsx($e, { strong: !0, children: t("settings.toolsets.result", { defaultValue: "Result" }) }) }),
-        /* @__PURE__ */ e.jsx(Kl, { content: O, maxHeight: 300 })
+        /* @__PURE__ */ e.jsx("div", { style: { marginBottom: 8 }, children: /* @__PURE__ */ e.jsx(He, { strong: !0, children: t("settings.toolsets.result", { defaultValue: "Result" }) }) }),
+        /* @__PURE__ */ e.jsx(Yl, { content: O, maxHeight: 300 })
       ] })
     ] })
   ] });
-}, Va = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, _a = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Gl
-}, Symbol.toStringTag, { value: "Module" })), Ql = () => {
-  const { t: s } = G("system"), [t] = Gt(), a = t.get("provider"), l = t.get("code"), n = t.get("state"), [i, r] = b(null), [m, d] = b(null), [c, f] = b(null);
+  default: ea
+}, Symbol.toStringTag, { value: "Module" })), ta = () => {
+  const { t: s } = G("system"), [t] = as(), a = t.get("provider"), l = t.get("code"), n = t.get("state"), [i, r] = x(null), [p, d] = x(null), [c, m] = x(null);
   return A(async () => {
     if (!l || !n || !a)
       throw new Error(s("settings.oauth.testConnection.missingRequiredParameters", { defaultValue: "Missing required parameters" }));
-    const V = await S.system.testOauthCallback({ code: l, state: n, provider: a });
-    if (!V.user_info)
+    const b = await k.system.testOauthCallback({ code: l, state: n, provider: a });
+    if (!b.user_info)
       throw new Error(s("settings.oauth.testConnection.responseUserInfoIsNull", { defaultValue: "response user_info is null" }));
-    if (!V.user)
+    if (!b.user)
       throw new Error(s("settings.oauth.testConnection.responseUserIsNull", { defaultValue: "response user is null" }));
-    r(V.user), d(V.user_info);
+    r(b.user), d(b.user_info);
   }, {
     onSuccess: () => {
-      f({
+      m({
         status: "success",
         message: s("settings.oauth.testConnection.success", { defaultValue: "Successfully tested connection" })
       });
     },
-    onError: (V) => {
-      f({
+    onError: (b) => {
+      m({
         status: "error",
         message: s("settings.oauth.testConnection.callbackFailed", { defaultValue: "Failed to test connection" }),
-        error: V.message
+        error: b.message
       });
     }
   }), c ? /* @__PURE__ */ e.jsx("div", { children: /* @__PURE__ */ e.jsx(
-    ps,
+    vs,
     {
       status: c.status,
       title: c.message,
       subTitle: c.error,
-      extra: /* @__PURE__ */ e.jsxs(K, { style: { display: !m || !i ? "none" : "inline-block", textAlign: "left" }, direction: "vertical", children: [
-        /* @__PURE__ */ e.jsx(ie, { title: s("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(at, { value: m || {} }) }),
-        /* @__PURE__ */ e.jsx(ie, { title: s("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(at, { value: i || {} }) })
+      extra: /* @__PURE__ */ e.jsxs(K, { style: { display: !p || !i ? "none" : "inline-block", textAlign: "left" }, direction: "vertical", children: [
+        /* @__PURE__ */ e.jsx(ie, { title: s("settings.oauth.testConnection.oauthUserInfo", { defaultValue: "OAuth User Info" }), children: /* @__PURE__ */ e.jsx(rt, { value: p || {} }) }),
+        /* @__PURE__ */ e.jsx(ie, { title: s("settings.oauth.testConnection.loginUserInfo", { defaultValue: "Login User Info" }), style: { marginTop: 16 }, children: /* @__PURE__ */ e.jsx(rt, { value: i || {} }) })
       ] })
     }
-  ) }) : /* @__PURE__ */ e.jsx(Ke, {});
-}, ka = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  ) }) : /* @__PURE__ */ e.jsx(vt, {});
+}, Sa = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: Ql
+  default: ta
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  ba as A,
-  xa as O,
-  ya as S,
-  Va as T,
-  ja as a,
-  ka as b,
-  ha as i
+  va as A,
+  ba as O,
+  Va as S,
+  _a as T,
+  ka as a,
+  Sa as b,
+  ja as i
 };

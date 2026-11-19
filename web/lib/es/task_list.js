@@ -1,11 +1,11 @@
 import { j as s } from "./vendor.js";
-import { useRef as h, useState as k, useMemo as O, useEffect as R } from "react";
-import { App as A, Tag as y, Progress as F, Card as v, Space as m, Select as E, Input as P, Button as c } from "antd";
+import { useRef as k, useState as y, useMemo as O, useEffect as R } from "react";
+import { App as A, Tag as h, Progress as F, Card as v, Space as m, Select as E, Input as P, Button as c } from "antd";
 import { EyeOutlined as L, StopOutlined as $, RedoOutlined as N, DownloadOutlined as z, DeleteOutlined as B, SearchOutlined as x, ReloadOutlined as G, CalendarOutlined as U } from "@ant-design/icons";
 import { useTranslation as w } from "react-i18next";
 import { a as i } from "./index.js";
-import { c as q, i as M, h as Z } from "./components.js";
-import { P as V } from "./base.js";
+import { c as q, j as M, i as Z } from "./components.js";
+import { P as j } from "./base.js";
 import { useNavigate as H } from "react-router-dom";
 const J = {
   pending: "default",
@@ -14,7 +14,7 @@ const J = {
   failed: "error",
   cancelled: "default"
 }, le = () => {
-  const { message: n } = A.useApp(), { t: a } = w("task"), { t: o } = w("common"), r = h(null), [u, g] = k(""), [d, j] = k(), f = h(!0), p = H(), T = O(() => {
+  const { message: n } = A.useApp(), { t: a } = w("task"), { t: o } = w("common"), r = k(null), [u, V] = y(""), [d, g] = y(), f = k(!0), p = H(), T = O(() => {
     const e = a("type", { returnObjects: !0 });
     return !e || typeof e != "object" ? [] : Object.entries(e).map(([t, l]) => ({
       value: t,
@@ -61,7 +61,7 @@ const J = {
       width: 300,
       render: (e) => {
         const t = a(`type.${e}`, { defaultValue: e });
-        return /* @__PURE__ */ s.jsx(y, { color: "blue", children: t });
+        return /* @__PURE__ */ s.jsx(h, { color: "blue", children: t });
       }
     },
     {
@@ -69,7 +69,7 @@ const J = {
       dataIndex: "status",
       key: "status",
       width: 100,
-      render: (e) => /* @__PURE__ */ s.jsx(y, { color: J[e] || "default", children: a(`status.${e}`, { defaultValue: e }) })
+      render: (e) => /* @__PURE__ */ s.jsx(h, { color: J[e] || "default", children: a(`status.${e}`, { defaultValue: e }) })
     },
     {
       title: a("progress", { defaultValue: "Progress" }),
@@ -159,8 +159,8 @@ const J = {
       )
     }
   ], I = (e) => i.tasks.listTasks({
-    current: e.current ?? V.DEFAULT_CURRENT,
-    page_size: e.page_size ?? V.DEFAULT_PAGE_SIZE,
+    current: e.current ?? j.DEFAULT_CURRENT,
+    page_size: e.page_size ?? j.DEFAULT_PAGE_SIZE,
     search: u || void 0,
     type: d || void 0
   });
@@ -176,7 +176,7 @@ const J = {
             {
               placeholder: a("typeFilterPlaceholder", { defaultValue: "Filter by type" }),
               value: d,
-              onChange: (e) => j(e),
+              onChange: (e) => g(e),
               options: T,
               allowClear: !0,
               style: { width: 240 }
@@ -188,7 +188,7 @@ const J = {
               placeholder: a("searchPlaceholder", { defaultValue: "Search by type or ID" }),
               prefix: /* @__PURE__ */ s.jsx(x, {}),
               value: u,
-              onChange: (e) => g(e.target.value),
+              onChange: (e) => V(e.target.value),
               onPressEnter: () => {
                 var e, t;
                 return (t = (e = r.current) == null ? void 0 : e.reload) == null ? void 0 : t.call(e);

@@ -156,7 +156,17 @@ async function E(a, e) {
     ...e || {}
   });
 }
-async function g(a) {
+async function g(a, e) {
+  return t("/api/ai/models/test", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: a,
+    ...e || {}
+  });
+}
+async function A(a) {
   return t(
     "/api/ai/models/types",
     {
@@ -165,7 +175,7 @@ async function g(a) {
     }
   );
 }
-async function A(a, e) {
+async function C(a, e) {
   return t("/api/ai/trace/events", {
     method: "GET",
     params: {
@@ -183,13 +193,13 @@ async function S(a, e) {
     ...e || {}
   });
 }
-async function C(a) {
+async function q(a) {
   return t("/api/ai/trace/status", {
     method: "GET",
     ...a || {}
   });
 }
-async function q(a, e) {
+async function M(a, e) {
   return t("/api/ai/trace/toggle", {
     method: "POST",
     headers: {
@@ -199,7 +209,7 @@ async function q(a, e) {
     ...e || {}
   });
 }
-async function M(a, e, s) {
+async function j(a, e, s) {
   const { sessionId: n, ...o } = a;
   return t(`/api/ai/chat/sessions/${n}`, {
     method: "POST",
@@ -211,7 +221,7 @@ async function M(a, e, s) {
     ...s || {}
   });
 }
-const j = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const G = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   createAiModel: y,
   createChatSession: r,
@@ -220,20 +230,21 @@ const j = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   downloadAiTraceEvents: S,
   generateChatSessionTitle: d,
   getAiModel: h,
-  getAiTraceEvents: A,
-  getAiTraceStatus: C,
-  getAiTypeDefinitions: g,
+  getAiTraceEvents: C,
+  getAiTraceStatus: q,
+  getAiTypeDefinitions: A,
   getChatSession: p,
   listAiModelPurposes: m,
   listAiModels: l,
   listChatSessions: i,
   setAiModelPurpose: u,
   setDefaultAiModel: P,
-  streamChat: M,
+  streamChat: j,
   testAiModel: E,
-  toggleAiTrace: q,
+  testAiModelConfig: g,
+  toggleAiTrace: M,
   updateAiModel: T
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  j as a
+  G as a
 };

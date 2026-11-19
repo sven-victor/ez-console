@@ -2,12 +2,12 @@ import { j as e } from "./vendor.js";
 import { useState as h, useEffect as b } from "react";
 import { App as g, Card as x, Tabs as y } from "antd";
 import { useTranslation as l } from "react-i18next";
-import { m as P, l as j, n as A, o as V, U as w } from "./components.js";
+import { n as P, m as j, o as A, p as V, U as w } from "./components.js";
 import { c as L } from "./contexts.js";
 import { a as S } from "./index.js";
 import { useNavigate as k, useLocation as F } from "react-router-dom";
 const $ = () => {
-  const { message: n } = g.useApp(), { t: s } = l("authorization"), { t: c } = l("common"), { user: a, updateUser: f } = L(), [u, r] = h(!1), d = k(), i = F(), m = i.hash.replace("#", "") || "basic", o = async () => {
+  const { message: n } = g.useApp(), { t: s } = l("authorization"), { t: c } = l("common"), { user: a, updateUser: f } = L(), [u, r] = h(!1), d = k(), i = F(), p = i.hash.replace("#", "") || "basic", o = async () => {
     try {
       r(!0);
       const t = await S.authorization.getCurrentUser();
@@ -21,7 +21,7 @@ const $ = () => {
   b(() => {
     o();
   }, []);
-  const p = [
+  const m = [
     {
       key: "basic",
       label: s("profile.basic", { defaultValue: "Basic Information" }),
@@ -57,11 +57,11 @@ const $ = () => {
       children: /* @__PURE__ */ e.jsx(
         y,
         {
-          defaultActiveKey: m,
+          defaultActiveKey: p,
           onChange: (t) => {
             d(`${i.pathname}#${t}`);
           },
-          items: p,
+          items: m,
           destroyInactiveTabPane: !0
         }
       )

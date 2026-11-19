@@ -1,13 +1,13 @@
 import { j as e } from "./vendor.js";
 import { useState as s, useRef as ie, useEffect as k } from "react";
-import { App as ne, Form as c, Result as se, Card as le, Typography as de, Alert as B, Input as x, Button as $, Divider as ge, Space as me, Avatar as ce } from "antd";
+import { App as ne, Form as c, Result as se, Card as le, Typography as de, Alert as B, Input as x, Button as $, Divider as me, Space as ge, Avatar as ce } from "antd";
 import { KeyOutlined as ue, UserOutlined as fe, LockOutlined as pe, GithubOutlined as he } from "@ant-design/icons";
 import { useNavigate as xe, useLocation as we, useSearchParams as je } from "react-router-dom";
 import { u as ye, b as be } from "./contexts.js";
 import { useTranslation as Pe } from "react-i18next";
 import { a as D } from "./index.js";
 import { A as z } from "./client.js";
-import { L as G, a as _e, b as Ne, l as Ve } from "./components.js";
+import { L as G, a as _e, b as Ne, m as Ve } from "./components.js";
 import { m as Le, g as ke } from "./base.js";
 import { clearCache as ve } from "ahooks";
 import i from "classnames";
@@ -53,11 +53,11 @@ const { Title: Te } = de, Se = Ae(({ css: n, isDarkMode: w }) => ({
       width: 100%;
     `
 })), Ke = ({ transformLangConfig: n }) => {
-  const { message: w } = ne.useApp(), { styles: d } = Se(), h = xe(), K = we(), [l] = je(), { login: v, oauthLogin: A, user: T } = ye(), { t, i18n: P } = Pe(), [S, g] = s(null), [_, F] = s({}), [u, j] = s("login"), [W, X] = s(null), [N, Y] = s(null), [f, H] = s(null), [y] = c.useForm(), I = ie(!1), [J, E] = s(!1), [O, C] = s([]), [V, L] = s(0), { siteConfig: o, loading: Q, error: b } = be(), [Z, R] = s("Loading..."), U = async (r) => {
-    const m = async (a) => "username" in a ? await v({ username: a.username, password: a.password }) : "mfa_token" in a ? await v({ mfa_token: a.mfa_token, mfa_code: a.mfa_code }) : await A({ code: a.code, state: a.state, provider: a.provider });
+  const { message: w } = ne.useApp(), { styles: d } = Se(), h = xe(), K = we(), [l] = je(), { login: v, oauthLogin: A, user: T } = ye(), { t, i18n: P } = Pe(), [S, m] = s(null), [_, F] = s({}), [u, j] = s("login"), [W, X] = s(null), [N, Y] = s(null), [f, H] = s(null), [y] = c.useForm(), I = ie(!1), [J, E] = s(!1), [O, C] = s([]), [V, L] = s(0), { siteConfig: o, loading: Q, error: b } = be(), [Z, R] = s("Loading..."), U = async (r) => {
+    const g = async (a) => "username" in a ? await v({ username: a.username, password: a.password }) : "mfa_token" in a ? await v({ mfa_token: a.mfa_token, mfa_code: a.mfa_code }) : await A({ code: a.code, state: a.state, provider: a.provider });
     try {
       E(!0);
-      const a = await m(r);
+      const a = await g(r);
       if (ve(), await new Promise((p) => setTimeout(p, 100)), a && a.mfa_enforced && !a.mfa_enabled && K.pathname !== "/profile")
         h("/profile#mfa");
       else {
@@ -66,11 +66,11 @@ const { Title: Te } = de, Se = Ae(({ css: n, isDarkMode: w }) => ({
       }
     } catch (a) {
       if (a.password_expired)
-        j("password_expired"), X(a.token || null), g(null);
+        j("password_expired"), X(a.token || null), m(null);
       else if (a.needsMFA)
-        g(null), j("mfa"), h("/login", { replace: !0 }), Y(a.mfaType), H(a.user || null), y.setFieldValue("mfa_token", a.mfaToken);
+        m(null), j("mfa"), h("/login", { replace: !0 }), Y(a.mfaType), H(a.user || null), y.setFieldValue("mfa_token", a.mfaToken);
       else if ("username" in r || "mfa_token" in r)
-        if (a instanceof z ? g(t("login.error", { defaultValue: "Login failed: {{error}}", error: t(`login.${a}`, { defaultValue: a.message }) })) : g(typeof a == "string" ? a : t("login.error", { defaultValue: "Login failed" })), "mfa_token" in r) {
+        if (a instanceof z ? m(t("login.error", { defaultValue: "Login failed: {{error}}", error: t(`login.${a}`, { defaultValue: a.message }) })) : m(typeof a == "string" ? a : t("login.error", { defaultValue: "Login failed" })), "mfa_token" in r) {
           L(30);
           const p = setInterval(() => {
             L((M) => M >= 1 ? M - 1 : 0);
@@ -80,7 +80,7 @@ const { Title: Te } = de, Se = Ae(({ css: n, isDarkMode: w }) => ({
           }, 3e4);
         } else "username" in r && j("login");
       else
-        a instanceof z ? g(t("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: t(`login.${a.code}`, { defaultValue: a.message }) })) : g(typeof a == "string" ? a : t("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: a })), h("/login", { replace: !0 }), q();
+        a instanceof z ? m(t("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: t(`login.${a.code}`, { defaultValue: a.message }) })) : m(typeof a == "string" ? a : t("login.oauthError", { defaultValue: "OAuth login failed: {{error}}", error: a })), h("/login", { replace: !0 }), q();
     } finally {
       E(!1);
     }
@@ -97,8 +97,8 @@ const { Title: Te } = de, Se = Ae(({ css: n, isDarkMode: w }) => ({
   k(() => {
     if (!I.current) {
       I.current = !0;
-      const r = l.get("code"), m = l.get("state"), a = l.get("provider");
-      r && m && a ? U({ code: r, state: m, provider: a }) : q();
+      const r = l.get("code"), g = l.get("state"), a = l.get("provider");
+      r && g && a ? U({ code: r, state: g, provider: a }) : q();
     }
   }, [l, A]), k(() => {
     P.language && R((o == null ? void 0 : o.name_i18n[P.language]) || (o == null ? void 0 : o.name) || "");
@@ -106,10 +106,10 @@ const { Title: Te } = de, Se = Ae(({ css: n, isDarkMode: w }) => ({
   const ee = async (r) => {
     try {
       F({ ..._, [r]: !0 });
-      const { url: m } = await D.oauth.getLoginUrl({ provider: r }, { headers: { "X-Base-Path": ke() } });
-      window.location.href = m;
-    } catch (m) {
-      w.error(t("login.oauthError", { defaultValue: "OAuth login failed" })), console.error("OAuth login error:", m);
+      const { url: g } = await D.oauth.getLoginUrl({ provider: r }, { headers: { "X-Base-Path": ke() } });
+      window.location.href = g;
+    } catch (g) {
+      w.error(t("login.oauthError", { defaultValue: "OAuth login failed" })), console.error("OAuth login error:", g);
     } finally {
       F({ ..._, [r]: !1 });
     }
@@ -227,8 +227,8 @@ const { Title: Te } = de, Se = Ae(({ css: n, isDarkMode: w }) => ({
       }
     ),
     O.length > 0 && u !== "password_expired" && /* @__PURE__ */ e.jsxs(e.Fragment, { children: [
-      /* @__PURE__ */ e.jsx(ge, { className: i("login-page-divider", "login-page-divider-or"), children: t("login.or", { defaultValue: "Or" }) }),
-      /* @__PURE__ */ e.jsx(me, { direction: "vertical", className: i(d.loginPageProviders, "login-page-providers"), children: O.map((r) => /* @__PURE__ */ e.jsx(
+      /* @__PURE__ */ e.jsx(me, { className: i("login-page-divider", "login-page-divider-or"), children: t("login.or", { defaultValue: "Or" }) }),
+      /* @__PURE__ */ e.jsx(ge, { direction: "vertical", className: i(d.loginPageProviders, "login-page-providers"), children: O.map((r) => /* @__PURE__ */ e.jsx(
         $,
         {
           icon: ae(r.name),

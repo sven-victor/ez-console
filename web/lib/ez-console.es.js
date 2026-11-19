@@ -1,7 +1,7 @@
-import { A as p, b as m, c as d, J as u, d as f, M as A, e as c, f as h, w as l } from "./es/index.js";
-import { useTranslation as C } from "react-i18next";
+import { A as p, b as m, c as d, M as u, d as f, e as A, w as c } from "./es/index.js";
+import { useTranslation as l } from "react-i18next";
 import "./es/base.js";
-import { c as w, d as x, e as I, A as b, f as L, D as P, H as D, g as F, a as H, L as M, O as v, h as y, P as E, i as G, b as J, j as T } from "./es/components.js";
+import { c as C, d as S, e as w, A as x, f as I, D as b, H as L, J as P, g as D, h as F, a as H, L as M, O as k, i as v, P as y, j as E, b as G, k as J } from "./es/components.js";
 import { A as B, a as N, b as O } from "./es/ai-chat-layout.js";
 import "react";
 import { default as j } from "./es/forbidden.js";
@@ -18,39 +18,39 @@ export {
   B as AIChatButton,
   N as AIChatModal,
   O as AIChatSider,
-  w as Actions,
-  x as AdminGuard,
-  I as AllLangUIConfig,
+  C as Actions,
+  S as AdminGuard,
+  w as AllLangUIConfig,
   X as ApiError,
   m as AppLayout,
-  b as Avatar,
-  L as AvatarUpload,
-  P as DynamicIcon,
+  x as Avatar,
+  I as AvatarUpload,
+  b as DynamicIcon,
   d as EZApp,
   j as Forbidden,
-  D as HeaderDropdown,
+  L as HeaderDropdown,
   Y as HttpClient,
-  u as JsonSchemaConfigForm,
-  f as JsonSchemaConfigFormItem,
+  P as JsonSchemaConfigForm,
+  D as JsonSchemaConfigFormItem,
   F as LabelCreater,
   H as LanguageSwitch,
   M as Loading,
-  A as MarkdownCode,
-  c as MarkdownViewer,
+  u as MarkdownCode,
+  f as MarkdownViewer,
   z as NotFound,
-  v as OrganizationSwitcher,
-  y as PermissionGuard,
-  E as PrivateRoute,
-  G as Table,
-  J as ThemeSwitch,
-  h as api,
+  k as OrganizationSwitcher,
+  v as PermissionGuard,
+  y as PrivateRoute,
+  E as Table,
+  G as ThemeSwitch,
+  A as api,
   _ as apiDelete,
   $ as apiGet,
   aa as apiPost,
   sa as apiPut,
   ea as client,
   oa as fetchSSE,
-  T as getIconByName,
+  J as getIconByName,
   na as i18n,
   ta as request,
   ra as setClient,
@@ -58,6 +58,6 @@ export {
   Z as useAuth,
   K as usePermission,
   Q as useSite,
-  C as useTranslation,
-  l as withSuspense
+  l as useTranslation,
+  c as withSuspense
 };

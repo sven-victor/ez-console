@@ -243,7 +243,7 @@ async function z(t, a) {
   );
 }
 async function U(t, a, n) {
-  const { id: s, user_id: i, ...r } = t;
+  const { id: s, user_id: i, ...o } = t;
   return e(
     `/api/system/organizations/${s}/users/${i}/roles`,
     {
@@ -251,7 +251,7 @@ async function U(t, a, n) {
       headers: {
         "Content-Type": "application/json"
       },
-      params: { ...r },
+      params: { ...o },
       data: a,
       ...n || {}
     }
@@ -304,7 +304,7 @@ async function _(t, a) {
     }
   );
 }
-async function D(t, a, n) {
+async function v(t, a, n) {
   const { id: s, ...i } = t;
   return e(
     `/api/system/rate-limit-rules/${s}`,
@@ -319,7 +319,7 @@ async function D(t, a, n) {
     }
   );
 }
-async function v(t, a) {
+async function D(t, a) {
   const { id: n, ...s } = t;
   return e(
     `/api/system/rate-limit-rules/${n}`,
@@ -330,7 +330,7 @@ async function v(t, a) {
     }
   );
 }
-async function F(t) {
+async function w(t) {
   return e(
     "/api/system/rate-limit-settings",
     {
@@ -339,7 +339,7 @@ async function F(t) {
     }
   );
 }
-async function w(t, a) {
+async function F(t, a) {
   return e(
     "/api/system/rate-limit-settings",
     {
@@ -537,7 +537,7 @@ async function tt(t, a) {
   });
 }
 async function at(t, a, n) {
-  const { id: s, path: i, ...r } = t;
+  const { id: s, path: i, ...o } = t;
   return e(
     `/api/system/skills/${s}/files/${i}`,
     {
@@ -545,7 +545,7 @@ async function at(t, a, n) {
       headers: {
         "Content-Type": "application/octet-stream"
       },
-      params: { ...r },
+      params: { ...o },
       data: a,
       ...n || {}
     }
@@ -603,7 +603,7 @@ async function it(t, a, n) {
     }
   );
 }
-async function rt(t, a) {
+async function ot(t, a) {
   return e("/api/system/skills/clone", {
     method: "POST",
     headers: {
@@ -613,7 +613,7 @@ async function rt(t, a) {
     ...a || {}
   });
 }
-async function ot(t) {
+async function rt(t) {
   return e("/api/system/skills/domains", {
     method: "GET",
     ...t || {}
@@ -622,11 +622,11 @@ async function ot(t) {
 async function pt(t, a, n) {
   const s = new FormData();
   return a && s.append("file", a), Object.keys(t).forEach((i) => {
-    const r = t[i];
-    r != null && (typeof r == "object" && !(r instanceof File) ? r instanceof Array ? r.forEach((o) => s.append(i, o || "")) : s.append(
+    const o = t[i];
+    o != null && (typeof o == "object" && !(o instanceof File) ? o instanceof Array ? o.forEach((r) => s.append(i, r || "")) : s.append(
       i,
-      new Blob([JSON.stringify(r)], { type: "application/json" })
-    ) : s.append(i, r));
+      new Blob([JSON.stringify(o)], { type: "application/json" })
+    ) : s.append(i, o));
   }), e("/api/system/skills/upload", {
     method: "POST",
     data: s,
@@ -812,7 +812,30 @@ async function Ot(t, a) {
     }
   );
 }
-async function $t(t) {
+async function $t(t, a) {
+  return e("/api/system/toolsets/test", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    data: t,
+    ...a || {}
+  });
+}
+async function qt(t, a) {
+  return e(
+    "/api/system/toolsets/tools/preview",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      data: t,
+      ...a || {}
+    }
+  );
+}
+async function Gt(t) {
   return e(
     "/api/system/toolsets/types",
     {
@@ -821,20 +844,20 @@ async function $t(t) {
     }
   );
 }
-const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+const Ut = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   addUserToOrganization: G,
   callTool: kt,
   checkPasswordComplexity: J,
   clearSiteCache: y,
-  cloneSkill: rt,
+  cloneSkill: ot,
   createOrganization: C,
   createRateLimitRule: b,
   createSkill: H,
   createSkillDir: Y,
   createToolSet: gt,
   deleteOrganization: $,
-  deleteRateLimitRule: v,
+  deleteRateLimitRule: D,
   deleteSkill: V,
   deleteSkillPath: et,
   deleteToolSet: Et,
@@ -844,7 +867,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getOrganization: j,
   getRateLimitEffective: B,
   getRateLimitRule: _,
-  getRateLimitSettings: F,
+  getRateLimitSettings: w,
   getSecuritySettings: x,
   getSiteConfig: M,
   getSkill: K,
@@ -857,7 +880,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   getTaskSettings: dt,
   getToolSet: St,
   getToolSetTools: Ot,
-  getToolSetTypeDefinitions: $t,
+  getToolSetTypeDefinitions: Gt,
   getUserOrganizations: L,
   healthCheck: d,
   importLdapUsers: f,
@@ -866,12 +889,13 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   listOrganizations: k,
   listRateLimitRules: R,
   listSkillAiToolBindings: W,
-  listSkillDomains: ot,
+  listSkillDomains: rt,
   listSkillFilesTree: Z,
   listSkills: N,
   listToolSets: ft,
   moveSkillPath: st,
   previewSkill: nt,
+  previewToolSetTools: qt,
   putSkillFile: at,
   removeUserFromOrganization: z,
   replaceSkillAiToolBindings: X,
@@ -881,11 +905,12 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   testOauthConnection: P,
   testSmtpConnection: yt,
   testToolSet: jt,
+  testToolSetConfig: $t,
   updateLdapSettings: T,
   updateOauthSettings: S,
   updateOrganization: O,
-  updateRateLimitRule: D,
-  updateRateLimitSettings: w,
+  updateRateLimitRule: v,
+  updateRateLimitSettings: F,
   updateSecuritySettings: I,
   updateSkill: Q,
   updateSkillStatus: it,
@@ -898,7 +923,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   uploadSkill: pt
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  Gt as a,
+  Ut as a,
   q as b,
   C as c,
   $ as d,

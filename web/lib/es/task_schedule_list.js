@@ -4,7 +4,7 @@ import { App as D, Tag as h, Switch as N, Progress as z, Space as y, Card as k, 
 import { HistoryOutlined as $, PlayCircleOutlined as P, EyeOutlined as O, DownloadOutlined as H, ReloadOutlined as g } from "@ant-design/icons";
 import { useTranslation as x } from "react-i18next";
 import { a as o } from "./index.js";
-import { h as U, c as m, i as v } from "./components.js";
+import { i as U, c as m, j as v } from "./components.js";
 import { P as w } from "./base.js";
 import { useRequest as q } from "ahooks";
 import { useNavigate as B } from "react-router-dom";
@@ -22,7 +22,7 @@ const G = {
         d.error(a("scheduleListFailed", { defaultValue: "Failed to list schedules: {{error}}", error: e }));
       }
     }
-  ), _ = Array.isArray(n) ? n : (n == null ? void 0 : n.data) ?? [], j = async (e, t) => {
+  ), j = Array.isArray(n) ? n : (n == null ? void 0 : n.data) ?? [], _ = async (e, t) => {
     try {
       await o.tasks.toggleTaskSchedule({ id: e }, { enabled: t }), d.success(a("scheduleUpdated", { defaultValue: "Schedule updated." })), p();
     } catch {
@@ -65,7 +65,7 @@ const G = {
       dataIndex: "enabled",
       key: "enabled",
       width: 90,
-      render: (e, t) => /* @__PURE__ */ s.jsx(U, { permission: "task:schedule:update", children: /* @__PURE__ */ s.jsx(N, { checked: e, onChange: (r) => j(t.id, r), size: "small" }) })
+      render: (e, t) => /* @__PURE__ */ s.jsx(U, { permission: "task:schedule:update", children: /* @__PURE__ */ s.jsx(N, { checked: e, onChange: (r) => _(t.id, r), size: "small" }) })
     },
     {
       title: a("scheduleNextRun", { defaultValue: "Next Run" }),
@@ -209,7 +209,7 @@ const G = {
           {
             rowKey: "id",
             columns: C,
-            dataSource: _,
+            dataSource: j,
             loading: T,
             pagination: !1,
             scroll: { x: 900 }

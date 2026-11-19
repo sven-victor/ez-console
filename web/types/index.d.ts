@@ -22,6 +22,7 @@ import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import { Popconfirm } from 'antd';
 import { ReactNode } from 'react';
 import { RJSFSchema } from '@rjsf/utils/lib';
+import { SpinSize } from 'antd/es/spin';
 import { StrictRJSFSchema } from '@rjsf/utils';
 import { TableProps as TableProps_2 } from 'antd';
 import { TabsProps } from 'antd';
@@ -592,6 +593,12 @@ export declare const api: {
     getToolSetTools(params: API.getToolSetToolsParams, options?: {
         [key: string]: any;
     }): Promise<API.Tool[]>;
+    testToolSetConfig(body: API.TestToolSetConfigRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.MessageData>;
+    previewToolSetTools(body: API.TestToolSetConfigRequest, options?: {
+        [key: string]: any;
+    }): Promise<API.ToolPreview[]>;
     getToolSetTypeDefinitions(options?: {
         [key: string]: any;
     }): Promise<API.ToolSetTypeDefinition[]>;
@@ -1021,6 +1028,7 @@ export declare namespace API {
         ResponseArrayServiceToolSetTypeDefinition,
         ResponseArrayString,
         ResponseArraySystemapiTool,
+        ResponseArraySystemapiToolPreview,
         ResponseAuthorizationapiCreateServiceAccountAccessKeyResponse,
         ResponseAuthorizationapiResetUserPasswordResponse,
         ResponseAuthorizationapiSendDisableMFACodeResponse,
@@ -1108,8 +1116,10 @@ export declare namespace API {
         TaskSettingResponse,
         TaskStatus,
         terminateSessionParams,
+        TestAIModelConfigRequest,
         testAIModelParams,
         TestOAuthCallbackResponse,
+        TestToolSetConfigRequest,
         testToolSetParams,
         toggleTaskScheduleParams,
         ToggleTraceRequest,
@@ -1119,6 +1129,7 @@ export declare namespace API {
         ToolCall,
         ToolCallStatus,
         ToolDefinition,
+        ToolPreview,
         ToolSet,
         ToolSetStatus,
         ToolSetType,
@@ -2088,9 +2099,9 @@ export declare interface IRouteItem {
     hideInMenu?: boolean;
 }
 
-export declare const JsonSchemaConfigForm: FC<JsonSchemaConfigFormProps>;
+export declare function JsonSchemaConfigForm(props: JsonSchemaConfigFormProps): JSX_2.Element;
 
-export declare const JsonSchemaConfigFormItem: FC<JsonSchemaConfigFormItemProps>;
+export declare function JsonSchemaConfigFormItem(props: JsonSchemaConfigFormItemProps): JSX_2.Element;
 
 export declare interface JsonSchemaConfigFormItemProps extends FormItemProps {
     schema: RJSFSchema;
@@ -2358,7 +2369,12 @@ export declare interface listUsersParams {
     status?: string;
 }
 
-export declare const Loading: default_2.FC;
+export declare const Loading: default_2.FC<LoadingProps>;
+
+declare interface LoadingProps {
+    style?: default_2.CSSProperties;
+    size?: SpinSize;
+}
 
 export declare interface LoginRequest {
     mfa_code: string;
@@ -3043,6 +3059,13 @@ export declare interface ResponseArrayString {
 export declare interface ResponseArraySystemapiTool {
     code: string;
     data: Tool[];
+    err: string;
+    trace_id: string;
+}
+
+export declare interface ResponseArraySystemapiToolPreview {
+    code: string;
+    data: ToolPreview[];
     err: string;
     trace_id: string;
 }
@@ -3922,6 +3945,11 @@ export declare interface terminateSessionParams {
     id: string;
 }
 
+export declare interface TestAIModelConfigRequest {
+    config: Record<string, any>;
+    provider: AIModelProvider;
+}
+
 export declare interface testAIModelParams {
     /** AI model ID */
     id: string;
@@ -3930,6 +3958,11 @@ export declare interface testAIModelParams {
 export declare interface TestOAuthCallbackResponse {
     user: User;
     user_info: Record<string, any>;
+}
+
+export declare interface TestToolSetConfigRequest {
+    config?: Record<string, any>;
+    type: ToolSetType;
 }
 
 export declare interface testToolSetParams {
@@ -3990,6 +4023,11 @@ export declare interface ToolDefinition {
     parameters: any;
     strict: boolean;
     type: string;
+}
+
+export declare interface ToolPreview {
+    description: string;
+    name: string;
 }
 
 export declare interface ToolSet {
