@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   App,
   Card,
@@ -120,6 +120,7 @@ const AIModelSettings: React.FC = () => {
   const canUpdatePurpose = hasPermission('ai:models:update');
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [schemaReady, setSchemaReady] = useState(false);
   const [editingModel, setEditingModel] = useState<AIModel | null>(null);
   const [searchText, setSearchText] = useState('');
   const [selectedProvider, setSelectedProvider] = useState<string>('');
@@ -167,7 +168,6 @@ const AIModelSettings: React.FC = () => {
       onSuccess: () => {
         message.success(t('models.createSuccess', { defaultValue: 'AI model created successfully' }));
         setIsModalVisible(false);
-        form.resetFields();
         refresh();
       },
       onError: (error) => {
@@ -185,8 +185,6 @@ const AIModelSettings: React.FC = () => {
       onSuccess: () => {
         message.success(t('models.updateSuccess', { defaultValue: 'AI model updated successfully' }));
         setIsModalVisible(false);
-        form.resetFields();
-        setEditingModel(null);
         refresh();
       },
       onError: (error) => {
@@ -356,9 +354,31 @@ const AIModelSettings: React.FC = () => {
     deleteModel(record.id);
   };
 
+  const closeEditor = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleEditorAfterClose = () => {
+    setSchemaReady(false);
+    window.setTimeout(() => {
+      form.resetFields();
+      setEditingModel(null);
+      setSelectedProvider('');
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (!isModalVisible) {
+      return;
+    }
+    const timer = window.setTimeout(() => setSchemaReady(true), 0);
+    return () => window.clearTimeout(timer);
+  }, [isModalVisible]);
+
   const handleCreate = () => {
     setEditingModel(null);
     setSelectedProvider('');
+    setSchemaReady(false);
     form.resetFields();
     setIsModalVisible(true);
   };
@@ -366,6 +386,7 @@ const AIModelSettings: React.FC = () => {
   const handleEdit = (record: AIModel) => {
     setEditingModel(record);
     setSelectedProvider(record.provider);
+    setSchemaReady(false);
     const config = record.config || {};
     const formData: AIModelFormData = {
       name: record.name,
@@ -386,6 +407,7 @@ const AIModelSettings: React.FC = () => {
   const handleClone = async (record: AIModel) => {
     setEditingModel(null);
     setSelectedProvider(record.provider);
+    setSchemaReady(false);
     form.resetFields();
     try {
       const m = (await api.ai.getAiModel({ id: record.id })) as AIModel;
@@ -679,11 +701,10 @@ const AIModelSettings: React.FC = () => {
       <Modal
         title={editingModel ? t('models.edit', { defaultValue: 'Edit AI Model' }) : t('models.create', { defaultValue: 'Create AI Model' })}
         open={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          form.resetFields();
-          setEditingModel(null);
-        }}
+        loading={!schemaReady}
+        destroyOnHidden
+        afterClose={handleEditorAfterClose}
+        onCancel={closeEditor}
         footer={null}
         width={currentProviderDefinition?.ui_schema?.['ui:width'] || 600}
       >
@@ -814,14 +835,7 @@ const AIModelSettings: React.FC = () => {
               >
                 {t('models.test', { defaultValue: 'Test Connection' })}
               </Button>
-              <Button
-                onClick={() => {
-                  setIsModalVisible(false);
-                  form.resetFields();
-                  setEditingModel(null);
-                  setSelectedProvider('');
-                }}
-              >
+              <Button onClick={closeEditor}>
                 {tCommon('cancel', { defaultValue: 'Cancel' })}
               </Button>
             </Space>

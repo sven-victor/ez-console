@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   App,
@@ -93,6 +93,7 @@ const ToolSetSettings: React.FC = () => {
   const navigate = useNavigate();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [schemaReady, setSchemaReady] = useState(false);
   const [editingToolSet, setEditingToolSet] = useState<ToolSet | null>(null);
   const [searchText, setSearchText] = useState('');
   const [configModalVisible, setConfigModalVisible] = useState(false);
@@ -156,7 +157,6 @@ const ToolSetSettings: React.FC = () => {
       onSuccess: () => {
         message.success(t('settings.toolsets.createSuccess', { defaultValue: 'toolset created successfully' }));
         setIsModalVisible(false);
-        form.resetFields();
         refresh();
       },
       onError: (error) => {
@@ -177,8 +177,6 @@ const ToolSetSettings: React.FC = () => {
       onSuccess: () => {
         message.success(t('settings.toolsets.updateSuccess', { defaultValue: 'toolset updated successfully' }));
         setIsModalVisible(false);
-        form.resetFields();
-        setEditingToolSet(null);
         refresh();
       },
       onError: (error) => {
@@ -289,18 +287,40 @@ const ToolSetSettings: React.FC = () => {
     [t, refresh],
   );
 
+  const closeEditor = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleEditorAfterClose = () => {
+    setSchemaReady(false);
+    window.setTimeout(() => {
+      form.resetFields();
+      setEditingToolSet(null);
+      setSelectedType('');
+    }, 0);
+  };
+
+  useEffect(() => {
+    if (!isModalVisible) {
+      return;
+    }
+    const timer = window.setTimeout(() => setSchemaReady(true), 0);
+    return () => window.clearTimeout(timer);
+  }, [isModalVisible]);
+
   const handleCreate = () => {
     setEditingToolSet(null);
-    form.resetFields();
     setSelectedType('');
+    setSchemaReady(false);
+    form.resetFields();
     setIsModalVisible(true);
   };
 
   const handleEdit = (record: ToolSet) => {
     setEditingToolSet(record);
     setSelectedType(record.type);
-    const formValues = { ...record };
-    form.setFieldsValue(formValues);
+    setSchemaReady(false);
+    form.setFieldsValue({ ...record });
     setIsModalVisible(true);
   };
 
@@ -554,12 +574,10 @@ const ToolSetSettings: React.FC = () => {
       <Modal
         title={editingToolSet ? t('settings.toolsets.edit', { defaultValue: 'Edit Toolset' }) : t('settings.toolsets.create', { defaultValue: 'Create Toolset' })}
         open={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          form.resetFields();
-          setEditingToolSet(null);
-          setSelectedType('');
-        }}
+        loading={!schemaReady}
+        destroyOnHidden
+        afterClose={handleEditorAfterClose}
+        onCancel={closeEditor}
         footer={null}
         width={currentTypeDefinition?.ui_schema?.['ui:width'] || 600}
       >
@@ -633,14 +651,7 @@ const ToolSetSettings: React.FC = () => {
               >
                 {t('settings.toolsets.test', { defaultValue: 'Test Connection' })}
               </Button>
-              <Button
-                onClick={() => {
-                  setIsModalVisible(false);
-                  form.resetFields();
-                  setEditingToolSet(null);
-                  setSelectedType('');
-                }}
-              >
+              <Button onClick={closeEditor}>
                 {tCommon('cancel', { defaultValue: 'Cancel' })}
               </Button>
             </Space>

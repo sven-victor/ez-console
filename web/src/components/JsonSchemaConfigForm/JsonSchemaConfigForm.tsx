@@ -16,10 +16,11 @@
 
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import Form, { Templates } from '@rjsf/antd';
+import { getDefaultRegistry } from '@rjsf/core';
 import { FieldProps, FieldTemplateProps, RJSFSchema } from '@rjsf/utils/lib';
 import { customizeValidator } from '@rjsf/validator-ajv8';
 import { createStyles, useTheme } from 'antd-style';
-import { Select, Form as AntForm, type FormItemProps } from 'antd';
+import { Select, Spin, Form as AntForm, type FormItemProps } from 'antd';
 import ReactCodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import classNames from 'classnames';
@@ -34,6 +35,78 @@ import RemoteSelectWidget, { ToolsetsSelectWidget } from './RemoteSelectWidget';
 import DeferredBaseInputTemplate, { DeferredTextareaWidget } from './DeferredInputs';
 
 const { FieldTemplate: FieldTemplateAntd } = Templates
+
+/** Columns mounted per frame. One LayoutGridField commit of a large row blocks the main thread. */
+const LAYOUT_FIELD_BATCH = 4;
+
+const LayoutGridFieldImpl = getDefaultRegistry().fields.LayoutGridField;
+
+function rowChildren(uiSchema: FieldProps['uiSchema']): unknown[] | null {
+  const layout = (uiSchema as { 'ui:layoutGrid'?: { 'ui:row'?: { children?: unknown } } } | undefined)?.['ui:layoutGrid'];
+  const children = layout?.['ui:row']?.children;
+  return Array.isArray(children) ? children : null;
+}
+
+function withRowChildren(uiSchema: FieldProps['uiSchema'], children: unknown[]) {
+  const source = (uiSchema ?? {}) as Record<string, unknown>;
+  const layout = (source['ui:layoutGrid'] ?? {}) as Record<string, unknown>;
+  const row = (layout['ui:row'] ?? {}) as Record<string, unknown>;
+  return {
+    ...source,
+    'ui:layoutGrid': {
+      ...layout,
+      'ui:row': {
+        ...row,
+        children,
+      },
+    },
+  };
+}
+
+/** Mounts one layout row in short slices so opening the dialog can paint between batches. */
+function GrowingLayoutGridField({ total, ...props }: FieldProps & { total: number }) {
+  const [visible, setVisible] = useState(() => Math.min(LAYOUT_FIELD_BATCH, total));
+  const [trackedTotal, setTrackedTotal] = useState(total);
+  if (trackedTotal !== total) {
+    setTrackedTotal(total);
+    setVisible(Math.min(LAYOUT_FIELD_BATCH, total));
+  }
+  const shown = trackedTotal === total ? visible : Math.min(LAYOUT_FIELD_BATCH, total);
+
+  useEffect(() => {
+    if (shown >= total) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setVisible((count) => Math.min(count + LAYOUT_FIELD_BATCH, total));
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [shown, total]);
+
+  const uiSchema = useMemo(
+    () => withRowChildren(props.uiSchema, (rowChildren(props.uiSchema) ?? []).slice(0, shown)),
+    [props.uiSchema, shown],
+  );
+
+  return (
+    <>
+      <LayoutGridFieldImpl {...props} uiSchema={uiSchema} />
+      {shown < total ? (
+        <div style={{ textAlign: 'center', padding: 8 }}>
+          <Spin size="small" />
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+function ProgressiveLayoutGridField(props: FieldProps) {
+  const children = rowChildren(props.uiSchema);
+  if (!children || children.length <= LAYOUT_FIELD_BATCH) {
+    return <LayoutGridFieldImpl {...props} />;
+  }
+  return <GrowingLayoutGridField {...props} total={children.length} />;
+}
 
 /** Default indent for JSON stringify */
 const JSON_EDITOR_INDENT = 2;
@@ -541,7 +614,10 @@ export const JsonSchemaConfigForm: React.FC<JsonSchemaConfigFormProps> = ({
     }
   }, [schema, uiSchema]);
 
-  const fields = useMemo(() => ({ objectEditor: I18nObjectField(t) }), [t]);
+  const fields = useMemo(() => ({
+    objectEditor: I18nObjectField(t),
+    LayoutGridField: ProgressiveLayoutGridField,
+  }), [t]);
   const templates = useMemo(() => ({
     FieldTemplate: I18nFieldTemplate(t),
     BaseInputTemplate: DeferredBaseInputTemplate,
