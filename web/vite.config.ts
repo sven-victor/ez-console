@@ -64,6 +64,11 @@ const baseConfig: UserConfig = {
           if (id.includes('/node_modules/react-syntax-highlighter/')) return 'highlighter';
           if (id.includes('/node_modules/mermaid/')) return 'mermaid';
           if (id.includes('/node_modules/refractor/')) return 'refractor';
+          if (
+            id.includes('/node_modules/@uiw/react-codemirror/') ||
+            id.includes('/node_modules/@codemirror/') ||
+            id.includes('/node_modules/@lezer/')
+          ) return 'codemirror';
           if (id.includes('/node_modules/@ant-design/x/') || id.includes('/node_modules/@ant-design/x-markdown/') || id.includes('/node_modules/@ant-design/x-sdk/')) return 'ant-design-x';
           if (id.includes('/node_modules/lodash/') || id.includes('/node_modules/lodash-es/')) return `lodash`;
           if (id.includes('node_modules')) return 'vendor';

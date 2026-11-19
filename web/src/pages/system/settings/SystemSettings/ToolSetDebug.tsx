@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, lazy, Suspense } from 'react';
 import {
   App,
   Card,
@@ -34,8 +34,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useRequest } from 'ahooks';
-import ReactCodeMirror from '@uiw/react-codemirror';
-import { json } from '@codemirror/lang-json';
+import type { ReactCodeMirrorProps } from '@uiw/react-codemirror';
 import JsonView from '@uiw/react-json-view';
 import api from '@/service/api';
 import { JsonSchemaConfigForm } from '@/components/JsonSchemaConfigForm';
@@ -43,6 +42,19 @@ import type { RJSFSchema } from '@rjsf/utils';
 import { tryParseJSON } from '@/utils';
 
 const { Text, Title } = Typography;
+
+const ReactCodeMirror = lazy(() =>
+  Promise.all([
+    import('@uiw/react-codemirror'),
+    import('@codemirror/lang-json'),
+  ]).then(([{ default: CodeMirror }, { json }]) => {
+    const extensions = [json()];
+    const Editor: React.FC<Omit<ReactCodeMirrorProps, 'extensions'>> = (props) => (
+      <CodeMirror {...props} extensions={extensions} />
+    );
+    return { default: Editor };
+  }),
+);
 
 const JsonBlock: React.FC<{ content: string; maxHeight?: number }> = ({
   content,
@@ -317,13 +329,20 @@ const ToolSetDebug: React.FC = () => {
               )
             ) : (
               <div>
-                <ReactCodeMirror
-                  value={paramsCodeValue}
-                  height="200px"
-                  extensions={[json()]}
-                  onChange={handleCodeChange}
-                  basicSetup={{ lineNumbers: true, foldGutter: true }}
-                />
+                <Suspense
+                  fallback={
+                    <div style={{ height: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Spin />
+                    </div>
+                  }
+                >
+                  <ReactCodeMirror
+                    value={paramsCodeValue}
+                    height="200px"
+                    onChange={handleCodeChange}
+                    basicSetup={{ lineNumbers: true, foldGutter: true }}
+                  />
+                </Suspense>
                 {codeParseError && (
                   <Text type="danger" style={{ fontSize: 12, marginTop: 4, display: 'block' }}>
                     {codeParseError}
