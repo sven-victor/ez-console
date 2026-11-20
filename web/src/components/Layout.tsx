@@ -536,8 +536,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         </Header>
         <Content className={classNames("site-content", styles.content)}>
           {wrappedContent}
-          {canUseAIChat && <AIChatButton icon={aiChatProps?.floatButtonIcon} />}
-          {canUseAIChat && aiLayout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
         </Content>
         {footerConfig !== false && (
           <Footer className={classNames("site-footer", styles.footer)}>
@@ -546,6 +544,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
         )}
       </Layout>
       {(canUseAIChat && (aiLayout === 'sidebar' || aiLayout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider {...aiChatProps} />)}
+      {canUseAIChat && <AIChatButton icon={aiChatProps?.floatButtonIcon} />}
+      {canUseAIChat && aiLayout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
     </Layout>
   }
 
