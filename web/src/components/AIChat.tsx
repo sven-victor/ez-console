@@ -55,9 +55,13 @@ import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/pris
 
 const useStyle = createStyles(({ token, css }) => {
   return {
+    layoutSelector: css`
+      flex: none;
+    `,
     siderLayout: css`
       width: 100%;
-      height: calc(100vh - 60px);
+      flex: 1 1 auto;
+      min-height: 0;
       display: flex;
       background: ${token.colorBgContainer};
       font-family: AlibabaPuHuiTi, ${token.fontFamily}, sans-serif;
@@ -167,6 +171,12 @@ const useStyle = createStyles(({ token, css }) => {
         .ant-bubble-end .ant-bubble-footer {
           display: flex;
           justify-content: flex-end;
+        }
+        .ant-bubble .ant-bubble-footer {
+          margin-block-start: 0;
+        }
+        .ant-bubble{
+          padding-block: 8px;
         }
       }
       .x-markdown-light pre .ant-codeHighlighter .ant-codeHighlighter-code pre{
@@ -1981,7 +1991,7 @@ export const AIChat: React.FC<AIChatProps> = ({
   return (
     <XProvider>
       <ChatContext.Provider value={{ onReload, setMessage }}>
-        <div style={{ height: '50px', width: '100%', position: 'relative' }}>
+        <div className={styles.layoutSelector} style={{ height: '50px', width: '100%', position: 'relative' }}>
           <Radio.Group
             style={{
               position: 'absolute',

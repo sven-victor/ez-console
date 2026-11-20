@@ -22,6 +22,7 @@ interface ResizeDividerProps {
   onResize: (newWidth: number) => void;
   minWidth?: number;
   maxWidth?: number;
+  rootClassName?: string;
 }
 
 const useStyles = createStyles(({ token, css }) => ({
@@ -68,6 +69,7 @@ const ResizeDivider: React.FC<ResizeDividerProps> = ({
   onResize,
   minWidth = 300,
   maxWidth = window.innerWidth * 0.5,
+  rootClassName = '',
 }) => {
   const { styles } = useStyles();
   const [isDragging, setIsDragging] = useState(false);
@@ -111,7 +113,7 @@ const ResizeDivider: React.FC<ResizeDividerProps> = ({
   return (
     <div
       onMouseDown={handleMouseDown}
-      className={classNames(styles.root)}
+      className={classNames(styles.root, rootClassName)}
     >
       <div
         className={classNames(styles.grip)}

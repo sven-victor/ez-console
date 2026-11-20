@@ -39,7 +39,7 @@ import { type ItemType as MenuItemType } from 'antd/es/menu/interface';
 import usePermission from '@/hooks/usePermission';
 import { flatMapDeep, snakeCase } from 'lodash-es';
 import { getURL, toSmartTitle } from '@/utils';
-import { AIChatModal, AIChatButton, AIChatSider } from './AIChatLayout';
+import { AIChatButton, AIChatLayout } from './AIChatLayout';
 import { useSite } from '@/contexts/SiteContext';
 import { useAI } from '@/contexts/AIContext';
 import { useGlobalAITools } from '@/hooks/useGlobalAITools';
@@ -195,7 +195,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const { isDarkMode } = useThemeMode();
   const { styles } = useStyle();
-  const { layout: aiLayout, visible: chatVisible, loaded: chatLoaded, resetPageAIContext } = useAI()
+  const { resetPageAIContext } = useAI()
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const location = useLocation();
@@ -547,9 +547,8 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           </Footer>
         )}
       </Layout>
-      {(canUseAIChat && (aiLayout === 'sidebar' || aiLayout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider {...aiChatProps} />)}
       {canUseAIChat && <AIChatButton icon={aiChatProps?.floatButtonIcon} />}
-      {canUseAIChat && aiLayout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
+      {(canUseAIChat && <AIChatLayout {...aiChatProps} />)}
     </Layout>
   }
 

@@ -26,7 +26,7 @@ import { AIChatFloatButton } from './AIChatFloatButton';
 const AIChatDialog = lazy(() => import('./AIChat'));
 
 
-const useStyle = createStyles(({ token, css, appearance }) => {
+const useStyle = createStyles(({ token, css, appearance }, layout?: 'float-sidebar' | 'classic' | 'sidebar') => {
   const isDark = appearance === 'dark';
   const floatShadow = isDark
     ? '0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08)'
@@ -36,6 +36,9 @@ const useStyle = createStyles(({ token, css, appearance }) => {
     : '0 12px 32px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(0, 0, 0, 0.1)';
 
   return {
+    resizeDivider: css`
+      background-color: ${layout === 'sidebar' ? token.controlItemBgHover : 'unset'};
+    `,
     siderLayout: css`
       position: relative;
       height: 100vh;
@@ -44,8 +47,16 @@ const useStyle = createStyles(({ token, css, appearance }) => {
     siderLayoutContent: css`
       height: 100%;
       width: 100%;
+      min-height: 0;
       background-color: ${token.colorBgContainer};
       overflow: hidden;
+      border-radius: ${layout === 'float-sidebar' ? '12px' : '0'};
+    `,
+    chatHost: css`
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
     `,
     floatSiderLayout: css`
       position: fixed;
@@ -67,66 +78,65 @@ const useStyle = createStyles(({ token, css, appearance }) => {
   };
 });
 
-export const AIChatModal: React.FC<AIChatProps> = (props) => {
-  const { visible: chatVisible, setVisible: setChatVisible, setLoaded } = useAI()
+export const AIChatLayout: React.FC<AIChatProps> = (props) => {
+  const { visible: chatVisible, setVisible: setChatVisible, setLoaded, layout } = useAI()
   useEffect(() => {
     setLoaded(true);
   }, [setLoaded]);
-  return (
-    <Modal
-      className="ai-chat-modal"
-      width={1200}
-      open={chatVisible}
-      closable={false}
-      onCancel={() => setChatVisible(false)}
-      footer={null}
-    >
-      {withSuspense(AIChatDialog, props)}
-    </Modal>
-  )
-}
 
-export const AIChatSider: React.FC<AIChatProps> = (props) => {
-  const { styles } = useStyle();
-  const { layout, visible } = useAI()
+  const { styles } = useStyle(layout);
+
   const [sidebarWidth, setSidebarWidth] = useState<number>(() => {
     const saved = localStorage.getItem('ai-sidebar-width');
     return saved ? parseInt(saved, 10) : 400;
   });
-  const { setLoaded } = useAI()
-  useEffect(() => {
-    setLoaded(true);
-  }, [setLoaded]);
+
 
   useEffect(() => {
     localStorage.setItem('ai-sidebar-width', sidebarWidth.toString());
   }, [sidebarWidth]);
 
+
+  if (layout === 'classic') {
+    return (
+      <Modal
+        className="ai-chat-modal"
+        width={1200}
+        open={chatVisible}
+        closable={false}
+        onCancel={() => setChatVisible(false)}
+        footer={null}
+      >
+        {withSuspense(AIChatDialog, props)}
+      </Modal>
+    )
+  }
+
+
   const handleSidebarResize = (newWidth: number) => {
     setSidebarWidth(newWidth);
   };
+
   return (
     <div
       style={{
         width: `${sidebarWidth}px`,
-        display: visible ? 'flex' : 'none',
+        display: chatVisible ? 'flex' : 'none',
         overflow: 'hidden',
         flexShrink: 0,
       }}
       className={classNames("ai-sidebar-layout", layout === 'float-sidebar' ? styles.floatSiderLayout : styles.siderLayout)}
     >
       <ResizeDivider
+        rootClassName={styles.resizeDivider}
         onResize={handleSidebarResize}
         minWidth={300}
         maxWidth={window.innerWidth * 0.5}
       />
       <div
-        style={{
-          borderRadius: layout === 'float-sidebar' ? '12px' : '0',
-        }}
         className={styles.siderLayoutContent}
       >
-        <div>
+        <div className={styles.chatHost}>
           {withSuspense(AIChatDialog, props)}
         </div>
       </div>
