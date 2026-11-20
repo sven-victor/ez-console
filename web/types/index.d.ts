@@ -2,6 +2,7 @@ import { AvatarProps as AvatarProps_2 } from 'antd';
 import { AxiosInstance } from 'axios';
 import { AxiosRequestConfig } from 'axios';
 import { AxiosResponse } from 'axios';
+import { BreadcrumbProps } from 'antd';
 import { ButtonProps } from 'antd';
 import { ComponentProps } from '@ant-design/x-markdown';
 import { ComponentType } from 'react';
@@ -17,11 +18,13 @@ import { ItemType } from 'antd/es/menu/interface';
 import { ItemType as ItemType_2 } from 'antd/es/breadcrumb/Breadcrumb';
 import { JSX as JSX_2 } from 'react';
 import { LazyExoticComponent } from 'react';
+import { MenuProps } from 'antd';
 import { MessageInfo } from '@ant-design/x-sdk';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
 import { Popconfirm } from 'antd';
 import { ReactNode } from 'react';
 import { RJSFSchema } from '@rjsf/utils/lib';
+import { SiderProps } from 'antd';
 import { SpinSize } from 'antd/es/spin';
 import { StrictRJSFSchema } from '@rjsf/utils';
 import { TableProps as TableProps_2 } from 'antd';
@@ -1191,6 +1194,18 @@ export declare const apiPut: <T>(url: string, data?: unknown, config?: AxiosRequ
 
 export declare const AppLayout: default_2.FC<AppLayoutProps>;
 
+export declare interface AppLayoutConfig {
+    siderProps?: SiderProps;
+    menuProps?: Omit<MenuProps, 'items' | 'selectedKeys'>;
+    logo?: default_2.ReactNode | ((ctx: LayoutLogoContext) => default_2.ReactNode) | false;
+    breadcrumb?: false | Pick<BreadcrumbProps, 'itemRender' | 'className' | 'style'>;
+    footer?: default_2.ReactNode | false;
+    contentWrapper?: false | {
+        className?: string;
+        style?: default_2.CSSProperties;
+    };
+}
+
 export declare interface AppLayoutProps {
     siderWidth?: number;
     routes: IRoute[];
@@ -1198,7 +1213,7 @@ export declare interface AppLayoutProps {
     transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
     menuStyle?: 'dark' | 'light';
     transformHeaderItems?: (items: default_2.ReactNode[]) => default_2.ReactNode[];
-    renderLayout?: (siteIconUrl: string | null, menuItems: ItemType[], headerItems: default_2.ReactNode[], breadcrumbs: ItemType_2[], content: default_2.ReactNode) => default_2.ReactNode;
+    layout?: LayoutRender | AppLayoutConfig;
     aiChatProps?: AIChatProps;
 }
 
@@ -1686,7 +1701,7 @@ export declare interface ErrorResponse {
 
 export declare type EventType = "content" | "tool_call" | "error" | "client_tool_pending" | "hitl_pending";
 
-export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, renderLayout, aiChatProps, style, themeProviderProps, configProviderProps, }: EZAppProps): JSX_2.Element;
+export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, layout, aiChatProps, style, themeProviderProps, configProviderProps, }: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;
@@ -1697,7 +1712,7 @@ export declare interface EZAppProps {
     extraPublicRoutes?: IRoute[];
     menuStyle?: 'dark' | 'light';
     transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
-    renderLayout?: (siteIconUrl: string | null, menuItems: ItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType_2[], content: React.ReactNode) => React.ReactNode;
+    layout?: AppLayoutProps['layout'];
     aiChatProps?: AIChatProps;
     /** Theme-aware global CSS. Keep the function referentially stable. */
     style?: GlobalStyleFn;
@@ -2160,6 +2175,24 @@ export declare interface LanguageSwitchProps {
     transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
     className?: string;
 }
+
+export declare interface LayoutContext {
+    siteIconUrl: string | null;
+    menuItems: ItemType[];
+    headerItems: default_2.ReactNode[];
+    breadcrumbs: ItemType_2[];
+    content: default_2.ReactNode;
+    collapsed: boolean;
+    setCollapsed: (collapsed: boolean) => void;
+}
+
+export declare interface LayoutLogoContext {
+    collapsed: boolean;
+    siteIconUrl: string | null;
+    siteName: string;
+}
+
+export declare type LayoutRender = (ctx: LayoutContext) => default_2.ReactNode;
 
 export declare interface LDAPSettings {
     base_dn: string;

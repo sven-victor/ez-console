@@ -15,7 +15,8 @@
  */
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Layout, Menu, Breadcrumb, Button, Spin, Space } from 'antd';
+import { Layout, Menu, Breadcrumb, Button, Spin, Space, type BreadcrumbProps, type MenuProps, type SiderProps } from 'antd';
+import type { CollapseType } from 'antd/es/layout/Sider';
 import {
   UserOutlined,
   MenuUnfoldOutlined,
@@ -51,9 +52,10 @@ const { Header, Content, Footer, Sider } = Layout;
 const useStyle = createStyles(({ token, css }) => {
   return {
     layout: css`
-      min-height: 100vh;
+      height: 100vh;
       display: flex;
       flex-direction: row;
+      overflow: hidden;
     `,
     header: css`
       padding: 0;
@@ -72,12 +74,15 @@ const useStyle = createStyles(({ token, css }) => {
     `,
     content: css`
       margin: 0 16px;
-      height: calc(100vh - 120px);
+      flex: 1 1 auto;
+      min-height: 0;
       overflow: auto;
     `,
     mainLayout: css`
       flex: 1;
       min-width: 0;
+      min-height: 0;
+      overflow: hidden;
       background-color: ${token.colorBgContainer};
     `,
     breadcrumb: css`
@@ -95,9 +100,12 @@ const useStyle = createStyles(({ token, css }) => {
       display: inline-flex;
     `,
     menuSider: css`
+      height: 100%;
       .ant-layout-sider-children{
         display: flex;
         flex-direction: column;
+        height: 100%;
+        min-height: 0;
       }
     `,
     menuToggleButton: css`
@@ -124,9 +132,42 @@ const useStyle = createStyles(({ token, css }) => {
     `,
     menu: css`
       flex: 1 1 0%;
+      min-height: 0;
+      overflow: auto;
     `,
   }
 })
+
+export interface LayoutContext {
+  siteIconUrl: string | null;
+  menuItems: MenuItemType[];
+  headerItems: React.ReactNode[];
+  breadcrumbs: ItemType[];
+  content: React.ReactNode;
+  collapsed: boolean;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+export type LayoutRender = (ctx: LayoutContext) => React.ReactNode;
+
+export interface LayoutLogoContext {
+  collapsed: boolean;
+  siteIconUrl: string | null;
+  siteName: string;
+}
+
+export interface AppLayoutConfig {
+  siderProps?: SiderProps;
+  menuProps?: Omit<MenuProps, 'items' | 'selectedKeys'>;
+  logo?: React.ReactNode | ((ctx: LayoutLogoContext) => React.ReactNode) | false;
+  breadcrumb?: false | Pick<BreadcrumbProps, 'itemRender' | 'className' | 'style'>;
+  footer?: React.ReactNode | false;
+  contentWrapper?: false | {
+    className?: string;
+    style?: React.CSSProperties;
+  };
+}
+
 export interface AppLayoutProps {
   siderWidth?: number;
   routes: IRoute[];
@@ -134,7 +175,7 @@ export interface AppLayoutProps {
   transformLangConfig?: (langs: LanguageConfig[]) => LanguageConfig[];
   menuStyle?: 'dark' | 'light';
   transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
-  renderLayout?: (siteIconUrl: string | null, menuItems: MenuItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+  layout?: LayoutRender | AppLayoutConfig;
   aiChatProps?: AIChatProps;
 }
 
@@ -145,12 +186,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   transformLangConfig,
   menuStyle = 'dark',
   transformHeaderItems = (items) => items,
-  renderLayout,
+  layout = { footer: false },
   aiChatProps,
 }) => {
   const { isDarkMode } = useThemeMode();
   const { styles } = useStyle();
-  const { layout, visible: chatVisible, loaded: chatLoaded, resetPageAIContext } = useAI()
+  const { layout: aiLayout, visible: chatVisible, loaded: chatLoaded, resetPageAIContext } = useAI()
   const { t, i18n } = useTranslation();
   const { t: tCommon } = useTranslation('common');
   const location = useLocation();
@@ -165,7 +206,32 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const [navigation, setNavigation] = useState<API.Navigation[]>([]);
   const [siteIcon, setSiteIcon] = useState<string | null>(null);
   const [siteName, setSiteName] = useState<string>("Loading...");
-  const [collapsed, setCollapsed] = useState(false);
+  const layoutConfig = typeof layout === 'function' ? undefined : layout;
+  const {
+    className: siderClassName,
+    width: siderWidthProp,
+    theme: siderTheme,
+    collapsed: controlledCollapsed,
+    defaultCollapsed = false,
+    onCollapse: onSiderCollapse,
+    collapsible: siderCollapsible,
+    breakpoint: siderBreakpoint = 'xxl',
+    ...restSiderProps
+  } = layoutConfig?.siderProps ?? {};
+  const {
+    className: menuClassName,
+    theme: menuTheme,
+    ...restMenuProps
+  } = layoutConfig?.menuProps ?? {};
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
+  const siderCollapsed = controlledCollapsed ?? collapsed;
+  const collapsible = siderCollapsible ?? true;
+  const setSiderCollapsed = (next: boolean, type: CollapseType) => {
+    if (controlledCollapsed === undefined) {
+      setCollapsed(next);
+    }
+    onSiderCollapse?.(next, type);
+  };
 
   // Safety net: drop a stale page-level AI registration left by a page that
   // did not return the cleanup from registerPageAI. Registrations made by the
@@ -370,61 +436,133 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   }
 
 
-  const defaultRenderLayout = (siteIconUrl: string | null, menuItems: MenuItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode): React.ReactNode => {
+  const defaultItemRender: BreadcrumbProps['itemRender'] = (route) => {
+    const path = route.href || route.path
+    if (path) {
+      return <Link to={path}>{route.title}</Link>
+    }
+    return <span>{route.title}</span>
+  }
+
+  const defaultRenderLayout = (ctx: LayoutContext): React.ReactNode => {
     const pageClassName = sanitizeClassName(matchRoutes(routes, location.pathname)?.pop()?.route.name)
-    return <Layout className={classNames("main-layout", styles.layout, { [`page-${pageClassName}`]: pageClassName })}>
-      <Sider width={siderWidth} collapsible collapsed={collapsed} onCollapse={setCollapsed} className={classNames(styles.menuSider, 'layout-menu-sider')} theme={isDarkMode ? 'light' : menuStyle} >
+    const logoConfig = layoutConfig?.logo
+    const breadcrumbConfig = layoutConfig?.breadcrumb
+    const footerConfig = layoutConfig?.footer
+    const contentWrapper = layoutConfig?.contentWrapper
+
+    let logoNode: React.ReactNode = null
+    if (logoConfig !== false) {
+      let logoContent: React.ReactNode
+      if (typeof logoConfig === 'function') {
+        logoContent = logoConfig({
+          collapsed: siderCollapsed,
+          siteIconUrl: ctx.siteIconUrl,
+          siteName,
+        })
+      } else if (logoConfig !== undefined) {
+        logoContent = logoConfig
+      } else if (ctx.siteIconUrl) {
+        logoContent = <img src={ctx.siteIconUrl} alt="logo" className={styles.layoutLogoImage} />
+      } else {
+        logoContent = <Spin />
+      }
+      logoNode = (
         <div className={classNames("logo", styles.layoutLogo)}>
           <div className={classNames("layout-logo-container", styles.layoutLogoContainer)}>
-            {siteIconUrl ? <img src={siteIconUrl} alt="logo" className={styles.layoutLogoImage} /> : <Spin />}
+            {logoContent}
           </div>
         </div>
+      )
+    }
+
+    const breadcrumbNode = breadcrumbConfig === false ? null : (
+      <Breadcrumb
+        className={classNames("site-breadcrumb", styles.breadcrumb, breadcrumbConfig?.className)}
+        style={breadcrumbConfig?.style}
+        itemRender={breadcrumbConfig?.itemRender ?? defaultItemRender}
+        items={ctx.breadcrumbs}
+      />
+    )
+
+    const wrappedContent = contentWrapper === false ? ctx.content : (
+      <div
+        className={classNames("site-content-container", styles.contentContainer, contentWrapper?.className)}
+        style={contentWrapper?.style}
+      >
+        {ctx.content}
+      </div>
+    )
+
+    return <Layout className={classNames("main-layout", styles.layout, { [`page-${pageClassName}`]: pageClassName })}>
+      <Sider
+        {...restSiderProps}
+        width={siderWidthProp ?? siderWidth}
+        breakpoint={siderBreakpoint}
+        collapsible={collapsible}
+        collapsed={siderCollapsed}
+        onCollapse={setSiderCollapsed}
+        className={classNames(styles.menuSider, 'layout-menu-sider', siderClassName)}
+        theme={siderTheme ?? (isDarkMode ? 'light' : menuStyle)}
+      >
+        {logoNode}
         <Menu
-          className={classNames("layout-menu", styles.menu)}
-          theme={isDarkMode ? 'light' : menuStyle}
           defaultOpenKeys={defaultOpenKeys}
           defaultSelectedKeys={['1']}
           mode="inline"
+          {...restMenuProps}
+          className={classNames("layout-menu", styles.menu, menuClassName)}
+          theme={menuTheme ?? (isDarkMode ? 'light' : menuStyle)}
           selectedKeys={[selectedMenuKeys]}
-          items={menuItems}
+          items={ctx.menuItems}
         />
       </Sider>
       <Layout className={classNames("site-layout", "main-layout", styles.mainLayout)}>
         <Header className={classNames("site-header", styles.header)}>
           <Space>
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              // style={{ fontSize: '16px', width: 64, height: 64 }}
-              className={classNames("layout-menu-toggle", styles.menuToggleButton)}
-            />
-            <Breadcrumb className={classNames("site-breadcrumb", styles.breadcrumb)} itemRender={(route) => {
-              const path = route.href || route.path
-              if (path) {
-                return <Link to={path}>{route.title}</Link>
-              }
-              return <span>{route.title}</span>
-            }} items={breadcrumbs} />
+            {collapsible && (
+              <Button
+                type="text"
+                icon={siderCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setSiderCollapsed(!siderCollapsed, 'clickTrigger')}
+                className={classNames("layout-menu-toggle", styles.menuToggleButton)}
+              />
+            )}
+            {breadcrumbNode}
           </Space>
           <div className={classNames("header-items", styles.headerItems)} >
-            {headerItems}
+            {ctx.headerItems}
           </div>
         </Header>
         <Content className={classNames("site-content", styles.content)}>
-          <div className={classNames("site-content-container", styles.contentContainer)}>
-            {content}
-          </div>
+          {wrappedContent}
           {canUseAIChat && <AIChatButton icon={aiChatProps?.floatButtonIcon} />}
-          {canUseAIChat && layout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
+          {canUseAIChat && aiLayout === 'classic' && (chatVisible || chatLoaded) && <AIChatModal {...aiChatProps} />}
         </Content>
-        <Footer className={classNames("site-footer", styles.footer)}> ©{new Date().getFullYear()} {siteName}</Footer>
+        {footerConfig !== false && (
+          <Footer className={classNames("site-footer", styles.footer)}>
+            {footerConfig === undefined ? <> ©{new Date().getFullYear()} {siteName}</> : footerConfig}
+          </Footer>
+        )}
       </Layout>
-      {(canUseAIChat && (layout === 'sidebar' || layout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider {...aiChatProps} />)}
+      {(canUseAIChat && (aiLayout === 'sidebar' || aiLayout === 'float-sidebar')) && (chatVisible || chatLoaded) && (<AIChatSider {...aiChatProps} />)}
     </Layout>
   }
 
-  return (renderLayout ?? defaultRenderLayout)(siteIcon, renderMenuItems(routes), transformHeaderItems(headerItems), getBreadcrumbs(), element ?? <Outlet />)
+  const layoutContext: LayoutContext = {
+    siteIconUrl: siteIcon,
+    menuItems: renderMenuItems(routes),
+    headerItems: transformHeaderItems(headerItems),
+    breadcrumbs: getBreadcrumbs(),
+    content: element ?? <Outlet />,
+    collapsed: siderCollapsed,
+    setCollapsed: (next) => setSiderCollapsed(next, 'clickTrigger'),
+  }
+
+  if (typeof layout === 'function') {
+    return layout(layoutContext)
+  }
+  return defaultRenderLayout(layoutContext)
 };
 
 export default AppLayout; 

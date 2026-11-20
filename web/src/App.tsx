@@ -20,8 +20,6 @@ import { App as AntdApp, ConfigProvider, type ConfigProviderProps, type TabsProp
 import type { Locale } from 'antd/es/locale';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
-import { type ItemType } from 'antd/es/breadcrumb/Breadcrumb';
-import { type ItemType as MenuItemType } from 'antd/es/menu/interface';
 
 import zhCN from 'antd/lib/locale/zh_CN';
 import enUS from 'antd/lib/locale/en_US';
@@ -34,7 +32,7 @@ import svSE from 'antd/lib/locale/sv_SE';
 import { getRoutes, type IRoute } from './routes';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
-import AppLayout from './components/Layout';
+import AppLayout, { type AppLayoutProps } from './components/Layout';
 
 import './index.css'
 import './i18n'
@@ -95,7 +93,7 @@ export interface AppProps {
   extraPublicRoutes?: IRoute[];
   menuStyle?: 'dark' | 'light';
   transformHeaderItems?: (items: React.ReactNode[]) => React.ReactNode[];
-  renderLayout?: (siteIconUrl: string | null, menuItems: MenuItemType[], headerItems: React.ReactNode[], breadcrumbs: ItemType[], content: React.ReactNode) => React.ReactNode;
+  layout?: AppLayoutProps['layout'];
   aiChatProps?: AIChatProps;
   /** Theme-aware global CSS. Keep the function referentially stable. */
   style?: GlobalStyleFn;
@@ -116,7 +114,7 @@ function App({
   extraPublicRoutes = [],
   menuStyle = 'dark',
   transformHeaderItems = (items) => items,
-  renderLayout,
+  layout,
   aiChatProps,
   style,
   themeProviderProps,
@@ -160,7 +158,7 @@ function App({
         transformLangConfig={transformLangConfig}
         menuStyle={menuStyle}
         transformHeaderItems={transformHeaderItems}
-        renderLayout={renderLayout}
+        layout={layout}
         aiChatProps={aiChatProps}
       />} /> : route.element
       if ('children' in route && route.children && route.children.length > 0) {

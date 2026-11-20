@@ -25,7 +25,7 @@ import type { EZAppProps } from 'ez-console';
 | `transformLangConfig` | `(langs) => langs` | Transform language configuration |
 | `menuStyle` | `'dark' \| 'light'` | Sidebar menu style (default: `'dark'`) |
 | `transformHeaderItems` | `(items) => items` | Transform header action items |
-| `renderLayout` | `(siteIconUrl, menuItems, headerItems, breadcrumbs, content) => ReactNode` | Custom layout renderer |
+| `layout` | `LayoutRender \| AppLayoutConfig` | Replace the shell (`(ctx) => ReactNode`) or override `siderProps`, `menuProps`, `logo`, `breadcrumb`, `footer`, and `contentWrapper`. `siderProps.width` overrides `siderWidth`; `siderProps.theme` and `menuProps.theme` override `menuStyle` |
 | `aiChatProps` | `AIChatProps?` | Props forwarded to the built-in AI chat component. Includes `ephemeralSystemPrompts` (host system prompts on every request) and `defaultSkillDomains` (domains selected by default; omitted means the client sends `domains: []`) |
 | `style` | `GlobalStyleFn?` | Theme-aware global CSS, rendered inside `ThemeProvider` via `createGlobalStyle`. The function receives `{ theme }` and must stay referentially stable |
 | `themeProviderProps` | `Omit<ThemeProviderProps, 'children'>?` | Extra props for antd-style `ThemeProvider`, including `theme`. Theme mode is still stored locally; a passed `onThemeModeChange` runs after that |
@@ -80,11 +80,24 @@ import { AdminGuard } from 'ez-console';
 Pre-built layout with sidebar and header (exported as `AppLayout`, not `Layout`):
 
 ```typescript
-import { AppLayout } from 'ez-console';
+import { EZApp } from 'ez-console';
 
-// Already included in EZApp
-// Customize through theme configuration or renderLayout prop
+// Already included in EZApp. Override parts of the default shell:
+<EZApp
+  layout={{
+    siderProps: { width: 200 },
+    logo: ({ collapsed, siteName }) => (collapsed ? <Mark /> : <span>{siteName}</span>),
+    breadcrumb: false,
+    footer: false,
+    contentWrapper: false,
+  }}
+/>
+
+// Or replace the shell with a function. A function and a config object are mutually exclusive.
+<EZApp layout={(ctx) => <CustomShell {...ctx} />} />
 ```
+
+`logo`, `footer`, and `contentWrapper` use `false` to remove that region. Omit them to keep the default. `siderProps.collapsed` controls the sider; otherwise `AppLayout` keeps the collapsed state and still calls `siderProps.onCollapse`.
 
 ### Loading
 

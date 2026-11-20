@@ -33,7 +33,7 @@ export { default as LabelCreater, type LabelCreaterProps } from '@/components/La
 export { default as OrganizationSwitcher } from '@/components/OrganizationSwitcher';
 export { default as LanguageSwitch, AllLangUIConfig, type LanguageSwitchProps } from '@/components/LanguageSwitch';
 export { default as ThemeSwitch, type ThemeSwitchProps } from '@/components/ThemeSwitch';
-export { default as AppLayout, type AppLayoutProps } from '@/components/Layout';
+export { default as AppLayout, type AppLayoutProps, type AppLayoutConfig, type LayoutContext, type LayoutLogoContext, type LayoutRender } from '@/components/Layout';
 export { PermissionGuard, type PermissionGuardProps, AdminGuard } from '@/components/PermissionGuard';
 export { default as PrivateRoute, type PrivateRouteProps } from '@/components/PrivateRoute';
 export { default as Table, type TableRefProps, type TableActionRefProps, type TableProps } from '@/components/Table';
