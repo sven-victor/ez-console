@@ -26,7 +26,7 @@ interface ResizeDividerProps {
 
 const useStyles = createStyles(({ token, css }) => ({
   root: css`
-    width: 8px;
+    width: 4px;
     align-self: stretch;
     cursor: col-resize;
     position: relative;
@@ -35,26 +35,21 @@ const useStyles = createStyles(({ token, css }) => ({
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: ${token.colorBorder};
+    background-color: ${token.controlItemBgHover};
     transition: background-color 0.2s ease;
 
     &:hover {
-      background-color: ${token.colorFill};
+      background-color: ${token.controlItemBgActive};
     }
-  `,
-  dragging: css`
-    background-color: ${token.colorPrimary};
-    transition: none;
-
-    &:hover {
-      background-color: ${token.colorPrimary};
+    &:active {
+      background-color: ${token.controlItemBgActiveHover};
     }
   `,
   grip: css`
-    width: 3px;
+    width: 2px;
     height: 40px;
     border-radius: 2px;
-    background-color: ${token.colorTextQuaternary};
+    background-color: ${token.colorFill};
     opacity: 0.85;
     transition: opacity 0.2s ease, background-color 0.2s ease;
     pointer-events: none;
@@ -76,7 +71,6 @@ const ResizeDivider: React.FC<ResizeDividerProps> = ({
 }) => {
   const { styles } = useStyles();
   const [isDragging, setIsDragging] = useState(false);
-  const [isHovering, setIsHovering] = useState(false);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -117,16 +111,10 @@ const ResizeDivider: React.FC<ResizeDividerProps> = ({
   return (
     <div
       onMouseDown={handleMouseDown}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-      className={classNames(styles.root, isDragging && styles.dragging)}
+      className={classNames(styles.root)}
     >
       <div
-        className={classNames(
-          styles.grip,
-          isHovering && styles.gripHover,
-          isDragging && styles.gripDragging,
-        )}
+        className={classNames(styles.grip)}
       />
     </div>
   );
