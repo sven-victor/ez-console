@@ -79,6 +79,10 @@ const useStyle = createStyles(({ token, css }) => {
       overflow: auto;
     `,
     mainLayout: css`
+      /* Containing block for in-page drawers. isolation keeps their z-index
+         inside this column so they cannot paint over the AI sidebar. */
+      position: relative;
+      isolation: isolate;
       flex: 1;
       min-width: 0;
       min-height: 0;
