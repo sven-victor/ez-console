@@ -899,6 +899,7 @@ const MyComponent: React.FC = () => {
 8. **i18n**: Use translations for all user-facing text
 9. **Responsive Design**: Use Ant Design's grid system
 10. **Component Reuse**: Create reusable components for common patterns
+11. **In-page Drawers**: Mount Ant Design `Drawer`s on `.site-layout` so they stay in the page column while the AI sidebar is open. See [In-page Drawer](./10-frontend-components.md#in-page-drawer)
 
 ## Next Steps
 

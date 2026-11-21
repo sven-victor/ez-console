@@ -99,6 +99,33 @@ import { EZApp } from 'ez-console';
 
 `logo`, `footer`, and `contentWrapper` use `false` to remove that region. Omit them to keep the default. `siderProps.collapsed` controls the sider; otherwise `AppLayout` keeps the collapsed state and still calls `siderProps.onCollapse`.
 
+#### In-page Drawer
+
+Ant Design `Drawer` mounts on `document.body` with `position: fixed`, so an open drawer covers the whole viewport, including the AI sidebar. Page drawers should open inside the page column (`.site-layout`: header, content, and footer). The left menu and the AI sidebar sit outside that column and stay usable.
+
+`.site-layout` is already `position: relative`, `isolation: isolate`, and `overflow: hidden`. Pass these props:
+
+```tsx
+<Drawer
+  open={open}
+  onClose={onClose}
+  width={800}
+  getContainer=".site-layout"
+  rootStyle={{ position: 'absolute' }}
+  styles={{ wrapper: { maxWidth: '100%' } }}
+>
+  {children}
+</Drawer>
+```
+
+- `getContainer=".site-layout"` portals the drawer into the page column. Because the container is not `document.body`, Ant Design does not lock body scroll, so the AI sidebar keeps scrolling.
+- `rootStyle={{ position: 'absolute' }}` overrides the default `position: fixed`, so the mask and panel fill `.site-layout` only.
+- `styles.wrapper.maxWidth: '100%'` keeps the panel inside the column when the AI sidebar is open and the column is narrower than `width`.
+
+Reference: `web/src/pages/system/settings/SystemSettings/AITraceViewer.tsx` and `web/src/pages/authorization/role/RoleDrawer.tsx`.
+
+A custom `layout` render must keep an element with class `site-layout` and the same three CSS properties (`position: relative`, `isolation: isolate`, `overflow: hidden`). Without that element, `getContainer=".site-layout"` falls back to `document.body`.
+
 ### Loading
 
 Loading spinner component:
