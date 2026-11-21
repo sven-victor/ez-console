@@ -301,7 +301,7 @@ const RoleDrawer: React.FC<RoleDrawerProps> = ({ roleId, open, onClose }) => {
       }}
     >
       <Spin spinning={loading}>
-        <Space direction='vertical'>
+        <Space direction='vertical' style={{ width: '100%' }}>
           {role ? (
             tabItems
           ) : (
