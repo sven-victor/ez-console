@@ -339,7 +339,7 @@ func (s *roleService) GetRole(ctx context.Context, id string) (*model.Role, erro
 	if err := db.Session(ctx).
 		Where(&model.Role{Base: model.Base{ResourceID: id}}).
 		Preload("Permissions").
-		Preload("AIToolPermissions").
+		Preload("AIToolPermissions.ToolSet").
 		Preload("Organization").
 		First(&role).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -361,7 +361,18 @@ func (s *roleService) GetRole(ctx context.Context, id string) (*model.Role, erro
 			}
 		}
 	}
+	stripRoleToolSetSecrets(&role)
 	return &role, nil
+}
+
+// stripRoleToolSetSecrets drops toolset credentials from a role payload.
+// Role viewers need the toolset name and type, not connection secrets.
+func stripRoleToolSetSecrets(role *model.Role) {
+	for i := range role.AIToolPermissions {
+		if role.AIToolPermissions[i].ToolSet != nil {
+			role.AIToolPermissions[i].ToolSet.Config = nil
+		}
+	}
 }
 
 // CreateRole creates a new role

@@ -258,9 +258,14 @@ const RoleDrawer: React.FC<RoleDrawerProps> = ({ roleId, open, onClose }) => {
       </>}>
         {Object.entries(toolsByToolset).map(([tsId, { toolset, tools }]) => (
           <div key={tsId} style={{ marginBottom: 12 }}>
-            <Typography.Text strong style={{ display: 'block', marginBottom: 4 }}>
-              {toolset?.name || tsId}
-            </Typography.Text>
+            <Space size={8} style={{ marginBottom: 4 }}>
+              <Typography.Text strong>
+                {toolset?.name || tsId}
+              </Typography.Text>
+              {toolset?.type ? (
+                <Tag color="blue">{String(toolset.type).toUpperCase()}</Tag>
+              ) : null}
+            </Space>
             <div>
               {tools.map((toolName) => (
                 <Tag key={toolName} color="blue" style={{ marginBottom: 4 }}>
