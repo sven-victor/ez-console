@@ -43,12 +43,15 @@ const RoleDrawer: React.FC<RoleDrawerProps> = ({ roleId, open, onClose }) => {
   const enableMultiOrg = siteConfig?.enable_multi_org ?? false;
 
 
-  const { data: role, loading: loading } = useRequest(async () => {
+  const { data: role, loading: loading, mutate } = useRequest(async () => {
     if (!roleId) return null;
     return api.authorization.getRole({ id: roleId });
   }, {
     refreshDeps: [roleId, open],
     ready: !!roleId && open,
+    onBefore: () => {
+      mutate();
+    },
     onError: () => {
       message.error(t('role.loadDetailError', { defaultValue: 'Failed to load role details' }));
     },
