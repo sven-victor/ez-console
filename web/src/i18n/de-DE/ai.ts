@@ -184,6 +184,9 @@ export default {
   },
   chat: {
     openAssistant: 'KI-Assistent öffnen',
+    layoutModal: 'Dialog',
+    layoutSidebar: 'Seitenleiste',
+    layoutFloat: 'Schwebend',
     newConversation: 'Neue Konversation',
     defaultConversationTitle: 'Neue Konversation',
     deleteConversationFailed: 'Konversation konnte nicht gelöscht werden.',

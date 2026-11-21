@@ -184,6 +184,9 @@ export default {
   },
   chat: {
     openAssistant: 'Ouvrir l\'assistant IA',
+    layoutModal: 'Fenêtre',
+    layoutSidebar: 'Barre latérale',
+    layoutFloat: 'Fenêtre flottante',
     newConversation: 'Nouvelle conversation',
     defaultConversationTitle: 'Nouvelle conversation',
     deleteConversationFailed: 'Échec de la suppression de la conversation.',

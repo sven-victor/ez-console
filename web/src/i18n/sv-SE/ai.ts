@@ -184,6 +184,9 @@ export default {
   },
   chat: {
     openAssistant: 'Öppna AI-assistent',
+    layoutModal: 'Fönster',
+    layoutSidebar: 'Sidofält',
+    layoutFloat: 'Flytande',
     newConversation: 'Ny konversation',
     defaultConversationTitle: 'Ny konversation',
     deleteConversationFailed: 'Misslyckades med att ta bort konversation.',

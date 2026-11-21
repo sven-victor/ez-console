@@ -209,6 +209,9 @@ export default {
   },
   chat: {
     openAssistant: 'Open AI Assistant',
+    layoutModal: 'Modal',
+    layoutSidebar: 'Sidebar',
+    layoutFloat: 'Float',
     newConversation: 'New Conversation',
     defaultConversationTitle: 'New Conversation',
     deleteConversationFailed: 'Failed to delete conversation.',

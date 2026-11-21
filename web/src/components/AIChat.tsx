@@ -34,10 +34,10 @@ import {
 import { AbstractChatProvider, TransformMessage, useXChat, XRequest, XRequestOptions } from '@ant-design/x-sdk';
 import { useXConversations, type MessageInfo } from '@ant-design/x-sdk';
 import { type ComponentProps, XMarkdown, XMarkdownProps } from '@ant-design/x-markdown';
-import { LuPanelRight, LuPanelRightDashed, LuExternalLink, LuBookOpenText } from "react-icons/lu";
+import { LuAppWindow, LuPanelRight, LuPictureInPicture2, LuBookOpenText } from "react-icons/lu";
 
 import { useRequest } from 'ahooks';
-import { App, Button, Dropdown, Flex, Radio, Space, Spin, Tag } from 'antd';
+import { App, Button, Dropdown, Flex, Radio, Space, Spin, Tag, Tooltip } from 'antd';
 import { createStyles, useThemeMode } from 'antd-style';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -57,6 +57,10 @@ const useStyle = createStyles(({ token, css }) => {
   return {
     layoutSelector: css`
       flex: none;
+    `,
+    layoutSelectorDraggable: css`
+      cursor: grab;
+      touch-action: none;
     `,
     siderLayout: css`
       width: 100%;
@@ -981,7 +985,7 @@ const ChatList: React.FC<ChatListProps> = ({
           items={bubbleMessages}
           style={{
             height: '100%',
-            paddingInline: layout === 'classic' ? 'calc(calc(100% - 700px) /2)' : '20px'
+            paddingInline: layout === 'classic' ? '16px' : (layout === "float-sidebar" ? '0px' : '16px')
           }}
           // @ts-expect-error Bubble.List roles typing is incomplete for this usage
           roles={{
@@ -1991,7 +1995,14 @@ export const AIChat: React.FC<AIChatProps> = ({
   return (
     <XProvider>
       <ChatContext.Provider value={{ onReload, setMessage }}>
-        <div className={styles.layoutSelector} style={{ height: '50px', width: '100%', position: 'relative' }}>
+        <div
+          className={classNames(
+            styles.layoutSelector,
+            'ai-chat-layout-selector',
+            layout === 'float-sidebar' && styles.layoutSelectorDraggable,
+          )}
+          style={{ height: '50px', width: '100%', position: 'relative' }}
+        >
           <Radio.Group
             style={{
               position: 'absolute',
@@ -2000,13 +2011,25 @@ export const AIChat: React.FC<AIChatProps> = ({
               transform: 'translate(-50%, -50%)',
             }}
             options={[{
-              label: <LuExternalLink style={{ transform: 'scaleX(-1)' }} />,
+              label: (
+                <Tooltip title={t('chat.layoutModal', { defaultValue: 'Modal' })}>
+                  <span><LuAppWindow /></span>
+                </Tooltip>
+              ),
               value: 'classic',
             }, {
-              label: <LuPanelRightDashed />,
+              label: (
+                <Tooltip title={t('chat.layoutSidebar', { defaultValue: 'Sidebar' })}>
+                  <span><LuPanelRight /></span>
+                </Tooltip>
+              ),
               value: 'sidebar',
             }, {
-              label: <LuPanelRight />,
+              label: (
+                <Tooltip title={t('chat.layoutFloat', { defaultValue: 'Float' })}>
+                  <span><LuPictureInPicture2 /></span>
+                </Tooltip>
+              ),
               value: 'float-sidebar',
             }
             ]}

@@ -184,6 +184,9 @@ export default {
   },
   chat: {
     openAssistant: 'فتح مساعد الذكاء الاصطناعي',
+    layoutModal: 'نافذة',
+    layoutSidebar: 'الشريط الجانبي',
+    layoutFloat: 'عائم',
     newConversation: 'محادثة جديدة',
     defaultConversationTitle: 'محادثة جديدة',
     deleteConversationFailed: 'فشل حذف المحادثة.',

@@ -207,6 +207,9 @@ export default {
   },
   chat: {
     openAssistant: '打开智能助手',
+    layoutModal: '弹窗',
+    layoutSidebar: '侧栏',
+    layoutFloat: '浮窗',
     newConversation: '新建对话',
     defaultConversationTitle: '新建对话',
     deleteConversationFailed: '删除对话失败。',
