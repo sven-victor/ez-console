@@ -1,0 +1,206 @@
+const e = {
+  models: {
+    name: "Name",
+    provider: "Anbieter",
+    modelId: "Modell-ID",
+    status: "Status",
+    description: "Beschreibung",
+    apiKey: "API-Schlüssel",
+    baseUrl: "Basis-URL",
+    create: "KI-Modell erstellen",
+    edit: "KI-Modell bearbeiten",
+    test: "Verbindung testen",
+    setDefault: "Als Standard festlegen",
+    defaultModel: "Standardmodell",
+    searchPlaceholder: "KI-Modelle suchen...",
+    fetchTypeDefinitionsFailed: "KI-Typdefinitionen konnten nicht abgerufen werden",
+    clone: "Klonen",
+    cloneTooltip: "Als neues Modell klonen (API-Schlüssel ggf. erneut eingeben)",
+    cloneLoadFailed: "Modell zum Klonen konnte nicht geladen werden",
+    editTooltip: "Modell bearbeiten",
+    deleteTooltip: "Modell löschen",
+    systemPrompt: "Systemprompt",
+    systemPromptHelp: "Optionaler Systemprompt, der jeder Unterhaltung für dieses Modell vorangestellt wird.",
+    systemPromptPlaceholder: "Systemprompt eingeben (optional)",
+    autoCacheBreakpoint: "Cache-Haltepunkt automatisch setzen",
+    autoCacheBreakpointHelp: "Setzt einen Prompt-Cache-Haltepunkt nach dem Systemprompt dieses Modells. Wird ignoriert, wenn das Modell das nicht unterstützt.",
+    maxChatTokens: "Max. Chat-Tokens (Kontext / Zusammenfassung)",
+    maxChatTokensHelp: "0 nutzt nur max_tokens der Anbieterkonfiguration. Ein positiver Wert setzt das Kontextfenster für die Zusammenfassung dieses Modells.",
+    maxChatIterations: "Max. Chat-Iterationen (Tool-Runden)",
+    maxChatIterationsHelp: "0 nutzt den Standard. Ein positiver Wert begrenzt Tool-Aufruf-Iterationen für dieses Modell.",
+    namePlaceholder: "Modellname eingeben",
+    descriptionPlaceholder: "Modellbeschreibung eingeben",
+    providerPlaceholder: "Anbieter auswählen",
+    apiKeyPlaceholder: "API-Schlüssel eingeben",
+    apiKeyPlaceholderEdit: "Leer lassen, um aktuellen API-Schlüssel zu behalten",
+    baseUrlPlaceholder: "Optional: Benutzerdefinierter API-Endpunkt",
+    setAsDefault: "Als Standardmodell festlegen",
+    nameRequired: "Bitte geben Sie den Modellnamen ein",
+    providerRequired: "Bitte wählen Sie einen Anbieter aus",
+    modelIdRequired: "Bitte geben Sie die Modell-ID ein",
+    apiKeyRequired: "Bitte geben Sie den API-Schlüssel ein",
+    fetchFailed: "KI-Modelle konnten nicht abgerufen werden",
+    createSuccess: "KI-Modell erfolgreich erstellt",
+    createFailed: "KI-Modell konnte nicht erstellt werden",
+    updateSuccess: "KI-Modell erfolgreich aktualisiert",
+    updateFailed: "KI-Modell konnte nicht aktualisiert werden",
+    deleteSuccess: "KI-Modell erfolgreich gelöscht",
+    deleteFailed: "KI-Modell konnte nicht gelöscht werden",
+    testSuccess: "KI-Modell-Verbindungstest erfolgreich",
+    testFailed: "KI-Modell-Verbindungstest fehlgeschlagen",
+    testFailedDetail: "KI-Modell-Verbindungstest fehlgeschlagen: {{error}}",
+    setDefaultSuccess: "Standard-KI-Modell erfolgreich festgelegt",
+    setDefaultFailed: "Standard-KI-Modell konnte nicht festgelegt werden",
+    deleteConfirm: "Sind Sie sicher, dass Sie dieses KI-Modell löschen möchten?",
+    openai: {
+      form: {
+        api_key: {
+          label: "API-Schlüssel",
+          description: "OpenAI-API-Schlüssel (verschlüsselt)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "OpenAI-Modell-ID (z. B. gpt-4, gpt-3.5-turbo)"
+        },
+        base_url: {
+          label: "Basis-URL",
+          description: "Benutzerdefinierte API-Endpunkt-URL (optional)"
+        },
+        organization_id: {
+          label: "Organisations-ID",
+          description: "OpenAI-Organisations-ID (optional)"
+        }
+      }
+    },
+    anthropic: {
+      form: {
+        api_key: {
+          label: "API-Schlüssel",
+          description: "Anthropic-API-Schlüssel (verschlüsselt)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "Anthropic-Modell-ID (z. B. claude-sonnet-4-20250514)"
+        },
+        base_url: {
+          label: "Basis-URL",
+          description: "Benutzerdefinierte API-Endpunkt-URL (optional)"
+        }
+      }
+    },
+    gemini: {
+      form: {
+        api_key: {
+          label: "API-Schlüssel",
+          description: "Google-Gemini-API-Schlüssel (verschlüsselt)"
+        },
+        model_id: {
+          label: "Modell-ID",
+          description: "Gemini-Modell-ID (z. B. gemini-2.0-flash)"
+        },
+        base_url: {
+          label: "Basis-URL",
+          description: "Benutzerdefinierte API-Endpunkt-URL (optional)"
+        }
+      }
+    }
+  },
+  trace: {
+    title: "KI-Trace-Viewer",
+    debug: "Debuggen",
+    debugEnabled: "KI-Debug aktiviert",
+    debugDisabled: "KI-Debug deaktiviert",
+    enableConfirm: "KI-Debug-Tracing aktivieren? Dies zeichnet detaillierte KI-Interaktionsdaten auf.",
+    disableConfirm: "KI-Debug-Tracing deaktivieren? Alle gespeicherten Trace-Daten werden gelöscht.",
+    enableSuccess: "KI-Debug-Tracing aktiviert",
+    disableSuccess: "KI-Debug-Tracing deaktiviert",
+    toggleFailed: "KI-Debug-Tracing konnte nicht umgeschaltet werden",
+    statusFetchFailed: "KI-Debug-Status konnte nicht abgerufen werden",
+    traceId: "Trace-ID",
+    traceIdPlaceholder: "Trace-ID eingeben",
+    search: "Suchen",
+    download: "Herunterladen",
+    downloadFailed: "Trace-Daten konnten nicht heruntergeladen werden",
+    noEvents: "Keine Trace-Ereignisse für diese Trace-ID gefunden",
+    fetchFailed: "Trace-Ereignisse konnten nicht abgerufen werden",
+    back: "Zurück",
+    eventTypes: {
+      llm_request: "LLM-Anfrage",
+      llm_response: "LLM-Antwort",
+      token_usage: "Token-Nutzung",
+      tool_call: "Werkzeugaufruf",
+      tool_result: "Werkzeugergebnis",
+      error: "Fehler",
+      summary: "Zusammenfassung"
+    },
+    duration: "Dauer",
+    durationMs: "{{ms}}ms",
+    promptTokens: "Prompt-Tokens",
+    completionTokens: "Vervollständigungs-Tokens",
+    totalTokens: "Gesamt-Tokens",
+    activeTokens: "Aktive Tokens",
+    cacheReadTokens: "Cache-Lesen",
+    cacheWriteTokens: "Cache-Schreiben",
+    cacheHitRate: "Cache-Trefferquote",
+    cacheIncludedHint: "Cache-Tokens sind in den Prompt-Tokens enthalten.",
+    tool: "Werkzeug",
+    arguments: "Argumente",
+    result: "Ergebnis",
+    toolCallId: "Werkzeugaufruf-ID",
+    failed: "Fehlgeschlagen",
+    succeeded: "Erfolgreich",
+    status: "Status",
+    request: "Anfrage",
+    rawRequest: "Rohanfrage",
+    response: "Antwort",
+    rawResponse: "Rohantwort",
+    expandAll: "Alle aufklappen",
+    collapseAll: "Alle zuklappen",
+    viewSequence: "Sequenzdiagramm",
+    viewTimeline: "Zeitlinie",
+    actors: {
+      agent: "Agent",
+      llm: "LLM",
+      tool: "Tool"
+    }
+  },
+  chat: {
+    openAssistant: "KI-Assistent öffnen",
+    layoutModal: "Dialog",
+    layoutSidebar: "Seitenleiste",
+    layoutFloat: "Schwebend",
+    newConversation: "Neue Konversation",
+    defaultConversationTitle: "Neue Konversation",
+    deleteConversationFailed: "Konversation konnte nicht gelöscht werden.",
+    requestInProgress: "Anfrage wird bearbeitet, bitte warten Sie auf den Abschluss.",
+    today: "Heute",
+    renameConversation: "Umbenennen",
+    inputPlaceholder: "Bitte geben Sie Ihre Nachricht ein",
+    regenerateTitle: "Titel neu generieren",
+    generatingTitle: "Titel wird generiert...",
+    titleGenerated: "Titel erfolgreich generiert",
+    titleGenerationFailed: "Titel konnte nicht generiert werden",
+    skill: "Fähigkeit",
+    skillsPlaceholder: "Fähigkeiten (optional)",
+    skillsOptional: "optional",
+    skillsSelected: "{{count}} ausgewählt",
+    skillDomain: "Fähigkeitsbereich",
+    fetchConversationFailed: "Konversation konnte nicht geladen werden",
+    createConversationFailed: "Konversation konnte nicht erstellt werden",
+    hitlArguments: "Argumente",
+    hitlChose: "Sie haben {{label}} gewählt.",
+    hitlAbandoned: "Sie haben fortgefahren, ohne zu wählen.",
+    hitlExecute: "Ausführen",
+    hitlDontExecute: "Nicht ausführen",
+    copyMessage: "Nachricht kopieren",
+    copied: "Kopiert",
+    showToolCalls: "Tool-Aufrufe anzeigen",
+    hideToolCalls: "Tool-Aufrufe ausblenden",
+    toolRunning: "Läuft",
+    toolDone: "Fertig",
+    toolFailed: "Fehlgeschlagen"
+  }
+};
+export {
+  e as default
+};

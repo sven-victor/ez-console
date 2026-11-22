@@ -6,6 +6,18 @@ function toSnakeCase(str: string) {
   return str.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase().replace(/^_+/, "");
 }
 
+const I18N_SHELL_NS = new Set(['shell', 'translation', 'common', 'inbox', 'task']);
+
+function i18nChunkName(id: string): string | undefined {
+  if (!id.includes('/src/i18n/') || /\/i18n\/(?:index|backend)\.ts$/.test(id) || id.endsWith('.test.ts')) {
+    return undefined;
+  }
+  const relative = id.split('/src/i18n/')[1].replace(/\.[^.]+$/, '');
+  const [lng, ns] = relative.split(/[\\/]/);
+  if (!ns || I18N_SHELL_NS.has(ns)) return `i18n-${lng}-shell`;
+  return `i18n-${lng}-${ns}`;
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
@@ -59,6 +71,8 @@ export default defineConfig({
               return `monitoring-${toSnakeCase(matchSubPage[1])}`;
             }
           };
+          const localeChunk = i18nChunkName(id);
+          if (localeChunk) return localeChunk;
           if (id.includes('/src/i18n/') || id.includes('/src/utils/') || id.includes('/src/constants/') || id.includes('/src/api/')) return 'base';
           if (id.includes('/src/components/')) return 'components';
           if (id.startsWith('\x00vite/') || id === '\x00commonjsHelpers.js') {
@@ -70,7 +84,6 @@ export default defineConfig({
           return toSnakeCase(path.basename(id, path.extname(id)))
         }
       },
-
     },
   },
 })

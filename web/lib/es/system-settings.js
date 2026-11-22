@@ -5614,7 +5614,12 @@ const Kl = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
         open: m === "sequence" && !!y,
         onClose: () => O(null),
         width: 800,
-        styles: { body: { paddingRight: 0 } },
+        getContainer: ".site-layout",
+        rootStyle: { position: "absolute" },
+        styles: {
+          body: { paddingRight: 0 },
+          wrapper: { maxWidth: "100%" }
+        },
         children: y && /* @__PURE__ */ e.jsx(tt, { children: /* @__PURE__ */ e.jsx(Nt, { entry: y, t: a }) }, y.event.id)
       }
     )

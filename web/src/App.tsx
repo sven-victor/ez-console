@@ -19,7 +19,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { App as AntdApp, ConfigProvider, type ConfigProviderProps, type TabsProps as AntTabsProps } from 'antd';
 import type { Locale } from 'antd/es/locale';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 
 import zhCN from 'antd/lib/locale/zh_CN';
 import enUS from 'antd/lib/locale/en_US';
@@ -30,6 +30,7 @@ import arEG from 'antd/lib/locale/ar_EG';
 import svSE from 'antd/lib/locale/sv_SE';
 
 import { getRoutes, type IRoute } from './routes';
+import Loading from './components/Loading';
 import { AuthProvider } from './contexts/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import AppLayout, { type AppLayoutProps } from './components/Layout';
@@ -106,7 +107,7 @@ export interface AppProps {
   configProviderProps?: Omit<ConfigProviderProps, 'children' | 'locale'>;
 }
 
-function App({
+function AppContent({
   transformRouter = (routes) => routes,
   transformSettingTabs = (items) => items,
   transformLangConfig = (langs) => langs,
@@ -202,6 +203,14 @@ function App({
         </ConfigProvider>
       </ThemeProvider>
     </QueryClientProvider>
+  );
+}
+
+function App(props: AppProps) {
+  return (
+    <Suspense fallback={<Loading />}>
+      <AppContent {...props} />
+    </Suspense>
   );
 }
 

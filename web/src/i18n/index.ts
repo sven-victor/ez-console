@@ -17,139 +17,87 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import zhCN from './zh-CN';
-import enUS from './en-US';
-import enUSCommon from './en-US/common';
-import enUSAuthorization from './en-US/authorization';
-import enUSSystem from './en-US/system';
-import enUSAi from './en-US/ai';
-import enUSTask from './en-US/task';
-import enUSInbox from './en-US/inbox';
-import deDE from './de-DE';
-import esES from './es-ES';
-import frFR from './fr-FR';
-import arAE from './ar-AE';
-import svSE from './sv-SE';
+import { createI18nResourceBackend, type I18nNamespace, type I18nResourceLoader } from './backend';
 
-import zhCNCommon from './zh-CN/common';
-import zhCNAuthorization from './zh-CN/authorization';
-import zhCNSystem from './zh-CN/system';
-import zhCNAi from './zh-CN/ai';
-import zhCNTask from './zh-CN/task';
-import zhCNInbox from './zh-CN/inbox';
+export type { I18nNamespace, I18nResourceLoader };
 
-import deDECommon from './de-DE/common';
-import deDEAuthorization from './de-DE/authorization';
-import deDESystem from './de-DE/system';
-import deDEAi from './de-DE/ai';
-import deDETask from './de-DE/task';
-import deDEInbox from './de-DE/inbox';
+const FALLBACK_LNG = 'en-US';
 
-import esESCommon from './es-ES/common';
-import esESAuthorization from './es-ES/authorization';
-import esESSystem from './es-ES/system';
-import esESAi from './es-ES/ai';
-import esESTask from './es-ES/task';
-import esESInbox from './es-ES/inbox';
+const { backend, register, bind } = createI18nResourceBackend({ fallbackLng: FALLBACK_LNG });
 
-import frFRCommon from './fr-FR/common';
-import frFRAuthorization from './fr-FR/authorization';
-import frFRSystem from './fr-FR/system';
-import frFRAi from './fr-FR/ai';
-import frFRTask from './fr-FR/task';
-import frFRInbox from './fr-FR/inbox';
+bind(i18n);
 
-import arAECommon from './ar-AE/common';
-import arAEAuthorization from './ar-AE/authorization';
-import arAESystem from './ar-AE/system';
-import arAEAi from './ar-AE/ai';
-import arAETask from './ar-AE/task';
-import arAEInbox from './ar-AE/inbox';
+// Header uses these together, and each file is small, so they share one chunk.
+const shellNamespaces = ['translation', 'common', 'inbox', 'task'] as const;
 
-import svSECommon from './sv-SE/common';
-import svSEAuthorization from './sv-SE/authorization';
-import svSESystem from './sv-SE/system';
-import svSEAi from './sv-SE/ai';
-import svSETask from './sv-SE/task';
-import svSEInbox from './sv-SE/inbox';
+register('zh-CN', shellNamespaces, () => import('./zh-CN/shell'));
+register('en-US', shellNamespaces, () => import('./en-US/shell'));
+register('de-DE', shellNamespaces, () => import('./de-DE/shell'));
+register('es-ES', shellNamespaces, () => import('./es-ES/shell'));
+register('fr-FR', shellNamespaces, () => import('./fr-FR/shell'));
+register('ar-AE', shellNamespaces, () => import('./ar-AE/shell'));
+register('sv-SE', shellNamespaces, () => import('./sv-SE/shell'));
 
+register('zh-CN', 'authorization', () => import('./zh-CN/authorization'));
+register('en-US', 'authorization', () => import('./en-US/authorization'));
+register('de-DE', 'authorization', () => import('./de-DE/authorization'));
+register('es-ES', 'authorization', () => import('./es-ES/authorization'));
+register('fr-FR', 'authorization', () => import('./fr-FR/authorization'));
+register('ar-AE', 'authorization', () => import('./ar-AE/authorization'));
+register('sv-SE', 'authorization', () => import('./sv-SE/authorization'));
+
+register('zh-CN', 'system', () => import('./zh-CN/system'));
+register('en-US', 'system', () => import('./en-US/system'));
+register('de-DE', 'system', () => import('./de-DE/system'));
+register('es-ES', 'system', () => import('./es-ES/system'));
+register('fr-FR', 'system', () => import('./fr-FR/system'));
+register('ar-AE', 'system', () => import('./ar-AE/system'));
+register('sv-SE', 'system', () => import('./sv-SE/system'));
+
+register('zh-CN', 'ai', () => import('./zh-CN/ai'));
+register('en-US', 'ai', () => import('./en-US/ai'));
+register('de-DE', 'ai', () => import('./de-DE/ai'));
+register('es-ES', 'ai', () => import('./es-ES/ai'));
+register('fr-FR', 'ai', () => import('./fr-FR/ai'));
+register('ar-AE', 'ai', () => import('./ar-AE/ai'));
+register('sv-SE', 'ai', () => import('./sv-SE/ai'));
+
+/**
+ * Register a lazy translation bundle. Pass one namespace, or several that should
+ * load together. A grouped loader's default export is keyed by namespace:
+ *
+ * registerI18nResource('en-US', 'settings', () => import('./en-US/settings'))
+ * registerI18nResource('en-US', ['settings', 'audit'], () => import('./en-US/shell'))
+ *
+ * `addResource` / `addResourceBundle` still apply immediately and take priority over a loader
+ * for the same language and namespace.
+ */
+export function registerI18nResource(lng: string, ns: I18nNamespace, loader: I18nResourceLoader) {
+  register(lng, ns, loader);
+}
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
+  .use(backend)
   .init({
-    ns: ['common', 'authorization', 'system', 'ai', 'task', 'inbox'],
+    ns: ['translation', 'common'],
     defaultNS: 'translation',
-    resources: {
-      'zh-CN': {
-        translation: zhCN,
-        common: zhCNCommon,
-        authorization: zhCNAuthorization,
-        system: zhCNSystem,
-        ai: zhCNAi,
-        task: zhCNTask,
-        inbox: zhCNInbox,
-      },
-      'en-US': {
-        translation: enUS,
-        common: enUSCommon,
-        authorization: enUSAuthorization,
-        system: enUSSystem,
-        ai: enUSAi,
-        task: enUSTask,
-        inbox: enUSInbox,
-      },
-      'de-DE': {
-        translation: deDE,
-        common: deDECommon,
-        authorization: deDEAuthorization,
-        system: deDESystem,
-        ai: deDEAi,
-        task: deDETask,
-        inbox: deDEInbox,
-      },
-      'es-ES': {
-        translation: esES,
-        common: esESCommon,
-        authorization: esESAuthorization,
-        system: esESSystem,
-        ai: esESAi,
-        task: esESTask,
-        inbox: esESInbox,
-      },
-      'fr-FR': {
-        translation: frFR,
-        common: frFRCommon,
-        authorization: frFRAuthorization,
-        system: frFRSystem,
-        ai: frFRAi,
-        task: frFRTask,
-        inbox: frFRInbox,
-      },
-      'ar-AE': {
-        translation: arAE,
-        common: arAECommon,
-        authorization: arAEAuthorization,
-        system: arAESystem,
-        ai: arAEAi,
-        task: arAETask,
-        inbox: arAEInbox,
-      },
-      'sv-SE': {
-        translation: svSE,
-        common: svSECommon,
-        authorization: svSEAuthorization,
-        system: svSESystem,
-        ai: svSEAi,
-        task: svSETask,
-        inbox: svSEInbox,
-      },
-    },
-    fallbackLng: 'en-US',
+    fallbackLng: FALLBACK_LNG,
+    // Do not also request the language subtag (`zh` for `zh-CN`).
+    load: 'currentOnly',
+    partialBundledLanguages: true,
+    // Retry once inside the backend. A truthy error payload then clears i18next's failed
+    // state so the next language change can try again. The default of 5 retries would
+    // multiply that and delay Suspense.
+    maxRetries: 0,
     debug: process.env.NODE_ENV === 'development',
     interpolation: {
       escapeValue: false,
     },
+    react: {
+      useSuspense: true,
+    },
   });
 
-export default i18n; 
+export default i18n;

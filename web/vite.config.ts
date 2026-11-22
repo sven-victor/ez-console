@@ -26,6 +26,19 @@ function toSnakeCase(str: string) {
   return str.replace(/([a-z0-9])([A-Z])/g, '$1_$2').toLowerCase();
 }
 
+// translation, common, inbox, and task share one chunk.
+const I18N_SHELL_NS = new Set(['shell', 'translation', 'common', 'inbox', 'task']);
+
+function i18nChunkName(id: string): string | undefined {
+  if (!id.includes('/src/i18n/') || /\/i18n\/(?:index|backend)\.ts$/.test(id) || id.endsWith('.test.ts')) {
+    return undefined;
+  }
+  const relative = id.split('/src/i18n/')[1].replace(/\.[^.]+$/, '');
+  const [lng, ns] = relative.split(/[\\/]/);
+  if (!ns || I18N_SHELL_NS.has(ns)) return `i18n-${lng}-shell`;
+  return `i18n-${lng}-${ns}`;
+}
+
 const baseConfig: UserConfig = {
   base: '/console/',
   plugins: [
@@ -64,10 +77,21 @@ const baseConfig: UserConfig = {
           if (id.includes('/node_modules/react-syntax-highlighter/')) return 'highlighter';
           if (id.includes('/node_modules/mermaid/')) return 'mermaid';
           if (id.includes('/node_modules/refractor/')) return 'refractor';
+          // One chunk for the whole CodeMirror graph. `codemirror` and
+          // @uiw/codemirror-extensions-basic-setup import @codemirror/*, while
+          // @codemirror/view imports style-mod. Leaving either side in vendor
+          // makes those chunks import each other and crashes on load
+          // ("Cannot access '…' before initialization").
           if (
             id.includes('/node_modules/@uiw/react-codemirror/') ||
-            id.includes('/node_modules/@codemirror/') ||
-            id.includes('/node_modules/@lezer/')
+            id.includes('/node_modules/@uiw/codemirror-extensions-basic-setup/') ||
+            id.includes('/node_modules/codemirror/') ||
+            id.includes('/node_modules/@codemirror/')
+            // id.includes('/node_modules/@lezer/') ||
+            // id.includes('/node_modules/style-mod/') ||
+            // id.includes('/node_modules/crelt/') ||
+            // id.includes('/node_modules/w3c-keyname/') ||
+            // id.includes('/node_modules/@marijn/find-cluster-break/')
           ) return 'codemirror';
           if (id.includes('/node_modules/@ant-design/x/') || id.includes('/node_modules/@ant-design/x-markdown/') || id.includes('/node_modules/@ant-design/x-sdk/')) return 'ant-design-x';
           if (id.includes('/node_modules/lodash/') || id.includes('/node_modules/lodash-es/')) return `lodash`;
@@ -81,6 +105,8 @@ const baseConfig: UserConfig = {
           if (id.includes('/src/pages/authorization/role')) return 'roles';
           if (id.includes('/src/pages/authorization/service-account')) return 'service-accounts';
           if (id.includes('/src/pages/profile')) return 'profile';
+          const localeChunk = i18nChunkName(id);
+          if (localeChunk) return localeChunk;
           if (id.includes('/src/i18n/') || id.includes('/src/utils/') || id.includes('/src/constants/') || id.includes('/src/api/')) return 'base';
           if (id.includes('/src/components/')) return 'components';
           if (id.startsWith('\x00')) {

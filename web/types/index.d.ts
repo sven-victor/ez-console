@@ -91,10 +91,12 @@ export declare const AIChat: LazyExoticComponent<FC<AIChatProps>>;
 
 export declare const AIChatButton: default_2.FC<AIChatButtonProps>;
 
-declare interface AIChatButtonProps {
+export declare interface AIChatButtonProps {
     /** Custom float button icon; overrides the default blinking robot when provided. */
     icon?: default_2.ReactNode;
 }
+
+export declare const AIChatLayout: default_2.FC<AIChatProps>;
 
 export declare interface AIChatMessage {
     /** Message content */
@@ -133,8 +135,6 @@ export declare type AIChatMessageMetadata = true;
 export declare type AIChatMessageRole = "user" | "assistant" | "system" | "tool" | "prompt";
 
 export declare type AIChatMessageStatus = "pending" | "streaming" | "completed" | "failed";
-
-export declare const AIChatModal: default_2.FC<AIChatProps>;
 
 export declare interface AIChatProps {
     bubble?: {
@@ -195,8 +195,6 @@ export declare interface AIChatSession {
     /** User ID */
     user_id: string;
 }
-
-export declare const AIChatSider: default_2.FC<AIChatProps>;
 
 declare interface AIContextType {
     layout: 'classic' | 'sidebar' | 'float-sidebar';
@@ -1701,7 +1699,7 @@ export declare interface ErrorResponse {
 
 export declare type EventType = "content" | "tool_call" | "error" | "client_tool_pending" | "hitl_pending";
 
-export declare function EZApp({ transformRouter, transformSettingTabs, transformLangConfig, extraPrivateRoutes, extraPublicRoutes, menuStyle, transformHeaderItems, layout, aiChatProps, style, themeProviderProps, configProviderProps, }: EZAppProps): JSX_2.Element;
+export declare function EZApp(props: EZAppProps): JSX_2.Element;
 
 export declare interface EZAppProps {
     basePath?: string;
@@ -2060,6 +2058,18 @@ export declare class HttpClient {
 }
 
 export { i18n }
+
+export declare type I18nNamespace = string | readonly string[];
+
+declare type I18nResource = Record<string, unknown>;
+
+/**
+ * One literal `import()` of a language file, or of a module whose default export
+ * maps several namespaces (`{ common, inbox }`).
+ */
+export declare type I18nResourceLoader = () => Promise<I18nResource | {
+    default: I18nResource;
+}>;
 
 export declare type ID = "";
 
@@ -2876,6 +2886,18 @@ export declare interface RegisteredClientTool {
     parameters: StrictRJSFSchema;
     handler: ClientToolHandler;
 }
+
+/**
+ * Register a lazy translation bundle. Pass one namespace, or several that should
+ * load together. A grouped loader's default export is keyed by namespace:
+ *
+ * registerI18nResource('en-US', 'settings', () => import('./en-US/settings'))
+ * registerI18nResource('en-US', ['settings', 'audit'], () => import('./en-US/shell'))
+ *
+ * `addResource` / `addResourceBundle` still apply immediately and take priority over a loader
+ * for the same language and namespace.
+ */
+export declare function registerI18nResource(lng: string, ns: I18nNamespace, loader: I18nResourceLoader): void;
 
 export declare interface removeUserFromOrganizationParams {
     /** Organization ID */

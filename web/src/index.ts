@@ -21,7 +21,7 @@ export {
 } from '@/App'
 
 export { useTranslation } from 'react-i18next';
-export { default as i18n } from '@/i18n'
+export { default as i18n, registerI18nResource, type I18nNamespace, type I18nResourceLoader } from '@/i18n'
 export { withSuspense, type IRoute, type IRouteGroup, type IRouteItem } from '@/routes'
 
 export { default as Loading } from '@/components/Loading';
@@ -38,7 +38,7 @@ export { PermissionGuard, type PermissionGuardProps, AdminGuard } from '@/compon
 export { default as PrivateRoute, type PrivateRouteProps } from '@/components/PrivateRoute';
 export { default as Table, type TableRefProps, type TableActionRefProps, type TableProps } from '@/components/Table';
 export { type AIChatProps } from '@/components/AIChat';
-export { AIChatModal, AIChatButton, AIChatSider } from '@/components/AIChatLayout';
+export { AIChatButton, AIChatLayout, type AIChatButtonProps } from '@/components/AIChatLayout';
 export { type MarkdownViewerProps } from '@/components/MarkdownViewer';
 export { type JsonSchemaConfigFormItemProps, type JsonSchemaConfigFormProps } from '@/components/JsonSchemaConfigForm/JsonSchemaConfigForm';
 

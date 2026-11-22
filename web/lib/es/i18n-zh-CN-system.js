@@ -1,0 +1,686 @@
+const e = {
+  title: "系统管理",
+  settings: {
+    title: "系统设置",
+    tabs: {
+      security: "安全设置",
+      oauth: "OAuth2.0认证设置",
+      ldap: "LDAP认证设置",
+      smtp: "SMTP设置",
+      base: "基础设置",
+      toolSets: "工具集设置",
+      skills: "技能",
+      aiModels: "AI模型设置",
+      organizations: "组织管理",
+      task: "任务设置",
+      rateLimit: "接口限流"
+    },
+    rateLimit: {
+      enabled: "启用接口限流",
+      storeLabel: "存储",
+      failOpen: "故障放行",
+      defaults: "默认共享配额",
+      anonymous: "匿名（IP）",
+      user: "用户",
+      serviceAccount: "服务账户",
+      routeRules: "路由规则",
+      createRule: "创建规则",
+      editRule: "编辑规则",
+      deleteConfirm: "确定删除该规则？",
+      subjectType: "主体类型",
+      subjectId: "主体 ID",
+      subjectIdHint: "留空表示该类型下所有主体",
+      method: "方法",
+      path: "路径",
+      pathHint: "Gin 完整路径，例如 /api/ai/chat/sessions/:sessionId。留空表示共享桶。",
+      rate: "速率",
+      period: "周期",
+      burst: "突发",
+      quota: "配额",
+      quotaPeriod: "配额周期",
+      memoryWarn: "集群模式使用内存存储时，限额按节点独立计算。请将 rate_limit.store 设为 redis 以实现集群级限额。",
+      resetAll: "重置全部计数器",
+      resetAllConfirm: "将重置所有限流与配额计数器。当前被拦截的请求会立即恢复放行。",
+      resetSubject: "重置计数器",
+      resetSubjectConfirm: "重置该主体类型的共享桶计数器？",
+      resetRule: "重置计数器",
+      resetRuleConfirm: "重置该规则的计数器？",
+      resetSuccess: "计数器已重置",
+      resetFailed: "重置计数器失败"
+    },
+    task: {
+      maxConcurrent: "最大并发任务数",
+      maxConcurrentTooltip: "允许同时运行的最大任务数量。",
+      aiChatRetentionDays: "AI 会话保留天数",
+      aiChatRetentionDaysTooltip: "基于最后一次对话时间自动清理 AI 会话（包含会话与消息）。",
+      taskLogRetentionDays: "任务日志保留天数",
+      taskLogRetentionDaysTooltip: "自动清理任务执行日志与历史任务运行记录。",
+      auditLogRetentionDays: "审计日志保留天数",
+      auditLogRetentionDaysTooltip: "自动清理指定天数之前的审计日志。",
+      logStorageBackend: "日志存储",
+      logStorageBackendTooltip: "任务执行日志的存储位置。数据库将日志存储在应用数据库中。",
+      logStoragePlaceholder: "选择存储后端",
+      logStorageDatabase: "数据库",
+      logStorage: {
+        database: "数据库"
+      },
+      fields: {
+        task_max_concurrent: "最大并发任务数",
+        task_ai_chat_retention_days: "AI 会话保留天数",
+        task_log_retention_days: "任务日志保留天数",
+        task_audit_log_retention_days: "审计日志保留天数"
+      }
+    },
+    skills: {
+      title: "AI Agent 技能",
+      name: "名称",
+      description: "描述",
+      category: "分类",
+      domain: "领域",
+      create: "创建技能",
+      createSkill: "创建技能",
+      editSkill: "编辑技能",
+      upload: "上传",
+      editFiles: "编辑文件",
+      cloneSkill: "克隆技能",
+      cloneNameDefault: "{{name}}（副本）",
+      cloneSuccess: "技能已克隆",
+      cloneFailed: "克隆技能失败",
+      actionManageFiles: "管理文件",
+      actionPreview: "预览",
+      actionEditMetadata: "编辑信息",
+      actionClone: "克隆",
+      actionDelete: "删除",
+      deleteSkillConfirm: "确定删除该技能？",
+      deleteSkillConfirmDescription: "将删除该技能及其所有文件，此操作不可恢复。",
+      fetchFailed: "获取技能列表失败",
+      createSuccess: "技能已创建",
+      createFailed: "创建技能失败",
+      updateSuccess: "技能已更新",
+      updateFailed: "更新技能失败",
+      deleteSuccess: "技能已删除",
+      deleteFailed: "删除技能失败",
+      presetTag: "内置",
+      presetDisabledManageFiles: "内置技能不能编辑文件。",
+      presetDisabledEditMetadata: "内置技能不能修改元数据。",
+      presetDisabledDelete: "内置技能不能删除。",
+      statusForAi: "AI 对话",
+      scopeUser: "用户技能",
+      scopeAll: "全部技能",
+      statusUpdateSuccess: "技能状态已更新",
+      statusUpdateFailed: "更新技能状态失败",
+      tooltipEnableSkillForAi: "在 AI 对话中启用此技能",
+      tooltipDisableSkillForAi: "在 AI 对话中禁用此技能",
+      uploadSuccess: "技能已上传",
+      uploadFailed: "上传失败",
+      previewFailed: "加载预览失败",
+      selectFile: "请选择文件",
+      file: "文件 (.md 或 .zip)",
+      initialContent: "初始 SKILL.md 内容（可选）",
+      aiToolsLoadFailed: "加载 AI 工具绑定失败",
+      aiToolsOrgHint: "绑定按组织存储。请使用顶栏的组织切换器选择组织，或通过 API 发送 X-Scope-OrgID。",
+      aiToolsNoOrg: "请先选择组织后再配置 AI 工具绑定。",
+      aiToolsetNoTools: "该工具集中没有可用工具。",
+      aiToolsetsEmpty: "当前组织下没有可用的 AI 工具集。",
+      wildcardPatterns: "通配符模式（可选）",
+      wildcardPatternsHelp: "toolset_id 或 tool_name 可使用 *（例如 *:sleep 表示所有工具集中的 sleep；uuid:* 表示该工具集全部工具）。",
+      addWildcardRow: "添加模式行",
+      patternToolsetAll: "*（全部工具集）",
+      patternToolsetPlaceholder: "工具集 ID",
+      patternToolNameAll: "*（全部工具）",
+      patternToolNamePlaceholder: "工具名称",
+      editor: {
+        backToSkills: "返回技能列表",
+        skill: "技能",
+        file: "文件",
+        folder: "文件夹",
+        save: "保存",
+        saved: "已保存",
+        delete: "删除",
+        deleted: "已删除",
+        rename: "重命名",
+        renamed: "已重命名",
+        open: "打开",
+        newFile: "新建文件",
+        newFolder: "新建文件夹",
+        loading: "加载中...",
+        selectFileToEdit: "请选择要编辑的文件",
+        failedToLoadFile: "加载文件失败",
+        failedToSave: "保存失败",
+        failedToDelete: "删除失败",
+        failedToRename: "重命名失败",
+        failedToMove: "移动失败",
+        moved: "已移动",
+        nameRequired: "请输入名称",
+        fileNameExtension: "文件名须以 .md 或 .txt 结尾",
+        onlyMdTxtAllowed: "仅支持 .md 和 .txt 文件",
+        fileCreated: "文件已创建",
+        folderCreated: "文件夹已创建",
+        failedToCreateFile: "创建文件失败",
+        failedToCreateFolder: "创建文件夹失败",
+        deleteConfirm: "确认删除？",
+        deleteConfirmContent: "删除 {{path}}？",
+        deleteConfirmContentDir: "删除 {{path}}？将删除该文件夹及其下所有内容。",
+        newFileTitle: "新建文件",
+        newFolderTitle: "新建文件夹",
+        folderName: "文件夹名",
+        fileName: "文件名",
+        create: "创建",
+        renameTitle: "重命名",
+        previewTitle: "技能预览",
+        placeholderNewFile: "filename.md 或 filename.txt",
+        placeholderFolder: "folder-name",
+        placeholderFileName: "name.md",
+        presetReadOnly: "此为内置技能，文件为只读；请使用预览查看内容。"
+      }
+    },
+    days: "天",
+    minutes: "分钟",
+    fetchFailed: "获取系统设置失败",
+    updateSuccess: "系统设置更新成功",
+    updateFailed: "系统设置更新失败",
+    base: {
+      name: "名称",
+      logo: "图标",
+      homePage: "首页",
+      disableLocalUserLogin: "禁用本地用户登录",
+      disableLocalUserLoginTooltip: "禁用本地用户登录，仅在其他认证方法启用时有效",
+      enableMultiOrg: "启用多组织",
+      enableMultiOrgTooltip: "启用多组织功能。启用后，可在“组织管理”标签中管理组织。关闭时，会将当前选中的组织设为默认组织。",
+      defaultOrganization: "默认组织",
+      defaultOrganizationTooltip: "在关闭多组织时使用。从启用多组织切换为关闭时，会将当前选中的组织设为默认组织。",
+      currentOrganization: "当前组织",
+      currentOrganizationTooltip: "如果关闭多组织，该组织将成为默认组织。",
+      enableSkillToolBinding: "将 AI 工具与技能关联",
+      enableSkillToolBindingTooltip: "启用后，当对话包含技能范围时，AI 聊天会根据技能绑定收窄工具列表（仍受角色 AI 工具权限约束）。技能编辑界面可配置关联工具。",
+      showToolCalls: "显示工具调用",
+      showToolCallsTooltip: "开启后，AI 聊天会在助手消息下方显示服务端工具调用。客户端工具和人工确认卡片不受影响。",
+      clearSiteCache: "清理站点缓存",
+      clearSiteCacheConfirm: "确定清理服务端所有应用缓存吗？已登录用户可能需要重新登录。",
+      clearSiteCacheSuccess: "站点缓存已清理",
+      clearSiteCacheFailed: "清理站点缓存失败"
+    },
+    organizations: {
+      title: "组织管理",
+      create: "创建组织",
+      edit: "编辑组织",
+      deleteConfirm: "删除组织",
+      deleteConfirmContent: "确定要删除该组织吗？此操作不可撤销。",
+      fetchFailed: "获取组织列表失败",
+      createSuccess: "组织创建成功",
+      createFailed: "创建组织失败",
+      updateSuccess: "组织更新成功",
+      updateFailed: "更新组织失败",
+      deleteSuccess: "组织删除成功",
+      deleteFailed: "删除组织失败",
+      name: "名称",
+      nameRequired: "请输入组织名称",
+      slug: "标识符",
+      slugTooltip: "可选的唯一标识符，仅允许字母、数字、连字符、下划线和点。",
+      slugInvalid: "标识符仅允许字母、数字、连字符、下划线和点",
+      description: "描述",
+      status: "状态",
+      active: "启用",
+      disabled: "禁用",
+      searchPlaceholder: "搜索组织...",
+      createdAt: "创建时间",
+      detail: "组织详情",
+      users: {
+        title: "组织用户",
+        add: "添加用户",
+        addSuccess: "用户已成功加入组织",
+        addFailed: "添加用户到组织失败",
+        updateRolesSuccess: "用户角色更新成功",
+        updateRolesFailed: "用户角色更新失败",
+        removeSuccess: "用户已从组织移除",
+        removeFailed: "从组织移除用户失败",
+        fetchFailed: "获取组织用户失败",
+        username: "用户名",
+        email: "邮箱",
+        fullName: "姓名",
+        status: "状态",
+        roles: "角色",
+        editRoles: "编辑角色",
+        remove: "移除",
+        searchPlaceholder: "搜索用户...",
+        user: "用户",
+        userRequired: "请选择用户",
+        selectUser: "请选择用户",
+        selectRoles: "请选择角色",
+        removeConfirm: "移除用户",
+        removeConfirmContent: "确定要将该用户从组织中移除吗？这也会移除其在该组织中的所有角色。"
+      }
+    },
+    security: {
+      mfa: {
+        label: "强制启用多因子认证(MFA)",
+        tooltip: "启用后，所有用户必须设置并使用多因子认证登录系统"
+      },
+      passwordComplexity: {
+        label: "密码复杂度",
+        tooltip: "设置用户密码的复杂度要求",
+        options: {
+          low: "不安全：可以为任意字符",
+          medium: "一般：至少由大写字母、小写字母和数字的任意两种组合组成",
+          high: "安全：必须包括大小写字母和数字",
+          veryHigh: "非常安全：必须包含大小写字母、数字和特殊字符"
+        }
+      },
+      passwordMinLength: {
+        label: "密码最小长度",
+        tooltip: "设置密码的最小长度要求"
+      },
+      passwordExpiry: {
+        label: "密码过期时间",
+        tooltip: "设置用户密码的过期时间，0表示永不过期"
+      },
+      passwordExpiryNotify: {
+        label: "密码到期前通知时间",
+        tooltip: "设置密码到期前多少天发送邮件提醒，0表示不提醒"
+      },
+      loginFailureLock: {
+        label: "登录失败自动锁定",
+        tooltip: "启用后，连续多次登录失败将导致账户被临时锁定"
+      },
+      loginFailureAttempts: {
+        label: "登录失败次数",
+        tooltip: "设置多少次登录失败后锁定账户"
+      },
+      loginFailureLockoutMinutes: {
+        label: "登录失败锁定时间",
+        tooltip: "设置登录失败锁定时间"
+      },
+      historyPasswordCheck: {
+        label: "历史密码检查策略",
+        tooltip: "启用后，用户修改密码时不能使用最近用过的密码"
+      },
+      historyPasswordCount: {
+        label: "历史密码检查数量",
+        tooltip: "设置检查最近多少个历史密码"
+      },
+      inactiveAccountLock: {
+        label: "不活跃账户自动锁定",
+        tooltip: "设置多少天未登录后账户将被自动锁定，0表示不锁定"
+      },
+      sessionTimeout: {
+        label: "会话过期时间",
+        tooltip: "设置用户会话的自动过期时间"
+      },
+      sessionIdleTimeout: {
+        label: "会话空闲时间",
+        tooltip: "设置用户会话的自动过期时间"
+      }
+    },
+    oauth: {
+      testConnection: {
+        button: "测试连接",
+        failed: "测试连接失败: {{error}}",
+        success: "测试连接成功",
+        callbackFailed: "测试连接失败",
+        missingRequiredParameters: "缺少必要参数",
+        responseUserInfoIsNull: "响应用户信息为空",
+        responseUserIsNull: "响应用户为空",
+        oauthUserInfo: "OAuth用户信息",
+        loginUserInfo: "登录用户信息"
+      },
+      enabled: {
+        label: "启用OAuth认证",
+        tooltip: "启用后，用户可以通过第三方OAuth服务登录系统"
+      },
+      provider: {
+        label: "OAuth提供商",
+        tooltip: "选择OAuth认证服务提供商",
+        options: {
+          github: "GitHub",
+          google: "Google",
+          dingtalk: "钉钉",
+          wechat: "微信",
+          autoDiscover: "自动发现",
+          custom: "自定义"
+        },
+        required: "请选择OAuth提供商"
+      },
+      clientId: {
+        label: "客户端ID",
+        tooltip: "OAuth应用的客户端ID",
+        required: "请输入客户端ID"
+      },
+      clientSecret: {
+        label: "客户端密钥",
+        tooltip: "OAuth应用的客户端密钥",
+        required: "请输入客户端密钥",
+        unchanged: "不修改"
+      },
+      wellknownEndpoint: {
+        label: "Wellknown端点",
+        tooltip: "OAuth服务的Wellknown端点URL",
+        required: "请输入Wellknown端点URL",
+        invalidUrl: "请输入有效的URL地址"
+      },
+      authEndpoint: {
+        label: "认证端点",
+        tooltip: "OAuth服务的认证端点URL",
+        required: "请输入认证端点URL",
+        invalidUrl: "请输入有效的URL地址"
+      },
+      tokenEndpoint: {
+        label: "令牌端点",
+        tooltip: "OAuth服务的令牌端点URL",
+        required: "请输入令牌端点URL",
+        invalidUrl: "请输入有效的URL地址"
+      },
+      userInfoEndpoint: {
+        label: "用户信息端点",
+        tooltip: "OAuth服务的用户信息端点URL",
+        required: "请输入用户信息端点URL",
+        invalidUrl: "请输入有效的URL地址"
+      },
+      scope: {
+        label: "授权范围",
+        tooltip: "OAuth请求的授权范围，多个值用空格分隔",
+        required: "请输入授权范围"
+      },
+      redirectUri: {
+        label: "重定向URI",
+        tooltip: "OAuth认证完成后的重定向URI",
+        required: "请输入重定向URI",
+        invalidUrl: "请输入有效的URL地址"
+      },
+      autoCreateUser: {
+        label: "自动创建用户",
+        tooltip: "启用后，系统将自动为首次使用OAuth登录的用户创建账号"
+      },
+      defaultRole: {
+        label: "默认角色",
+        tooltip: "通过OAuth注册的用户默认被分配的角色",
+        required: "启用自动创建用户时，请输入默认角色"
+      },
+      roleMappingMode: {
+        label: "角色映射模式",
+        tooltip: "控制如何从OAuth2提供商同步用户角色",
+        infoTitle: "角色映射模式说明",
+        options: {
+          disabled: {
+            label: "不映射",
+            description: "忽略OAuth2提供商的角色信息。新用户分配默认角色，现有用户保持其当前角色不变。"
+          },
+          new_user_only: {
+            label: "仅新用户",
+            description: "仅对新创建的用户使用OAuth2角色。现有用户始终保持其当前角色分配，不受OAuth2提供商返回的角色信息影响。"
+          },
+          temporary: {
+            label: "临时（仅当前会话）",
+            description: "仅在当前会话中应用OAuth2角色，不写入数据库。如果用户通过其他方式（如本地密码）登录，则使用数据库中存储的角色。"
+          },
+          enforce: {
+            label: "强制",
+            description: "当OAuth2提供角色信息时，始终覆盖用户角色并写入数据库。适用于OAuth2提供商是角色权威来源的场景。"
+          }
+        }
+      },
+      iconUrl: {
+        label: "图标URL",
+        tooltip: "OAuth提供商的图标URL，显示在登录页面",
+        required: "请输入图标URL",
+        invalidUrl: "请输入有效的URL地址"
+      },
+      displayName: {
+        label: "显示名称",
+        tooltip: "OAuth提供商在登录页面显示的名称",
+        required: "请输入显示名称"
+      },
+      mfaEnabled: {
+        label: "启用MFA",
+        tooltip: "启用后，用户在OAuth登录时需要进行MFA认证"
+      },
+      fieldMapping: {
+        title: "字段映射",
+        presetDescription: '当前使用预设的字段映射配置，如需自定义，请选择"自定义"提供商',
+        autoDetectHint: "字段映射为可选项，如果不填写系统将自动检测合适的字段",
+        emailField: {
+          label: "邮箱字段",
+          tooltip: "OAuth用户信息中的邮箱字段名",
+          required: "请输入邮箱字段名"
+        },
+        usernameField: {
+          label: "用户名字段",
+          tooltip: "OAuth用户信息中的用户名字段名",
+          required: "请输入用户名字段名"
+        },
+        fullNameField: {
+          label: "全名字段",
+          tooltip: "OAuth用户信息中的全名字段名"
+        },
+        avatarField: {
+          label: "头像字段",
+          tooltip: "OAuth用户信息中的头像URL字段名"
+        },
+        roleField: {
+          label: "角色字段",
+          tooltip: "OAuth用户信息中的角色字段名（如果提供商返回用户角色信息）"
+        }
+      }
+    },
+    ldap: {
+      enabled: "启用LDAP认证",
+      serverUrl: "LDAP服务器URL",
+      bindDn: "绑定DN",
+      bindPassword: "绑定密码",
+      baseDn: "基础DN",
+      userFilter: "用户过滤条件",
+      userAttr: "用户属性",
+      emailAttr: "邮箱属性",
+      displayNameAttr: "显示名称属性",
+      autoCreateUser: "自动创建用户",
+      defaultRole: "默认角色",
+      importUsers: "导入LDAP用户",
+      testConnection: "测试连接",
+      import: "导入用户",
+      save: "保存设置",
+      loadError: "加载LDAP设置失败: {{error}}",
+      saveSuccess: "LDAP设置更新成功",
+      saveError: "LDAP设置更新失败",
+      testError: "LDAP连接测试失败: {{error}}",
+      importSuccess: "LDAP用户导入成功",
+      importError: "LDAP用户导入失败",
+      serverUrlRequired: "请输入LDAP服务器URL",
+      bindDnRequired: "请输入绑定DN",
+      bindPasswordRequired: "请输入绑定密码",
+      baseDnRequired: "请输入基础DN",
+      userFilterRequired: "请输入用户过滤条件",
+      userAttrRequired: "请输入用户属性",
+      emailAttrRequired: "请输入邮箱属性",
+      displayNameAttrRequired: "请输入显示名称属性",
+      defaultRoleRequired: "请输入默认角色",
+      test: {
+        title: "测试LDAP连接",
+        username: "用户名",
+        password: "密码",
+        test: "测试",
+        cancel: "取消",
+        usernameRequired: "请输入用户名",
+        passwordRequired: "请输入密码"
+      },
+      tlsDivider: "TLS配置",
+      startTls: "启用TLS",
+      insecure: "不检查证书",
+      caCert: "CA证书",
+      caCertPlaceholder: `-----BEGIN CERTIFICATE-----
+...`,
+      clientCert: "客户端证书",
+      clientCertPlaceholder: "请输入客户端证书",
+      clientKey: "客户端密钥",
+      clientKeyPlaceholder: "不修改",
+      importTitle: "导入LDAP用户",
+      username: "用户名",
+      email: "邮箱",
+      fullName: "姓名",
+      importStatus: "导入状态",
+      importTypeBound: "已绑定",
+      checkAll: "全选",
+      timeout: "超时时间",
+      timeoutTooltip: "LDAP连接超时时间（秒）"
+    },
+    smtp: {
+      enabled: "启用SMTP",
+      host: "SMTP服务器",
+      port: "SMTP端口",
+      username: "SMTP用户名",
+      password: "SMTP密码",
+      encryption: "加密",
+      encryptionNone: "无",
+      encryptionRequired: "加密是必需的。",
+      encryptionSslTls: "SSL/TLS",
+      encryptionStartTls: "STARTTLS",
+      fromAddress: "发件人地址",
+      fromAddressInvalid: "无效的邮箱地址。",
+      fromAddressRequired: "发件人地址是必需的。",
+      fromName: "发件人名称",
+      fromNamePlaceholder: "系统通知",
+      adminEmails: "管理员邮箱",
+      adminEmailsTooltip: "接收管理员通知的邮箱地址。",
+      adminEmailsPlaceholder: "输入邮箱地址",
+      hostRequired: "SMTP服务器是必需的。",
+      portRequired: "SMTP端口是必需的。",
+      sendTestEmail: "发送测试邮件",
+      testConnection: "测试连接",
+      testConnectionTitle: "测试SMTP连接",
+      testEmailRecipient: "收件人邮箱地址",
+      testEmailRecipientInvalid: "无效的邮箱地址。",
+      testEmailRecipientRequired: "收件人邮箱地址是必需的。",
+      usernameRequired: "用户名是必需的。",
+      templateDivider: "模板设置",
+      resetPasswordTemplate: "重置密码模板",
+      userLockedTemplate: "用户锁定模板",
+      mfaCodeTemplate: "MFA验证码模板",
+      mfaDisabledTemplate: "MFA禁用通知模板",
+      activationTemplate: "账户激活邮件模板",
+      activationTemplateTooltip: "创建无密码用户时发送的激活邮件模板。可用变量：{{.ActivationURL}}（激活链接）、{{.FullName}}（用户姓名）、{{.Username}}。",
+      passwordExpiryTemplate: "密码到期提醒模板",
+      loginFailureLockTemplate: "登录失败锁定提醒模板",
+      inactiveLockTemplate: "不活跃账户锁定提醒模板",
+      loadError: "加载SMTP设置失败: {{error}}",
+      saveSuccess: "SMTP设置保存成功。",
+      saveError: "保存SMTP设置失败: {{error}}",
+      testError: "SMTP连接测试失败: {{error}}",
+      testResult: "测试结果",
+      testSuccess: "连接成功！",
+      testFailed: "连接失败: {{error}}"
+    },
+    toolsets: {
+      name: "名称",
+      type: "类型",
+      status: "状态",
+      description: "描述",
+      configuration: "配置",
+      create: "创建工具集",
+      edit: "编辑工具集",
+      test: "测试连接",
+      viewTools: "查看工具",
+      viewConfig: "查看配置",
+      tools: "工具",
+      noTools: "暂无可用工具",
+      searchPlaceholder: "搜索工具集...",
+      namePlaceholder: "请输入工具集名称",
+      descriptionPlaceholder: "请输入工具集描述",
+      typePlaceholder: "请选择类型",
+      nameRequired: "请输入工具集名称",
+      typeRequired: "请选择类型",
+      fieldRequired: "请输入{{field}}",
+      invalidJSON: "JSON格式无效",
+      fetchFailed: "获取工具集失败",
+      fetchTypeDefinitionsFailed: "获取工具集类型定义失败",
+      createSuccess: "工具集创建成功",
+      createFailed: "创建工具集失败",
+      updateSuccess: "工具集更新成功",
+      updateFailed: "更新工具集失败",
+      deleteSuccess: "工具集删除成功",
+      deleteFailed: "删除工具集失败",
+      presetTag: "内置",
+      scopeUser: "用户工具集",
+      scopeAll: "全部工具集",
+      presetDisabledEdit: "内置工具集不能编辑。",
+      presetDisabledDelete: "内置工具集不能删除。",
+      testSuccess: "工具集连接测试成功",
+      testFailed: "工具集连接测试失败",
+      testFailedDetail: "工具集连接测试失败: {{error}}",
+      statusUpdateSuccess: "状态已更新",
+      statusUpdateFailed: "更新状态失败",
+      tooltipEnableToolSet: "启用此工具集",
+      tooltipDisableToolSet: "禁用此工具集",
+      deleteConfirm: "确定要删除此工具集吗？",
+      parameters: "参数",
+      fetchToolsFailed: "获取工具失败",
+      debug: "调试工具",
+      backToList: "返回",
+      debugTitle: "工具调试",
+      selectTool: "选择工具",
+      selectToolPlaceholder: "请选择要调试的工具",
+      switchToCodeEditor: "切换到 JSON 编辑器",
+      switchToFormEditor: "切换到表单编辑器",
+      noParameters: "该工具没有参数",
+      callTool: "执行",
+      callToolFailed: "工具调用失败",
+      result: "执行结果",
+      selectToolFirst: "请先选择一个工具",
+      mcp: {
+        form: {
+          endpoint: {
+            label: "端点",
+            description: "MCP 服务器的端点"
+          },
+          protocol: {
+            label: "协议",
+            description: "MCP 服务器的协议"
+          },
+          auth_type: {
+            label: "认证类型",
+            description: "认证方式"
+          },
+          username: {
+            label: "用户名",
+            description: "MCP 服务器的用户名"
+          },
+          password: {
+            label: "密码",
+            description: "MCP 服务器的密码"
+          },
+          args: {
+            label: "参数",
+            description: "可选的 MCP 客户端选项。支持的键：headers（或 header）为 HTTP 请求头名称与值的对象；proxy 为 http/https/socks5/socks5h URL。"
+          },
+          token: {
+            label: "Bearer 令牌",
+            description: "MCP 服务器的 Bearer 令牌"
+          },
+          approval_tools: {
+            label: "审批工具",
+            description: "执行前需要审批确认的 MCP 工具"
+          }
+        }
+      }
+    }
+  },
+  audit: {
+    title: "审计日志",
+    filter: {
+      username: "用户名",
+      action: "操作",
+      status: "状态",
+      dateRange: "时间范围",
+      search: "搜索",
+      reset: "重置"
+    },
+    columns: {
+      username: "用户名"
+    }
+  },
+  menu: {
+    system: "系统管理",
+    settings: "系统设置",
+    audit: "审计日志"
+  }
+};
+export {
+  e as default
+};
