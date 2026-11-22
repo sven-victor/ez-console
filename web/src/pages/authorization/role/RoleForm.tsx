@@ -140,6 +140,7 @@ const templateMap = {
 };
 
 const defaultPolicyDocument = JSON.stringify({ Statement: [] }, null, 2);
+const EMPTY_ORGANIZATIONS: API.Organization[] = [];
 
 const RoleForm: React.FC = () => {
   const { message } = App.useApp();
@@ -156,7 +157,7 @@ const RoleForm: React.FC = () => {
   const { enableMultiOrg, currentOrgId } = useSite();
   const { user } = useAuth();
 
-  const organizations = user?.organizations || [];
+  const organizations = user?.organizations ?? EMPTY_ORGANIZATIONS;
 
   const [form] = Form.useForm();
   const [checkedKeys, setCheckedKeys] = useState<string[]>([]);
@@ -166,7 +167,7 @@ const RoleForm: React.FC = () => {
   const [aiToolSelections, setAiToolSelections] = useState<Record<string, string[]>>({});
   const aiToolSelectionsRef = useRef<Record<string, string[]>>({});
   const [roleType, setRoleType] = useState<'global' | 'organization'>('global');
-  const [selectedOrgId, setSelectedOrgId] = useState<string | undefined>(undefined);
+  const selectedOrgId = currentOrgId || undefined;
   const [isSystemRole, setIsSystemRole] = useState(false);
 
   // When multi-org is off, global roles may configure AI tools; when on, only organization roles.
@@ -175,10 +176,6 @@ const RoleForm: React.FC = () => {
   useEffect(() => {
     aiToolSelectionsRef.current = aiToolSelections;
   }, [aiToolSelections]);
-
-  useEffect(() => {
-    setSelectedOrgId(currentOrgId || undefined);
-  }, []);
 
   const { data: allPermissions = [] } = useRequest<TreeDataNodeWithCode[], []>(async () => {
     return api.authorization.listPermissions().then((res) => {
@@ -334,17 +331,7 @@ const RoleForm: React.FC = () => {
     } else {
       setAiToolsets([]);
     }
-  }, [
-    cloneFrom,
-    runFetchAiToolsets,
-    form,
-    id,
-    isEditMode,
-    organizations,
-    selectedOrgId,
-    enableMultiOrg,
-    runLoadRole,
-  ]);
+  }, [cloneFrom, id, isEditMode]);
 
   const filteredPermissions = useMemo<TreeDataNodeWithCode[]>(() => {
     const isGlobalRole = roleType === 'global';
