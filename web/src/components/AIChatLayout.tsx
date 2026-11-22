@@ -447,7 +447,7 @@ export const AIChatLayout: React.FC<AIChatProps> = (props) => {
         className={styles.siderLayoutContent}
       >
         <div className={styles.chatHost}>
-          {withSuspense(AIChatDialog, props)}
+          {chatVisible && withSuspense(AIChatDialog, props)}
         </div>
       </div>
       {layout === 'float-sidebar' && RESIZE_HANDLES.map((handle) => (
