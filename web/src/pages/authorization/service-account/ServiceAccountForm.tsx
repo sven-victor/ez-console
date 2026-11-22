@@ -38,13 +38,15 @@ interface ServiceAccountFormValues {
   organization_id?: string;
 }
 
+const EMPTY_ORGANIZATIONS: API.Organization[] = [];
+
 const ServiceAccountForm = ({
   serviceAccountID,
   onClose,
   open = false,
   onSuccess,
   enableMultiOrg = false,
-  organizations = [],
+  organizations = EMPTY_ORGANIZATIONS,
 }: ServiceAccountFormProps) => {
   const { message } = App.useApp();
 
@@ -107,22 +109,23 @@ const ServiceAccountForm = ({
   );
 
   useEffect(() => {
-    if (open) {
-      form.resetFields();
-      const defaultOrgId = currentOrgId || (organizations.length > 0 ? organizations[0].id : '');
-      const defaultScope = enableMultiOrg && defaultOrgId ? 'organization' : 'global';
-      setScopeType(defaultScope);
-      setSelectedOrgId(defaultScope === 'organization' ? defaultOrgId : undefined);
-      if (serviceAccountID) {
-        loadServiceAccount(serviceAccountID);
-      } else {
-        setLoadedOrgName(null);
-        form.setFieldsValue({
-          organization_id: defaultScope === 'organization' ? defaultOrgId : undefined,
-        });
-      }
+    if (!open) {
+      return;
     }
-  }, [serviceAccountID, open, enableMultiOrg, organizations, currentOrgId, form, loadServiceAccount, t]);
+    form.resetFields();
+    const defaultOrgId = currentOrgId || (organizations.length > 0 ? organizations[0].id : '');
+    const defaultScope = enableMultiOrg && defaultOrgId ? 'organization' : 'global';
+    setScopeType(defaultScope);
+    setSelectedOrgId(defaultScope === 'organization' ? defaultOrgId : undefined);
+    if (serviceAccountID) {
+      loadServiceAccount(serviceAccountID);
+    } else {
+      setLoadedOrgName(null);
+      form.setFieldsValue({
+        organization_id: defaultScope === 'organization' ? defaultOrgId : undefined,
+      });
+    }
+  }, [serviceAccountID, open]);
 
   return <Modal
     title={serviceAccountID ? t('serviceAccount.edit', { defaultValue: 'Edit Service Account' }) : t('serviceAccount.create', { defaultValue: 'Create Service Account' })}
