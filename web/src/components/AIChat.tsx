@@ -46,8 +46,6 @@ import { normalizeCallAIOptions, useAI, type CallAIArgument, type RegisteredClie
 import { useSite } from '@/contexts/SiteContext';
 import classNames from 'classnames';
 import { MessageStatus } from '@ant-design/x-sdk/es/x-chat';
-import '@ant-design/x-markdown/themes/light.css';
-import '@ant-design/x-markdown/themes/dark.css';
 import type { BubbleItemType, Info } from '@ant-design/x/es/bubble/interface';
 import { HITLCard } from '@/components/HITLCard';
 import { ChatMessageActions, type DisplayToolCall } from '@/components/ChatMessageActions';
@@ -181,12 +179,6 @@ const useStyle = createStyles(({ token, css }) => {
         }
         .ant-bubble{
           padding-block: 8px;
-        }
-      }
-      .x-markdown-light pre .ant-codeHighlighter .ant-codeHighlighter-code pre{
-        background-color: #f5f5f5;
-        code{
-          background-color: #f5f5f5;
         }
       }
       .ant-bubble-content > .x-markdown > pre{
@@ -761,7 +753,7 @@ const Code: React.FC<ComponentProps> = (props) => {
       'pre[class*="language-"]': {
         ...style['pre[class*="language-"]'],
         margin: 0,
-        borderRadius: 0
+        borderRadius: 0,
       },
     }
   }} lang={lang}>{children}</CodeHighlighter>;
@@ -847,7 +839,6 @@ const ChatList: React.FC<ChatListProps> = ({
   showToolCalls = false,
 }) => {
   const { styles } = useStyle();
-  const { isDarkMode } = useThemeMode();
   // Immediate per-card highlight. Bubble.List often skips a footer refresh
   // until the last card submits and hitlSubmitting changes.
   const [hitlLocalSelections, setHitlLocalSelections] = useState<Record<string, string>>({});
@@ -887,7 +878,6 @@ const ChatList: React.FC<ChatListProps> = ({
         <XMarkdown
           paragraphTag="div"
           content={content}
-          className={isDarkMode ? 'x-markdown-dark' : 'x-markdown-light'}
           components={components}
         />
       );
