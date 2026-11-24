@@ -52,7 +52,7 @@ export default {
       rate: 'Rate',
       period: 'Period',
       burst: 'Burst',
-      quota: 'Quota',
+      quota: 'Daily quota',
       quotaPeriod: 'Quota period',
       memoryWarn: 'Cluster mode with in-memory store: limits are per node. Use rate_limit.store=redis for cluster-wide limits.',
       resetAll: 'Reset all counters',

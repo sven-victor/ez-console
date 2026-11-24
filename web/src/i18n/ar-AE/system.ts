@@ -52,7 +52,7 @@ export default {
       rate: 'المعدل',
       period: 'الفترة',
       burst: 'الاندفاع',
-      quota: 'الحصة',
+      quota: 'الحصة اليومية',
       quotaPeriod: 'فترة الحصة',
       memoryWarn: 'وضع الكتلة مع تخزين الذاكرة: الحدود لكل عقدة. استخدم rate_limit.store=redis لحدود على مستوى الكتلة.',
       resetAll: 'إعادة تعيين جميع العدادات',

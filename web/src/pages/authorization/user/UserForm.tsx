@@ -34,7 +34,6 @@ import { useTranslation } from 'react-i18next';
 import { useRequest } from 'ahooks';
 import { AvatarUpload } from '@/components/Avatar';
 import { useSite } from '@/contexts/SiteContext';
-import RateLimitOverrideForm from '@/components/RateLimitOverrideForm';
 
 const { Option } = Select;
 
@@ -208,7 +207,6 @@ const UserForm: React.FC = () => {
   };
 
   return (
-    <>
     <Card
       title={isEditMode ? t('user.editTitle', { defaultValue: 'Edit User' }) : t('user.createTitle', { defaultValue: 'Create User' })}
       loading={userLoading}
@@ -343,12 +341,6 @@ const UserForm: React.FC = () => {
         </Form.Item>
       </Form>
     </Card>
-    {isEditMode && id && (
-      <Card title={t('rateLimit.title', { defaultValue: 'Rate limit override' })} style={{ marginTop: 16 }}>
-        <RateLimitOverrideForm kind="user" subjectId={id} />
-      </Card>
-    )}
-    </>
   );
 };
 

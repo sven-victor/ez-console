@@ -88,17 +88,11 @@ const SharedBucketTable: React.FC<{ onResetSubject?: (key: SharedBucketKey) => P
       ),
     },
     {
-      title: `${t('settings.rateLimit.quota', { defaultValue: 'Quota' })} / ${t('settings.rateLimit.quotaPeriod', { defaultValue: 'Quota period' })}`,
+      title: t('settings.rateLimit.quota', { defaultValue: 'Quota' }),
+      width: 120,
       render: (_, row) => (
-        <Form.Item style={cellItemStyle}>
-          <Space.Compact>
-            <Form.Item name={[row.key, 'quota']} noStyle>
-              <InputNumber min={0} style={{ width: 100 }} placeholder="0" />
-            </Form.Item>
-            <Form.Item name={[row.key, 'quota_period']} noStyle>
-              <Input placeholder="1d" style={{ width: 72 }} />
-            </Form.Item>
-          </Space.Compact>
+        <Form.Item name={[row.key, 'quota']} style={cellItemStyle}>
+          <InputNumber min={0} style={{ width: '100%' }} placeholder="0" />
         </Form.Item>
       ),
     },
@@ -362,11 +356,8 @@ const RateLimitSettings: React.FC = () => {
           <Form.Item name="burst" label={t('settings.rateLimit.burst', { defaultValue: 'Burst' })}>
             <InputNumber min={1} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="quota" label={t('settings.rateLimit.quota', { defaultValue: 'Quota' })}>
+          <Form.Item name="quota" label={t('settings.rateLimit.quota', { defaultValue: 'Daily quota' })}>
             <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="quota_period" label={t('settings.rateLimit.quotaPeriod', { defaultValue: 'Quota period' })}>
-            <Input placeholder="1d" />
           </Form.Item>
           <Form.Item
             name="enabled"

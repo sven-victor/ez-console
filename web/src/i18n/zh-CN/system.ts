@@ -52,7 +52,7 @@ export default {
       rate: '速率',
       period: '周期',
       burst: '突发',
-      quota: '配额',
+      quota: '日配额',
       quotaPeriod: '配额周期',
       memoryWarn: '集群模式使用内存存储时，限额按节点独立计算。请将 rate_limit.store 设为 redis 以实现集群级限额。',
       resetAll: '重置全部计数器',

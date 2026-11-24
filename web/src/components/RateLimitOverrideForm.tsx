@@ -50,7 +50,6 @@ const RateLimitOverrideForm: React.FC<RateLimitOverrideFormProps> = ({ kind, sub
         period: ov.period || '1m',
         burst: ov.burst,
         quota: ov.quota,
-        quota_period: ov.quota_period || '1d',
         enabled: ov.enabled !== false,
       });
     },
@@ -134,9 +133,6 @@ const RateLimitOverrideForm: React.FC<RateLimitOverrideFormProps> = ({ kind, sub
       </Form.Item>
       <Form.Item name="quota" label={t('rateLimit.quota', { defaultValue: 'Daily quota (0 = none)' })}>
         <InputNumber min={0} style={{ width: '100%' }} />
-      </Form.Item>
-      <Form.Item name="quota_period" label={t('rateLimit.quotaPeriod', { defaultValue: 'Quota period' })}>
-        <Input placeholder="1d" />
       </Form.Item>
       <Form.Item
         name="enabled"

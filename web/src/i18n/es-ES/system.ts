@@ -52,7 +52,7 @@ export default {
       rate: 'Tasa',
       period: 'Periodo',
       burst: 'Ráfaga',
-      quota: 'Cuota',
+      quota: 'Cuota diaria',
       quotaPeriod: 'Periodo de cuota',
       memoryWarn: 'Modo clúster con almacén en memoria: los límites son por nodo. Use rate_limit.store=redis para límites de todo el clúster.',
       resetAll: 'Restablecer todos los contadores',

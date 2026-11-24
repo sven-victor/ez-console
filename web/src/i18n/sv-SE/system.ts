@@ -52,7 +52,7 @@ export default {
       rate: 'Hastighet',
       period: 'Period',
       burst: 'Burst',
-      quota: 'Kvot',
+      quota: 'Dagskvot',
       quotaPeriod: 'Kvotperiod',
       memoryWarn: 'Klusterläge med minneslagring: gränserna gäller per nod. Använd rate_limit.store=redis för klusteromfattande gränser.',
       resetAll: 'Återställ alla räknare',

@@ -52,7 +52,7 @@ export default {
       rate: 'Débit',
       period: 'Période',
       burst: 'Rafale',
-      quota: 'Quota',
+      quota: 'Quota journalier',
       quotaPeriod: 'Période de quota',
       memoryWarn: 'Mode cluster avec stockage mémoire : les limites sont par nœud. Utilisez rate_limit.store=redis pour des limites à l’échelle du cluster.',
       resetAll: 'Réinitialiser tous les compteurs',

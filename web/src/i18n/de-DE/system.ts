@@ -52,7 +52,7 @@ export default {
       rate: 'Rate',
       period: 'Zeitraum',
       burst: 'Burst',
-      quota: 'Kontingent',
+      quota: 'Tageskontingent',
       quotaPeriod: 'Kontingentzeitraum',
       memoryWarn: 'Cluster-Modus mit In-Memory-Store: Limits gelten pro Knoten. Verwenden Sie rate_limit.store=redis für clusterweite Limits.',
       resetAll: 'Alle Zähler zurücksetzen',
