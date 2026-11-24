@@ -11,7 +11,7 @@ import { useLocation as at, useNavigate as ot, Link as F, matchRoutes as H, Outl
 import { Layout as Y, Breadcrumb as ct, Menu as dt, Space as ht, Button as ut, Spin as pt, ConfigProvider as ft, App as gt } from "antd";
 import { useTranslation as Z } from "react-i18next";
 import { lazy as r, Suspense as fe, useState as U, useEffect as D, useMemo as ge } from "react";
-import { L as xe, H as ie, O as xt, I as yt, T as wt, A as ae, a as jt, b as vt, P as bt } from "./components.js";
+import { L as xe, H as ie, O as xt, I as yt, T as wt, A as ae, a as jt, b as bt, P as vt } from "./components.js";
 import { DashboardOutlined as It, SolutionOutlined as kt, UserOutlined as ye, SafetyOutlined as St, FileSearchOutlined as zt, SettingOutlined as Mt, SwapOutlined as Nt, MenuUnfoldOutlined as At, MenuFoldOutlined as Lt } from "@ant-design/icons";
 import { d as Tt, a as _t, u as Ct, b as Rt, e as Ot, f as Ut, A as Dt, S as Bt, g as Et } from "./contexts.js";
 import { flatMapDeep as $t, snakeCase as Ft } from "lodash-es";
@@ -27,7 +27,7 @@ function o(s, l) {
   return /* @__PURE__ */ e.jsx(fe, { fallback: /* @__PURE__ */ e.jsx(xe, {}), children: /* @__PURE__ */ e.jsx(s, { ...l }) });
 }
 const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoutes: x = [], extraPublicRoutes: M = [] }) => {
-  const b = [
+  const v = [
     {
       path: "/login",
       element: o(Zt, { transformLangConfig: l }),
@@ -297,7 +297,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
       ]
     }
   ];
-  return [...b, ...N];
+  return [...v, ...N];
 }, Xn = {
   ai: qe,
   authorization: ce,
@@ -306,7 +306,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
   system: q,
   oauth: ue,
   tasks: pe
-}, { Header: yn, Content: wn, Footer: jn, Sider: vn } = Y, bn = Kt(({ token: s, css: l }) => ({
+}, { Header: yn, Content: wn, Footer: jn, Sider: bn } = Y, vn = Kt(({ token: s, css: l }) => ({
   layout: l`
       height: 100vh;
       display: flex;
@@ -344,6 +344,12 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
       min-height: 0;
       overflow: hidden;
       background-color: ${s.colorBgContainer};
+      > .ant-modal-root > .ant-modal-wrap{
+        position: absolute;
+      }
+      > .ant-drawer{
+        position: absolute;
+      }
     `,
   breadcrumb: l`
       margin-left: 8px;
@@ -400,15 +406,15 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
   siderWidth: l = 250,
   routes: x,
   transformLangConfig: M,
-  menuStyle: b = "dark",
+  menuStyle: v = "dark",
   transformHeaderItems: N = (S) => S,
   layout: I = { footer: !1 },
   aiChatProps: k
 }) => {
   var ee;
-  const { isDarkMode: S } = Ht(), { styles: d } = bn(), { resetPageAIContext: g } = Tt(), { t: v, i18n: u } = Z(), { t: A } = Z("common"), j = at(), { hasPermission: L } = _t(), T = ot(), { logout: B, user: m } = Ct(), { siteConfig: i, clearCurrentOrgId: c } = Rt();
+  const { isDarkMode: S } = Ht(), { styles: d } = vn(), { resetPageAIContext: g } = Tt(), { t: b, i18n: u } = Z(), { t: A } = Z("common"), j = at(), { hasPermission: L } = _t(), T = ot(), { logout: B, user: m } = Ct(), { siteConfig: i, clearCurrentOrgId: c } = Rt();
   Ot();
-  const z = !!((ee = i == null ? void 0 : i.attrs) != null && ee.ai_enabled) && L("ai:chat:create"), [_, C] = U([]), [je, ve] = U(null), [E, be] = U("Loading..."), h = typeof I == "function" ? void 0 : I, {
+  const z = !!((ee = i == null ? void 0 : i.attrs) != null && ee.ai_enabled) && L("ai:chat:create"), [_, C] = U([]), [je, be] = U(null), [E, ve] = U("Loading..."), h = typeof I == "function" ? void 0 : I, {
     className: Ie,
     width: ke,
     theme: Se,
@@ -448,10 +454,10 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
         name: "home",
         path: i.home_page
       }] : [], ...y];
-      t.length > 1 ? C(t) : C([]), ve(i.logo), (a = document.getElementById("site-icon")) == null || a.setAttribute("href", i.logo);
+      t.length > 1 ? C(t) : C([]), be(i.logo), (a = document.getElementById("site-icon")) == null || a.setAttribute("href", i.logo);
     }
   }, [i]), D(() => {
-    u.language && be((i == null ? void 0 : i.name_i18n[u.language]) || (i == null ? void 0 : i.name) || "");
+    u.language && ve((i == null ? void 0 : i.name_i18n[u.language]) || (i == null ? void 0 : i.name) || "");
   }, [i, u.language]);
   const K = () => {
     const n = H(x, j.pathname), a = [];
@@ -469,7 +475,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
             continue;
           a.push({
             path: t.pathnameBase,
-            title: t.route.name ? v(`breadcrumbs.${p.replace(/\./g, "_")}`, { defaultValue: Qe(t.route.name) }) : void 0,
+            title: t.route.name ? b(`breadcrumbs.${p.replace(/\./g, "_")}`, { defaultValue: Qe(t.route.name) }) : void 0,
             key: t.pathname || t.route.name
           });
         }
@@ -488,18 +494,18 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
         return w.length == 0 && t.path ? {
           key: t.path,
           icon: t.icon,
-          label: /* @__PURE__ */ e.jsx(F, { to: t.path, children: v(`menu.${[...a, t.name].join(".")}`, { defaultValue: p }) })
+          label: /* @__PURE__ */ e.jsx(F, { to: t.path, children: b(`menu.${[...a, t.name].join(".")}`, { defaultValue: p }) })
         } : {
           key: t.path ?? t.name,
           icon: t.icon,
-          label: v(`menu.${[...a, t.name, t.name].join(".")}`, { defaultValue: p }),
+          label: b(`menu.${[...a, t.name, t.name].join(".")}`, { defaultValue: p }),
           children: w
         };
       }
       return t.name && t.path ? {
         key: t.path,
         icon: t.icon,
-        label: /* @__PURE__ */ e.jsx(F, { to: t.path, children: v(`menu.${[...a, t.name].join(".")}`, { defaultValue: p }) })
+        label: /* @__PURE__ */ e.jsx(F, { to: t.path, children: b(`menu.${[...a, t.name].join(".")}`, { defaultValue: p }) })
       } : null;
     }).filter(Boolean);
   };
@@ -525,7 +531,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
           items: _.map((n) => ({
             key: n.path,
             style: { paddingRight: "20px" },
-            label: /* @__PURE__ */ e.jsx("a", { href: n.path, children: v(`menu.${n.name}`, { defaultValue: n.name }) })
+            label: /* @__PURE__ */ e.jsx("a", { href: n.path, children: b(`menu.${n.name}`, { defaultValue: n.name }) })
           }))
         },
         children: /* @__PURE__ */ e.jsx(Nt, {})
@@ -548,7 +554,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
       "user-dropdown"
     ),
     /* @__PURE__ */ e.jsx(jt, { className: "header-item language-switch", transformLangConfig: M }, "language-switch"),
-    /* @__PURE__ */ e.jsx(vt, { className: "header-item theme-switch" }, "theme-switch")
+    /* @__PURE__ */ e.jsx(bt, { className: "header-item theme-switch" }, "theme-switch")
   ], Fe = (n) => n ? Ft(n).replace(/[^a-zA-Z0-9-]/g, "-") : "", Ve = (n) => {
     const a = n.href || n.path;
     return a ? /* @__PURE__ */ e.jsx(F, { to: a, children: n.title }) : /* @__PURE__ */ e.jsx("span", { children: n.title });
@@ -582,7 +588,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
     );
     return /* @__PURE__ */ e.jsxs(Y, { className: f("main-layout", d.layout, { [`page-${a}`]: a }), children: [
       /* @__PURE__ */ e.jsxs(
-        vn,
+        bn,
         {
           ...Ae,
           width: ke ?? l,
@@ -591,7 +597,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
           collapsed: R,
           onCollapse: G,
           className: f(d.menuSider, "layout-menu-sider", Ie),
-          theme: Se ?? (S ? "light" : b),
+          theme: Se ?? (S ? "light" : v),
           children: [
             $,
             /* @__PURE__ */ e.jsx(
@@ -602,7 +608,7 @@ const xn = ({ transformSettingTabs: s, transformLangConfig: l, extraPrivateRoute
                 mode: "inline",
                 ..._e,
                 className: f("layout-menu", d.menu, Le),
-                theme: Te ?? (S ? "light" : b),
+                theme: Te ?? (S ? "light" : v),
                 selectedKeys: [Ee],
                 items: n.menuItems
               }
@@ -682,14 +688,14 @@ function Mn({
   transformSettingTabs: l = (u) => u,
   transformLangConfig: x = (u) => u,
   extraPrivateRoutes: M = [],
-  extraPublicRoutes: b = [],
+  extraPublicRoutes: v = [],
   menuStyle: N = "dark",
   transformHeaderItems: I = (u) => u,
   layout: k,
   aiChatProps: S,
   style: d,
   themeProviderProps: g,
-  configProviderProps: v
+  configProviderProps: b
 }) {
   const { i18n: u } = Z(), [A, j] = U(me[u.language] || Q);
   D(() => {
@@ -702,9 +708,9 @@ function Mn({
     transformSettingTabs: l,
     transformLangConfig: x,
     extraPrivateRoutes: M,
-    extraPublicRoutes: b
+    extraPublicRoutes: v
   }))), B = (m, i) => m.flatMap((c) => c.is_private ? [c] : [c]).map((c, z) => {
-    const _ = c.is_private ? /* @__PURE__ */ e.jsx(bt, { element: /* @__PURE__ */ e.jsx(
+    const _ = c.is_private ? /* @__PURE__ */ e.jsx(vt, { element: /* @__PURE__ */ e.jsx(
       In,
       {
         routes: T,
@@ -736,7 +742,7 @@ function Mn({
       },
       children: [
         d ? /* @__PURE__ */ e.jsx(kn, { styles: d }) : null,
-        /* @__PURE__ */ e.jsx(ft, { ...v, locale: A, children: /* @__PURE__ */ e.jsx(gt, { children: /* @__PURE__ */ e.jsx(Dt, { children: /* @__PURE__ */ e.jsx(Bt, { children: /* @__PURE__ */ e.jsx(Et, { children: /* @__PURE__ */ e.jsx(lt, { basename: he(), children: /* @__PURE__ */ e.jsx(mt, { children: B(T) }) }) }) }) }) }) })
+        /* @__PURE__ */ e.jsx(ft, { ...b, locale: A, children: /* @__PURE__ */ e.jsx(gt, { children: /* @__PURE__ */ e.jsx(Dt, { children: /* @__PURE__ */ e.jsx(Bt, { children: /* @__PURE__ */ e.jsx(Et, { children: /* @__PURE__ */ e.jsx(lt, { basename: he(), children: /* @__PURE__ */ e.jsx(mt, { children: B(T) }) }) }) }) }) }) })
       ]
     }
   ) });

@@ -30,6 +30,12 @@
       min-height: 0;
       overflow: hidden;
       background-color: ${n.colorBgContainer};
+      > .ant-modal-root > .ant-modal-wrap{
+        position: absolute;
+      }
+      > .ant-drawer{
+        position: absolute;
+      }
     `,breadcrumb:l`
       margin-left: 8px;
     `,headerItems:l`

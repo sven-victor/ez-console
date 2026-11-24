@@ -273,7 +273,7 @@ const re = ({ style: t, size: n = "large" }) => /* @__PURE__ */ e.jsx("div", { s
         )
       }
     ),
-    /* @__PURE__ */ e.jsx(De, { open: o, footer: null, onCancel: () => l(!1), children: /* @__PURE__ */ e.jsx("img", { style: { width: "100%" }, src: u }) })
+    /* @__PURE__ */ e.jsx(De, { getContainer: ".site-layout", open: o, footer: null, onCancel: () => l(!1), children: /* @__PURE__ */ e.jsx("img", { style: { width: "100%" }, src: u }) })
   ] });
 }, Xn = ({ className: t }) => {
   const { t: n } = C("common"), { user: a } = fe(), { currentOrgId: s, setCurrentOrgId: r } = ge(), i = (a == null ? void 0 : a.organizations) || [], o = (h) => {
@@ -1326,6 +1326,7 @@ const ls = ({ className: t, onSuccess: n, token: a }) => {
         okButtonProps: { danger: !0, loading: l },
         onCancel: Se,
         destroyOnHidden: !0,
+        getContainer: ".site-layout",
         children: [
           /* @__PURE__ */ e.jsx(
             ne,

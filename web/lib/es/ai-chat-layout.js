@@ -273,7 +273,7 @@ const gt = ut(({ token: t, css: e, appearance: m }, i) => {
           "div",
           {
             className: l.siderLayoutContent,
-            children: /* @__PURE__ */ N.jsx("div", { className: l.chatHost, children: X(V, t) })
+            children: /* @__PURE__ */ N.jsx("div", { className: l.chatHost, children: e && X(V, t) })
           }
         ),
         n === "float-sidebar" && k.map((o) => /* @__PURE__ */ N.jsx(

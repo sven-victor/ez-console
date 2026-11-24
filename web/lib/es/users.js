@@ -38,6 +38,7 @@ const { Option: B } = K, ie = ["active", "disabled", "deleted", "locked", "passw
   }, [n]), /* @__PURE__ */ e.jsx(
     Me,
     {
+      getContainer: ".site-layout",
       open: n !== null,
       onCancel: d,
       onOk: () => {

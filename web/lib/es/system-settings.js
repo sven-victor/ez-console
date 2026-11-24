@@ -1023,6 +1023,7 @@ const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
     /* @__PURE__ */ e.jsxs(
       fe,
       {
+        getContainer: ".site-layout",
         title: t("settings.ldap.test.title", { defaultValue: "Test LDAP Connection" }),
         open: p,
         onCancel: () => d(!1),
@@ -1307,6 +1308,7 @@ const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
           /* @__PURE__ */ e.jsx(E, { onClick: () => p(!1), children: a("cancel", { defaultValue: "Cancel" }) }, "back"),
           /* @__PURE__ */ e.jsx(E, { type: "primary", loading: v, onClick: () => d.submit(), children: t("settings.smtp.sendTestEmail", { defaultValue: "Send Test Email" }) }, "submit")
         ],
+        getContainer: ".site-layout",
         children: /* @__PURE__ */ e.jsxs(
           o,
           {
@@ -1921,6 +1923,7 @@ const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
         onCancel: Ee,
         footer: null,
         width: ((st = R == null ? void 0 : R.ui_schema) == null ? void 0 : st["ui:width"]) || 600,
+        getContainer: ".site-layout",
         children: /* @__PURE__ */ e.jsxs(
           o,
           {
@@ -2080,6 +2083,7 @@ const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
     /* @__PURE__ */ e.jsxs(
       fe,
       {
+        getContainer: ".site-layout",
         title: a("models.assignPurposesTitle", { defaultValue: "Assign purposes" }),
         open: w,
         onCancel: D,
@@ -2495,6 +2499,8 @@ const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
         onCancel: Te,
         footer: null,
         width: ((h = R == null ? void 0 : R.ui_schema) == null ? void 0 : h["ui:width"]) || 600,
+        getContainer: ".site-layout",
+        centered: !0,
         children: /* @__PURE__ */ e.jsxs(
           o,
           {
@@ -2597,6 +2603,8 @@ const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
           /* @__PURE__ */ e.jsx(E, { onClick: () => I(!1), children: a("close", { defaultValue: "Close" }) }, "close")
         ],
         width: 600,
+        getContainer: ".site-layout",
+        centered: !0,
         children: /* @__PURE__ */ e.jsx("pre", { style: { background: "#f5f5f5", padding: 16, borderRadius: 4, overflow: "auto" }, children: JSON.stringify(M, null, 2) })
       }
     ),
@@ -2610,6 +2618,8 @@ const Be = /^(https?:\/\/)(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*
           /* @__PURE__ */ e.jsx(E, { onClick: () => f(!1), children: a("close", { defaultValue: "Close" }) }, "close")
         ],
         width: 800,
+        getContainer: ".site-layout",
+        centered: !0,
         children: /* @__PURE__ */ e.jsx("div", { style: { maxHeight: "600px", overflow: "auto" }, children: C ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40 }, children: /* @__PURE__ */ e.jsx(Ce, { style: { fontSize: 24 }, spin: !0 }) }) : W.length === 0 ? /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: 40, color: "#999" }, children: t("settings.toolsets.noTools", { defaultValue: "No tools available" }) }) : W.map((u, S) => {
           var ee, X, te;
           return /* @__PURE__ */ e.jsx(
@@ -3043,6 +3053,7 @@ const bl = () => {
           },
           confirmLoading: W,
           width: Ee,
+          getContainer: ".site-layout",
           children: /* @__PURE__ */ e.jsxs(o, { form: i, layout: "vertical", autoComplete: "off", children: [
             /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: t("settings.skills.name", { defaultValue: "Name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(V, {}) }),
             /* @__PURE__ */ e.jsx(o.Item, { name: "description", label: t("settings.skills.description", { defaultValue: "Description" }), children: /* @__PURE__ */ e.jsx(Pt, { rows: 2 }) }),
@@ -3188,6 +3199,7 @@ description: ...
           onOk: ae,
           onCancel: () => U(!1),
           confirmLoading: ve,
+          getContainer: ".site-layout",
           children: /* @__PURE__ */ e.jsxs(o, { form: f, layout: "vertical", children: [
             /* @__PURE__ */ e.jsx(o.Item, { name: "file", label: t("settings.skills.file", { defaultValue: "File (.md or .zip)" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(hs, { maxCount: 1, beforeUpload: () => !1, accept: ".md,.zip", children: /* @__PURE__ */ e.jsx(E, { icon: /* @__PURE__ */ e.jsx(At, {}), children: a("selectFile", { defaultValue: "Select file" }) }) }) }),
             /* @__PURE__ */ e.jsx(o.Item, { name: "category", label: t("settings.skills.category", { defaultValue: "Category" }), children: /* @__PURE__ */ e.jsx(V, {}) }),
@@ -3523,7 +3535,7 @@ description: ...
         onCancel: () => d(!1),
         onOk: () => r.submit(),
         confirmLoading: se,
-        destroyOnClose: !0,
+        destroyOnHidden: !0,
         children: /* @__PURE__ */ e.jsxs(o, { form: r, layout: "vertical", onFinish: Q, disabled: !n, children: [
           /* @__PURE__ */ e.jsx(o.Item, { name: "subject_type", label: t("settings.rateLimit.subjectType", { defaultValue: "Subject" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(H, { options: vl }) }),
           /* @__PURE__ */ e.jsx(o.Item, { name: "subject_id", label: t("settings.rateLimit.subjectId", { defaultValue: "Subject ID" }), children: /* @__PURE__ */ e.jsx(V, { placeholder: t("settings.rateLimit.subjectIdHint", { defaultValue: "Empty = all subjects of this type" }) }) }),
@@ -3739,6 +3751,7 @@ description: ...
         },
         confirmLoading: W || J,
         width: 600,
+        getContainer: ".site-layout",
         children: /* @__PURE__ */ e.jsxs(o, { form: p, layout: "vertical", children: [
           /* @__PURE__ */ e.jsx(
             o.Item,
@@ -4096,6 +4109,7 @@ description: ...
         },
         confirmLoading: N,
         width: 600,
+        getContainer: ".site-layout",
         children: /* @__PURE__ */ e.jsxs(o, { form: r, layout: "vertical", children: [
           /* @__PURE__ */ e.jsx(
             o.Item,
@@ -4151,6 +4165,7 @@ description: ...
         },
         confirmLoading: j,
         width: 600,
+        getContainer: ".site-layout",
         children: /* @__PURE__ */ e.jsxs(o, { form: p, layout: "vertical", children: [
           /* @__PURE__ */ e.jsx(
             o.Item,
@@ -4473,10 +4488,10 @@ const Pl = () => {
             }
           ) })
         ] }),
-        /* @__PURE__ */ e.jsx(fe, { title: i("settings.skills.editor.newFileTitle", { defaultValue: "New file" }), open: w, onOk: be, onCancel: () => {
+        /* @__PURE__ */ e.jsx(fe, { getContainer: ".site-layout", title: i("settings.skills.editor.newFileTitle", { defaultValue: "New file" }), open: w, onOk: be, onCancel: () => {
           U(!1), J("");
         }, okText: i("settings.skills.editor.create", { defaultValue: "Create" }), children: /* @__PURE__ */ e.jsx(V, { placeholder: i("settings.skills.editor.placeholderNewFile", { defaultValue: "filename.md or filename.txt" }), value: Y, onChange: (z) => J(z.target.value) }) }),
-        /* @__PURE__ */ e.jsx(fe, { title: i("settings.skills.editor.newFolderTitle", { defaultValue: "New folder" }), open: f, onOk: () => le.validateFields().then(Te), onCancel: () => W(!1), okText: i("settings.skills.editor.create", { defaultValue: "Create" }), children: /* @__PURE__ */ e.jsx(o, { form: le, layout: "vertical", children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: i("settings.skills.editor.folderName", { defaultValue: "Folder name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(V, { placeholder: i("settings.skills.editor.placeholderFolder", { defaultValue: "folder-name" }) }) }) }) }),
+        /* @__PURE__ */ e.jsx(fe, { getContainer: ".site-layout", title: i("settings.skills.editor.newFolderTitle", { defaultValue: "New folder" }), open: f, onOk: () => le.validateFields().then(Te), onCancel: () => W(!1), okText: i("settings.skills.editor.create", { defaultValue: "Create" }), children: /* @__PURE__ */ e.jsx(o, { form: le, layout: "vertical", children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: i("settings.skills.editor.folderName", { defaultValue: "Folder name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(V, { placeholder: i("settings.skills.editor.placeholderFolder", { defaultValue: "folder-name" }) }) }) }) }),
         /* @__PURE__ */ e.jsx(
           fe,
           {
@@ -4485,7 +4500,8 @@ const Pl = () => {
             onOk: C,
             onCancel: () => P(null),
             okText: i("settings.skills.editor.rename", { defaultValue: "Rename" }),
-            destroyOnClose: !0,
+            destroyOnHidden: !0,
+            getContainer: ".site-layout",
             children: /* @__PURE__ */ e.jsx(o, { form: _, layout: "vertical", onValuesChange: (z, D) => N(D.name ?? ""), children: /* @__PURE__ */ e.jsx(o.Item, { name: "name", label: T != null && T.isDir ? i("settings.skills.editor.folderName", { defaultValue: "Folder name" }) : i("settings.skills.editor.fileName", { defaultValue: "File name" }), rules: [{ required: !0 }], children: /* @__PURE__ */ e.jsx(
               V,
               {
@@ -5615,7 +5631,6 @@ const Kl = ({ from: s, to: t, label: a, color: l, kind: n, failed: i, styles: r,
         onClose: () => O(null),
         width: 800,
         getContainer: ".site-layout",
-        rootStyle: { position: "absolute" },
         styles: {
           body: { paddingRight: 0 },
           wrapper: { maxWidth: "100%" }
