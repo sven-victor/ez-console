@@ -33,6 +33,7 @@ export default {
     },
     rateLimit: {
       enabled: 'Activar limitación de tasa',
+      enabledHint: 'Desactivado: esta regla se ignora y se aplica la capa siguiente.',
       storeLabel: 'Almacén',
       failOpen: 'Permitir si falla',
       defaults: 'Cubos compartidos predeterminados',

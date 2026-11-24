@@ -33,6 +33,7 @@ export default {
     },
     rateLimit: {
       enabled: 'تمكين تحديد المعدل',
+      enabledHint: 'إيقاف: يتم تجاهل هذه القاعدة ويُطبَّق المستوى التالي.',
       storeLabel: 'التخزين',
       failOpen: 'السماح عند الفشل',
       defaults: 'الحصص المشتركة الافتراضية',

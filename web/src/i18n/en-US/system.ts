@@ -33,6 +33,7 @@ export default {
     },
     rateLimit: {
       enabled: 'Enable rate limiting',
+      enabledHint: 'Off: this rule is ignored and the next layer applies.',
       storeLabel: 'Store',
       failOpen: 'Fail open',
       defaults: 'Default shared buckets',

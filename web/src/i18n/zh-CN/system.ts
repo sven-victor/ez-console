@@ -33,6 +33,7 @@ export default {
     },
     rateLimit: {
       enabled: '启用接口限流',
+      enabledHint: '关闭后忽略此规则，并应用下一层规则。',
       storeLabel: '存储',
       failOpen: '故障放行',
       defaults: '默认共享配额',

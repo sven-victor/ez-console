@@ -33,6 +33,7 @@ export default {
     },
     rateLimit: {
       enabled: 'Aktivera hastighetsbegränsning',
+      enabledHint: 'Av: den här regeln ignoreras och nästa lager gäller.',
       storeLabel: 'Lagring',
       failOpen: 'Öppna vid fel',
       defaults: 'Standarddelade hinkar',

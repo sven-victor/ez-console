@@ -335,7 +335,10 @@ const OrganizationDetail: React.FC = () => {
               pageSize,
               total: usersData?.total || 0,
               showSizeChanger: true,
-              showTotal: (total) => tCommon('pagination.total', { defaultValue: `Total ${total} items` }),
+              showTotal: (total, [start, end]) => tCommon('pagination.total', {
+                defaultValue: '{{start}}-{{end}} of {{total}} items',
+                start, end, total,
+              }),
               onChange: (page, size) => {
                 setCurrent(page);
                 setPageSize(size);

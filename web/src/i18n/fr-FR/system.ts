@@ -33,6 +33,7 @@ export default {
     },
     rateLimit: {
       enabled: 'Activer la limitation de débit',
+      enabledHint: 'Désactivé : cette règle est ignorée et la couche suivante s\'applique.',
       storeLabel: 'Stockage',
       failOpen: 'Laisser passer en cas d’échec',
       defaults: 'Seaux partagés par défaut',

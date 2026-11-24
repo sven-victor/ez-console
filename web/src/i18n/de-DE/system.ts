@@ -33,6 +33,7 @@ export default {
     },
     rateLimit: {
       enabled: 'Ratenbegrenzung aktivieren',
+      enabledHint: 'Aus: Diese Regel wird ignoriert und die nächste Ebene gilt.',
       storeLabel: 'Speicher',
       failOpen: 'Bei Fehler durchlassen',
       defaults: 'Standard-Gemeinschaftskontingente',
