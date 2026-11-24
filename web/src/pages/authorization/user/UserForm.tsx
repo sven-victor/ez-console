@@ -121,7 +121,7 @@ const UserForm: React.FC = () => {
   );
 
   const rolesOptions: (API.Role & { label: React.ReactNode, value: string })[] = useMemo(() => {
-    const userRoles = userData?.roles.filter((role: API.Role) => !rolesData?.some((r: API.Role) => r.id === role.id));
+    const userRoles = userData?.roles?.filter((role: API.Role) => !rolesData?.some((r: API.Role) => r.id === role.id));
     return [...(userRoles || []), ...(rolesData || [])].map((role) => ({
       ...role,
       label: enableMultiOrg ? renderOrganizationRole(role.organization_id, role) : role.name || '',
