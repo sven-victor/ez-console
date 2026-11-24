@@ -320,6 +320,7 @@ const OrganizationSettings: React.FC = () => {
         }}
         confirmLoading={creating || updating}
         width={600}
+        getContainer=".site-layout"
       >
         <Form form={form} layout="vertical">
           <Form.Item

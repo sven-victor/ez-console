@@ -88,6 +88,12 @@ const useStyle = createStyles(({ token, css }) => {
       min-height: 0;
       overflow: hidden;
       background-color: ${token.colorBgContainer};
+      > .ant-modal-root > .ant-modal-wrap{
+        position: absolute;
+      }
+      > .ant-drawer{
+        position: absolute;
+      }
     `,
     breadcrumb: css`
       margin-left: 8px;

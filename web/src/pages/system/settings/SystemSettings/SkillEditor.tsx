@@ -462,10 +462,10 @@ const SkillEditor: React.FC = () => {
         </>
       )}
 
-      <Modal title={t('settings.skills.editor.newFileTitle', { defaultValue: 'New file' })} open={newFileModal} onOk={handleCreateFile} onCancel={() => { setNewFileModal(false); setNewName(''); }} okText={t('settings.skills.editor.create', { defaultValue: 'Create' })}>
+      <Modal getContainer=".site-layout" title={t('settings.skills.editor.newFileTitle', { defaultValue: 'New file' })} open={newFileModal} onOk={handleCreateFile} onCancel={() => { setNewFileModal(false); setNewName(''); }} okText={t('settings.skills.editor.create', { defaultValue: 'Create' })}>
         <Input placeholder={t('settings.skills.editor.placeholderNewFile', { defaultValue: 'filename.md or filename.txt' })} value={newName} onChange={(e) => setNewName(e.target.value)} />
       </Modal>
-      <Modal title={t('settings.skills.editor.newFolderTitle', { defaultValue: 'New folder' })} open={newDirModal} onOk={() => dirForm.validateFields().then(handleCreateDir)} onCancel={() => setNewDirModal(false)} okText={t('settings.skills.editor.create', { defaultValue: 'Create' })}>
+      <Modal getContainer=".site-layout" title={t('settings.skills.editor.newFolderTitle', { defaultValue: 'New folder' })} open={newDirModal} onOk={() => dirForm.validateFields().then(handleCreateDir)} onCancel={() => setNewDirModal(false)} okText={t('settings.skills.editor.create', { defaultValue: 'Create' })}>
         <Form form={dirForm} layout="vertical">
           <Form.Item name="name" label={t('settings.skills.editor.folderName', { defaultValue: 'Folder name' })} rules={[{ required: true }]}>
             <Input placeholder={t('settings.skills.editor.placeholderFolder', { defaultValue: 'folder-name' })} />
@@ -479,7 +479,8 @@ const SkillEditor: React.FC = () => {
         onOk={handleRenameOk}
         onCancel={() => setRenameTarget(null)}
         okText={t('settings.skills.editor.rename', { defaultValue: 'Rename' })}
-        destroyOnClose
+        destroyOnHidden
+        getContainer=".site-layout"
       >
         <Form form={renameForm} layout="vertical" onValuesChange={(_, v) => setRenameValue(v.name ?? '')}>
           <Form.Item name="name" label={renameTarget?.isDir ? t('settings.skills.editor.folderName', { defaultValue: 'Folder name' }) : t('settings.skills.editor.fileName', { defaultValue: 'File name' })} rules={[{ required: true }]}>

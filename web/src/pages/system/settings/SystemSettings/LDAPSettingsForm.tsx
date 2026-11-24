@@ -351,6 +351,7 @@ const LDAPSettingsForm: React.FC = () => {
       </Form >
 
       <Modal
+        getContainer=".site-layout"
         title={t('settings.ldap.test.title', { defaultValue: 'Test LDAP Connection' })}
         open={testModalVisible}
         onCancel={() => setTestModalVisible(false)}

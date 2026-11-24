@@ -99,11 +99,22 @@ import { EZApp } from 'ez-console';
 
 `logo`, `footer`, and `contentWrapper` use `false` to remove that region. Omit them to keep the default. `siderProps.collapsed` controls the sider; otherwise `AppLayout` keeps the collapsed state and still calls `siderProps.onCollapse`.
 
-#### In-page Drawer
+#### In-page Drawer and Modal
 
-Ant Design `Drawer` mounts on `document.body` with `position: fixed`, so an open drawer covers the whole viewport, including the AI sidebar. Page drawers should open inside the page column (`.site-layout`: header, content, and footer). The left menu and the AI sidebar sit outside that column and stay usable.
+Ant Design `Drawer` and `Modal` mount on `document.body` with `position: fixed`, so an open overlay covers the whole viewport, including the AI sidebar. Page overlays should open inside the page column (`.site-layout`: header, content, and footer). The left menu and the AI sidebar sit outside that column and stay usable.
 
-`.site-layout` is already `position: relative`, `isolation: isolate`, and `overflow: hidden`. Pass these props:
+`AppLayout` already makes `.site-layout` the containing block (`position: relative`, `isolation: isolate`, `overflow: hidden`) and overrides the overlay roots so they fill that column:
+
+```css
+.site-layout > .ant-drawer {
+  position: absolute;
+}
+.site-layout > .ant-modal-root > .ant-modal-wrap {
+  position: absolute;
+}
+```
+
+Pass `getContainer=".site-layout"` only. Do not set `rootStyle`; the rules above replace `rootStyle={{ position: 'absolute' }}`.
 
 ```tsx
 <Drawer
@@ -111,20 +122,32 @@ Ant Design `Drawer` mounts on `document.body` with `position: fixed`, so an open
   onClose={onClose}
   width={800}
   getContainer=".site-layout"
-  rootStyle={{ position: 'absolute' }}
   styles={{ wrapper: { maxWidth: '100%' } }}
 >
   {children}
 </Drawer>
+
+<Modal open={open} onCancel={onClose} getContainer=".site-layout">
+  {children}
+</Modal>
 ```
 
-- `getContainer=".site-layout"` portals the drawer into the page column. Because the container is not `document.body`, Ant Design does not lock body scroll, so the AI sidebar keeps scrolling.
-- `rootStyle={{ position: 'absolute' }}` overrides the default `position: fixed`, so the mask and panel fill `.site-layout` only.
-- `styles.wrapper.maxWidth: '100%'` keeps the panel inside the column when the AI sidebar is open and the column is narrower than `width`.
+- `getContainer=".site-layout"` portals the overlay into the page column. Because the container is not `document.body`, Ant Design does not lock body scroll, so the AI sidebar keeps scrolling. `Modal.confirm` and the other static methods accept the same `getContainer`.
+- `.ant-drawer` contains both the mask and the panel, so the drawer rule keeps the whole drawer inside `.site-layout`. The modal rule positions `.ant-modal-wrap` (the dialog) inside `.site-layout`. The modal mask (`.ant-modal-mask`) stays `position: fixed` and still covers the viewport.
+- For a `Drawer`, `styles.wrapper.maxWidth: '100%'` keeps the panel inside the column when the AI sidebar is open and the column is narrower than `width`.
+- Nested drawers do not inherit `getContainer`. The layout rule is a direct-child selector (`.site-layout > .ant-drawer`), so each layer must set `getContainer=".site-layout"` itself. An inner drawer left at the default container mounts on `document.body` with `position: fixed` and covers the AI sidebar. A `Modal` opened from a drawer is a separate portal and needs its own `getContainer` too.
 
-Reference: `web/src/pages/system/settings/SystemSettings/AITraceViewer.tsx` and `web/src/pages/authorization/role/RoleDrawer.tsx`.
+```tsx
+<Drawer open={outerOpen} onClose={closeOuter} width={800} getContainer=".site-layout">
+  <Drawer open={innerOpen} onClose={closeInner} width={480} getContainer=".site-layout">
+    {children}
+  </Drawer>
+</Drawer>
+```
 
-A custom `layout` render must keep an element with class `site-layout` and the same three CSS properties (`position: relative`, `isolation: isolate`, `overflow: hidden`). Without that element, `getContainer=".site-layout"` falls back to `document.body`.
+Reference: `web/src/components/Layout.tsx`, `web/src/pages/system/settings/SystemSettings/AITraceViewer.tsx`, `web/src/pages/authorization/role/RoleDrawer.tsx`, and `web/src/pages/authorization/user/UserList.tsx`.
+
+A custom `layout` render must keep an element with class `site-layout`, the three containing-block properties, and the two child rules above. Without that element, `getContainer=".site-layout"` falls back to `document.body`. Without the child rules, the overlay stays `position: fixed` and covers the AI sidebar.
 
 ### Loading
 

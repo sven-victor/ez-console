@@ -125,6 +125,7 @@ const FixUserModal = ({ user, onClose, onSuccess }: { user: API.User | null, onC
 
 
   return <Modal
+    getContainer=".site-layout"
     open={user !== null}
     onCancel={onClose}
     onOk={() => {

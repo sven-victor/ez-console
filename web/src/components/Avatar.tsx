@@ -221,7 +221,7 @@ export const AvatarUpload = ({ value, onChange, shape, ...props }: AvatarUploadP
       </Upload>
     </ImgCrop>
 
-    <Modal open={previewOpen} footer={null} onCancel={() => setPreviewOpen(false)}>
+    <Modal getContainer=".site-layout" open={previewOpen} footer={null} onCancel={() => setPreviewOpen(false)}>
       <img style={{ width: '100%' }} src={previewImage} />
     </Modal>
   </>;

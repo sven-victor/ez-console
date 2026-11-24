@@ -311,6 +311,7 @@ const ProfileMFA: React.FC<ProfileMFAProps> = ({ user, onSuccess }) => {
         okButtonProps={{ danger: true, loading }}
         onCancel={closeDisableModal}
         destroyOnHidden
+        getContainer=".site-layout"
       >
         <Alert
           message={t('mfa.disableWarning')}

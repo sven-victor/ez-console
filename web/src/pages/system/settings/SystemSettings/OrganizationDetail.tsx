@@ -86,7 +86,7 @@ const OrganizationDetail: React.FC = () => {
 
   // Fetch organization users
   const { data: usersData, loading: usersLoading, refresh: refreshUsers } = useRequest(
-    () => systemApi.listOrganizationUsers({ id: id!, current, page_size: pageSize, search: searchText }) ,
+    () => systemApi.listOrganizationUsers({ id: id!, current, page_size: pageSize, search: searchText }),
     {
       ready: !!id,
       refreshDeps: [id, current, pageSize, searchText],
@@ -115,7 +115,7 @@ const OrganizationDetail: React.FC = () => {
 
   // Add user to organization
   const { loading: addingUser, run: addUser } = useRequest(
-    (data: AddUserFormData) => systemApi.addUserToOrganization({ id: id! }, data) ,
+    (data: AddUserFormData) => systemApi.addUserToOrganization({ id: id! }, data),
     {
       manual: true,
       onSuccess: () => {
@@ -132,7 +132,7 @@ const OrganizationDetail: React.FC = () => {
 
   // Update user roles in organization
   const { loading: updatingRoles, run: updateRoles } = useRequest(
-    (data: UpdateRolesFormData) => systemApi.updateUserOrganizationRoles({ id: id!, user_id: editingUser!.id }, data) ,
+    (data: UpdateRolesFormData) => systemApi.updateUserOrganizationRoles({ id: id!, user_id: editingUser!.id }, data),
     {
       manual: true,
       onSuccess: () => {
@@ -150,7 +150,7 @@ const OrganizationDetail: React.FC = () => {
 
   // Remove user from organization
   const { run: removeUser } = useRequest(
-    (userId: string) => systemApi.removeUserFromOrganization({ id: id!, user_id: userId }) ,
+    (userId: string) => systemApi.removeUserFromOrganization({ id: id!, user_id: userId }),
     {
       manual: true,
       onSuccess: () => {
@@ -356,6 +356,7 @@ const OrganizationDetail: React.FC = () => {
         }}
         confirmLoading={addingUser}
         width={600}
+        getContainer=".site-layout"
       >
         <Form form={addUserForm} layout="vertical">
           <Form.Item
@@ -405,6 +406,7 @@ const OrganizationDetail: React.FC = () => {
         }}
         confirmLoading={updatingRoles}
         width={600}
+        getContainer=".site-layout"
       >
         <Form form={updateRolesForm} layout="vertical">
           <Form.Item

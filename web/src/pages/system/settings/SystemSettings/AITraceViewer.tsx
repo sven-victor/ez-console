@@ -1559,10 +1559,8 @@ const AITraceViewer: React.FC = () => {
         open={viewMode === 'sequence' && !!selectedEvent}
         onClose={() => setSelectedEvent(null)}
         width={800}
-        // Portal into the page column. rootStyle overrides the default fixed
-        // positioning so the mask and panel stay inside .site-layout.
+        // Portal into the page column.
         getContainer=".site-layout"
-        rootStyle={{ position: 'absolute' }}
         styles={{
           body: { paddingRight: 0 },
           wrapper: { maxWidth: '100%' },

@@ -228,6 +228,7 @@ const SMTPSettingsForm: React.FC = () => {
             {t('settings.smtp.sendTestEmail', { defaultValue: 'Send Test Email' })}
           </Button>,
         ]}
+        getContainer=".site-layout"
       >
         <Form
           form={testForm}

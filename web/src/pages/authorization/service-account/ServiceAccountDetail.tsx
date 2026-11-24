@@ -314,11 +314,11 @@ const ServiceAccountDetail: React.FC = () => {
               title={
                 serviceAccount.status === 'active'
                   ? t('serviceAccount.disableConfirm', {
-                      defaultValue: 'Are you sure you want to disable this service account?',
-                    })
+                    defaultValue: 'Are you sure you want to disable this service account?',
+                  })
                   : t('serviceAccount.enableConfirm', {
-                      defaultValue: 'Are you sure you want to enable this service account?',
-                    })
+                    defaultValue: 'Are you sure you want to enable this service account?',
+                  })
               }
               onConfirm={handleToggleStatus}
               okText={tCommon('confirm', { defaultValue: 'Confirm' })}
@@ -472,6 +472,7 @@ const ServiceAccountDetail: React.FC = () => {
         }}
         footer={null}
         width={700}
+        getContainer=".site-layout"
       >
         <Form form={policyForm} layout="vertical" onFinish={handleUpdatePolicy}>
           <Form.Item

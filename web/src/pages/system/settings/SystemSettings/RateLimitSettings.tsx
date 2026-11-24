@@ -338,7 +338,7 @@ const RateLimitSettings: React.FC = () => {
         onCancel={() => setModalOpen(false)}
         onOk={() => ruleForm.submit()}
         confirmLoading={ruleSaving}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={ruleForm} layout="vertical" onFinish={submitRule} disabled={!canUpdate}>
           <Form.Item name="subject_type" label={t('settings.rateLimit.subjectType', { defaultValue: 'Subject' })} rules={[{ required: true }]}>

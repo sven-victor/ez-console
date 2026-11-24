@@ -580,6 +580,8 @@ const ToolSetSettings: React.FC = () => {
         onCancel={closeEditor}
         footer={null}
         width={currentTypeDefinition?.ui_schema?.['ui:width'] || 600}
+        getContainer=".site-layout"
+        centered
       >
         <Form
           form={form}
@@ -670,6 +672,8 @@ const ToolSetSettings: React.FC = () => {
           </Button>,
         ]}
         width={600}
+        getContainer=".site-layout"
+        centered
       >
         <pre style={{ background: '#f5f5f5', padding: 16, borderRadius: 4, overflow: 'auto' }}>
           {JSON.stringify(selectedConfig, null, 2)}
@@ -687,6 +691,8 @@ const ToolSetSettings: React.FC = () => {
           </Button>,
         ]}
         width={800}
+        getContainer=".site-layout"
+        centered
       >
         <div style={{ maxHeight: '600px', overflow: 'auto' }}>
           {loadingTools ? (

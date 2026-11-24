@@ -899,7 +899,7 @@ const MyComponent: React.FC = () => {
 8. **i18n**: Use translations for all user-facing text
 9. **Responsive Design**: Use Ant Design's grid system
 10. **Component Reuse**: Create reusable components for common patterns
-11. **In-page Drawers**: Mount Ant Design `Drawer`s on `.site-layout` so they stay in the page column while the AI sidebar is open. See [In-page Drawer](./10-frontend-components.md#in-page-drawer)
+11. **In-page Drawers and Modals**: Mount Ant Design `Drawer` and `Modal` with `getContainer=".site-layout"` so they stay in the page column while the AI sidebar is open. Each nested drawer is its own portal and needs the same prop. `AppLayout` already sets those overlays to `position: absolute`; do not pass `rootStyle`. See [In-page Drawer and Modal](./10-frontend-components.md#in-page-drawer-and-modal)
 
 ## Next Steps
 

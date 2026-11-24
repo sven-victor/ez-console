@@ -305,6 +305,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
         onOk={runUpdateAccessKey}
         confirmLoading={updateLoading}
         onCancel={handleCancel}
+        getContainer=".site-layout"
       >
         <Form
           form={form}
@@ -355,6 +356,7 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
 
       {/* Display Secret of Newly Created Key */}
       <Modal
+        getContainer=".site-layout"
         title={
           <Space>
             <ExclamationCircleOutlined style={{ color: '#faad14' }} />

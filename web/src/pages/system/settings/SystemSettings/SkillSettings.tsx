@@ -651,6 +651,7 @@ const SkillSettings: React.FC = () => {
           }}
           confirmLoading={submitLoading}
           width={modalWidth}
+          getContainer=".site-layout"
         >
           <Form form={form} layout="vertical" autoComplete='off'>
             <Form.Item name="name" label={t('settings.skills.name', { defaultValue: 'Name' })} rules={[{ required: true }]}>
@@ -820,6 +821,7 @@ const SkillSettings: React.FC = () => {
           onOk={handleUpload}
           onCancel={() => setUploadModalVisible(false)}
           confirmLoading={uploading}
+          getContainer=".site-layout"
         >
           <Form form={uploadForm} layout="vertical">
             <Form.Item name="file" label={t('settings.skills.file', { defaultValue: 'File (.md or .zip)' })} rules={[{ required: true }]}>

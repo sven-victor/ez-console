@@ -291,10 +291,8 @@ const RoleDrawer: React.FC<RoleDrawerProps> = ({ roleId, open, onClose }) => {
       onClose={onClose}
       width={800}
       destroyOnHidden
-      // Portal into the page column. rootStyle overrides the default fixed
-      // positioning so the mask and panel stay inside .site-layout.
+      // Portal into the page column. 
       getContainer=".site-layout"
-      rootStyle={{ position: 'absolute' }}
       styles={{
         body: { paddingRight: 0 },
         wrapper: { maxWidth: '100%' },

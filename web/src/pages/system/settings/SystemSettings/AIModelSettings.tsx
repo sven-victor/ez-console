@@ -707,6 +707,7 @@ const AIModelSettings: React.FC = () => {
         onCancel={closeEditor}
         footer={null}
         width={currentProviderDefinition?.ui_schema?.['ui:width'] || 600}
+        getContainer=".site-layout"
       >
         <Form
           form={form}
@@ -844,6 +845,7 @@ const AIModelSettings: React.FC = () => {
       </Modal>
 
       <Modal
+        getContainer=".site-layout"
         title={t('models.assignPurposesTitle', { defaultValue: 'Assign purposes' })}
         open={purposeOpen}
         onCancel={closePurposeModal}
