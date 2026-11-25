@@ -18,6 +18,7 @@ import { Tooltip } from 'antd';
 import { createStyles } from 'antd-style';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { copyText } from '@/utils/clipboard';
 
 export interface DisplayToolCall {
   id: string;
@@ -257,7 +258,7 @@ export function ChatMessageActions({
 
   async function copyMessage() {
     try {
-      await navigator.clipboard.writeText(text);
+      await copyText(text);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1200);
     } catch {

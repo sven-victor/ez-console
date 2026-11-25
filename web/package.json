@@ -11,7 +11,7 @@
     "build": "tsc && vite build",
     "build:lib": "vite build --mode lib",
     "lint": "eslint . --max-warnings 0",
-    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test src/i18n/*.test.ts",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test src/i18n/*.test.ts src/utils/*.test.ts",
     "preview": "vite preview",
     "openapi2ts": "node scripts/openapi.js"
   },

@@ -44,6 +44,7 @@ import {
 import api from '@/service/api';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '@/utils';
+import { copyText } from '@/utils/clipboard';
 import dayjs from 'dayjs';
 import { useRequest } from 'ahooks';
 import { PermissionGuard } from '@/components/PermissionGuard';
@@ -99,15 +100,13 @@ const ServiceAccountAccessKeys: React.FC<ServiceAccessKeysProps> = ({ serviceAcc
   );
 
   // Copy to clipboard
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text).then(
-      () => {
-        message.success(t('serviceAccount.copyKeySuccess', { defaultValue: 'Copied to clipboard!' }));
-      },
-      (err) => {
-        console.error('Could not copy text: ', err);
-      }
-    );
+  const copyToClipboard = async (text: string) => {
+    try {
+      await copyText(text);
+      message.success(t('serviceAccount.copyKeySuccess', { defaultValue: 'Copied to clipboard!' }));
+    } catch (err) {
+      console.error('Could not copy text: ', err);
+    }
   };
 
   // Open create key modal window
