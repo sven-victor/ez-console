@@ -787,9 +787,13 @@ function normalizeStringList(values: string[] | undefined): string[] {
   return result;
 }
 
+interface ContentInfo extends Info {
+  role: 'user' | 'assistant';
+}
+
 export interface AIChatProps {
   bubble?: {
-    contentRender?: (content: string, info: Info, onSendMessage: (val: string) => void) => React.ReactNode;
+    contentRender?: (content: string, info: ContentInfo, onSendMessage: (val: string) => void) => React.ReactNode;
     footerRender?: ((message: MessageInfo<ChatStreamMessage>, info: Info, onSendMessage: (val: string) => void) => React.ReactNode);
     components?: {
       [tagName: string]: React.ComponentType<ComponentProps & { onSendMessage: (val: string) => void }> | keyof JSX.IntrinsicElements;
@@ -870,7 +874,7 @@ const ChatList: React.FC<ChatListProps> = ({
   }, [onSendMessage, bubble.components]);
 
   const {
-    contentRender = (content: string) => {
+    contentRender = (content: string, info: ContentInfo) => {
       if (!content) {
         return null;
       }
@@ -879,6 +883,7 @@ const ChatList: React.FC<ChatListProps> = ({
           paragraphTag="div"
           content={content}
           components={components}
+          {...(info.role === 'user' ? { config: { breaks: true } } : {})}
         />
       );
     },
@@ -909,7 +914,7 @@ const ChatList: React.FC<ChatListProps> = ({
             footer: { width: '100%' },
           },
         } : {}),
-        contentRender: contentRender,
+        contentRender: (content: string, info: Info) => contentRender(content, { ...info, role: i.message.role as 'user' | 'assistant' }, onSendMessage),
         footer: (_: string, info: Info) => {
           const extra = footerRender?.(i, info, onSendMessage);
           const tools = showToolCalls && i.message.role === 'assistant' ? (i.message.toolCalls ?? []) : [];
