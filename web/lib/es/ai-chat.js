@@ -551,22 +551,23 @@ const gn = ({
         m[k] = _;
         continue;
       }
-      m[k] = (B) => /* @__PURE__ */ l.jsx(
+      m[k] = (P) => /* @__PURE__ */ l.jsx(
         _,
         {
-          ...B,
+          ...P,
           onSendMessage: r
         }
       );
     }
     return m;
   }, [r, a.components]), {
-    contentRender: Z = (m) => m ? /* @__PURE__ */ l.jsx(
+    contentRender: Z = (m, k) => m ? /* @__PURE__ */ l.jsx(
       Ze,
       {
         paragraphTag: "div",
         content: m,
-        components: Q
+        components: Q,
+        ...k.role === "user" ? { config: { breaks: !0 } } : {}
       }
     ) : null,
     footerRender: D = ({ message: m }) => {
@@ -587,9 +588,9 @@ const gn = ({
           footer: { width: "100%" }
         }
       } : {},
-      contentRender: Z,
-      footer: (_, B) => {
-        const J = D == null ? void 0 : D(m, B, r), q = v && m.message.role === "assistant" ? m.message.toolCalls ?? [] : [], ee = m.message.content || "", h = m.status === "loading" || m.status === "updating", O = ee || q.length > 0 ? /* @__PURE__ */ l.jsx(
+      contentRender: (_, P) => Z(_, { ...P, role: m.message.role }, r),
+      footer: (_, P) => {
+        const J = D == null ? void 0 : D(m, P, r), q = v && m.message.role === "assistant" ? m.message.toolCalls ?? [] : [], ee = m.message.content || "", h = m.status === "loading" || m.status === "updating", O = ee || q.length > 0 ? /* @__PURE__ */ l.jsx(
           Qt,
           {
             text: ee,
@@ -608,18 +609,18 @@ const gn = ({
         return /* @__PURE__ */ l.jsxs(ie, { className: "hitl-card-stack", vertical: !0, gap: 8, style: { width: "100%" }, children: [
           O,
           J || null,
-          k.map((P) => {
-            const W = `${m.id}:${P.tool_call_id}`, $ = ce[W] || P.selected_option_id;
+          k.map(($) => {
+            const W = `${m.id}:${$.tool_call_id}`, N = ce[W] || $.selected_option_id;
             return /* @__PURE__ */ l.jsx(
               Zt,
               {
-                card: $ && $ !== P.selected_option_id ? { ...P, selected_option_id: $ } : P,
+                card: N && N !== $.selected_option_id ? { ...$, selected_option_id: N } : $,
                 submitting: de,
                 onSelect: de ? void 0 : (fe) => {
-                  H((je) => ({ ...je, [W]: fe })), f == null || f(m.id, P.tool_call_id, fe);
+                  H((je) => ({ ...je, [W]: fe })), f == null || f(m.id, $.tool_call_id, fe);
                 }
               },
-              P.tool_call_id
+              $.tool_call_id
             );
           })
         ] });
@@ -675,7 +676,7 @@ const gn = ({
     getEphemeralSystemPrompts: Z,
     getClientTools: D,
     registerGlobalAI: ue
-  } = Gt(), { t: m } = st("ai"), { t: k } = st("common"), { styles: _ } = lt(), { siteConfig: B } = Ut(), J = (B == null ? void 0 : B.show_tool_calls) ?? !1;
+  } = Gt(), { t: m } = st("ai"), { t: k } = st("common"), { styles: _ } = lt(), { siteConfig: P } = Ut(), J = (P == null ? void 0 : P.show_tool_calls) ?? !1;
   ae = J;
   const q = (e) => ({
     key: e.id,
@@ -686,9 +687,9 @@ const gn = ({
     activeConversationKey: h,
     setActiveConversationKey: O,
     addConversation: de,
-    setConversations: P,
+    setConversations: $,
     getConversation: W,
-    setConversation: $,
+    setConversation: N,
     removeConversation: fe,
     getMessages: je
   } = Bt({
@@ -743,7 +744,7 @@ const gn = ({
         e.name
       ] })
     }))
-  ], [pe, qe]), [te, Ke] = Y(), { onRequest: K, messages: y, isRequesting: ne, abort: gt, onReload: ht, setMessages: Ae, setMessage: N } = qt({
+  ], [pe, qe]), [te, Ke] = Y(), { onRequest: K, messages: y, isRequesting: ne, abort: gt, onReload: ht, setMessages: Ae, setMessage: V } = qt({
     provider: fn(h),
     // every conversation has its own provider
     conversationKey: h,
@@ -764,7 +765,7 @@ const gn = ({
       content: `${t}`,
       role: "assistant"
     }
-  }), V = T(() => {
+  }), z = T(() => {
     const e = {
       domains: X.filter((i) => i.type === "domain").map((i) => i.value),
       skill_ids: X.filter((i) => i.type === "skill").map((i) => i.value)
@@ -778,7 +779,7 @@ const gn = ({
     }))), e;
   }, [X, Z, D]), bt = A(/* @__PURE__ */ new Map()), Le = A(/* @__PURE__ */ new Map()), se = A(h);
   se.current = h;
-  const S = A(!1), z = A(!1), Fe = A(0), j = A(null), R = A(null), Me = A(() => {
+  const S = A(!1), B = A(!1), Fe = A(0), j = A(null), R = A(null), Me = A(() => {
   }), oe = A(null), [G, L] = Y(null);
   ft.onChunk = (e) => {
     const t = R.current;
@@ -829,11 +830,11 @@ const gn = ({
     K({
       content: "",
       client_tool_results: n,
-      ...V()
+      ...z()
     });
-  }, [ge, K, V]), He = T(() => {
+  }, [ge, K, z]), He = T(() => {
     const e = j.current;
-    !e || e.streamRequested || e.posted || (Fe.current += 1, j.current = null, S.current = !1, z.current = !1, R.current = null, L(null), e.revert());
+    !e || e.streamRequested || e.posted || (Fe.current += 1, j.current = null, S.current = !1, B.current = !1, R.current = null, L(null), e.revert());
   }, []), Je = T(async (e, t, n, i) => {
     if (S.current)
       return;
@@ -842,12 +843,12 @@ const gn = ({
       L(null);
       return;
     }
-    const g = n.map((C) => C.tool_call_id), b = () => ln(N, e, g), x = { generation: p, streamRequested: !1, posted: !1, revert: b };
+    const g = n.map((C) => C.tool_call_id), b = () => ln(V, e, g), x = { generation: p, streamRequested: !1, posted: !1, revert: b };
     j.current = x, S.current = !0;
     try {
       let C = [];
       if (t != null && t.length && (C = await he(d, t)), Fe.current !== p || se.current !== d) {
-        j.current === x && (j.current = null, S.current = !1, z.current = !1, R.current = null, L(null), b());
+        j.current === x && (j.current = null, S.current = !1, B.current = !1, R.current = null, L(null), b());
         return;
       }
       R.current = {
@@ -861,7 +862,7 @@ const gn = ({
         content: "",
         ...C.length > 0 ? { client_tool_results: C } : {},
         hitl_decisions: n,
-        ...V()
+        ...z()
       });
     } catch {
       const C = R.current;
@@ -869,9 +870,9 @@ const gn = ({
         C.reconciling || (C.reconciling = !0, Me.current(C));
         return;
       }
-      R.current = null, j.current === x && (j.current = null), S.current = !1, z.current = !1, L(null), b();
+      R.current = null, j.current === x && (j.current = null), S.current = !1, B.current = !1, L(null), b();
     }
-  }, [he, K, V, N]), ye = T(() => {
+  }, [he, K, z, V]), ye = T(() => {
     const e = se.current, t = Ae;
     let n = [], i;
     if (t((p) => {
@@ -911,7 +912,7 @@ const gn = ({
     if (G || S.current)
       return;
     let i;
-    if (!N(e, (g) => {
+    if (!V(e, (g) => {
       const b = g.message.hitlCards, x = b == null ? void 0 : b.find((w) => w.tool_call_id === t);
       if (!b || !x || x.status !== "pending")
         return {};
@@ -929,7 +930,7 @@ const gn = ({
       return;
     const d = { messageId: e, toolCallId: t, optionId: n };
     L(d), Je(e, i.calls, i.decisions, d);
-  }, [G, N, Je]);
+  }, [G, V, Je]);
   I(() => {
     const e = j.current;
     e && !e.streamRequested && He();
@@ -942,13 +943,13 @@ const gn = ({
   }, [h, He]), I(() => {
     const e = j.current;
     if (ne) {
-      e && (e.streamRequested = !0), (e || S.current) && (z.current = !0);
+      e && (e.streamRequested = !0), (e || S.current) && (B.current = !0);
       return;
     }
-    z.current && (z.current = !1, S.current = !1);
+    B.current && (B.current = !1, S.current = !1);
   }, [ne]);
   const We = T((e) => {
-    e.streamStarted = !0, N(e.messageId, (t) => {
+    e.streamStarted = !0, V(e.messageId, (t) => {
       var p;
       const n = (p = t.message.hitlCards) == null ? void 0 : p.map((d) => e.decisionIDs.includes(d.tool_call_id) && d.status === "pending" ? { ...d, status: "decided" } : d), i = ae ? rt(n, e.decisionIDs) : [];
       return {
@@ -958,9 +959,9 @@ const gn = ({
           ...i.length ? { toolCalls: _e(t.message.toolCalls, i) } : {}
         }
       };
-    }), be(e.conversationId), R.current = null, j.current = null, S.current = !1, z.current = !1, L(null);
-  }, [be, N]), Xe = T(() => {
-    R.current = null, j.current = null, S.current = !1, z.current = !1, L(null);
+    }), be(e.conversationId), R.current = null, j.current = null, S.current = !1, B.current = !1, L(null);
+  }, [be, V]), Xe = T(() => {
+    R.current = null, j.current = null, S.current = !1, B.current = !1, L(null);
   }, []), De = T(async (e) => {
     let t = null;
     try {
@@ -976,7 +977,7 @@ const gn = ({
       e.reconciling = !1;
       return;
     }
-    N(e.messageId, (n) => {
+    V(e.messageId, (n) => {
       var d;
       const i = (d = n.message.hitlCards) == null ? void 0 : d.map((g) => {
         if (!e.decisionIDs.includes(g.tool_call_id) || g.status === "abandoned")
@@ -992,7 +993,7 @@ const gn = ({
         }
       };
     }), Xe();
-  }, [Xe, N]);
+  }, [Xe, V]);
   Me.current = (e) => {
     De(e);
   }, I(() => {
@@ -1046,7 +1047,7 @@ const gn = ({
       }
       ye(), K({
         content: e,
-        ...V()
+        ...z()
       });
     }
   }, { run: xt, loading: Ct } = U(async (e) => await M.ai.getChatSession({ sessionId: e }), {
@@ -1119,14 +1120,14 @@ const gn = ({
     }
   });
   I(() => {
-    P((H == null ? void 0 : H.map((e) => q(e))) || []);
+    $((H == null ? void 0 : H.map((e) => q(e))) || []);
   }, [H]);
   const { run: vt } = U(async (e) => await M.ai.deleteChatSession({ sessionId: e }), {
     manual: !0,
     onError(e, [t]) {
       me.error(m("chat.deleteConversationFailed", { defaultValue: "Failed to delete conversation" }));
       const n = W(t);
-      n && $(t, { ...n, loading: !1 });
+      n && N(t, { ...n, loading: !1 });
     },
     onSuccess(e, [t]) {
       fe(t);
@@ -1135,12 +1136,12 @@ const gn = ({
     manual: !0,
     onSuccess: ({ title: e }, [t]) => {
       const n = W(t);
-      n && $(t, { ...n, title: e, loading: !1 });
+      n && N(t, { ...n, title: e, loading: !1 });
     },
     onError: (e, [t]) => {
       me.error(m("chat.titleGenerationFailed", { defaultValue: "Failed to generate title: {{error}}", error: e.message || e }));
       const n = W(t);
-      n && $(t, { ...n, loading: !1 });
+      n && N(t, { ...n, loading: !1 });
     }
   });
   I(() => {
@@ -1149,12 +1150,12 @@ const gn = ({
       setTimeout(() => {
         ye(), K({
           content: e,
-          ...V(),
+          ...z(),
           ...t !== void 0 ? { domains: t } : {}
         });
       }, 1e3), Ke(void 0);
     }
-  }, [h, te, V, ye]), I(() => {
+  }, [h, te, z, ye]), I(() => {
     if (h) {
       const e = je(h);
       if (e && e.length > 0)
@@ -1174,7 +1175,7 @@ const gn = ({
         return;
       ye(), K({
         content: e,
-        ...V(),
+        ...z(),
         ...i !== void 0 ? { domains: i } : {}
       });
       return;
@@ -1217,7 +1218,7 @@ const gn = ({
               key: "regenerateTitle",
               icon: /* @__PURE__ */ l.jsx(Lt, {}),
               onClick: () => {
-                $(e.key, { ...e, loading: !0 }), _t(e.key);
+                N(e.key, { ...e, loading: !0 }), _t(e.key);
               }
             },
             {
@@ -1226,7 +1227,7 @@ const gn = ({
               icon: /* @__PURE__ */ l.jsx(Ft, {}),
               danger: !0,
               onClick: () => {
-                $(e.key, { ...e, loading: !0 }), vt(e.key);
+                N(e.key, { ...e, loading: !0 }), vt(e.key);
               }
             }
           ]
@@ -1285,7 +1286,7 @@ const gn = ({
       placeholder: m("chat.inputPlaceholder")
     }
   ) }) });
-  return /* @__PURE__ */ l.jsx($t, { children: /* @__PURE__ */ l.jsxs(pn.Provider, { value: { onReload: ht, setMessage: N }, children: [
+  return /* @__PURE__ */ l.jsx($t, { children: /* @__PURE__ */ l.jsxs(pn.Provider, { value: { onReload: ht, setMessage: V }, children: [
     /* @__PURE__ */ l.jsxs(
       "div",
       {

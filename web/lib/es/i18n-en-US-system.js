@@ -17,6 +17,7 @@ const e = {
     },
     rateLimit: {
       enabled: "Enable rate limiting",
+      enabledHint: "Off: this rule is ignored and the next layer applies.",
       storeLabel: "Store",
       failOpen: "Fail open",
       defaults: "Default shared buckets",
@@ -36,7 +37,7 @@ const e = {
       rate: "Rate",
       period: "Period",
       burst: "Burst",
-      quota: "Quota",
+      quota: "Daily quota",
       quotaPeriod: "Quota period",
       memoryWarn: "Cluster mode with in-memory store: limits are per node. Use rate_limit.store=redis for cluster-wide limits.",
       resetAll: "Reset all counters",

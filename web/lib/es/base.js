@@ -1,12 +1,12 @@
-import L from "i18next";
-import { initReactI18next as k } from "react-i18next";
-import x from "i18next-browser-languagedetector";
-import { r as w } from "./client.js";
-import { load as z } from "js-yaml";
-const rt = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
-  const r = t instanceof Date ? t : new Date(t), i = r.getFullYear(), f = String(r.getMonth() + 1).padStart(2, "0"), p = String(r.getDate()).padStart(2, "0"), n = String(r.getHours()).padStart(2, "0"), c = String(r.getMinutes()).padStart(2, "0"), g = String(r.getSeconds()).padStart(2, "0");
-  return e.replace("YYYY", String(i)).replace("MM", f).replace("DD", p).replace("HH", n).replace("mm", c).replace("ss", g);
-}, nt = (t, e) => {
+import D from "i18next";
+import { initReactI18next as T } from "react-i18next";
+import F from "i18next-browser-languagedetector";
+import { r as R } from "./client.js";
+import { load as k } from "js-yaml";
+const nt = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
+  const r = t instanceof Date ? t : new Date(t), i = r.getFullYear(), l = String(r.getMonth() + 1).padStart(2, "0"), p = String(r.getDate()).padStart(2, "0"), n = String(r.getHours()).padStart(2, "0"), c = String(r.getMinutes()).padStart(2, "0"), y = String(r.getSeconds()).padStart(2, "0");
+  return e.replace("YYYY", String(i)).replace("MM", l).replace("DD", p).replace("HH", n).replace("mm", c).replace("ss", y);
+}, ot = (t, e) => {
   if (typeof t != "string")
     throw new Error("Color must be a string.");
   const r = t.trim().toLowerCase();
@@ -14,44 +14,44 @@ const rt = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
     let c = r.slice(1);
     if (c.length === 3 && (c = c[0] + c[0] + c[1] + c[1] + c[2] + c[2]), c.length !== 6)
       throw new Error("Invalid HEX color format. Expected #RRGGBB or #RGB.");
-    const g = parseInt(c.slice(0, 2), 16), h = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
-    if (isNaN(g) || isNaN(h) || isNaN(b))
+    const y = parseInt(c.slice(0, 2), 16), g = parseInt(c.slice(2, 4), 16), b = parseInt(c.slice(4, 6), 16);
+    if (isNaN(y) || isNaN(g) || isNaN(b))
       throw new Error("Invalid characters in HEX color value.");
-    return `rgba(${g}, ${h}, ${b}, ${e})`;
+    return `rgba(${y}, ${g}, ${b}, ${e})`;
   }
-  const i = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, f = r.match(i);
-  if (f) {
-    const c = parseInt(f[1], 10), g = parseInt(f[2], 10), h = parseInt(f[3], 10);
-    if (c < 0 || c > 255 || g < 0 || g > 255 || h < 0 || h > 255)
+  const i = /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/, l = r.match(i);
+  if (l) {
+    const c = parseInt(l[1], 10), y = parseInt(l[2], 10), g = parseInt(l[3], 10);
+    if (c < 0 || c > 255 || y < 0 || y > 255 || g < 0 || g > 255)
       throw new Error("Invalid RGB color value. Each component must be between 0 and 255.");
-    return `rgba(${c}, ${g}, ${h}, ${e})`;
+    return `rgba(${c}, ${y}, ${g}, ${e})`;
   }
   const p = /^rgba\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*([0-9.]+)\s*\)$/, n = r.match(p);
   if (n) {
-    const c = parseInt(n[1], 10), g = parseInt(n[2], 10), h = parseInt(n[3], 10);
-    if (c < 0 || c > 255 || g < 0 || g > 255 || h < 0 || h > 255)
+    const c = parseInt(n[1], 10), y = parseInt(n[2], 10), g = parseInt(n[3], 10);
+    if (c < 0 || c > 255 || y < 0 || y > 255 || g < 0 || g > 255)
       throw new Error("Invalid RGBA color value. RGB components must be between 0 and 255.");
-    return `rgba(${c}, ${g}, ${h}, ${e})`;
+    return `rgba(${c}, ${y}, ${g}, ${e})`;
   }
   throw new Error(
     "Unsupported color format. Please use HEX (#RRGGBB, #RGB), RGB (rgb(r,g,b)), or RGBA (rgba(r,g,b,a))."
   );
-}, ot = (t) => {
+}, st = (t) => {
   if (!t)
     return "";
   const [e, r] = t.split("@");
   return e.length <= 2 ? e[0] + "*".repeat(e.length - 1) + "@" + r : e[0] + "*".repeat(e.length - 2) + e[e.length - 1] + "@" + r;
-}, st = (t) => t ? "/".endsWith("/") ? t.startsWith("/") ? "/" + t.substring(1) : "/" + t : t.startsWith("/") ? "/" + t : "//" + t : "/", it = (t) => {
+}, it = (t) => t ? "/".endsWith("/") ? t.startsWith("/") ? "/" + t.substring(1) : "/" + t : t.startsWith("/") ? "/" + t : "//" + t : "/", at = (t) => {
   const e = ["of", "the", "and", "in", "on", "at", "to", "for"];
   return t.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/[_-]+/g, " ").toLowerCase().split(/\s+/).map((r, i) => i !== 0 && e.includes(r) ? r : r.charAt(0).toUpperCase() + r.slice(1)).join(" ");
-}, at = (t, e, r) => {
+}, ct = (t, e, r) => {
   if (t === void 0 && e === void 0) return !0;
   if (t === void 0 || e === void 0 || t.length !== e.length) return !1;
   const i = new Array(e.length).fill(!1);
-  for (const f of t) {
+  for (const l of t) {
     let p = !1;
     for (let n = 0; n < e.length; n++)
-      if (!i[n] && r(f, e[n])) {
+      if (!i[n] && r(l, e[n])) {
         i[n] = !0, p = !0;
         break;
       }
@@ -59,15 +59,15 @@ const rt = (t, e = "YYYY-MM-DDTHH:mm:ssZ") => {
   }
   return !0;
 };
-function ct(t) {
+function lt(t) {
   try {
     return { parsed: JSON.parse(t), isJSON: !0 };
   } catch {
     return { parsed: null, isJSON: !1 };
   }
 }
-const B = 2;
-function T(t) {
+const M = 2;
+function z(t) {
   if (!t || typeof t != "object" || Array.isArray(t)) return null;
   const e = t, r = e.default;
   return r && typeof r == "object" && !Array.isArray(r) ? r : "default" in e && Object.keys(e).every((i) => i === "default" || i === "__esModule") ? null : e;
@@ -75,16 +75,16 @@ function T(t) {
 function E(t) {
   return !!t && typeof t == "object" && !Array.isArray(t) && Object.keys(t).length > 0;
 }
-function _(t, e) {
+function B(t, e) {
   if (t.length === 1) return { [t[0]]: e };
   const r = {};
   for (const i of t) {
-    const f = e[i];
-    f && typeof f == "object" && !Array.isArray(f) && (r[i] = f);
+    const l = e[i];
+    l && typeof l == "object" && !Array.isArray(l) && (r[i] = l);
   }
   return r;
 }
-function C() {
+function _() {
   let t = () => {
   };
   return { promise: new Promise((r) => {
@@ -92,120 +92,120 @@ function C() {
   }), resolve: t };
 }
 function Y(t) {
-  const { fallbackLng: e } = t, r = /* @__PURE__ */ new Map(), i = /* @__PURE__ */ new Set(), f = /* @__PURE__ */ new Map();
+  const { fallbackLng: e } = t, r = /* @__PURE__ */ new Map(), i = /* @__PURE__ */ new Set(), l = /* @__PURE__ */ new Map();
   let p = !1, n, c;
-  function g(o, s) {
+  function y(o, s) {
     if (process.env.NODE_ENV === "production") return;
-    const u = `${o}|${s}`;
-    i.has(u) || (i.add(u), console.warn(`[i18n] No resource registered for "${o}" namespace "${s}".`));
+    const f = `${o}|${s}`;
+    i.has(f) || (i.add(f), console.warn(`[i18n] No resource registered for "${o}" namespace "${s}".`));
   }
-  function h(o) {
+  function g(o) {
     if (o.pending) return o.pending;
     const s = (async () => {
-      let u;
-      for (let m = 0; m < B; m += 1)
+      let f;
+      for (let m = 0; m < M; m += 1)
         try {
-          const l = T(await o.loader());
-          if (!l) throw new Error("Invalid i18n resource");
-          const d = _(o.namespaces, l);
+          const u = z(await o.loader());
+          if (!u) throw new Error("Invalid i18n resource");
+          const d = B(o.namespaces, u);
           if (o.namespaces.length > 1 && Object.keys(d).length === 0)
             throw new Error("Invalid i18n resource");
           return d;
-        } catch (l) {
-          u = l;
+        } catch (u) {
+          f = u;
         }
-      throw u instanceof Error ? u : new Error(String(u));
+      throw f instanceof Error ? f : new Error(String(f));
     })();
     return o.pending = s, s.catch(() => {
       o.pending === s && (o.pending = void 0);
     }), s;
   }
-  function b(o, s, u, m) {
+  function b(o, s, f, m) {
     if (n)
-      for (const l of u.namespaces) {
-        if (l === s) continue;
-        const d = m[l];
-        !E(d) || E(n.getResourceBundle(o, l)) || n.addResourceBundle(o, l, d, !0, !0);
+      for (const u of f.namespaces) {
+        if (u === s) continue;
+        const d = m[u];
+        !E(d) || E(n.getResourceBundle(o, u)) || n.addResourceBundle(o, u, d, !0, !0);
       }
   }
-  function $(o, s, u) {
+  function $(o, s, f) {
     const m = r.get(`${o}|${s}`);
     if (!m) {
-      g(o, s), u(null, null);
+      y(o, s), f(null, null);
       return;
     }
-    h(m).then(
-      (l) => {
-        b(o, s, m, l);
-        const d = l[s];
-        u(null, E(d) ? d : null);
+    g(m).then(
+      (u) => {
+        b(o, s, m, u);
+        const d = u[s];
+        f(null, E(d) ? d : null);
       },
-      (l) => {
-        const d = l instanceof Error ? l : new Error(String(l));
-        console.error(`[i18n] Failed to load "${o}" namespace "${s}".`, d), u(d, {});
+      (u) => {
+        const d = u instanceof Error ? u : new Error(String(u));
+        console.error(`[i18n] Failed to load "${o}" namespace "${s}".`, d), f(d, {});
       }
     );
   }
-  function R() {
+  function w() {
     p || (p = !0, queueMicrotask(() => {
-      f.clear(), p = !1;
+      l.clear(), p = !1;
     }));
   }
-  function G(o, s, u, m) {
-    o.resolve(!s && E(u)), m(s, u);
+  function U(o, s, f, m) {
+    o.resolve(!s && E(f)), m(s, f);
   }
-  const v = {
+  const j = {
     type: "backend",
     init() {
     },
-    read(o, s, u) {
-      if (R(), o === e) {
-        const l = f.get(s);
-        if (l) {
-          l.promise.then((A) => {
-            A ? u(null, null) : $(o, s, u);
+    read(o, s, f) {
+      if (w(), o === e) {
+        const u = l.get(s);
+        if (u) {
+          u.promise.then((A) => {
+            A ? f(null, null) : $(o, s, f);
           });
           return;
         }
         const d = c || (n == null ? void 0 : n.language);
         if (d && d !== e && E(n == null ? void 0 : n.getResourceBundle(d, s))) {
-          u(null, null);
+          f(null, null);
           return;
         }
       }
-      const m = C();
-      o !== e && f.set(s, m), $(o, s, (l, d) => G(m, l, d, u));
+      const m = _();
+      o !== e && l.set(s, m), $(o, s, (u, d) => U(m, u, d, f));
     }
   };
-  function F(o, s, u) {
+  function C(o, s, f) {
     const m = typeof s == "string" ? [s] : [...s];
     if (m.length === 0) return;
-    const l = { namespaces: m, loader: u };
+    const u = { namespaces: m, loader: f };
     for (const S of m) {
-      const I = `${o}|${S}`;
-      r.has(I) && process.env.NODE_ENV !== "production" && console.warn(`[i18n] Replacing resource loader for "${o}" namespace "${S}".`), r.set(I, l);
+      const x = `${o}|${S}`;
+      r.has(x) && process.env.NODE_ENV !== "production" && console.warn(`[i18n] Replacing resource loader for "${o}" namespace "${S}".`), r.set(x, u);
     }
     if (!(n != null && n.isInitialized) || n.language !== o) return;
     const d = n.options.ns, A = typeof d == "string" ? [d] : d ?? [], N = m.filter((S) => A.includes(S) ? !E(n == null ? void 0 : n.getResourceBundle(o, S)) : !1);
     N.length !== 0 && n.reloadResources([o], N);
   }
-  function M(o) {
+  function G(o) {
     n = o, o.on("languageChanging", (s) => {
       s && (c = s);
     });
   }
-  return { backend: v, register: F, bind: M };
+  return { backend: j, register: C, bind: G };
 }
-const O = "en-US", { backend: P, register: a, bind: H } = Y({ fallbackLng: O });
-H(L);
-const y = ["translation", "common", "inbox", "task"];
-a("zh-CN", y, () => import("./i18n-zh-CN-shell.js"));
-a("en-US", y, () => import("./i18n-en-US-shell.js"));
-a("de-DE", y, () => import("./i18n-de-DE-shell.js"));
-a("es-ES", y, () => import("./i18n-es-ES-shell.js"));
-a("fr-FR", y, () => import("./i18n-fr-FR-shell.js"));
-a("ar-AE", y, () => import("./i18n-ar-AE-shell.js"));
-a("sv-SE", y, () => import("./i18n-sv-SE-shell.js"));
+const L = "en-US", { backend: P, register: a, bind: H } = Y({ fallbackLng: L });
+H(D);
+const h = ["translation", "common", "inbox", "task"];
+a("zh-CN", h, () => import("./i18n-zh-CN-shell.js"));
+a("en-US", h, () => import("./i18n-en-US-shell.js"));
+a("de-DE", h, () => import("./i18n-de-DE-shell.js"));
+a("es-ES", h, () => import("./i18n-es-ES-shell.js"));
+a("fr-FR", h, () => import("./i18n-fr-FR-shell.js"));
+a("ar-AE", h, () => import("./i18n-ar-AE-shell.js"));
+a("sv-SE", h, () => import("./i18n-sv-SE-shell.js"));
 a("zh-CN", "authorization", () => import("./i18n-zh-CN-authorization.js"));
 a("en-US", "authorization", () => import("./i18n-en-US-authorization.js"));
 a("de-DE", "authorization", () => import("./i18n-de-DE-authorization.js"));
@@ -230,10 +230,10 @@ a("sv-SE", "ai", () => import("./i18n-sv-SE-ai.js"));
 function ft(t, e, r) {
   a(t, e, r);
 }
-L.use(x).use(k).use(P).init({
+D.use(F).use(T).use(P).init({
   ns: ["translation", "common"],
   defaultNS: "translation",
-  fallbackLng: O,
+  fallbackLng: L,
   // Do not also request the language subtag (`zh` for `zh-CN`).
   load: "currentOnly",
   partialBundledLanguages: !0,
@@ -250,7 +250,7 @@ L.use(x).use(k).use(P).init({
   }
 });
 async function V(t, e) {
-  return w("/api/files", {
+  return R("/api/files", {
     method: "GET",
     params: {
       ...t
@@ -260,13 +260,13 @@ async function V(t, e) {
 }
 async function W(t, e, r) {
   const i = new FormData();
-  return e && i.append("file", e), Object.keys(t).forEach((f) => {
-    const p = t[f];
-    p != null && (typeof p == "object" && !(p instanceof File) ? p instanceof Array ? p.forEach((n) => i.append(f, n || "")) : i.append(
-      f,
+  return e && i.append("file", e), Object.keys(t).forEach((l) => {
+    const p = t[l];
+    p != null && (typeof p == "object" && !(p instanceof File) ? p instanceof Array ? p.forEach((n) => i.append(l, n || "")) : i.append(
+      l,
       new Blob([JSON.stringify(p)], { type: "application/json" })
-    ) : i.append(f, p));
-  }), w("/api/files", {
+    ) : i.append(l, p));
+  }), R("/api/files", {
     method: "POST",
     data: i,
     requestType: "form",
@@ -275,14 +275,14 @@ async function W(t, e, r) {
 }
 async function q(t, e) {
   const { fileKey: r, ...i } = t;
-  return w(`/api/files/${r}`, {
+  return R(`/api/files/${r}`, {
     method: "GET",
     params: { ...i },
     ...e || {}
   });
 }
 async function J(t) {
-  return w("/api/statistics", {
+  return R("/api/statistics", {
     method: "GET",
     ...t || {}
   });
@@ -294,32 +294,32 @@ const ut = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   listFiles: V,
   uploadFile: W
 }, Symbol.toStringTag, { value: "Module" }));
-function U(t) {
+function v(t) {
   const e = t.payload;
   return e && typeof e == "object" && !Array.isArray(e) ? e : {};
 }
-function lt(t, e) {
-  return t(`types.${e.type}`, { defaultValue: e.type, ...U(e) });
-}
 function pt(t, e) {
-  return t(`typeDescriptions.${e.type}`, { defaultValue: "", ...U(e) });
+  return t(`types.${e.type}`, { defaultValue: e.type, ...v(e) });
 }
-function dt(t) {
+function dt(t, e) {
+  return t(`typeDescriptions.${e.type}`, { defaultValue: "", ...v(e) });
+}
+function mt(t) {
   return !t.read_at;
 }
-const mt = {
+const yt = {
   DEFAULT_CURRENT: 1,
   DEFAULT_PAGE_SIZE: 10
 };
 function X(t) {
   try {
-    const e = z(t);
+    const e = k(t);
     return e && typeof e == "object" && !Array.isArray(e) ? e : {};
   } catch (e) {
     return console.error(e), {};
   }
 }
-function j(t) {
+function O(t) {
   if (t == null) return "";
   if (typeof t == "string") return t;
   if (typeof t == "number" || typeof t == "boolean" || typeof t == "bigint")
@@ -327,7 +327,7 @@ function j(t) {
   if (t instanceof Date)
     return t.toISOString();
   if (Array.isArray(t))
-    return t.map((e) => j(e)).join(", ");
+    return t.map((e) => O(e)).join(", ");
   if (typeof t == "object")
     try {
       return JSON.stringify(t);
@@ -336,8 +336,8 @@ function j(t) {
     }
   return String(t);
 }
-function D(t) {
-  return j(t).replace(/\|/g, "\\|").replace(/\n/g, " ");
+function I(t) {
+  return O(t).replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 function gt(t) {
   if (typeof t != "string" || !t.trim()) return t;
@@ -346,29 +346,50 @@ function gt(t) {
   const r = e.slice(3), i = r.indexOf(`
 ---`);
   if (i === -1) return t;
-  const f = r.slice(0, i).trim(), p = r.slice(i + 4).trimStart(), n = X(f), c = Object.keys(n);
+  const l = r.slice(0, i).trim(), p = r.slice(i + 4).trimStart(), n = X(l), c = Object.keys(n);
   if (c.length === 0) return t;
-  const g = "| Field | Value |", h = "| --- | --- |", b = c.map((R) => "| " + D(R) + " | " + D(n[R]) + " |").join(`
+  const y = "| Field | Value |", g = "| --- | --- |", b = c.map((w) => "| " + I(w) + " | " + I(n[w]) + " |").join(`
 `);
-  return g + `
-` + h + `
+  return y + `
+` + g + `
 ` + b + `
 
 ` + p;
 }
+function Z(t) {
+  const e = document.createElement("textarea");
+  e.value = t, e.setAttribute("readonly", ""), e.style.position = "fixed", e.style.top = "0", e.style.left = "0", e.style.width = "1px", e.style.height = "1px", e.style.opacity = "0", document.body.appendChild(e), e.focus(), e.select(), e.setSelectionRange(0, t.length);
+  try {
+    return document.execCommand("copy");
+  } finally {
+    document.body.removeChild(e);
+  }
+}
+async function ht(t) {
+  var e;
+  if (window.isSecureContext && ((e = navigator.clipboard) != null && e.writeText))
+    try {
+      await navigator.clipboard.writeText(t);
+      return;
+    } catch {
+    }
+  if (!Z(t))
+    throw new Error("Failed to copy text");
+}
 export {
-  mt as P,
-  dt as a,
-  pt as b,
-  lt as c,
-  ut as d,
-  nt as e,
-  rt as f,
-  st as g,
-  gt as h,
-  at as i,
-  ct as j,
-  ot as m,
+  yt as P,
+  mt as a,
+  dt as b,
+  pt as c,
+  ht as d,
+  ut as e,
+  nt as f,
+  it as g,
+  ot as h,
+  ct as i,
+  gt as j,
+  lt as k,
+  st as m,
   ft as r,
-  it as t
+  at as t
 };

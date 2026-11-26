@@ -310,6 +310,7 @@ const e = {
       "authorization.user.list": "Ver lista de usuarios",
       "authorization.user.view_audit_logs": "Ver registros de auditoría de usuarios",
       "authorization.user.assign-roles": "Asignar roles a usuarios",
+      "authorization.user.assign_roles": "Asignar roles a usuarios",
       "system.security.update": "Actualizar ajustes de seguridad",
       "system.security.view": "Ver ajustes de seguridad",
       "system.settings.update": "Actualizar ajustes",
@@ -317,9 +318,14 @@ const e = {
       Rate_Limit: "Límite de tasa",
       "system.rate_limit.view": "Ver límites de tasa",
       "system.rate_limit.update": "Actualizar límites de tasa",
+      "system.rate_limit_rule.create": "Crear regla de límite",
+      "system.rate_limit_rule.update": "Actualizar regla de límite",
+      "system.rate_limit_rule.delete": "Eliminar regla de límite",
+      "system.rate_limit_settings.update": "Actualizar límites de tasa",
       "system.view": "Ver información del sistema",
       "system.audit_log.view": "Ver registros de auditoría",
       "file.list": "Ver lista de archivos",
+      "file.publish": "Publicar archivos públicos",
       "authorization.service_account.list": "Ver lista de cuentas de servicio",
       "authorization.service_account.create": "Crear cuenta de servicio",
       "authorization.service_account.delete": "Eliminar cuenta de servicio",
@@ -334,6 +340,8 @@ const e = {
       "authorization.service_account.role.assign": "Asignar roles a cuenta de servicio",
       "authorization.service_account.policy.view": "Ver política de cuenta de servicio",
       "authorization.service_account.policy.update": "Actualizar política de cuenta de servicio",
+      "authorization.service_account.rate_limit.update": "Actualizar el límite de tasa de la cuenta de servicio",
+      "authorization.service_account.rate_limit.reset": "Restablecer contadores de límite de la cuenta de servicio",
       "statistics.view": "Ver estadísticas",
       Skill_Management: "Gestión de habilidades",
       Task_Management: "Gestión de tareas",
@@ -353,6 +361,9 @@ const e = {
       "task.schedule.list": "Listar tareas programadas",
       "task.schedule.update": "Actualizar tareas programadas",
       "authorization.user.reset-password": "Restablecer contraseña de usuario",
+      "authorization.user.reset_password": "Restablecer contraseña de usuario",
+      "authorization.user.rate_limit.update": "Actualizar el límite de tasa del usuario",
+      "authorization.user.rate_limit.reset": "Restablecer contadores de límite del usuario",
       "authorization.user.export": "Exportar usuarios",
       AI_Model_Management: "Gestión de modelos de IA",
       AI_Chat: "Chat de IA",
@@ -416,6 +427,14 @@ const e = {
         delete: "Eliminar regla de límite",
         reset: "Restablecer contadores de límite"
       },
+      rate_limit_rule: {
+        create: "Crear regla de límite",
+        update: "Actualizar regla de límite",
+        delete: "Eliminar regla de límite"
+      },
+      rate_limit_settings: {
+        update: "Actualizar límites de tasa"
+      },
       organization: {
         update: "Actualizar organización",
         create: "Crear organización",
@@ -435,7 +454,17 @@ const e = {
         enable_mfa: "Habilitar MFA",
         activate_mfa: "Verificar y activar MFA",
         disable_mfa: "Deshabilitar MFA",
-        import_ldap_users: "Importar usuarios LDAP"
+        import_ldap_users: "Importar usuarios LDAP",
+        rate_limit: {
+          update: "Actualizar el límite de tasa del usuario",
+          reset: "Restablecer contadores de límite del usuario"
+        }
+      },
+      service_account: {
+        rate_limit: {
+          update: "Actualizar el límite de tasa de la cuenta de servicio",
+          reset: "Restablecer contadores de límite de la cuenta de servicio"
+        }
       },
       oauth: {
         callback: "Devolución de llamada OAuth/Inicio de sesión"
@@ -596,6 +625,7 @@ const e = {
     quota: "Cuota diaria (0 = ninguna)",
     quotaPeriod: "Periodo de cuota",
     enabled: "Activado",
+    enabledHint: "Desactivado: esta anulación se ignora y se aplica el valor predeterminado del tipo. Use «Restablecer predeterminado» para eliminar la anulación.",
     inherited: "Se usa el valor predeterminado del tipo. Guarde para crear una anulación específica.",
     sourceHint: "Los valores mostrados se heredan.",
     saveSuccess: "Anulación de límite guardada",

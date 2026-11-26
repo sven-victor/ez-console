@@ -17,6 +17,7 @@ const e = {
     },
     rateLimit: {
       enabled: "启用接口限流",
+      enabledHint: "关闭后忽略此规则，并应用下一层规则。",
       storeLabel: "存储",
       failOpen: "故障放行",
       defaults: "默认共享配额",
@@ -36,7 +37,7 @@ const e = {
       rate: "速率",
       period: "周期",
       burst: "突发",
-      quota: "配额",
+      quota: "日配额",
       quotaPeriod: "配额周期",
       memoryWarn: "集群模式使用内存存储时，限额按节点独立计算。请将 rate_limit.store 设为 redis 以实现集群级限额。",
       resetAll: "重置全部计数器",

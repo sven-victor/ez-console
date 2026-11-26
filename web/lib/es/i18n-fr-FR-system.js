@@ -17,6 +17,7 @@ const e = {
     },
     rateLimit: {
       enabled: "Activer la limitation de débit",
+      enabledHint: "Désactivé : cette règle est ignorée et la couche suivante s'applique.",
       storeLabel: "Stockage",
       failOpen: "Laisser passer en cas d’échec",
       defaults: "Seaux partagés par défaut",
@@ -36,7 +37,7 @@ const e = {
       rate: "Débit",
       period: "Période",
       burst: "Rafale",
-      quota: "Quota",
+      quota: "Quota journalier",
       quotaPeriod: "Période de quota",
       memoryWarn: "Mode cluster avec stockage mémoire : les limites sont par nœud. Utilisez rate_limit.store=redis pour des limites à l’échelle du cluster.",
       resetAll: "Réinitialiser tous les compteurs",

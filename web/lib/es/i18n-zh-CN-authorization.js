@@ -312,6 +312,7 @@ const e = {
       "authorization.user.list": "查看用户列表",
       "authorization.user.view_audit_logs": "查看用户审计日志",
       "authorization.user.assign-roles": "分配角色给用户",
+      "authorization.user.assign_roles": "分配角色给用户",
       "system.security.update": "更新安全设置",
       "system.security.view": "查看安全设置",
       "system.settings.update": "更新设置",
@@ -319,9 +320,14 @@ const e = {
       Rate_Limit: "接口限流",
       "system.rate_limit.view": "查看限流设置",
       "system.rate_limit.update": "更新限流设置",
+      "system.rate_limit_rule.create": "创建限流规则",
+      "system.rate_limit_rule.update": "更新限流规则",
+      "system.rate_limit_rule.delete": "删除限流规则",
+      "system.rate_limit_settings.update": "更新限流设置",
       "system.view": "查看系统信息",
       "system.audit_log.view": "查看审计日志",
       "file.list": "查看文件列表",
+      "file.publish": "发布公开文件",
       "authorization.service_account.list": "查看服务账户列表",
       "authorization.service_account.create": "创建服务账户",
       "authorization.service_account.delete": "删除服务账户",
@@ -336,6 +342,8 @@ const e = {
       "authorization.service_account.role.assign": "分配服务账户角色",
       "authorization.service_account.policy.view": "查看服务账户策略",
       "authorization.service_account.policy.update": "更新服务账户策略",
+      "authorization.service_account.rate_limit.update": "更新服务账户限流",
+      "authorization.service_account.rate_limit.reset": "重置服务账户限流计数器",
       "statistics.view": "查看统计信息",
       AI_Model_Management: "AI模型管理",
       AI_Chat: "AI 对话",
@@ -374,6 +382,9 @@ const e = {
       "task.schedule.list": "查看定时任务列表",
       "task.schedule.update": "更新定时任务",
       "authorization.user.reset-password": "重置用户密码",
+      "authorization.user.reset_password": "重置用户密码",
+      "authorization.user.rate_limit.update": "更新用户限流",
+      "authorization.user.rate_limit.reset": "重置用户限流计数器",
       "authorization.user.export": "导出用户"
     }
   },
@@ -418,6 +429,14 @@ const e = {
         delete: "删除限流规则",
         reset: "重置限流计数器"
       },
+      rate_limit_rule: {
+        create: "创建限流规则",
+        update: "更新限流规则",
+        delete: "删除限流规则"
+      },
+      rate_limit_settings: {
+        update: "更新限流设置"
+      },
       organization: {
         update: "更新组织",
         create: "创建组织",
@@ -437,7 +456,17 @@ const e = {
         enable_mfa: "启用多因素认证",
         activate_mfa: "验证并激活多因素认证",
         disable_mfa: "禁用多因素认证",
-        import_ldap_users: "导入 LDAP 用户"
+        import_ldap_users: "导入 LDAP 用户",
+        rate_limit: {
+          update: "更新用户限流",
+          reset: "重置用户限流计数器"
+        }
+      },
+      service_account: {
+        rate_limit: {
+          update: "更新服务账户限流",
+          reset: "重置服务账户限流计数器"
+        }
       },
       oauth: {
         callback: "OAuth 回调/登录"
@@ -602,6 +631,7 @@ const e = {
     quota: "日配额（0 表示无）",
     quotaPeriod: "配额周期",
     enabled: "启用",
+    enabledHint: "关闭后忽略此覆盖，并使用类型默认值。使用「恢复默认」可删除该覆盖。",
     inherited: "当前使用类型默认值。保存后将创建该主体的覆盖规则。",
     sourceHint: "显示的值为继承的默认值。",
     saveSuccess: "限流覆盖已保存",

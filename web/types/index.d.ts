@@ -138,7 +138,7 @@ export declare type AIChatMessageStatus = "pending" | "streaming" | "completed" 
 
 export declare interface AIChatProps {
     bubble?: {
-        contentRender?: (content: string, info: Info, onSendMessage: (val: string) => void) => default_2.ReactNode;
+        contentRender?: (content: string, info: ContentInfo, onSendMessage: (val: string) => void) => default_2.ReactNode;
         footerRender?: ((message: MessageInfo<ChatStreamMessage>, info: Info, onSendMessage: (val: string) => void) => default_2.ReactNode);
         components?: {
             [tagName: string]: default_2.ComponentType<ComponentProps & {
@@ -1442,6 +1442,10 @@ export declare interface CloneSkillRequest {
 }
 
 export declare type Condition = true;
+
+declare interface ContentInfo extends Info {
+    role: 'user' | 'assistant';
+}
 
 export declare interface CreateAIModelRequest {
     /** Insert a prompt-cache breakpoint after the system prompt. Ignored when the model does not support it. Omitted means true. */

@@ -17,6 +17,7 @@ const e = {
     },
     rateLimit: {
       enabled: "Aktivera hastighetsbegränsning",
+      enabledHint: "Av: den här regeln ignoreras och nästa lager gäller.",
       storeLabel: "Lagring",
       failOpen: "Öppna vid fel",
       defaults: "Standarddelade hinkar",
@@ -36,7 +37,7 @@ const e = {
       rate: "Hastighet",
       period: "Period",
       burst: "Burst",
-      quota: "Kvot",
+      quota: "Dagskvot",
       quotaPeriod: "Kvotperiod",
       memoryWarn: "Klusterläge med minneslagring: gränserna gäller per nod. Använd rate_limit.store=redis för klusteromfattande gränser.",
       resetAll: "Återställ alla räknare",

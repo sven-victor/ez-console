@@ -310,6 +310,7 @@ const e = {
       "authorization.user.list": "عرض قائمة المستخدمين",
       "authorization.user.view_audit_logs": "عرض سجلات تدقيق المستخدم",
       "authorization.user.assign-roles": "تعيين الأدوار إلى المستخدمين",
+      "authorization.user.assign_roles": "تعيين الأدوار إلى المستخدمين",
       "system.security.update": "تحديث إعدادات الأمان",
       "system.security.view": "عرض إعدادات الأمان",
       "system.settings.update": "تحديث الإعدادات",
@@ -317,9 +318,14 @@ const e = {
       Rate_Limit: "تحديد المعدل",
       "system.rate_limit.view": "عرض إعدادات تحديد المعدل",
       "system.rate_limit.update": "تحديث إعدادات تحديد المعدل",
+      "system.rate_limit_rule.create": "إنشاء قاعدة تحديد المعدل",
+      "system.rate_limit_rule.update": "تحديث قاعدة تحديد المعدل",
+      "system.rate_limit_rule.delete": "حذف قاعدة تحديد المعدل",
+      "system.rate_limit_settings.update": "تحديث إعدادات تحديد المعدل",
       "system.view": "عرض معلومات النظام",
       "system.audit_log.view": "عرض سجلات التدقيق",
       "file.list": "عرض قائمة الملفات",
+      "file.publish": "نشر الملفات العامة",
       "authorization.service_account.list": "عرض قائمة حسابات الخدمة",
       "authorization.service_account.create": "إنشاء حساب خدمة",
       "authorization.service_account.delete": "حذف حساب خدمة",
@@ -334,6 +340,8 @@ const e = {
       "authorization.service_account.role.assign": "تعيين أدوار إلى حسابات الخدمة",
       "authorization.service_account.policy.view": "عرض سياسة حساب الخدمة",
       "authorization.service_account.policy.update": "تحديث سياسة حساب الخدمة",
+      "authorization.service_account.rate_limit.update": "تحديث حد المعدل لحساب الخدمة",
+      "authorization.service_account.rate_limit.reset": "إعادة تعيين عدادات حد المعدل لحساب الخدمة",
       "statistics.view": "عرض الإحصاءات",
       Skill_Management: "إدارة المهارات",
       Task_Management: "إدارة المهام",
@@ -353,6 +361,9 @@ const e = {
       "task.schedule.list": "عرض قائمة المهام المجدولة",
       "task.schedule.update": "تحديث المهام المجدولة",
       "authorization.user.reset-password": "إعادة تعيين كلمة مرور المستخدم",
+      "authorization.user.reset_password": "إعادة تعيين كلمة مرور المستخدم",
+      "authorization.user.rate_limit.update": "تحديث حد المعدل للمستخدم",
+      "authorization.user.rate_limit.reset": "إعادة تعيين عدادات حد المعدل للمستخدم",
       "authorization.user.export": "تصدير المستخدمين",
       AI_Model_Management: "إدارة نماذج الذكاء الاصطناعي",
       AI_Chat: "محادثة الذكاء الاصطناعي",
@@ -416,6 +427,14 @@ const e = {
         delete: "حذف قاعدة تحديد المعدل",
         reset: "إعادة تعيين عدادات تحديد المعدل"
       },
+      rate_limit_rule: {
+        create: "إنشاء قاعدة تحديد المعدل",
+        update: "تحديث قاعدة تحديد المعدل",
+        delete: "حذف قاعدة تحديد المعدل"
+      },
+      rate_limit_settings: {
+        update: "تحديث إعدادات تحديد المعدل"
+      },
       organization: {
         update: "تحديث المنظمة",
         create: "إنشاء منظمة",
@@ -435,7 +454,17 @@ const e = {
         enable_mfa: "تمكين المصادقة متعددة العوامل",
         activate_mfa: "التحقق وتفعيل المصادقة متعددة العوامل",
         disable_mfa: "تعطيل المصادقة متعددة العوامل",
-        import_ldap_users: "استيراد مستخدمي LDAP"
+        import_ldap_users: "استيراد مستخدمي LDAP",
+        rate_limit: {
+          update: "تحديث حد المعدل للمستخدم",
+          reset: "إعادة تعيين عدادات حد المعدل للمستخدم"
+        }
+      },
+      service_account: {
+        rate_limit: {
+          update: "تحديث حد المعدل لحساب الخدمة",
+          reset: "إعادة تعيين عدادات حد المعدل لحساب الخدمة"
+        }
       },
       oauth: {
         callback: "معاودة الاتصال OAuth/تسجيل الدخول"
@@ -596,6 +625,7 @@ const e = {
     quota: "الحصة اليومية (0 = بدون)",
     quotaPeriod: "فترة الحصة",
     enabled: "مفعّل",
+    enabledHint: "إيقاف: يتم تجاهل هذا التجاوز ويُطبَّق الافتراضي للنوع. استخدم «إعادة التعيين للافتراضي» لحذف التجاوز.",
     inherited: "يتم استخدام الافتراضي للنوع. احفظ لإنشاء تجاوز خاص بالموضوع.",
     sourceHint: "القيم المعروضة موروثة.",
     saveSuccess: "تم حفظ تجاوز تحديد المعدل",

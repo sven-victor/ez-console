@@ -310,6 +310,7 @@ const e = {
       "authorization.user.list": "Visa användarelista",
       "authorization.user.view_audit_logs": "Visa användargranskningsloggar",
       "authorization.user.assign-roles": "Tilldela roller till användare",
+      "authorization.user.assign_roles": "Tilldela roller till användare",
       "system.security.update": "Uppdatera säkerhetsinställningar",
       "system.security.view": "Visa säkerhetsinställningar",
       "system.settings.update": "Uppdatera inställningar",
@@ -317,9 +318,14 @@ const e = {
       Rate_Limit: "Hastighetsbegränsning",
       "system.rate_limit.view": "Visa hastighetsbegränsning",
       "system.rate_limit.update": "Uppdatera hastighetsbegränsning",
+      "system.rate_limit_rule.create": "Skapa hastighetsregel",
+      "system.rate_limit_rule.update": "Uppdatera hastighetsregel",
+      "system.rate_limit_rule.delete": "Ta bort hastighetsregel",
+      "system.rate_limit_settings.update": "Uppdatera hastighetsbegränsning",
       "system.view": "Visa systeminformation",
       "system.audit_log.view": "Visa granskningsloggar",
       "file.list": "Visa filer",
+      "file.publish": "Publicera offentliga filer",
       "authorization.service_account.list": "Visa tjänstekonton",
       "authorization.service_account.create": "Skapa tjänstekonton",
       "authorization.service_account.delete": "Ta bort tjänstekonton",
@@ -334,6 +340,8 @@ const e = {
       "authorization.service_account.role.assign": "Tilldela roller till tjänstekonton",
       "authorization.service_account.policy.view": "Visa tjänstekonton policy",
       "authorization.service_account.policy.update": "Uppdatera tjänstekonton policy",
+      "authorization.service_account.rate_limit.update": "Uppdatera hastighetsbegränsning för tjänstekonto",
+      "authorization.service_account.rate_limit.reset": "Återställ hastighetsräknare för tjänstekonto",
       "statistics.view": "Visa statistik",
       Skill_Management: "Kompetenshantering",
       Task_Management: "Uppgiftshantering",
@@ -353,6 +361,9 @@ const e = {
       "task.schedule.list": "Lista schemalagda uppgifter",
       "task.schedule.update": "Uppdatera schemalagda uppgifter",
       "authorization.user.reset-password": "Återställ användarlösenord",
+      "authorization.user.reset_password": "Återställ användarlösenord",
+      "authorization.user.rate_limit.update": "Uppdatera hastighetsbegränsning för användare",
+      "authorization.user.rate_limit.reset": "Återställ hastighetsräknare för användare",
       "authorization.user.export": "Exportera användare",
       AI_Model_Management: "AI-modellhantering",
       AI_Chat: "AI-chatt",
@@ -416,6 +427,14 @@ const e = {
         delete: "Ta bort hastighetsregel",
         reset: "Återställ hastighetsräknare"
       },
+      rate_limit_rule: {
+        create: "Skapa hastighetsregel",
+        update: "Uppdatera hastighetsregel",
+        delete: "Ta bort hastighetsregel"
+      },
+      rate_limit_settings: {
+        update: "Uppdatera hastighetsbegränsning"
+      },
       organization: {
         update: "Uppdatera organisation",
         create: "Skapa organisation",
@@ -435,7 +454,17 @@ const e = {
         enable_mfa: "Aktivera MFA",
         activate_mfa: "Verifiera och aktivera MFA",
         disable_mfa: "Inaktivera MFA",
-        import_ldap_users: "Importera LDAP-användare"
+        import_ldap_users: "Importera LDAP-användare",
+        rate_limit: {
+          update: "Uppdatera hastighetsbegränsning för användare",
+          reset: "Återställ hastighetsräknare för användare"
+        }
+      },
+      service_account: {
+        rate_limit: {
+          update: "Uppdatera hastighetsbegränsning för tjänstekonto",
+          reset: "Återställ hastighetsräknare för tjänstekonto"
+        }
       },
       oauth: {
         callback: "OAuth Callback/Inloggning"
@@ -596,6 +625,7 @@ const e = {
     quota: "Daglig kvot (0 = ingen)",
     quotaPeriod: "Kvotperiod",
     enabled: "Aktiverad",
+    enabledHint: "Av: den här åsidosättningen ignoreras och typens standardvärde gäller. Använd «Återställ till standard» för att ta bort åsidosättningen.",
     inherited: "Använder typens standard. Spara för att skapa en subjektspecifik överskrivning.",
     sourceHint: "Visade värden ärvs.",
     saveSuccess: "Överskrivning sparad",

@@ -310,6 +310,7 @@ const e = {
       "authorization.user.list": "Afficher la liste des utilisateurs",
       "authorization.user.view_audit_logs": "Afficher les journaux d'audit des utilisateurs",
       "authorization.user.assign-roles": "Affecter des rôles aux utilisateurs",
+      "authorization.user.assign_roles": "Affecter des rôles aux utilisateurs",
       "system.security.update": "Mettre à jour les paramètres de sécurité",
       "system.security.view": "Afficher les paramètres de sécurité",
       "system.settings.update": "Mettre à jour les paramètres",
@@ -317,9 +318,14 @@ const e = {
       Rate_Limit: "Limitation de débit",
       "system.rate_limit.view": "Afficher la limitation de débit",
       "system.rate_limit.update": "Mettre à jour la limitation de débit",
+      "system.rate_limit_rule.create": "Créer une règle de limitation",
+      "system.rate_limit_rule.update": "Mettre à jour une règle de limitation",
+      "system.rate_limit_rule.delete": "Supprimer une règle de limitation",
+      "system.rate_limit_settings.update": "Mettre à jour la limitation de débit",
       "system.view": "Afficher les informations système",
       "system.audit_log.view": "Afficher les journaux d'audit",
       "file.list": "Afficher la liste des fichiers",
+      "file.publish": "Publier des fichiers publics",
       "authorization.service_account.list": "Afficher la liste des comptes de service",
       "authorization.service_account.create": "Créer un compte de service",
       "authorization.service_account.delete": "Supprimer un compte de service",
@@ -334,6 +340,8 @@ const e = {
       "authorization.service_account.role.assign": "Affecter des rôles au compte de service",
       "authorization.service_account.policy.view": "Afficher une politique du compte de service",
       "authorization.service_account.policy.update": "Mettre à jour une politique du compte de service",
+      "authorization.service_account.rate_limit.update": "Mettre à jour la limitation de débit du compte de service",
+      "authorization.service_account.rate_limit.reset": "Réinitialiser les compteurs de limitation du compte de service",
       "statistics.view": "Afficher les statistiques",
       Skill_Management: "Gestion des compétences",
       Task_Management: "Gestion des tâches",
@@ -353,6 +361,9 @@ const e = {
       "task.schedule.list": "Lister les tâches planifiées",
       "task.schedule.update": "Mettre à jour les tâches planifiées",
       "authorization.user.reset-password": "Réinitialiser le mot de passe de l'utilisateur",
+      "authorization.user.reset_password": "Réinitialiser le mot de passe de l'utilisateur",
+      "authorization.user.rate_limit.update": "Mettre à jour la limitation de débit de l'utilisateur",
+      "authorization.user.rate_limit.reset": "Réinitialiser les compteurs de limitation de l'utilisateur",
       "authorization.user.export": "Exporter les utilisateurs",
       AI_Model_Management: "Gestion des modèles IA",
       AI_Chat: "Chat IA",
@@ -416,6 +427,14 @@ const e = {
         delete: "Supprimer une règle de limitation",
         reset: "Réinitialiser les compteurs de limitation"
       },
+      rate_limit_rule: {
+        create: "Créer une règle de limitation",
+        update: "Mettre à jour une règle de limitation",
+        delete: "Supprimer une règle de limitation"
+      },
+      rate_limit_settings: {
+        update: "Mettre à jour la limitation de débit"
+      },
       organization: {
         update: "Mettre à jour l'organisation",
         create: "Créer une organisation",
@@ -435,7 +454,17 @@ const e = {
         enable_mfa: "Activer la MFA",
         activate_mfa: "Vérifier et activer la MFA",
         disable_mfa: "Désactiver la MFA",
-        import_ldap_users: "Importer les utilisateurs LDAP"
+        import_ldap_users: "Importer les utilisateurs LDAP",
+        rate_limit: {
+          update: "Mettre à jour la limitation de débit de l'utilisateur",
+          reset: "Réinitialiser les compteurs de limitation de l'utilisateur"
+        }
+      },
+      service_account: {
+        rate_limit: {
+          update: "Mettre à jour la limitation de débit du compte de service",
+          reset: "Réinitialiser les compteurs de limitation du compte de service"
+        }
       },
       oauth: {
         callback: "Rappel OAuth/Connexion"
@@ -596,6 +625,7 @@ const e = {
     quota: "Quota quotidien (0 = aucun)",
     quotaPeriod: "Période de quota",
     enabled: "Activé",
+    enabledHint: "Désactivé : ce remplacement est ignoré et la valeur par défaut du type s'applique. Utilisez « Réinitialiser par défaut » pour supprimer le remplacement.",
     inherited: "Utilise la valeur par défaut du type. Enregistrez pour créer une surcharge spécifique.",
     sourceHint: "Les valeurs affichées sont héritées.",
     saveSuccess: "Surcharge de limitation enregistrée",

@@ -355,7 +355,18 @@ const e = {
       "task.schedule.list": "List scheduled tasks",
       "task.schedule.update": "Update scheduled tasks",
       "authorization.user.reset-password": "Reset user password",
-      "authorization.user.export": "Export users"
+      "authorization.user.reset_password": "Reset User Password",
+      "authorization.user.assign_roles": "Assign roles to users",
+      "authorization.user.export": "Export users",
+      "file.publish": "Publish public files",
+      "authorization.service_account.rate_limit.update": "Update service account rate limit",
+      "authorization.service_account.rate_limit.reset": "Reset service account rate limit counters",
+      "authorization.user.rate_limit.update": "Update user rate limit",
+      "authorization.user.rate_limit.reset": "Reset user rate limit counters",
+      "system.rate_limit_rule.create": "Create rate limit rule",
+      "system.rate_limit_rule.update": "Update rate limit rule",
+      "system.rate_limit_rule.delete": "Delete rate limit rule",
+      "system.rate_limit_settings.update": "Update rate limit settings"
     }
   },
   auditLog: {
@@ -399,6 +410,14 @@ const e = {
         delete: "Delete rate limit rule",
         reset: "Reset rate limit counters"
       },
+      rate_limit_rule: {
+        create: "Create rate limit rule",
+        update: "Update rate limit rule",
+        delete: "Delete rate limit rule"
+      },
+      rate_limit_settings: {
+        update: "Update rate limit settings"
+      },
       organization: {
         update: "Update organization",
         create: "Create organization",
@@ -418,7 +437,17 @@ const e = {
         enable_mfa: "Enable MFA",
         activate_mfa: "Verify and Activate MFA",
         disable_mfa: "Disable MFA",
-        import_ldap_users: "Import LDAP Users"
+        import_ldap_users: "Import LDAP Users",
+        rate_limit: {
+          update: "Update user rate limit",
+          reset: "Reset user rate limit counters"
+        }
+      },
+      service_account: {
+        rate_limit: {
+          update: "Update service account rate limit",
+          reset: "Reset service account rate limit counters"
+        }
       },
       oauth: {
         callback: "OAuth Callback/Login"
@@ -581,6 +610,7 @@ const e = {
     quota: "Daily quota (0 = none)",
     quotaPeriod: "Quota period",
     enabled: "Enabled",
+    enabledHint: "Off: this override is ignored and the type default applies. Use Reset to default to delete the override.",
     inherited: "Using the type default. Save to create a subject-specific override.",
     sourceHint: "Values shown are inherited.",
     saveSuccess: "Rate limit override saved",

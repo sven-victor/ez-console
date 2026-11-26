@@ -310,6 +310,7 @@ const e = {
       "authorization.user.list": "Benutzerliste anzeigen",
       "authorization.user.view_audit_logs": "Benutzerprüfprotokolle anzeigen",
       "authorization.user.assign-roles": "Benutzerrollen zuweisen",
+      "authorization.user.assign_roles": "Benutzerrollen zuweisen",
       "system.security.update": "Sicherheitseinstellungen aktualisieren",
       "system.security.view": "Sicherheitseinstellungen anzeigen",
       "system.settings.update": "Einstellungen aktualisieren",
@@ -317,9 +318,14 @@ const e = {
       Rate_Limit: "Ratenbegrenzung",
       "system.rate_limit.view": "Ratenbegrenzung anzeigen",
       "system.rate_limit.update": "Ratenbegrenzung aktualisieren",
+      "system.rate_limit_rule.create": "Ratenregel erstellen",
+      "system.rate_limit_rule.update": "Ratenregel aktualisieren",
+      "system.rate_limit_rule.delete": "Ratenregel löschen",
+      "system.rate_limit_settings.update": "Ratenbegrenzung aktualisieren",
       "system.view": "Systeminformationen anzeigen",
       "system.audit_log.view": "Prüfprotokolle anzeigen",
       "file.list": "Dateilisten anzeigen",
+      "file.publish": "Öffentliche Dateien veröffentlichen",
       "authorization.service_account.list": "Dienstkontenliste anzeigen",
       "authorization.service_account.create": "Dienstkonto erstellen",
       "authorization.service_account.delete": "Dienstkonto löschen",
@@ -334,6 +340,8 @@ const e = {
       "authorization.service_account.role.assign": "Dienstkontorollen zuweisen",
       "authorization.service_account.policy.view": "Dienstkontorichtlinien anzeigen",
       "authorization.service_account.policy.update": "Dienstkontorichtlinien aktualisieren",
+      "authorization.service_account.rate_limit.update": "Dienstkonto-Ratenbegrenzung aktualisieren",
+      "authorization.service_account.rate_limit.reset": "Dienstkonto-Ratenbegrenzer zurücksetzen",
       "statistics.view": "Statistiken anzeigen",
       Skill_Management: "Skill-Verwaltung",
       Task_Management: "Aufgabenverwaltung",
@@ -353,6 +361,9 @@ const e = {
       "task.schedule.list": "Geplante Aufgaben auflisten",
       "task.schedule.update": "Geplante Aufgaben aktualisieren",
       "authorization.user.reset-password": "Benutzerpasswort zurücksetzen",
+      "authorization.user.reset_password": "Benutzerpasswort zurücksetzen",
+      "authorization.user.rate_limit.update": "Benutzer-Ratenbegrenzung aktualisieren",
+      "authorization.user.rate_limit.reset": "Benutzer-Ratenbegrenzer zurücksetzen",
       "authorization.user.export": "Benutzer exportieren",
       AI_Model_Management: "KI-Modellverwaltung",
       AI_Chat: "KI-Chat",
@@ -416,6 +427,14 @@ const e = {
         delete: "Ratenregel löschen",
         reset: "Ratenbegrenzer zurücksetzen"
       },
+      rate_limit_rule: {
+        create: "Ratenregel erstellen",
+        update: "Ratenregel aktualisieren",
+        delete: "Ratenregel löschen"
+      },
+      rate_limit_settings: {
+        update: "Ratenbegrenzung aktualisieren"
+      },
       organization: {
         update: "Organisation aktualisieren",
         create: "Organisation erstellen",
@@ -435,7 +454,17 @@ const e = {
         enable_mfa: "MFA aktivieren",
         activate_mfa: "MFA verifizieren und aktivieren",
         disable_mfa: "MFA deaktivieren",
-        import_ldap_users: "LDAP-Benutzer importieren"
+        import_ldap_users: "LDAP-Benutzer importieren",
+        rate_limit: {
+          update: "Benutzer-Ratenbegrenzung aktualisieren",
+          reset: "Benutzer-Ratenbegrenzer zurücksetzen"
+        }
+      },
+      service_account: {
+        rate_limit: {
+          update: "Dienstkonto-Ratenbegrenzung aktualisieren",
+          reset: "Dienstkonto-Ratenbegrenzer zurücksetzen"
+        }
       },
       oauth: {
         callback: "OAuth-Rückruf/Anmeldung"
@@ -596,6 +625,7 @@ const e = {
     quota: "Tageskontingent (0 = keines)",
     quotaPeriod: "Kontingentzeitraum",
     enabled: "Aktiviert",
+    enabledHint: "Aus: Diese Überschreibung wird ignoriert und der Typstandard gilt. Mit „Auf Standard zurücksetzen“ wird die Überschreibung gelöscht.",
     inherited: "Es gilt der Typstandard. Speichern, um eine subjektspezifische Überschreibung zu erstellen.",
     sourceHint: "Angezeigte Werte sind geerbt.",
     saveSuccess: "Ratenbegrenzungs-Überschreibung gespeichert",

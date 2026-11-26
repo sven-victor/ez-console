@@ -6,19 +6,19 @@ import { TeamOutlined as Te, CheckCircleOutlined as ie, CloseCircleOutlined as F
 import { useNavigate as Ve, Link as Ne, useLocation as Ue, useParams as Le } from "react-router-dom";
 import { i as O, c as Me, q as Be } from "./components.js";
 import { a as z } from "./index.js";
-import { P as ae, f as q } from "./base.js";
+import { P as ae, f as q, d as qe } from "./base.js";
 import { useTranslation as R } from "react-i18next";
-import { a as ne, b as Se, u as qe } from "./contexts.js";
-import Ge from "./not_found.js";
-import $e from "dayjs";
-import { createStyles as Je } from "antd-style";
-const We = [], be = ({
+import { a as ne, b as Se, u as Ge } from "./contexts.js";
+import $e from "./not_found.js";
+import Je from "dayjs";
+import { createStyles as We } from "antd-style";
+const He = [], be = ({
   serviceAccountID: i,
   onClose: c,
   open: a = !1,
   onSuccess: b,
   enableMultiOrg: w = !1,
-  organizations: d = We
+  organizations: d = He
 }) => {
   const { message: t } = W.useApp(), { hasGlobalPermission: h } = ne(), { t: o } = R("authorization"), { t: m } = R("common"), { currentOrgId: _ } = Se(), [n] = v.useForm(), [C, I] = V("global"), [x, S] = V(void 0), [D, y] = V(null), { run: K, loading: r } = k((u) => {
     if (i) {
@@ -160,8 +160,8 @@ const We = [], be = ({
       )
     }
   );
-}, He = () => {
-  const { message: i } = W.useApp(), { t: c } = R("authorization"), { t: a } = R("common"), b = Ve(), [w] = v.useForm(), { siteConfig: d } = Se(), { user: t } = qe(), h = (t == null ? void 0 : t.organizations) || [], o = (d == null ? void 0 : d.enable_multi_org) ?? !1, [m, _] = V([]), [n, C] = V(0), [I, x] = V(!1), [S, D] = V(null), [y, K] = V({
+}, Qe = () => {
+  const { message: i } = W.useApp(), { t: c } = R("authorization"), { t: a } = R("common"), b = Ve(), [w] = v.useForm(), { siteConfig: d } = Se(), { user: t } = Ge(), h = (t == null ? void 0 : t.organizations) || [], o = (d == null ? void 0 : d.enable_multi_org) ?? !1, [m, _] = V([]), [n, C] = V(0), [I, x] = V(!1), [S, D] = V(null), [y, K] = V({
     current: ae.DEFAULT_CURRENT,
     page_size: ae.DEFAULT_PAGE_SIZE,
     search: void 0,
@@ -440,10 +440,10 @@ const We = [], be = ({
       }
     )
   ] });
-}, vt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, yt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: He
-}, Symbol.toStringTag, { value: "Module" })), { Text: $, Paragraph: de } = Ae, { TextArea: Qe } = ee, Ye = ({ serviceAccountID: i }) => {
+  default: Qe
+}, Symbol.toStringTag, { value: "Module" })), { Text: $, Paragraph: de } = Ae, { TextArea: Ye } = ee, Ze = ({ serviceAccountID: i }) => {
   const { message: c } = W.useApp(), { t: a } = R("authorization"), { t: b } = R("common"), [w, d] = V(!1), [t] = v.useForm(), [h, o] = V(null), [m, _] = V(null), [n, C] = V(!1), {
     data: I = [],
     loading: x,
@@ -470,15 +470,12 @@ const We = [], be = ({
         c.error(a("serviceAccount.deleteKeyError", { defaultValue: "Failed to delete access key." }));
       }
     }
-  ), y = (l) => {
-    navigator.clipboard.writeText(l).then(
-      () => {
-        c.success(a("serviceAccount.copyKeySuccess", { defaultValue: "Copied to clipboard!" }));
-      },
-      (P) => {
-        console.error("Could not copy text: ", P);
-      }
-    );
+  ), y = async (l) => {
+    try {
+      await qe(l), c.success(a("serviceAccount.copyKeySuccess", { defaultValue: "Copied to clipboard!" }));
+    } catch (P) {
+      console.error("Could not copy text: ", P);
+    }
   }, K = () => {
     o(null), t.resetFields(), d(!0);
   }, r = (l) => {
@@ -486,7 +483,7 @@ const We = [], be = ({
       name: l.name,
       description: l.description,
       status: l.status === "active",
-      expires_at: l.expires_at ? $e(l.expires_at) : void 0
+      expires_at: l.expires_at ? Je(l.expires_at) : void 0
     }), d(!0);
   }, A = () => {
     d(!1), t.resetFields();
@@ -661,7 +658,7 @@ const We = [], be = ({
                   name: "description",
                   label: a("serviceAccount.keyDescription", { defaultValue: "Description" }),
                   children: /* @__PURE__ */ e.jsx(
-                    Qe,
+                    Ye,
                     {
                       rows: 3,
                       placeholder: a("serviceAccount.keyDescriptionPlaceholder", { defaultValue: "Enter key description (optional)" })
@@ -761,7 +758,7 @@ Secret Key: ${m.secret_access_key}`;
       }
     )
   ] });
-}, { Text: he } = Ae, Ze = ({ serviceAccount: i, onRefresh: c, loading: a }) => {
+}, { Text: he } = Ae, Xe = ({ serviceAccount: i, onRefresh: c, loading: a }) => {
   const { message: b } = W.useApp(), { id: w } = i || {}, { t: d } = R("authorization"), { t } = R("common"), [h, o] = V([]), [m, _] = V([]), { hasPermission: n } = ne();
   fe(() => {
     _((i == null ? void 0 : i.roles) || []);
@@ -872,7 +869,7 @@ Secret Key: ${m.secret_access_key}`;
       ] })
     }
   );
-}, { TabPane: J } = xe, Xe = {
+}, { TabPane: J } = xe, et = {
   allow_all: {
     Statement: [
       {
@@ -932,7 +929,7 @@ Secret Key: ${m.secret_access_key}`;
       }
     ]
   }
-}, et = Je(({ css: i }) => ({
+}, tt = We(({ css: i }) => ({
   rolePolicy: i`
        .ant-collapse-content>.ant-collapse-content-box{
         padding: 2px;
@@ -951,8 +948,8 @@ Secret Key: ${m.secret_access_key}`;
       right: 20px;
       top: 5px;
     `
-})), tt = () => {
-  const { message: i } = W.useApp(), { styles: c } = et(), d = Ue().hash.replace("#", "") || "basic", { t } = R("authorization"), { t: h } = R("common"), { id: o } = Le(), m = Ve(), { hasPermission: _ } = ne(), [n, C] = V(null), [I, x] = V(!1), [S] = v.useForm(), [D, y] = V(!1), { loading: K, refresh: r } = k(
+})), at = () => {
+  const { message: i } = W.useApp(), { styles: c } = tt(), d = Ue().hash.replace("#", "") || "basic", { t } = R("authorization"), { t: h } = R("common"), { id: o } = Le(), m = Ve(), { hasPermission: _ } = ne(), [n, C] = V(null), [I, x] = V(!1), [S] = v.useForm(), [D, y] = V(!1), { loading: K, refresh: r } = k(
     () => z.authorization.getServiceAccountById({ id: o }),
     {
       refreshDeps: [o],
@@ -1094,7 +1091,7 @@ Secret Key: ${m.secret_access_key}`;
                 t("serviceAccount.accessKeys", { defaultValue: "Access Keys" })
               ] }),
               disabled: !_("authorization:service_account:access_key:list"),
-              children: /* @__PURE__ */ e.jsx(Ye, { serviceAccountID: o })
+              children: /* @__PURE__ */ e.jsx(Ze, { serviceAccountID: o })
             },
             "access-keys"
           ),
@@ -1107,7 +1104,7 @@ Secret Key: ${m.secret_access_key}`;
               ] }),
               disabled: !_("authorization:service_account:role:list"),
               children: /* @__PURE__ */ e.jsx(
-                Ze,
+                Xe,
                 {
                   serviceAccount: n,
                   onRefresh: r
@@ -1187,7 +1184,7 @@ Secret Key: ${m.secret_access_key}`;
                         { label: t("serviceAccount.allowWithUri", { defaultValue: "Allow with URI" }), value: "allow_with_uri" }
                       ],
                       onChange: (j) => {
-                        const U = Xe[j];
+                        const U = et[j];
                         U && S.setFieldValue("policy_document", JSON.stringify(U, null, 2));
                       }
                     }
@@ -1238,12 +1235,12 @@ Secret Key: ${m.secret_access_key}`;
         )
       ]
     }
-  ) : /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: "50px 0" }, children: /* @__PURE__ */ e.jsx(Q, { description: t("serviceAccount.notFound", { defaultValue: "Service account not found." }) }) }) : /* @__PURE__ */ e.jsx(Ge, {});
-}, yt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+  ) : /* @__PURE__ */ e.jsx("div", { style: { textAlign: "center", padding: "50px 0" }, children: /* @__PURE__ */ e.jsx(Q, { description: t("serviceAccount.notFound", { defaultValue: "Service account not found." }) }) }) : /* @__PURE__ */ e.jsx($e, {});
+}, At = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  default: tt
+  default: at
 }, Symbol.toStringTag, { value: "Module" }));
 export {
-  vt as S,
-  yt as a
+  yt as S,
+  At as a
 };

@@ -17,6 +17,7 @@ const e = {
     },
     rateLimit: {
       enabled: "Activar limitación de tasa",
+      enabledHint: "Desactivado: esta regla se ignora y se aplica la capa siguiente.",
       storeLabel: "Almacén",
       failOpen: "Permitir si falla",
       defaults: "Cubos compartidos predeterminados",
@@ -36,7 +37,7 @@ const e = {
       rate: "Tasa",
       period: "Periodo",
       burst: "Ráfaga",
-      quota: "Cuota",
+      quota: "Cuota diaria",
       quotaPeriod: "Periodo de cuota",
       memoryWarn: "Modo clúster con almacén en memoria: los límites son por nodo. Use rate_limit.store=redis para límites de todo el clúster.",
       resetAll: "Restablecer todos los contadores",

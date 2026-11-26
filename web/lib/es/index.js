@@ -1,6 +1,6 @@
 import { a as qe } from "./ai.js";
 import { a as ce } from "./authorization.js";
-import { d as de, g as he, t as Qe } from "./base.js";
+import { e as de, g as he, t as Qe } from "./base.js";
 import { i as Ye } from "./inbox.js";
 import { a as q } from "./system.js";
 import { o as ue } from "./oauth.js";
